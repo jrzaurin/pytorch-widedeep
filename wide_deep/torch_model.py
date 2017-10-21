@@ -225,11 +225,9 @@ class WideDeep(nn.Module):
 
         X_w = Variable(torch.from_numpy(dataset.wide)).float()
         X_d = Variable(torch.from_numpy(dataset.deep))
-        y = torch.from_numpy(dataset.labels)
-        y = (Variable(y).float() if self.method != 'multiclass' else Variable(y))
 
         if use_cuda:
-            X_w, X_d, y = X_w.cuda(), X_d.cuda(), y.cuda()
+            X_w, X_d = X_w.cuda(), X_d.cuda()
 
         # set the model in evaluation mode so dropout is not applied
         net = self.eval()
@@ -259,11 +257,9 @@ class WideDeep(nn.Module):
 
         X_w = Variable(torch.from_numpy(dataset.wide)).float()
         X_d = Variable(torch.from_numpy(dataset.deep))
-        y = torch.from_numpy(dataset.labels)
-        y = (Variable(y).float() if self.method != 'multiclass' else Variable(y))
 
         if use_cuda:
-            X_w, X_d, y = X_w.cuda(), X_d.cuda(), y.cuda()
+            X_w, X_d = X_w.cuda(), X_d.cuda()
 
         # set the model in evaluation mode so dropout is not applied
         net = self.eval()
