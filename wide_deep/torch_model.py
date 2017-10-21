@@ -65,7 +65,7 @@ class WideDeep(nn.Module):
                  deep_column_idx,
                  hidden_layers,
                  encoding_dict,
-                 n_class=1,
+                 n_class,
                  dropout=None):
 
         super(WideDeep, self).__init__()
