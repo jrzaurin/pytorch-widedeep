@@ -64,9 +64,9 @@ class WideDeep(nn.Module):
                  continuous_cols,
                  deep_column_idx,
                  hidden_layers,
+                 dropout,
                  encoding_dict,
-                 n_class,
-                 dropout=None):
+                 n_class):
 
         super(WideDeep, self).__init__()
         self.wide_dim = wide_dim
@@ -74,9 +74,9 @@ class WideDeep(nn.Module):
         self.embeddings_input = embeddings_input
         self.continuous_cols = continuous_cols
         self.hidden_layers = hidden_layers
-        self.n_class = n_class
-        self.encoding_dict = encoding_dict
         self.dropout = dropout
+        self.encoding_dict = encoding_dict
+        self.n_class = n_class
 
         # Build the embedding layers to be passed through the deep-side
         for col,val,dim in self.embeddings_input:
@@ -86,11 +86,11 @@ class WideDeep(nn.Module):
         input_emb_dim = np.sum([emb[2] for emb in self.embeddings_input])
         self.linear_1 = nn.Linear(input_emb_dim+len(continuous_cols), self.hidden_layers[0])
         if self.dropout:
-            self.linear_1_drop = nn.Dropout(self.dropout)
+            self.linear_1_drop = nn.Dropout(self.dropout[0])
         for i,h in enumerate(self.hidden_layers[1:],1):
             setattr(self, 'linear_'+str(i+1), nn.Linear( self.hidden_layers[i-1], self.hidden_layers[i] ))
             if self.dropout:
-                setattr(self, 'linear_'+str(i+1)+'_drop', nn.Dropout(self.dropout))
+                setattr(self, 'linear_'+str(i+1)+'_drop', nn.Dropout(self.dropout[i]))
 
         # Connect the wide- and dee-side of the model to the output neuron(s)
         self.output = nn.Linear(self.hidden_layers[-1]+self.wide_dim, self.n_class)

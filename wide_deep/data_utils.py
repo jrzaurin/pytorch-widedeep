@@ -92,7 +92,7 @@ def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, 
         df_tmp[colname] = df_tmp[cols].apply(lambda x: '-'.join(x), axis=1)
         crossed_columns.append(colname)
 
-    # Extract the categorical column names that will be one hot encoded later
+    # Extract the categorical column names that can be one hot encoded later
     categorical_columns = list(df_tmp.select_dtypes(include=['object']).columns)
 
     # Encode the dataframe and get the encoding Dictionary only for the
