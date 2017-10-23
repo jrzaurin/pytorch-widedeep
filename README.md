@@ -9,6 +9,7 @@ The algorithm was built using `python 2.7.13` and the required packages are:
 ```
 pandas
 numpy
+scipy
 sklearn
 pytorch
 ```
@@ -90,9 +91,9 @@ And that's it.
 
 Here I have illustrated how to use the model for binary classification. In `demo3` you can find how to use it for linear regression and multiclass classification. In the [research paper](https://arxiv.org/pdf/1606.07792.pdf) they show how they used it in the context of recommendation algorithms. 
 
-In my experience, this algorithm shines where the data is complex (multiple categorical features with many levels) and rich (lots of observations). For example, I recently implemented a recommendation algorithm that relied mostly on a multiclass classification using `XGBoost`. `XGBoost` was challenged with a series of matrix factorization algorithms (`pyFM, lightFM, fastFM` in python or `MF and ALS` in pySpark) and always performed better. The only algorithm that obatined better metrics than XGBoost (meaning better `Mean Average Precision` on the ranked recommendations) was `Wide and Deep`.
+In my experience, this algorithm shines where the data is complex (multiple categorical features with many levels) and rich (lots of observations). For example, I recently implemented a recommendation algorithm that relied mostly on a multiclass classification using `XGBoost`. `XGBoost` was challenged with a series of matrix factorization algorithms (`pyFM, lightFM, fastFM` in python or `MF and ALS` in pySpark) and always performed better. The only algorithm that obtained better metrics than XGBoost (meaning better `Mean Average Precision` on the ranked recommendations) was `Wide and Deep`.
 
-A very interesting use of this algorithm consists of passing user and item features through the wide part and the user and item emebeddings through the deep part. Although **mathematically different**, this set up is similar to the Rendle's [Factorization Machines](https://www.csie.ntu.edu.tw/~b97053/paper/Rendle2010FM.pdf) in the sense that we can infer interest/score/ratings for unseen user-item interactions from the sparse set of seen interactions, using also user and item features. As a byproduct, we will also get the user and item embeddings. Essentially the two algorithms are trying to learn the embeddings based on existing user-item interactions, although the relations learned through the dense layers can be more "expressive" than those using Matrix Factorization. 
+A very interesting use of this algorithm consists of passing user and item features through the wide part and the user and item emebeddings through the deep part. Although **mathematically different**, this set up is conceptually similar to the Rendle's [Factorization Machines](https://www.csie.ntu.edu.tw/~b97053/paper/Rendle2010FM.pdf) in the sense that we can infer interest/score/ratings for unseen user-item interactions from the sparse set of seen interactions, using also user and item features. As a byproduct, we will also get the user and item embeddings. Essentially the two algorithms are trying to learn the embeddings based on existing user-item interactions, although the relations learned through the dense layers can be more "expressive" than those using Matrix Factorization. 
 
 ## TO DO:
 
