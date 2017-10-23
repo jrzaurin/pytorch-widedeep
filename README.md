@@ -28,13 +28,18 @@ DF = pd.read_csv('data/adult_data.csv')
 DF['income_label'] = (DF["income_bracket"].apply(lambda x: ">50K" in x)).astype(int)
 
 # Experiment set up
+# WIDE PART
 wide_cols = ['age','hours_per_week','education', 'relationship','workclass',
              'occupation','native_country','gender']
 crossed_cols = (['education', 'occupation'], ['native_country', 'occupation'])
+
+# DEEP PART
 # columns that will be passed as embeddings and their corresponding number of embeddings (optional, see demo3). 
 embeddings_cols = [('education',10), ('relationship',8), ('workclass',10),
                     ('occupation',10),('native_country',10)]
 continuous_cols = ["age","hours_per_week"]
+
+# TARGET AND METHOD
 target = 'income_label'
 method = 'logistic'
 
@@ -45,12 +50,6 @@ wd_dataset = prepare_data(DF, wide_cols,crossed_cols,embeddings_cols,continuous_
 ### 2. Build the model
 The model is build with the `WideDeep` class as follows:
 ``` 
-import torch
-from wide_deep.torch_model import WideDeep
-
-# to run on a GPU
-use_cuda = torch.cuda.is_available()
-
 # Network set up
 wide_dim = wd_dataset['train_dataset'].wide.shape[1]
 n_unique = len(np.unique(wd_dataset['train_dataset'].labels))
@@ -62,9 +61,12 @@ dropout = [0.5,0.2]
 n_class=1
 
 # Build the model
+import torch
+from wide_deep.torch_model import WideDeep
+
 model = WideDeep(wide_dim,embeddings_input,continuous_cols,deep_column_idx,hidden_layers,dropout,encoding_dict,n_class)
 model.compile(method=method)
-if use_cuda:
+if torch.cuda.is_available():
     model = model.cuda()
 ```
 
