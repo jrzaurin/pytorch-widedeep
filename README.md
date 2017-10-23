@@ -5,6 +5,7 @@ This is a PyTorch implementation of Tensorflow's Wide and Deep Algorithm. Detail
 
 ## Requirements:
 
+The algorithm was built using `python 2.7.13` and the required packages are:
 ```
 pandas
 numpy
@@ -14,7 +15,7 @@ pytorch
 
 ## How to use it.
 
-I have included 3 demos to explain the data preparation required, how the algorithm is built (the wide and deep parts separately) and how to use it. If you are familiar with the algorithm and you just want to give it a go, you can directly go to demo3 or have a look to main.py (which can be run as `python main.py`). Using it is as simple as this: 
+I have included 3 demos to explain how the data needs to be prepared, how the algorithm is built (the wide and deep parts separately) and how to use it. If you are familiar with the algorithm and you just want to give it a go, you can directly go to demo3 or have a look to main.py (which can be run as `python main.py` and has a few more details). Using it is as simple as this: 
 
 ### 1. Prepare the data
 The wide-part and deep-part need to be specified as follows:
@@ -22,6 +23,7 @@ The wide-part and deep-part need to be specified as follows:
 import numpy as np
 import pandas as pd
 
+# Read the data
 DF = pd.read_csv('data/adult_data.csv')
 
 # target for logistic regression
@@ -43,12 +45,12 @@ continuous_cols = ["age","hours_per_week"]
 target = 'income_label'
 method = 'logistic'
 
-# Prepare data
+# PREPARE DATA
 from wide_deep.data_utils import prepare_data
 wd_dataset = prepare_data(DF, wide_cols,crossed_cols,embeddings_cols,continuous_cols,target)
 ```
 ### 2. Build the model
-The model is build with the `WideDeep` class as follows:
+The model is built with the `WideDeep` class. To run on a GPU simply do `model = model.cuda()`.
 ``` 
 # Network set up
 wide_dim = wd_dataset['train_dataset'].wide.shape[1]
@@ -88,9 +90,9 @@ And that's it.
 
 Here I have illustrated how to use the model for binary classification. In `demo3` you can find how to use it for linear regression and multiclass classification. In the [research paper](https://arxiv.org/pdf/1606.07792.pdf) they show how they used it in the context of recommendation algorithms. 
 
-In my experience, this algorithm shines where the data is complex (multiple categorical features with many levels) and rich (lots of observations). For example, I recently implemented a recommendation algorithm that relied mostly on a multiclass classification using `XGBoost`. `XGBoost` was challenged with a series of matrix factorization techniques (`pyFM, lightFM, fastFM` in python or `MF and ALS` in pySpark) and always performed better. The only algorithm that obatined better metrics than XGBoost (meaning better `Mean Average Precision`) was `Wide and Deep`.
+In my experience, this algorithm shines where the data is complex (multiple categorical features with many levels) and rich (lots of observations). For example, I recently implemented a recommendation algorithm that relied mostly on a multiclass classification using `XGBoost`. `XGBoost` was challenged with a series of matrix factorization algorithms (`pyFM, lightFM, fastFM` in python or `MF and ALS` in pySpark) and always performed better. The only algorithm that obatined better metrics than XGBoost (meaning better `Mean Average Precision` on the ranked recommendations) was `Wide and Deep`.
 
-A very interesting use of this algorithm consists of passing user and item features through the wide part and the user and item emebeddings through the deep part. Although **mathematically different**, this set up is similar to the Rendle's [Factorization Machines](https://www.csie.ntu.edu.tw/~b97053/paper/Rendle2010FM.pdf) in the sense that we can infer interest/score/ratings for unseen user-item interactions from the sparse set of seen interactions using also user and item features. As a byproduct, we will also get the user and item embeddings. Essentially the two algorithms are trying to learn the embeddings based on existing user-item interactions, although the relations learned through the dense layers can be more "expressive" than those using Matrix Factorization. 
+A very interesting use of this algorithm consists of passing user and item features through the wide part and the user and item emebeddings through the deep part. Although **mathematically different**, this set up is similar to the Rendle's [Factorization Machines](https://www.csie.ntu.edu.tw/~b97053/paper/Rendle2010FM.pdf) in the sense that we can infer interest/score/ratings for unseen user-item interactions from the sparse set of seen interactions, using also user and item features. As a byproduct, we will also get the user and item embeddings. Essentially the two algorithms are trying to learn the embeddings based on existing user-item interactions, although the relations learned through the dense layers can be more "expressive" than those using Matrix Factorization. 
 
 ## TO DO:
 
