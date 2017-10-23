@@ -2,7 +2,11 @@
 import numpy as np
 import pandas as pd
 from collections import namedtuple
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+
+
+pd.options.mode.chained_assignment = None
 
 
 def label_encode(df, cols=None):
@@ -39,7 +43,7 @@ def label_encode(df, cols=None):
 
 
 def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, target,
-    def_dim=8, seed=1981):
+    scale=False, def_dim=8, seed=1981):
 
     """Prepares a pandas dataframe for the WideDeep model.
 
@@ -52,6 +56,7 @@ def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, 
     2 elements: (col_name, embedding dimension for this column)
     continuous_cols : list with the continous column names
     target (str) : the target to be fitted
+    scale (bool) : boolean indicating if the continuous columns must be scaled
     def_dim (int) : Default dimension of the embeddings. If no embedding dimension is
     included in the "embeddings_cols" input all embedding columns will use this value (8)
     seed (int) : Random State for the train/test split
@@ -72,11 +77,11 @@ def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, 
 
     # If embeddings_cols does not include the embeddings dimensions it will be set as
     # def_dim
-    if len(embeddings_cols[0]) == 1:
-        emb_dim = {e:def_dim for e in embeddings_cols}
-    else:
+    if type(embeddings_cols[0]) is tuple:
         emb_dim = dict(embeddings_cols)
         embeddings_cols = [emb[0] for emb in embeddings_cols]
+    else:
+        emb_dim = {e:def_dim for e in embeddings_cols}
     deep_cols = embeddings_cols+continuous_cols
 
     # Extract the target and copy the dataframe so we don't mutate it
@@ -106,6 +111,13 @@ def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, 
     # to slice the tensors
     df_deep = df_tmp[deep_cols]
     deep_column_idx = {k:v for v,k in enumerate(df_deep.columns)}
+
+    # The continous columns will be concatenated with the embeddings, so you
+    # probably want to normalize them first
+    if scale:
+        scaler = StandardScaler()
+        for cc in continuous_cols:
+            df_deep[cc]  = scaler.fit_transform(df_deep[cc].values.reshape(-1,1))
 
     # select the wide_cols and one-hot encode those that are categorical
     df_wide = df_tmp[wide_cols+crossed_columns]

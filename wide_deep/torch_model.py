@@ -96,7 +96,7 @@ class WideDeep(nn.Module):
         self.output = nn.Linear(self.hidden_layers[-1]+self.wide_dim, self.n_class)
 
 
-    def compile(self, method="logistic", optimizer="Adam"):
+    def compile(self, method="logistic", optimizer="Adam", learning_rate=0.001, momentum=0.0):
         """Wrapper to set the activation, loss and the optimizer.
 
         Parameters:
@@ -112,11 +112,11 @@ class WideDeep(nn.Module):
             self.activation, self.criterion = F.softmax, F.cross_entropy
 
         if optimizer == "Adam":
-            self.optimizer = torch.optim.Adam(self.parameters())
+            self.optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate)
         if optimizer == "RMSprop":
-            self.optimizer = torch.optim.RMSprop(self.parameters())
+            self.optimizer = torch.optim.RMSprop(self.parameters(), lr=learning_rate)
         if optimizer == "SGD":
-            self.optimizer = torch.optim.SGD(self.parameters())
+            self.optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate, momentum=momentum)
 
         self.method = method
 
@@ -134,7 +134,7 @@ class WideDeep(nn.Module):
         out (torch.tensor) : result of the output neuron(s)
         """
         # Deep Side
-        emb = [getattr(self, 'emb_layer_'+col)(X_d[:,self.deep_column_idx[col]])
+        emb = [getattr(self, 'emb_layer_'+col)(X_d[:,self.deep_column_idx[col]].long())
                for col,_,_ in self.embeddings_input]
 
         cont_idx = [self.deep_column_idx[col] for col in self.continuous_cols]
@@ -150,7 +150,7 @@ class WideDeep(nn.Module):
                 x_deep = getattr(self, 'linear_'+str(i+1)+'_drop')(x_deep)
 
         # Deep + Wide sides
-        wide_deep_input = torch.cat([x_deep, X_w], 1)
+        wide_deep_input = torch.cat([x_deep, X_w.float()], 1)
 
         if not self.activation:
             out = self.output(wide_deep_input)
@@ -181,7 +181,7 @@ class WideDeep(nn.Module):
             total=0
             correct=0
             for i, (X_wide, X_deep, target) in enumerate(train_loader):
-                X_w = Variable(X_wide).float()
+                X_w = Variable(X_wide)
                 X_d = Variable(X_deep)
                 y = (Variable(target).float() if self.method != 'multiclass' else Variable(target))
 

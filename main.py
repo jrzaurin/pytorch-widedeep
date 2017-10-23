@@ -29,7 +29,8 @@ if __name__ == '__main__':
         crossed_cols,
         embeddings_cols,
         continuous_cols,
-        target)
+        target,
+        scale=True)
 
     # Network set up
     wide_dim = wd_dataset['train_dataset'].wide.shape[1]
