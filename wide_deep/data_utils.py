@@ -2,7 +2,6 @@
 import numpy as np
 import pandas as pd
 from collections import namedtuple
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
 
@@ -40,7 +39,7 @@ def label_encode(df, cols=None):
 
 
 def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, target,
-    def_dim=8, seed=1981, normalize=False):
+    def_dim=8, seed=1981):
 
     """Prepares a pandas dataframe for the WideDeep model.
 
@@ -113,12 +112,6 @@ def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, 
     del(df_tmp)
     dummy_cols = [c for c in wide_cols+crossed_columns if c in categorical_columns]
     df_wide = pd.get_dummies(df_wide, columns=dummy_cols)
-
-    # if normalize is set True we will apply a StandardScaler
-    if normalize:
-        scaler = StandardScaler()
-        df_deep = scaler.fit_transform(df_deep)
-        df_wide = scaler.fit_transform(df_wide)
 
     # train/test split
     X_train_deep, X_test_deep = train_test_split(df_deep.values, test_size=0.3, random_state=seed)
