@@ -14,7 +14,7 @@ pytorch
 
 ## How to use it.
 
-I have included 3 demos to explain the data preparation required, how the algorithm is build (the wide and deep parts separately) and how to use it. If you are familiar with the algorithm and you just want to give it a go, you can directly go to demo3 or have a look to main.py (which can be run as `python main.py`). Using it is as simple as this: 
+I have included 3 demos to explain the data preparation required, how the algorithm is built (the wide and deep parts separately) and how to use it. If you are familiar with the algorithm and you just want to give it a go, you can directly go to demo3 or have a look to main.py (which can be run as `python main.py`). Using it is as simple as this: 
 
 ### 1. Prepare the data
 The wide-part and deep-part need to be specified as follows:
