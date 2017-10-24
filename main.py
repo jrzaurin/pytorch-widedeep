@@ -1,4 +1,5 @@
 from __future__ import print_function
+import os
 import torch
 import numpy as np
 import pandas as pd
@@ -67,7 +68,10 @@ if __name__ == '__main__':
     print(model.get_embeddings('education'))
 
     # save
-    torch.save(model.state_dict(), 'model/logistic.pkl')
+    MODEL_DIR = 'model'
+    if not os.path.exists(MODEL_DIR):
+        os.makedirs(MODEL_DIR)
+    torch.save(model.state_dict(), os.path.join(MODEL_DIR,'logistic.pkl'))
 
     # load
     # model = WideDeep(wide_dim, embeddings_input, continuous_cols, deep_column_idx, hidden_layers, encoding_dict)
