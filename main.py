@@ -73,7 +73,7 @@ if __name__ == '__main__':
         os.makedirs(MODEL_DIR)
     torch.save(model.state_dict(), os.path.join(MODEL_DIR,'logistic.pkl'))
 
-    # load
+    # load model
     # model = WideDeep(
     #     wide_dim,
     #     embeddings_input,
