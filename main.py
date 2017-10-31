@@ -70,5 +70,14 @@ if __name__ == '__main__':
     torch.save(model.state_dict(), 'model/logistic.pkl')
 
     # load
-    # model = WideDeep(wide_dim, embeddings_input, continuous_cols, deep_column_idx, hidden_layers, encoding_dict)
+    # model = WideDeep(
+    #     wide_dim,
+    #     embeddings_input,
+    #     continuous_cols,
+    #     deep_column_idx,
+    #     hidden_layers,
+    #     dropout,
+    #     encoding_dict,
+    #     n_class)
+    # model.compile(method=method)
     # model.load_state_dict(torch.load('model/logistic.pkl'))
