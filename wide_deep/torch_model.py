@@ -136,11 +136,13 @@ class WideDeep(nn.Module):
         # Deep Side
         emb = [getattr(self, 'emb_layer_'+col)(X_d[:,self.deep_column_idx[col]].long())
                for col,_,_ in self.embeddings_input]
+        if self.continuous_cols:
+            cont_idx = [self.deep_column_idx[col] for col in self.continuous_cols]
+            cont = [X_d[:, cont_idx].float()]
+            deep_inp = torch.cat(emb+cont, 1)
+        else:
+            deep_inp = torch.cat(emb, 1)
 
-        cont_idx = [self.deep_column_idx[col] for col in self.continuous_cols]
-        cont = [X_d[:, cont_idx].float()]
-
-        deep_inp = torch.cat(emb+cont, 1)
         x_deep = F.relu(self.linear_1(deep_inp))
         if self.dropout:
             x_deep = self.linear_1_drop(x_deep)

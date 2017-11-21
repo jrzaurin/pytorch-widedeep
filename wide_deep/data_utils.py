@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 from collections import namedtuple
+from itertools import chain
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
@@ -87,6 +88,7 @@ def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, 
     # Extract the target and copy the dataframe so we don't mutate it
     # internally.
     Y = np.array(df[target])
+    all_columns = list(set(wide_cols + deep_cols + list(chain(*crossed_cols))))
     df_tmp = df.copy()[list(set(wide_cols + deep_cols))]
 
     # Build the crossed columns
