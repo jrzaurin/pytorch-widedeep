@@ -89,7 +89,7 @@ def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, 
     # internally.
     Y = np.array(df[target])
     all_columns = list(set(wide_cols + deep_cols + list(chain(*crossed_cols))))
-    df_tmp = df.copy()[list(set(wide_cols + deep_cols))]
+    df_tmp = df.copy()[all_columns]
 
     # Build the crossed columns
     crossed_columns = []
