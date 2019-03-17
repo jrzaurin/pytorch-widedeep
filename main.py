@@ -55,6 +55,12 @@ if __name__ == '__main__':
         dropout,
         encoding_dict,
         n_class)
+    # if multiple compilers for wide and deep side:
+    # optimizer={'wide': ['name', lr, momentum], 'deep': ['name', lr, momentum]}
+    # for example:
+    # optimizer={'wide': ['SGD', 0.001, 0.1], 'deep': ['Adam', 0.001]}
+    # and
+    # model.compile(method=method, optimizer=optimizer)
     model.compile(method=method)
     if use_cuda:
         model = model.cuda()
