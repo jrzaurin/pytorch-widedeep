@@ -34,10 +34,10 @@ def label_encode(df, cols=None):
         val_types[c] = df[c].unique()
 
     val_to_idx = dict()
-    for k, v in val_types.iteritems():
+    for k, v in val_types.items():
         val_to_idx[k] = {o: i for i, o in enumerate(val_types[k])}
 
-    for k, v in val_to_idx.iteritems():
+    for k, v in val_to_idx.items():
         df[k] = df[k].apply(lambda x: v[x])
 
     return val_to_idx, df
@@ -106,12 +106,12 @@ def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, 
     encoding_dict,df_tmp = label_encode(df_tmp)
     encoding_dict = {k:encoding_dict[k] for k in encoding_dict if k in deep_cols}
     embeddings_input = []
-    for k,v in encoding_dict.iteritems():
+    for k,v in encoding_dict.items():
         embeddings_input.append((k, len(v), emb_dim[k]))
 
     # select the deep_cols and get the column index that will be use later
     # to slice the tensors
-    df_deep = df_tmp[deep_cols]
+    df_deep = df_tmp[deep_cols].copy()
     deep_column_idx = {k:v for v,k in enumerate(df_deep.columns)}
 
     # The continous columns will be concatenated with the embeddings, so you
@@ -119,7 +119,7 @@ def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, 
     if scale:
         scaler = StandardScaler()
         for cc in continuous_cols:
-            df_deep[cc]  = scaler.fit_transform(df_deep[cc].values.reshape(-1,1))
+            df_deep[cc]  = scaler.fit_transform(df_deep[cc].values.reshape(-1,1).astype(float))
 
     # select the wide_cols and one-hot encode those that are categorical
     df_wide = df_tmp[wide_cols+crossed_columns]
