@@ -269,7 +269,6 @@ class WideDeep(nn.Module):
 
                 self.optimizer.zero_grad()
                 y_pred =  net(X_w, X_d)
-                loss = None
                 if(self.criterion == F.cross_entropy):
                     loss = self.criterion(y_pred, y) #[batch_size, 1]
                 else:
