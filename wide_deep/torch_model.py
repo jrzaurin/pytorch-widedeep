@@ -175,8 +175,8 @@ class WideDeep(nn.Module):
             # last two sets of parameters are the weights and bias of the last
             # linear layer
             last_linear_weights = params[-2]
-            # by construction, if the weights from wide_dim "in advance"
-            # correspond to the weight side and will use one optimizer
+            # by construction, the weights from wide_dim "in advance"
+            # correspond to the wide side and will use one optimizer
             wide_params = [nn.Parameter(last_linear_weights[:, -self.wide_dim:])]
             # The weights from the deep side and the bias will use the other
             # optimizer
