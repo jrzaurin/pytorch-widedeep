@@ -362,7 +362,8 @@ if __name__ == '__main__':
         target = 'yield'
 
         wd_dataset_airbnb = prepare_data_airbnb(
-            df = DF.sample(5000),
+            # df = DF.sample(5000),
+            df = DF.sample,
             img_id = img_id,
             img_path = img_path,
             text_col = text_col,
