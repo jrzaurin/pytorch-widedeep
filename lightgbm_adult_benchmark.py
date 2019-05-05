@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import lightgbm as lgb
 import pickle
+import pdb
 
 from hyperopt import hp, tpe, fmin, Trials
 from sklearn.model_selection import train_test_split
@@ -79,7 +80,7 @@ best = fmin(fn=objective,
 best['num_boost_round'] = early_stop_dict[trials.best_trial['tid']]
 best['num_leaves'] = int(best['num_leaves'])
 best['verbose'] = -1
-model = lgb.LGBMRegressor(**best)
+model = lgb.LGBMClassifier(**best)
 model.fit(dtrain.data,
 	dtrain.label,
 	feature_name=all_columns,
@@ -88,8 +89,7 @@ model.fit(dtrain.data,
 X_te = df_te.iloc[:,:-1].values
 y_te = df_te['income_label'].values
 preds = model.predict(X_te)
-fpres = (preds > 0.5).astype('int')
-acc = accuracy_score(y_te, fpres)
+acc = accuracy_score(y_te, preds)
 
 print(acc)
 
