@@ -363,7 +363,7 @@ if __name__ == '__main__':
 
         wd_dataset_airbnb = prepare_data_airbnb(
             # df = DF.sample(5000),
-            df = DF.sample,
+            df = DF,
             img_id = img_id,
             img_path = img_path,
             text_col = text_col,
