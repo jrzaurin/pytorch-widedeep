@@ -11,7 +11,7 @@ found [here](https://github.com/jrzaurin/Wide-and-Deep-Keras).
 
 The Figure below is my attempt to illustrate the different components of the algorithm
 
-![Figure 1. Wide and Deeper](WideDeeper.png)
+![Figure 1. Wide and Deeper](widedeeper.png)
 
 ## Requirements:
 
