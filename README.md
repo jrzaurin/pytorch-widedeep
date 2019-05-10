@@ -68,7 +68,11 @@ pretrained embeddings matrix.
 
 
 The Airbnb listings dataset requires a bit of preprocessing. This is attained
-by simply running `python airbnb_data_preprocessing.py`. Details of what
+by simply running:
+
+`python airbnb_data_preprocessing.py`.
+
+Details of what
 happens within that script can be found in the companion notebook
 `airbnb_data_preprocessing.ipynb`. The resulting file `listings_processed.csv`
 is also stored in `data/adult/`. Then you can run `python download_images.py`
@@ -77,9 +81,11 @@ will take a while).
 
 Once you have:
 
-1. Download adult and airbnb listings dataset
-2. run `python airbnb_data_preprocessing.py`
-3. run `python download_images.py`
+1. Download adult and airbnb listings dataset and place them in `data/adult/` and `data/airbnb` respectively
+2. run: `python airbnb_data_preprocessing.py`
+3. run: `python download_images.py`
+
+Again, remember, this last step will take some time.
 
 your data directory will look like (`tree data -L 2`):
 
@@ -118,7 +124,12 @@ You could simply run:
 python prepare_data.py --dataset airbnb --wordvectors fasttext --imtype property
 ```
 
-and this will store a pickle `wd_dataset.p` object at `data/airbnb/wide_deep_data/`. Alternatively, you can do it manually as:
+and this will store a pickle `wd_dataset.p` object at
+`data/airbnb/wide_deep_data/`.  Note that you will be processing over 50k
+relatively big images, so chances are you might run out of memory. I am sure
+you will find ways to split the process in chunks or other optimizations.
+
+Alternatively, you can do it manually as:
 
 
 ```
@@ -263,7 +274,7 @@ model.fit(n_epochs=5, train_loader=train_loader, eval_loader=valid_loader)
 preds = model.predict(test_loader)
 
 # save
-torch.save(model.state_dict(), 'model/logistic.pkl')
+torch.save(model.state_dict(), 'model/airbnb_regression.pkl')
 ```
 
 And that's it. I have also included two python files:
