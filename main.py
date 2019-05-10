@@ -30,12 +30,12 @@ if __name__ == '__main__':
         vocab_size = len(wd_dataset['vocab'].itos),
         embedding_dim = wd_dataset['word_embeddings_matrix'].shape[1],
         hidden_dim = 64,
-        n_layers = 3,
-        rnn_dropout = 0.,
-        spatial_dropout = 0.25,
+        n_layers = 2,
+        rnn_dropout = 0.5,
+        spatial_dropout = 0.1,
         padding_idx = 1,
         attention = False,
-        bidirectional = False,
+        bidirectional = True,
         embedding_matrix = wd_dataset['word_embeddings_matrix']
         )
     params['deep_img'] = dict(
@@ -75,9 +75,9 @@ if __name__ == '__main__':
     valid_set = WideDeepLoader(wd_dataset['valid'], transform, mode='train')
     test_set = WideDeepLoader(wd_dataset['test'], transform, mode='test')
     train_loader = torch.utils.data.DataLoader(dataset=train_set,
-        batch_size=128, num_workers=4, shuffle=True)
+        batch_size=64, num_workers=4, shuffle=True)
     valid_loader = torch.utils.data.DataLoader(dataset=valid_set,
-        batch_size=128, num_workers=4, shuffle=True)
+        batch_size=64, num_workers=4, shuffle=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_set,
         batch_size=32,shuffle=False)
     model.fit(n_epochs=10, train_loader=train_loader, eval_loader=valid_loader)
