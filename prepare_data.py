@@ -199,11 +199,12 @@ def prepare_data_airbnb(df, img_id, img_path, text_col, max_vocab, min_freq, max
     X_val_img, X_te_img = train_test_split(X_val_img, test_size=0.5, random_state=seed)
     y_val, y_te = train_test_split(y_val, test_size=0.5, random_state=seed)
 
-    # Computing the average of the RGB channels (is only done for the training set)
+    # Computing the average of the RGB channels
     mean_R, mean_G, mean_B = [], [], []
     std_R, std_G, std_B = [], [], []
     for img in X_tr_img:
-        (mean_r, mean_g, mean_b), (std_r, std_g, std_b) = cv2.meanStdDev(img)
+        # remember, cv2 reads BGR
+        (mean_b, mean_g, mean_r), (std_b, std_g, std_r) = cv2.meanStdDev(img)
         mean_R.append(mean_r), mean_G.append(mean_g), mean_B.append(mean_b)
         std_R.append(std_r), std_G.append(std_g), std_B.append(std_b)
     normalise_metrics = dict(
@@ -362,13 +363,12 @@ if __name__ == '__main__':
         target = 'yield'
 
         wd_dataset_airbnb = prepare_data_airbnb(
-            # df = DF.sample(5000),
-            df = DF,
+            df = DF.sample(30000),
             img_id = img_id,
             img_path = img_path,
             text_col = text_col,
-            max_vocab = 20000,
-            min_freq = 2,
+            max_vocab = 30000,
+            min_freq = 5,
             maxlen = 170,
             word_vectors_path = word_vectors_path,
             embeddings_cols = embeddings_cols,

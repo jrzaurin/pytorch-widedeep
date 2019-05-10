@@ -30,7 +30,7 @@ if __name__ == '__main__':
         vocab_size = len(wd_dataset['vocab'].itos),
         embedding_dim = wd_dataset['word_embeddings_matrix'].shape[1],
         hidden_dim = 64,
-        n_layers = 1,
+        n_layers = 3,
         rnn_dropout = 0.,
         spatial_dropout = 0.25,
         padding_idx = 1,
@@ -61,19 +61,23 @@ if __name__ == '__main__':
     model.compile(method='regression', optimizer=optimizer, lr_scheduler=lr_scheduler)
     if use_cuda:
         model = model.cuda()
-    mean=[0.485, 0.456, 0.406] #RGB
-    std=[0.229, 0.224, 0.225]  #RGB
+    # # ImageNet metrics
+    # mean=[0.485, 0.456, 0.406] #RGB
+    # std=[0.229, 0.224, 0.225]  #RGB
+    # cv2 reads BGR
+    mean=[0.406, 0.456, 0.485] #BGR
+    std=[0.225, 0.224, 0.229]  #BGR
     transform  = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=mean, std=std)
     ])
-    train_set = WideDeepLoader(wd_dataset['train'], transform, mode='train')
+    train_set = WideDeepLoader(wd_dataset['train'], transform, mode='train', )
     valid_set = WideDeepLoader(wd_dataset['valid'], transform, mode='train')
     test_set = WideDeepLoader(wd_dataset['test'], transform, mode='test')
     train_loader = torch.utils.data.DataLoader(dataset=train_set,
-        batch_size=128,shuffle=True)
+        batch_size=128, num_workers=4, shuffle=True)
     valid_loader = torch.utils.data.DataLoader(dataset=valid_set,
-        batch_size=128,shuffle=True)
+        batch_size=128, num_workers=4, shuffle=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_set,
         batch_size=32,shuffle=False)
     model.fit(n_epochs=10, train_loader=train_loader, eval_loader=valid_loader)

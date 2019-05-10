@@ -57,10 +57,6 @@ def resize_images(img_path:PosixPath, image_list:List[str])->np.ndarray:
     print('Reading Images from {}'.format(img_path))
     imgs = [cv2.imread(str(img_path/img)) for img in image_list]
 
-    # I am a maniac and I want my images RGB
-    print('BGR to RGB')
-    imgs = [cv2.cvtColor(img, cv2.COLOR_BGR2RGB) for img in imgs]
-
     # finding images with different height and width
     aspect = [(im.shape[0], im.shape[1]) for im in imgs]
     aspect_r = [a[0]/a[1] for a in aspect]
