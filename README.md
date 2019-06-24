@@ -141,6 +141,7 @@ from pathlib import Path
 # `data/airbnb/listings_processed.csv`
 DATA_PATH=Path('data')
 DF_airbnb = pd.read_csv(DATA_PATH/'airbnb/listings_processed.csv')
+# let's just focus on descriptions with more than 10 words
 DF_airbnb = DF_airbnb[DF_airbnb.description.apply(lambda x: len(x.split(' '))>=10)]
 out_dir = DATA_PATH/'airbnb/wide_deep_data/'
 
