@@ -9,10 +9,10 @@ from sklearn.utils import Bunch
 
 from ..wdtypes import *
 
-from .wide_utils import prepare_wide
-from .deep_utils import prepare_deep
+from .wide_utils  import prepare_wide
+from .deep_utils  import prepare_deep
 from .image_utils import prepare_image
-from .text_utils import prepare_text
+from .text_utils  import prepare_text
 
 pd.options.mode.chained_assignment = None
 
