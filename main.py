@@ -71,7 +71,7 @@ if __name__ == '__main__':
         transforms.ToTensor(),
         transforms.Normalize(mean=mean, std=std)
     ])
-    train_set = WideDeepLoader(wd_dataset['train'], transform, mode='train', )
+    train_set = WideDeepLoader(wd_dataset['train'], transform, mode='train')
     valid_set = WideDeepLoader(wd_dataset['valid'], transform, mode='train')
     test_set = WideDeepLoader(wd_dataset['test'], transform, mode='test')
     train_loader = torch.utils.data.DataLoader(dataset=train_set,

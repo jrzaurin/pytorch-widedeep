@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchvision import models
 
-from .wdtypes import *
+from ..wdtypes import *
 
 def conv_layer(ni:int, nf:int, ks:int=3, stride:int=1, maxpool:bool=True,
     adaptiveavgpool:bool=False):

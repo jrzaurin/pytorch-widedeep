@@ -2,16 +2,22 @@
 import numpy as np
 import pandas as pd
 import warnings
+import os
 
 from pathlib import Path
 
 warnings.filterwarnings('ignore')
 
 DATA_PATH = Path('data/airbnb')
-df_original = pd.read_csv(DATA_PATH/'listings.csv')
+fname = 'listings.csv.gz'
+if not os.path.exists(DATA_PATH):
+    os.makedirs(DATA_PATH)
+
+df_original = pd.read_csv(DATA_PATH/fname)
 print(df_original.shape)
 df_original.head()
 
+# this is just subjective. One can choose some other columns
 keep_cols = ['id', 'host_id', 'description', 'house_rules', 'host_name',
     'host_listings_count', 'host_identity_verified', 'neighbourhood_cleansed',
     'latitude', 'longitude','is_location_exact','property_type', 'room_type',

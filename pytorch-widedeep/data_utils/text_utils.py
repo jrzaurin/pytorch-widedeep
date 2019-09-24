@@ -1,11 +1,28 @@
 import numpy as np
+import pandas as pd
 import html
 import re
 
+from pathlib import PosixPath
 from typing import List
 from gensim.utils import tokenize
 from fastai.text import Tokenizer
 from fastai.text.transform import Vocab
+
+from ..wdtypes import *
+
+
+def prepare_text(df:pd.DataFrame, text_col:str, max_vocab:int, min_freq:int, maxlen:int,
+    word_vectors_path:str, verbose:int=1):
+    texts = df[text_col].tolist()
+    tokens = get_texts(texts)
+    vocab = Vocab.create(tokens, max_vocab=max_vocab, min_freq=min_freq)
+    sequences = [vocab.numericalize(t) for t in tokens]
+    padded_seq = np.array([pad_sequences(s, maxlen=maxlen) for s in sequences])
+    if verbose:
+	    print("The vocabulary contains {} words".format(len(vocab.stoi)))
+    embedding_matrix = build_embeddings_matrix(vocab, word_vectors_path)
+    return padded_seq, embedding_matrix, vocab
 
 
 def simple_preprocess(doc:str, lower:bool=False, deacc:bool=False, min_len:int=2,
@@ -17,26 +34,7 @@ def simple_preprocess(doc:str, lower:bool=False, deacc:bool=False, min_len:int=2
     return tokens
 
 
-def fix_html(text:str) -> str:
-	"""
-	helper taken from the fastai course 2018 lesson 3:
-	Check here: http://course18.fast.ai/
-	"""
-	re1 = re.compile(r'  +')
-	text = text.replace('#39;', "'").replace('amp;', '&').replace('#146;', "'").replace(
-	    'nbsp;', ' ').replace('#36;', '$').replace('\\n', "\n").replace('quot;', "'").replace(
-	    '<br />', "\n").replace('\\"', '"').replace('<unk>','u_n').replace(' @.@ ','.').replace(
-	    ' @-@ ','-').replace('\\', ' \\ ')
-	return re1.sub(' ', html.unescape(text))
-
-
-def get_texts_fastai(texts:List[str]) -> List[List[str]]:
-    fixed_texts = [fix_html(t) for t in texts]
-    tok = Tokenizer().process_all(fixed_texts)
-    return tok
-
-
-def get_texts_gensim(texts:List[str]) -> List[List[str]]:
+def get_texts(texts:List[str]) -> List[List[str]]:
     processed_textx = [' '.join(simple_preprocess(t)) for t in texts]
     tok = Tokenizer().process_all(processed_textx)
     return tok
@@ -53,25 +51,23 @@ def pad_sequences(seq:List[int], maxlen:int=190, pad_first:bool=True, pad_idx:in
         return res
 
 
-def build_embeddings_matrix(vocab:Vocab, word_vectors_file:str) -> np.ndarray:
+def build_embeddings_matrix(vocab:Vocab, word_vectors_path:PosixPath, verbose:int=1) -> np.ndarray:
 
-	if 'fasttext' in word_vectors_file:
-		word_vectors = 'fasttext'
-	elif 'glove' in word_vectors_file:
-		word_vectors = 'glove'
+	if verbose: print('Indexing word vectors...')
 
-	print('Indexing word vectors...')
 	embeddings_index = {}
-	f = open(word_vectors_file)
+	f = open(str(word_vectors_path))
 	for line in f:
 	    values = line.split()
 	    word = values[0]
 	    coefs = np.asarray(values[1:], dtype='float32')
 	    embeddings_index[word] = coefs
 	f.close()
-	print('Loaded {} word vectors'.format(len(embeddings_index)))
 
-	print('Preparing embeddings matrix...')
+	if verbose:
+		print('Loaded {} word vectors'.format(len(embeddings_index)))
+		print('Preparing embeddings matrix...')
+
 	mean_word_vector = np.mean(list(embeddings_index.values()), axis=0)
 	embedding_dim = len(list(embeddings_index.values())[0])
 	num_words = len(vocab.itos)
@@ -84,6 +80,8 @@ def build_embeddings_matrix(vocab:Vocab, word_vectors_file:str) -> np.ndarray:
 	        found_words+=1
 	    else:
 	        embedding_matrix[i] = mean_word_vector
-	print('{} words in our vocabulary had {} vectors and appear more than the min frequency'.format(found_words, word_vectors))
+
+	if verbose:
+		print('{} words in the vocabulary had {} vectors and appear more than the min frequency'.format(found_words, word_vectors_path))
 
 	return embedding_matrix

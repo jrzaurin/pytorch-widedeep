@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 from torch.optim.lr_scheduler import StepLR, MultiStepLR
 from tqdm import tqdm,trange
 
-from .wdtypes import *
+from ..wdtypes import *
 from .wide import Wide
 from .deep_dense import DeepDense
 from .deep_text import DeepText
