@@ -1,0 +1,5 @@
+# sftp to the instance
+sftp-config.json
+
+# Byte-Compiled Files
+*.pyc
