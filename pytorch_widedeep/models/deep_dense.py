@@ -5,6 +5,7 @@ from torch import Tensor
 
 from ..wdtypes import *
 
+
 def dense_layer(inp:int, out:int, dropout:float):
     return nn.Sequential(
         nn.Linear(inp, out),
