@@ -15,8 +15,8 @@ def dense_layer(inp:int, out:int, dropout:float):
 class DeepDense(nn.Module):
     def __init__(self, embeddings_input:List[Tuple[str,int,int]],
         embeddings_encoding_dict:Dict[str,Any], continuous_cols:List[str],
-        deep_column_idx:Dict[str,int], hidden_layers:List[int], dropout:List[float],
-        output_dim:int):
+        deep_column_idx:Dict[str,int], hidden_layers:List[int],
+        dropout:List[float], output_dim:int):
         """
         Model consisting in a series of Dense Layers that receive continous
         features concatenated with categorical features represented with
@@ -25,11 +25,11 @@ class DeepDense(nn.Module):
         Parameters:
         embeddings_input: List
             List of Tuples with the column name, number of unique values and
-            embedding dimension. e.g. [(education, 11, 32), ...]
+            embedding dimension. e.g. [('education', 11, 32), ...]
         embeddings_encoding_dict: Dict
             Dict containing the encoding mappings
         continuous_cols: List
-            List with the name of the so called continuous cols
+            List with the name of the numeric cols
         deep_column_idx: Dict
             Dict containing the index of the embedding columns. Required to
             slice the tensors.
