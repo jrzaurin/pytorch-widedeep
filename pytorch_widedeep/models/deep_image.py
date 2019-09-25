@@ -18,23 +18,33 @@ def conv_layer(ni:int, nf:int, ks:int=3, stride:int=1, maxpool:bool=True,
 
 class DeepImage(nn.Module):
 
-    def __init__(self, output_dim:int=1, pretrained:bool=True, freeze:Union[str,int]=6):
+    def __init__(self, output_dim:int=1, pretrained:bool=True, resnet=18,
+        freeze:Union[str,int]=6):
         super(DeepImage, self).__init__()
         """
         Standard image classifier/regressor using a pretrained network
-        freezing some of the  first layers (or all layers). I use Resnet34
-        which has 9 "blocks" before the last dense layers. The first 4 are
-        the: conv->batchnorm->relu->maxpool. After that we have 4 'layers' (so
-        4+4=8) comprised by a series of convolutions and then the final
-        AdaptiveAvgPool2d (8+1=9). The parameter freeze sets the last layer to
-        be frozen. For example, freeze=6 will freeze all but the last 2 Layers
-        and AdaptiveAvgPool2d layer. If freeze-'all' it freezes the entire
-        network.
-        """
+        freezing some of the  first layers (or all layers).
 
+        I use Resnets which have 9 "components" before the last dense layers.
+        The first 4 are: conv->batchnorm->relu->maxpool.
+
+        After that we have 4 additional 'layers' (so 4+4=8) comprised by a
+        series of convolutions and then the final AdaptiveAvgPool2d (8+1=9).
+
+        The parameter freeze sets the last layer to be frozen. For example,
+        freeze=6 will freeze all but the last 2 Layers and AdaptiveAvgPool2d
+        layer. If freeze='all' it freezes the entire network.
+        """
         if pretrained:
-            vision_model = models.resnet34(pretrained=True)
+            if resnet==18:
+                vision_model = models.resnet18(pretrained=True)
+            elif resnet==34:
+                vision_model = models.resnet34(pretrained=True)
+            elif resnet==50:
+                vision_model = models.resnet50(pretrained=True)
+
             backbone_layers = list(vision_model.children())[:-1]
+
             if isinstance(freeze, str):
                 frozen_layers = []
                 for layer in backbone_layers:
@@ -50,6 +60,7 @@ class DeepImage(nn.Module):
                     for param in layer.parameters():
                         param.requires_grad = False
                     frozen_layers.append(layer)
+
                 backbone_layers = frozen_layers + trainable_layers
                 self.backbone = nn.Sequential(*backbone_layers)
         else:
@@ -59,12 +70,15 @@ class DeepImage(nn.Module):
                 conv_layer(128, 256, 1, maxpool=False),
                 conv_layer(256, 512, 1, maxpool=False, adaptiveavgpool=True),
                 )
-        # one could add more layers here perhaps: 512->256->out
-        self.dilinear = nn.Linear(512, output_dim)
+        self.head = nn.Sequential(
+            nn.Linear(512, 256),
+            nn.Linear(256, 128),
+            nn.Linear(128, output_dim)
+            )
 
     def forward(self, x:Tensor)->Tensor:
         x = self.backbone(x)
         x = x.view(x.size(0), -1)
-        out = self.dilinear(x)
+        out = self.head(x)
         return out
 
