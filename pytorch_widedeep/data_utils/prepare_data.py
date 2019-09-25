@@ -45,7 +45,7 @@ def prepare_data(df:pd.DataFrame, target:str, wide_cols:List[str],
         prepare_deep(df, embeddings_cols, continuous_cols, standardize_cols, scale, default_emb_dim)
 
     # Using sklearn's Bunch as Container for the dataset
-    wd_dataset = Bunch(wide=X_wide, deep_dense=X_deep,
+    wd_dataset = Bunch(target=y, wide=X_wide, deep_dense=X_deep,
         cat_embeddings_input=cat_embed_inp,
         cat_embeddings_encoding_dict = cat_embed_encoding_dict,
         continuous_cols = continuous_cols,
