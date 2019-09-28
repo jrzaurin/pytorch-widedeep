@@ -78,7 +78,7 @@ class ReduceLROnPlateau:
 		self.eps=eps
 
 	def __call__(self, optimizer:Optimizer):
-		self.sch = torch.optim.lr_scheduler.ExponentialLR(optimizer, mode=self.mode, factor=self.factor,
+		self.sch = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode=self.mode, factor=self.factor,
 					patience=self.patience, verbose=self.verbose, threshold=self.threshold,
 					threshold_mode=self.threshold, cooldown=self.cooldown, min_lr=self.min_lr,
 					eps=self.eps)
