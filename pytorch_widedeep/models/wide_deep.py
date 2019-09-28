@@ -196,7 +196,7 @@ class WideDeep(nn.Module):
 
     def training_step(self, data:Dict[str, Tensor], target:Tensor, batch_nb:int):
 
-        X = {k:v.cuda() for k,v in data.keys()} if use_cuda else data
+        X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
         y = target.float() if self.method != 'multiclass' else target
         y = y.cuda() if use_cuda else y
 
@@ -228,7 +228,7 @@ class WideDeep(nn.Module):
     def validation_step(self, data:Dict[str, Tensor], target:Tensor, batch_nb:int):
 
         with torch.no_grad():
-            X = {k:v.cuda() for k,v in data.keys()} if use_cuda else data
+            X = {k:v.cuda() for k,v in data.item()} if use_cuda else data
             y = target.float() if self.method != 'multiclass' else target
             y = y.cuda() if use_cuda else y
 
