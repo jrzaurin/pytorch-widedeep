@@ -3,14 +3,28 @@ import torch
 import pickle
 import numpy as np
 import pandas as pd
+
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+
 from pathlib import Path
 from torchvision import transforms
+
+from pytorch_widedeep.data_utils.prepare_data import prepare_data
+
 from pytorch_widedeep.models.wide_deep import WideDeep, WideDeepLoader
-from sklearn.metrics import mean_squared_error
+
+from pytorch_widedeep.initializers import Normal, Uniform, XavierNormal, XavierUniform
+from pytorch_widedeep.optimizers import MultipleOptimizers, Adam, SGD, RAdam
+from pytorch_widedeep.lr_schedulers import MultipleLRScheduler, StepLR, MultiStepLR
+
+from pytorch_widedeep.models.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_widedeep.models.metrics import BinaryAccuracy
 
 import pdb
 
 if __name__ == '__main__':
+
 
     use_cuda = torch.cuda.is_available()
 
@@ -22,11 +36,52 @@ if __name__ == '__main__':
         continuous_cols=wd.continuous_cols,
         deep_column_idx=wd.deep_column_idx, vocab_size=len(wd.vocab.itos),
         pretrained=False)
-    model.compile(method='regression', optimizer='Adam')
-    print(model.optimizer)
-    print(model.lr_scheduler)
-    print(model)
 
+    initializers = {'wide': Normal, 'deepdense':Uniform, 'deeptext':XavierNormal, 'deepimage':XavierUniform}
+    optimizers = {'wide': Adam, 'deepdense':Adam, 'deeptext':RAdam, 'deepimage':SGD}
+    schedulers = {'wide': StepLR(step_size=5), 'deepdense':StepLR(step_size=5), 'deeptext':MultiStepLR(milestones=[5,8]),
+        'deepimage':MultiStepLR(milestones=[5,8])}
+
+    callbacks = [EarlyStopping, ModelCheckpoint]
+    metrics = [BinaryAccuracy]
+
+    model.compile(method='regression', initializers=initializers, optimizers=optimizers,
+        lr_schedulers=schedulers, callbacks=callbacks, metrics=metrics)
+
+    # train/valid/test split
+    seed=1
+    X_tr_wide, X_val_wide = train_test_split(wd.wide.astype('float32'), test_size=0.4, random_state=seed)
+    X_tr_deep, X_val_deep = train_test_split(wd.deep_dense, test_size=0.4, random_state=seed)
+    X_tr_text, X_val_text = train_test_split(wd.deep_text.astype('int64'), test_size=0.4, random_state=seed)
+    X_tr_img, X_val_img = train_test_split(wd.deep_img, test_size=0.4, random_state=seed)
+    y_tr, y_val = train_test_split(wd.target, test_size=0.4, random_state=seed)
+
+    X_val_wide, X_te_wide = train_test_split(X_val_wide, test_size=0.5, random_state=seed)
+    X_val_deep, X_te_deep = train_test_split(X_val_deep, test_size=0.5, random_state=seed)
+    X_val_text, X_te_text = train_test_split(X_val_text, test_size=0.5, random_state=seed)
+    X_val_img, X_te_img = train_test_split(X_val_img, test_size=0.5, random_state=seed)
+    y_val, y_te = train_test_split(y_val, test_size=0.5, random_state=seed)
+
+    mean=[0.406, 0.456, 0.485] #BGR
+    std=[0.225, 0.224, 0.229]  #BGR
+    transform  = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean, std=std)
+    ])
+
+    train_set = WideDeepLoader(X_tr_wide[:100], X_tr_deep[:100], X_tr_text[:100], X_tr_img[:100], y_tr[:100], transform)
+    valid_set = WideDeepLoader(X_val_wide[:100], X_val_deep[:100], X_val_text[:100], X_val_img[:100], y_val[:100], transform)
+    test_set = WideDeepLoader(X_te_wide, X_te_deep, X_te_text, X_te_img, y_te, transform)
+
+    train_loader = torch.utils.data.DataLoader(dataset=train_set,
+        batch_size=16, num_workers=8, shuffle=True)
+    valid_loader = torch.utils.data.DataLoader(dataset=valid_set,
+        batch_size=16, num_workers=8, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(dataset=test_set,
+        batch_size=16,shuffle=False)
+
+    model.fit(n_epochs=1, train_loader=train_loader, eval_loader=valid_loader)
+    pdb.set_trace()
 
     # wd_dataset = pickle.load(open("data/airbnb/wide_deep_data/wd_dataset.p", "rb"))
     # params = dict()
