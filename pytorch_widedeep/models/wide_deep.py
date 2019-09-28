@@ -11,94 +11,23 @@ from torch.utils.data import Dataset
 from torch.optim.lr_scheduler import StepLR, MultiStepLR, ExponentialLR, ReduceLROnPlateau
 
 from ..wdtypes import *
+from ..radam import RAdam
+
+from ..initializers import MultipleInitializers
+from ..optimizers import MultipleOptimizers
+from ..lr_schedulers import MultipleLRScheduler
 
 from .wide import Wide
 from .deep_dense import DeepDense
 from .deep_text import DeepText
 from .deep_image import DeepImage
 
-from .radam import RAdam
+from .callbacks import History, CallbackContainer
+from .metrics import MultipleMetrics, MetricCallback
 
 import pdb
 
 use_cuda = torch.cuda.is_available()
-
-
-def set_method(method:str):
-    if method =='regression':
-        return None, F.mse_loss
-    if method =='logistic':
-        return torch.sigmoid, F.binary_cross_entropy
-    if method=='multiclass':
-        return F.softmax, F.cross_entropy
-
-
-def set_optimizer(model_params:ModelParams, opt_name, opt_params:Optional[Dict]=None):
-    if opt_name == "RAdam":
-        return RAdam(model_params, **opt_params) if opt_params else RAdam(model_params)
-    if opt_name == "Adam":
-        return torch.optim.Adam(model_params, **opt_params) if opt_params else torch.optim.Adam(model_params)
-    if opt_name == "SGD":
-        return torch.optim.SGD(model_params, **opt_params) if opt_params else torch.optim.SGD(model_params)
-
-
-def set_scheduler(optimizer:Optimizer, sch_name:str, sch_params:Optional[Dict]=None):
-    if sch_name == "StepLR":
-        return StepLR(optimizer, **sch_params) if sch_params else StepLR(optimizer)
-    if sch_name == "MultiStepLR":
-        return MultiStepLR(optimizer, **sch_params) if sch_params else MultiStepLR(optimizer)
-    if sch_name == "ExponentialLR":
-        return ExponentialLR(optimizer, **sch_params) if sch_params else ExponentialLR(optimizer)
-    if sch_name == "ReduceLROnPlateau":
-        return ReduceLROnPlateau(optimizer, **sch_params) if sch_params else ReduceLROnPlateau(optimizer)
-
-
-class EarlyStopping:
-    def __init__(self, patience:int=10, delta:float=0.):
-
-        self.patience = patience
-        self.verbose = verbose
-        self.counter = 0
-        self.best_score = None
-        self.early_stop = False
-        self.val_loss_min = np.Inf
-        self.delta = delta
-
-    def __call__(self, val_loss:Tensor):
-
-        score = -val_loss
-
-        if self.best_score is None:
-            self.best_score = score
-        elif score < self.best_score - self.delta:
-            self.counter += 1
-            if self.counter >= self.patience:
-                self.early_stop = True
-        else:
-            self.best_score = score
-            self.counter = 0
-
-
-class MultipleOptimizer(object):
-    def __init__(self, opts:List[Optimizer]):
-        self.optimizers = opts
-
-    def zero_grad(self):
-        for op in self.optimizers:
-            op.zero_grad()
-
-    def step(self):
-        for op in self.optimizers:
-            op.step()
-
-
-class MultipleLRScheduler(object):
-    def __init__(self, scheds:List[LRScheduler]):
-        self.schedulers = scheds
-
-    def step(self):
-        for sc in self.schedulers:
-            sc.step()
 
 
 class WideDeepLoader(Dataset):
@@ -198,48 +127,6 @@ class WideDeep(nn.Module):
             self.deep_img = DeepImage(self.output_dim, self.pretrained, self.resnet,
                 self.freeze)
 
-    def compile(self, method:str, optimizer:str=None, optimizer_param:Optional[Dict]=None,
-        lr_scheduler:Optional[str]=None, lr_scheduler_params:Optional[Dict]=None,
-        wide_optimizer:Optional[str]=None, wide_optimizer_param:Optional[Dict]=None,
-        deep_dense_optimizer:Optional[str]=None, deep_dense_optimizer_param:Optional[Dict]=None,
-        deep_text_optimizer:Optional[str]=None, deep_text_optimizer_param:Optional[Dict]=None,
-        deep_img_optimizer:Optional[str]=None, deep_img_optimizer_param:Optional[Dict]=None,
-        wide_scheduler:Optional[str]=None, wide_scheduler_param:Optional[Dict]=None,
-        deep_dense_scheduler:Optional[str]=None, deep_dense_scheduler_param:Optional[Dict]=None,
-        deep_text_scheduler:Optional[str]=None, deep_text_scheduler_param:Optional[Dict]=None,
-        deep_img_scheduler:Optional[str]=None, deep_img_scheduler_param:Optional[Dict]=None):
-
-        self.method = method
-        self.activation, self.criterion = set_method(method)
-
-        if optimizer is not None:
-            self.optimizer = set_optimizer(self.parameters(), optimizer, optimizer_param)
-            self.lr_scheduler = set_scheduler(self.optimizer, lr_scheduler, lr_scheduler_params)
-        else:
-            if wide_optimizer is None:
-                wide_opt = set_optimizer(self.wide.parameters(), "Adam")
-            else:
-                wide_opt = set_optimizer(self.wide.parameters(), wide_optimizer, wide_optimizer_param)
-            wide_sch = set_scheduler(self.wide_opt, wide_scheduler, wide_scheduler_param) if wide_scheduler else None
-            if deep_dense_optimizer is None:
-                deep_dense_opt = set_optimizer(self.deep_dense.parameters(), "Adam")
-            else:
-                deep_dense_opt = set_optimizer(self.deep_dense.parameters(), deep_dense_optimizer, deep_dense_optimizer_param)
-            deep_dense_sch = set_scheduler(self.deep_dense_opt, deep_dense_scheduler, deep_dense_scheduler_param) if deep_dense_scheduler else None
-            if deep_text_optimizer is None:
-                deep_text_opt = set_optimizer(self.deep_text.parameters(), "Adam")
-            else:
-                deep_text_opt = set_optimizer(self.deep_text.parameters(), deep_text_optimizer, deep_text_optimizer_param)
-            deep_text_sch = set_scheduler(self.deep_text_opt, deep_text_scheduler, deep_text_scheduler_param) if deep_text_scheduler else None
-            if deep_img_optimizer is None:
-                deep_img_opt = set_optimizer(self.deep_img.parameters(), "Adam")
-            else:
-                deep_img_opt = set_optimizer(self.deep_img.parameters(), deep_img_optimizer, deep_img_optimizer_param)
-            deep_img_sch = set_scheduler(self.deep_img_opt, deep_img_scheduler, deep_img_scheduler_param) if deep_img_scheduler else None
-
-            self.optimizer = MultipleOptimizer([wide_opt, deep_dense_opt, deep_text_opt, deep_img_opt])
-            self.lr_scheduler = MultipleLRScheduler([wide_sch, deep_dense_sch, deep_text_sch, deep_img_sch])
-
     def forward(self, X:Tuple[Dict[str,Tensor],Tensor])->Tensor:
 
         wide_deep = self.wide(X['wide'])
@@ -260,6 +147,53 @@ class WideDeep(nn.Module):
                 out = self.activation(wide_deep)
             return out
 
+    def set_method(self, method:str):
+        self.method = method
+        if self.method =='regression':
+            self.activation, self.criterion = None, F.mse_loss
+        if self.method =='logistic':
+            self.activation, self.criterion = torch.sigmoid, F.binary_cross_entropy
+        if self.method=='multiclass':
+            self.activation, self.criterion = F.softmax, F.cross_entropy
+
+    def compile(self, method, callbacks=None, initializers=None, optimizers=None, lr_schedulers=None,
+        metrics=None, global_optimizer=None, global_optimizer_params=None, global_lr_scheduler=None,
+        global_lr_scheduler_params=None):
+
+        self.set_method(method)
+
+        if initializers is not None:
+            self.initializer = MultipleInitializers(initializers)
+            self.initializer.apply(self)
+
+        if optimizers is not None:
+            self.optimizer = MultipleOptimizers(optimizers)
+            self.optimizer.apply(self)
+        elif global_optimizer is not None:
+            self.optimizer = global_optimizer(self)
+        else:
+            print('bla bla...')
+            self.optimizer = torch.optim.Adam(self.parameters())
+
+        if lr_schedulers is not None:
+            self.lr_scheduler = MultipleLRScheduler(lr_schedulers)
+            self.lr_scheduler.apply(self.optimizer._optimizers)
+        elif global_lr_scheduler is not None:
+            self.lr_scheduler = global_lr_scheduler(self.optimizer)
+        else:
+            self.lr_scheduler = None
+
+        self.history = History
+        self.callbacks = [self.history]
+        if callbacks is not None:
+            self.callbacks.append(callbacks)
+
+        if metrics is not None:
+            self.metric = MultipleMetrics(metrics)
+            self.callbacks.append(MetricCallback(self.metric))
+
+        callback_container = CallbackContainer(self.callbacks)
+
     def training_step(self, data:Dict[str, Tensor], target:Tensor, batch_nb:int):
 
         X = {k:v.cuda() for k,v in data.keys()} if use_cuda else data
@@ -275,21 +209,21 @@ class WideDeep(nn.Module):
         loss.backward()
         self.optimizer.step()
 
-        running_loss += loss.item()
-        avg_loss = running_loss/(batch_nb+1)
+        self.running_loss += loss.item()
+        avg_loss = self.running_loss/(batch_nb+1)
         if self.method != "regression":
-            total+= y.size(0)
+            self.total+= y.size(0)
             if self.method == 'logistic':
                 y_pred_cat = (y_pred > 0.5).squeeze(1).float()
             if self.method == "multiclass":
                 _, y_pred_cat = torch.max(y_pred, 1)
-            correct+= float((y_pred_cat == y).sum().item())
-            acc = correct/total
+            self.correct+= float((y_pred_cat == y).sum().item())
+            acc = self.correct/self.total
 
         if self.method != 'regression':
-            return avg_loss
-        else:
             return acc, avg_loss
+        else:
+            return avg_loss
 
     def validation_step(self, data:Dict[str, Tensor], target:Tensor, batch_nb:int):
 
@@ -303,62 +237,56 @@ class WideDeep(nn.Module):
                 loss = self.criterion(y_pred, y)
             else:
                 loss = self.criterion(y_pred, y.view(-1, 1))
-            running_loss += loss.item()
-            avg_loss = running_loss/(i+1)
+            self.running_loss += loss.item()
+            avg_loss = self.running_loss/(batch_nb+1)
             if self.method != "regression":
-                total+= y.size(0)
+                self.total+= y.size(0)
                 if self.method == 'logistic':
                     y_pred_cat = (y_pred > 0.5).squeeze(1).float()
                 if self.method == "multiclass":
                     _, y_pred_cat = torch.max(y_pred, 1)
-                correct+= float((y_pred_cat == y).sum().item())
+                self.correct+= float((y_pred_cat == y).sum().item())
+                acc = self.correct/self.total
 
         if self.method != 'regression':
-            return avg_loss
-        else:
             return acc, avg_loss
+        else:
+            return avg_loss
+
 
     def fit(self, n_epochs:int, train_loader:DataLoader, eval_loader:Optional[DataLoader]=None,
         patience:Optional[int]=10):
 
         train_steps =  (len(train_loader.dataset) // train_loader.batch_size) + 1
         if eval_loader:
-            early_stopping = EarlyStopping(patience=patience)
             eval_steps =  (len(eval_loader.dataset) // eval_loader.batch_size) + 1
         for epoch in range(n_epochs):
 
-            total, correct, running_loss = 0,0,0
+            self.total, self.correct, self.running_loss = 0,0,0
             with trange(train_steps) as t:
                 for i, (data,target) in zip(t, train_loader):
                     t.set_description('epoch %i' % (epoch+1))
                     if self.method != 'regression':
                         acc, avg_loss = self.training_step(data, target, i)
-                        t.set_postfix(acc=correct/total, loss=avg_loss)
+                        t.set_postfix(acc=acc, loss=avg_loss)
                     else:
                         avg_loss = self.training_step(data, target, i)
                         t.set_postfix(loss=np.sqrt(avg_loss))
 
             if eval_loader:
+                self.total, self.correct, self.running_loss = 0,0,0
                 current_best_loss, stopping_step, should_stop = 1e3, 0, False
-                total, correct, running_loss = 0,0,0
                 with trange(eval_steps) as v:
                     for i, (data,target) in zip(v, eval_loader):
                         v.set_description('valid')
                         if self.method != 'regression':
                             acc, avg_loss = self.validation_step(data, target, i)
-                            v.set_postfix(acc=correct/total, loss=avg_loss)
+                            v.set_postfix(acc=self.correct/self.total, loss=avg_loss)
                         else:
                             avg_loss = self.validation_step(data, target, i)
                             v.set_postfix(loss=np.sqrt(avg_loss))
-                early_stopping(avg_loss)
-                if early_stopping.early_stop:
-                    print("Early stopping")
-                    break
 
-            if self.lr_scheduler:
-                if isinstance(scheduler, ReduceLROnPlateau): self.lr_scheduler.step(avg_loss)
-            else:
-                self.lr_scheduler.step()
+            if self.lr_scheduler: self.lr_scheduler.step()
 
     def predict(self, dataloader:DataLoader)->np.ndarray:
         test_steps =  (len(dataloader.dataset) // dataloader.batch_size) + 1
@@ -401,19 +329,6 @@ class WideDeep(nn.Module):
                 return np.vstack(preds_l)
 
     def get_embeddings(self, col_name:str) -> Dict[str,np.ndarray]:
-        """Extract the embeddings for the embedding columns.
-
-        Parameters:
-        -----------
-        col_name: str
-            column we want to extract the embedding for
-
-        Returns:
-        --------
-        embeddings_dict: Dict
-            Dict with the column values and the corresponding embeddings
-        """
-
         params = list(self.named_parameters())
         emb_layers = [p for p in params if 'emb_layer' in p[0]]
         emb_layer  = [layer for layer in emb_layers if col_name in layer[0]][0]
