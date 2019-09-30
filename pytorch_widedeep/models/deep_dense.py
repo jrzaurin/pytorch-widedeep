@@ -50,8 +50,10 @@ class DeepDense(nn.Module):
         self.continuous_cols = continuous_cols
         self.deep_column_idx = deep_column_idx
 
-        for col,val,dim in embeddings_input:
-            setattr(self, 'emb_layer_'+col, nn.Embedding(val, dim))
+        self.embedding_layers = nn.ModuleDict({'emb_layer_'+col: nn.Embedding(val, dim)
+            for col, val, dim in embeddings_input})
+        # for col,val,dim in embeddings_input:
+        #     setattr(self, 'emb_layer_'+col, nn.Embedding(val, dim))
         input_emb_dim = np.sum([emb[2] for emb in embeddings_input])+len(continuous_cols)
         hidden_layers = [input_emb_dim] + hidden_layers
         dropout = [0.0] + dropout
@@ -64,8 +66,10 @@ class DeepDense(nn.Module):
         self.dense.add_module('last_linear', nn.Linear(hidden_layers[-1], output_dim))
 
     def forward(self, X:Tensor)->Tensor:
-        emb = [getattr(self, 'emb_layer_'+col)(X[:,self.deep_column_idx[col]].long())
-               for col,_,_ in self.embeddings_input]
+        emb = [self.embedding_layers['emb_layer_'+col](X[:,self.deep_column_idx[col]].long())
+            for col,_,_ in self.embeddings_input]
+        # emb = [getattr(self, 'emb_layer_'+col)(X[:,self.deep_column_idx[col]].long())
+        #        for col,_,_ in self.embeddings_input]
         if self.continuous_cols:
             cont_idx = [self.deep_column_idx[col] for col in self.continuous_cols]
             cont = [X[:, cont_idx].float()]
