@@ -84,6 +84,3 @@ class BinaryAccuracy(Metric):
         self.total_count += len(y_pred)
         accuracy = float(self.correct_count) / float(self.total_count)
         return np.round(accuracy, 4)
-
-
-

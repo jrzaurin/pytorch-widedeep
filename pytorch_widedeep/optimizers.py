@@ -93,8 +93,3 @@ class SGD:
 
 	def step(self):
 		self.opt.step()
-
-
-
-
-

@@ -50,4 +50,3 @@ class DeepDense(nn.Module):
             inp = torch.cat(emb, 1)
         out = self.dense(inp)
         return out
-

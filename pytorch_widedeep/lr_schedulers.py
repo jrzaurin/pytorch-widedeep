@@ -87,9 +87,3 @@ class ReduceLROnPlateau:
 					threshold_mode=self.threshold, cooldown=self.cooldown, min_lr=self.min_lr,
 					eps=self.eps)
 		return self.sch
-
-
-
-
-
-

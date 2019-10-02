@@ -79,9 +79,3 @@ class SimplePreprocessor:
     def preprocess(self, image:np.ndarray)->np.ndarray:
         return cv2.resize(image, (self.width, self.height),
             interpolation=self.inter)
-
-
-
-
-
-

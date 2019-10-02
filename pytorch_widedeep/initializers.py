@@ -155,4 +155,3 @@ class Orthogonal(Initializer):
 			if fnmatch(n, self.pattern) and pattern_in:
 				if 'bias' in n: nn.init.normal_(p, val=0)
 				elif p.requires_grad: nn.init.orthogonal_(p, gain=self.gain)
-

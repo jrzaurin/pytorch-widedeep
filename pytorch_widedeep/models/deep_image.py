@@ -81,4 +81,3 @@ class DeepImage(nn.Module):
         x = x.view(x.size(0), -1)
         out = self.head(x)
         return out
-
