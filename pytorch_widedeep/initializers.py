@@ -7,7 +7,7 @@ from .wdtypes import *
 
 class Initializer(object):
 
-    def __call__(self, model:nn.Module):
+    def __call__(self, model:TorchModel):
         raise NotImplementedError('Initializer must implement this method')
 
 
@@ -16,7 +16,7 @@ class MultipleInitializers(object):
 	def __init__(self, initializers:Dict[str, Initializer]):
 	    self._initializers = initializers
 
-	def apply(self, model:nn.Module):
+	def apply(self, model:TorchModel):
 		children = list(model.children())
 		for child in children:
 			model_name = child.__class__.__name__.lower()
@@ -35,7 +35,7 @@ class Normal(Initializer):
 	    self.pattern = pattern
 	    super(Normal, self).__init__()
 
-	def __call__(self, submodel:nn.Module):
+	def __call__(self, submodel:TorchModel):
 		for n,p in submodel.named_parameters():
 			if fnmatch(n, self.pattern) and pattern_in:
 				if self.bias and ('bias' in n):
@@ -55,7 +55,7 @@ class Uniform(Initializer):
 	    self.pattern = pattern
 	    super(Uniform, self).__init__()
 
-	def __call__(self, submodel:nn.Module):
+	def __call__(self, submodel:TorchModel):
 		for n,p in submodel.named_parameters():
 			if fnmatch(n, self.pattern) and pattern_in:
 				if self.bias and ('bias' in n):
@@ -74,7 +74,7 @@ class ConstantInitializer(Initializer):
 	    self.pattern = pattern
 	    super(ConstantInitializer, self).__init__()
 
-	def __call__(self, submodel:nn.Module):
+	def __call__(self, submodel:TorchModel):
 		for n,p in submodel.named_parameters():
 			if fnmatch(n, self.pattern) and pattern_in:
 				if self.bias and ('bias' in n):
@@ -92,7 +92,7 @@ class XavierUniform(Initializer):
 	    self.pattern = pattern
 	    super(XavierUniform, self).__init__()
 
-	def __call__(self, submodel:nn.Module):
+	def __call__(self, submodel:TorchModel):
 		for n,p in submodel.named_parameters():
 			if fnmatch(n, self.pattern) and pattern_in:
 				if 'bias' in n: nn.init.constant_(p, val=0)
@@ -106,7 +106,7 @@ class XavierNormal(Initializer):
 	    self.pattern = pattern
 	    super(XavierNormal, self).__init__()
 
-	def __call__(self, submodel:nn.Module):
+	def __call__(self, submodel:TorchModel):
 		for n,p in submodel.named_parameters():
 			if fnmatch(n, self.pattern) and pattern_in:
 				if 'bias' in n: nn.init.constant_(p, val=0)
@@ -121,7 +121,7 @@ class KaimingUniform(Initializer):
 	    self.pattern = pattern
 	    super(KaimingUniform, self).__init__()
 
-	def __call__(self, submodel:nn.Module):
+	def __call__(self, submodel:TorchModel):
 		for n,p in submodel.named_parameters():
 			if fnmatch(n, self.pattern) and pattern_in:
 				if 'bias' in n: nn.init.constant_(p, val=0)
@@ -136,7 +136,7 @@ class KaimingNormal(Initializer):
 	    self.pattern = pattern
 	    super(KaimingNormal, self).__init__()
 
-	def __call__(self, submodel:nn.Module):
+	def __call__(self, submodel:TorchModel):
 		for n,p in submodel.named_parameters():
 			if fnmatch(n, self.pattern) and pattern_in:
 				if 'bias' in n: nn.init.constant_(p, val=0)
@@ -150,7 +150,7 @@ class Orthogonal(Initializer):
 	    self.pattern = pattern
 	    super(Orthogonal, self).__init__()
 
-	def __call__(self, submodel:nn.Module):
+	def __call__(self, submodel:TorchModel):
 		for n,p in submodel.named_parameters():
 			if fnmatch(n, self.pattern) and pattern_in:
 				if 'bias' in n: nn.init.normal_(p, val=0)

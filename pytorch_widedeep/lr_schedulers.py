@@ -7,12 +7,16 @@ from .wdtypes import *
 class MultipleLRScheduler(object):
 
 	def __init__(self,schedulers:Dict[str,LRScheduler]):
-	    self._schedulers = schedulers
+
+		instantiated_schedulers = {}
+		for model_name, scheduler in schedulers.items():
+			if isinstance(scheduler, type):
+				instantiated_schedulers[model_name] = scheduler()
+			else: instantiated_schedulers[model_name] = scheduler
+		self._schedulers = instantiated_schedulers
 
 	def apply(self, optimizers:Dict[str, Optimizer]):
 		for model_name, optimizer in optimizers.items():
-			if isinstance(self._schedulers[model_name], type):
-				self._schedulers[model_name] = self._schedulers[model_name]()
 			self._schedulers[model_name] = self._schedulers[model_name](optimizer)
 
 	def step(self, loss=None):

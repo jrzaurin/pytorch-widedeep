@@ -4,20 +4,22 @@ from torch import nn
 from .radam import RAdam as orgRAdam
 from .wdtypes import *
 
-import pdb
-
 
 class MultipleOptimizers(object):
 
 	def __init__(self, optimizers:Dict[str,Optimizer]):
-	    self._optimizers = optimizers
 
-	def apply(self, model:nn.Module):
+		instantiated_optimizers = {}
+		for model_name, optimizer in optimizers.items():
+			if isinstance(optimizer, type):
+				instantiated_optimizers[model_name] = optimizer()
+			else: instantiated_optimizers[model_name] = optimizer
+		self._optimizers = instantiated_optimizers
+
+	def apply(self, model:TorchModel):
 		children = list(model.children())
 		for child in children:
 			model_name = child.__class__.__name__.lower()
-			if isinstance(self._optimizers[model_name], type):
-				self._optimizers[model_name] = self._optimizers[model_name]()
 			self._optimizers[model_name] = self._optimizers[model_name](child)
 
 	def zero_grad(self):
@@ -39,7 +41,7 @@ class Adam:
 		self.weight_decay=weight_decay
 		self.amsgrad=amsgrad
 
-	def __call__(self, submodel:nn.Module):
+	def __call__(self, submodel:TorchModel) -> Optimizer:
 		self.opt = torch.optim.Adam(submodel.parameters(), lr=self.lr, betas=self.betas, eps=self.eps,
 			weight_decay=self.weight_decay, amsgrad=self.amsgrad)
 		return self.opt
@@ -59,7 +61,7 @@ class RAdam:
 		self.eps=eps
 		self.weight_decay=weight_decay
 
-	def __call__(self, submodel:nn.Module):
+	def __call__(self, submodel:TorchModel) -> Optimizer:
 		self.opt = orgRAdam(submodel.parameters(), lr=self.lr, betas=self.betas, eps=self.eps,
 			weight_decay=self.weight_decay)
 		return self.opt
@@ -81,7 +83,7 @@ class SGD:
 		self.weight_decay=weight_decay
 		self.nesterov=nesterov
 
-	def __call__(self, submodel:nn.Module):
+	def __call__(self, submodel:TorchModel) -> Optimizer:
 		self.opt = torch.optim.SGD(submodel.parameters(), lr=self.lr, momentum=self.momentum,
 			dampening=self.dampening, weight_decay=self.weight_decay, nesterov=self.nesterov)
 		return self.opt
