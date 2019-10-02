@@ -4,34 +4,43 @@ import pickle
 import numpy as np
 import pandas as pd
 
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
-
 from pathlib import Path
 from torchvision import transforms
 
-from pytorch_widedeep.data_utils.prepare_data import prepare_data
-
-from pytorch_widedeep.models.wide_deep import WideDeep, WideDeepLoader
-
 from pytorch_widedeep.initializers import Normal, Uniform, XavierNormal, XavierUniform
-from pytorch_widedeep.optimizers import MultipleOptimizers, Adam, SGD, RAdam
 from pytorch_widedeep.lr_schedulers import MultipleLRScheduler, StepLR, MultiStepLR
-
-# -> HERE. CHECK callbacks and metrics. move modules and move on
-from pytorch_widedeep.models.callbacks import EarlyStopping, ModelCheckpoint
-from pytorch_widedeep.models.metrics import BinaryAccuracy
+from pytorch_widedeep.optimizers import MultipleOptimizers, Adam, SGD, RAdam
+from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_widedeep.metrics import BinaryAccuracy
+from pytorch_widedeep.utils.data_utils import prepare_data
+from pytorch_widedeep.models.wide_deep import WideDeep, WideDeepLoader
 
 import pdb
 
+use_cuda = torch.cuda.is_available()
+
 if __name__ == '__main__':
 
-    use_cuda = torch.cuda.is_available()
+    DATA_PATH = Path('data')
+    df = pd.read_csv(DATA_PATH/'adult/adult.csv.zip')
+    df.columns = [c.replace("-", "_") for c in df.columns]
+    df['age_buckets'] = pd.cut(df.age, bins=[16, 25, 30, 35, 40, 45, 50, 55, 60, 91], labels=np.arange(9))
+    df['income_label'] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
+    df.drop('income', axis=1, inplace=True)
+    df.head()
 
-    wd = pickle.load(open('data/wd_dataset.p', 'rb'))
+    wide_cols = ['age_buckets', 'education', 'relationship','workclass','occupation',
+        'native_country','gender']
+    crossed_cols = (['education', 'occupation'], ['native_country', 'occupation'])
+    cat_embed_cols = [('education',10), ('relationship',8), ('workclass',10),
+        ('occupation',10),('native_country',10)]
+    continuous_cols = ["age","hours_per_week"]
+    target = 'income_label'
+    wd = prepare_data(df, target, wide_cols, crossed_cols, cat_embed_cols, continuous_cols)
+
     model = WideDeep(output_dim=1, wide_dim=wd.wide.shape[1],
-        embeddings_input = wd.cat_embeddings_input,
-        embeddings_encoding_dict=wd.cat_embeddings_encoding_dict,
+        cat_embed_input = wd.cat_embed_input,
+        cat_embed_encoding_dict=wd.cat_embed_encoding_dict,
         continuous_cols=wd.continuous_cols,
         deep_column_idx=wd.deep_column_idx)
 
@@ -43,8 +52,9 @@ if __name__ == '__main__':
 
     model.compile(method='logistic', initializers=initializers, optimizers=optimizers,
         lr_schedulers=schedulers, callbacks=callbacks, metrics=metrics)
-    model.fit(wd.wide.astype('float32'), wd.deep_dense, wd.target, n_epochs=4, batch_size=256, val_split=0.2)
-    preds = model.predict_proba(wd.wide.astype('float32'), wd.deep_dense)
+
+    model.fit(X_wide=wd.wide, X_deep=wd.deepdense, target=wd.target,
+        n_epochs=4, batch_size=256, val_split=0.2)
     pdb.set_trace()
 
     # wd_dataset = pickle.load(open("data/airbnb/wide_deep_data/wd_dataset.p", "rb"))
