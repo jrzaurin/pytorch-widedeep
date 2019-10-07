@@ -1,0 +1,9 @@
+pandas>=0.24.2
+numpy>=1.16.4
+scipy>=1.2.1
+sklearn>=0.21.3
+gensim>=3.5.0
+imutils>=0.5.2
+pytorch>=1.1.0
+fastai>=1.0.52
+tqdm>=4.31.1
