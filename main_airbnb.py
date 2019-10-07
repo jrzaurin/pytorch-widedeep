@@ -69,4 +69,3 @@ if __name__ == '__main__':
 
     model.fit(X_wide=wd.wide, X_deep=wd.deepdense, X_text=wd.deeptext, X_img=wd.deepimage,
         target=wd.target, n_epochs=1, batch_size=32, val_split=0.2)
-    pdb.set_trace()
