@@ -1,0 +1,48 @@
+# Adapted from https://gist.github.com/dreftymac/a589eea7d67e79bd84fe
+
+# These files are text and should be normalized (Convert crlf => lf)
+*.py text
+*.rst text
+*.md text
+*.js text
+*.htm text
+*.html text
+*.css text
+*.xml text
+*.txt text
+*.ini text
+*.inc text
+
+# These files are binary and should be left untouched
+# (binary is a macro for -text -diff)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mov binary
+*.mp4 binary
+*.mp3 binary
+*.flv binary
+*.fla binary
+*.swf binary
+*.gz binary
+*.zip binary
+*.7z binary
+*.ttf binary
+
+# Auto detect text files and perform LF normalization
+# http://davidlaing.com/2012/09/19/customise-your-gitattributes-to-become-a-git-ninja/
+* text=auto
+
+# Documents
+*.doc  diff=astextplain
+*.DOC  diff=astextplain
+*.docx diff=astextplain
+*.DOCX diff=astextplain
+*.dot  diff=astextplain
+*.DOT  diff=astextplain
+*.pdf  diff=astextplain
+*.PDF  diff=astextplain
+*.rtf  diff=astextplain
+*.RTF  diff=astextplain

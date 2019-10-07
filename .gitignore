@@ -1,5 +1,20 @@
-# sftp to the instance
-sftp-config.json
-
-# Byte-Compiled Files
+#python
+build/
+dist/
+__pycache__*
 *.pyc
+*.pyo
+*.egg-info
+
+# jupyter / ipython
+.ipynb_checkpoints
+Untitled*.ipynb
+data/
+model_weights/
+
+# tests
+.coverage
+
+# sublime
+*.sublime-workspace
+sftp*-config.json
