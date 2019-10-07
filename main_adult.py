@@ -14,6 +14,7 @@ from pytorch_widedeep.models.wide_deep import WideDeep
 
 use_cuda = torch.cuda.is_available()
 
+
 if __name__ == '__main__':
 
     DATA_PATH = Path('data')
