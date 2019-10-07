@@ -5,13 +5,15 @@ from sklearn.preprocessing import StandardScaler
 
 from ..wdtypes import *
 
-def prepare_wide(df:pd.DataFrame, wide_cols:List[str], crossed_cols:List[Tuple[str,str]],
+
+def prepare_wide(df:pd.DataFrame, wide_cols:List[str], crossed_cols,
     already_dummies:Optional[List[str]]=None) -> np.ndarray:
 
     df_wide = df.copy()[wide_cols]
 
     crossed_columns = []
     for cols in crossed_cols:
+        cols = list(cols)
         colname = '_'.join(cols)
         df_wide[colname] = df_wide[cols].apply(lambda x: '-'.join(x), axis=1)
         crossed_columns.append(colname)
