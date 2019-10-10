@@ -1,3 +1,4 @@
+import sys
 from torch.nn import Module
 from torch import Tensor
 from torchvision.transforms import *
@@ -5,7 +6,11 @@ from torch.optim.optimizer import Optimizer
 from torch.utils.data.dataloader import DataLoader
 from torch.optim.lr_scheduler import _LRScheduler
 from pathlib import PosixPath
-from typing import List, Any, Union, Dict, Optional, Tuple, Generator, Collection, Iterable
+from typing import List, Any, Union, Dict, Callable, Optional, Tuple, Generator, Collection, Iterable
+
+SimpleNamespace = type(sys.implementation)
+ListRules = Collection[Callable[[str],str]]
+Tokens = Collection[Collection[str]]
 
 Transforms= Union[CenterCrop, ColorJitter, Compose, FiveCrop, Grayscale,
 	Lambda, LinearTransformation, Normalize, Pad, RandomAffine,
