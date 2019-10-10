@@ -1,9 +1,10 @@
 pandas>=0.24.2
 numpy>=1.16.4
 scipy>=1.2.1
-sklearn>=0.21.3
+scikit-learn>=0.21.2
 gensim>=3.5.0
 imutils>=0.5.2
-pytorch>=1.1.0
+torch>=1.1.0
+torchvision>=0.2.2
 fastai>=1.0.52
 tqdm>=4.31.1

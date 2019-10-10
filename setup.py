@@ -4,15 +4,7 @@
 import os
 import setuptools
 
-
 pwd = os.path.dirname(__file__)
-
-install_requires = []
-with open(os.path.join(pwd, 'requirements.txt')) as f:
-    for line in f:
-        line = line.strip()
-        if line and not line.startswith('#'):
-            install_requires.append(line)
 
 with open(os.path.join(pwd, 'version.txt')) as f:
     version = f.read().strip()
@@ -45,7 +37,18 @@ setup_kwargs = {
     'author_email': 'jrzaurin@gmail.com',
     'url': '',
     'license': 'MIT',
-    'install_requires': install_requires,
+    'install_requires': [
+        "pandas",
+        "numpy",
+        "scipy",
+        "scikit-learn",
+        "gensim",
+        "imutils",
+        "torch",
+        "torchvision",
+        "fastai",
+        # "opencv-python",
+        "tqdm"],
     'classifiers': [
         dev_status[majorminor],
         'Environment :: Other Environment',
