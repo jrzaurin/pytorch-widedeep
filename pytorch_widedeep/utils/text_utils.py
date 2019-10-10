@@ -1,31 +1,17 @@
 import numpy as np
 import pandas as pd
 import html
+import os
 import re
 
 from pathlib import PosixPath
 from typing import List
 from gensim.utils import tokenize
-from fastai.text import Tokenizer
-from fastai.text.transform import Vocab
+from sklearn.utils.validation import check_is_fitted
 
+from .fastai_transforms import Tokenizer, Vocab
+from .base_util import DataProcessor
 from ..wdtypes import *
-
-
-def prepare_text(df:pd.DataFrame, text_col:str, max_vocab:int, min_freq:int, maxlen:int,
-	word_vectors_path:Optional[str]=None, verbose:int=1):
-	texts = df[text_col].tolist()
-	tokens = get_texts(texts)
-	vocab = Vocab.create(tokens, max_vocab=max_vocab, min_freq=min_freq)
-	sequences = [vocab.numericalize(t) for t in tokens]
-	padded_seq = np.array([pad_sequences(s, maxlen=maxlen) for s in sequences])
-	if verbose:
-	    print("The vocabulary contains {} words".format(len(vocab.stoi)))
-	if word_vectors_path is not None:
-	    embedding_matrix = build_embeddings_matrix(vocab, word_vectors_path)
-	else:
-		embedding_matrix = None
-	return padded_seq, embedding_matrix, vocab
 
 
 def simple_preprocess(doc:str, lower:bool=False, deacc:bool=False, min_len:int=2,
@@ -54,12 +40,14 @@ def pad_sequences(seq:List[int], maxlen:int=190, pad_first:bool=True, pad_idx:in
         return res
 
 
-def build_embeddings_matrix(vocab:Vocab, word_vectors_path:PosixPath, verbose:int=1) -> np.ndarray:
+def build_embeddings_matrix(vocab:Vocab, word_vectors_path:str, verbose:int=1) -> np.ndarray:
 
+	if not os.path.isfile(word_vectors_path):
+		raise FileNotFoundError("{} not found".format(word_vectors_path))
 	if verbose: print('Indexing word vectors...')
 
 	embeddings_index = {}
-	f = open(str(word_vectors_path))
+	f = open(word_vectors_path)
 	for line in f:
 	    values = line.split()
 	    word = values[0]
@@ -88,3 +76,41 @@ def build_embeddings_matrix(vocab:Vocab, word_vectors_path:PosixPath, verbose:in
 		print('{} words in the vocabulary had {} vectors and appear more than the min frequency'.format(found_words, word_vectors_path))
 
 	return embedding_matrix
+
+
+class TextProcessor(DataProcessor):
+	"""docstring for TextProcessor"""
+	def __init__(self, max_vocab:int=30000, min_freq:int=5,
+		maxlen:int=80, word_vectors_path:Optional[str]=None,
+		verbose:int=1):
+		super(TextProcessor, self).__init__()
+		self.max_vocab = max_vocab
+		self.min_freq = min_freq
+		self.maxlen = maxlen
+		self.word_vectors_path = word_vectors_path
+		self.verbose = verbose
+
+	def fit(self, df:pd.DataFrame, text_col:str)->DataProcessor:
+		text_col = text_col
+		texts = df[text_col].tolist()
+		tokens = get_texts(texts)
+		self.vocab = Vocab.create(tokens, max_vocab=self.max_vocab, min_freq=self.min_freq)
+		return self
+
+	def transform(self, df:pd.DataFrame, text_col:str)->np.ndarray:
+		check_is_fitted(self, 'vocab')
+		self.text_col = text_col
+		texts = df[self.text_col].tolist()
+		self.tokens = get_texts(texts)
+		sequences = [self.vocab.numericalize(t) for t in self.tokens]
+		padded_seq = np.array([pad_sequences(s, maxlen=self.maxlen) for s in sequences])
+		if self.verbose:
+		    print("The vocabulary contains {} words".format(len(self.vocab.stoi)))
+		if self.word_vectors_path is not None:
+		    self.embedding_matrix = build_embeddings_matrix(self.vocab, self.word_vectors_path)
+		return padded_seq
+
+	def fit_transform(self, df:pd.DataFrame, text_col:str)->np.ndarray:
+		return self.fit(df, text_col).transform(df, text_col)
+
+
