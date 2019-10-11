@@ -3,14 +3,11 @@ import pandas as pd
 import torch
 from pathlib import Path
 
-# from pytorch_widedeep.utils.data_utils import prepare_data
-# from pytorch_widedeep.models.wide_deep import WideDeep
+from pytorch_widedeep.utils.wide_utils import WideProcessor
+from pytorch_widedeep.utils.deep_utils import DeepProcessor
 
-# from pytorch_widedeep.initializers import Normal, Uniform, XavierNormal, XavierUniform
-# from pytorch_widedeep.lr_schedulers import MultipleLRScheduler, StepLR, MultiStepLR, ReduceLROnPlateau
-# from pytorch_widedeep.optimizers import Adam, SGD, RAdam
-# from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
-# from pytorch_widedeep.metrics import BinaryAccuracy
+from pytorch_widedeep.models.wide import Wide
+from pytorch_widedeep.models.deep_dense import DeepDense
 
 # use_cuda = torch.cuda.is_available()
 
@@ -26,20 +23,33 @@ if __name__ == '__main__':
     df.drop('income', axis=1, inplace=True)
     df.head()
 
-
-    from pytorch_widedeep.utils.wide_utils import WideProcessor
     wide_cols = ['age_buckets', 'education', 'relationship','workclass','occupation',
         'native_country','gender']
     crossed_cols = [('education', 'occupation'), ('native_country', 'occupation')]
-    prepare_wide = WideProcessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
-    X_wide = prepare_wide.fit_transform(df)
-
-    from pytorch_widedeep.utils.deep_utils import DeepProcessor
     cat_embed_cols = [('education',10), ('relationship',8), ('workclass',10),
         ('occupation',10),('native_country',10)]
     continuous_cols = ["age","hours_per_week"]
+
+    prepare_wide = WideProcessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+    X_wide = prepare_wide.fit_transform(df)
+
     prepare_deep = DeepProcessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
     X_deep = prepare_deep.fit_transform(df)
+
+    wide = Wide(X_wide.shape[1], 1)
+    pred_wide = wide(torch.tensor(X_wide[:10]))
+
+    deep = DeepDense(
+        hidden_layers=[32,16],
+        dropout=[0.5],
+        deep_column_idx=prepare_deep.deep_column_idx,
+        embed_input=prepare_deep.embeddings_input,
+        continuous_cols=continuous_cols,
+        batchnorm=True,
+        output_dim=1)
+    pred_deep = deep(torch.tensor(X_deep[:10]))
+    pdb.set_trace()
+
 
     # wd_dataset = prepare_data(df,
     #     target=target,
