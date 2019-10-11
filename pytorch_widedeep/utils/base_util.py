@@ -10,5 +10,5 @@ class DataProcessor(object):
     def predict(self):
     	pass
 
-    def fit_predict(self):
+    def fit_transform(self):
         pass

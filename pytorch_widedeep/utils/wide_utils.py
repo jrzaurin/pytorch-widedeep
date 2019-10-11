@@ -8,7 +8,7 @@ from .base_util import DataProcessor
 from ..wdtypes import *
 
 
-class WideProcessor(object):
+class WideProcessor(DataProcessor):
     def __init__(self, wide_cols:List[str], crossed_cols=None,
         already_dummies:Optional[List[str]]=None):
         super(WideProcessor, self).__init__()
@@ -53,7 +53,7 @@ class WideProcessor(object):
             X_oh_2=self.one_hot_enc.transform(df_wide[dummy_cols])
             return np.hstack((X_oh_1, X_oh_2))
         else:
-            return self.one_hot_enc.transform(df_wide[self.wide_crossed_cols])
+            return (self.one_hot_enc.transform(df_wide[self.wide_crossed_cols]))
 
     def fit_transform(self, df:pd.DataFrame)->np.ndarray:
         return self.fit(df).transform(df)

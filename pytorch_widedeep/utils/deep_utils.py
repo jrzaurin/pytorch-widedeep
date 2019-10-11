@@ -100,6 +100,7 @@ class DeepProcessor(DataProcessor):
                 df_deep = df_emb.copy()
             except:
                 df_deep = df_cont.copy()
+        self.deep_column_idx = {k:v for v,k in enumerate(df_deep.columns)}
         return df_deep.values
 
     def fit_transform(self, df:pd.DataFrame)->np.ndarray:
