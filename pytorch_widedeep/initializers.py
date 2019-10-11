@@ -42,8 +42,8 @@ class Normal(Initializer):
 					nn.init.normal_(p, mean=self.mean, std=self.std)
 				elif ('bias' in n):
 					continue
-				else:
-					p.requires_grad: nn.init.normal_(p, mean=self.mean, std=self.std)
+				elif p.requires_grad:
+					nn.init.normal_(p, mean=self.mean, std=self.std)
 
 
 class Uniform(Initializer):
@@ -62,8 +62,8 @@ class Uniform(Initializer):
 					nn.init.uniform_(p, a=self.a, b=self.b)
 				elif ('bias' in n):
 					continue
-				else:
-					p.requires_grad: nn.init.uniform_(p, a=self.a, b=self.b)
+				elif p.requires_grad:
+					nn.init.uniform_(p, a=self.a, b=self.b)
 
 
 class ConstantInitializer(Initializer):
@@ -81,7 +81,7 @@ class ConstantInitializer(Initializer):
 					nn.init.constant_(p, val=self.value)
 				elif ('bias' in n):
 					continue
-				else:
+				elif:
 					p.requires_grad: nn.init.constant_(p, val=self.value)
 
 
