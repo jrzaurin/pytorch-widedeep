@@ -18,7 +18,10 @@ def conv_layer(ni:int, nf:int, ks:int=3, stride:int=1, maxpool:bool=True,
 
 class DeepImage(nn.Module):
 
-    def __init__(self, output_dim, pretrained:bool=True, resnet=18,
+    def __init__(self,
+        output_dim:int=1,
+        pretrained:bool=True,
+        resnet=18,
         freeze:Union[str,int]=6):
         super(DeepImage, self).__init__()
         """
@@ -70,7 +73,7 @@ class DeepImage(nn.Module):
                 conv_layer(128, 256, 1, maxpool=False),
                 conv_layer(256, 512, 1, maxpool=False, adaptiveavgpool=True),
                 )
-        self.head = nn.Sequential(
+        self.dilinear = nn.Sequential(
             nn.Linear(512, 256),
             nn.Linear(256, 128),
             nn.Linear(128, output_dim)
@@ -79,5 +82,5 @@ class DeepImage(nn.Module):
     def forward(self, x:Tensor)->Tensor:
         x = self.backbone(x)
         x = x.view(x.size(0), -1)
-        out = self.head(x)
+        out = self.dilinear(x)
         return out

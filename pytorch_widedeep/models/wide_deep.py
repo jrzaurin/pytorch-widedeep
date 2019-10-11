@@ -22,7 +22,6 @@ from sklearn.utils import Bunch
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 
-import pdb
 
 use_cuda = torch.cuda.is_available()
 
@@ -66,8 +65,7 @@ class WideDeepLoader(Dataset):
 class WideDeep(nn.Module):
 
     def __init__(self, output_dim:int, wide_dim:int,
-        cat_embed_input:List[Tuple[str,int,int]],
-        cat_embed_encoding_dict:Dict[str,Any], continuous_cols:List[str],
+        cat_embed_input:List[Tuple[str,int,int]], continuous_cols:List[str],
         deep_column_idx:Dict[str,int], hidden_layers:List[int]=[64,32],
         dropout:List[float]=[0.], add_text:bool=False,
         nlp_model:Optional[nn.Module]=None, vocab_size:Optional[int]=None,
@@ -91,12 +89,12 @@ class WideDeep(nn.Module):
 
         # DEEP DENSE
         self.cat_embed_input = cat_embed_input
-        self.cat_embed_encoding_dict = cat_embed_encoding_dict
         self.continuous_cols = continuous_cols
         self.deep_column_idx = deep_column_idx
         self.hidden_layers = hidden_layers
         self.dropout = dropout
-        self.deep_dense = DeepDense( self.cat_embed_input, self.cat_embed_encoding_dict,
+        self.deep_dense = DeepDense( self.cat_embed_input,
+            # self.cat_embed_encoding_dict,
             self.continuous_cols, self.deep_column_idx, self.hidden_layers, self.dropout,
             self.output_dim)
 
@@ -163,7 +161,8 @@ class WideDeep(nn.Module):
         if self.method == 'multiclass':
             return F.cross_entropy(y_pred, y_true, weight=self.class_weight)
 
-    def compile(self, method:str, callbacks:Optional[List[Callback]]=None,
+    def compile(self, method:str,
+        callbacks:Optional[List[Callback]]=None,
         initializers:Optional[List[Initializer]]=None,
         optimizers:Optional[List[Optimizer]]=None,
         lr_schedulers:Optional[List[LRScheduler]]=None,
