@@ -20,7 +20,12 @@ class MultipleOptimizers(object):
 		children = list(model.children())
 		for child in children:
 			model_name = child.__class__.__name__.lower()
-			self._optimizers[model_name] = self._optimizers[model_name](child)
+			try:
+				self._optimizers[model_name] = self._optimizers[model_name](child)
+			except KeyError:
+			    warnings.warn(
+			    	'Model name has to be one of: {}'.format(str([child.__class__.__name__.lower()
+			    		for child in children])), ValueError)
 
 	def zero_grad(self):
 	    for _, opt in self._optimizers.items():
@@ -29,6 +34,7 @@ class MultipleOptimizers(object):
 	def step(self):
 	    for _, opt in self._optimizers.items():
 	        opt.step()
+
 
 class Adam:
 
@@ -46,11 +52,6 @@ class Adam:
 			weight_decay=self.weight_decay, amsgrad=self.amsgrad)
 		return self.opt
 
-	def zero_grad(self):
-		self.opt.zero_grad()
-
-	def step(self):
-		self.opt.step()
 
 class RAdam:
 
@@ -65,12 +66,6 @@ class RAdam:
 		self.opt = orgRAdam(submodel.parameters(), lr=self.lr, betas=self.betas, eps=self.eps,
 			weight_decay=self.weight_decay)
 		return self.opt
-
-	def zero_grad(self):
-		self.opt.zero_grad()
-
-	def step(self):
-		self.opt.step()
 
 
 class SGD:
@@ -88,8 +83,22 @@ class SGD:
 			dampening=self.dampening, weight_decay=self.weight_decay, nesterov=self.nesterov)
 		return self.opt
 
-	def zero_grad(self):
-		self.opt.zero_grad()
 
-	def step(self):
-		self.opt.step()
+class RMSprop:
+
+	def __init__(self, lr=0.01, alpha=0.99, eps=1e-08, weight_decay=0, momentum=0, centered=False):
+
+		self.lr = lr
+		self.alpha = alpha
+		self.eps = eps
+		self.weight_decay = weight_decay
+		self.momentum = momentum
+		self.centered = centered
+
+
+	def __call__(self, submodel:TorchModel) -> Optimizer:
+		self.opt = torch.optim.SGD(submodel.parameters(), lr = self.lr, alpha = self.alpha,
+			eps = self.eps, weight_decay = self.weight_decay, momentum = self.momentum,
+			centered = self.centered)
+		return self.opt
+
