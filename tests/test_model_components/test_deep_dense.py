@@ -31,7 +31,7 @@ def test_deep_dense_embed():
 ###############################################################################
 # Continous cols but NO embeddings
 ###############################################################################
-continuous_cols=colnames[-2:]
+continuous_cols=colnames[-5:]
 model2 = DeepDense(
 hidden_layers=[32,16],
 dropout=[0.5],
