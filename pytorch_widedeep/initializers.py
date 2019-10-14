@@ -25,9 +25,9 @@ class MultipleInitializers(object):
 			try:
 				child.apply(self._initializers[model_name])
 			except KeyError:
-			    warnings.warn(
+			    raise ValueError(
 			    	'Model name has to be one of: {}'.format(str([child.__class__.__name__.lower()
-			    		for child in children])), ValueError)
+			    		for child in children])))
 
 class Normal(Initializer):
 

@@ -23,9 +23,9 @@ class MultipleOptimizers(object):
 			try:
 				self._optimizers[model_name] = self._optimizers[model_name](child)
 			except KeyError:
-			    warnings.warn(
+			    raise ValueError(
 			    	'Model name has to be one of: {}'.format(str([child.__class__.__name__.lower()
-			    		for child in children])), ValueError)
+			    		for child in children])))
 
 	def zero_grad(self):
 	    for _, opt in self._optimizers.items():
