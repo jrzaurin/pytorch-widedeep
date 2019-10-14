@@ -115,13 +115,13 @@ class History(Callback):
 
     def on_train_begin(self, logs:Optional[Dict]=None):
         self.epoch = []
-        self.history = {}
+        self._history = {}
 
     def on_epoch_end(self, epoch:int, logs:Optional[Dict]=None):
         logs = logs or {}
         self.epoch.append(epoch)
         for k, v in logs.items():
-            self.history.setdefault(k, []).append(v)
+            self._history.setdefault(k, []).append(v)
 
 
 class ModelCheckpoint(Callback):
