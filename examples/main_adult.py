@@ -58,7 +58,7 @@ if __name__ == '__main__':
     model = WideDeep(wide=wide, deepdense=deepdense)
 
     initializers = {'wide': Normal, 'deepdense':Normal}
-    optimizers = {'wide': Adam, 'deepdense':RAdam(lr=0.001)}
+    optimizers = {'wide': Adam, 'deepdense':Adam }
     schedulers = {'wide': StepLR(step_size=5), 'deepdense':StepLR(step_size=5)}
 
     callbacks = [EarlyStopping, ModelCheckpoint(filepath='../model_weights/wd_out')]
