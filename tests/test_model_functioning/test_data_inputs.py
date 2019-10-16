@@ -12,8 +12,6 @@ from pytorch_widedeep.models.deep_text import DeepText
 from pytorch_widedeep.models.deep_image import DeepImage
 from pytorch_widedeep.models.wide_deep import WideDeep
 
-import pdb
-
 # Wide array
 X_wide = np.random.choice(2, (100, 100), p = [0.8, 0.2])
 
@@ -103,7 +101,7 @@ transforms2 = [Normalize(mean=mean, std=std)]
 def test_widedeep_inputs(X_wide, X_deep, X_text, X_img, X_train, X_val, target, val_split,
 	transforms, nepoch, null):
 	model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage)
-	model.compile(method='logistic', transforms=transforms)
+	model.compile(method='logistic', transforms=transforms, verbose=0)
 	model.fit(
 		X_wide = X_wide,
 		X_deep = X_deep,
@@ -114,6 +112,5 @@ def test_widedeep_inputs(X_wide, X_deep, X_text, X_img, X_train, X_val, target, 
 		target = target,
 		val_split = val_split,
 		batch_size=16,
-		verbose=0
 		)
 	assert model.history.epoch[0] == nepoch and model.history._history['train_loss'] is not null
