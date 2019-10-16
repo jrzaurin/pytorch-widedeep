@@ -30,9 +30,9 @@ import pdb
 
 
 class WideDeepLoader(Dataset):
-    def __init__(self, X_wide:np.ndarray, X_deep:np.ndarray, target:np.ndarray,
-        X_text:Optional[np.ndarray]=None, X_img:Optional[np.ndarray]=None,
-        transforms:Optional=None):
+    def __init__(self, X_wide:np.ndarray, X_deep:np.ndarray,
+        target:Optional[np.ndarray]=None, X_text:Optional[np.ndarray]=None,
+        X_img:Optional[np.ndarray]=None, transforms:Optional=None):
 
         self.X_wide = X_wide
         self.X_deep = X_deep
@@ -85,13 +85,13 @@ class WideDeep(nn.Module):
         self.deepimage = deepimage
 
     def forward(self, X:List[Dict[str,Tensor]])->Tensor:
-        wide_deep = self.wide(X['wide'])
-        wide_deep.add_(self.deepdense(X['deepdense']))
+        out = self.wide(X['wide'])
+        out.add_(self.deepdense(X['deepdense']))
         if self.deeptext is not None:
-            wide_deep.add_(self.deeptext(X['deeptext']))
+            out.add_(self.deeptext(X['deeptext']))
         if self.deepimage is not None:
-            wide_deep.add_(self.deepimage(X['deepimage']))
-        return wide_deep
+            out.add_(self.deepimage(X['deepimage']))
+        return out
 
     def compile(self,method:str,
         initializers:Optional[Dict[str,Initializer]]=None,
@@ -103,12 +103,14 @@ class WideDeep(nn.Module):
         callbacks:Optional[List[Callback]]=None,
         metrics:Optional[List[Metric]]=None,
         class_weight:Optional[Union[float,List[float],Tuple[float]]]=None,
-        focal_loss:bool=False, alpha:float=0.25, gamma:float=1):
+        with_focal_loss:bool=False, alpha:float=0.25, gamma:float=1,
+        verbose=1):
 
+        self.verbose = verbose
         self.early_stop = False
         self.method = method
-        self.focal_loss = focal_loss
-        if self.focal_loss:
+        self.with_focal_loss = with_focal_loss
+        if self.with_focal_loss:
             self.alpha, self.gamma = alpha, gamma
 
         if isinstance(class_weight, float):
@@ -119,7 +121,7 @@ class WideDeep(nn.Module):
             self.class_weight = None
 
         if initializers is not None:
-            self.initializer = MultipleInitializers(initializers)
+            self.initializer = MultipleInitializers(initializers, verbose=self.verbose)
             self.initializer.apply(self)
 
         if optimizers is not None:
@@ -173,8 +175,8 @@ class WideDeep(nn.Module):
             return F.softmax(inp, dim=1)
 
     def _loss_fn(self, y_pred:Tensor, y_true:Tensor) -> Tensor:
-        if self.focal_loss:
-            return self.FocalLoss(self.alpha, self.gamma)(y_pred, y_true)
+        if self.with_focal_loss:
+            return FocalLoss(self.alpha, self.gamma)(y_pred, y_true)
         if self.method == 'regression':
             return F.mse_loss(y_pred, y_true.view(-1, 1))
         if self.method == 'logistic':
@@ -292,8 +294,7 @@ class WideDeep(nn.Module):
         X_train:Optional[Dict[str,np.ndarray]]=None,
         X_val:Optional[Dict[str,np.ndarray]]=None,
         val_split:Optional[float]=None, target:Optional[np.ndarray]=None,
-        n_epochs:int=1, batch_size:int=32, patience:int=10, seed:int=1,
-        verbose:int=1):
+        n_epochs:int=1, batch_size:int=32, patience:int=10, seed:int=1):
 
         if X_train is None and (X_wide is None or X_deep is None or target is None):
             raise ValueError(
@@ -314,7 +315,7 @@ class WideDeep(nn.Module):
             epoch_logs = {}
             self.callback_container.on_epoch_begin(epoch+1, epoch_logs)
             self.train_running_loss = 0.
-            with trange(train_steps, disable=verbose != 1) as t:
+            with trange(train_steps, disable=self.verbose != 1) as t:
                 for batch_idx, (data,target) in zip(t, train_loader):
                     t.set_description('epoch %i' % (epoch+1))
                     acc, train_loss = self._training_step(data, target, batch_idx)
@@ -332,7 +333,7 @@ class WideDeep(nn.Module):
                     shuffle=False)
                 eval_steps =  (len(eval_loader.dataset) // batch_size) + 1
                 self.valid_running_loss = 0.
-                with trange(eval_steps, disable=verbose != 1) as v:
+                with trange(eval_steps, disable=self.verbose != 1) as v:
                     for i, (data,target) in zip(v, eval_loader):
                         v.set_description('valid')
                         acc, val_loss = self._validation_step(data, target, i)
@@ -365,11 +366,11 @@ class WideDeep(nn.Module):
 
         preds_l = []
         with torch.no_grad():
-            with trange(test_steps) as t:
+            with trange(test_steps, disable=self.verbose != 1) as t:
                 for i, data in zip(t, test_loader):
                     t.set_description('predict')
                     X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
-                    preds = self._activation_fn(self.forward(X).cpu().data.numpy())
+                    preds = self._activation_fn(self.forward(X)).cpu().data.numpy()
                     preds_l.append(preds)
             if self.method == "regression":
                 return np.vstack(preds_l).squeeze(1)
@@ -389,19 +390,19 @@ class WideDeep(nn.Module):
             load_dict = {'X_wide': X_wide, 'X_deep': X_deep}
             if X_text is not None: load_dict.update({'X_text': X_text})
             if X_img is not None:  load_dict.update({'X_img': X_img})
+            test_set = WideDeepLoader(**load_dict)
 
-        test_set = WideDeepLoader(**load_dict)
         test_loader = torch.utils.data.DataLoader(dataset=test_set,
             batch_size=self.batch_size,shuffle=False)
         test_steps =  (len(test_loader.dataset) // test_loader.batch_size) + 1
 
         preds_l = []
         with torch.no_grad():
-            with trange(test_steps) as t:
+            with trange(test_steps, disable=self.verbose != 1) as t:
                 for i, data in zip(t, test_loader):
                     t.set_description('predict')
                     X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
-                    preds = self._activation_fn(self.forward(X).cpu().data.numpy())
+                    preds = self._activation_fn(self.forward(X)).cpu().data.numpy()
                     preds_l.append(preds)
             if self.method == "logistic":
                 preds = np.vstack(preds_l).squeeze(1)
