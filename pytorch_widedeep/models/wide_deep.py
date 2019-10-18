@@ -29,9 +29,6 @@ from copy import deepcopy
 use_cuda = torch.cuda.is_available()
 
 
-import pdb
-
-
 class WideDeepLoader(Dataset):
     def __init__(self, X_wide:np.ndarray, X_deep:np.ndarray,
         target:Optional[np.ndarray]=None, X_text:Optional[np.ndarray]=None,
@@ -100,7 +97,7 @@ class WideDeep(nn.Module):
         initializers:Optional[Dict[str,Initializer]]=None,
         optimizers:Optional[Dict[str,Optimizer]]=None,
         global_optimizer:Optional[Optimizer]=None,
-        # optimizer_params:Optional[Union[List[Dict],Dict[str,List[Dict]]]]=None,
+        param_groups:Optional[Union[List[Dict],Dict[str,List[Dict]]]]=None,
         lr_schedulers:Optional[Dict[str,LRScheduler]]=None,
         global_lr_scheduler:Optional[LRScheduler]=None,
         transforms:Optional[List[Transforms]]=None,
@@ -130,10 +127,10 @@ class WideDeep(nn.Module):
 
         if optimizers is not None:
             self.optimizer = MultipleOptimizers(optimizers)
-            self.optimizer.apply(self)
+            self.optimizer.apply(self, param_groups)
         elif global_optimizer is not None:
             if isinstance(global_optimizer, type): global_optimizer = global_optimizer()
-            self.optimizer = global_optimizer(self)
+            self.optimizer = global_optimizer(self, param_groups)
         else:
             self.optimizer = torch.optim.Adam(self.parameters())
 
