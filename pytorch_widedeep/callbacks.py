@@ -10,12 +10,8 @@ import warnings
 import torch
 
 from tqdm import tqdm
-
-from .wdtypes import *
-
 from copy import deepcopy
-
-import pdb
+from .wdtypes import *
 
 
 def _get_current_time():
@@ -142,28 +138,46 @@ class LRHistory(Callback):
             self.model.lr_history = {}
             if self.model.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
                 for model_name, opt in self.model.optimizer._optimizers.items():
-                   self.model.lr_history.setdefault('lr_'+model_name, []).append(opt.param_groups[0]['lr'])
+                    if model_name in self.model.lr_scheduler._schedulers:
+                        for group_idx, group in enumerate(opt.param_groups):
+                            self.model.lr_history.setdefault(
+                                ("_").join(['lr', model_name, str(group_idx)]),[]
+                                ).append(group['lr'])
             elif not self.model.cyclic:
-                self.model.lr_history.setdefault('lr', []).append(self.model.optimizer.param_groups[0]['lr'])
+                for group_idx, group in enumerate(self.model.optimizer.param_groups):
+                    self.model.lr_history.setdefault(
+                        ("_").join(['lr', str(group_idx)]),[]).append(group['lr'])
         else: pass
 
     def on_batch_end(self, batch:int, logs:Optional[Dict]=None):
         if self.model.lr_scheduler:
             if self.model.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
                 for model_name, opt in self.model.optimizer._optimizers.items():
-                    if 'cycl' in self.model.lr_scheduler._schedulers[model_name].__class__.__name__.lower():
-                        self.model.lr_history.setdefault('lr_'+model_name, []).append(opt.param_groups[0]['lr'])
+                    if model_name in self.model.lr_scheduler._schedulers:
+                        if 'cycl' in self.model.lr_scheduler._schedulers[model_name].__class__.__name__.lower():
+                            for group_idx, group in enumerate(opt.param_groups):
+                                self.model.lr_history.setdefault(
+                                    ("_").join(['lr', model_name, str(group_idx)]),[]
+                                    ).append(group['lr'])
             elif self.model.cyclic:
-                self.model.lr_history.setdefault('lr', []).append(self.model.optimizer.param_groups[0]['lr'])
+                for group_idx, group in enumerate(self.model.optimizer.param_groups):
+                    self.model.lr_history.setdefault(
+                        ("_").join(['lr', str(group_idx)]),[]).append(group['lr'])
 
     def on_epoch_end(self, epoch:int, logs:Optional[Dict]=None):
         if self.model.lr_scheduler:
             if self.model.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
                 for model_name, opt in self.model.optimizer._optimizers.items():
-                    if 'cycl' not in self.model.lr_scheduler._schedulers[model_name].__class__.__name__.lower():
-                       self.model.lr_history.setdefault('lr_'+model_name, []).append(opt.param_groups[0]['lr'])
+                    if model_name in self.model.lr_scheduler._schedulers:
+                        if 'cycl' not in self.model.lr_scheduler._schedulers[model_name].__class__.__name__.lower():
+                            for group_idx, group in enumerate(opt.param_groups):
+                                self.model.lr_history.setdefault(
+                                    ("_").join(['lr', model_name, str(group_idx)]),
+                                    []).append(group['lr'])
             elif not self.model.cyclic:
-                self.model.lr_history.setdefault('lr', []).append(self.model.optimizer.param_groups[0]['lr'])
+                for group_idx, group in enumerate(self.model.optimizer.param_groups):
+                    self.model.lr_history.setdefault(
+                        ("_").join(['lr', str(group_idx)]),[]).append(group['lr'])
 
 
 class ModelCheckpoint(Callback):
