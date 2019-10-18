@@ -17,7 +17,9 @@ class MultipleLRScheduler(object):
 
 	def apply(self, optimizers:Dict[str, Optimizer]):
 		for model_name, optimizer in optimizers.items():
-			self._schedulers[model_name] = self._schedulers[model_name](optimizer)
+			if model_name in self._schedulers:
+				self._schedulers[model_name] = self._schedulers[model_name](optimizer)
+			else: pass
 
 	def step(self, loss=None):
 		for _, sc in self._schedulers.items():
