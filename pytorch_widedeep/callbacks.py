@@ -13,6 +13,10 @@ from tqdm import tqdm
 
 from .wdtypes import *
 
+from copy import deepcopy
+
+import pdb
+
 
 def _get_current_time():
     return datetime.datetime.now().strftime("%B %d, %Y - %I:%M%p")
@@ -68,9 +72,9 @@ class CallbackContainer(object):
 
     def on_train_end(self, logs:Optional[Dict]=None):
         logs = logs or {}
-        logs['final_loss'] = self.model.history.epoch_losses[-1],
-        logs['best_loss'] = min(self.model.history.epoch_losses),
-        logs['stop_time'] = _get_current_time()
+        # logs['final_loss'] = self.model.history.epoch_losses[-1],
+        # logs['best_loss'] = min(self.model.history.epoch_losses),
+        # logs['stop_time'] = _get_current_time()
         for callback in self.callbacks:
             callback.on_train_end(logs)
 
@@ -117,11 +121,49 @@ class History(Callback):
         self.epoch = []
         self._history = {}
 
+    def on_epoch_begin(self, epoch:int, logs:Optional[Dict]=None):
+        # avoid mutation during epoch run
+        logs = deepcopy(logs) or {}
+        for k, v in logs.items():
+            self._history.setdefault(k, []).append(v)
+
     def on_epoch_end(self, epoch:int, logs:Optional[Dict]=None):
         logs = logs or {}
         self.epoch.append(epoch)
         for k, v in logs.items():
             self._history.setdefault(k, []).append(v)
+
+
+class LRHistory(Callback):
+
+
+    def on_epoch_begin(self, epoch:int, logs:Optional[Dict]=None):
+        if epoch==0 and self.model.lr_scheduler:
+            self.model.lr_history = {}
+            if self.model.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
+                for model_name, opt in self.model.optimizer._optimizers.items():
+                   self.model.lr_history.setdefault('lr_'+model_name, []).append(opt.param_groups[0]['lr'])
+            elif not self.model.cyclic:
+                self.model.lr_history.setdefault('lr', []).append(self.model.optimizer.param_groups[0]['lr'])
+        else: pass
+
+    def on_batch_end(self, batch:int, logs:Optional[Dict]=None):
+        if self.model.lr_scheduler:
+            if self.model.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
+                for model_name, opt in self.model.optimizer._optimizers.items():
+                    if 'cycl' in self.model.lr_scheduler._schedulers[model_name].__class__.__name__.lower():
+                        self.model.lr_history.setdefault('lr_'+model_name, []).append(opt.param_groups[0]['lr'])
+            elif self.model.cyclic:
+                self.model.lr_history.setdefault('lr', []).append(self.model.optimizer.param_groups[0]['lr'])
+
+    def on_epoch_end(self, epoch:int, logs:Optional[Dict]=None):
+        if self.model.lr_scheduler:
+            if self.model.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
+                for model_name, opt in self.model.optimizer._optimizers.items():
+                    if 'cycl' not in self.model.lr_scheduler._schedulers[model_name].__class__.__name__.lower():
+                       self.model.lr_history.setdefault('lr_'+model_name, []).append(opt.param_groups[0]['lr'])
+            elif not self.model.cyclic:
+                self.model.lr_history.setdefault('lr', []).append(self.model.optimizer.param_groups[0]['lr'])
 
 
 class ModelCheckpoint(Callback):
@@ -140,6 +182,10 @@ class ModelCheckpoint(Callback):
         self.period = period
         self.epochs_since_last_save = 0
         self.max_save = max_save
+
+        root_dir = filepath.split("/")[:-1][0]
+        if not os.path.exists(root_dir):
+            os.makedirs(root_dir)
 
         if self.max_save > 0:
             self.old_files = []
@@ -190,7 +236,7 @@ class ModelCheckpoint(Callback):
                                 except:
                                     pass
                                 self.old_files = self.old_files[1:]
-                            self.old_files.append(file)
+                            self.old_files.append(filepath)
                     else:
                         if self.verbose > 0:
                             print('\nEpoch %05d: %s did not improve from %0.5f' %
@@ -206,7 +252,7 @@ class ModelCheckpoint(Callback):
                         except:
                             pass
                         self.old_files = self.old_files[1:]
-                    self.old_files.append(file)
+                    self.old_files.append(filepath)
 
 
 class EarlyStopping(Callback):
