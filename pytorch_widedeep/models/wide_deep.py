@@ -19,9 +19,12 @@ from .deep_text import DeepText
 from .deep_image import DeepImage
 
 from tqdm import tqdm,trange
+from collections import defaultdict
 from sklearn.utils import Bunch
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
+
+from copy import deepcopy
 
 use_cuda = torch.cuda.is_available()
 
@@ -97,6 +100,7 @@ class WideDeep(nn.Module):
         initializers:Optional[Dict[str,Initializer]]=None,
         optimizers:Optional[Dict[str,Optimizer]]=None,
         global_optimizer:Optional[Optimizer]=None,
+        # optimizer_params:Optional[Union[List[Dict],Dict[str,List[Dict]]]]=None,
         lr_schedulers:Optional[Dict[str,LRScheduler]]=None,
         global_lr_scheduler:Optional[LRScheduler]=None,
         transforms:Optional[List[Transforms]]=None,
@@ -128,24 +132,28 @@ class WideDeep(nn.Module):
             self.optimizer = MultipleOptimizers(optimizers)
             self.optimizer.apply(self)
         elif global_optimizer is not None:
-            if isinstance(global_optimizer, type): self.optimizer = global_optimizer()
-            self.optimizer = global_optimizer(self.parameters())
+            if isinstance(global_optimizer, type): global_optimizer = global_optimizer()
+            self.optimizer = global_optimizer(self)
         else:
             self.optimizer = torch.optim.Adam(self.parameters())
 
         if lr_schedulers is not None:
             self.lr_scheduler = MultipleLRScheduler(lr_schedulers)
             self.lr_scheduler.apply(self.optimizer._optimizers)
-            if 'cycl' in [sc.__class__.__name__.lower() for _,sc in self.lr_scheduler._schedulers.items()]:
-                self.cyclic = True
-            else: self.cyclic = False
+            scheduler_names = [sc.__class__.__name__.lower() for _,sc in self.lr_scheduler._schedulers.items()]
+            self.cyclic = any(['cycl' in sn for sn in scheduler_names])
         elif global_lr_scheduler is not None:
-            if isinstance(global_optimizer, type): self.lr_scheduler = global_lr_scheduler()
-            self.lr_scheduler = global_lr_scheduler(self.optimizer)
-            if 'cycl' in self.lr_scheduler.__class__.__name__.lower(): self.cyclic = True
-            else: self.cyclic = False
+            if isinstance(global_lr_scheduler, type): global_lr_scheduler = global_lr_scheduler()
+            try: self.lr_scheduler = global_lr_scheduler(self.optimizer)
+            except:
+                raise TypeError(
+                    "{} is not an Optimizer. If a global learning rate scheduler "
+                    "is used then a single global optimizer must also be used".format(
+                        type(self.optimizer).__name__)
+                    )
+            self.cyclic = 'cycl' in self.lr_scheduler.__class__.__name__.lower()
         else:
-            self.lr_scheduler = None
+            self.lr_scheduler, self.cyclic = None, False
 
         if transforms is not None:
             self.transforms = MultipleTransforms(transforms)()
@@ -155,7 +163,9 @@ class WideDeep(nn.Module):
         self.history = History()
         self.callbacks = [self.history]
         if callbacks is not None:
-            self.callbacks += callbacks
+            for callback in callbacks:
+                if isinstance(callback, type): callback = callback()
+                self.callbacks.append(callback)
 
         if metrics is not None:
             self.metric = MultipleMetrics(metrics)
@@ -227,11 +237,11 @@ class WideDeep(nn.Module):
 
         if self.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler' and self.cyclic:
             if step_location == 'on_batch_end':
-                for scheduler_name, scheduler in self.lr_scheduler._schedulers.items():
-                    if 'cycl' in scheduler_name.lower(): scheduler.step()
+                for model_name, scheduler in self.lr_scheduler._schedulers.items():
+                    if 'cycl' in scheduler.__class__.__name__.lower(): scheduler.step()
             elif step_location == 'on_epoch_end':
                 for scheduler_name, scheduler in self.lr_scheduler._schedulers.items():
-                    if 'cycl' not in scheduler_name.lower(): scheduler.step()
+                    if 'cycl' not in scheduler.__class__.__name__.lower(): scheduler.step()
         elif self.cyclic:
             if step_location == 'on_batch_end': self.lr_scheduler.step()
             else: pass
@@ -312,8 +322,8 @@ class WideDeep(nn.Module):
 
         for epoch in range(n_epochs):
             # train step...
-            epoch_logs = {}
-            self.callback_container.on_epoch_begin(epoch+1, epoch_logs)
+            epoch_logs={}
+            self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
             self.train_running_loss = 0.
             with trange(train_steps, disable=self.verbose != 1) as t:
                 for batch_idx, (data,target) in zip(t, train_loader):
@@ -323,10 +333,10 @@ class WideDeep(nn.Module):
                         t.set_postfix(metrics=acc, loss=train_loss)
                     else:
                         t.set_postfix(loss=np.sqrt(train_loss))
-                    if self.lr_scheduler: self._lr_scheduler_step(step_location="on_batch_end")
+                    if self.lr_scheduler: self._lr_scheduler_step(step_location='on_batch_end')
+                    self.callback_container.on_batch_end(batch=batch_idx)
             epoch_logs['train_loss'] = train_loss
-            if acc is not None: epoch_logs['train_acc'] = acc
-
+            if acc is not None: epoch_logs['train_acc'] = acc['acc']
             # eval step...
             if eval_set is not None:
                 eval_loader = DataLoader(dataset=eval_set, batch_size=batch_size, num_workers=8,
@@ -342,12 +352,14 @@ class WideDeep(nn.Module):
                         else:
                             v.set_postfix(loss=np.sqrt(val_loss))
                 epoch_logs['val_loss'] = val_loss
-                if acc is not None: epoch_logs['val_acc'] = acc
-
-            self.callback_container.on_epoch_end(epoch+1, epoch_logs)
+                if acc is not None: epoch_logs['val_acc'] = acc['acc']
+            if self.lr_scheduler: self._lr_scheduler_step(step_location='on_epoch_end')
+            # log and check if early_stop...
+            self.callback_container.on_epoch_end(epoch, epoch_logs)
             if self.early_stop:
+                self.callback_container.on_train_end(epoch)
                 break
-            if self.lr_scheduler: self._lr_scheduler_step(step_location="on_epoch_end")
+            self.callback_container.on_train_end(epoch)
 
     def predict(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
         X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->np.ndarray:
