@@ -1,7 +1,7 @@
 import torch
 import pytest
 
-from pytorch_widedeep.models.wide import Wide
+from pytorch_widedeep.models import Wide
 
 inp = torch.rand(10, 10)
 model = Wide(10, 1)

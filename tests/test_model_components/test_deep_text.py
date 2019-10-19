@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import pytest
 
-from pytorch_widedeep.models.deep_text import DeepText
+from pytorch_widedeep.models import DeepText
 
 padded_sequences = np.random.choice(np.arange(1,100), (100, 48))
 padded_sequences = np.hstack((np.repeat(np.array([[0,0]]), 100, axis=0), padded_sequences))

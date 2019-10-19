@@ -4,18 +4,12 @@ import torch
 import pytest
 
 from torch import nn
-from pytorch_widedeep.models.wide import Wide
-from pytorch_widedeep.models.deep_dense import DeepDense
-from pytorch_widedeep.models.deep_text import DeepText
-from pytorch_widedeep.models.deep_image import DeepImage
-
-from pytorch_widedeep.models.wide_deep import WideDeep
+from pytorch_widedeep.models import Wide, DeepDense, DeepText, DeepImage, WideDeep
 from pytorch_widedeep.optimizers import Adam, RAdam, SGD, RMSprop
 from pytorch_widedeep.lr_schedulers import (StepLR, MultiStepLR, ExponentialLR,
 	ReduceLROnPlateau, CyclicLR, OneCycleLR)
 from copy import deepcopy as c
 
-import pdb
 
 # Wide array
 X_wide=np.random.choice(2, (100, 100), p = [0.8, 0.2])
@@ -80,8 +74,8 @@ def test_cyclic_lr_schedulers():
 
 	optimizers = { 'wide': Adam(lr=0.001), 'deepdense':Adam(lr=0.001)}
 	lr_schedulers = {
-		'wide': CyclicLR(base_lr=0.001, max_lr=0.01, step_size_up=10, cycle_momentum=False),
-		'deepdense': CyclicLR(base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False)}
+		'wide': CyclicLR(base_lr=0.001, max_lr=0.01, step_size_up=20, cycle_momentum=False),
+		'deepdense': CyclicLR(base_lr=0.001, max_lr=0.01, step_size_up=10, cycle_momentum=False)}
 
 	wide = Wide(100, 1)
 	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
@@ -90,7 +84,7 @@ def test_cyclic_lr_schedulers():
 	model.compile(method='logistic', optimizers=optimizers, lr_schedulers=lr_schedulers,
 		verbose=0)
 	model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, target=target,
-		n_epochs=10)
+		n_epochs=5)
 
 	out = []
 	out.append(

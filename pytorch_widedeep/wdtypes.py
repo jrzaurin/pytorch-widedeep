@@ -8,9 +8,6 @@ from torch.optim.lr_scheduler import _LRScheduler
 from pathlib import PosixPath
 from typing import (List, Any, Union, Dict, Callable, Optional, Tuple,
 	Generator, Collection, Iterable)
-from .initializers import Initializer
-from .callbacks import Callback
-from .metrics import Metric
 
 SimpleNamespace = type(sys.implementation)
 ListRules = Collection[Callable[[str],str]]
@@ -22,5 +19,6 @@ Transforms= Union[CenterCrop, ColorJitter, Compose, FiveCrop, Grayscale,
 	RandomHorizontalFlip, RandomOrder, RandomResizedCrop, RandomRotation,
 	RandomSizedCrop, RandomVerticalFlip, Resize, Scale, TenCrop,
 	ToPILImage, ToTensor]
+
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor,Tensor,Tensor]

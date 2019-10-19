@@ -3,9 +3,7 @@ import string
 import torch
 import pytest
 
-from pytorch_widedeep.models.wide import Wide
-from pytorch_widedeep.models.deep_dense import DeepDense
-from pytorch_widedeep.models.wide_deep import WideDeep
+from pytorch_widedeep.models import Wide, DeepDense, WideDeep
 
 # Wide array
 X_wide = np.random.choice(2, (100, 100), p = [0.8, 0.2])

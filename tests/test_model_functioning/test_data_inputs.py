@@ -4,13 +4,8 @@ import torch
 import pytest
 
 from torchvision.transforms import ToTensor, Normalize
-
 from sklearn.model_selection import train_test_split
-from pytorch_widedeep.models.wide import Wide
-from pytorch_widedeep.models.deep_dense import DeepDense
-from pytorch_widedeep.models.deep_text import DeepText
-from pytorch_widedeep.models.deep_image import DeepImage
-from pytorch_widedeep.models.wide_deep import WideDeep
+from pytorch_widedeep.models import Wide, DeepDense, DeepText, DeepImage, WideDeep
 
 # Wide array
 X_wide = np.random.choice(2, (100, 100), p = [0.8, 0.2])
@@ -67,35 +62,35 @@ transforms2 = [Normalize(mean=mean, std=std)]
 @pytest.mark.parametrize(
 	'X_wide, X_deep, X_text, X_img, X_train, X_val, target, val_split, transforms, nepoch, null',
 	[
-	(X_wide, X_deep, X_text, X_img, None, None, target, None, transforms1, 1, None),
-	(X_wide, X_deep, X_text, X_img, None, None, target, None, transforms2, 1, None),
-	(X_wide, X_deep, X_text, X_img, None, None, target, None, None, 1, None),
-	(X_wide, X_deep, X_text, X_img_norm, None, None, target, None, transforms2, 1, None),
-	(X_wide, X_deep, X_text, X_img_norm, None, None, target, None, transforms1, 1, None),
-	(X_wide, X_deep, X_text, X_img_norm, None, None, target, None, None, 1, None),
-	(X_wide, X_deep, X_text, X_img, None, None, target, 0.2, None, 1, None),
+	(X_wide, X_deep, X_text, X_img, None, None, target, None, transforms1, 0, None),
+	(X_wide, X_deep, X_text, X_img, None, None, target, None, transforms2, 0, None),
+	(X_wide, X_deep, X_text, X_img, None, None, target, None, None, 0, None),
+	(X_wide, X_deep, X_text, X_img_norm, None, None, target, None, transforms2, 0, None),
+	(X_wide, X_deep, X_text, X_img_norm, None, None, target, None, transforms1, 0, None),
+	(X_wide, X_deep, X_text, X_img_norm, None, None, target, None, None, 0, None),
+	(X_wide, X_deep, X_text, X_img, None, None, target, 0.2, None, 0, None),
 	(
 		None, None, None ,None, {'X_wide':X_wide, 'X_deep':X_deep, 'X_text':X_text,
-		'X_img':X_img, 'target': target}, None, None, None, None, 1, None),
+		'X_img':X_img, 'target': target}, None, None, None, None, 0, None),
 	(
 		None, None, None ,None, {'X_wide':X_wide, 'X_deep':X_deep, 'X_text':X_text,
-		'X_img':X_img, 'target': target}, None, None, None, transforms1, 1, None),
+		'X_img':X_img, 'target': target}, None, None, None, transforms1, 0, None),
 	(
 		None, None, None, None, {'X_wide':X_wide, 'X_deep':X_deep, 'X_text':X_text,
-		'X_img': X_img, 'target': target}, None, None, 0.2, None, 1, None),
+		'X_img': X_img, 'target': target}, None, None, 0.2, None, 0, None),
 	(
 		None, None, None, None, {'X_wide':X_wide, 'X_deep':X_deep, 'X_text':X_text,
-		'X_img': X_img, 'target': target}, None, None, 0.2, transforms2, 1, None),
+		'X_img': X_img, 'target': target}, None, None, 0.2, transforms2, 0, None),
 	(
 		None, None, None, None, {'X_wide':X_wide_tr, 'X_deep':X_deep_tr,
 		'X_text':X_text_tr, 'X_img': X_img_tr, 'target': y_train}, {'X_wide':X_wide_val,
 		'X_deep':X_deep_val, 'X_text':X_text_val, 'X_img': X_img_val, 'target': y_val}, None, None,
-		None, 1, None),
+		None, 0, None),
 	(
 		None, None, None, None, {'X_wide':X_wide_tr, 'X_deep':X_deep_tr,
 		'X_text':X_text_tr, 'X_img': X_img_tr, 'target': y_train}, {'X_wide':X_wide_val,
 		'X_deep':X_deep_val, 'X_text':X_text_val, 'X_img': X_img_val, 'target': y_val}, None, None,
-		transforms1, 1, None)
+		transforms1, 0, None)
 	]
 	)
 def test_widedeep_inputs(X_wide, X_deep, X_text, X_img, X_train, X_val, target, val_split,

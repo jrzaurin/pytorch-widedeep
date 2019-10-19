@@ -5,11 +5,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .wdtypes import *
-from .initializers import MultipleInitializers
+from .initializers import Initializer, MultipleInitializers
 from .optimizers import MultipleOptimizers
 from .lr_schedulers import MultipleLRScheduler
-from .callbacks import History, CallbackContainer
-from .metrics import MultipleMetrics, MetricCallback
+from .callbacks import Callback, History, CallbackContainer
+from .metrics import Metric, MultipleMetrics, MetricCallback
 from .transforms import MultipleTransforms
 from .losses import FocalLoss
 

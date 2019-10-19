@@ -4,16 +4,9 @@ import torch
 import pytest
 
 from torch import nn
-from pytorch_widedeep.models.wide import Wide
-from pytorch_widedeep.models.deep_dense import DeepDense
-from pytorch_widedeep.models.deep_text import DeepText
-from pytorch_widedeep.models.deep_image import DeepImage
-
-from pytorch_widedeep.models.wide_deep import WideDeep
+from pytorch_widedeep.models import Wide, DeepDense, DeepText, DeepImage, WideDeep
 from pytorch_widedeep.optimizers import Adam, RAdam, SGD, RMSprop
 from copy import deepcopy as c
-
-import pdb
 
 # Wide array
 X_wide=np.random.choice(2, (100, 100), p = [0.8, 0.2])

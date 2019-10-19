@@ -4,21 +4,14 @@ import string
 import torch
 import pytest
 
+from torch import nn
 from itertools import chain
 
-from torch import nn
-from pytorch_widedeep.models.wide import Wide
-from pytorch_widedeep.models.deep_dense import DeepDense
-from pytorch_widedeep.models.deep_text import DeepText
-from pytorch_widedeep.models.deep_image import DeepImage
-
-from pytorch_widedeep.models.wide_deep import WideDeep
+from pytorch_widedeep.models import Wide, DeepDense, DeepText, DeepImage, WideDeep
 from pytorch_widedeep.optimizers import Adam, RAdam, SGD, RMSprop
 from pytorch_widedeep.lr_schedulers import (StepLR, MultiStepLR, ExponentialLR,
 	ReduceLROnPlateau, CyclicLR, OneCycleLR)
 from pytorch_widedeep.callbacks import ModelCheckpoint, EarlyStopping, LRHistory
-
-import pdb
 
 # Wide array
 X_wide=np.random.choice(2, (100, 100), p = [0.8, 0.2])
@@ -65,9 +58,9 @@ def test_history_callback(optimizers, schedulers, len_loss_output, len_lr_output
 	out = []
 	out.append(len(model.history._history['train_loss'])==len_loss_output)
 	try:
-		lr_list = list(chain.from_iterable(model.lr_history['lr_deepdense']))
+		lr_list = list(chain.from_iterable(model.lr_history['lr_deepdense_0']))
 	except TypeError:
-		lr_list = model.lr_history['lr_deepdense']
+		lr_list = model.lr_history['lr_deepdense_0']
 	out.append(len(lr_list)==len_lr_output)
 	assert all(out)
 

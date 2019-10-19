@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import pytest
 
-from pytorch_widedeep.models.deep_image import DeepImage
+from pytorch_widedeep.models import DeepImage
 
 X_images = (torch.from_numpy(np.random.rand(10, 3, 224, 224))).float()
 

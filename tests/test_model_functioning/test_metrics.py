@@ -5,7 +5,6 @@ import pytest
 from copy import deepcopy
 from pytorch_widedeep.metrics import BinaryAccuracy, CategoricalAccuracy
 
-import pdb
 
 y_true = torch.from_numpy(np.random.choice(2, 100)).float()
 y_pred = deepcopy(y_true.view(-1,1)).float()

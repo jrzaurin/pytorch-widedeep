@@ -5,8 +5,6 @@ from .callbacks import Callback
 from .wdtypes import *
 
 
-import pdb
-
 class Metric(object):
 
     def reset(self):
