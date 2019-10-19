@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.utils.wide_utils import WideProcessor
+from pytorch_widedeep.preprocessing import WideProcessor
 
 
 def create_test_dataset(input_type, with_crossed=True):

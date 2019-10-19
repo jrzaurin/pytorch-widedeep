@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.utils.deep_utils import label_encoder, DeepProcessor
+from pytorch_widedeep.utils.deep_utils import label_encoder
+from pytorch_widedeep.preprocessing import DeepProcessor
 
 
 def create_test_dataset(input_type, input_type_2=None):

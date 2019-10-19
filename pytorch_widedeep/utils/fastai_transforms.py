@@ -1,9 +1,11 @@
 '''
 NLP data processing; tokenizes text and creates vocab indexes
 
-I have directly Copied and Paste of the transforms.py fastai library.  I only
+I have directly COPIED AND PASTE OF THE TRANSFORMS.PY FASTAI LIBRARY.  I only
 need the Tokenizer and the Vocab classes which are both in this module. This
 way I avoid the numerous fastai dependencies.
+
+Credit for the code here to Jeremy Howard and the fastai team
 '''
 
 from ..wdtypes import *

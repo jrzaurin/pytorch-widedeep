@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.utils.image_utils import ImageProcessor
+from pytorch_widedeep.preprocessing import ImageProcessor
 
 df = pd.DataFrame({'galaxies': ['galaxy1.png', 'galaxy2.png']})
 img_col = 'galaxies'
