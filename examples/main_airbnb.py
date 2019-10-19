@@ -1,14 +1,10 @@
-import os
-import torch
-import pickle
 import numpy as np
 import pandas as pd
+import os
+import torch
 
-from pytorch_widedeep.utils.text_utils import TextProcessor
-from pytorch_widedeep.models.deep_text import DeepText
-
-from pytorch_widedeep.utils.image_utils import ImageProcessor
-from pytorch_widedeep.models.deep_image import DeepImage
+from pytorch_widedeep.preprocessing import (WideProcessor, DeepProcessor,
+    TextProcessor, ImageProcessor)
 
 import pdb
 
@@ -33,8 +29,11 @@ if __name__ == '__main__':
     img_path = '../data/airbnb/property_picture'
     target = 'yield'
 
+    pdb.set_trace()
     text_processor = TextProcessor(word_vectors_path=word_vectors_path)
     X_text = text_processor.fit_transform(df, text_col)
+    image_processor = ImageProcessor()
+    X_images = image_processor.fit_transform(df, img_col, img_path)
 
     deeptext = DeepText(
         vocab_size=len(text_processor.vocab.itos),
@@ -46,9 +45,6 @@ if __name__ == '__main__':
         output_dim=1,
         embedding_matrix=text_processor.embedding_matrix
         )
-
-    image_processor = ImageProcessor()
-    X_images = image_processor.fit_transform(df, img_col, img_path)
     deepimage = DeepImage()
 
     # model = WideDeep(output_dim=1, wide_dim=wd.wide.shape[1],

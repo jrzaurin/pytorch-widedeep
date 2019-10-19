@@ -3,21 +3,10 @@ import pandas as pd
 import torch
 from pathlib import Path
 
-from pytorch_widedeep.utils.wide_utils import WideProcessor
-from pytorch_widedeep.utils.deep_utils import DeepProcessor
+from pytorch_widedeep.preprocessing import (WideProcessor, DeepProcessor,
+    TextProcessor, ImageProcessor)
 
-from pytorch_widedeep.models.wide import Wide
-from pytorch_widedeep.models.deep_dense import DeepDense
-
-from pytorch_widedeep.models.wide_deep import WideDeep
-
-from pytorch_widedeep.initializers import *
-from pytorch_widedeep.optimizers import *
-from pytorch_widedeep.lr_schedulers import *
-from pytorch_widedeep.callbacks import *
-from pytorch_widedeep.metrics import *
-
-# use_cuda = torch.cuda.is_available()
+use_cuda = torch.cuda.is_available()
 
 import pdb
 
@@ -45,6 +34,7 @@ if __name__ == '__main__':
     prepare_deep = DeepProcessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
     X_deep = prepare_deep.fit_transform(df)
 
+    pdb.set_trace()
     wide = Wide(
         wide_dim=X_wide.shape[1],
         output_dim=1)
