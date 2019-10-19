@@ -3,8 +3,13 @@ import pandas as pd
 import torch
 from pathlib import Path
 
-from pytorch_widedeep.preprocessing import (WideProcessor, DeepProcessor,
-    TextProcessor, ImageProcessor)
+from pytorch_widedeep.preprocessing import WideProcessor, DeepProcessor
+from pytorch_widedeep.models import Wide, DeepDense, WideDeep
+from pytorch_widedeep.initializers import *
+from pytorch_widedeep.optimizers import *
+from pytorch_widedeep.lr_schedulers import *
+from pytorch_widedeep.callbacks import *
+from pytorch_widedeep.metrics import *
 
 use_cuda = torch.cuda.is_available()
 
@@ -34,12 +39,11 @@ if __name__ == '__main__':
     prepare_deep = DeepProcessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
     X_deep = prepare_deep.fit_transform(df)
 
-    pdb.set_trace()
     wide = Wide(
         wide_dim=X_wide.shape[1],
         output_dim=1)
     deepdense = DeepDense(
-        hidden_layers=[32,16],
+        hidden_layers=[64,32],
         dropout=[0.5],
         deep_column_idx=prepare_deep.deep_column_idx,
         embed_input=prepare_deep.embeddings_input,
@@ -47,9 +51,9 @@ if __name__ == '__main__':
         output_dim=1)
     model = WideDeep(wide=wide, deepdense=deepdense)
 
-    initializers = {'wide': Normal, 'deepdense':Normal}
-    optimizers = {'wide': Adam, 'deepdense':Adam }
-    schedulers = {'wide': StepLR(step_size=5), 'deepdense':StepLR(step_size=5)}
+    initializers = {'wide': KaimingNormal, 'deepdense':KaimingNormal}
+    optimizers = {'wide': RAdam, 'deepdense':RAdam }
+    schedulers = {'wide': StepLR(step_size=25), 'deepdense':StepLR(step_size=25)}
 
     callbacks = [EarlyStopping, ModelCheckpoint(filepath='../model_weights/wd_out')]
     metrics = [BinaryAccuracy]
@@ -66,7 +70,7 @@ if __name__ == '__main__':
         X_wide=X_wide,
         X_deep=X_deep,
         target=target,
-        n_epochs=10,
+        n_epochs=50,
         batch_size=256,
         val_split=0.2)
     pdb.set_trace()

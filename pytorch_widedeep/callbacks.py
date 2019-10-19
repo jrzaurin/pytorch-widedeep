@@ -9,6 +9,7 @@ import datetime
 import warnings
 import torch
 
+from torch import nn
 from tqdm import tqdm
 from copy import deepcopy
 from .wdtypes import *
@@ -35,7 +36,7 @@ class CallbackContainer(object):
         for callback in self.callbacks:
             callback.set_params(params)
 
-    def set_model(self, model:TorchModel):
+    def set_model(self, model:nn.Module):
         self.model = model
         for callback in self.callbacks:
             callback.set_model(model)
@@ -86,7 +87,7 @@ class Callback(object):
     def set_params(self, params):
         self.params = params
 
-    def set_model(self, model:TorchModel):
+    def set_model(self, model:nn.Module):
         self.model = model
 
     def on_epoch_begin(self, epoch:int, logs:Optional[Dict]=None):

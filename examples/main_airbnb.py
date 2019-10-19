@@ -5,13 +5,18 @@ import torch
 
 from pytorch_widedeep.preprocessing import (WideProcessor, DeepProcessor,
     TextProcessor, ImageProcessor)
+from pytorch_widedeep.models import (Wide, DeepDense, DeepText, DeepImage,
+    WideDeep)
+from pytorch_widedeep.initializers import *
+from pytorch_widedeep.callbacks import *
+from pytorch_widedeep.optimizers import *
+from pytorch_widedeep.lr_schedulers import *
 
 import pdb
 
 use_cuda = torch.cuda.is_available()
 
 if __name__ == '__main__':
-
 
     df = pd.read_csv('../data/airbnb/tmp_df.csv')
 
@@ -29,12 +34,27 @@ if __name__ == '__main__':
     img_path = '../data/airbnb/property_picture'
     target = 'yield'
 
-    pdb.set_trace()
+    target = df[target].values
+    prepare_wide = WideProcessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+    X_wide = prepare_wide.fit_transform(df)
+    prepare_deep = DeepProcessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
+    X_deep = prepare_deep.fit_transform(df)
+
     text_processor = TextProcessor(word_vectors_path=word_vectors_path)
     X_text = text_processor.fit_transform(df, text_col)
     image_processor = ImageProcessor()
     X_images = image_processor.fit_transform(df, img_col, img_path)
 
+    wide = Wide(
+        wide_dim=X_wide.shape[1],
+        output_dim=1)
+    deepdense = DeepDense(
+        hidden_layers=[64,32],
+        dropout=[0.5],
+        deep_column_idx=prepare_deep.deep_column_idx,
+        embed_input=prepare_deep.embeddings_input,
+        continuous_cols=continuous_cols,
+        output_dim=1)
     deeptext = DeepText(
         vocab_size=len(text_processor.vocab.itos),
         hidden_dim=64,
@@ -46,27 +66,20 @@ if __name__ == '__main__':
         embedding_matrix=text_processor.embedding_matrix
         )
     deepimage = DeepImage()
+    model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext,
+        deepimage=deepimage)
 
-    # model = WideDeep(output_dim=1, wide_dim=wd.wide.shape[1],
-    #     cat_embed_input = wd.cat_embed_input,
-    #     cat_embed_encoding_dict=wd.cat_embed_encoding_dict,
-    #     continuous_cols=wd.continuous_cols,
-    #     deep_column_idx=wd.deep_column_idx, add_text=True,
-    #     vocab_size=len(wd.vocab.itos),
-    #     word_embed_matrix = wd.word_embed_matrix,
-    #     add_image=True)
+    initializers = {'wide': Normal, 'deepdense':Normal, 'deeptext':Normal, 'deepimage':Normal}
+    optimizers = {'wide': Adam, 'deepdense':Adam, 'deeptext':RAdam, 'deepimage':Adam}
+    schedulers = {'wide': StepLR(step_size=5), 'deepdense':StepLR(step_size=5), 'deeptext':MultiStepLR(milestones=[5,8]),
+        'deepimage':MultiStepLR(milestones=[5,8])}
+    mean = [0.406, 0.456, 0.485]  #BGR
+    std =  [0.225, 0.224, 0.229]  #BGR
+    transforms = [ToTensor, Normalize(mean=mean, std=std)]
+    callbacks = [EarlyStopping, ModelCheckpoint(filepath='model_weights/wd_out.pt')]
 
-    # initializers = {'wide': Normal, 'deepdense':Normal, 'deeptext':Normal, 'deepimage':Normal}
-    # optimizers = {'wide': Adam, 'deepdense':Adam, 'deeptext':RAdam, 'deepimage':Adam}
-    # schedulers = {'wide': StepLR(step_size=5), 'deepdense':StepLR(step_size=5), 'deeptext':MultiStepLR(milestones=[5,8]),
-    #     'deepimage':MultiStepLR(milestones=[5,8])}
-    # mean = [0.406, 0.456, 0.485]  #BGR
-    # std =  [0.225, 0.224, 0.229]  #BGR
-    # transforms = [ToTensor, Normalize(mean=mean, std=std)]
-    # callbacks = [EarlyStopping, ModelCheckpoint(filepath='model_weights/wd_out.pt')]
-
-    # model.compile(method='regression', initializers=initializers, optimizers=optimizers,
-    #     lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
-
-    # model.fit(X_wide=wd.wide, X_deep=wd.deepdense, X_text=wd.deeptext, X_img=wd.deepimage,
-    #     target=wd.target, n_epochs=1, batch_size=32, val_split=0.2)
+    model.compile(method='regression', initializers=initializers, optimizers=optimizers,
+        lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
+    model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images,
+        target=target, n_epochs=1, batch_size=32, val_split=0.2)
+    pdb.set_trace()
