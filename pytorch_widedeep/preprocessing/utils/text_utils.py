@@ -4,7 +4,7 @@ import html
 import os
 import re
 
-from ..wdtypes import *
+from ...wdtypes import *
 from .fastai_transforms import Tokenizer, Vocab
 from gensim.utils import tokenize
 

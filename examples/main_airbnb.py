@@ -9,8 +9,7 @@ from pytorch_widedeep.models import (Wide, DeepDense, DeepText, DeepImage,
     WideDeep)
 from pytorch_widedeep.initializers import *
 from pytorch_widedeep.callbacks import *
-from pytorch_widedeep.optimizers import *
-from pytorch_widedeep.lr_schedulers import *
+from pytorch_widedeep.optim import RAdam
 
 import pdb
 
@@ -69,10 +68,19 @@ if __name__ == '__main__':
     model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext,
         deepimage=deepimage)
 
+    wide_opt = torch.optim.Adam(model.wide.parameters())
+    deep_opt = torch.optim.Adam(model.deepdense.parameters())
+    text_opt = RAdam(model.deeptext.parameters())
+    img_opt  = RAdam(model.deepimage.parameters())
+
+    wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=5)
+    deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)
+    text_sch = torch.optim.lr_scheduler.StepLR(text_opt, step_size=5)
+    img_sch  = torch.optim.lr_scheduler.StepLR(img_opt, step_size=3)
+
+    optimizers = {'wide': wide_opt, 'deepdense':deep_opt, 'deeptext':text_opt, 'deepimage': img_opt}
+    schedulers = {'wide': wide_sch, 'deepdense':deep_sch, 'deeptext':text_sch, 'deepimage': img_sch}
     initializers = {'wide': Normal, 'deepdense':Normal, 'deeptext':Normal, 'deepimage':Normal}
-    optimizers = {'wide': Adam, 'deepdense':Adam, 'deeptext':RAdam, 'deepimage':Adam}
-    schedulers = {'wide': StepLR(step_size=5), 'deepdense':StepLR(step_size=5), 'deeptext':MultiStepLR(milestones=[5,8]),
-        'deepimage':MultiStepLR(milestones=[5,8])}
     mean = [0.406, 0.456, 0.485]  #BGR
     std =  [0.225, 0.224, 0.229]  #BGR
     transforms = [ToTensor, Normalize(mean=mean, std=std)]

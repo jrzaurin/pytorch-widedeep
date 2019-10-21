@@ -6,14 +6,15 @@ import warnings
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.validation import check_is_fitted
+from tqdm import tqdm
 
-from .wdtypes import *
-from .utils.deep_utils import label_encoder
+from ..wdtypes import *
+from .utils.dense_utils import *
 from .utils.text_utils import *
 from .utils.image_utils import *
 
 
-class DataProcessor(object):
+class BasePreprocessor(object):
 
     def __init__(self):
         pass
@@ -28,10 +29,10 @@ class DataProcessor(object):
         pass
 
 
-class WideProcessor(DataProcessor):
+class WidePreprocessor(BasePreprocessor):
     def __init__(self, wide_cols:List[str], crossed_cols=None,
         already_dummies:Optional[List[str]]=None):
-        super(WideProcessor, self).__init__()
+        super(WidePreprocessor, self).__init__()
         self.wide_cols = wide_cols
         self.crossed_cols = crossed_cols
         self.already_dummies = already_dummies
@@ -47,7 +48,7 @@ class WideProcessor(DataProcessor):
             crossed_colnames.append(colname)
         return df, crossed_colnames
 
-    def fit(self, df:pd.DataFrame)->DataProcessor:
+    def fit(self, df:pd.DataFrame)->BasePreprocessor:
         df_wide = df.copy()[self.wide_cols]
         if self.crossed_cols is not None:
             df_wide, crossed_colnames = self._cross_cols(df_wide)
@@ -79,14 +80,14 @@ class WideProcessor(DataProcessor):
         return self.fit(df).transform(df)
 
 
-class DeepProcessor(DataProcessor):
+class DeepPreprocessor(BasePreprocessor):
     def __init__(self,
         embed_cols:List[Union[str,Tuple[str,int]]]=None,
         continuous_cols:List[str]=None,
         already_standard:Optional[List[str]]=None,
         scale:bool=True,
         default_embed_dim:int=8):
-        super(DeepProcessor, self).__init__()
+        super(DeepPreprocessor, self).__init__()
 
         self.embed_cols=embed_cols
         self.continuous_cols=continuous_cols
@@ -113,7 +114,7 @@ class DeepProcessor(DataProcessor):
             else: self.standardize_cols = self.continuous_cols
         return df.copy()[self.continuous_cols]
 
-    def fit(self, df:pd.DataFrame)->DataProcessor:
+    def fit(self, df:pd.DataFrame)->BasePreprocessor:
         if self.embed_cols is not None:
             df_emb = self._prepare_embed(df)
             _, self.encoding_dict = label_encoder(df_emb, cols=df_emb.columns.tolist())
@@ -154,19 +155,19 @@ class DeepProcessor(DataProcessor):
         return self.fit(df).transform(df)
 
 
-class TextProcessor(DataProcessor):
-    """docstring for TextProcessor"""
+class TextPreprocessor(BasePreprocessor):
+    """docstring for TextPreprocessor"""
     def __init__(self, max_vocab:int=30000, min_freq:int=5,
         maxlen:int=80, word_vectors_path:Optional[str]=None,
         verbose:int=1):
-        super(TextProcessor, self).__init__()
+        super(TextPreprocessor, self).__init__()
         self.max_vocab = max_vocab
         self.min_freq = min_freq
         self.maxlen = maxlen
         self.word_vectors_path = word_vectors_path
         self.verbose = verbose
 
-    def fit(self, df:pd.DataFrame, text_col:str)->DataProcessor:
+    def fit(self, df:pd.DataFrame, text_col:str)->BasePreprocessor:
         text_col = text_col
         texts = df[text_col].tolist()
         tokens = get_texts(texts)
@@ -190,15 +191,15 @@ class TextProcessor(DataProcessor):
         return self.fit(df, text_col).transform(df, text_col)
 
 
-class ImageProcessor(DataProcessor):
-    """docstring for ImageProcessor"""
+class ImagePreprocessor(BasePreprocessor):
+    """docstring for ImagePreprocessor"""
     def __init__(self, width:int=224, height:int=224, verbose:int=1):
-        super(ImageProcessor, self).__init__()
+        super(ImagePreprocessor, self).__init__()
         self.width = width
         self.height = height
         self.verbose = verbose
 
-    def fit(self)->DataProcessor:
+    def fit(self)->BasePreprocessor:
         self.aap = AspectAwarePreprocessor(self.width, self.height)
         self.spp = SimplePreprocessor(self.width, self.height)
         return self

@@ -5,13 +5,13 @@ import torch
 import pytest
 
 from torch import nn
+from torch.optim.lr_scheduler import StepLR, CyclicLR
 from itertools import chain
 
 from pytorch_widedeep.models import Wide, DeepDense, DeepText, DeepImage, WideDeep
-from pytorch_widedeep.optimizers import Adam, RAdam, SGD, RMSprop
-from pytorch_widedeep.lr_schedulers import (StepLR, MultiStepLR, ExponentialLR,
-	ReduceLROnPlateau, CyclicLR, OneCycleLR)
 from pytorch_widedeep.callbacks import ModelCheckpoint, EarlyStopping, LRHistory
+from pytorch_widedeep.optim import RAdam
+
 
 # Wide array
 X_wide=np.random.choice(2, (100, 100), p = [0.8, 0.2])
@@ -35,11 +35,26 @@ target = np.random.choice(2, 100)
 ###############################################################################
 # Test that history saves the information adequately
 ###############################################################################
-optimizers_1 = { 'wide': Adam, 'deepdense': Adam}
-lr_schedulers_1 = { 'wide': StepLR(step_size=4), 'deepdense': CyclicLR(base_lr=0.001, max_lr=0.01, step_size_up=10, cycle_momentum=False)}
+wide = Wide(100, 1)
+deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
+    embed_input=embed_input, continuous_cols=colnames[-5:], output_dim=1)
+model = WideDeep(wide=wide, deepdense=deepdense)
 
-optimizers_2 = { 'wide': Adam, 'deepdense':RAdam}
-lr_schedulers_2 = {'wide': StepLR(step_size=4),'deepdense': StepLR(step_size=4)}
+wide_opt_1 = torch.optim.Adam(model.wide.parameters())
+deep_opt_1 = torch.optim.Adam(model.deepdense.parameters())
+wide_sch_1 = StepLR(wide_opt_1, step_size=4)
+deep_sch_1 = CyclicLR(deep_opt_1, base_lr=0.001, max_lr=0.01, step_size_up=10, cycle_momentum=False)
+optimizers_1 = {'wide': wide_opt_1, 'deepdense': deep_opt_1}
+lr_schedulers_1 = {'wide': wide_sch_1, 'deepdense': deep_sch_1}
+
+wide_opt_2 = torch.optim.Adam(model.wide.parameters())
+deep_opt_2 = RAdam(model.deepdense.parameters())
+wide_sch_2 = StepLR(wide_opt_2, step_size=4)
+deep_sch_2 = StepLR(deep_opt_2, step_size=4)
+optimizers_2 = { 'wide': wide_opt_2, 'deepdense':deep_opt_2}
+lr_schedulers_2 = {'wide': wide_sch_2,'deepdense': deep_sch_2}
+
+
 @pytest.mark.parametrize(
     'optimizers, schedulers, len_loss_output, len_lr_output',
     [
@@ -48,10 +63,6 @@ lr_schedulers_2 = {'wide': StepLR(step_size=4),'deepdense': StepLR(step_size=4)}
     ]
     )
 def test_history_callback(optimizers, schedulers, len_loss_output, len_lr_output):
-	wide = Wide(100, 1)
-	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
-	    embed_input=embed_input, continuous_cols=colnames[-5:], output_dim=1)
-	model = WideDeep(wide=wide, deepdense=deepdense)
 	model.compile(method='logistic', optimizers=optimizers, lr_schedulers=schedulers,
 		callbacks=[LRHistory], verbose=0)
 	model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, target=target, n_epochs=5)

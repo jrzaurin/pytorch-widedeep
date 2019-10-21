@@ -3,11 +3,9 @@ import pandas as pd
 import torch
 from pathlib import Path
 
-from pytorch_widedeep.preprocessing import WideProcessor, DeepProcessor
+from pytorch_widedeep.preprocessing import WidePreprocessor, DeepPreprocessor
 from pytorch_widedeep.models import Wide, DeepDense, WideDeep
 from pytorch_widedeep.initializers import *
-from pytorch_widedeep.optimizers import *
-from pytorch_widedeep.lr_schedulers import *
 from pytorch_widedeep.callbacks import *
 from pytorch_widedeep.metrics import *
 
@@ -34,9 +32,9 @@ if __name__ == '__main__':
     target = 'income_label'
 
     target = df[target].values
-    prepare_wide = WideProcessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+    prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
-    prepare_deep = DeepProcessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
+    prepare_deep = DeepPreprocessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
     X_deep = prepare_deep.fit_transform(df)
 
     wide = Wide(
@@ -51,11 +49,17 @@ if __name__ == '__main__':
         output_dim=1)
     model = WideDeep(wide=wide, deepdense=deepdense)
 
-    initializers = {'wide': KaimingNormal, 'deepdense':KaimingNormal}
-    optimizers = {'wide': RAdam, 'deepdense':RAdam }
-    schedulers = {'wide': StepLR(step_size=25), 'deepdense':StepLR(step_size=25)}
+    wide_opt = torch.optim.Adam(model.wide.parameters())
+    deep_opt = torch.optim.Adam(model.deepdense.parameters())
 
-    callbacks = [EarlyStopping, ModelCheckpoint(filepath='../model_weights/wd_out')]
+    wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=3)
+    deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=5)
+
+    optimizers = {'wide': wide_opt, 'deepdense':deep_opt}
+    schedulers = {'wide': wide_sch, 'deepdense':deep_sch}
+
+    initializers = {'wide': Normal, 'deepdense':Normal}
+    callbacks = [LRHistory, EarlyStopping, ModelCheckpoint(filepath='../model_weights/wd_out')]
     metrics = [BinaryAccuracy]
 
     model.compile(
@@ -70,7 +74,7 @@ if __name__ == '__main__':
         X_wide=X_wide,
         X_deep=X_deep,
         target=target,
-        n_epochs=50,
+        n_epochs=10,
         batch_size=256,
         val_split=0.2)
     pdb.set_trace()

@@ -12,7 +12,7 @@ class Initializer(object):
         raise NotImplementedError('Initializer must implement this method')
 
 
-class MultipleInitializers(object):
+class MultipleInitializer(object):
 
 	def __init__(self, initializers:Dict[str, Initializer], verbose=True):
 

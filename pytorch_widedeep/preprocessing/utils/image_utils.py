@@ -8,16 +8,10 @@ Credit for the code here to ADRIAN ROSEBROCK
 '''
 
 import numpy as np
-import pandas as pd
-import warnings
 import imutils
 import cv2
 
-from os import listdir
-from tqdm import tqdm
-from sklearn.utils.validation import check_is_fitted
-
-from ..wdtypes import *
+from ...wdtypes import *
 
 
 class AspectAwarePreprocessor:

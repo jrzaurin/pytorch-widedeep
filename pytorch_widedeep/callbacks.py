@@ -198,7 +198,7 @@ class ModelCheckpoint(Callback):
         self.epochs_since_last_save = 0
         self.max_save = max_save
 
-        root_dir = filepath.split("/")[:-1][0]
+        root_dir = ('/').join(filepath.split("/")[:-1])
         if not os.path.exists(root_dir):
             os.makedirs(root_dir)
 

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.preprocessing import WideProcessor
+from pytorch_widedeep.preprocessing import WidePreprocessor
 
 
 def create_test_dataset(input_type, with_crossed=True):
@@ -29,7 +29,7 @@ cross_cols = [('col1', 'col2')]
 
 df_letters, unique_letters = create_test_dataset(some_letters)
 df_numbers, unique_numbers = create_test_dataset(some_numbers)
-preprocessor1 = WideProcessor(wide_cols, cross_cols)
+preprocessor1 = WidePreprocessor(wide_cols, cross_cols)
 
 @pytest.mark.parametrize('input_df, expected_shape',
 	[
@@ -48,7 +48,7 @@ def test_preprocessor1(input_df, expected_shape):
 
 df_letters_wo_crossed, unique_letters_wo_crossed = create_test_dataset(some_letters, with_crossed=False)
 df_numbers_wo_crossed, unique_numbers_wo_crossed = create_test_dataset(some_numbers, with_crossed=False)
-preprocessor2 = WideProcessor(wide_cols)
+preprocessor2 = WidePreprocessor(wide_cols)
 
 @pytest.mark.parametrize('input_df, expected_shape',
 	[

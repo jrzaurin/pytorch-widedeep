@@ -1,6 +1,6 @@
 from torchvision.transforms import Compose
 
-from .wdtypes import *
+from ..wdtypes import *
 
 class MultipleTransforms(object):
 

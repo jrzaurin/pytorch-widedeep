@@ -4,11 +4,11 @@ import pytest
 import warnings
 
 from sklearn.datasets import fetch_20newsgroups
-from pytorch_widedeep.preprocessing import TextProcessor
+from pytorch_widedeep.preprocessing import TextPreprocessor
 
 texts = np.random.choice(fetch_20newsgroups().data, 10)
 df = pd.DataFrame({'texts':texts})
-processor = TextProcessor(min_freq=0)
+processor = TextPreprocessor(min_freq=0)
 X_text = processor.fit_transform(df, 'texts')
 
 ###############################################################################

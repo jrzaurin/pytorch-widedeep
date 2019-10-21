@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.utils.deep_utils import label_encoder
-from pytorch_widedeep.preprocessing import DeepProcessor
+from pytorch_widedeep.preprocessing.utils.dense_utils import label_encoder
+from pytorch_widedeep.preprocessing import DeepPreprocessor
 
 
 def create_test_dataset(input_type, input_type_2=None):
@@ -64,18 +64,18 @@ def test_label_encoder_with_custom_encoder(input_df, encoding_dict, output_df):
 	assert tmp_df.equals(output_df)
 
 ################################################################################
-# Test the DeepProcessor: only categorical columns to be represented with
+# Test the DeepPreprocessor: only categorical columns to be represented with
 # embeddings
 ###############################################################################
 
 cat_embed_cols = [('col1',5), ('col2',5)]
 
-preprocessor1 = DeepProcessor(cat_embed_cols)
+preprocessor1 = DeepPreprocessor(cat_embed_cols)
 X_letters = preprocessor1.fit_transform(df_letters)
 embed_input_letters = preprocessor1.embeddings_input
 decoding_dict_letters = {c: {k:v for v,k in preprocessor1.encoding_dict[c].items()} for c in preprocessor1.encoding_dict.keys()}
 
-preprocessor2 = DeepProcessor(cat_embed_cols)
+preprocessor2 = DeepPreprocessor(cat_embed_cols)
 X_numbers = preprocessor2.fit_transform(df_numbers)
 embed_input_numbers = preprocessor2.embeddings_input
 decoding_dict_numbers = {c: {k:v for v,k in preprocessor2.encoding_dict[c].items()} for c in preprocessor2.encoding_dict.keys()}
@@ -105,7 +105,7 @@ def test_prepare_deep_without_continous_columns(input_df, X_deep, embed_input, d
 
 
 ################################################################################
-# Test the DeepProcessor: only continouos columns
+# Test the DeepPreprocessor: only continouos columns
 ###############################################################################
 
 def test_prepare_deep_without_embedding_columns():
@@ -113,7 +113,7 @@ def test_prepare_deep_without_embedding_columns():
 	errors=[]
 	df_randint = pd.DataFrame(np.random.choice(np.arange(100), (100,2)))
 	df_randint.columns = ['col1', 'col2']
-	preprocessor3 = DeepProcessor(continuous_cols=['col1', 'col2'])
+	preprocessor3 = DeepPreprocessor(continuous_cols=['col1', 'col2'])
 
 	try:
 		X_randint = preprocessor3.fit_transform(df_randint)

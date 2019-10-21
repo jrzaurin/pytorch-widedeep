@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.preprocessing import ImageProcessor
+from pytorch_widedeep.preprocessing import ImagePreprocessor
 
 df = pd.DataFrame({'galaxies': ['galaxy1.png', 'galaxy2.png']})
 img_col = 'galaxies'
 imd_dir = 'images'
-processor = ImageProcessor()
+processor = ImagePreprocessor()
 X_imgs = processor.fit_transform(df, img_col, img_path=imd_dir)
 
 ###############################################################################

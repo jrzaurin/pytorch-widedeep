@@ -46,8 +46,6 @@ setup_kwargs = {
         "imutils",
         "torch",
         "torchvision",
-        "fastai",
-        # "opencv-python",
         "tqdm"],
     'classifiers': [
         dev_status[majorminor],
