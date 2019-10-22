@@ -41,10 +41,10 @@ def test_initializers_1():
 
 	wide = Wide(100, 1)
 	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
-	    embed_input=embed_input, continuous_cols=colnames[-5:], output_dim=1)
+	    embed_input=embed_input, continuous_cols=colnames[-5:])
 	deeptext = DeepText( vocab_size=vocab_size, embed_dim=32, padding_idx=0)
 	deepimage=DeepImage(pretrained=True)
-	model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage)
+	model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage, output_dim=1)
 	cmodel = c(model)
 
 	org_weights = []
@@ -69,9 +69,9 @@ def test_initializers_with_pattern():
 
 	wide = Wide(100, 1)
 	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
-	    embed_input=embed_input, continuous_cols=colnames[-5:], output_dim=1)
+	    embed_input=embed_input, continuous_cols=colnames[-5:])
 	deeptext = DeepText( vocab_size=vocab_size, embed_dim=32, padding_idx=0)
-	model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext)
+	model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, output_dim=1)
 	cmodel = c(model)
 	org_word_embed = []
 	for n,p in cmodel.named_parameters():

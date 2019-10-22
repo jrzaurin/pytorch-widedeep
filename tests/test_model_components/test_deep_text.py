@@ -19,7 +19,7 @@ model1 = DeepText(
     )
 def test_deep_test():
 	out = model1(torch.from_numpy(padded_sequences))
-	assert out.size(0)==100 and out.size(1)==1
+	assert out.size(0)==100 and out.size(1)==64
 
 ###############################################################################
 # With Pretrained Embeddings
@@ -31,7 +31,7 @@ model2 = DeepText(
     )
 def test_deep_test_pretrained():
 	out = model2(torch.from_numpy(padded_sequences))
-	assert out.size(0)==100 and out.size(1)==1
+	assert out.size(0)==100 and out.size(1)==64
 
 ###############################################################################
 # Make sure it throws a warning

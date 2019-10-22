@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pytorch_widedeep.preprocessing import WidePreprocessor, DeepPreprocessor
 from pytorch_widedeep.models import Wide, DeepDense, WideDeep
+from pytorch_widedeep.optim import RAdam
 from pytorch_widedeep.initializers import *
 from pytorch_widedeep.callbacks import *
 from pytorch_widedeep.metrics import *
@@ -36,7 +37,6 @@ if __name__ == '__main__':
     X_wide = prepare_wide.fit_transform(df)
     prepare_deep = DeepPreprocessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
     X_deep = prepare_deep.fit_transform(df)
-
     wide = Wide(
         wide_dim=X_wide.shape[1],
         output_dim=1)
@@ -45,20 +45,17 @@ if __name__ == '__main__':
         dropout=[0.5],
         deep_column_idx=prepare_deep.deep_column_idx,
         embed_input=prepare_deep.embeddings_input,
-        continuous_cols=continuous_cols,
-        output_dim=1)
+        continuous_cols=continuous_cols)
     model = WideDeep(wide=wide, deepdense=deepdense)
 
     wide_opt = torch.optim.Adam(model.wide.parameters())
-    deep_opt = torch.optim.Adam(model.deepdense.parameters())
-
+    deep_opt = RAdam(model.deepdense.parameters())
     wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=3)
     deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=5)
 
     optimizers = {'wide': wide_opt, 'deepdense':deep_opt}
     schedulers = {'wide': wide_sch, 'deepdense':deep_sch}
-
-    initializers = {'wide': Normal, 'deepdense':Normal}
+    initializers = {'wide': KaimingNormal, 'deepdense':XavierNormal}
     callbacks = [LRHistory, EarlyStopping, ModelCheckpoint(filepath='../model_weights/wd_out')]
     metrics = [BinaryAccuracy]
 

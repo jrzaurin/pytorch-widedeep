@@ -25,11 +25,7 @@ class MultipleInitializer(object):
 		self._initializers = instantiated_initializers
 
 	def apply(self, model:nn.Module):
-		children = list(model.children())
-		children_names = [child.__class__.__name__.lower() for child in children]
-		if not all([cn in children_names for cn in self._initializers.keys()]):
-			raise ValueError('Model name has to be one of: {}'.format(children_names))
-		for child, name in zip(children, children_names):
+		for name, child in model.named_children():
 			try:
 				self._initializers[name](child)
 			except:

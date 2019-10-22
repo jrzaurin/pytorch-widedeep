@@ -2,6 +2,8 @@ import torch
 
 from ..wdtypes import *
 
+from .deep_dense import dense_layer
+
 from torch import nn
 from torchvision import models
 
@@ -20,10 +22,12 @@ def conv_layer(ni:int, nf:int, ks:int=3, stride:int=1, maxpool:bool=True,
 class DeepImage(nn.Module):
 
     def __init__(self,
-        output_dim:int=1,
         pretrained:bool=True,
-        resnet=18,
-        freeze:Union[str,int]=6):
+        resnet:int=18,
+        freeze:Union[str,int]=6,
+        head_layers:Optional[List[int]] = None,
+        head_dropout:Optional[List[float]]=None,
+        head_batchnorm:Optional[bool] = False):
         super(DeepImage, self).__init__()
         """
         Standard image classifier/regressor using a pretrained network
@@ -39,6 +43,9 @@ class DeepImage(nn.Module):
         freeze=6 will freeze all but the last 2 Layers and AdaptiveAvgPool2d
         layer. If freeze='all' it freezes the entire network.
         """
+
+        self.head_layers = head_layers
+
         if pretrained:
             if resnet==18:
                 vision_model = models.resnet18(pretrained=True)
@@ -57,7 +64,7 @@ class DeepImage(nn.Module):
                     frozen_layers.append(layer)
                 self.backbone = nn.Sequential(*frozen_layers)
             if isinstance(freeze, int):
-                assert freeze < 8, 'freeze must be less than 8 when using resnet architectures'
+                assert freeze < 8, "freeze' must be less than 8 when using resnet architectures"
                 frozen_layers = []
                 trainable_layers = backbone_layers[freeze:]
                 for layer in backbone_layers[:freeze]:
@@ -74,14 +81,24 @@ class DeepImage(nn.Module):
                 conv_layer(128, 256, 1, maxpool=False),
                 conv_layer(256, 512, 1, maxpool=False, adaptiveavgpool=True),
                 )
-        self.dilinear = nn.Sequential(
-            nn.Linear(512, 256),
-            nn.Linear(256, 128),
-            nn.Linear(128, output_dim)
-            )
+
+        # the output_dim attribute will be used as input_dim when "merging" the models
+        self.output_dim = 512
+
+        if self.head_layers is not None:
+            self.head = nn.Sequential()
+            for i in range(1, len(head_layers)):
+                self.head.add_module(
+                    'dense_layer_{}'.format(i-1),
+                    dense_layer(head_layers[i-1], head_layers[i], head_dropout[i-1], head_batchnorm)
+                    )
+            self.output_dim = head_layers[-1]
 
     def forward(self, x:Tensor)->Tensor:
         x = self.backbone(x)
         x = x.view(x.size(0), -1)
-        out = self.dilinear(x)
-        return out
+        if self.head_layers is not None:
+            out = self.head(x)
+            return out
+        else:
+            return x

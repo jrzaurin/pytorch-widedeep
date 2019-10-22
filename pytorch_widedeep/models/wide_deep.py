@@ -15,10 +15,13 @@ from ._wd_dataset import WideDeepDataset
 from ._multiple_optimizer import MultipleOptimizer
 from ._multiple_lr_scheduler import MultipleLRScheduler
 from ._multiple_transforms import MultipleTransforms
+from .deep_dense import dense_layer
 
 from tqdm import tqdm,trange
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
+
+import pdb
 
 
 use_cuda = torch.cuda.is_available()
@@ -29,36 +32,83 @@ class WideDeep(nn.Module):
     def __init__(self,
         wide:nn.Module,
         deepdense:nn.Module,
+        output_dim:int=1,
         deeptext:Optional[nn.Module]=None,
-        deepimage:Optional[nn.Module]=None):
+        deepimage:Optional[nn.Module]=None,
+        deephead:Optional[nn.Module]=None,
+        head_layers:Optional[List]=None,
+        head_dropout:Optional[List]=None,
+        head_batchnorm:Optional[bool]=None):
 
         super(WideDeep, self).__init__()
+
+        # The main 5 components of the wide and deep assemble
         self.wide = wide
         self.deepdense = deepdense
         self.deeptext  = deeptext
         self.deepimage = deepimage
+        self.deephead = deephead
+
+        if self.deephead is None:
+            if head_layers is not None:
+                input_dim = self.deepdense.output_dim + self.deeptext.output_dim + self.deepimage.output_dim
+                head_layers = [input_dim] + head_layers
+                if not head_dropout: head_dropout = [0.] * (len(head_layers)-1)
+                self.deephead = nn.Sequential()
+                for i in range(1, len(head_layers)):
+                    self.deephead.add_module(
+                        'head_layer_{}'.format(i-1),
+                        dense_layer( head_layers[i-1], head_layers[i], head_dropout[i-1], head_batchnorm))
+                self.deephead.add_module('head_out', nn.Linear(head_layers[-1], output_dim))
+            else:
+                self.deepdense = nn.Sequential(
+                    self.deepdense,
+                    nn.Linear(self.deepdense.output_dim, output_dim))
+                if self.deeptext is not None:
+                    self.deeptext = nn.Sequential(
+                        self.deeptext,
+                        nn.Linear(self.deeptext.output_dim, output_dim))
+                if self.deepimage is not None:
+                    self.deepimage = nn.Sequential(
+                        self.deepimage,
+                        nn.Linear(self.deepimage.output_dim, output_dim))
 
     def forward(self, X:List[Dict[str,Tensor]])->Tensor:
+        # Wide output: direct connection to the output neuron(s)
         out = self.wide(X['wide'])
-        out.add_(self.deepdense(X['deepdense']))
-        if self.deeptext is not None:
-            out.add_(self.deeptext(X['deeptext']))
-        if self.deepimage is not None:
-            out.add_(self.deepimage(X['deepimage']))
-        return out
 
-    def compile(self,method:str,
+        # Deep output: either connected directly to the output neuron(s) or
+        # passed through a head first
+        if self.deephead:
+            deepside = self.deepdense(X['deepdense'])
+            if self.deeptext is not None:
+                deepside = torch.cat( [deepside, self.deeptext(X['deeptext'])], axis=1 )
+            if self.deepimage is not None:
+                deepside = torch.cat( [deepside, self.deepimage(X['deepimage'])], axis=1 )
+            deepside_out = self.head(deepside)
+            return out.add_(deepside_out)
+        else:
+            out.add_(self.deepdense(X['deepdense']))
+            if self.deeptext is not None:
+                out.add_(self.deeptext(X['deeptext']))
+            if self.deepimage is not None:
+                out.add_(self.deepimage(X['deepimage']))
+            return out
+
+    def compile(self,
+        method:str,
         initializers:Optional[Dict[str,Initializer]]=None,
         optimizers:Optional[Dict[str,Optimizer]]=None,
         global_optimizer:Optional[Optimizer]=None,
-        # param_groups:Optional[Union[List[Dict],Dict[str,List[Dict]]]]=None,
         lr_schedulers:Optional[Dict[str,LRScheduler]]=None,
         global_lr_scheduler:Optional[LRScheduler]=None,
         transforms:Optional[List[Transforms]]=None,
         callbacks:Optional[List[Callback]]=None,
         metrics:Optional[List[Metric]]=None,
         class_weight:Optional[Union[float,List[float],Tuple[float]]]=None,
-        with_focal_loss:bool=False, alpha:float=0.25, gamma:float=1,
+        with_focal_loss:bool=False,
+        alpha:float=0.25,
+        gamma:float=1,
         verbose=1):
 
         self.verbose = verbose
@@ -192,14 +242,18 @@ class WideDeep(nn.Module):
         elif step_location == 'on_epoch_end': self.lr_scheduler.step()
         else: pass
 
-    def _train_val_split(self, X_wide:Optional[np.ndarray]=None,
-        X_deep:Optional[np.ndarray]=None, X_text:Optional[np.ndarray]=None,
+    def _train_val_split(self,
+        X_wide:Optional[np.ndarray]=None,
+        X_deep:Optional[np.ndarray]=None,
+        X_text:Optional[np.ndarray]=None,
         X_img:Optional[np.ndarray]=None,
         X_train:Optional[Dict[str,np.ndarray]]=None,
         X_val:Optional[Dict[str,np.ndarray]]=None,
-        val_split:Optional[float]=None, target:Optional[np.ndarray]=None,
+        val_split:Optional[float]=None,
+        target:Optional[np.ndarray]=None,
         seed:int=1):
 
+        # No evaluation set
         if X_val is None and val_split is None:
             if X_train is not None:
                 X_wide, X_deep, target = X_train['X_wide'], X_train['X_deep'], X_train['target']
@@ -213,6 +267,7 @@ class WideDeep(nn.Module):
             train_set = WideDeepDataset(**X_train, transforms=self.transforms)
             eval_set = None
         else:
+            # evaluation set will be used. Either X_val or val_split are not None
             if X_val is not None:
                 if X_train is None:
                     X_train = {'X_wide':X_wide, 'X_deep': X_deep, 'target': target}
@@ -221,31 +276,40 @@ class WideDeep(nn.Module):
             else:
                 if X_train is not None:
                     X_wide, X_deep, target = X_train['X_wide'], X_train['X_deep'], X_train['target']
-                    if 'X_text' in X_train.keys():
-                        X_text = X_train['X_text']
-                    if 'X_img' in X_train.keys():
-                        X_img = X_train['X_img']
-                X_tr_wide, X_val_wide, X_tr_deep, X_val_deep, y_tr, y_val = train_test_split(X_wide, X_deep, target, test_size=val_split, random_state=seed)
+                    if 'X_text' in X_train.keys(): X_text = X_train['X_text']
+                    if 'X_img' in X_train.keys(): X_img = X_train['X_img']
+                X_tr_wide, X_val_wide, X_tr_deep, X_val_deep, y_tr, y_val = train_test_split(X_wide,
+                    X_deep, target, test_size=val_split, random_state=seed)
                 X_train = {'X_wide':X_tr_wide, 'X_deep': X_tr_deep, 'target': y_tr}
                 X_val = {'X_wide':X_val_wide, 'X_deep': X_val_deep, 'target': y_val}
                 try:
-                    X_tr_text, X_val_text = train_test_split(X_text, test_size=val_split, random_state=seed)
+                    X_tr_text, X_val_text = train_test_split(X_text, test_size=val_split,
+                        random_state=seed)
                     X_train.update({'X_text': X_tr_text}), X_val.update({'X_text': X_val_text})
                 except: pass
                 try:
-                    X_tr_img, X_val_img = train_test_split(X_img, test_size=val_split, random_state=seed)
+                    X_tr_img, X_val_img = train_test_split(X_img, test_size=val_split,
+                        random_state=seed)
                     X_train.update({'X_img': X_tr_img}), X_val.update({'X_img': X_val_img})
                 except: pass
+            # Train and validation dictionaries have been built
             train_set = WideDeepDataset(**X_train, transforms=self.transforms)
             eval_set = WideDeepDataset(**X_val, transforms=self.transforms)
         return train_set, eval_set
 
-    def fit(self, X_wide:Optional[np.ndarray]=None, X_deep:Optional[np.ndarray]=None,
-        X_text:Optional[np.ndarray]=None, X_img:Optional[np.ndarray]=None,
+    def fit(self,
+        X_wide:Optional[np.ndarray]=None,
+        X_deep:Optional[np.ndarray]=None,
+        X_text:Optional[np.ndarray]=None,
+        X_img:Optional[np.ndarray]=None,
         X_train:Optional[Dict[str,np.ndarray]]=None,
         X_val:Optional[Dict[str,np.ndarray]]=None,
-        val_split:Optional[float]=None, target:Optional[np.ndarray]=None,
-        n_epochs:int=1, batch_size:int=32, patience:int=10, seed:int=1):
+        val_split:Optional[float]=None,
+        target:Optional[np.ndarray]=None,
+        n_epochs:int=1,
+        batch_size:int=32,
+        patience:int=10,
+        seed:int=1):
 
         if X_train is None and (X_wide is None or X_deep is None or target is None):
             raise ValueError(
@@ -367,15 +431,13 @@ class WideDeep(nn.Module):
                 return np.vstack(preds_l)
 
     def get_embeddings(self, col_name:str,
-        cat_embed_encoding_dict:Dict[str,Dict[str,int]]) -> Dict[str,np.ndarray]:
-
-        params = list(self.named_parameters())
-        emb_layers = [p for p in params if 'emb_layer' in p[0]]
-        emb_layer  = [layer for layer in emb_layers if col_name in layer[0]][0]
-        embeddings = emb_layer[1].cpu().data.numpy()
-        col_label_encoding = cat_embed_encoding_dict[col_name]
-        inv_dict = {v:k for k,v in col_label_encoding.items()}
-        embeddings_dict = {}
-        for idx,value in inv_dict.items():
-            embeddings_dict[value] = embeddings[idx]
-        return embeddings_dict
+        cat_encoding_dict:Dict[str,Dict[str,int]]) -> Dict[str,np.ndarray]:
+        for n,p in self.named_parameters():
+            if 'embed_layers' in n and col_name in n:
+                embed_mtx = p.cpu().data.numpy()
+        encoding_dict = cat_encoding_dict[col_name]
+        inv_encoding_dict = {v:k for k,v in encoding_dict.items()}
+        cat_embed_dict = {}
+        for idx,value in inv_encoding_dict.items():
+            cat_embed_dict[value] = embed_mtx[idx]
+        return cat_embed_dict

@@ -3,8 +3,8 @@ import pandas as pd
 import os
 import torch
 
-from pytorch_widedeep.preprocessing import (WideProcessor, DeepProcessor,
-    TextProcessor, ImageProcessor)
+from pytorch_widedeep.preprocessing import (WidePreprocessor, DeepPreprocessor,
+    TextPreprocessor, ImagePreprocessor)
 from pytorch_widedeep.models import (Wide, DeepDense, DeepText, DeepImage,
     WideDeep)
 from pytorch_widedeep.initializers import *
@@ -34,14 +34,14 @@ if __name__ == '__main__':
     target = 'yield'
 
     target = df[target].values
-    prepare_wide = WideProcessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+    prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
-    prepare_deep = DeepProcessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
+    prepare_deep = DeepPreprocessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
     X_deep = prepare_deep.fit_transform(df)
 
-    text_processor = TextProcessor(word_vectors_path=word_vectors_path)
+    text_processor = TextPreprocessor(word_vectors_path=word_vectors_path)
     X_text = text_processor.fit_transform(df, text_col)
-    image_processor = ImageProcessor()
+    image_processor = ImagePreprocessor()
     X_images = image_processor.fit_transform(df, img_col, img_path)
 
     wide = Wide(
@@ -52,8 +52,7 @@ if __name__ == '__main__':
         dropout=[0.5],
         deep_column_idx=prepare_deep.deep_column_idx,
         embed_input=prepare_deep.embeddings_input,
-        continuous_cols=continuous_cols,
-        output_dim=1)
+        continuous_cols=continuous_cols)
     deeptext = DeepText(
         vocab_size=len(text_processor.vocab.itos),
         hidden_dim=64,
@@ -61,26 +60,29 @@ if __name__ == '__main__':
         rnn_dropout=0.5,
         spatial_dropout=0.5,
         padding_idx=1,
-        output_dim=1,
         embedding_matrix=text_processor.embedding_matrix
         )
-    deepimage = DeepImage()
+    deepimage = DeepImage(pretrained=True, head_layers=None)
     model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext,
-        deepimage=deepimage)
+        deepimage=deepimage, head_layers=[256, 128, 64])
+    # pdb.set_trace()
 
     wide_opt = torch.optim.Adam(model.wide.parameters())
     deep_opt = torch.optim.Adam(model.deepdense.parameters())
     text_opt = RAdam(model.deeptext.parameters())
     img_opt  = RAdam(model.deepimage.parameters())
+    head_opt = torch.optim.Adam(model.head.parameters())
 
     wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=5)
     deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)
     text_sch = torch.optim.lr_scheduler.StepLR(text_opt, step_size=5)
     img_sch  = torch.optim.lr_scheduler.StepLR(img_opt, step_size=3)
+    head_sch = torch.optim.lr_scheduler.StepLR(head_opt, step_size=5)
 
-    optimizers = {'wide': wide_opt, 'deepdense':deep_opt, 'deeptext':text_opt, 'deepimage': img_opt}
-    schedulers = {'wide': wide_sch, 'deepdense':deep_sch, 'deeptext':text_sch, 'deepimage': img_sch}
-    initializers = {'wide': Normal, 'deepdense':Normal, 'deeptext':Normal, 'deepimage':Normal}
+    optimizers = {'wide': wide_opt, 'deepdense':deep_opt, 'deeptext':text_opt, 'deepimage': img_opt, 'head': head_opt}
+    schedulers = {'wide': wide_sch, 'deepdense':deep_sch, 'deeptext':text_sch, 'deepimage': img_sch, 'head': head_sch}
+    initializers = {'wide': KaimingNormal, 'deepdense':KaimingNormal, 'deeptext':KaimingNormal, 'deepimage':KaimingNormal,
+    'head': KaimingNormal}
     mean = [0.406, 0.456, 0.485]  #BGR
     std =  [0.225, 0.224, 0.229]  #BGR
     transforms = [ToTensor, Normalize(mean=mean, std=std)]

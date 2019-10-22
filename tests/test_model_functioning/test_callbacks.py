@@ -37,7 +37,7 @@ target = np.random.choice(2, 100)
 ###############################################################################
 wide = Wide(100, 1)
 deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
-    embed_input=embed_input, continuous_cols=colnames[-5:], output_dim=1)
+    embed_input=embed_input, continuous_cols=colnames[-5:])
 model = WideDeep(wide=wide, deepdense=deepdense)
 
 wide_opt_1 = torch.optim.Adam(model.wide.parameters())
@@ -81,7 +81,7 @@ def test_history_callback(optimizers, schedulers, len_loss_output, len_lr_output
 def test_early_stop():
 	wide = Wide(100, 1)
 	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
-	    embed_input=embed_input, continuous_cols=colnames[-5:], output_dim=1)
+	    embed_input=embed_input, continuous_cols=colnames[-5:])
 	model = WideDeep(wide=wide, deepdense=deepdense)
 	model.compile(method='logistic', callbacks=[EarlyStopping(min_delta=0.1, patience=3,
 		restore_best_weights=True, verbose=1)], verbose=1)
@@ -103,7 +103,7 @@ def test_early_stop():
 def test_model_checkpoint(save_best_only, max_save, n_files):
 	wide = Wide(100, 1)
 	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
-	    embed_input=embed_input, continuous_cols=colnames[-5:], output_dim=1)
+	    embed_input=embed_input, continuous_cols=colnames[-5:])
 	model = WideDeep(wide=wide, deepdense=deepdense)
 	model.compile(method='logistic', callbacks=[ModelCheckpoint("weights/test_weights",
 		save_best_only=save_best_only, max_save=max_save)], verbose=0)

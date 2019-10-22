@@ -6,6 +6,7 @@ import warnings
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.validation import check_is_fitted
+from scipy.sparse import csc_matrix
 from tqdm import tqdm
 
 from ..wdtypes import *
@@ -31,12 +32,12 @@ class BasePreprocessor(object):
 
 class WidePreprocessor(BasePreprocessor):
     def __init__(self, wide_cols:List[str], crossed_cols=None,
-        already_dummies:Optional[List[str]]=None):
+        already_dummies:Optional[List[str]]=None, sparse=False):
         super(WidePreprocessor, self).__init__()
         self.wide_cols = wide_cols
         self.crossed_cols = crossed_cols
         self.already_dummies = already_dummies
-        self.one_hot_enc = OneHotEncoder(sparse=False)
+        self.one_hot_enc = OneHotEncoder(sparse=sparse)
 
     def _cross_cols(self, df:pd.DataFrame):
         crossed_colnames = []
@@ -63,7 +64,7 @@ class WidePreprocessor(BasePreprocessor):
             self.one_hot_enc.fit(df_wide[self.wide_crossed_cols])
         return self
 
-    def transform(self, df:pd.DataFrame)->np.ndarray:
+    def transform(self, df:pd.DataFrame)->Union[sparse_matrix, np.ndarray]:
         check_is_fitted(self.one_hot_enc, 'categories_')
         df_wide = df.copy()[self.wide_cols]
         if self.crossed_cols is not None:
@@ -76,7 +77,7 @@ class WidePreprocessor(BasePreprocessor):
         else:
             return (self.one_hot_enc.transform(df_wide[self.wide_crossed_cols]))
 
-    def fit_transform(self, df:pd.DataFrame)->np.ndarray:
+    def fit_transform(self, df:pd.DataFrame)->Union[sparse_matrix, np.ndarray]:
         return self.fit(df).transform(df)
 
 
@@ -84,9 +85,9 @@ class DeepPreprocessor(BasePreprocessor):
     def __init__(self,
         embed_cols:List[Union[str,Tuple[str,int]]]=None,
         continuous_cols:List[str]=None,
-        already_standard:Optional[List[str]]=None,
         scale:bool=True,
-        default_embed_dim:int=8):
+        default_embed_dim:int=8,
+        already_standard:Optional[List[str]]=None):
         super(DeepPreprocessor, self).__init__()
 
         self.embed_cols=embed_cols
@@ -96,7 +97,7 @@ class DeepPreprocessor(BasePreprocessor):
         self.default_embed_dim=default_embed_dim
 
         assert (self.embed_cols is not None) or (self.continuous_cols is not None), \
-        'Either the embedding columns or continuous columns must not be passed'
+        "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
 
     def _prepare_embed(self, df:pd.DataFrame)->pd.DataFrame:
         if isinstance(self.embed_cols[0], Tuple):
@@ -156,7 +157,6 @@ class DeepPreprocessor(BasePreprocessor):
 
 
 class TextPreprocessor(BasePreprocessor):
-    """docstring for TextPreprocessor"""
     def __init__(self, max_vocab:int=30000, min_freq:int=5,
         maxlen:int=80, word_vectors_path:Optional[str]=None,
         verbose:int=1):
@@ -192,7 +192,7 @@ class TextPreprocessor(BasePreprocessor):
 
 
 class ImagePreprocessor(BasePreprocessor):
-    """docstring for ImagePreprocessor"""
+
     def __init__(self, width:int=224, height:int=224, verbose:int=1):
         super(ImagePreprocessor, self).__init__()
         self.width = width

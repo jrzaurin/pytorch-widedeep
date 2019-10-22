@@ -37,9 +37,8 @@ def test_focal_loss(X_wide, X_deep, target, method, output_dim, probs_dim):
 	    dropout=[0.5],
 	    deep_column_idx=deep_column_idx,
 	    embed_input=embed_input,
-	    continuous_cols=colnames[-5:],
-	    output_dim=output_dim)
-	model = WideDeep(wide=wide, deepdense=deepdense)
+	    continuous_cols=colnames[-5:])
+	model = WideDeep(wide=wide, deepdense=deepdense, output_dim=output_dim)
 	model.compile(method=method, verbose=0, with_focal_loss=True)
 	model.fit(X_wide = X_wide, X_deep = X_deep, target=target)
 	probs = model.predict_proba(X_wide=X_wide, X_deep=X_deep)

@@ -47,9 +47,8 @@ def test_fit_methods(X_wide, X_deep, target, method, X_wide_test, X_deep_test, X
         dropout=[0.5],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,
-        continuous_cols=colnames[-5:],
-        output_dim=output_dim)
-    model = WideDeep(wide=wide, deepdense=deepdense)
+        continuous_cols=colnames[-5:])
+    model = WideDeep(wide=wide, deepdense=deepdense, output_dim=output_dim)
     model.compile(method=method, verbose=0)
     model.fit(
         X_wide = X_wide,

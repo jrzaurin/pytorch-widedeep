@@ -21,12 +21,11 @@ model1 = DeepDense(
     hidden_layers=[32,16],
     dropout=[0.5],
     deep_column_idx={k:v for v,k in enumerate(colnames[:5])},
-    embed_input=embed_input,
-    output_dim=1)
+    embed_input=embed_input)
 
 def test_deep_dense_embed():
 	out = model1(X_deep_emb)
-	assert out.size(0) == 10 and out.size(1) == 1
+	assert out.size(0) == 10 and out.size(1) == 16
 
 ###############################################################################
 # Continous cols but NO embeddings
@@ -36,12 +35,11 @@ model2 = DeepDense(
 hidden_layers=[32,16],
 dropout=[0.5],
 deep_column_idx={k:v for v,k in enumerate(colnames[5:])},
-continuous_cols=continuous_cols,
-output_dim=1)
+continuous_cols=continuous_cols)
 
 def test_deep_dense_cont():
 	out = model2(X_deep_cont)
-	assert out.size(0) == 10 and out.size(1) == 1
+	assert out.size(0) == 10 and out.size(1) == 16
 
 ###############################################################################
 # Continous Cols and Embeddings
@@ -51,9 +49,8 @@ hidden_layers=[32,16],
 dropout=[0.5],
 deep_column_idx={k:v for v,k in enumerate(colnames)},
 embed_input=embed_input,
-continuous_cols=continuous_cols,
-output_dim=1)
+continuous_cols=continuous_cols)
 
 def test_deep_dense():
 	out = model3(X_deep)
-	assert out.size(0) == 10 and out.size(1) == 1
+	assert out.size(0) == 10 and out.size(1) == 16

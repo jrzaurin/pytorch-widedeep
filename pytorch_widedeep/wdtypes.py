@@ -1,4 +1,6 @@
 import sys
+import scipy
+
 from torch.nn import Module
 from torch import Tensor
 from torchvision.transforms import *
@@ -8,6 +10,9 @@ from torch.optim.lr_scheduler import _LRScheduler
 from pathlib import PosixPath
 from typing import (List, Any, Union, Dict, Callable, Optional, Tuple,
 	Generator, Collection, Iterable)
+
+
+sparse_matrix = Union[scipy.sparse.csr.csr_matrix]
 
 SimpleNamespace = type(sys.implementation)
 ListRules = Collection[Callable[[str],str]]

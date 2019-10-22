@@ -148,7 +148,6 @@ class LRHistory(Callback):
                 for group_idx, group in enumerate(self.model.optimizer.param_groups):
                     self.model.lr_history.setdefault(
                         ("_").join(['lr', str(group_idx)]),[]).append(group['lr'])
-        else: pass
 
     def on_batch_end(self, batch:int, logs:Optional[Dict]=None):
         if self.model.lr_scheduler:
@@ -275,7 +274,7 @@ class EarlyStopping(Callback):
     Stop training when a monitored quantity has stopped improving.
     """
 
-    def __init__(self, monitor:str='val_loss', min_delta:int=0, patience:int=0,
+    def __init__(self, monitor:str='val_loss', min_delta:int=0, patience:int=10,
         verbose:int=0,mode:str='auto', baseline:Optional[float]=None,
         restore_best_weights:bool=False):
 

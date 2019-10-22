@@ -6,8 +6,10 @@ from torch.utils.data import Dataset
 
 from ..wdtypes import *
 
+import pdb
+
 class WideDeepDataset(Dataset):
-    def __init__(self, X_wide:np.ndarray, X_deep:np.ndarray,
+    def __init__(self, X_wide:Union[np.ndarray, sparse_matrix], X_deep:np.ndarray,
         target:Optional[np.ndarray]=None, X_text:Optional[np.ndarray]=None,
         X_img:Optional[np.ndarray]=None, transforms:Optional=None):
 
@@ -22,8 +24,9 @@ class WideDeepDataset(Dataset):
         self.Y = target
 
     def __getitem__(self, idx:int):
-
-        X = Bunch(wide=self.X_wide[idx])
+        if isinstance(self.X_wide, sparse_matrix):
+            X = Bunch(wide=np.array(self.X_wide[idx].todense()).squeeze())
+        else: X = Bunch(wide=self.X_wide[idx])
         X.deepdense= self.X_deep[idx]
         if self.X_text is not None:
             X.deeptext = self.X_text[idx]
@@ -44,4 +47,4 @@ class WideDeepDataset(Dataset):
             return X
 
     def __len__(self):
-        return len(self.X_wide)
+        return len(self.X_deep)

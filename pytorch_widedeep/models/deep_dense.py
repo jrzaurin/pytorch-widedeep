@@ -25,14 +25,12 @@ class DeepDense(nn.Module):
     def __init__(self,
         deep_column_idx:Dict[str,int],
         hidden_layers:List[int],
-        dropout:List[float]=0.,
+        dropout:Optional[List[float]]=None,
+        batchnorm:Optional[bool]=None,
         embed_input:Optional[List[Tuple[str,int,int]]]=None,
-        continuous_cols:Optional[List[str]]=None,
-        batchnorm:bool=False,
-        output_dim:int=1):
+        continuous_cols:Optional[List[str]]=None):
 
         super(DeepDense, self).__init__()
-
         self.embed_input = embed_input
         self.continuous_cols = continuous_cols
         self.deep_column_idx = deep_column_idx
@@ -52,15 +50,16 @@ class DeepDense(nn.Module):
         # Dense Layers
         input_dim = emb_inp_dim + cont_inp_dim
         hidden_layers = [input_dim] + hidden_layers
-        dropout = [0.0] + dropout
+        dropout = [0.] + dropout if dropout is not None else [0.]*(len(hidden_layers)-1)
+        batchnorm = batchnorm if batchnorm is not None else False
         self.dense = nn.Sequential()
         for i in range(1, len(hidden_layers)):
             self.dense.add_module(
                 'dense_layer_{}'.format(i-1),
                 dense_layer( hidden_layers[i-1], hidden_layers[i], dropout[i-1], batchnorm))
 
-        # Last Linear (Deep Dense Linear ddlinear)
-        self.dense.add_module('ddlinear', nn.Linear(hidden_layers[-1], output_dim))
+        # the output_dim attribute will be used as input_dim when "merging" the models
+        self.output_dim = hidden_layers[-1]
 
     def forward(self, X:Tensor)->Tensor:
         if self.embed_input is not None:
