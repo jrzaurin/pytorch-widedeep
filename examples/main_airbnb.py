@@ -49,7 +49,7 @@ if __name__ == '__main__':
         output_dim=1)
     deepdense = DeepDense(
         hidden_layers=[64,32],
-        dropout=[0.5],
+        dropout=[0.2,0.2],
         deep_column_idx=prepare_deep.deep_column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols)
@@ -58,31 +58,26 @@ if __name__ == '__main__':
         hidden_dim=64,
         n_layers=3,
         rnn_dropout=0.5,
-        spatial_dropout=0.5,
         padding_idx=1,
         embedding_matrix=text_processor.embedding_matrix
         )
     deepimage = DeepImage(pretrained=True, head_layers=None)
     model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext,
-        deepimage=deepimage, head_layers=[256, 128, 64])
-    # pdb.set_trace()
+        deepimage=deepimage)
 
     wide_opt = torch.optim.Adam(model.wide.parameters())
     deep_opt = torch.optim.Adam(model.deepdense.parameters())
     text_opt = RAdam(model.deeptext.parameters())
     img_opt  = RAdam(model.deepimage.parameters())
-    head_opt = torch.optim.Adam(model.head.parameters())
 
     wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=5)
     deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)
     text_sch = torch.optim.lr_scheduler.StepLR(text_opt, step_size=5)
     img_sch  = torch.optim.lr_scheduler.StepLR(img_opt, step_size=3)
-    head_sch = torch.optim.lr_scheduler.StepLR(head_opt, step_size=5)
 
-    optimizers = {'wide': wide_opt, 'deepdense':deep_opt, 'deeptext':text_opt, 'deepimage': img_opt, 'head': head_opt}
-    schedulers = {'wide': wide_sch, 'deepdense':deep_sch, 'deeptext':text_sch, 'deepimage': img_sch, 'head': head_sch}
-    initializers = {'wide': KaimingNormal, 'deepdense':KaimingNormal, 'deeptext':KaimingNormal, 'deepimage':KaimingNormal,
-    'head': KaimingNormal}
+    optimizers = {'wide': wide_opt, 'deepdense':deep_opt, 'deeptext':text_opt, 'deepimage': img_opt}
+    schedulers = {'wide': wide_sch, 'deepdense':deep_sch, 'deeptext':text_sch, 'deepimage': img_sch}
+    initializers = {'wide': KaimingNormal, 'deepdense':KaimingNormal, 'deeptext':KaimingNormal, 'deepimage':KaimingNormal}
     mean = [0.406, 0.456, 0.485]  #BGR
     std =  [0.225, 0.224, 0.229]  #BGR
     transforms = [ToTensor, Normalize(mean=mean, std=std)]

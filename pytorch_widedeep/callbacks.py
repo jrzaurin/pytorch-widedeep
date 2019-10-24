@@ -132,7 +132,9 @@ class History(Callback):
 
 
 class LRHistory(Callback):
-
+    def __init__(self, n_epochs):
+        super(LRHistory, self).__init__()
+        self.n_epochs = n_epochs
 
     def on_epoch_begin(self, epoch:int, logs:Optional[Dict]=None):
         if epoch==0 and self.model.lr_scheduler:
@@ -165,7 +167,7 @@ class LRHistory(Callback):
                         ("_").join(['lr', str(group_idx)]),[]).append(group['lr'])
 
     def on_epoch_end(self, epoch:int, logs:Optional[Dict]=None):
-        if self.model.lr_scheduler:
+        if epoch != (self.n_epochs-1) and self.model.lr_scheduler:
             if self.model.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
                 for model_name, opt in self.model.optimizer._optimizers.items():
                     if model_name in self.model.lr_scheduler._schedulers:

@@ -8,7 +8,7 @@ way I avoid the numerous fastai dependencies.
 Credit for the code here to Jeremy Howard and the fastai team
 '''
 
-from ...wdtypes import *
+from ..wdtypes import *
 
 import sys
 import os

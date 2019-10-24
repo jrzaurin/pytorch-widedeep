@@ -11,7 +11,7 @@ import numpy as np
 import imutils
 import cv2
 
-from ...wdtypes import *
+from ..wdtypes import *
 
 
 class AspectAwarePreprocessor:

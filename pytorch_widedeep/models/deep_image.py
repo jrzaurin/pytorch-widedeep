@@ -20,6 +20,52 @@ def conv_layer(ni:int, nf:int, ks:int=3, stride:int=1, maxpool:bool=True,
 
 
 class DeepImage(nn.Module):
+    r"""
+    Standard image classifier/regressor using a pretrained network freezing
+    some of the first layers, or all layers. I use Resnets which have 9
+    "components" before the last dense layers.
+    The first 4 are: conv->batchnorm->relu->maxpool.
+    After that we have 4 additional 'layers' (resnet blocks) (so 4+4=8)
+    comprised by a series of convolutions and then the final AdaptiveAvgPool2d
+    (8+1=9). The parameter freeze sets the layers to be frozen. For example,
+    freeze=6 will freeze all but the last 2 Layers and AdaptiveAvgPool2d
+    layer. If freeze='all' it freezes the entire network. In addition, there
+    is the option to add a Fully Connected (FC) set of dense layers (FC-Head,
+    referred as 'imagehead') on top of the stack of RNNs
+
+    Parameters
+    ----------
+    pretrained: boolean that indicates whether or not we use a pretrained Resnet network
+        or a series of conv layers (see conv_layer function)
+    resnet: int indicating the resnet architecture. One of 18, 34 or 50
+    freeze: int or string indicating the number of layers to freeze. If int
+        must be less than 8
+    head_layers: optional list with the sizes of the stacked dense layers in the head
+        e.g: [128, 64]
+    head_dropout: optional list with the dropout between the dense layers.
+        e.g: [0.5, 0.5].
+    head_batchnorm: Optional Boolean indicating whether or not to include batch
+        normalizatin in the dense layers that form the imagehead
+
+    Attributes
+    ----------
+    backbone: Sequential stack of CNNs comprising the 'backbone' of the network
+    imagehead: Sequential stack of dense layers comprising the FC-Head (aka imagehead)
+    output_dim: integer containing the output dimension of the model. This is a
+        required attribute neccesary to build the WideDeep class
+
+    Example
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import DeepImage
+    >>> X_img = torch.rand((2,3,224,224))
+    >>> model = DeepImage(head_layers=[512, 64, 8])
+    >>> model(X_img)
+    tensor([[ 7.7234e-02,  8.0923e-02,  2.3077e-01, -5.1122e-03, -4.3018e-03,
+              3.1193e-01,  3.0780e-01,  6.5098e-01],
+            [ 4.6191e-02,  6.7856e-02, -3.0163e-04, -3.7670e-03, -2.1437e-03,
+              1.5416e-01,  3.9227e-01,  5.5048e-01]], grad_fn=<LeakyReluBackward1>)
+    """
 
     def __init__(self,
         pretrained:bool=True,
@@ -29,20 +75,6 @@ class DeepImage(nn.Module):
         head_dropout:Optional[List[float]]=None,
         head_batchnorm:Optional[bool] = False):
         super(DeepImage, self).__init__()
-        """
-        Standard image classifier/regressor using a pretrained network
-        freezing some of the  first layers (or all layers).
-
-        I use Resnets which have 9 "components" before the last dense layers.
-        The first 4 are: conv->batchnorm->relu->maxpool.
-
-        After that we have 4 additional 'layers' (so 4+4=8) comprised by a
-        series of convolutions and then the final AdaptiveAvgPool2d (8+1=9).
-
-        The parameter freeze sets the last layer to be frozen. For example,
-        freeze=6 will freeze all but the last 2 Layers and AdaptiveAvgPool2d
-        layer. If freeze='all' it freezes the entire network.
-        """
 
         self.head_layers = head_layers
 
@@ -86,9 +118,14 @@ class DeepImage(nn.Module):
         self.output_dim = 512
 
         if self.head_layers is not None:
-            self.head = nn.Sequential()
+            assert self.head_layers[0]==self.output_dim, (
+                "The output dimension from the backbone ({}) is not consistent with "
+                "the expected input dimension ({}) of the fc-head".format(
+                    self.output_dim, self.head_layers[0]))
+            if not head_dropout: head_dropout = [0.]*len(head_layers)
+            self.imagehead = nn.Sequential()
             for i in range(1, len(head_layers)):
-                self.head.add_module(
+                self.imagehead.add_module(
                     'dense_layer_{}'.format(i-1),
                     dense_layer(head_layers[i-1], head_layers[i], head_dropout[i-1], head_batchnorm)
                     )
@@ -98,7 +135,7 @@ class DeepImage(nn.Module):
         x = self.backbone(x)
         x = x.view(x.size(0), -1)
         if self.head_layers is not None:
-            out = self.head(x)
+            out = self.imagehead(x)
             return out
         else:
             return x

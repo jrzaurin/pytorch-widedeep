@@ -28,7 +28,85 @@ use_cuda = torch.cuda.is_available()
 
 
 class WideDeep(nn.Module):
+    r""" Main collector class to combine all Wide, DeepDense, DeepText and
+    DeepImage models. There are two options to combine these models.
+    1) Directly connecting the output of the models to an ouput neuron(s).
+    2) Adding a FC-Head on top of the deep models. This FC-Head will combine
+    the output form the DeepDense, DeepText and DeepImage and will be then
+    connected to the output neuron(s)
 
+    Parameters
+    ----------
+    wide: wide model. I recommend using the Wide class in this package.
+        However, can a custom model as long as is  consistent with the
+        required architecture.
+    deepdense: deep dense model consisting in a series of categorical features
+        represented by embeddings combined with numerical (aka continuous)
+        features. I recommend using the DeepDense class in this package.
+        However, a custom model as long as is  consistent with the required
+        architecture.
+    deeptext: optional model for the text input. Must be an object of class
+        DeepText or a custom model as long as is consistent with the required
+        architecture.
+    deepimage: optional model for the images input. Must be an object of class
+        DeepImage or a custom model as long as is consistent with the required
+        architecture.
+    deephead: optional dense model consisting in a stack of dense layers.
+    head_layers: optional list with the sizes of the stacked dense layers in
+        the fc-head e.g: [128, 64]
+    head_dropout: optional list with the dropout between the dense layers.
+        e.g: [0.5, 0.5]
+    head_batchnorm: Optional Boolean indicating whether or not to include batch
+        normalizatin in the dense layers that form the texthead
+    output_dim: int size of the final layer. 1 for regression and binary
+        classification or 'n_class' for multiclass classification
+
+    ** While I recommend using the Wide and DeepDense classes within this
+    package when building the corresponding model components, it is very likely
+    that the user will want to use custom text and image models. Simply, build
+    them and pass them as the corresponding parameters. Note that the custom
+    models must return a last layer of activations (i.e. not the final prediction)
+    so that  these activations are collected by WideDeep and combined accordingly.
+    In  addition, the classes/models must also contain an attribute 'output_dim'
+    with the size of these last layers of activations.
+
+    Attributes
+    ----------
+    deephead: Sequential stack of dense layers comprising the FC-Head (aka imagehead)
+        can be custom designed
+
+    ** The remaining attributes that will be set as we compile and run the model are
+        discussed within the corresponding methods.
+
+    Example
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import Wide, DeepDense, DeepText, DeepImage, WideDeep
+    >>>
+    >>> X_wide = torch.empty(5, 5).random_(2)
+    >>> wide = Wide(wide_dim=X_wide.size(0), output_dim=1)
+    >>>
+    >>> X_deep = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
+    >>> colnames = ['a', 'b', 'c', 'd', 'e']
+    >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
+    >>> deep_column_idx = {k:v for v,k in enumerate(colnames)}
+    >>> deepdense = DeepDense(hidden_layers=[8,4], deep_column_idx=deep_column_idx, embed_input=embed_input)
+    >>>
+    >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
+    >>> deeptext = DeepText(vocab_size=4, hidden_dim=4, n_layers=1, padding_idx=0, embed_dim=4)
+    >>>
+    >>> X_img = torch.rand((5,3,224,224))
+    >>> deepimage = DeepImage(head_layers=[512, 64, 8])
+    >>>
+    >>> model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage, output_dim=1)
+    >>> input_dict = {'wide':X_wide, 'deepdense':X_deep, 'deeptext':X_text, 'deepimage':X_img}
+    >>> model(X=input_dict)
+    tensor([[-0.3779],
+            [-0.5247],
+            [-0.2773],
+            [-0.2888],
+            [-0.2010]], grad_fn=<AddBackward0>)
+    """
     def __init__(self,
         wide:nn.Module,
         deepdense:nn.Module,
@@ -74,6 +152,12 @@ class WideDeep(nn.Module):
                         nn.Linear(self.deepimage.output_dim, output_dim))
 
     def forward(self, X:List[Dict[str,Tensor]])->Tensor:
+        r"""
+        Parameters
+        ----------
+        X: List of Dict where the keys are the model names (wide, deepdense, deeptext
+            and deepimage) and the values are the corresponding Tensors
+        """
         # Wide output: direct connection to the output neuron(s)
         out = self.wide(X['wide'])
 
@@ -85,7 +169,7 @@ class WideDeep(nn.Module):
                 deepside = torch.cat( [deepside, self.deeptext(X['deeptext'])], axis=1 )
             if self.deepimage is not None:
                 deepside = torch.cat( [deepside, self.deepimage(X['deepimage'])], axis=1 )
-            deepside_out = self.head(deepside)
+            deepside_out = self.deephead(deepside)
             return out.add_(deepside_out)
         else:
             out.add_(self.deepdense(X['deepdense']))
@@ -97,11 +181,9 @@ class WideDeep(nn.Module):
 
     def compile(self,
         method:str,
+        optimizers:Union[Optimizer,Dict[str,Optimizer]],
+        lr_schedulers:Optional[Union[LRScheduler,Dict[str,LRScheduler]]]=None,
         initializers:Optional[Dict[str,Initializer]]=None,
-        optimizers:Optional[Dict[str,Optimizer]]=None,
-        global_optimizer:Optional[Optimizer]=None,
-        lr_schedulers:Optional[Dict[str,LRScheduler]]=None,
-        global_lr_scheduler:Optional[LRScheduler]=None,
         transforms:Optional[List[Transforms]]=None,
         callbacks:Optional[List[Callback]]=None,
         metrics:Optional[List[Metric]]=None,
@@ -109,8 +191,84 @@ class WideDeep(nn.Module):
         with_focal_loss:bool=False,
         alpha:float=0.25,
         gamma:float=1,
-        verbose=1):
+        verbose:int=1):
+        r"""
+        Function to set a number of attributes that are used during the training process.
 
+        Parameters
+        ----------
+        method: required parameter. One of ('regression', 'binary' or 'multiclass')
+        optimizers: either an Optimizer object (e.g. torch.optim.Adam()) or a
+            dictionary where there keys are the model's children (i.e. wide,
+            deepdense, deeptext, deepimage and/or deephead)  and the values
+            are the corresponding optimizers. If multiple optimizers are used
+            the  dictionary **must** contain an optimizer per child.
+            Defaults to Adam.
+        lr_schedulers: optional parameter with a LRScheduler object (e.g
+            torch.optim.lr_scheduler.StepLR(opt, step_size=5)) or  dictionary
+            where there keys are the model's children (i.e. wide, deepdense,
+            deeptext, deepimage and/or deephead)  and the values are the
+            corresponding learning rate schedulers.
+        initializers: optional dictionary where there keys are the model's
+            children (i.e. wide, deepdense, deeptext, deepimage and/or deephead)
+            and the values are the corresponding initializers.
+        transforms: optional List with torchvision.transforms to be applied to
+            the image component of the model
+        callbacks: optional List with callbacks. Callbacks available are:
+            ModelCheckpoint, EarlyStopping, and LRHistory. The History callback is
+            used by default.
+        metrics: optional List of metrics. Metrics available are: BinaryAccuracy
+            and CategoricalAccuracy
+        class_weight: optional parameter than can be one of: a float
+            indicating the weight of the minority class in binary classification
+            problems (e.g. 9.) or a list or tuple with weights for the different
+            classes in multiclass classification problems  (e.g. [1., 2., 3.]).
+            The weights do not neccesarily need to be normalised. If your loss
+            function uses reduction='mean', the loss will be normalized by the sum
+            of the corresponding weights for each element. If you are using
+            reduction='none', you would have to take care of the normalization
+            yourself. See here:
+            https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10
+        with_focal_loss: optional boolean indicating whether or not to use the
+            Focal Loss. https://arxiv.org/pdf/1708.02002.pdf
+        alpha, gamma: Focal Loss parameters. See:
+            https://arxiv.org/pdf/1708.02002.pdf
+        verbose: int indicating the level of verbosity. Setting it to 0 will
+            print nothing during training.
+
+        Attributes
+        ----------
+        Attributes that are not direct assignations of parameters
+
+        self.cyclic: boolean indicating if any of the lr_schedulers is
+            CyclicLR or OneCycleLR
+
+        Example
+        --------
+        Assuming you have already built the model components (wide, deepdense, etc...)
+
+        >>> from pytorch_widedeep.models import WideDeep
+        >>> from pytorch_widedeep.initializers import *
+        >>> from pytorch_widedeep.callbacks import *
+        >>> from pytorch_widedeep.optim import RAdam
+        >>> model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage)
+        >>> wide_opt = torch.optim.Adam(model.wide.parameters())
+        >>> deep_opt = torch.optim.Adam(model.deepdense.parameters())
+        >>> text_opt = RAdam(model.deeptext.parameters())
+        >>> img_opt  = RAdam(model.deepimage.parameters())
+        >>> wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=5)
+        >>> deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)
+        >>> text_sch = torch.optim.lr_scheduler.StepLR(text_opt, step_size=5)
+        >>> img_sch  = torch.optim.lr_scheduler.StepLR(img_opt, step_size=3)
+        >>> optimizers = {'wide': wide_opt, 'deepdense':deep_opt, 'deeptext':text_opt, 'deepimage': img_opt}
+        >>> schedulers = {'wide': wide_sch, 'deepdense':deep_sch, 'deeptext':text_sch, 'deepimage': img_sch}
+        >>> initializers = {'wide': Uniform, 'deepdense':Normal, 'deeptext':KaimingNormal,
+        >>> ... 'deepimage':KaimingUniform}
+        >>> transforms = [ToTensor, Normalize(mean=mean, std=std)]
+        >>> callbacks = [LRHistory, EarlyStopping, ModelCheckpoint(filepath='model_weights/wd_out.pt')]
+        >>> model.compile(method='regression', initializers=initializers, optimizers=optimizers,
+        >>> ... lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
+        """
         self.verbose = verbose
         self.early_stop = False
         self.method = method
@@ -119,7 +277,7 @@ class WideDeep(nn.Module):
             self.alpha, self.gamma = alpha, gamma
 
         if isinstance(class_weight, float):
-            self.class_weight = torch.tensor([class_weight, 1.-class_weight])
+            self.class_weight = torch.tensor([1.-class_weight, class_weight])
         elif isinstance(class_weight, (List, Tuple)):
             self.class_weight =  torch.tensor(class_weight)
         else:
@@ -129,20 +287,23 @@ class WideDeep(nn.Module):
             self.initializer = MultipleInitializer(initializers, verbose=self.verbose)
             self.initializer.apply(self)
 
-        if optimizers is not None:
+        if isinstance(optimizers, Optimizer):
+            self.optimizer = optimizers
+        elif len(optimizers)>1:
+            opt_names = list(optimizers.keys())
+            mod_names = [n  for n, c in self.named_children()]
+            for mn in mod_names: assert mn in opt_names, "No optimizer found for {}".format(mn)
             self.optimizer = MultipleOptimizer(optimizers)
-        elif global_optimizer is not None:
-            self.optimizer = global_optimizer
         else:
             self.optimizer = torch.optim.Adam(self.parameters())
 
-        if lr_schedulers is not None:
+        if isinstance(lr_schedulers, LRScheduler):
+            self.lr_scheduler = lr_schedulers
+            self.cyclic = 'cycl' in self.lr_scheduler.__class__.__name__.lower()
+        elif len(lr_schedulers) > 1:
             self.lr_scheduler = MultipleLRScheduler(lr_schedulers)
             scheduler_names = [sc.__class__.__name__.lower() for _,sc in self.lr_scheduler._schedulers.items()]
             self.cyclic = any(['cycl' in sn for sn in scheduler_names])
-        elif global_lr_scheduler is not None:
-            self.lr_scheduler = global_lr_scheduler
-            self.cyclic = 'cycl' in self.lr_scheduler.__class__.__name__.lower()
         else:
             self.lr_scheduler, self.cyclic = None, False
 
@@ -170,7 +331,7 @@ class WideDeep(nn.Module):
     def _activation_fn(self, inp:Tensor) -> Tensor:
         if self.method == 'regression':
             return inp
-        if self.method == 'logistic':
+        if self.method == 'binary':
             return torch.sigmoid(inp)
         if self.method == 'multiclass':
             return F.softmax(inp, dim=1)
@@ -180,13 +341,13 @@ class WideDeep(nn.Module):
             return FocalLoss(self.alpha, self.gamma)(y_pred, y_true)
         if self.method == 'regression':
             return F.mse_loss(y_pred, y_true.view(-1, 1))
-        if self.method == 'logistic':
+        if self.method == 'binary':
             return F.binary_cross_entropy(y_pred, y_true.view(-1, 1), weight=self.class_weight)
         if self.method == 'multiclass':
             return F.cross_entropy(y_pred, y_true, weight=self.class_weight)
 
     def _training_step(self, data:Dict[str, Tensor], target:Tensor, batch_idx:int):
-
+        self.train()
         X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
         y = target.float() if self.method != 'multiclass' else target
         y = y.cuda() if use_cuda else y
@@ -208,6 +369,7 @@ class WideDeep(nn.Module):
 
     def _validation_step(self, data:Dict[str, Tensor], target:Tensor, batch_idx:int):
 
+        self.eval()
         with torch.no_grad():
             X = {k:v.cuda() for k,v in data.item()} if use_cuda else data
             y = target.float() if self.method != 'multiclass' else target
@@ -225,7 +387,17 @@ class WideDeep(nn.Module):
             return None, avg_loss
 
     def _lr_scheduler_step(self, step_location:str):
+        r"""
+        Function to execute the learning rate schedulers steps.
+        If the lr_scheduler is Cyclic (i.e. CyclicLR or OneCycleLR), the step
+        must  happen after training each bach durig training. On the other
+        hand, if the  scheduler is not Cyclic, is expected to be called after
+        validation.
 
+        Parameters
+        ----------
+        step_location: string indicating where to run the lr_scheduler step
+        """
         if self.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler' and self.cyclic:
             if step_location == 'on_batch_end':
                 for model_name, scheduler in self.lr_scheduler._schedulers.items():
@@ -252,9 +424,23 @@ class WideDeep(nn.Module):
         val_split:Optional[float]=None,
         target:Optional[np.ndarray]=None,
         seed:int=1):
+        r"""
+        If a validation set (X_val) is passed to the fit method, or val_split
+        is specified, the train/val split will happen internally. A number of
+        options are allowed in terms of data inputs. For parameter
+        information, please, see the .fit() method documentation
 
-        # No evaluation set
+        Returns
+        -------
+        train_set: WideDeepDataset object that will be loaded through
+            torch.utils.data.DataLoader
+        eval_set : WideDeepDataset object that will be loaded through
+            torch.utils.data.DataLoader
+        """
+        # Without validation
         if X_val is None and val_split is None:
+            # if a train dictionary is passed, check if text and image datasets
+            # are present and instantiate the WideDeepDataset class
             if X_train is not None:
                 X_wide, X_deep, target = X_train['X_wide'], X_train['X_deep'], X_train['target']
                 if 'X_text' in X_train.keys(): X_text = X_train['X_text']
@@ -266,14 +452,19 @@ class WideDeep(nn.Module):
             except: pass
             train_set = WideDeepDataset(**X_train, transforms=self.transforms)
             eval_set = None
+        # With validation
         else:
-            # evaluation set will be used. Either X_val or val_split are not None
             if X_val is not None:
+                # if a validation dictionary is passed, then if not train
+                # dictionary is passed we build it with the input arrays
+                # (either the dictionary or the arrays must be passed)
                 if X_train is None:
                     X_train = {'X_wide':X_wide, 'X_deep': X_deep, 'target': target}
                     if X_text is not None: X_train.update({'X_text': X_text})
                     if X_img is not None:  X_train.update({'X_img': X_img})
             else:
+                # if a train dictionary is passed, check if text and image
+                # datasets are present. The train/val split using val_split
                 if X_train is not None:
                     X_wide, X_deep, target = X_train['X_wide'], X_train['X_deep'], X_train['target']
                     if 'X_text' in X_train.keys(): X_text = X_train['X_text']
@@ -292,7 +483,7 @@ class WideDeep(nn.Module):
                         random_state=seed)
                     X_train.update({'X_img': X_tr_img}), X_val.update({'X_img': X_val_img})
                 except: pass
-            # Train and validation dictionaries have been built
+            # At this point the X_train and X_val dictionaries have been built
             train_set = WideDeepDataset(**X_train, transforms=self.transforms)
             eval_set = WideDeepDataset(**X_val, transforms=self.transforms)
         return train_set, eval_set
@@ -310,11 +501,60 @@ class WideDeep(nn.Module):
         batch_size:int=32,
         patience:int=10,
         seed:int=1):
+        r"""
+        fit method that must run after calling 'compile'
+
+        Parameters
+        ----------
+        X_wide: optional np.array with the one hot encoded wide input.
+        X_deep: optional np.array with the input for the deepdense model
+        X_text: optional np.array with the input for the deeptext model
+        X_img : optional np.array with the input for the deepimage model
+        X_train: optional Dict with the training dataset for the different
+            model branches.  Keys are 'X_wide', 'X_deep', 'X_text', 'X_img' and 'target'
+            the values are the corresponding matrices
+            e.g X_train = {'X_wide': X_wide, 'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
+        X_val: optional Dict with the validation dataset for the different
+            model branches.  Keys are 'X_wide', 'X_deep', 'X_text', 'X_img' and 'target'
+            the values are the corresponding matrices
+            e.g X_val = {'X_wide': X_wide, 'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
+        val_split: optional float specifying the train/val split
+        target: optional np.array with the target values
+        n_epochs: number of epochs
+        batch_size: batch size
+        patience: number of epochs without improving the target metric before
+            we stop the fit
+        seed: random seed for the train/val split
+
+        **WideDeep assumes that X_wide, X_deep and target ALWAYS exist, while
+        X_text and X_img are optional
+        **Either X_train or X_wide, X_deep and target must be passed to the
+        fit method
+
+        Example
+        --------
+        Assuming you have already built and compiled the model
+
+        Ex 1. using train input arrays directly and no validation
+        >>> model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=10, batch_size=256)
+
+        Ex 2: using train input arrays directly and validation with val_split
+        >>> model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=10, batch_size=256, val_split=0.2)
+
+        Ex 3: using train dict and val_split
+        >>> X_train = {'X_wide': X_wide, 'X_deep': X_deep, 'target': y}
+        >>> model.fit(X_train, n_epochs=10, batch_size=256, val_split=0.2)
+
+        Ex 4: validation using training and validation dicts
+        >>> X_train = {'X_wide': X_wide_tr, 'X_deep': X_deep_tr, 'target': y_tr}
+        >>> X_val = {'X_wide': X_wide_val, 'X_deep': X_deep_val, 'target': y_val}
+        >>> model.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
+        """
 
         if X_train is None and (X_wide is None or X_deep is None or target is None):
             raise ValueError(
-                "training data is missing. Either a dictionary (X_train) with "
-                "the training data or at least 3 arrays (X_wide, X_deep, "
+                "Training data is missing. Either a dictionary (X_train) with "
+                "the training dataset or at least 3 arrays (X_wide, X_deep, "
                 "target) must be passed to the fit method")
 
         self.batch_size = batch_size
@@ -365,73 +605,126 @@ class WideDeep(nn.Module):
                 self.callback_container.on_train_end(epoch)
                 break
             self.callback_container.on_train_end(epoch)
+        self.train()
+
+    def _predict(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
+        X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->List:
+        r"""
+        Hidden method to avoid code repetition in predict and predict_proba.
+        For parameter information, please, see the .predict() method
+        documentation
+        """
+        if X_test is not None:
+            test_set = WideDeepDataset(**X_test)
+        else:
+            load_dict = {'X_wide': X_wide, 'X_deep': X_deep}
+            if X_text is not None: load_dict.update({'X_text': X_text})
+            if X_img is not None:  load_dict.update({'X_img': X_img})
+            test_set = WideDeepDataset(**load_dict)
+
+        test_loader = torch.utils.data.DataLoader(dataset=test_set,
+            batch_size=self.batch_size,shuffle=False)
+        test_steps =  (len(test_loader.dataset) // test_loader.batch_size) + 1
+
+        self.eval()
+        preds_l = []
+        with torch.no_grad():
+            with trange(test_steps, disable=self.verbose != 1) as t:
+                for i, data in zip(t, test_loader):
+                    t.set_description('predict')
+                    X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
+                    preds = self._activation_fn(self.forward(X)).cpu().data.numpy()
+                    preds_l.append(preds)
+        self.train()
+        return preds_l
 
     def predict(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
         X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->np.ndarray:
+        r"""
+        fit method that must run after calling 'compile'
 
-        if X_test is not None:
-            test_set = WideDeepDataset(**X_test)
-        else:
-            load_dict = {'X_wide': X_wide, 'X_deep': X_deep}
-            if X_text is not None: load_dict.update({'X_text': X_text})
-            if X_img is not None:  load_dict.update({'X_img': X_img})
-            test_set = WideDeepDataset(**load_dict)
+        Parameters
+        ----------
+        X_wide: optional np.array with the one hot encoded wide input.
+        X_deep: optional np.array with the input for the deepdense model
+        X_text: optional np.array with the input for the deeptext model
+        X_img : optional np.array with the input for the deepimage model
+        X_test: optional Dict with the testing dataset for the different
+            model branches.  Keys are 'X_wide', 'X_deep', 'X_text', 'X_img' and 'target'
+            the values are the corresponding matrices
+            e.g X_test = {'X_wide': X_wide_te, 'X_wide': X_wide_te, 'X_text': X_text_te, 'X_img': X_img_te}
 
-        test_loader = torch.utils.data.DataLoader(dataset=test_set,
-            batch_size=self.batch_size,shuffle=False)
-        test_steps =  (len(test_loader.dataset) // test_loader.batch_size) + 1
+        **WideDeep assumes that X_wide, X_deep and target ALWAYS exist, while
+        X_text and X_img are optional
 
-        preds_l = []
-        with torch.no_grad():
-            with trange(test_steps, disable=self.verbose != 1) as t:
-                for i, data in zip(t, test_loader):
-                    t.set_description('predict')
-                    X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
-                    preds = self._activation_fn(self.forward(X)).cpu().data.numpy()
-                    preds_l.append(preds)
-            if self.method == "regression":
-                return np.vstack(preds_l).squeeze(1)
-            if self.method == "logistic":
-                preds = np.vstack(preds_l).squeeze(1)
-                return (preds > 0.5).astype('int')
-            if self.method == "multiclass":
-                preds = np.vstack(preds_l)
-                return np.argmax(preds, 1)
+        Returns
+        -------
+        preds: np.array with the predicted target for the test dataset.
+        """
+        preds_l = _predict(X_wide, X_deep, X_text, X_img, X_test)
+        if self.method == "regression":
+            return np.vstack(preds_l).squeeze(1)
+        if self.method == "binary":
+            preds = np.vstack(preds_l).squeeze(1)
+            return (preds > 0.5).astype('int')
+        if self.method == "multiclass":
+            preds = np.vstack(preds_l)
+            return np.argmax(preds, 1)
 
     def predict_proba(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
         X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->np.ndarray:
-
-        if X_test is not None:
-            test_set = WideDeepDataset(**X_test)
-        else:
-            load_dict = {'X_wide': X_wide, 'X_deep': X_deep}
-            if X_text is not None: load_dict.update({'X_text': X_text})
-            if X_img is not None:  load_dict.update({'X_img': X_img})
-            test_set = WideDeepDataset(**load_dict)
-
-        test_loader = torch.utils.data.DataLoader(dataset=test_set,
-            batch_size=self.batch_size,shuffle=False)
-        test_steps =  (len(test_loader.dataset) // test_loader.batch_size) + 1
-
-        preds_l = []
-        with torch.no_grad():
-            with trange(test_steps, disable=self.verbose != 1) as t:
-                for i, data in zip(t, test_loader):
-                    t.set_description('predict')
-                    X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
-                    preds = self._activation_fn(self.forward(X)).cpu().data.numpy()
-                    preds_l.append(preds)
-            if self.method == "logistic":
-                preds = np.vstack(preds_l).squeeze(1)
-                probs = np.zeros([preds.shape[0],2])
-                probs[:,0] = 1-preds
-                probs[:,1] = preds
-                return probs
-            if self.method == "multiclass":
-                return np.vstack(preds_l)
+        """
+        Returns
+        -------
+        preds: np.array with the predicted probabilities of target for the
+        test dataset for  binary and multiclass methods
+        """
+        preds_l = _predict(X_wide, X_deep, X_text, X_img, X_test)
+        if self.method == "binary":
+            preds = np.vstack(preds_l).squeeze(1)
+            probs = np.zeros([preds.shape[0],2])
+            probs[:,0] = 1-preds
+            probs[:,1] = preds
+            return probs
+        if self.method == "multiclass":
+            return np.vstack(preds_l)
 
     def get_embeddings(self, col_name:str,
         cat_encoding_dict:Dict[str,Dict[str,int]]) -> Dict[str,np.ndarray]:
+        """
+        Get the learned embeddings for the categorical features passed through deepdense.
+
+        Parameters
+        ----------
+        col_name: column name of the feature we want to get the embeddings for
+        cat_encoding_dict: Dict with the categorical encodings. The function
+            is designed to take the 'encoding_dict' attribute from the
+            DeepPreprocessor class. Any Dict with the same structure can be used
+
+        Returns
+        -------
+        cat_embed_dict: Dict with the categorical levels of the col_name
+            feature and the corresponding embeddings
+
+        Example:
+        -------
+        Assuming we have already train the model:
+
+        >>> model.get_embeddings(col_name='education', cat_encoding_dict=deep_preprocessor.encoding_dict)
+        {'11th': array([-0.42739448, -0.22282735,  0.36969638,  0.4445322 ,  0.2562272 ,
+        0.11572784, -0.01648579,  0.09027119,  0.0457597 , -0.28337458], dtype=float32),
+         'HS-grad': array([-0.10600474, -0.48775527,  0.3444158 ,  0.13818645, -0.16547225,
+        0.27409762, -0.05006042, -0.0668492 , -0.11047247,  0.3280354 ], dtype=float32),
+        ...
+        }
+
+        where:
+
+        >>> deep_preprocessor.encoding_dict['education']
+        {'11th': 0, 'HS-grad': 1, 'Assoc-acdm': 2, 'Some-college': 3, '10th': 4, 'Prof-school': 5,
+        '7th-8th': 6, 'Bachelors': 7, 'Masters': 8, 'Doctorate': 9, '5th-6th': 10, 'Assoc-voc': 11,
+        '9th': 12, '12th': 13, '1st-4th': 14, 'Preschool': 15}
+        """
         for n,p in self.named_parameters():
             if 'embed_layers' in n and col_name in n:
                 embed_mtx = p.cpu().data.numpy()

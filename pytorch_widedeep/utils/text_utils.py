@@ -4,7 +4,7 @@ import html
 import os
 import re
 
-from ...wdtypes import *
+from ..wdtypes import *
 from .fastai_transforms import Tokenizer, Vocab
 from gensim.utils import tokenize
 
@@ -35,7 +35,8 @@ def pad_sequences(seq:List[int], maxlen:int, pad_first:bool=True, pad_idx:int=1)
         return res
 
 
-def build_embeddings_matrix(vocab:Vocab, word_vectors_path:str, verbose:int=1) -> np.ndarray:
+def build_embeddings_matrix(vocab:Vocab, word_vectors_path:str, min_freq:int,
+	verbose:int=1) -> np.ndarray:
 
 	if not os.path.isfile(word_vectors_path):
 		raise FileNotFoundError("{} not found".format(word_vectors_path))
@@ -68,7 +69,8 @@ def build_embeddings_matrix(vocab:Vocab, word_vectors_path:str, verbose:int=1) -
 	        embedding_matrix[i] = mean_word_vector
 
 	if verbose:
-		print('{} words in the vocabulary had {} vectors and appear more than the min frequency'.format(found_words, word_vectors_path))
+		print('{} words in the vocabulary had {} vectors and appear more than {} times'.format(
+			found_words, word_vectors_path, min_freq))
 
 	return embedding_matrix
 

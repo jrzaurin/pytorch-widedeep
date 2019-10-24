@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from ...wdtypes import *
+from ..wdtypes import *
 
 
 pd.options.mode.chained_assignment = None

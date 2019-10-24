@@ -31,7 +31,6 @@ if __name__ == '__main__':
         ('occupation',10),('native_country',10)]
     continuous_cols = ["age","hours_per_week"]
     target = 'income_label'
-
     target = df[target].values
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
@@ -42,7 +41,7 @@ if __name__ == '__main__':
         output_dim=1)
     deepdense = DeepDense(
         hidden_layers=[64,32],
-        dropout=[0.5],
+        dropout=[0.2,0.2],
         deep_column_idx=prepare_deep.deep_column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols)
@@ -56,14 +55,14 @@ if __name__ == '__main__':
     optimizers = {'wide': wide_opt, 'deepdense':deep_opt}
     schedulers = {'wide': wide_sch, 'deepdense':deep_sch}
     initializers = {'wide': KaimingNormal, 'deepdense':XavierNormal}
-    callbacks = [LRHistory, EarlyStopping, ModelCheckpoint(filepath='../model_weights/wd_out')]
+    callbacks = [LRHistory(n_epochs=10), EarlyStopping, ModelCheckpoint(filepath='../model_weights/wd_out')]
     metrics = [BinaryAccuracy]
 
     model.compile(
-        method='logistic',
-        initializers=initializers,
+        method='binary',
         optimizers=optimizers,
         lr_schedulers=schedulers,
+        initializers=initializers,
         callbacks=callbacks,
         metrics=metrics)
 

@@ -10,9 +10,9 @@ from scipy.sparse import csc_matrix
 from tqdm import tqdm
 
 from ..wdtypes import *
-from .utils.dense_utils import *
-from .utils.text_utils import *
-from .utils.image_utils import *
+from ..utils.dense_utils import *
+from ..utils.text_utils import *
+from ..utils.image_utils import *
 
 
 class BasePreprocessor(object):
@@ -184,7 +184,8 @@ class TextPreprocessor(BasePreprocessor):
         if self.verbose:
             print("The vocabulary contains {} words".format(len(self.vocab.stoi)))
         if self.word_vectors_path is not None:
-            self.embedding_matrix = build_embeddings_matrix(self.vocab, self.word_vectors_path)
+            self.embedding_matrix = build_embeddings_matrix(self.vocab, self.word_vectors_path,
+                self.min_freq)
         return padded_seq
 
     def fit_transform(self, df:pd.DataFrame, text_col:str)->np.ndarray:
