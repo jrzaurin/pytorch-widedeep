@@ -31,6 +31,38 @@ class BasePreprocessor(object):
 
 
 class WidePreprocessor(BasePreprocessor):
+    r"""Preprocessor to prepare the wide input dataset
+
+    Parameters
+    ----------
+    wide_cols: List
+        List with the name of the columns that will be one-hot encoded and
+        pass through the Wide model
+    crossed_cols: List
+        List of Tuples with the name of the columns that will be "crossed"
+        and then one-hot encoded. e.g. (['education', 'occupation'], ...)
+    already_dummies: List
+        List of columns that are already dummies/one-hot encoded
+
+    Attributes
+    ----------
+    one_hot_enc: sklearn's OneHotEncoder
+    wide_crossed_cols: List
+        List with the names of all columns that will be one-hot encoded
+
+    Example
+    --------
+    Assuming we have a dataset loaded in memory as a pd.DataFrame
+
+    >>> wide_cols = ['age_buckets', 'education', 'relationship','workclass','occupation',
+    ... 'native_country','gender']
+    >>> crossed_cols = [('education', 'occupation'), ('native_country', 'occupation')]
+    >>> wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+    >>> X_wide = wide_preprocessor.fit_transform(df)
+
+    From there on, for new data (loaded as a dataframe)
+    >>> new_X_wide = wide_preprocessor.transform(new_df)
+    """
     def __init__(self, wide_cols:List[str], crossed_cols=None,
         already_dummies:Optional[List[str]]=None, sparse=False):
         super(WidePreprocessor, self).__init__()
@@ -53,7 +85,8 @@ class WidePreprocessor(BasePreprocessor):
         df_wide = df.copy()[self.wide_cols]
         if self.crossed_cols is not None:
             df_wide, crossed_colnames = self._cross_cols(df_wide)
-            self.wide_crossed_cols = self.wide_cols + crossed_colnames
+            self.wide_crossed_cols =List
+                List with  self.wide_cols + crossed_colnames
         else:
             self.wide_crossed_cols = self.wide_cols
 
@@ -82,6 +115,53 @@ class WidePreprocessor(BasePreprocessor):
 
 
 class DeepPreprocessor(BasePreprocessor):
+    r"""Preprocessor to prepare the deepdense input dataset
+
+    Parameters
+    ----------
+    embed_cols: List
+        List containing the name of the columns that will be represented with
+        embeddings or a Tuple with the name and the embedding dimension. e.g.:
+         [('education',32), ('relationship',16)
+    continuous_cols: List
+        List with the name of the so called continuous cols
+    scale: Bool
+        Bool indicating whether or not to scale/Standarise continuous cols.
+        Should "almost always" be True.
+    default_embed_dim: Int, default=8
+        Dimension for the embeddings used in the Deep-Dense model
+    already_standard: List, Optional,
+        List with the name of the continuous cols that do not need to be
+        Standarised.
+
+    Attributes
+    ----------
+    encoding_dict: Dict
+        Dict with the categorical encoding
+    embed_cols: List
+        List with the columns that will be represented with embeddings
+    embed_dim: Dict
+        Dict where keys are the embed cols and values are the embed dimensions
+    standardize_cols: List
+        List of the columns that will be standarized
+    deep_column_idx: Dict
+        Dict where keys are column names and values are column indexes. This
+        will be neccesary to slice tensors
+    scaler: sklearn's StandardScaler
+
+    Example
+    --------
+    Assuming we have a dataset loaded in memory as a pd.DataFrame
+
+    >>> cat_embed_cols = [('education',10), ('relationship',8), ('workclass',10),
+    ... ('occupation',10),('native_country',10)]
+    >>> continuous_cols = ["age","hours_per_week"]
+    >>> deep_preprocessor = DeepPreprocessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
+    >>> X_deep = deep_preprocessor.fit_transform(df)
+
+    From there on, for new data (loaded as a dataframe)
+    >>> new_X_deep = deep_preprocessor.transform(new_df)
+    """
     def __init__(self,
         embed_cols:List[Union[str,Tuple[str,int]]]=None,
         continuous_cols:List[str]=None,
@@ -157,7 +237,45 @@ class DeepPreprocessor(BasePreprocessor):
 
 
 class TextPreprocessor(BasePreprocessor):
-    def __init__(self, max_vocab:int=30000, min_freq:int=5,
+    r"""Preprocessor to prepare the deepdense input dataset
+
+    Parameters
+    ----------
+    max_vocab: Int, default=30000
+        Maximum number of token in the vocabulary
+    min_freq: Int, default=5
+        Minimum frequency for a token to be part of the vocabulary
+    maxlen: Int, default=80
+        Maximum length of the tokenized sequences
+    word_vectors_path: Optional, str
+        Path to the pretrained word vectors
+    verbose: Int, Default 1
+        Enable verbose output.
+
+    Attributes
+    ----------
+    text_col: str
+        column in the input pd.DataFrame containing the texts
+    vocab: fastai Vocab object. See https://docs.fast.ai/text.transform.html#Vocab
+        Vocab object containing the information of the vocabulary
+    tokens: List
+        List with Lists of str containing the tokenized texts
+    embedding_matrix: np.ndarray
+        Array with the pretrained embeddings
+
+    Example
+    --------
+    Assuming we have a dataset loaded in memory as a pd.DataFrame
+
+    >>> text_preprocessor = TextPreprocessor()
+    >>> X_text = text_preprocessor.fit_transform(df, text_col)
+
+    from there on
+
+    From there on, for new data (loaded as a dataframe)
+    >>> new_X_text = text_preprocessor.transform(new_df)
+    """
+     def __init__(self, max_vocab:int=30000, min_freq:int=5,
         maxlen:int=80, word_vectors_path:Optional[str]=None,
         verbose:int=1):
         super(TextPreprocessor, self).__init__()
@@ -193,7 +311,46 @@ class TextPreprocessor(BasePreprocessor):
 
 
 class ImagePreprocessor(BasePreprocessor):
+    r"""Preprocessor to prepare the deepdense input dataset
 
+    Parameters
+    ----------
+    width: Int, default=224
+        width of the resulting processed image. 224 because the default
+        architecture used by WideDeep is ResNet
+    height: Int, default=224
+        width of the resulting processed image. 224 because the default
+        architecture used by WideDeep is ResNet
+    verbose: Int, Default 1
+        Enable verbose output.
+
+    Attributes
+    ----------
+    aap: Class, AspectAwarePreprocessor()
+        Preprocessing tool taken from Adrian Rosebrock's book "Deep Learning
+        for Computer Vision".
+    spp: Class, SimplePreprocessor()
+        Preprocessing tool taken from Adrian Rosebrock's book "Deep Learning
+        for Computer Vision".
+    img_col: str
+        name of the column with the images filenames
+    normalise_metrics: Dict
+        Dict containing the normalisation metrics of the image dataset, i.e.
+        mean and std for the R, G and B channels
+
+    Example
+    --------
+    Assuming we have a dataset loaded in memory as a pd.DataFrame
+
+    >>> image_preprocessor = ImagePreprocessor()
+    >>> img_path = 'path/to/my_images'
+    >>> X_images = image_preprocessor.fit_transform(df, img_col, img_path)
+
+    from there on
+
+    From there on, for new data (loaded as a dataframe)
+    >>> next_X_images = image_preprocessor.transform(new_df)
+    """
     def __init__(self, width:int=224, height:int=224, verbose:int=1):
         super(ImagePreprocessor, self).__init__()
         self.width = width

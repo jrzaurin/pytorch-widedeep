@@ -37,43 +37,51 @@ class WideDeep(nn.Module):
 
     Parameters
     ----------
-    wide: wide model. I recommend using the Wide class in this package.
-        However, can a custom model as long as is  consistent with the
-        required architecture.
-    deepdense: deep dense model consisting in a series of categorical features
+    wide: nn.Module
+        Wide model. I recommend using the Wide class in this package. However,
+        can a custom model as long as is  consistent with the required
+        architecture.
+    deepdense: nn.Module
+        'Deep dense' model consisting in a series of categorical features
         represented by embeddings combined with numerical (aka continuous)
         features. I recommend using the DeepDense class in this package.
         However, a custom model as long as is  consistent with the required
         architecture.
-    deeptext: optional model for the text input. Must be an object of class
+    deeptext: nn.Module, Optional
+        'Deep text' model for the text input. Must be an object of class
         DeepText or a custom model as long as is consistent with the required
         architecture.
-    deepimage: optional model for the images input. Must be an object of class
+    deepimage: nn.Module, Optional
+        'Deep Image' model for the images input. Must be an object of class
         DeepImage or a custom model as long as is consistent with the required
         architecture.
-    deephead: optional dense model consisting in a stack of dense layers.
-    head_layers: optional list with the sizes of the stacked dense layers in
-        the fc-head e.g: [128, 64]
-    head_dropout: optional list with the dropout between the dense layers.
-        e.g: [0.5, 0.5]
-    head_batchnorm: Optional Boolean indicating whether or not to include batch
-        normalizatin in the dense layers that form the texthead
-    output_dim: int size of the final layer. 1 for regression and binary
-        classification or 'n_class' for multiclass classification
+    deephead: nn.Module, Optional
+        Dense model consisting in a stack of dense layers. The FC-Head
+    head_layers: List, Optional
+        Sizes of the stacked dense layers in the fc-head e.g: [128, 64]
+    head_dropout: List, Optional
+        Dropout between the dense layers. e.g: [0.5, 0.5]
+    head_batchnorm: Boolean, Optional
+        Whether or not to include batch normalizatin in the dense layers that
+        form the texthead
+    output_dim: Int
+        Size of the final layer. 1 for regression and binary classification or
+        'n_class' for multiclass classification
 
     ** While I recommend using the Wide and DeepDense classes within this
     package when building the corresponding model components, it is very likely
-    that the user will want to use custom text and image models. Simply, build
-    them and pass them as the corresponding parameters. Note that the custom
-    models must return a last layer of activations (i.e. not the final prediction)
-    so that  these activations are collected by WideDeep and combined accordingly.
-    In  addition, the classes/models must also contain an attribute 'output_dim'
-    with the size of these last layers of activations.
+    that the user will want to use custom text and image models. That is perfectly
+    possible. Simply, build them and pass them as the corresponding parameters.
+    Note that the custom models MUST return a last layer of activations (i.e. not
+    the final prediction) so that  these activations are collected by WideDeep and
+    combined accordingly. In  addition, the models MUST also contain an attribute
+    'output_dim' with the size of these last layers of activations.
 
     Attributes
     ----------
-    deephead: Sequential stack of dense layers comprising the FC-Head (aka imagehead)
-        can be custom designed
+    deephead: nn.Sequential
+        stack of dense layers comprising the FC-Head (aka imagehead) can be
+        custom designed
 
     ** The remaining attributes that will be set as we compile and run the model are
         discussed within the corresponding methods.
@@ -155,8 +163,10 @@ class WideDeep(nn.Module):
         r"""
         Parameters
         ----------
-        X: List of Dict where the keys are the model names (wide, deepdense, deeptext
-            and deepimage) and the values are the corresponding Tensors
+        X: List
+            List of Dict where the keys are the model names (wide, deepdense,
+            deeptext and deepimage) and the values are the corresponding
+            Tensors
         """
         # Wide output: direct connection to the output neuron(s)
         out = self.wide(X['wide'])
@@ -181,7 +191,7 @@ class WideDeep(nn.Module):
 
     def compile(self,
         method:str,
-        optimizers:Union[Optimizer,Dict[str,Optimizer]],
+        optimizers:Optional[Union[Optimizer,Dict[str,Optimizer]]]=None,
         lr_schedulers:Optional[Union[LRScheduler,Dict[str,LRScheduler]]]=None,
         initializers:Optional[Dict[str,Initializer]]=None,
         transforms:Optional[List[Transforms]]=None,
@@ -190,58 +200,63 @@ class WideDeep(nn.Module):
         class_weight:Optional[Union[float,List[float],Tuple[float]]]=None,
         with_focal_loss:bool=False,
         alpha:float=0.25,
-        gamma:float=1,
+        gamma:float=2,
         verbose:int=1):
         r"""
         Function to set a number of attributes that are used during the training process.
 
         Parameters
         ----------
-        method: required parameter. One of ('regression', 'binary' or 'multiclass')
-        optimizers: either an Optimizer object (e.g. torch.optim.Adam()) or a
+        method: Str
+             One of ('regression', 'binary' or 'multiclass')
+        optimizers: Optimizer, Dict. Optional, Default=Adam
+            Either an optimizers object (e.g. torch.optim.Adam()) or a
             dictionary where there keys are the model's children (i.e. wide,
             deepdense, deeptext, deepimage and/or deephead)  and the values
             are the corresponding optimizers. If multiple optimizers are used
-            the  dictionary **must** contain an optimizer per child.
-            Defaults to Adam.
-        lr_schedulers: optional parameter with a LRScheduler object (e.g
+            the  dictionary MUST contain an optimizer per child.
+        lr_schedulers: LRScheduler, Dict. Optional. Default=None
+            Either a LRScheduler object (e.g
             torch.optim.lr_scheduler.StepLR(opt, step_size=5)) or  dictionary
             where there keys are the model's children (i.e. wide, deepdense,
             deeptext, deepimage and/or deephead)  and the values are the
             corresponding learning rate schedulers.
-        initializers: optional dictionary where there keys are the model's
-            children (i.e. wide, deepdense, deeptext, deepimage and/or deephead)
-            and the values are the corresponding initializers.
-        transforms: optional List with torchvision.transforms to be applied to
-            the image component of the model
-        callbacks: optional List with callbacks. Callbacks available are:
-            ModelCheckpoint, EarlyStopping, and LRHistory. The History callback is
-            used by default.
-        metrics: optional List of metrics. Metrics available are: BinaryAccuracy
-            and CategoricalAccuracy
-        class_weight: optional parameter than can be one of: a float
-            indicating the weight of the minority class in binary classification
-            problems (e.g. 9.) or a list or tuple with weights for the different
-            classes in multiclass classification problems  (e.g. [1., 2., 3.]).
-            The weights do not neccesarily need to be normalised. If your loss
-            function uses reduction='mean', the loss will be normalized by the sum
-            of the corresponding weights for each element. If you are using
+        initializers: Dict, Optional. Default=None
+            Dict where there keys are the model's children (i.e. wide,
+            deepdense, deeptext, deepimage and/or deephead) and the values are
+            the corresponding initializers.
+        transforms: List, Optional. Default=None
+            List with torchvision.transforms to be applied to the image
+            component of the model
+        callbacks: List, Optional. Default=None
+            Callbacks available are: ModelCheckpoint, EarlyStopping, and
+            LRHistory. The History callback is used by default.
+        metrics: List, Optional. Default=None
+            Metrics available are: BinaryAccuracy and CategoricalAccuracy
+        class_weight: List, Tuple, Float. Optional. Default=None
+            Can be one of: float indicating the weight of the minority class
+            in binary classification problems (e.g. 9.) or a list or tuple
+            with weights for the different classes in multiclass
+            classification problems  (e.g. [1., 2., 3.]). The weights do not
+            neccesarily need to be normalised. If your loss function uses
+            reduction='mean', the loss will be normalized by the sum of the
+            corresponding weights for each element. If you are using
             reduction='none', you would have to take care of the normalization
             yourself. See here:
             https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10
-        with_focal_loss: optional boolean indicating whether or not to use the
-            Focal Loss. https://arxiv.org/pdf/1708.02002.pdf
-        alpha, gamma: Focal Loss parameters. See:
-            https://arxiv.org/pdf/1708.02002.pdf
-        verbose: int indicating the level of verbosity. Setting it to 0 will
-            print nothing during training.
+        with_focal_loss: Boolean, Optional. Default=False
+            Whether or not to use the Focal Loss. https://arxiv.org/pdf/1708.02002.pdf
+        alpha, gamma: Float. Default=0.25, 2
+            Focal Loss parameters. See: https://arxiv.org/pdf/1708.02002.pdf
+        verbose: Int
+            Setting it to 0 will print nothing during training.
 
         Attributes
         ----------
         Attributes that are not direct assignations of parameters
 
-        self.cyclic: boolean indicating if any of the lr_schedulers is
-            CyclicLR or OneCycleLR
+        self.cyclic: Boolean
+            Indicates if any of the lr_schedulers is CyclicLR or OneCycleLR
 
         Example
         --------
@@ -396,7 +411,8 @@ class WideDeep(nn.Module):
 
         Parameters
         ----------
-        step_location: string indicating where to run the lr_scheduler step
+        step_location: Str
+            Indicates where to run the lr_scheduler step
         """
         if self.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler' and self.cyclic:
             if step_location == 'on_batch_end':
@@ -432,9 +448,11 @@ class WideDeep(nn.Module):
 
         Returns
         -------
-        train_set: WideDeepDataset object that will be loaded through
+        train_set: WideDeepDataset
+            WideDeepDataset object that will be loaded through
             torch.utils.data.DataLoader
-        eval_set : WideDeepDataset object that will be loaded through
+        eval_set : WideDeepDataset
+            WideDeepDataset object that will be loaded through
             torch.utils.data.DataLoader
         """
         # Without validation
@@ -498,6 +516,7 @@ class WideDeep(nn.Module):
         val_split:Optional[float]=None,
         target:Optional[np.ndarray]=None,
         n_epochs:int=1,
+        validation_freq:int=1,
         batch_size:int=32,
         patience:int=10,
         seed:int=1):
@@ -506,25 +525,36 @@ class WideDeep(nn.Module):
 
         Parameters
         ----------
-        X_wide: optional np.array with the one hot encoded wide input.
-        X_deep: optional np.array with the input for the deepdense model
-        X_text: optional np.array with the input for the deeptext model
-        X_img : optional np.array with the input for the deepimage model
-        X_train: optional Dict with the training dataset for the different
-            model branches.  Keys are 'X_wide', 'X_deep', 'X_text', 'X_img' and 'target'
-            the values are the corresponding matrices
-            e.g X_train = {'X_wide': X_wide, 'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
-        X_val: optional Dict with the validation dataset for the different
-            model branches.  Keys are 'X_wide', 'X_deep', 'X_text', 'X_img' and 'target'
-            the values are the corresponding matrices
-            e.g X_val = {'X_wide': X_wide, 'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
-        val_split: optional float specifying the train/val split
-        target: optional np.array with the target values
-        n_epochs: number of epochs
-        batch_size: batch size
-        patience: number of epochs without improving the target metric before
-            we stop the fit
-        seed: random seed for the train/val split
+        X_wide: np.ndarray, Optional. Default=None
+            One hot encoded wide input.
+        X_deep: np.ndarray, Optional. Default=None
+            Input for the deepdense model
+        X_text: np.ndarray, Optional. Default=None
+            Input for the deeptext model
+        X_img : np.ndarray, Optional. Default=None
+            Input for the deepimage model
+        X_train: Dict, Optional. Default=None
+            Training dataset for the different model branches.  Keys are
+            'X_wide', 'X_deep', 'X_text', 'X_img' and 'target' the values are
+            the corresponding matrices e.g X_train = {'X_wide': X_wide,
+            'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
+        X_val: Dict, Optional. Default=None
+            Validation dataset for the different model branches.  Keys are
+            'X_wide', 'X_deep', 'X_text', 'X_img' and 'target' the values are
+            the corresponding matrices e.g X_val = {'X_wide': X_wide,
+            'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
+        val_split: Float, Optional. Default=None
+            train/val split
+        target: np.ndarray, Optional. Default=None
+            target values
+        n_epochs: Int, Default=1
+        validation_freq: Int, Default=1
+        batch_size: Int, Default=32
+        patience: Int, Default=10
+            Number of epochs without improving the target metric before we
+            stop the fit
+        seed: Int, Default=1
+            Random seed for the train/val split
 
         **WideDeep assumes that X_wide, X_deep and target ALWAYS exist, while
         X_text and X_img are optional
@@ -583,21 +613,23 @@ class WideDeep(nn.Module):
             epoch_logs['train_loss'] = train_loss
             if acc is not None: epoch_logs['train_acc'] = acc['acc']
             # eval step...
-            if eval_set is not None:
-                eval_loader = DataLoader(dataset=eval_set, batch_size=batch_size, num_workers=8,
-                    shuffle=False)
-                eval_steps =  (len(eval_loader.dataset) // batch_size) + 1
-                self.valid_running_loss = 0.
-                with trange(eval_steps, disable=self.verbose != 1) as v:
-                    for i, (data,target) in zip(v, eval_loader):
-                        v.set_description('valid')
-                        acc, val_loss = self._validation_step(data, target, i)
-                        if acc is not None:
-                            v.set_postfix(metrics=acc, loss=val_loss)
-                        else:
-                            v.set_postfix(loss=np.sqrt(val_loss))
-                epoch_logs['val_loss'] = val_loss
-                if acc is not None: epoch_logs['val_acc'] = acc['acc']
+
+            if epoch % validation_freq  == (validation_freq - 1):
+                if eval_set is not None:
+                    eval_loader = DataLoader(dataset=eval_set, batch_size=batch_size, num_workers=8,
+                        shuffle=False)
+                    eval_steps =  (len(eval_loader.dataset) // batch_size) + 1
+                    self.valid_running_loss = 0.
+                    with trange(eval_steps, disable=self.verbose != 1) as v:
+                        for i, (data,target) in zip(v, eval_loader):
+                            v.set_description('valid')
+                            acc, val_loss = self._validation_step(data, target, i)
+                            if acc is not None:
+                                v.set_postfix(metrics=acc, loss=val_loss)
+                            else:
+                                v.set_postfix(loss=np.sqrt(val_loss))
+                    epoch_logs['val_loss'] = val_loss
+                    if acc is not None: epoch_logs['val_acc'] = acc['acc']
             if self.lr_scheduler: self._lr_scheduler_step(step_location='on_epoch_end')
             # log and check if early_stop...
             self.callback_container.on_epoch_end(epoch, epoch_logs)
@@ -645,14 +677,19 @@ class WideDeep(nn.Module):
 
         Parameters
         ----------
-        X_wide: optional np.array with the one hot encoded wide input.
-        X_deep: optional np.array with the input for the deepdense model
-        X_text: optional np.array with the input for the deeptext model
-        X_img : optional np.array with the input for the deepimage model
-        X_test: optional Dict with the testing dataset for the different
-            model branches.  Keys are 'X_wide', 'X_deep', 'X_text', 'X_img' and 'target'
-            the values are the corresponding matrices
-            e.g X_test = {'X_wide': X_wide_te, 'X_wide': X_wide_te, 'X_text': X_text_te, 'X_img': X_img_te}
+        X_wide: np.ndarray, Optional. Default=None
+            One hot encoded wide input.
+        X_deep: np.ndarray, Optional. Default=None
+            Input for the deepdense model
+        X_text: np.ndarray, Optional. Default=None
+            Input for the deeptext model
+        X_img : np.ndarray, Optional. Default=None
+            Input for the deepimage model
+        X_test: Dict, Optional. Default=None
+            Testing dataset for the different model branches.  Keys are
+            'X_wide', 'X_deep', 'X_text', 'X_img' and 'target' the values are
+            the corresponding matrices e.g X_train = {'X_wide': X_wide,
+            'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
 
         **WideDeep assumes that X_wide, X_deep and target ALWAYS exist, while
         X_text and X_img are optional
@@ -676,8 +713,9 @@ class WideDeep(nn.Module):
         """
         Returns
         -------
-        preds: np.array with the predicted probabilities of target for the
-        test dataset for  binary and multiclass methods
+        preds: np.ndarray
+            Predicted probabilities of target for the test dataset for  binary
+            and multiclass methods
         """
         preds_l = _predict(X_wide, X_deep, X_text, X_img, X_test)
         if self.method == "binary":
@@ -696,15 +734,18 @@ class WideDeep(nn.Module):
 
         Parameters
         ----------
-        col_name: column name of the feature we want to get the embeddings for
-        cat_encoding_dict: Dict with the categorical encodings. The function
-            is designed to take the 'encoding_dict' attribute from the
-            DeepPreprocessor class. Any Dict with the same structure can be used
+        col_name: str,
+            Column name of the feature we want to get the embeddings for
+        cat_encoding_dict: Dict
+            Categorical encodings. The function is designed to take the
+            'encoding_dict' attribute from the DeepPreprocessor class. Any
+            Dict with the same structure can be used
 
         Returns
         -------
-        cat_embed_dict: Dict with the categorical levels of the col_name
-            feature and the corresponding embeddings
+        cat_embed_dict: Dict
+            Categorical levels of the col_name feature and the corresponding
+            embeddings
 
         Example:
         -------

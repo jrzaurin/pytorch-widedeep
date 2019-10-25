@@ -11,6 +11,12 @@ from gensim.utils import tokenize
 
 def simple_preprocess(doc:str, lower:bool=False, deacc:bool=False, min_len:int=2,
 	max_len:int=15) -> List[str]:
+	"""
+	Gensim's simple_preprocess adding a 'lower' param to indicate wether or not to
+	lower case all the token in the texts
+
+	For more informations see: https://radimrehurek.com/gensim/utils.html
+	"""
     tokens = [
         token for token in tokenize(doc, lower=False, deacc=deacc, errors='ignore')
         if min_len <= len(token) <= max_len and not token.startswith('_')
@@ -19,12 +25,38 @@ def simple_preprocess(doc:str, lower:bool=False, deacc:bool=False, min_len:int=2
 
 
 def get_texts(texts:List[str]) -> List[List[str]]:
+	"""
+	Uses fastai's Tokenizer because it does a series of very convenients things
+	during the tokenization process
+
+	See here: https://docs.fast.ai/text.transform.html#Tokenizer
+	"""
     processed_textx = [' '.join(simple_preprocess(t)) for t in texts]
     tok = Tokenizer().process_all(processed_textx)
     return tok
 
 
 def pad_sequences(seq:List[int], maxlen:int, pad_first:bool=True, pad_idx:int=1) -> List[List[int]]:
+	"""
+	Given a List of tokenized and 'numericalised' sequences it will return padded sequences
+	according to the input parameters maxlen, pad_first and pad_idx
+
+	Parameters
+	----------
+	seq: List
+		List of int tokens
+	maxlen: Int
+		Maximum length of the padded sequences
+	pad_first: Boolean. Default=True
+		Indicates whether the padding index will be added at the beginning or the
+		end of the sequences
+	pad_idx: Int. Default=1
+		padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
+
+	Returns:
+	res: List
+		Padded sequences
+	"""
     if len(seq) >= maxlen:
         res = np.array(seq[-maxlen:]).astype('int32')
         return res
@@ -37,7 +69,26 @@ def pad_sequences(seq:List[int], maxlen:int, pad_first:bool=True, pad_idx:int=1)
 
 def build_embeddings_matrix(vocab:Vocab, word_vectors_path:str, min_freq:int,
 	verbose:int=1) -> np.ndarray:
+	"""
+	Build the embedding matrix using pretrained word vectors
 
+	Parameters
+	----------
+	vocab: Fastai's Vocab object
+		see: https://docs.fast.ai/text.transform.html#Vocab
+	word_vectors_path:str
+		path to the pretrained word embeddings
+	min_freq: Int
+		minimum frequency required for a word to be in the vocabulary
+	verbose: Int. Default=1
+
+	Returns
+	-------
+	embedding_matrix: np.ndarray
+		pretrained word embeddings. If a word in our vocabulary is not among the
+		pretrained embeddings it will be assigned the mean pretrained
+		word-embeddings vector
+	"""
 	if not os.path.isfile(word_vectors_path):
 		raise FileNotFoundError("{} not found".format(word_vectors_path))
 	if verbose: print('Indexing word vectors...')

@@ -35,24 +35,32 @@ class DeepImage(nn.Module):
 
     Parameters
     ----------
-    pretrained: boolean that indicates whether or not we use a pretrained Resnet network
-        or a series of conv layers (see conv_layer function)
-    resnet: int indicating the resnet architecture. One of 18, 34 or 50
-    freeze: int or string indicating the number of layers to freeze. If int
-        must be less than 8
-    head_layers: optional list with the sizes of the stacked dense layers in the head
+    pretrained: Boolean
+        Indicates whether or not we use a pretrained Resnet network or a
+        series of conv layers (see conv_layer function)
+    resnet: Int
+        The resnet architecture. One of 18, 34 or 50
+    freeze: Int, Str
+        number of layers to freeze. If int must be less than 8. The only
+        string allowed is 'all' which will freeze the entire network
+    head_layers: List, Optional
+        List with the sizes of the stacked dense layers in the head
         e.g: [128, 64]
-    head_dropout: optional list with the dropout between the dense layers.
-        e.g: [0.5, 0.5].
-    head_batchnorm: Optional Boolean indicating whether or not to include batch
-        normalizatin in the dense layers that form the imagehead
+    head_dropout: List, Optional
+        List with the dropout between the dense layers. e.g: [0.5, 0.5].
+    head_batchnorm: Boolean, Optional
+        Boolean indicating whether or not to include batch normalizatin in the
+        dense layers that form the imagehead
 
     Attributes
     ----------
-    backbone: Sequential stack of CNNs comprising the 'backbone' of the network
-    imagehead: Sequential stack of dense layers comprising the FC-Head (aka imagehead)
-    output_dim: integer containing the output dimension of the model. This is a
-        required attribute neccesary to build the WideDeep class
+    backbone: nn.Sequential
+        Sequential stack of CNNs comprising the 'backbone' of the network
+    imagehead: nn.Sequential
+        Sequential stack of dense layers comprising the FC-Head (aka imagehead)
+    output_dim: Int
+        The output dimension of the model. This is a required attribute
+        neccesary to build the WideDeep class
 
     Example
     --------

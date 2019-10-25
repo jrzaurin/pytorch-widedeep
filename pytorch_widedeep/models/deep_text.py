@@ -14,31 +14,45 @@ class DeepText(nn.Module):
 
     Parameters
     ----------
-    vocab_size: number of words in the vocabulary
-    hidden_dim: number of features in the hidden state h of the LSTM
-    n_layers: number of recurrent layers
-    rnn_dropout: dropout layer on the outputs of each LSTM layer except the last
-        layer
-    bidirectional: boolean indicating whether the staked RNNs are bidirectional
-    padding_idx: index of the padding token in the padded-tokenised sequences.
-        default: 1. I use the fastai tokenizer where the token index 0 is
-        reserved for the  unknown word token
-    embed_dim: optional integer indicating the dimension of the word embedding matrix
-    embedding_matrix: optional array with pretrained word embeddings
-    head_layers: optional list with the sizes of the stacked dense layers in the head
+    vocab_size: Int
+        number of words in the vocabulary
+    hidden_dim: Int
+        number of features in the hidden state h of the LSTM
+    n_layers: Int
+        number of recurrent layers
+    rnn_dropout: Int
+        dropout for the dropout layer on the outputs of each LSTM layer except
+        the last layer
+    bidirectional: Boolean
+        indicates whether the staked RNNs are bidirectional
+    padding_idx: Int
+        index of the padding token in the padded-tokenised sequences. default:
+        1. I use the fastai Tokenizer where the token index 0 is reserved for
+        the  unknown word token
+    embed_dim: Int, Optional
+        Dimension of the word embedding matrix
+    embedding_matrix: np.ndarray, Optional
+         Pretrained word embeddings
+    head_layers: List, Optional
+        List with the sizes of the stacked dense layers in the head
         e.g: [128, 64]
-    head_dropout: optional list with the dropout between the dense layers.
-        e.g: [0.5, 0.5].
-    head_batchnorm: Optional Boolean indicating whether or not to include batch
-        normalizatin in the dense layers that form the texthead
+    head_dropout: List, Optional
+        List with the dropout between the dense layers. e.g: [0.5, 0.5].
+    head_batchnorm: Boolean, Optional
+        Whether or not to include batch normalizatin in the dense layers that
+        form the texthead
 
     Attributes
     ----------
-    word_embed: Module with the word embedding matrix
-    rnn: Module with the stack of LSTMs
-    texthead: optional Sequential stack of dense layers
-    output_dim: integer containing the output dimension of the model. This is a
-        required attribute neccesary to build the WideDeep class
+    word_embed: nn.Module
+        word embedding matrix
+    rnn: nn.Module
+        Stack of LSTMs
+    texthead: nn.Sequential, Optional
+        Stack of dense layers
+    output_dim: Int
+        The output dimension of the model. This is a required attribute
+        neccesary to build the WideDeep class
 
     Example
     --------

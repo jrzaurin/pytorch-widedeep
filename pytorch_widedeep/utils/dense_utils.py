@@ -8,6 +8,25 @@ pd.options.mode.chained_assignment = None
 
 def label_encoder(df_inp:pd.DataFrame, cols:Optional[List[str]]=None,
     val_to_idx:Optional[Dict[str,Dict[str,int]]]=None):
+    r"""
+    Label-encode some features of a given dataset.
+
+    Parameters:
+    -----------
+    df_inp: pd.Dataframe
+        input dataframe
+    cols: List, Optional
+        columns to be label-encoded
+    val_to_idx: Dict, Optional
+        dictionary with the encodings
+
+    Returns:
+    --------
+    df: pd.Dataframe
+        df with Label-encoded features.
+    val_to_idx: Dict
+        Dictionary with the encoding information
+    """
 
     df = df_inp.copy()
     if cols == None:

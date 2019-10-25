@@ -29,29 +29,36 @@ class DeepDense(nn.Module):
 
     Parameters
     ----------
-    deep_column_idx: Dict containing the index of the columns that will be
-        passed through the DeepDense model. Required to slice the tensors. e.g.
-        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
-    hidden_layers: List with the number of neurons per dense layer. e.g: [64,32]
-    dropout: Optional List with the dropout between the dense layers.
-        e.g: [0.5,0.5]
-    batchnorm: Optional Boolean indicating whether or not to include batch
-        normalizatin in the dense layers
-    embeddings_input: Optional List of Tuples with the column name, number of
-        unique values and embedding dimension. e.g. [(education, 11, 32), ...]
-    continuous_cols: Optional List with the name of the numeric (aka
-        continuous) columns
+    deep_column_idx: Dict
+        Dict containing the index of the columns that will be passed through
+        the DeepDense model. Required to slice the tensors. e.g. {'education':
+        0, 'relationship': 1, 'workclass': 2, ...}
+    hidden_layers: List
+        List with the number of neurons per dense layer. e.g: [64,32]
+    dropout: List, Optional
+        List with the dropout between the dense layers. e.g: [0.5,0.5]
+    batchnorm: Boolean, Optional
+        Boolean indicating whether or not to include batch normalizatin in the
+        dense layers
+    embeddings_input: List, Optional
+        List of Tuples with the column name, number of unique values and
+        embedding dimension. e.g. [(education, 11, 32), ...]
+    continuous_cols: List, Optional
+        List with the name of the numeric (aka continuous) columns
 
     **Either embeddings_input or continuous_cols (or both) should be passed to the
     model
 
     Attributes
     ----------
-    dense: nn.Sequential model of dense layers that will receive the
-        concatenation of the  embeddings and the continuous columns
-    embed_layers: nn.ModuleDict with the embedding layers
-    output_dim: integer containing the output dimension of the model. This is a
-        required attribute neccesary to build the WideDeep class
+    dense: nn.Sequential
+        model of dense layers that will receive the concatenation of the
+        embeddings and the continuous columns
+    embed_layers: nn.ModuleDict
+        ModuleDict with the embedding layers
+    output_dim: Int
+        The output dimension of the model. This is a required attribute
+        neccesary to build the WideDeep class
 
     Example
     --------

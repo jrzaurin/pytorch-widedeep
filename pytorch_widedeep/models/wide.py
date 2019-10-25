@@ -9,12 +9,15 @@ class Wide(nn.Module):
 
     Parameters
     ----------
-	wide_dim: size of the input tensor
-	output_dim: size of the ouput tensor
+	wide_dim: Int
+        size of the input tensor
+	output_dim: Int
+        size of the ouput tensor
 
     Attributes
     ----------
-	wide_linear: the linear layer that comprises the wide branch of the model
+	wide_linear: nn.Module
+        the linear layer that comprises the wide branch of the model
 
     Example
     --------

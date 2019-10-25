@@ -1,5 +1,7 @@
 '''
-Code here is mostly based on the code from the torchsample and Keras
+Code here is mostly based on the code from the torchsample and Keras packages
+
+CREDIT TO THE TORCHSAMPLE AND KERAS TEAMS
 '''
 import numpy as np
 import os
@@ -132,14 +134,23 @@ class History(Callback):
 
 
 class LRHistory(Callback):
+    """
+    Save the learning rates during training. Given the fact that non-cyclic
+    learning rates and cyclic learning rates are called at different stages
+    during training, the saving procedure is a bit convoluted.
+    """
     def __init__(self, n_epochs):
         super(LRHistory, self).__init__()
         self.n_epochs = n_epochs
 
     def on_epoch_begin(self, epoch:int, logs:Optional[Dict]=None):
         if epoch==0 and self.model.lr_scheduler:
+            # If is the first epoch and we use a scheduler, define the
+            # lr_history Dict and save
             self.model.lr_history = {}
             if self.model.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
+                # if we use multiple schedulers, we save the learning rate for
+                # each param_group of the optimizer.
                 for model_name, opt in self.model.optimizer._optimizers.items():
                     if model_name in self.model.lr_scheduler._schedulers:
                         for group_idx, group in enumerate(opt.param_groups):
@@ -147,6 +158,8 @@ class LRHistory(Callback):
                                 ("_").join(['lr', model_name, str(group_idx)]),[]
                                 ).append(group['lr'])
             elif not self.model.cyclic:
+                # if we use one lr_scheduler and is not cyclic, save the
+                # learning rate for each param_group of the optimizer.
                 for group_idx, group in enumerate(self.model.optimizer.param_groups):
                     self.model.lr_history.setdefault(
                         ("_").join(['lr', str(group_idx)]),[]).append(group['lr'])
@@ -154,6 +167,8 @@ class LRHistory(Callback):
     def on_batch_end(self, batch:int, logs:Optional[Dict]=None):
         if self.model.lr_scheduler:
             if self.model.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
+                # if we use multiple schedulers, we save the learning rate for
+                # each param_group of the optimizer IF IS CYCLIC
                 for model_name, opt in self.model.optimizer._optimizers.items():
                     if model_name in self.model.lr_scheduler._schedulers:
                         if 'cycl' in self.model.lr_scheduler._schedulers[model_name].__class__.__name__.lower():
@@ -162,6 +177,8 @@ class LRHistory(Callback):
                                     ("_").join(['lr', model_name, str(group_idx)]),[]
                                     ).append(group['lr'])
             elif self.model.cyclic:
+                # if we use one lr_scheduler and IS CYCLIC, save the
+                # learning rate for each param_group of the optimizer.
                 for group_idx, group in enumerate(self.model.optimizer.param_groups):
                     self.model.lr_history.setdefault(
                         ("_").join(['lr', str(group_idx)]),[]).append(group['lr'])
@@ -169,6 +186,8 @@ class LRHistory(Callback):
     def on_epoch_end(self, epoch:int, logs:Optional[Dict]=None):
         if epoch != (self.n_epochs-1) and self.model.lr_scheduler:
             if self.model.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
+                # if we use multiple schedulers, we save the learning rate for
+                # each param_group of the optimizer IF IS NOT CYCLIC
                 for model_name, opt in self.model.optimizer._optimizers.items():
                     if model_name in self.model.lr_scheduler._schedulers:
                         if 'cycl' not in self.model.lr_scheduler._schedulers[model_name].__class__.__name__.lower():
@@ -177,16 +196,46 @@ class LRHistory(Callback):
                                     ("_").join(['lr', model_name, str(group_idx)]),
                                     []).append(group['lr'])
             elif not self.model.cyclic:
+                # if we use one lr_scheduler and IS NOT CYCLIC, save the
+                # learning rate for each param_group of the optimizer.
                 for group_idx, group in enumerate(self.model.optimizer.param_groups):
                     self.model.lr_history.setdefault(
                         ("_").join(['lr', str(group_idx)]),[]).append(group['lr'])
 
 
 class ModelCheckpoint(Callback):
-    """
-    Save the model after every epoch.
-    """
+    r"""
+    Save the model after every epoch. This class is almost identical to the
+    corresponding keras class. Therefore, credit to the Keras Team.
 
+    Parameters
+    ----------
+    filepath: Str,
+        Full path to save the output weights. It must contain only the root of
+        the filenames. Epoch number and '.pt' extension (for pytorch) will be
+        added.
+        e.g. filepath="path/to/output_weights/weights_out"
+        And the saved files in that directory will be named
+        weights_out_1.pt
+        weights_out_2.pt
+        ...
+    monitor: Str, default='val_loss'
+        quantity to monitor
+    verbose:Int, default=0,
+    save_best_only: Boolean, default=False,
+        the latest best model according to the quantity monitored will not be
+        overwritten.
+    mode: Str, default='auto',
+        If 'save_best_only=True', the decision to overwrite the current save
+        file is made based on either the maximization or the minimization of
+        the monitored quantity. For 'val_acc', this should be 'max', for
+        'val_loss' this should be 'min', etc. In 'auto' mode, the direction is
+        automatically inferred from the name of the monitored quantity.
+    period: Int, default=1,
+        Interval (number of epochs) between checkpoints.
+    max_save:Int, default=-1
+        Max number of outputs to save. If -1 will save all outputs
+    """
     def __init__(self, filepath:str, monitor:str='val_loss', verbose:int=0,
                  save_best_only:bool=False, mode:str='auto', period:int=1,
                  max_save:int=-1):
@@ -230,7 +279,7 @@ class ModelCheckpoint(Callback):
         self.epochs_since_last_save += 1
         if self.epochs_since_last_save >= self.period:
             self.epochs_since_last_save = 0
-            filepath = '{}_{}'.format(self.filepath, epoch+1)
+            filepath = '{}_{}.p'.format(self.filepath, epoch+1)
             if self.save_best_only:
                 current = logs.get(self.monitor)
                 if current is None:
@@ -272,11 +321,38 @@ class ModelCheckpoint(Callback):
 
 
 class EarlyStopping(Callback):
-    """
-    Stop training when a monitored quantity has stopped improving.
-    """
+    r"""
+    Stop training when a monitored quantity has stopped improving. This class
+    is almost identical to the corresponding keras class. Therefore, credit to
+    the Keras Team.
 
-    def __init__(self, monitor:str='val_loss', min_delta:int=0, patience:int=10,
+    # Arguments
+        monitor: Str, default='val_loss'.
+            Quantity to be monitored.
+        min_delta: Float, default=0.
+            minimum change in the monitored quantity to qualify as an
+            improvement, i.e. an absolute change of less than min_delta, will
+            count as no improvement.
+        patience: Int, default=10.
+            Number of epochs that produced the monitored quantity with no
+            improvement after which training will be stopped.
+        verbose: Int.
+            verbosity mode.
+        mode: Str, default='auto'
+            one of {auto, min, max}. In `min` mode, training will stop when
+            the quantity monitored has stopped decreasing; in `max` mode it
+            will stop when the quantity monitored has stopped increasing; in
+            `auto` mode, the direction is automatically inferred from the name
+            of the monitored quantity.
+        baseline: Float, Optional. default=None.
+            Baseline value for the monitored quantity to reach. Training will
+            stop if the model doesn't show improvement over the baseline.
+        restore_best_weights: Boolean, default=None
+            Whether to restore model weights from the epoch with the best
+            value of the monitored quantity. If False, the model weights
+            obtained at the last step of training are used.
+    """
+    def __init__(self, monitor:str='val_loss', min_delta:float=0., patience:int=10,
         verbose:int=0,mode:str='auto', baseline:Optional[float]=None,
         restore_best_weights:bool=False):
 

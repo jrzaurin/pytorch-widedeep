@@ -14,13 +14,11 @@ from scipy.sparse.csr import csr_matrix as sparse_matrix
 SimpleNamespace = type(sys.implementation)
 ListRules = Collection[Callable[[str],str]]
 Tokens = Collection[Collection[str]]
-
 Transforms= Union[CenterCrop, ColorJitter, Compose, FiveCrop, Grayscale,
 	Lambda, LinearTransformation, Normalize, Pad, RandomAffine,
 	RandomApply, RandomChoice, RandomCrop, RandomGrayscale,
 	RandomHorizontalFlip, RandomOrder, RandomResizedCrop, RandomRotation,
 	RandomSizedCrop, RandomVerticalFlip, Resize, Scale, TenCrop,
 	ToPILImage, ToTensor]
-
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor,Tensor,Tensor]
