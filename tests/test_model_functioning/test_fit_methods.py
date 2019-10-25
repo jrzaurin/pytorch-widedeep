@@ -25,17 +25,17 @@ target_multic = np.random.choice(3, 100)
 X_test = {'X_wide':X_wide, 'X_deep': X_deep}
 
 ##############################################################################
-# Test that the three possible methods (regression, logistic and mutliclass)
+# Test that the three possible methods (regression, binary and mutliclass)
 # work well
 ##############################################################################
 @pytest.mark.parametrize(
     'X_wide, X_deep, target, method, X_wide_test, X_deep_test, X_test, output_dim, probs_dim',
     [
     (X_wide, X_deep, target_regres, 'regression', X_wide, X_deep, None, 1, None),
-    (X_wide, X_deep, target_binary, 'logistic',   X_wide, X_deep, None, 1, 2),
+    (X_wide, X_deep, target_binary, 'binary',   X_wide, X_deep, None, 1, 2),
     (X_wide, X_deep, target_multic, 'multiclass', X_wide, X_deep, None, 3, 3),
     (X_wide, X_deep, target_regres, 'regression', None, None, X_test, 1, None),
-    (X_wide, X_deep, target_binary, 'logistic',   None, None, X_test, 1, 2),
+    (X_wide, X_deep, target_binary, 'binary',   None, None, X_test, 1, 2),
     (X_wide, X_deep, target_multic, 'multiclass', None, None, X_test, 3, 3),
     ]
     )
@@ -44,7 +44,7 @@ def test_fit_methods(X_wide, X_deep, target, method, X_wide_test, X_deep_test, X
     wide = Wide(100, output_dim)
     deepdense = model3 = DeepDense(
         hidden_layers=[32,16],
-        dropout=[0.5],
+        dropout=[0.5, 0.5],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,
         continuous_cols=colnames[-5:])
@@ -58,7 +58,7 @@ def test_fit_methods(X_wide, X_deep, target, method, X_wide_test, X_deep_test, X
         X_wide=X_wide,
         X_deep=X_deep,
         X_test=X_test)
-    if method == 'logistic':
+    if method == 'binary':
         pass
     else:
         probs = model.predict_proba(

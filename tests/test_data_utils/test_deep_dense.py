@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.preprocessing.utils.dense_utils import label_encoder
+from pytorch_widedeep.utils.dense_utils import label_encoder
 from pytorch_widedeep.preprocessing import DeepPreprocessor
 
 

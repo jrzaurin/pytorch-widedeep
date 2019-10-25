@@ -17,11 +17,11 @@ def simple_preprocess(doc:str, lower:bool=False, deacc:bool=False, min_len:int=2
 
 	For more informations see: https://radimrehurek.com/gensim/utils.html
 	"""
-    tokens = [
-        token for token in tokenize(doc, lower=False, deacc=deacc, errors='ignore')
-        if min_len <= len(token) <= max_len and not token.startswith('_')
-    ]
-    return tokens
+	tokens = [
+	    token for token in tokenize(doc, lower=False, deacc=deacc, errors='ignore')
+	    if min_len <= len(token) <= max_len and not token.startswith('_')
+	]
+	return tokens
 
 
 def get_texts(texts:List[str]) -> List[List[str]]:
@@ -31,9 +31,9 @@ def get_texts(texts:List[str]) -> List[List[str]]:
 
 	See here: https://docs.fast.ai/text.transform.html#Tokenizer
 	"""
-    processed_textx = [' '.join(simple_preprocess(t)) for t in texts]
-    tok = Tokenizer().process_all(processed_textx)
-    return tok
+	processed_textx = [' '.join(simple_preprocess(t)) for t in texts]
+	tok = Tokenizer().process_all(processed_textx)
+	return tok
 
 
 def pad_sequences(seq:List[int], maxlen:int, pad_first:bool=True, pad_idx:int=1) -> List[List[int]]:
@@ -57,14 +57,14 @@ def pad_sequences(seq:List[int], maxlen:int, pad_first:bool=True, pad_idx:int=1)
 	res: List
 		Padded sequences
 	"""
-    if len(seq) >= maxlen:
-        res = np.array(seq[-maxlen:]).astype('int32')
-        return res
-    else:
-        res = np.zeros(maxlen, dtype='int32') + pad_idx
-        if pad_first: res[-len(seq):] = seq
-        else:         res[:len(seq):] = seq
-        return res
+	if len(seq) >= maxlen:
+	    res = np.array(seq[-maxlen:]).astype('int32')
+	    return res
+	else:
+	    res = np.zeros(maxlen, dtype='int32') + pad_idx
+	    if pad_first: res[-len(seq):] = seq
+	    else:         res[:len(seq):] = seq
+	    return res
 
 
 def build_embeddings_matrix(vocab:Vocab, word_vectors_path:str, min_freq:int,

@@ -19,7 +19,7 @@ X_deep_cont = X_deep[:, 5:]
 embed_input = [(u,i,j) for u,i,j in zip(colnames[:5], [5]*5, [16]*5)]
 model1 = DeepDense(
     hidden_layers=[32,16],
-    dropout=[0.5],
+    dropout=[0.5, 0.2],
     deep_column_idx={k:v for v,k in enumerate(colnames[:5])},
     embed_input=embed_input)
 
@@ -33,7 +33,7 @@ def test_deep_dense_embed():
 continuous_cols=colnames[-5:]
 model2 = DeepDense(
 hidden_layers=[32,16],
-dropout=[0.5],
+dropout=[0.5,0.2],
 deep_column_idx={k:v for v,k in enumerate(colnames[5:])},
 continuous_cols=continuous_cols)
 
@@ -46,7 +46,7 @@ def test_deep_dense_cont():
 ###############################################################################
 model3 = DeepDense(
 hidden_layers=[32,16],
-dropout=[0.5],
+dropout=[0.5, 0.2],
 deep_column_idx={k:v for v,k in enumerate(colnames)},
 embed_input=embed_input,
 continuous_cols=continuous_cols)

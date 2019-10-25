@@ -34,13 +34,16 @@ if __name__ == '__main__':
     target = 'yield'
 
     target = df[target].values
+
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
+
     prepare_deep = DeepPreprocessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
     X_deep = prepare_deep.fit_transform(df)
 
     text_processor = TextPreprocessor(word_vectors_path=word_vectors_path)
     X_text = text_processor.fit_transform(df, text_col)
+
     image_processor = ImagePreprocessor()
     X_images = image_processor.fit_transform(df, img_col, img_path)
 
@@ -85,6 +88,7 @@ if __name__ == '__main__':
 
     model.compile(method='regression', initializers=initializers, optimizers=optimizers,
         lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
+
     model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images,
         target=target, n_epochs=1, batch_size=32, val_split=0.2)
     pdb.set_trace()

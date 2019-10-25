@@ -112,7 +112,7 @@ class DeepText(nn.Module):
 
         if self.head_layers is not None:
             assert self.head_layers[0]==self.output_dim, (
-                "The output dimension from the stack or RNNs ({}) is not consistent with "
+                "The hidden dimension from the stack or RNNs ({}) is not consistent with "
                 "the expected input dimension ({}) of the fc-head".format(
                     self.output_dim, self.head_layers[0]))
             if not head_dropout: head_dropout = [0.]*len(head_layers)

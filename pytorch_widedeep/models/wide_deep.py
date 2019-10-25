@@ -302,23 +302,25 @@ class WideDeep(nn.Module):
             self.initializer = MultipleInitializer(initializers, verbose=self.verbose)
             self.initializer.apply(self)
 
-        if isinstance(optimizers, Optimizer):
-            self.optimizer = optimizers
-        elif len(optimizers)>1:
-            opt_names = list(optimizers.keys())
-            mod_names = [n  for n, c in self.named_children()]
-            for mn in mod_names: assert mn in opt_names, "No optimizer found for {}".format(mn)
-            self.optimizer = MultipleOptimizer(optimizers)
+        if optimizers is not None:
+            if isinstance(optimizers, Optimizer):
+                self.optimizer = optimizers
+            elif len(optimizers)>1:
+                opt_names = list(optimizers.keys())
+                mod_names = [n  for n, c in self.named_children()]
+                for mn in mod_names: assert mn in opt_names, "No optimizer found for {}".format(mn)
+                self.optimizer = MultipleOptimizer(optimizers)
         else:
             self.optimizer = torch.optim.Adam(self.parameters())
 
-        if isinstance(lr_schedulers, LRScheduler):
-            self.lr_scheduler = lr_schedulers
-            self.cyclic = 'cycl' in self.lr_scheduler.__class__.__name__.lower()
-        elif len(lr_schedulers) > 1:
-            self.lr_scheduler = MultipleLRScheduler(lr_schedulers)
-            scheduler_names = [sc.__class__.__name__.lower() for _,sc in self.lr_scheduler._schedulers.items()]
-            self.cyclic = any(['cycl' in sn for sn in scheduler_names])
+        if lr_schedulers is not None:
+            if isinstance(lr_schedulers, LRScheduler):
+                self.lr_scheduler = lr_schedulers
+                self.cyclic = 'cycl' in self.lr_scheduler.__class__.__name__.lower()
+            elif len(lr_schedulers) > 1:
+                self.lr_scheduler = MultipleLRScheduler(lr_schedulers)
+                scheduler_names = [sc.__class__.__name__.lower() for _,sc in self.lr_scheduler._schedulers.items()]
+                self.cyclic = any(['cycl' in sn for sn in scheduler_names])
         else:
             self.lr_scheduler, self.cyclic = None, False
 
@@ -698,7 +700,7 @@ class WideDeep(nn.Module):
         -------
         preds: np.array with the predicted target for the test dataset.
         """
-        preds_l = _predict(X_wide, X_deep, X_text, X_img, X_test)
+        preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)
         if self.method == "regression":
             return np.vstack(preds_l).squeeze(1)
         if self.method == "binary":
@@ -717,7 +719,7 @@ class WideDeep(nn.Module):
             Predicted probabilities of target for the test dataset for  binary
             and multiclass methods
         """
-        preds_l = _predict(X_wide, X_deep, X_text, X_img, X_test)
+        preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)
         if self.method == "binary":
             preds = np.vstack(preds_l).squeeze(1)
             probs = np.zeros([preds.shape[0],2])

@@ -36,7 +36,7 @@ target = np.random.choice(2, 100)
 # Test that history saves the information adequately
 ###############################################################################
 wide = Wide(100, 1)
-deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
+deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5, 0.5], deep_column_idx=deep_column_idx,
     embed_input=embed_input, continuous_cols=colnames[-5:])
 model = WideDeep(wide=wide, deepdense=deepdense)
 
@@ -59,12 +59,12 @@ lr_schedulers_2 = {'wide': wide_sch_2,'deepdense': deep_sch_2}
     'optimizers, schedulers, len_loss_output, len_lr_output',
     [
     (optimizers_1, lr_schedulers_1, 5, 21),
-    (optimizers_2, lr_schedulers_2, 5, 6)
+    (optimizers_2, lr_schedulers_2, 5, 5)
     ]
     )
 def test_history_callback(optimizers, schedulers, len_loss_output, len_lr_output):
-	model.compile(method='logistic', optimizers=optimizers, lr_schedulers=schedulers,
-		callbacks=[LRHistory], verbose=0)
+	model.compile(method='binary', optimizers=optimizers, lr_schedulers=schedulers,
+		callbacks=[LRHistory(n_epochs=5)], verbose=0)
 	model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, target=target, n_epochs=5)
 	out = []
 	out.append(len(model.history._history['train_loss'])==len_loss_output)
@@ -80,10 +80,10 @@ def test_history_callback(optimizers, schedulers, len_loss_output, len_lr_output
 ###############################################################################
 def test_early_stop():
 	wide = Wide(100, 1)
-	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
+	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5, 0.5], deep_column_idx=deep_column_idx,
 	    embed_input=embed_input, continuous_cols=colnames[-5:])
 	model = WideDeep(wide=wide, deepdense=deepdense)
-	model.compile(method='logistic', callbacks=[EarlyStopping(min_delta=0.1, patience=3,
+	model.compile(method='binary', callbacks=[EarlyStopping(min_delta=0.1, patience=3,
 		restore_best_weights=True, verbose=1)], verbose=1)
 	model.fit(X_wide=X_wide, X_deep=X_deep, target=target, val_split=0.2, n_epochs=5)
 	# length of history = patience+1
@@ -102,10 +102,10 @@ def test_early_stop():
     )
 def test_model_checkpoint(save_best_only, max_save, n_files):
 	wide = Wide(100, 1)
-	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
+	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5, 0.5], deep_column_idx=deep_column_idx,
 	    embed_input=embed_input, continuous_cols=colnames[-5:])
 	model = WideDeep(wide=wide, deepdense=deepdense)
-	model.compile(method='logistic', callbacks=[ModelCheckpoint("weights/test_weights",
+	model.compile(method='binary', callbacks=[ModelCheckpoint("weights/test_weights",
 		save_best_only=save_best_only, max_save=max_save)], verbose=0)
 	model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=5, val_split=0.2)
 	n_saved = len(os.listdir('weights/'))

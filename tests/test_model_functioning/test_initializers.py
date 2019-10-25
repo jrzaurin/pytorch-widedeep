@@ -40,7 +40,7 @@ test_layers_1 = ['wide.wlinear.weight', 'deepdense.dense.dense_layer_1.0.weight'
 def test_initializers_1():
 
 	wide = Wide(100, 1)
-	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
+	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5, 0.5], deep_column_idx=deep_column_idx,
 	    embed_input=embed_input, continuous_cols=colnames[-5:])
 	deeptext = DeepText( vocab_size=vocab_size, embed_dim=32, padding_idx=0)
 	deepimage=DeepImage(pretrained=True)
@@ -51,7 +51,7 @@ def test_initializers_1():
 	for n,p in cmodel.named_parameters():
 		if n in test_layers_1: org_weights.append(p)
 
-	model.compile(method='logistic', verbose=0, initializers=initializers_1)
+	model.compile(method='binary', verbose=0, initializers=initializers_1)
 	init_weights = []
 	for n,p in model.named_parameters():
 		if n in test_layers_1: init_weights.append(p)
@@ -68,7 +68,7 @@ initializers_2 = { 'wide': XavierNormal, 'deepdense':XavierUniform,
 def test_initializers_with_pattern():
 
 	wide = Wide(100, 1)
-	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5], deep_column_idx=deep_column_idx,
+	deepdense = DeepDense(hidden_layers=[32,16], dropout=[0.5, 0.5], deep_column_idx=deep_column_idx,
 	    embed_input=embed_input, continuous_cols=colnames[-5:])
 	deeptext = DeepText( vocab_size=vocab_size, embed_dim=32, padding_idx=0)
 	model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, output_dim=1)
@@ -76,7 +76,7 @@ def test_initializers_with_pattern():
 	org_word_embed = []
 	for n,p in cmodel.named_parameters():
 		if 'word_embed' in n: org_word_embed.append(p)
-	model.compile(method='logistic', verbose=0, initializers=initializers_2)
+	model.compile(method='binary', verbose=0, initializers=initializers_2)
 	init_word_embed = []
 	for n,p in model.named_parameters():
 		if 'word_embed' in n:  init_word_embed.append(p)

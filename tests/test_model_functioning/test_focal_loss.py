@@ -26,7 +26,7 @@ target_multic = np.random.choice(3, 100)
 @pytest.mark.parametrize(
     'X_wide, X_deep, target, method, output_dim, probs_dim',
     [
-    (X_wide, X_deep, target_binary, 'logistic',   1, 2),
+    (X_wide, X_deep, target_binary, 'binary',   1, 2),
     (X_wide, X_deep, target_multic, 'multiclass', 3, 3)
     ]
     )
@@ -34,7 +34,7 @@ def test_focal_loss(X_wide, X_deep, target, method, output_dim, probs_dim):
 	wide = Wide(100, output_dim)
 	deepdense = model3 = DeepDense(
 	    hidden_layers=[32,16],
-	    dropout=[0.5],
+	    dropout=[0.5, 0.5],
 	    deep_column_idx=deep_column_idx,
 	    embed_input=embed_input,
 	    continuous_cols=colnames[-5:])

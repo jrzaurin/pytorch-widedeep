@@ -134,7 +134,7 @@ class History(Callback):
 
 
 class LRHistory(Callback):
-    """
+    r"""
     Save the learning rates during training. Given the fact that non-cyclic
     learning rates and cyclic learning rates are called at different stages
     during training, the saving procedure is a bit convoluted.

@@ -55,7 +55,7 @@ if __name__ == '__main__':
     optimizers = {'wide': wide_opt, 'deepdense':deep_opt}
     schedulers = {'wide': wide_sch, 'deepdense':deep_sch}
     initializers = {'wide': KaimingNormal, 'deepdense':XavierNormal}
-    callbacks = [LRHistory(n_epochs=10), EarlyStopping, ModelCheckpoint(filepath='../model_weights/wd_out')]
+    callbacks = [LRHistory(n_epochs=10), EarlyStopping, ModelCheckpoint(filepath='model_weights/wd_out')]
     metrics = [BinaryAccuracy]
 
     model.compile(

@@ -37,7 +37,7 @@ X_wide_tr, X_wide_val, X_deep_tr, X_deep_val, X_text_tr, X_text_val, X_img_tr, X
 wide = Wide(100, 1)
 deepdense = DeepDense(
     hidden_layers=[32,16],
-    dropout=[0.5],
+    dropout=[0.5,0.5],
     deep_column_idx={k:v for v,k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=colnames[-5:])
@@ -95,7 +95,7 @@ transforms2 = [Normalize(mean=mean, std=std)]
 def test_widedeep_inputs(X_wide, X_deep, X_text, X_img, X_train, X_val, target, val_split,
 	transforms, nepoch, null):
 	model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage)
-	model.compile(method='logistic', transforms=transforms, verbose=0)
+	model.compile(method='binary', transforms=transforms, verbose=0)
 	model.fit(
 		X_wide = X_wide,
 		X_deep = X_deep,

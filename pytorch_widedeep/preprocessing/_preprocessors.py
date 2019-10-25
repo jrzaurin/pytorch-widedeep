@@ -85,8 +85,7 @@ class WidePreprocessor(BasePreprocessor):
         df_wide = df.copy()[self.wide_cols]
         if self.crossed_cols is not None:
             df_wide, crossed_colnames = self._cross_cols(df_wide)
-            self.wide_crossed_cols =List
-                List with  self.wide_cols + crossed_colnames
+            self.wide_crossed_cols = self.wide_cols + crossed_colnames
         else:
             self.wide_crossed_cols = self.wide_cols
 
@@ -275,7 +274,7 @@ class TextPreprocessor(BasePreprocessor):
     From there on, for new data (loaded as a dataframe)
     >>> new_X_text = text_preprocessor.transform(new_df)
     """
-     def __init__(self, max_vocab:int=30000, min_freq:int=5,
+    def __init__(self, max_vocab:int=30000, min_freq:int=5,
         maxlen:int=80, word_vectors_path:Optional[str]=None,
         verbose:int=1):
         super(TextPreprocessor, self).__init__()
