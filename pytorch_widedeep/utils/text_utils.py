@@ -11,7 +11,7 @@ from gensim.utils import tokenize
 
 def simple_preprocess(doc:str, lower:bool=False, deacc:bool=False, min_len:int=2,
 	max_len:int=15) -> List[str]:
-	"""
+	r"""
 	Gensim's simple_preprocess adding a 'lower' param to indicate wether or not to
 	lower case all the token in the texts
 
@@ -25,7 +25,7 @@ def simple_preprocess(doc:str, lower:bool=False, deacc:bool=False, min_len:int=2
 
 
 def get_texts(texts:List[str]) -> List[List[str]]:
-	"""
+	r"""
 	Uses fastai's Tokenizer because it does a series of very convenients things
 	during the tokenization process
 
@@ -37,7 +37,7 @@ def get_texts(texts:List[str]) -> List[List[str]]:
 
 
 def pad_sequences(seq:List[int], maxlen:int, pad_first:bool=True, pad_idx:int=1) -> List[List[int]]:
-	"""
+	r"""
 	Given a List of tokenized and 'numericalised' sequences it will return padded sequences
 	according to the input parameters maxlen, pad_first and pad_idx
 
@@ -69,7 +69,7 @@ def pad_sequences(seq:List[int], maxlen:int, pad_first:bool=True, pad_idx:int=1)
 
 def build_embeddings_matrix(vocab:Vocab, word_vectors_path:str, min_freq:int,
 	verbose:int=1) -> np.ndarray:
-	"""
+	r"""
 	Build the embedding matrix using pretrained word vectors
 
 	Parameters
