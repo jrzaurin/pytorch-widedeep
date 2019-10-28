@@ -11,13 +11,11 @@ from pytorch_widedeep.initializers import *
 from pytorch_widedeep.callbacks import *
 from pytorch_widedeep.optim import RAdam
 
-import pdb
-
 use_cuda = torch.cuda.is_available()
 
 if __name__ == '__main__':
 
-    df = pd.read_csv('../data/airbnb/tmp_df.csv')
+    df = pd.read_csv('data/airbnb/airbnb_sample.csv')
 
     crossed_cols = (['property_type', 'room_type'],)
     already_dummies = [c for c in df.columns if 'amenity' in c] + ['has_house_rules']
@@ -28,9 +26,9 @@ if __name__ == '__main__':
     continuous_cols = ['latitude', 'longitude', 'security_deposit', 'extra_people']
     already_standard = ['latitude', 'longitude']
     text_col = 'description'
-    word_vectors_path = '../data/glove.6B/glove.6B.100d.txt'
+    word_vectors_path = 'data/glove.6B/glove.6B.100d.txt'
     img_col = 'id'
-    img_path = '../data/airbnb/property_picture'
+    img_path = 'data/airbnb/property_picture'
     target = 'yield'
 
     target = df[target].values
@@ -91,4 +89,3 @@ if __name__ == '__main__':
 
     model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images,
         target=target, n_epochs=1, batch_size=32, val_split=0.2)
-    pdb.set_trace()

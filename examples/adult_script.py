@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import torch
-from pathlib import Path
 
 from pytorch_widedeep.preprocessing import WidePreprocessor, DeepPreprocessor
 from pytorch_widedeep.models import Wide, DeepDense, WideDeep
@@ -12,12 +11,9 @@ from pytorch_widedeep.metrics import *
 
 use_cuda = torch.cuda.is_available()
 
-import pdb
-
 if __name__ == '__main__':
 
-    DATA_PATH = Path('../data')
-    df = pd.read_csv(DATA_PATH/'adult/adult.csv.zip')
+    df = pd.read_csv('data/adult/adult.csv.zip')
     df.columns = [c.replace("-", "_") for c in df.columns]
     df['age_buckets'] = pd.cut(df.age, bins=[16, 25, 30, 35, 40, 45, 50, 55, 60, 91], labels=np.arange(9))
     df['income_label'] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
@@ -73,4 +69,3 @@ if __name__ == '__main__':
         n_epochs=10,
         batch_size=256,
         val_split=0.2)
-    pdb.set_trace()
