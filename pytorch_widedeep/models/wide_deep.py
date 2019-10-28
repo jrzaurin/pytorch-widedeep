@@ -21,8 +21,6 @@ from tqdm import tqdm,trange
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
-import pdb
-
 
 use_cuda = torch.cuda.is_available()
 
@@ -344,6 +342,9 @@ class WideDeep(nn.Module):
 
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self)
+
+        if use_cuda:
+            self.cuda()
 
     def _activation_fn(self, inp:Tensor) -> Tensor:
         if self.method == 'regression':

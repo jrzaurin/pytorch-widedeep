@@ -9,6 +9,9 @@ from .fastai_transforms import Tokenizer, Vocab
 from gensim.utils import tokenize
 
 
+__all__ = ['simple_preprocess', 'get_texts', 'pad_sequences', 'build_embeddings_matrix']
+
+
 def simple_preprocess(doc:str, lower:bool=False, deacc:bool=False, min_len:int=2,
 	max_len:int=15) -> List[str]:
 	r"""

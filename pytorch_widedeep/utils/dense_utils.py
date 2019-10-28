@@ -6,6 +6,10 @@ from ..wdtypes import *
 
 pd.options.mode.chained_assignment = None
 
+
+__all__ = ['label_encoder']
+
+
 def label_encoder(df_inp:pd.DataFrame, cols:Optional[List[str]]=None,
     val_to_idx:Optional[Dict[str,Dict[str,int]]]=None):
     r"""

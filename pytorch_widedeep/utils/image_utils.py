@@ -14,6 +14,9 @@ import cv2
 from ..wdtypes import *
 
 
+__all__ = ['AspectAwarePreprocessor', 'SimplePreprocessor']
+
+
 class AspectAwarePreprocessor:
     def __init__(self, width:int, height:int, inter=cv2.INTER_AREA):
         self.width = width

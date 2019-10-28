@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import warnings
-
+import cv2
 
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
@@ -12,6 +12,7 @@ from tqdm import tqdm
 from ..wdtypes import *
 from ..utils.dense_utils import *
 from ..utils.text_utils import *
+from ..utils.fastai_transforms import *
 from ..utils.image_utils import *
 
 
@@ -299,7 +300,7 @@ class TextPreprocessor(BasePreprocessor):
         sequences = [self.vocab.numericalize(t) for t in self.tokens]
         padded_seq = np.array([pad_sequences(s, maxlen=self.maxlen) for s in sequences])
         if self.verbose:
-            print("The vocabulary contains {} words".format(len(self.vocab.stoi)))
+            print("The vocabulary contains {} tokens".format(len(self.vocab.stoi)))
         if self.word_vectors_path is not None:
             self.embedding_matrix = build_embeddings_matrix(self.vocab, self.word_vectors_path,
                 self.min_freq)

@@ -3,6 +3,7 @@ import torch
 from torch import nn
 from ..wdtypes import *
 
+
 class Wide(nn.Module):
     r"""simple linear layer between the one-hot encoded wide input and the output
     neuron.

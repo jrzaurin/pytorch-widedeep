@@ -6,7 +6,6 @@ from torch.utils.data import Dataset
 
 from ..wdtypes import *
 
-import pdb
 
 class WideDeepDataset(Dataset):
     r"""Dataset object to load WideDeep data to the model
