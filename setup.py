@@ -43,10 +43,12 @@ setup_kwargs = {
         "scipy",
         "scikit-learn",
         "gensim",
+        "spacy",
+        "opencv-contrib-python",
         "imutils",
+        "tqdm"
         "torch",
-        "torchvision",
-        "tqdm"],
+        "torchvision"],
     'classifiers': [
         dev_status[majorminor],
         'Environment :: Other Environment',
