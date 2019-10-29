@@ -5,6 +5,9 @@ import torch.nn.functional as F
 from .wdtypes import *
 
 
+use_cuda = torch.cuda.is_available()
+
+
 class FocalLoss(nn.Module):
     def __init__(self, alpha:float=0.25, gamma:float=1.):
         super().__init__()
@@ -23,7 +26,8 @@ class FocalLoss(nn.Module):
             input = torch.cat([1-input, input], axis=1)
             num_class = 2
         else: num_class = input.size(1)
-        binary_target = torch.eye(num_class)[target.data.cpu().long()]
+        binary_target = torch.eye(num_class)[target.long()]
+        if use_cuda: binary_target = binary_target.cuda()
         binary_target = binary_target.contiguous()
         weight = self.get_weight(input, binary_target)
         return F.binary_cross_entropy_with_logits(input, binary_target, weight, reduction='sum')/num_class

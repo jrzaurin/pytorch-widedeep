@@ -81,4 +81,4 @@ def test_initializers_with_pattern():
 	for n,p in model.named_parameters():
 		if 'word_embed' in n:  init_word_embed.append(p)
 
-	assert torch.all(org_word_embed[0] == init_word_embed[0])
+	assert torch.all(org_word_embed[0] == init_word_embed[0].cpu())

@@ -389,7 +389,7 @@ class WideDeep(nn.Module):
 
         self.eval()
         with torch.no_grad():
-            X = {k:v.cuda() for k,v in data.item()} if use_cuda else data
+            X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
             y = target.float() if self.method != 'multiclass' else target
             y = y.cuda() if use_cuda else y
 
