@@ -5,7 +5,7 @@
 
 # pytorch-widedeep
 
-A flexible package to combine tabular data with text and images via wide and
+A flexible package to combine tabular data with text and images using wide and
 deep models.
 
 ### Introduction
@@ -24,44 +24,51 @@ few lines of code.
 
 **Architecture 1**:
 
-following the notation in the [paper](https://arxiv.org/abs/1606.07792):
+<p align="center">
+  <img width="600" src="docs/figures/architecture_1.png">
+</p>
+
+Architecture 1 combines the `Wide`, one-hot encoded features (a linear model)
+with the outputs from the `DeepDense`, `DeepText` and `DeepImage` components
+connected to a final output neuron or neurons, depending on whether we are
+performing a binary classification or regression, or a multi-class
+classification. The components within the faded-pink rectangles are
+concatenated.
+
+In math terms, and following the notation in the [paper](https://arxiv.org/abs/1606.07792), Architecture 1 can be formulated as:
 
 <p align="center">
   <img width="500" src="docs/figures/architecture_1_math.png">
 </p>
 
-<p align="center">
-  <img width="600" src="docs/figures/architecture_1.png">
-</p>
 
-Where *'W'* are the weight matrices and *'a'* are the activations of the last
-layers that are going to be combined.
-
-Architecture 1 combines the `Wide`, one-hot encoded features (a linear model)
-with the outputs from the `DeepDense`, `DeepText` and `DeepImage` components
-in a final output neuron or neurons, depending on whether we are performing a
-binary classification or regression, or a multi-class classification. The
-components within the faded-pink rectangles are concatenated.
+Where *'W'* are the weight matrices applied to the wide model and to the final
+activations of the deep models, *'a'* are these final activations, and
+&phi;(x) are the cross product transformations of the original features *'x'*
 
 **Architecture 2**
-
-<p align="center">
-  <img width="300" src="docs/figures/architecture_2_math.png">
-</p>
 
 <p align="center">
   <img width="600" src="docs/figures/architecture_2.png">
 </p>
 
 Architecture 2 combines the `Wide` one-hot encoded features (a linear model)
-with the Deep components of the model in the output neuron(s), after the
-different Deep components have been themselves combined through a FC-Head
+with the Deep components of the model connected to the output neuron(s), after
+the different Deep components have been themselves combined through a FC-Head
 (that I refer as `deephead`).
+
+In math terms, and following the notation in the
+[paper](https://arxiv.org/abs/1606.07792), Architecture 2 can be formulated
+as:
+
+<p align="center">
+  <img width="300" src="docs/figures/architecture_2_math.png">
+</p>
 
 When using `pytorch-widedeep`, the assumption is that the so called `Wide` and
 `DeepDense` components in the figures are **always** present, while `DeepText`
 and `DeepImage` are optional. `pytorch-widedeep` includes some standard text
-(stack of LSTMs) and image (pretrained ResNets or stack of CNNs) models.
+(stack of LSTMs) and image (pre-trained ResNets or stack of CNNs) models.
 However, the user can use any custom model as long as it has an attribute
 called `output_dim` with the size of the last layer of activations, so that
 WideDeep can be constructed. See the examples folder for more information.
@@ -74,11 +81,11 @@ Install directly from github
 pip install git+https://github.com/jrzaurin/pytorch-widedeep.git
 ```
 
-Note that the `Pytorch` installation formula with `conda` is different than
-that of `pip`. Therefore, if you are using `conda` and have already installed
-`torch` and `torvision`, I recommend cloning the directory, removing the
-`torch` and `torchvision` dependencies from the `setup.py` file and then `pip
-install .`:
+Note that the `Pytorch` installation formula with `pip` is different than that
+of `conda`. The later installs the cuda toolkit. Therefore, if you are using
+`conda` and have already installed `torch` and `torvision`, I recommend
+cloning the directory, removing the `torch` and `torchvision` dependencies
+from the `setup.py` file and then `pip install .`:
 
 ```
 # Clone the repository
@@ -96,25 +103,24 @@ pip install -e .
 
 Binary classification with the [adult
 dataset]([adult](https://www.kaggle.com/wenruliu/adult-income-dataset/downloads/adult.csv/2))
-using Wide and DeepDense and defaults settings.
+using `Wide` and `DeepDense` and defaults settings.
 
 ```python
 from pytorch_widedeep.preprocessing import WidePreprocessor, DeepPreprocessor
 from pytorch_widedeep.models import Wide, DeepDense, WideDeep
 from pytorch_widedeep.metrics import BinaryAccuracy
 
-# these next 4 lines are not related to pytorch-widedeep
+# these next 3 lines are not directly related to pytorch-widedeep
 df = pd.read_csv('data/adult/adult.csv.zip')
-df.columns = [c.replace("-", "_") for c in df.columns]
 df['income_label'] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
 df.drop('income', axis=1, inplace=True)
 
 # prepare wide, crossed, embedding and continuous columns
-wide_cols  = ['education', 'relationship', 'workclass', 'occupation','native_country', 'gender']
-cross_cols = [('education', 'occupation'), ('native_country', 'occupation')]
-embed_cols = [('education',16), ('workclass',16), ('occupation',16),('native_country',16)]
-cont_cols  = ["age", "hours_per_week"]
-target_col = 'income_label'
+wide_cols  = ['education', 'relationship', 'workclass', 'occupation','native-country', 'gender']
+cross_cols = [('education', 'occupation'), ('native-country', 'occupation')]
+embed_cols = [('education',16), ('workclass',16), ('occupation',16),('native-country',32)]
+cont_cols  = ["age", "hours-per-week"]
+target_col = 'income-label'
 
 # target
 target = df[target_col].values
@@ -139,7 +145,13 @@ model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=5, batch_size=25
 model.predict(X_wide=X_wide_te, X_deep=X_deep_te)
 ```
 
-Of course, one can do much more, such as using different initializations, optimizers or learning rate schedulers for each component of the overall model. Adding FC-Heads to the Text and Image components, etc. See the examples folder for a better understanding of the content of the package and its functionalities.
+Of course, one can do much more, such as using different initializations,
+optimizers or learning rate schedulers for each component of the overall
+model. Adding FC-Heads to the Text and Image components, etc. See the examples
+folder for a better understanding of the content of the package and its
+functionalities. In the likely case github does not render the notebooks, or
+it renders them missing some parts (e.g. colorful headlines) they are saved as
+markdown files in the docs folder.
 
 ### Testing
 
