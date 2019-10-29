@@ -38,6 +38,7 @@ setup_kwargs = {
     'url': '',
     'license': 'MIT',
     'install_requires': [
+        "pytest",
         "pandas",
         "numpy",
         "scipy",
@@ -46,7 +47,7 @@ setup_kwargs = {
         "spacy",
         "opencv-contrib-python",
         "imutils",
-        "tqdm"
+        "tqdm",
         "torch",
         "torchvision"],
     'classifiers': [
