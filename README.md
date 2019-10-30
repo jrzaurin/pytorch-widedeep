@@ -89,7 +89,7 @@ from the `setup.py` file and then `pip install .`:
 
 ```
 # Clone the repository
-git clone git@github.com:jrzaurin/pytorch-widedeep.git
+git clone https://github.com/jrzaurin/pytorch-widedeep
 cd pytorch-widedeep
 
 # remove torch and torchvision dependencies from setup.py and the run:
