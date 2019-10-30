@@ -122,7 +122,7 @@ There are 4 main notebooks in the `examples` folder plus some additional
 files. These notebooks cover most of the utilities of this package and can
 also act as documentation. In the likely case that github does not render the
 notebooks, or it renders them missing some parts, they are saved as markdown
-files in the docs folder.
+files in the `docs` folder.
 
 ### Quick start
 
@@ -175,8 +175,8 @@ model.predict(X_wide=X_wide_te, X_deep=X_deep_te)
 Of course, one can do much more, such as using different initializations,
 optimizers or learning rate schedulers for each component of the overall
 model. Adding FC-Heads to the Text and Image components, etc. See the
-`examples` folder for a better understanding of the content of the package and
-its functionalities.
+`examples` or the `docs` folders for a better understanding of the content of
+the package and its functionalities.
 
 ### Testing
 
