@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img width="250" src="docs/figures/widedeep_logo.png">
+  <img width="450" src="docs/figures/widedeep_logo.png">
 </p>
 
 # pytorch-widedeep
@@ -99,6 +99,13 @@ pip install .
 pip install -e .
 ```
 
+### Examples
+
+There are 4 main notebooks in the `examples` folder plus some additional
+files. These notebooks cover most of the utilities of this package. In the
+likely case that github does not render the notebooks, or it renders them
+missing some parts, they are saved as markdown files in the docs folder.
+
 ### Quick start
 
 Binary classification with the [adult
@@ -149,9 +156,7 @@ Of course, one can do much more, such as using different initializations,
 optimizers or learning rate schedulers for each component of the overall
 model. Adding FC-Heads to the Text and Image components, etc. See the examples
 folder for a better understanding of the content of the package and its
-functionalities. In the likely case github does not render the notebooks, or
-it renders them missing some parts (e.g. colorful headlines) they are saved as
-markdown files in the docs folder.
+functionalities.
 
 ### Testing
 
