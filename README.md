@@ -82,39 +82,22 @@ the user can use any custom model as long as it has an attribute called
 
 ### Installation
 
-#### OSX and Ubuntu (with and without CUDA)
-
 Install directly from github
 
 ```bash
 pip install git+https://github.com/jrzaurin/pytorch-widedeep.git
 ```
 
-#### If you are using Conda with CUDA
-
-The `Pytorch` installation command with `pip` is different than that of
-`conda` with CUDA. The later installs the CUDA toolkit, see
-[here](https://pytorch.org/). Therefore, if you are using `conda` and have
-already installed `torch` and `torvision`, or do not want to use `pip`, I
-recommend cloning the directory, removing the `torch` and `torchvision`
-dependencies from the `setup.py` file and then `pip install .`:
+#### Developer Install
 
 ```bash
 # Clone the repository
 git clone https://github.com/jrzaurin/pytorch-widedeep
 cd pytorch-widedeep
 
-# remove torch and torchvision dependencies from setup.py and the run:
-pip install .
-
-# or dev mode
+# Install in dev mode
 pip install -e .
 ```
-
-Note that installing `pytorch-widedeep` directly from github would still work
-(moreover if you do not have CUDA), but the CUDA toolkit is recommended for a
-more efficient installation/performance.
-
 
 ### Examples
 
