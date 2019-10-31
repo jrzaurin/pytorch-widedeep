@@ -1,4 +1,3 @@
-# From https://github.com/KristianHolsheimer/keras-gym
 #!/usr/bin/env python3
 # flake8: noqa
 import os
