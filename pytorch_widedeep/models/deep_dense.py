@@ -5,20 +5,11 @@ from torch import nn
 from ..wdtypes import *
 
 
-def dense_layer(inp:int, out:int, dropout:float, batchnorm=False):
-    if batchnorm:
-        return nn.Sequential(
-            nn.Linear(inp, out),
-            nn.BatchNorm1d(out),
-            nn.LeakyReLU(inplace=True),
-            nn.Dropout(dropout)
-            )
-    else:
-        return nn.Sequential(
-            nn.Linear(inp, out),
-            nn.LeakyReLU(inplace=True),
-            nn.Dropout(dropout)
-            )
+def dense_layer(inp:int, out:int, p:float=0., bn=False):
+    layers = [nn.Linear(inp, out), nn.LeakyReLU(inplace=True)]
+    if bn: layers.append(nn.BatchNorm1d(out))
+    layers.append(nn.Dropout(p))
+    return nn.Sequential(*layers)
 
 
 class DeepDense(nn.Module):
@@ -43,6 +34,8 @@ class DeepDense(nn.Module):
     embeddings_input: List, Optional
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
+    embed_p: float
+        embeddings dropout
     continuous_cols: List, Optional
         List with the name of the numeric (aka continuous) columns
 
@@ -83,6 +76,7 @@ class DeepDense(nn.Module):
         dropout:Optional[List[float]]=None,
         batchnorm:Optional[bool]=None,
         embed_input:Optional[List[Tuple[str,int,int]]]=None,
+        embed_p:float=0.,
         continuous_cols:Optional[List[str]]=None):
 
         super(DeepDense, self).__init__()
@@ -94,6 +88,7 @@ class DeepDense(nn.Module):
         if self.embed_input is not None:
             self.embed_layers = nn.ModuleDict({'emb_layer_'+col: nn.Embedding(val, dim)
                 for col, val, dim in self.embed_input})
+            self.embed_dropout = nn.Dropout(embed_p)
             emb_inp_dim = np.sum([embed[2] for embed in self.embed_input])
         else:
             emb_inp_dim = 0
@@ -118,16 +113,12 @@ class DeepDense(nn.Module):
 
     def forward(self, X:Tensor)->Tensor:
         if self.embed_input is not None:
-            embed = [self.embed_layers['emb_layer_'+col](X[:,self.deep_column_idx[col]].long())
+            x = [self.embed_layers['emb_layer_'+col](X[:,self.deep_column_idx[col]].long())
                 for col,_,_ in self.embed_input]
+            x = torch.cat(x, 1)
+            x = self.embed_dropout(x)
         if self.continuous_cols is not None:
             cont_idx = [self.deep_column_idx[col] for col in self.continuous_cols]
-            cont = X[:, cont_idx].float()
-        try:
-            out = self.dense(torch.cat(embed+[cont], 1))
-        except:
-            try:
-                out = self.dense(torch.cat(embed, 1))
-            except:
-                out = self.dense(cont)
-        return out
+            x_cont = X[:, cont_idx].float()
+            x = torch.cat([x, x_cont], 1) if self.embed_input is not None else x_cont
+        return self.dense(x)

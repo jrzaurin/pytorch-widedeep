@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import warnings
 import torch
 import torch.nn as nn
@@ -22,6 +23,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
 
+n_cpus = os.cpu_count()
 use_cuda = torch.cuda.is_available()
 
 
@@ -309,7 +311,7 @@ class WideDeep(nn.Module):
                 for mn in mod_names: assert mn in opt_names, "No optimizer found for {}".format(mn)
                 self.optimizer = MultipleOptimizer(optimizers)
         else:
-            self.optimizer = torch.optim.Adam(self.parameters())
+            self.optimizer = torch.optim.AdamW(self.parameters())
 
         if lr_schedulers is not None:
             if isinstance(lr_schedulers, LRScheduler):
@@ -593,7 +595,7 @@ class WideDeep(nn.Module):
         self.batch_size = batch_size
         train_set, eval_set = self._train_val_split(X_wide, X_deep, X_text, X_img,
             X_train, X_val, val_split, target, seed)
-        train_loader = DataLoader(dataset=train_set, batch_size=batch_size, num_workers=8)
+        train_loader = DataLoader(dataset=train_set, batch_size=batch_size, num_workers=n_cpus)
         train_steps =  (len(train_loader.dataset) // batch_size) + 1
         self.callback_container.on_train_begin({'batch_size': batch_size,
             'train_steps': train_steps, 'n_epochs': n_epochs})
@@ -619,7 +621,7 @@ class WideDeep(nn.Module):
 
             if epoch % validation_freq  == (validation_freq - 1):
                 if eval_set is not None:
-                    eval_loader = DataLoader(dataset=eval_set, batch_size=batch_size, num_workers=8,
+                    eval_loader = DataLoader(dataset=eval_set, batch_size=batch_size, num_workers=n_cpus,
                         shuffle=False)
                     eval_steps =  (len(eval_loader.dataset) // batch_size) + 1
                     self.valid_running_loss = 0.
@@ -657,8 +659,8 @@ class WideDeep(nn.Module):
             if X_img is not None:  load_dict.update({'X_img': X_img})
             test_set = WideDeepDataset(**load_dict)
 
-        test_loader = torch.utils.data.DataLoader(dataset=test_set,
-            batch_size=self.batch_size,shuffle=False)
+        test_loader = DataLoader(dataset=test_set, batch_size=self.batch_size, num_workers=n_cpus,
+            shuffle=False)
         test_steps =  (len(test_loader.dataset) // test_loader.batch_size) + 1
 
         self.eval()
