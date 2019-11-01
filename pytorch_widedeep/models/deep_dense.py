@@ -26,11 +26,11 @@ class DeepDense(nn.Module):
         0, 'relationship': 1, 'workclass': 2, ...}
     hidden_layers: List
         List with the number of neurons per dense layer. e.g: [64,32]
-    dropout: List, Optional
-        List with the dropout between the dense layers. e.g: [0.5,0.5]
-    batchnorm: Boolean, Optional
+    batchnorm: Boolean
         Boolean indicating whether or not to include batch normalizatin in the
         dense layers
+    dropout: List, Optional
+        List with the dropout between the dense layers. e.g: [0.5,0.5]
     embeddings_input: List, Optional
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
@@ -73,8 +73,8 @@ class DeepDense(nn.Module):
     def __init__(self,
         deep_column_idx:Dict[str,int],
         hidden_layers:List[int],
+        batchnorm:bool=False,
         dropout:Optional[List[float]]=None,
-        batchnorm:Optional[bool]=None,
         embed_input:Optional[List[Tuple[str,int,int]]]=None,
         embed_p:float=0.,
         continuous_cols:Optional[List[str]]=None):
@@ -101,7 +101,6 @@ class DeepDense(nn.Module):
         input_dim = emb_inp_dim + cont_inp_dim
         hidden_layers = [input_dim] + hidden_layers
         if not dropout: dropout = [0.]*len(hidden_layers)
-        batchnorm = batchnorm if batchnorm is not None else False
         self.dense = nn.Sequential()
         for i in range(1, len(hidden_layers)):
             self.dense.add_module(
