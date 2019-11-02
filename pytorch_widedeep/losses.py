@@ -15,7 +15,6 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
 
     def get_weight(self, x:Tensor, t:Tensor) -> Tensor:
-        self.alpha,self.gamma = 0.25,1
         p = x.sigmoid()
         pt = p*t + (1-p)*(1-t)
         w = self.alpha*t + (1-self.alpha)*(1-t)
