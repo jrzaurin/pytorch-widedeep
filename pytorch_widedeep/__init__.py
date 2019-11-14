@@ -3,12 +3,7 @@
 ##################################################
 import os.path
 
-try:
-    with open(os.path.join(os.path.dirname(__file__), "VERSION")) as f:
-        __version__ = f.read().strip()
-except Exception:
-    raise
-
+from pytorch_widedeep.version import __version__
 
 ##################################################
 # utils module accessible from pytorch-widedeep
