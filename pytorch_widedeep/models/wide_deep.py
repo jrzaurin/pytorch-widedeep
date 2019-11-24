@@ -22,6 +22,7 @@ from tqdm import tqdm,trange
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
+import pdb
 
 n_cpus = os.cpu_count()
 use_cuda = torch.cuda.is_available()
@@ -209,7 +210,7 @@ class WideDeep(nn.Module):
         ----------
         method: Str
              One of ('regression', 'binary' or 'multiclass')
-        optimizers: Optimizer, Dict. Optional, Default=Adam
+        optimizers: Optimizer, Dict. Optional, Default=AdamW
             Either an optimizers object (e.g. torch.optim.Adam()) or a
             dictionary where there keys are the model's children (i.e. wide,
             deepdense, deeptext, deepimage and/or deephead)  and the values
@@ -511,6 +512,51 @@ class WideDeep(nn.Module):
             eval_set = WideDeepDataset(**X_val, transforms=self.transforms)
         return train_set, eval_set
 
+    def _warm_step(self, model:nn.Module, model_name:str, loader:DataLoader, n_epochs:int):
+
+        model.train()
+
+        optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)
+        steps = len(loader)
+        step_size_up = round((steps*n_epochs) / 12.5)
+        step_size_down = (steps*n_epochs) - step_size_up
+        scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=0.001, max_lr=0.01,
+            step_size_up=step_size_up, step_size_down=step_size_down, cycle_momentum=False)
+
+        pdb.set_trace()
+        for epoch in range(n_epochs):
+            running_loss=0.
+            with trange(steps, disable=self.verbose != 1) as t:
+                for batch_idx, (data, target) in zip(t, loader):
+
+                    X = data[model_name].cuda() if use_cuda else data[model_name]
+                    y = target.float() if self.method != 'multiclass' else target
+                    y = y.cuda() if use_cuda else y
+
+                    optimizer.zero_grad()
+                    y_pred = self._activation_fn(model(X))
+                    loss   = self._loss_fn(y_pred, y)
+                    loss.backward()
+                    optimizer.step()
+                    scheduler.step()
+
+                    running_loss += loss.item()
+                    avg_loss = running_loss/(batch_idx+1)
+
+                    if self.metric is not None:
+                        acc = self.metric(y_pred, y)
+                        t.set_postfix(metrics=acc, loss=avg_loss)
+                    else:
+                        t.set_postfix(loss=np.sqrt(avg_loss))
+
+    def warm_up(self, loader:DataLoader, n_epochs:Union[int,Dict[str,int]]=1):
+
+        print('Warming up wide weights')
+        self._warm_step(self.wide, 'wide', loader, n_epochs=n_epochs)
+
+        print('Warming up wide weights')
+        self._warm_step(self.deepdense, 'deepdense', loader, n_epochs=n_epochs)
+
     def fit(self,
         X_wide:Optional[np.ndarray]=None,
         X_deep:Optional[np.ndarray]=None,
@@ -596,6 +642,9 @@ class WideDeep(nn.Module):
         train_set, eval_set = self._train_val_split(X_wide, X_deep, X_text, X_img,
             X_train, X_val, val_split, target, seed)
         train_loader = DataLoader(dataset=train_set, batch_size=batch_size, num_workers=n_cpus)
+        self.warm_up(train_loader, n_epochs=4)
+        pdb.set_trace()
+
         train_steps =  (len(train_loader.dataset) // batch_size) + 1
         self.callback_container.on_train_begin({'batch_size': batch_size,
             'train_steps': train_steps, 'n_epochs': n_epochs})
