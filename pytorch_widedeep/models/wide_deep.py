@@ -16,13 +16,12 @@ from ._wd_dataset import WideDeepDataset
 from ._multiple_optimizer import MultipleOptimizer
 from ._multiple_lr_scheduler import MultipleLRScheduler
 from ._multiple_transforms import MultipleTransforms
+from ._wdmodel_type import WDModel
 from .deep_dense import dense_layer
 
 from tqdm import tqdm,trange
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
-
-import pdb
 
 n_cpus = os.cpu_count()
 use_cuda = torch.cuda.is_available()
@@ -202,7 +201,8 @@ class WideDeep(nn.Module):
         with_focal_loss:bool=False,
         alpha:float=0.25,
         gamma:float=2,
-        verbose:int=1):
+        verbose:int=1,
+        seed:int=1):
         r"""
         Function to set a number of attributes that are used during the training process.
 
@@ -251,6 +251,8 @@ class WideDeep(nn.Module):
             Focal Loss parameters. See: https://arxiv.org/pdf/1708.02002.pdf
         verbose: Int
             Setting it to 0 will print nothing during training.
+        seed: Int, Default=1
+            Random seed to be used throughout all the methods
 
         Attributes
         ----------
@@ -286,6 +288,7 @@ class WideDeep(nn.Module):
         >>> ... lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
         """
         self.verbose = verbose
+        self.seed = seed
         self.early_stop = False
         self.method = method
         self.with_focal_loss = with_focal_loss
@@ -349,214 +352,6 @@ class WideDeep(nn.Module):
         if use_cuda:
             self.cuda()
 
-    def _activation_fn(self, inp:Tensor) -> Tensor:
-        if self.method == 'regression':
-            return inp
-        if self.method == 'binary':
-            return torch.sigmoid(inp)
-        if self.method == 'multiclass':
-            return F.softmax(inp, dim=1)
-
-    def _loss_fn(self, y_pred:Tensor, y_true:Tensor) -> Tensor:
-        if self.with_focal_loss:
-            return FocalLoss(self.alpha, self.gamma)(y_pred, y_true)
-        if self.method == 'regression':
-            return F.mse_loss(y_pred, y_true.view(-1, 1))
-        if self.method == 'binary':
-            return F.binary_cross_entropy(y_pred, y_true.view(-1, 1), weight=self.class_weight)
-        if self.method == 'multiclass':
-            return F.cross_entropy(y_pred, y_true, weight=self.class_weight)
-
-    def _training_step(self, data:Dict[str, Tensor], target:Tensor, batch_idx:int):
-        self.train()
-        X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
-        y = target.float() if self.method != 'multiclass' else target
-        y = y.cuda() if use_cuda else y
-
-        self.optimizer.zero_grad()
-        y_pred =  self._activation_fn(self.forward(X))
-        loss = self._loss_fn(y_pred, y)
-        loss.backward()
-        self.optimizer.step()
-
-        self.train_running_loss += loss.item()
-        avg_loss = self.train_running_loss/(batch_idx+1)
-
-        if self.metric is not None:
-            acc = self.metric(y_pred, y)
-            return acc, avg_loss
-        else:
-            return None, avg_loss
-
-    def _validation_step(self, data:Dict[str, Tensor], target:Tensor, batch_idx:int):
-
-        self.eval()
-        with torch.no_grad():
-            X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
-            y = target.float() if self.method != 'multiclass' else target
-            y = y.cuda() if use_cuda else y
-
-            y_pred = self._activation_fn(self.forward(X))
-            loss = self._loss_fn(y_pred, y)
-            self.valid_running_loss += loss.item()
-            avg_loss = self.valid_running_loss/(batch_idx+1)
-
-        if self.metric is not None:
-            acc = self.metric(y_pred, y)
-            return acc, avg_loss
-        else:
-            return None, avg_loss
-
-    def _lr_scheduler_step(self, step_location:str):
-        r"""
-        Function to execute the learning rate schedulers steps.
-        If the lr_scheduler is Cyclic (i.e. CyclicLR or OneCycleLR), the step
-        must  happen after training each bach durig training. On the other
-        hand, if the  scheduler is not Cyclic, is expected to be called after
-        validation.
-
-        Parameters
-        ----------
-        step_location: Str
-            Indicates where to run the lr_scheduler step
-        """
-        if self.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler' and self.cyclic:
-            if step_location == 'on_batch_end':
-                for model_name, scheduler in self.lr_scheduler._schedulers.items():
-                    if 'cycl' in scheduler.__class__.__name__.lower(): scheduler.step()
-            elif step_location == 'on_epoch_end':
-                for scheduler_name, scheduler in self.lr_scheduler._schedulers.items():
-                    if 'cycl' not in scheduler.__class__.__name__.lower(): scheduler.step()
-        elif self.cyclic:
-            if step_location == 'on_batch_end': self.lr_scheduler.step()
-            else: pass
-        elif self.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
-            if step_location == 'on_epoch_end': self.lr_scheduler.step()
-            else: pass
-        elif step_location == 'on_epoch_end': self.lr_scheduler.step()
-        else: pass
-
-    def _train_val_split(self,
-        X_wide:Optional[np.ndarray]=None,
-        X_deep:Optional[np.ndarray]=None,
-        X_text:Optional[np.ndarray]=None,
-        X_img:Optional[np.ndarray]=None,
-        X_train:Optional[Dict[str,np.ndarray]]=None,
-        X_val:Optional[Dict[str,np.ndarray]]=None,
-        val_split:Optional[float]=None,
-        target:Optional[np.ndarray]=None,
-        seed:int=1):
-        r"""
-        If a validation set (X_val) is passed to the fit method, or val_split
-        is specified, the train/val split will happen internally. A number of
-        options are allowed in terms of data inputs. For parameter
-        information, please, see the .fit() method documentation
-
-        Returns
-        -------
-        train_set: WideDeepDataset
-            WideDeepDataset object that will be loaded through
-            torch.utils.data.DataLoader
-        eval_set : WideDeepDataset
-            WideDeepDataset object that will be loaded through
-            torch.utils.data.DataLoader
-        """
-        # Without validation
-        if X_val is None and val_split is None:
-            # if a train dictionary is passed, check if text and image datasets
-            # are present and instantiate the WideDeepDataset class
-            if X_train is not None:
-                X_wide, X_deep, target = X_train['X_wide'], X_train['X_deep'], X_train['target']
-                if 'X_text' in X_train.keys(): X_text = X_train['X_text']
-                if 'X_img' in X_train.keys(): X_img = X_train['X_img']
-            X_train={'X_wide': X_wide, 'X_deep': X_deep, 'target': target}
-            try: X_train.update({'X_text': X_text})
-            except: pass
-            try: X_train.update({'X_img': X_img})
-            except: pass
-            train_set = WideDeepDataset(**X_train, transforms=self.transforms)
-            eval_set = None
-        # With validation
-        else:
-            if X_val is not None:
-                # if a validation dictionary is passed, then if not train
-                # dictionary is passed we build it with the input arrays
-                # (either the dictionary or the arrays must be passed)
-                if X_train is None:
-                    X_train = {'X_wide':X_wide, 'X_deep': X_deep, 'target': target}
-                    if X_text is not None: X_train.update({'X_text': X_text})
-                    if X_img is not None:  X_train.update({'X_img': X_img})
-            else:
-                # if a train dictionary is passed, check if text and image
-                # datasets are present. The train/val split using val_split
-                if X_train is not None:
-                    X_wide, X_deep, target = X_train['X_wide'], X_train['X_deep'], X_train['target']
-                    if 'X_text' in X_train.keys(): X_text = X_train['X_text']
-                    if 'X_img' in X_train.keys(): X_img = X_train['X_img']
-                X_tr_wide, X_val_wide, X_tr_deep, X_val_deep, y_tr, y_val = train_test_split(X_wide,
-                    X_deep, target, test_size=val_split, random_state=seed)
-                X_train = {'X_wide':X_tr_wide, 'X_deep': X_tr_deep, 'target': y_tr}
-                X_val = {'X_wide':X_val_wide, 'X_deep': X_val_deep, 'target': y_val}
-                try:
-                    X_tr_text, X_val_text = train_test_split(X_text, test_size=val_split,
-                        random_state=seed)
-                    X_train.update({'X_text': X_tr_text}), X_val.update({'X_text': X_val_text})
-                except: pass
-                try:
-                    X_tr_img, X_val_img = train_test_split(X_img, test_size=val_split,
-                        random_state=seed)
-                    X_train.update({'X_img': X_tr_img}), X_val.update({'X_img': X_val_img})
-                except: pass
-            # At this point the X_train and X_val dictionaries have been built
-            train_set = WideDeepDataset(**X_train, transforms=self.transforms)
-            eval_set = WideDeepDataset(**X_val, transforms=self.transforms)
-        return train_set, eval_set
-
-    def _warm_step(self, model:nn.Module, model_name:str, loader:DataLoader, n_epochs:int):
-
-        model.train()
-
-        optimizer = torch.optim.AdamW(model.parameters(), lr=0.001)
-        steps = len(loader)
-        step_size_up = round((steps*n_epochs) / 12.5)
-        step_size_down = (steps*n_epochs) - step_size_up
-        scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=0.001, max_lr=0.01,
-            step_size_up=step_size_up, step_size_down=step_size_down, cycle_momentum=False)
-
-        pdb.set_trace()
-        for epoch in range(n_epochs):
-            running_loss=0.
-            with trange(steps, disable=self.verbose != 1) as t:
-                for batch_idx, (data, target) in zip(t, loader):
-
-                    X = data[model_name].cuda() if use_cuda else data[model_name]
-                    y = target.float() if self.method != 'multiclass' else target
-                    y = y.cuda() if use_cuda else y
-
-                    optimizer.zero_grad()
-                    y_pred = self._activation_fn(model(X))
-                    loss   = self._loss_fn(y_pred, y)
-                    loss.backward()
-                    optimizer.step()
-                    scheduler.step()
-
-                    running_loss += loss.item()
-                    avg_loss = running_loss/(batch_idx+1)
-
-                    if self.metric is not None:
-                        acc = self.metric(y_pred, y)
-                        t.set_postfix(metrics=acc, loss=avg_loss)
-                    else:
-                        t.set_postfix(loss=np.sqrt(avg_loss))
-
-    def warm_up(self, loader:DataLoader, n_epochs:Union[int,Dict[str,int]]=1):
-
-        print('Warming up wide weights')
-        self._warm_step(self.wide, 'wide', loader, n_epochs=n_epochs)
-
-        print('Warming up wide weights')
-        self._warm_step(self.deepdense, 'deepdense', loader, n_epochs=n_epochs)
-
     def fit(self,
         X_wide:Optional[np.ndarray]=None,
         X_deep:Optional[np.ndarray]=None,
@@ -570,7 +365,9 @@ class WideDeep(nn.Module):
         validation_freq:int=1,
         batch_size:int=32,
         patience:int=10,
-        seed:int=1):
+        warm_up:bool=False,
+        warm_epochs:int=4,
+        warm_max_lr:float=0.01):
         r"""
         fit method that must run after calling 'compile'
 
@@ -604,8 +401,14 @@ class WideDeep(nn.Module):
         patience: Int, Default=10
             Number of epochs without improving the target metric before we
             stop the fit
-        seed: Int, Default=1
-            Random seed for the train/val split
+        warm_up: Boolean, Default=False
+            Warm up the models individually
+        warm_epochs: Int, Default=4
+            Number of warm up epochs
+        warm_max_lr: Float, Default=0.01
+            Warming up will happen using a slanted triangular learning rates
+            (https://arxiv.org/pdf/1801.06146.pdf). warm_max_lr indicates the
+            maximum learning rate that will be used during the cycle
 
         **WideDeep assumes that X_wide, X_deep and target ALWAYS exist, while
         X_text and X_img are optional
@@ -640,15 +443,14 @@ class WideDeep(nn.Module):
 
         self.batch_size = batch_size
         train_set, eval_set = self._train_val_split(X_wide, X_deep, X_text, X_img,
-            X_train, X_val, val_split, target, seed)
+            X_train, X_val, val_split, target)
         train_loader = DataLoader(dataset=train_set, batch_size=batch_size, num_workers=n_cpus)
-        self.warm_up(train_loader, n_epochs=4)
-        pdb.set_trace()
-
         train_steps =  (len(train_loader.dataset) // batch_size) + 1
+        if warm_up: self._warm_up(train_loader, warm_epochs, warm_max_lr)
         self.callback_container.on_train_begin({'batch_size': batch_size,
             'train_steps': train_steps, 'n_epochs': n_epochs})
 
+        if self.verbose: print('Training')
         for epoch in range(n_epochs):
             # train step...
             epoch_logs={}
@@ -667,7 +469,6 @@ class WideDeep(nn.Module):
             epoch_logs['train_loss'] = train_loss
             if acc is not None: epoch_logs['train_acc'] = acc['acc']
             # eval step...
-
             if epoch % validation_freq  == (validation_freq - 1):
                 if eval_set is not None:
                     eval_loader = DataLoader(dataset=eval_set, batch_size=batch_size, num_workers=n_cpus,
@@ -692,37 +493,6 @@ class WideDeep(nn.Module):
                 break
             self.callback_container.on_train_end(epoch)
         self.train()
-
-    def _predict(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
-        X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->List:
-        r"""
-        Hidden method to avoid code repetition in predict and predict_proba.
-        For parameter information, please, see the .predict() method
-        documentation
-        """
-        if X_test is not None:
-            test_set = WideDeepDataset(**X_test)
-        else:
-            load_dict = {'X_wide': X_wide, 'X_deep': X_deep}
-            if X_text is not None: load_dict.update({'X_text': X_text})
-            if X_img is not None:  load_dict.update({'X_img': X_img})
-            test_set = WideDeepDataset(**load_dict)
-
-        test_loader = DataLoader(dataset=test_set, batch_size=self.batch_size, num_workers=n_cpus,
-            shuffle=False)
-        test_steps =  (len(test_loader.dataset) // test_loader.batch_size) + 1
-
-        self.eval()
-        preds_l = []
-        with torch.no_grad():
-            with trange(test_steps, disable=self.verbose != 1) as t:
-                for i, data in zip(t, test_loader):
-                    t.set_description('predict')
-                    X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
-                    preds = self._activation_fn(self.forward(X)).cpu().data.numpy()
-                    preds_l.append(preds)
-        self.train()
-        return preds_l
 
     def predict(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
         X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->np.ndarray:
@@ -829,3 +599,253 @@ class WideDeep(nn.Module):
         for idx,value in inv_encoding_dict.items():
             cat_embed_dict[value] = embed_mtx[idx]
         return cat_embed_dict
+
+    def _activation_fn(self, inp:Tensor) -> Tensor:
+        if self.method == 'regression':
+            return inp
+        if self.method == 'binary':
+            return torch.sigmoid(inp)
+        if self.method == 'multiclass':
+            return F.softmax(inp, dim=1)
+
+    def _loss_fn(self, y_pred:Tensor, y_true:Tensor) -> Tensor:
+        if self.with_focal_loss:
+            return FocalLoss(self.alpha, self.gamma)(y_pred, y_true)
+        if self.method == 'regression':
+            return F.mse_loss(y_pred, y_true.view(-1, 1))
+        if self.method == 'binary':
+            return F.binary_cross_entropy(y_pred, y_true.view(-1, 1), weight=self.class_weight)
+        if self.method == 'multiclass':
+            return F.cross_entropy(y_pred, y_true, weight=self.class_weight)
+
+    def _train_val_split(self,
+        X_wide:Optional[np.ndarray]=None,
+        X_deep:Optional[np.ndarray]=None,
+        X_text:Optional[np.ndarray]=None,
+        X_img:Optional[np.ndarray]=None,
+        X_train:Optional[Dict[str,np.ndarray]]=None,
+        X_val:Optional[Dict[str,np.ndarray]]=None,
+        val_split:Optional[float]=None,
+        target:Optional[np.ndarray]=None):
+        r"""
+        If a validation set (X_val) is passed to the fit method, or val_split
+        is specified, the train/val split will happen internally. A number of
+        options are allowed in terms of data inputs. For parameter
+        information, please, see the .fit() method documentation
+
+        Returns
+        -------
+        train_set: WideDeepDataset
+            WideDeepDataset object that will be loaded through
+            torch.utils.data.DataLoader
+        eval_set : WideDeepDataset
+            WideDeepDataset object that will be loaded through
+            torch.utils.data.DataLoader
+        """
+        # Without validation
+        if X_val is None and val_split is None:
+            # if a train dictionary is passed, check if text and image datasets
+            # are present and instantiate the WideDeepDataset class
+            if X_train is not None:
+                X_wide, X_deep, target = X_train['X_wide'], X_train['X_deep'], X_train['target']
+                if 'X_text' in X_train.keys(): X_text = X_train['X_text']
+                if 'X_img' in X_train.keys(): X_img = X_train['X_img']
+            X_train={'X_wide': X_wide, 'X_deep': X_deep, 'target': target}
+            try: X_train.update({'X_text': X_text})
+            except: pass
+            try: X_train.update({'X_img': X_img})
+            except: pass
+            train_set = WideDeepDataset(**X_train, transforms=self.transforms)
+            eval_set = None
+        # With validation
+        else:
+            if X_val is not None:
+                # if a validation dictionary is passed, then if not train
+                # dictionary is passed we build it with the input arrays
+                # (either the dictionary or the arrays must be passed)
+                if X_train is None:
+                    X_train = {'X_wide':X_wide, 'X_deep': X_deep, 'target': target}
+                    if X_text is not None: X_train.update({'X_text': X_text})
+                    if X_img is not None:  X_train.update({'X_img': X_img})
+            else:
+                # if a train dictionary is passed, check if text and image
+                # datasets are present. The train/val split using val_split
+                if X_train is not None:
+                    X_wide, X_deep, target = X_train['X_wide'], X_train['X_deep'], X_train['target']
+                    if 'X_text' in X_train.keys(): X_text = X_train['X_text']
+                    if 'X_img' in X_train.keys(): X_img = X_train['X_img']
+                X_tr_wide, X_val_wide, X_tr_deep, X_val_deep, y_tr, y_val = train_test_split(X_wide,
+                    X_deep, target, test_size=val_split, random_state=self.seed)
+                X_train = {'X_wide':X_tr_wide, 'X_deep': X_tr_deep, 'target': y_tr}
+                X_val = {'X_wide':X_val_wide, 'X_deep': X_val_deep, 'target': y_val}
+                try:
+                    X_tr_text, X_val_text = train_test_split(X_text, test_size=val_split,
+                        random_state=self.seed)
+                    X_train.update({'X_text': X_tr_text}), X_val.update({'X_text': X_val_text})
+                except: pass
+                try:
+                    X_tr_img, X_val_img = train_test_split(X_img, test_size=val_split,
+                        random_state=self.seed)
+                    X_train.update({'X_img': X_tr_img}), X_val.update({'X_img': X_val_img})
+                except: pass
+            # At this point the X_train and X_val dictionaries have been built
+            train_set = WideDeepDataset(**X_train, transforms=self.transforms)
+            eval_set = WideDeepDataset(**X_val, transforms=self.transforms)
+        return train_set, eval_set
+
+    def _warm_model(self, model:WDModel, model_name:str, loader:DataLoader, n_epochs:int,
+        max_lr:float):
+        r"""
+        To Warm up the different models that comprise WideDeep we will use a
+        triangular learning rate schedule and one single cycle over
+        The cycle will go from max_lr/10. to max_lr.
+        """
+        if self.verbose: print('Warming up {} for {} epochs'.format(model_name, n_epochs))
+
+        model.train()
+
+        optimizer = torch.optim.AdamW(model.parameters(), lr=max_lr/10.)
+        steps = len(loader)
+        step_size_up = round((steps*n_epochs) * 0.1)
+        step_size_down = (steps*n_epochs) - step_size_up
+        scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=max_lr/10.,
+            max_lr=max_lr, step_size_up=step_size_up, step_size_down=step_size_down,
+            cycle_momentum=False)
+
+        for epoch in range(n_epochs):
+            running_loss=0.
+            with trange(steps, disable=self.verbose != 1) as t:
+                for batch_idx, (data, target) in zip(t, loader):
+                    t.set_description('epoch %i' % (epoch+1))
+                    X = data[model_name].cuda() if use_cuda else data[model_name]
+                    y = target.float() if self.method != 'multiclass' else target
+                    y = y.cuda() if use_cuda else y
+
+                    optimizer.zero_grad()
+                    y_pred = self._activation_fn(model(X))
+                    loss   = self._loss_fn(y_pred, y)
+                    loss.backward()
+                    optimizer.step()
+                    scheduler.step()
+
+                    running_loss += loss.item()
+                    avg_loss = running_loss/(batch_idx+1)
+
+                    if self.metric is not None:
+                        acc = self.metric(y_pred, y)
+                        t.set_postfix(metrics=acc, loss=avg_loss)
+                    else:
+                        t.set_postfix(loss=np.sqrt(avg_loss))
+
+    def _warm_up(self, loader:DataLoader, n_epochs:int, max_lr:float):
+
+        if self.deephead is not None:
+            raise ValueError(
+                "Currently warming up is only supported without a fully connected 'DeepHead'")
+
+        self._warm_model(self.wide, 'wide', loader, n_epochs, max_lr)
+        self._warm_model(self.deepdense, 'deepdense', loader, n_epochs, max_lr)
+        if self.deeptext is not None:
+            self._warm_model(self.deeptext, 'deeptext', loader, n_epochs, max_lr)
+        if self.deepimage is not None:
+            self._warm_model(self.deepimage, 'deepimage', loader, n_epochs, max_lr)
+
+    def _lr_scheduler_step(self, step_location:str):
+        r"""
+        Function to execute the learning rate schedulers steps.
+        If the lr_scheduler is Cyclic (i.e. CyclicLR or OneCycleLR), the step
+        must  happen after training each bach durig training. On the other
+        hand, if the  scheduler is not Cyclic, is expected to be called after
+        validation.
+
+        Parameters
+        ----------
+        step_location: Str
+            Indicates where to run the lr_scheduler step
+        """
+        if self.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler' and self.cyclic:
+            if step_location == 'on_batch_end':
+                for model_name, scheduler in self.lr_scheduler._schedulers.items():
+                    if 'cycl' in scheduler.__class__.__name__.lower(): scheduler.step()
+            elif step_location == 'on_epoch_end':
+                for scheduler_name, scheduler in self.lr_scheduler._schedulers.items():
+                    if 'cycl' not in scheduler.__class__.__name__.lower(): scheduler.step()
+        elif self.cyclic:
+            if step_location == 'on_batch_end': self.lr_scheduler.step()
+            else: pass
+        elif self.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
+            if step_location == 'on_epoch_end': self.lr_scheduler.step()
+            else: pass
+        elif step_location == 'on_epoch_end': self.lr_scheduler.step()
+        else: pass
+
+    def _training_step(self, data:Dict[str, Tensor], target:Tensor, batch_idx:int):
+        self.train()
+        X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
+        y = target.float() if self.method != 'multiclass' else target
+        y = y.cuda() if use_cuda else y
+
+        self.optimizer.zero_grad()
+        y_pred =  self._activation_fn(self.forward(X))
+        loss = self._loss_fn(y_pred, y)
+        loss.backward()
+        self.optimizer.step()
+
+        self.train_running_loss += loss.item()
+        avg_loss = self.train_running_loss/(batch_idx+1)
+
+        if self.metric is not None:
+            acc = self.metric(y_pred, y)
+            return acc, avg_loss
+        else:
+            return None, avg_loss
+
+    def _validation_step(self, data:Dict[str, Tensor], target:Tensor, batch_idx:int):
+
+        self.eval()
+        with torch.no_grad():
+            X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
+            y = target.float() if self.method != 'multiclass' else target
+            y = y.cuda() if use_cuda else y
+
+            y_pred = self._activation_fn(self.forward(X))
+            loss = self._loss_fn(y_pred, y)
+            self.valid_running_loss += loss.item()
+            avg_loss = self.valid_running_loss/(batch_idx+1)
+
+        if self.metric is not None:
+            acc = self.metric(y_pred, y)
+            return acc, avg_loss
+        else:
+            return None, avg_loss
+
+    def _predict(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
+        X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->List:
+        r"""
+        Hidden method to avoid code repetition in predict and predict_proba.
+        For parameter information, please, see the .predict() method
+        documentation
+        """
+        if X_test is not None:
+            test_set = WideDeepDataset(**X_test)
+        else:
+            load_dict = {'X_wide': X_wide, 'X_deep': X_deep}
+            if X_text is not None: load_dict.update({'X_text': X_text})
+            if X_img is not None:  load_dict.update({'X_img': X_img})
+            test_set = WideDeepDataset(**load_dict)
+
+        test_loader = DataLoader(dataset=test_set, batch_size=self.batch_size, num_workers=n_cpus,
+            shuffle=False)
+        test_steps =  (len(test_loader.dataset) // test_loader.batch_size) + 1
+
+        self.eval()
+        preds_l = []
+        with torch.no_grad():
+            with trange(test_steps, disable=self.verbose != 1) as t:
+                for i, data in zip(t, test_loader):
+                    t.set_description('predict')
+                    X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
+                    preds = self._activation_fn(self.forward(X)).cpu().data.numpy()
+                    preds_l.append(preds)
+        self.train()
+        return preds_l
