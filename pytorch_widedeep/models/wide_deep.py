@@ -437,7 +437,7 @@ class WideDeep(nn.Module):
         train_set, eval_set = self._train_val_split(X_wide, X_deep, X_text, X_img,
             X_train, X_val, val_split, target)
         train_loader = DataLoader(dataset=train_set, batch_size=batch_size, num_workers=n_cpus)
-        train_steps =  (len(train_loader.dataset) // batch_size) + 1
+        train_steps =  len(train_loader)
         if warm_up: self._warm_up(train_loader, warm_epochs, warm_max_lr)
         self.callback_container.on_train_begin({'batch_size': batch_size,
             'train_steps': train_steps, 'n_epochs': n_epochs})
@@ -465,7 +465,7 @@ class WideDeep(nn.Module):
                 if eval_set is not None:
                     eval_loader = DataLoader(dataset=eval_set, batch_size=batch_size, num_workers=n_cpus,
                         shuffle=False)
-                    eval_steps =  (len(eval_loader.dataset) // batch_size) + 1
+                    eval_steps =  len(eval_loader)
                     self.valid_running_loss = 0.
                     with trange(eval_steps, disable=self.verbose != 1) as v:
                         for i, (data,target) in zip(v, eval_loader):
