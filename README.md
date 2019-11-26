@@ -157,9 +157,10 @@ model.predict(X_wide=X_wide_te, X_deep=X_deep_te)
 
 Of course, one can do much more, such as using different initializations,
 optimizers or learning rate schedulers for each component of the overall
-model. Adding FC-Heads to the Text and Image components, etc. See the
-`examples` or the `docs` folders for a better understanding of the content of
-the package and its functionalities.
+model. Adding FC-Heads to the Text and Image components. Using the [Focal
+Loss](https://arxiv.org/abs/1708.02002), warming up individual components
+before joined training, etc. See the `examples` or the `docs` folders for a
+better understanding of the content of the package and its functionalities.
 
 ### Testing
 
