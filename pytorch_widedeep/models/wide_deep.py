@@ -16,12 +16,12 @@ from ._wd_dataset import WideDeepDataset
 from ._multiple_optimizer import MultipleOptimizer
 from ._multiple_lr_scheduler import MultipleLRScheduler
 from ._multiple_transforms import MultipleTransforms
+from ._wdmodel_type import WDModel
 from .deep_dense import dense_layer
 
 from tqdm import tqdm,trange
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
-
 
 n_cpus = os.cpu_count()
 use_cuda = torch.cuda.is_available()
@@ -76,15 +76,6 @@ class WideDeep(nn.Module):
     the final prediction) so that  these activations are collected by WideDeep and
     combined accordingly. In  addition, the models MUST also contain an attribute
     'output_dim' with the size of these last layers of activations.
-
-    Attributes
-    ----------
-    deephead: nn.Sequential
-        stack of dense layers comprising the FC-Head (aka imagehead) can be
-        custom designed
-
-    ** The remaining attributes that will be set as we compile and run the model are
-        discussed within the corresponding methods.
 
     Example
     --------
@@ -164,9 +155,9 @@ class WideDeep(nn.Module):
         Parameters
         ----------
         X: List
-            List of Dict where the keys are the model names (wide, deepdense,
-            deeptext and deepimage) and the values are the corresponding
-            Tensors
+            List of Dict where the keys are the model names ('wide',
+            'deepdense', 'deeptext' and 'deepimage') and the values are the
+            corresponding Tensors
         """
         # Wide output: direct connection to the output neuron(s)
         out = self.wide(X['wide'])
@@ -201,33 +192,35 @@ class WideDeep(nn.Module):
         with_focal_loss:bool=False,
         alpha:float=0.25,
         gamma:float=2,
-        verbose:int=1):
+        verbose:int=1,
+        seed:int=1):
         r"""
-        Function to set a number of attributes that are used during the training process.
+        Function to set a number of attributes that will be used during the
+        training process.
 
         Parameters
         ----------
         method: Str
              One of ('regression', 'binary' or 'multiclass')
-        optimizers: Optimizer, Dict. Optional, Default=Adam
+        optimizers: Optimizer, Dict. Optional, Default=AdamW
             Either an optimizers object (e.g. torch.optim.Adam()) or a
-            dictionary where there keys are the model's children (i.e. wide,
-            deepdense, deeptext, deepimage and/or deephead)  and the values
-            are the corresponding optimizers. If multiple optimizers are used
-            the  dictionary MUST contain an optimizer per child.
+            dictionary where there keys are the model's children (i.e. 'wide',
+            'deepdense', 'deeptext', 'deepimage' and/or 'deephead')  and the
+            values are the corresponding optimizers. If multiple optimizers
+            are used the  dictionary MUST contain an optimizer per child.
         lr_schedulers: LRScheduler, Dict. Optional. Default=None
             Either a LRScheduler object (e.g
-            torch.optim.lr_scheduler.StepLR(opt, step_size=5)) or  dictionary
-            where there keys are the model's children (i.e. wide, deepdense,
-            deeptext, deepimage and/or deephead)  and the values are the
+            torch.optim.lr_scheduler.StepLR(opt, step_size=5)) or dictionary
+            where there keys are the model's children (i.e. 'wide', 'deepdense',
+            'deeptext', 'deepimage' and/or 'deephead') and the values are the
             corresponding learning rate schedulers.
         initializers: Dict, Optional. Default=None
-            Dict where there keys are the model's children (i.e. wide,
-            deepdense, deeptext, deepimage and/or deephead) and the values are
-            the corresponding initializers.
+            Dict where there keys are the model's children (i.e. 'wide',
+            'deepdense', 'deeptext', 'deepimage' and/or 'deephead') and the
+            values are the corresponding initializers.
         transforms: List, Optional. Default=None
             List with torchvision.transforms to be applied to the image
-            component of the model
+            component of the model (i.e. 'deepimage')
         callbacks: List, Optional. Default=None
             Callbacks available are: ModelCheckpoint, EarlyStopping, and
             LRHistory. The History callback is used by default.
@@ -250,13 +243,16 @@ class WideDeep(nn.Module):
             Focal Loss parameters. See: https://arxiv.org/pdf/1708.02002.pdf
         verbose: Int
             Setting it to 0 will print nothing during training.
+        seed: Int, Default=1
+            Random seed to be used throughout all the methods
 
         Attributes
         ----------
         Attributes that are not direct assignations of parameters
 
         self.cyclic: Boolean
-            Indicates if any of the lr_schedulers is CyclicLR or OneCycleLR
+            Indicates if any of the lr_schedulers is cyclic (i.e. CyclicLR or
+            OneCycleLR)
 
         Example
         --------
@@ -285,11 +281,11 @@ class WideDeep(nn.Module):
         >>> ... lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
         """
         self.verbose = verbose
+        self.seed = seed
         self.early_stop = False
         self.method = method
         self.with_focal_loss = with_focal_loss
-        if self.with_focal_loss:
-            self.alpha, self.gamma = alpha, gamma
+        if self.with_focal_loss: self.alpha, self.gamma = alpha, gamma
 
         if isinstance(class_weight, float):
             self.class_weight = torch.tensor([1.-class_weight, class_weight])
@@ -345,8 +341,256 @@ class WideDeep(nn.Module):
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self)
 
-        if use_cuda:
-            self.cuda()
+        if use_cuda: self.cuda()
+
+    def fit(self,
+        X_wide:Optional[np.ndarray]=None,
+        X_deep:Optional[np.ndarray]=None,
+        X_text:Optional[np.ndarray]=None,
+        X_img:Optional[np.ndarray]=None,
+        X_train:Optional[Dict[str,np.ndarray]]=None,
+        X_val:Optional[Dict[str,np.ndarray]]=None,
+        val_split:Optional[float]=None,
+        target:Optional[np.ndarray]=None,
+        n_epochs:int=1,
+        validation_freq:int=1,
+        batch_size:int=32,
+        patience:int=10,
+        warm_up:bool=False,
+        warm_epochs:int=4,
+        warm_max_lr:float=0.01):
+        r"""
+        fit method that must run after calling 'compile'
+
+        Parameters
+        ----------
+        X_wide: np.ndarray, Optional. Default=None
+            One hot encoded wide input.
+        X_deep: np.ndarray, Optional. Default=None
+            Input for the deepdense model
+        X_text: np.ndarray, Optional. Default=None
+            Input for the deeptext model
+        X_img : np.ndarray, Optional. Default=None
+            Input for the deepimage model
+        X_train: Dict, Optional. Default=None
+            Training dataset for the different model branches.  Keys are
+            'X_wide', 'X_deep', 'X_text', 'X_img' and 'target' the values are
+            the corresponding matrices e.g X_train = {'X_wide': X_wide,
+            'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
+        X_val: Dict, Optional. Default=None
+            Validation dataset for the different model branches.  Keys are
+            'X_wide', 'X_deep', 'X_text', 'X_img' and 'target' the values are
+            the corresponding matrices e.g X_val = {'X_wide': X_wide,
+            'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
+        val_split: Float, Optional. Default=None
+            train/val split
+        target: np.ndarray, Optional. Default=None
+            target values
+        n_epochs: Int, Default=1
+        validation_freq: Int, Default=1
+        batch_size: Int, Default=32
+        patience: Int, Default=10
+            Number of epochs without improving the target metric before we
+            stop the fit
+        warm_up: Boolean, Default=False
+            Warm up the models individually before starting the joined training
+        warm_epochs: Int, Default=4
+            Number of warm up epochs
+        warm_max_lr: Float, Default=0.01
+            Warming up will happen using a slanted triangular learning rates
+            (https://arxiv.org/pdf/1801.06146.pdf). warm_max_lr indicates the
+            maximum learning rate that will be used during the cycle. The
+            minimum (base_lr) learning rate is warm_max_lr/10.
+
+        **WideDeep assumes that X_wide, X_deep and target ALWAYS exist, while
+        X_text and X_img are optional
+        **Either X_train or X_wide, X_deep and target must be passed to the
+        fit method
+
+        Example
+        --------
+        Assuming you have already built and compiled the model
+
+        Ex 1. using train input arrays directly and no validation
+        >>> model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=10, batch_size=256)
+
+        Ex 2: using train input arrays directly and validation with val_split
+        >>> model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=10, batch_size=256, val_split=0.2)
+
+        Ex 3: using train dict and val_split
+        >>> X_train = {'X_wide': X_wide, 'X_deep': X_deep, 'target': y}
+        >>> model.fit(X_train, n_epochs=10, batch_size=256, val_split=0.2)
+
+        Ex 4: validation using training and validation dicts
+        >>> X_train = {'X_wide': X_wide_tr, 'X_deep': X_deep_tr, 'target': y_tr}
+        >>> X_val = {'X_wide': X_wide_val, 'X_deep': X_deep_val, 'target': y_val}
+        >>> model.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
+        """
+
+        if X_train is None and (X_wide is None or X_deep is None or target is None):
+            raise ValueError(
+                "Training data is missing. Either a dictionary (X_train) with "
+                "the training dataset or at least 3 arrays (X_wide, X_deep, "
+                "target) must be passed to the fit method")
+
+        self.batch_size = batch_size
+        train_set, eval_set = self._train_val_split(X_wide, X_deep, X_text, X_img,
+            X_train, X_val, val_split, target)
+        train_loader = DataLoader(dataset=train_set, batch_size=batch_size, num_workers=n_cpus)
+        train_steps =  (len(train_loader.dataset) // batch_size) + 1
+        if warm_up: self._warm_up(train_loader, warm_epochs, warm_max_lr)
+        self.callback_container.on_train_begin({'batch_size': batch_size,
+            'train_steps': train_steps, 'n_epochs': n_epochs})
+
+        if self.verbose: print('Training')
+        for epoch in range(n_epochs):
+            # train step...
+            epoch_logs={}
+            self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
+            self.train_running_loss = 0.
+            with trange(train_steps, disable=self.verbose != 1) as t:
+                for batch_idx, (data,target) in zip(t, train_loader):
+                    t.set_description('epoch %i' % (epoch+1))
+                    acc, train_loss = self._training_step(data, target, batch_idx)
+                    if acc is not None:
+                        t.set_postfix(metrics=acc, loss=train_loss)
+                    else:
+                        t.set_postfix(loss=np.sqrt(train_loss))
+                    if self.lr_scheduler: self._lr_scheduler_step(step_location='on_batch_end')
+                    self.callback_container.on_batch_end(batch=batch_idx)
+            epoch_logs['train_loss'] = train_loss
+            if acc is not None: epoch_logs['train_acc'] = acc['acc']
+            # eval step...
+            if epoch % validation_freq  == (validation_freq - 1):
+                if eval_set is not None:
+                    eval_loader = DataLoader(dataset=eval_set, batch_size=batch_size, num_workers=n_cpus,
+                        shuffle=False)
+                    eval_steps =  (len(eval_loader.dataset) // batch_size) + 1
+                    self.valid_running_loss = 0.
+                    with trange(eval_steps, disable=self.verbose != 1) as v:
+                        for i, (data,target) in zip(v, eval_loader):
+                            v.set_description('valid')
+                            acc, val_loss = self._validation_step(data, target, i)
+                            if acc is not None:
+                                v.set_postfix(metrics=acc, loss=val_loss)
+                            else:
+                                v.set_postfix(loss=np.sqrt(val_loss))
+                    epoch_logs['val_loss'] = val_loss
+                    if acc is not None: epoch_logs['val_acc'] = acc['acc']
+            if self.lr_scheduler: self._lr_scheduler_step(step_location='on_epoch_end')
+            # log and check if early_stop...
+            self.callback_container.on_epoch_end(epoch, epoch_logs)
+            if self.early_stop:
+                self.callback_container.on_train_end(epoch)
+                break
+            self.callback_container.on_train_end(epoch)
+        self.train()
+
+    def predict(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
+        X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->np.ndarray:
+        r"""
+        fit method that must run after calling 'compile'
+
+        Parameters
+        ----------
+        X_wide: np.ndarray, Optional. Default=None
+            One hot encoded wide input.
+        X_deep: np.ndarray, Optional. Default=None
+            Input for the deepdense model
+        X_text: np.ndarray, Optional. Default=None
+            Input for the deeptext model
+        X_img : np.ndarray, Optional. Default=None
+            Input for the deepimage model
+        X_test: Dict, Optional. Default=None
+            Testing dataset for the different model branches.  Keys are
+            'X_wide', 'X_deep', 'X_text', 'X_img' and 'target' the values are
+            the corresponding matrices e.g X_train = {'X_wide': X_wide,
+            'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
+
+        **WideDeep assumes that X_wide, X_deep and target ALWAYS exist, while
+        X_text and X_img are optional
+
+        Returns
+        -------
+        preds: np.array with the predicted target for the test dataset.
+        """
+        preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)
+        if self.method == "regression":
+            return np.vstack(preds_l).squeeze(1)
+        if self.method == "binary":
+            preds = np.vstack(preds_l).squeeze(1)
+            return (preds > 0.5).astype('int')
+        if self.method == "multiclass":
+            preds = np.vstack(preds_l)
+            return np.argmax(preds, 1)
+
+    def predict_proba(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
+        X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->np.ndarray:
+        r"""
+        Returns
+        -------
+        preds: np.ndarray
+            Predicted probabilities of target for the test dataset for  binary
+            and multiclass methods
+        """
+        preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)
+        if self.method == "binary":
+            preds = np.vstack(preds_l).squeeze(1)
+            probs = np.zeros([preds.shape[0],2])
+            probs[:,0] = 1-preds
+            probs[:,1] = preds
+            return probs
+        if self.method == "multiclass":
+            return np.vstack(preds_l)
+
+    def get_embeddings(self, col_name:str,
+        cat_encoding_dict:Dict[str,Dict[str,int]]) -> Dict[str,np.ndarray]:
+        r"""
+        Get the learned embeddings for the categorical features passed through deepdense.
+
+        Parameters
+        ----------
+        col_name: str,
+            Column name of the feature we want to get the embeddings for
+        cat_encoding_dict: Dict
+            Categorical encodings. The function is designed to take the
+            'encoding_dict' attribute from the DeepPreprocessor class. Any
+            Dict with the same structure can be used
+
+        Returns
+        -------
+        cat_embed_dict: Dict
+            Categorical levels of the col_name feature and the corresponding
+            embeddings
+
+        Example:
+        -------
+        Assuming we have already train the model:
+
+        >>> model.get_embeddings(col_name='education', cat_encoding_dict=deep_preprocessor.encoding_dict)
+        {'11th': array([-0.42739448, -0.22282735,  0.36969638,  0.4445322 ,  0.2562272 ,
+        0.11572784, -0.01648579,  0.09027119,  0.0457597 , -0.28337458], dtype=float32),
+         'HS-grad': array([-0.10600474, -0.48775527,  0.3444158 ,  0.13818645, -0.16547225,
+        0.27409762, -0.05006042, -0.0668492 , -0.11047247,  0.3280354 ], dtype=float32),
+        ...
+        }
+
+        where:
+
+        >>> deep_preprocessor.encoding_dict['education']
+        {'11th': 0, 'HS-grad': 1, 'Assoc-acdm': 2, 'Some-college': 3, '10th': 4, 'Prof-school': 5,
+        '7th-8th': 6, 'Bachelors': 7, 'Masters': 8, 'Doctorate': 9, '5th-6th': 10, 'Assoc-voc': 11,
+        '9th': 12, '12th': 13, '1st-4th': 14, 'Preschool': 15}
+        """
+        for n,p in self.named_parameters():
+            if 'embed_layers' in n and col_name in n:
+                embed_mtx = p.cpu().data.numpy()
+        encoding_dict = cat_encoding_dict[col_name]
+        inv_encoding_dict = {v:k for k,v in encoding_dict.items()}
+        cat_embed_dict = {}
+        for idx,value in inv_encoding_dict.items():
+            cat_embed_dict[value] = embed_mtx[idx]
+        return cat_embed_dict
 
     def _activation_fn(self, inp:Tensor) -> Tensor:
         if self.method == 'regression':
@@ -366,75 +610,6 @@ class WideDeep(nn.Module):
         if self.method == 'multiclass':
             return F.cross_entropy(y_pred, y_true, weight=self.class_weight)
 
-    def _training_step(self, data:Dict[str, Tensor], target:Tensor, batch_idx:int):
-        self.train()
-        X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
-        y = target.float() if self.method != 'multiclass' else target
-        y = y.cuda() if use_cuda else y
-
-        self.optimizer.zero_grad()
-        y_pred =  self._activation_fn(self.forward(X))
-        loss = self._loss_fn(y_pred, y)
-        loss.backward()
-        self.optimizer.step()
-
-        self.train_running_loss += loss.item()
-        avg_loss = self.train_running_loss/(batch_idx+1)
-
-        if self.metric is not None:
-            acc = self.metric(y_pred, y)
-            return acc, avg_loss
-        else:
-            return None, avg_loss
-
-    def _validation_step(self, data:Dict[str, Tensor], target:Tensor, batch_idx:int):
-
-        self.eval()
-        with torch.no_grad():
-            X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
-            y = target.float() if self.method != 'multiclass' else target
-            y = y.cuda() if use_cuda else y
-
-            y_pred = self._activation_fn(self.forward(X))
-            loss = self._loss_fn(y_pred, y)
-            self.valid_running_loss += loss.item()
-            avg_loss = self.valid_running_loss/(batch_idx+1)
-
-        if self.metric is not None:
-            acc = self.metric(y_pred, y)
-            return acc, avg_loss
-        else:
-            return None, avg_loss
-
-    def _lr_scheduler_step(self, step_location:str):
-        r"""
-        Function to execute the learning rate schedulers steps.
-        If the lr_scheduler is Cyclic (i.e. CyclicLR or OneCycleLR), the step
-        must  happen after training each bach durig training. On the other
-        hand, if the  scheduler is not Cyclic, is expected to be called after
-        validation.
-
-        Parameters
-        ----------
-        step_location: Str
-            Indicates where to run the lr_scheduler step
-        """
-        if self.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler' and self.cyclic:
-            if step_location == 'on_batch_end':
-                for model_name, scheduler in self.lr_scheduler._schedulers.items():
-                    if 'cycl' in scheduler.__class__.__name__.lower(): scheduler.step()
-            elif step_location == 'on_epoch_end':
-                for scheduler_name, scheduler in self.lr_scheduler._schedulers.items():
-                    if 'cycl' not in scheduler.__class__.__name__.lower(): scheduler.step()
-        elif self.cyclic:
-            if step_location == 'on_batch_end': self.lr_scheduler.step()
-            else: pass
-        elif self.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
-            if step_location == 'on_epoch_end': self.lr_scheduler.step()
-            else: pass
-        elif step_location == 'on_epoch_end': self.lr_scheduler.step()
-        else: pass
-
     def _train_val_split(self,
         X_wide:Optional[np.ndarray]=None,
         X_deep:Optional[np.ndarray]=None,
@@ -443,8 +618,7 @@ class WideDeep(nn.Module):
         X_train:Optional[Dict[str,np.ndarray]]=None,
         X_val:Optional[Dict[str,np.ndarray]]=None,
         val_split:Optional[float]=None,
-        target:Optional[np.ndarray]=None,
-        seed:int=1):
+        target:Optional[np.ndarray]=None):
         r"""
         If a validation set (X_val) is passed to the fit method, or val_split
         is specified, the train/val split will happen internally. A number of
@@ -493,17 +667,17 @@ class WideDeep(nn.Module):
                     if 'X_text' in X_train.keys(): X_text = X_train['X_text']
                     if 'X_img' in X_train.keys(): X_img = X_train['X_img']
                 X_tr_wide, X_val_wide, X_tr_deep, X_val_deep, y_tr, y_val = train_test_split(X_wide,
-                    X_deep, target, test_size=val_split, random_state=seed)
+                    X_deep, target, test_size=val_split, random_state=self.seed)
                 X_train = {'X_wide':X_tr_wide, 'X_deep': X_tr_deep, 'target': y_tr}
                 X_val = {'X_wide':X_val_wide, 'X_deep': X_val_deep, 'target': y_val}
                 try:
                     X_tr_text, X_val_text = train_test_split(X_text, test_size=val_split,
-                        random_state=seed)
+                        random_state=self.seed)
                     X_train.update({'X_text': X_tr_text}), X_val.update({'X_text': X_val_text})
                 except: pass
                 try:
                     X_tr_img, X_val_img = train_test_split(X_img, test_size=val_split,
-                        random_state=seed)
+                        random_state=self.seed)
                     X_train.update({'X_img': X_tr_img}), X_val.update({'X_img': X_val_img})
                 except: pass
             # At this point the X_train and X_val dictionaries have been built
@@ -511,138 +685,131 @@ class WideDeep(nn.Module):
             eval_set = WideDeepDataset(**X_val, transforms=self.transforms)
         return train_set, eval_set
 
-    def fit(self,
-        X_wide:Optional[np.ndarray]=None,
-        X_deep:Optional[np.ndarray]=None,
-        X_text:Optional[np.ndarray]=None,
-        X_img:Optional[np.ndarray]=None,
-        X_train:Optional[Dict[str,np.ndarray]]=None,
-        X_val:Optional[Dict[str,np.ndarray]]=None,
-        val_split:Optional[float]=None,
-        target:Optional[np.ndarray]=None,
-        n_epochs:int=1,
-        validation_freq:int=1,
-        batch_size:int=32,
-        patience:int=10,
-        seed:int=1):
+    def _warm_model(self, model:WDModel, model_name:str, loader:DataLoader, n_epochs:int,
+        max_lr:float):
         r"""
-        fit method that must run after calling 'compile'
+        To Warm up individually the different models that comprise WideDeep we
+        will use a triangular learning rate schedule and one single cycle over
+        n_epochs The cycle will go from max_lr/10. to max_lr.
+        """
+        if self.verbose: print('Warming up {} for {} epochs'.format(model_name, n_epochs))
+
+        model.train()
+
+        optimizer = torch.optim.AdamW(model.parameters(), lr=max_lr/10.)
+        steps = len(loader)
+        step_size_up = round((steps*n_epochs) * 0.1)
+        step_size_down = (steps*n_epochs) - step_size_up
+        scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=max_lr/10.,
+            max_lr=max_lr, step_size_up=step_size_up, step_size_down=step_size_down,
+            cycle_momentum=False)
+
+        for epoch in range(n_epochs):
+            running_loss=0.
+            with trange(steps, disable=self.verbose != 1) as t:
+                for batch_idx, (data, target) in zip(t, loader):
+                    t.set_description('epoch %i' % (epoch+1))
+                    X = data[model_name].cuda() if use_cuda else data[model_name]
+                    y = target.float() if self.method != 'multiclass' else target
+                    y = y.cuda() if use_cuda else y
+
+                    optimizer.zero_grad()
+                    y_pred = self._activation_fn(model(X))
+                    loss   = self._loss_fn(y_pred, y)
+                    loss.backward()
+                    optimizer.step()
+                    scheduler.step()
+
+                    running_loss += loss.item()
+                    avg_loss = running_loss/(batch_idx+1)
+
+                    if self.metric is not None:
+                        acc = self.metric(y_pred, y)
+                        t.set_postfix(metrics=acc, loss=avg_loss)
+                    else:
+                        t.set_postfix(loss=np.sqrt(avg_loss))
+
+    def _warm_up(self, loader:DataLoader, n_epochs:int, max_lr:float):
+        r"""
+        Simple wrappup to individually warm up model components
+        """
+        if self.deephead is not None:
+            raise ValueError(
+                "Currently warming up is only supported without a fully connected 'DeepHead'")
+
+        self._warm_model(self.wide, 'wide', loader, n_epochs, max_lr)
+        self._warm_model(self.deepdense, 'deepdense', loader, n_epochs, max_lr)
+        if self.deeptext: self._warm_model(self.deeptext, 'deeptext', loader, n_epochs, max_lr)
+        if self.deepimage: self._warm_model(self.deepimage, 'deepimage', loader, n_epochs, max_lr)
+
+    def _lr_scheduler_step(self, step_location:str):
+        r"""
+        Function to execute the learning rate schedulers steps.
+        If the lr_scheduler is Cyclic (i.e. CyclicLR or OneCycleLR), the step
+        must happen after training each bach durig training. On the other
+        hand, if the  scheduler is not Cyclic, is expected to be called after
+        validation.
 
         Parameters
         ----------
-        X_wide: np.ndarray, Optional. Default=None
-            One hot encoded wide input.
-        X_deep: np.ndarray, Optional. Default=None
-            Input for the deepdense model
-        X_text: np.ndarray, Optional. Default=None
-            Input for the deeptext model
-        X_img : np.ndarray, Optional. Default=None
-            Input for the deepimage model
-        X_train: Dict, Optional. Default=None
-            Training dataset for the different model branches.  Keys are
-            'X_wide', 'X_deep', 'X_text', 'X_img' and 'target' the values are
-            the corresponding matrices e.g X_train = {'X_wide': X_wide,
-            'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
-        X_val: Dict, Optional. Default=None
-            Validation dataset for the different model branches.  Keys are
-            'X_wide', 'X_deep', 'X_text', 'X_img' and 'target' the values are
-            the corresponding matrices e.g X_val = {'X_wide': X_wide,
-            'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
-        val_split: Float, Optional. Default=None
-            train/val split
-        target: np.ndarray, Optional. Default=None
-            target values
-        n_epochs: Int, Default=1
-        validation_freq: Int, Default=1
-        batch_size: Int, Default=32
-        patience: Int, Default=10
-            Number of epochs without improving the target metric before we
-            stop the fit
-        seed: Int, Default=1
-            Random seed for the train/val split
-
-        **WideDeep assumes that X_wide, X_deep and target ALWAYS exist, while
-        X_text and X_img are optional
-        **Either X_train or X_wide, X_deep and target must be passed to the
-        fit method
-
-        Example
-        --------
-        Assuming you have already built and compiled the model
-
-        Ex 1. using train input arrays directly and no validation
-        >>> model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=10, batch_size=256)
-
-        Ex 2: using train input arrays directly and validation with val_split
-        >>> model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=10, batch_size=256, val_split=0.2)
-
-        Ex 3: using train dict and val_split
-        >>> X_train = {'X_wide': X_wide, 'X_deep': X_deep, 'target': y}
-        >>> model.fit(X_train, n_epochs=10, batch_size=256, val_split=0.2)
-
-        Ex 4: validation using training and validation dicts
-        >>> X_train = {'X_wide': X_wide_tr, 'X_deep': X_deep_tr, 'target': y_tr}
-        >>> X_val = {'X_wide': X_wide_val, 'X_deep': X_deep_val, 'target': y_val}
-        >>> model.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
+        step_location: Str
+            Indicates where to run the lr_scheduler step
         """
+        if self.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler' and self.cyclic:
+            if step_location == 'on_batch_end':
+                for model_name, scheduler in self.lr_scheduler._schedulers.items():
+                    if 'cycl' in scheduler.__class__.__name__.lower(): scheduler.step()
+            elif step_location == 'on_epoch_end':
+                for scheduler_name, scheduler in self.lr_scheduler._schedulers.items():
+                    if 'cycl' not in scheduler.__class__.__name__.lower(): scheduler.step()
+        elif self.cyclic:
+            if step_location == 'on_batch_end': self.lr_scheduler.step()
+            else: pass
+        elif self.lr_scheduler.__class__.__name__ == 'MultipleLRScheduler':
+            if step_location == 'on_epoch_end': self.lr_scheduler.step()
+            else: pass
+        elif step_location == 'on_epoch_end': self.lr_scheduler.step()
+        else: pass
 
-        if X_train is None and (X_wide is None or X_deep is None or target is None):
-            raise ValueError(
-                "Training data is missing. Either a dictionary (X_train) with "
-                "the training dataset or at least 3 arrays (X_wide, X_deep, "
-                "target) must be passed to the fit method")
-
-        self.batch_size = batch_size
-        train_set, eval_set = self._train_val_split(X_wide, X_deep, X_text, X_img,
-            X_train, X_val, val_split, target, seed)
-        train_loader = DataLoader(dataset=train_set, batch_size=batch_size, num_workers=n_cpus)
-        train_steps =  (len(train_loader.dataset) // batch_size) + 1
-        self.callback_container.on_train_begin({'batch_size': batch_size,
-            'train_steps': train_steps, 'n_epochs': n_epochs})
-
-        for epoch in range(n_epochs):
-            # train step...
-            epoch_logs={}
-            self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
-            self.train_running_loss = 0.
-            with trange(train_steps, disable=self.verbose != 1) as t:
-                for batch_idx, (data,target) in zip(t, train_loader):
-                    t.set_description('epoch %i' % (epoch+1))
-                    acc, train_loss = self._training_step(data, target, batch_idx)
-                    if acc is not None:
-                        t.set_postfix(metrics=acc, loss=train_loss)
-                    else:
-                        t.set_postfix(loss=np.sqrt(train_loss))
-                    if self.lr_scheduler: self._lr_scheduler_step(step_location='on_batch_end')
-                    self.callback_container.on_batch_end(batch=batch_idx)
-            epoch_logs['train_loss'] = train_loss
-            if acc is not None: epoch_logs['train_acc'] = acc['acc']
-            # eval step...
-
-            if epoch % validation_freq  == (validation_freq - 1):
-                if eval_set is not None:
-                    eval_loader = DataLoader(dataset=eval_set, batch_size=batch_size, num_workers=n_cpus,
-                        shuffle=False)
-                    eval_steps =  (len(eval_loader.dataset) // batch_size) + 1
-                    self.valid_running_loss = 0.
-                    with trange(eval_steps, disable=self.verbose != 1) as v:
-                        for i, (data,target) in zip(v, eval_loader):
-                            v.set_description('valid')
-                            acc, val_loss = self._validation_step(data, target, i)
-                            if acc is not None:
-                                v.set_postfix(metrics=acc, loss=val_loss)
-                            else:
-                                v.set_postfix(loss=np.sqrt(val_loss))
-                    epoch_logs['val_loss'] = val_loss
-                    if acc is not None: epoch_logs['val_acc'] = acc['acc']
-            if self.lr_scheduler: self._lr_scheduler_step(step_location='on_epoch_end')
-            # log and check if early_stop...
-            self.callback_container.on_epoch_end(epoch, epoch_logs)
-            if self.early_stop:
-                self.callback_container.on_train_end(epoch)
-                break
-            self.callback_container.on_train_end(epoch)
+    def _training_step(self, data:Dict[str, Tensor], target:Tensor, batch_idx:int):
         self.train()
+        X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
+        y = target.float() if self.method != 'multiclass' else target
+        y = y.cuda() if use_cuda else y
+
+        self.optimizer.zero_grad()
+        y_pred =  self._activation_fn(self.forward(X))
+        loss = self._loss_fn(y_pred, y)
+        loss.backward()
+        self.optimizer.step()
+
+        self.train_running_loss += loss.item()
+        avg_loss = self.train_running_loss/(batch_idx+1)
+
+        if self.metric is not None:
+            acc = self.metric(y_pred, y)
+            return acc, avg_loss
+        else:
+            return None, avg_loss
+
+    def _validation_step(self, data:Dict[str, Tensor], target:Tensor, batch_idx:int):
+
+        self.eval()
+        with torch.no_grad():
+            X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
+            y = target.float() if self.method != 'multiclass' else target
+            y = y.cuda() if use_cuda else y
+
+            y_pred = self._activation_fn(self.forward(X))
+            loss = self._loss_fn(y_pred, y)
+            self.valid_running_loss += loss.item()
+            avg_loss = self.valid_running_loss/(batch_idx+1)
+
+        if self.metric is not None:
+            acc = self.metric(y_pred, y)
+            return acc, avg_loss
+        else:
+            return None, avg_loss
 
     def _predict(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
         X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->List:
@@ -674,109 +841,3 @@ class WideDeep(nn.Module):
                     preds_l.append(preds)
         self.train()
         return preds_l
-
-    def predict(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
-        X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->np.ndarray:
-        r"""
-        fit method that must run after calling 'compile'
-
-        Parameters
-        ----------
-        X_wide: np.ndarray, Optional. Default=None
-            One hot encoded wide input.
-        X_deep: np.ndarray, Optional. Default=None
-            Input for the deepdense model
-        X_text: np.ndarray, Optional. Default=None
-            Input for the deeptext model
-        X_img : np.ndarray, Optional. Default=None
-            Input for the deepimage model
-        X_test: Dict, Optional. Default=None
-            Testing dataset for the different model branches.  Keys are
-            'X_wide', 'X_deep', 'X_text', 'X_img' and 'target' the values are
-            the corresponding matrices e.g X_train = {'X_wide': X_wide,
-            'X_wide': X_wide, 'X_text': X_text, 'X_img': X_img}
-
-        **WideDeep assumes that X_wide, X_deep and target ALWAYS exist, while
-        X_text and X_img are optional
-
-        Returns
-        -------
-        preds: np.array with the predicted target for the test dataset.
-        """
-        preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)
-        if self.method == "regression":
-            return np.vstack(preds_l).squeeze(1)
-        if self.method == "binary":
-            preds = np.vstack(preds_l).squeeze(1)
-            return (preds > 0.5).astype('int')
-        if self.method == "multiclass":
-            preds = np.vstack(preds_l)
-            return np.argmax(preds, 1)
-
-    def predict_proba(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
-        X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->np.ndarray:
-        """
-        Returns
-        -------
-        preds: np.ndarray
-            Predicted probabilities of target for the test dataset for  binary
-            and multiclass methods
-        """
-        preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)
-        if self.method == "binary":
-            preds = np.vstack(preds_l).squeeze(1)
-            probs = np.zeros([preds.shape[0],2])
-            probs[:,0] = 1-preds
-            probs[:,1] = preds
-            return probs
-        if self.method == "multiclass":
-            return np.vstack(preds_l)
-
-    def get_embeddings(self, col_name:str,
-        cat_encoding_dict:Dict[str,Dict[str,int]]) -> Dict[str,np.ndarray]:
-        """
-        Get the learned embeddings for the categorical features passed through deepdense.
-
-        Parameters
-        ----------
-        col_name: str,
-            Column name of the feature we want to get the embeddings for
-        cat_encoding_dict: Dict
-            Categorical encodings. The function is designed to take the
-            'encoding_dict' attribute from the DeepPreprocessor class. Any
-            Dict with the same structure can be used
-
-        Returns
-        -------
-        cat_embed_dict: Dict
-            Categorical levels of the col_name feature and the corresponding
-            embeddings
-
-        Example:
-        -------
-        Assuming we have already train the model:
-
-        >>> model.get_embeddings(col_name='education', cat_encoding_dict=deep_preprocessor.encoding_dict)
-        {'11th': array([-0.42739448, -0.22282735,  0.36969638,  0.4445322 ,  0.2562272 ,
-        0.11572784, -0.01648579,  0.09027119,  0.0457597 , -0.28337458], dtype=float32),
-         'HS-grad': array([-0.10600474, -0.48775527,  0.3444158 ,  0.13818645, -0.16547225,
-        0.27409762, -0.05006042, -0.0668492 , -0.11047247,  0.3280354 ], dtype=float32),
-        ...
-        }
-
-        where:
-
-        >>> deep_preprocessor.encoding_dict['education']
-        {'11th': 0, 'HS-grad': 1, 'Assoc-acdm': 2, 'Some-college': 3, '10th': 4, 'Prof-school': 5,
-        '7th-8th': 6, 'Bachelors': 7, 'Masters': 8, 'Doctorate': 9, '5th-6th': 10, 'Assoc-voc': 11,
-        '9th': 12, '12th': 13, '1st-4th': 14, 'Preschool': 15}
-        """
-        for n,p in self.named_parameters():
-            if 'embed_layers' in n and col_name in n:
-                embed_mtx = p.cpu().data.numpy()
-        encoding_dict = cat_encoding_dict[col_name]
-        inv_encoding_dict = {v:k for k,v in encoding_dict.items()}
-        cat_embed_dict = {}
-        for idx,value in inv_encoding_dict.items():
-            cat_embed_dict[value] = embed_mtx[idx]
-        return cat_embed_dict
