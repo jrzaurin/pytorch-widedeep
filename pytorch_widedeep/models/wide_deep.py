@@ -77,15 +77,6 @@ class WideDeep(nn.Module):
     combined accordingly. In  addition, the models MUST also contain an attribute
     'output_dim' with the size of these last layers of activations.
 
-    Attributes
-    ----------
-    deephead: nn.Sequential
-        stack of dense layers comprising the FC-Head (aka imagehead) can be
-        custom designed
-
-    ** The remaining attributes that will be set as we compile and run the model are
-        discussed within the corresponding methods.
-
     Example
     --------
     >>> import torch
@@ -164,9 +155,9 @@ class WideDeep(nn.Module):
         Parameters
         ----------
         X: List
-            List of Dict where the keys are the model names (wide, deepdense,
-            deeptext and deepimage) and the values are the corresponding
-            Tensors
+            List of Dict where the keys are the model names ('wide',
+            'deepdense', 'deeptext' and 'deepimage') and the values are the
+            corresponding Tensors
         """
         # Wide output: direct connection to the output neuron(s)
         out = self.wide(X['wide'])
@@ -204,7 +195,8 @@ class WideDeep(nn.Module):
         verbose:int=1,
         seed:int=1):
         r"""
-        Function to set a number of attributes that are used during the training process.
+        Function to set a number of attributes that will be used during the
+        training process.
 
         Parameters
         ----------
@@ -212,23 +204,23 @@ class WideDeep(nn.Module):
              One of ('regression', 'binary' or 'multiclass')
         optimizers: Optimizer, Dict. Optional, Default=AdamW
             Either an optimizers object (e.g. torch.optim.Adam()) or a
-            dictionary where there keys are the model's children (i.e. wide,
-            deepdense, deeptext, deepimage and/or deephead)  and the values
-            are the corresponding optimizers. If multiple optimizers are used
-            the  dictionary MUST contain an optimizer per child.
+            dictionary where there keys are the model's children (i.e. 'wide',
+            'deepdense', 'deeptext', 'deepimage' and/or 'deephead')  and the
+            values are the corresponding optimizers. If multiple optimizers
+            are used the  dictionary MUST contain an optimizer per child.
         lr_schedulers: LRScheduler, Dict. Optional. Default=None
             Either a LRScheduler object (e.g
-            torch.optim.lr_scheduler.StepLR(opt, step_size=5)) or  dictionary
-            where there keys are the model's children (i.e. wide, deepdense,
-            deeptext, deepimage and/or deephead)  and the values are the
+            torch.optim.lr_scheduler.StepLR(opt, step_size=5)) or dictionary
+            where there keys are the model's children (i.e. 'wide', 'deepdense',
+            'deeptext', 'deepimage' and/or 'deephead') and the values are the
             corresponding learning rate schedulers.
         initializers: Dict, Optional. Default=None
-            Dict where there keys are the model's children (i.e. wide,
-            deepdense, deeptext, deepimage and/or deephead) and the values are
-            the corresponding initializers.
+            Dict where there keys are the model's children (i.e. 'wide',
+            'deepdense', 'deeptext', 'deepimage' and/or 'deephead') and the
+            values are the corresponding initializers.
         transforms: List, Optional. Default=None
             List with torchvision.transforms to be applied to the image
-            component of the model
+            component of the model (i.e. 'deepimage')
         callbacks: List, Optional. Default=None
             Callbacks available are: ModelCheckpoint, EarlyStopping, and
             LRHistory. The History callback is used by default.
@@ -259,7 +251,8 @@ class WideDeep(nn.Module):
         Attributes that are not direct assignations of parameters
 
         self.cyclic: Boolean
-            Indicates if any of the lr_schedulers is CyclicLR or OneCycleLR
+            Indicates if any of the lr_schedulers is cyclic (i.e. CyclicLR or
+            OneCycleLR)
 
         Example
         --------
@@ -292,8 +285,7 @@ class WideDeep(nn.Module):
         self.early_stop = False
         self.method = method
         self.with_focal_loss = with_focal_loss
-        if self.with_focal_loss:
-            self.alpha, self.gamma = alpha, gamma
+        if self.with_focal_loss: self.alpha, self.gamma = alpha, gamma
 
         if isinstance(class_weight, float):
             self.class_weight = torch.tensor([1.-class_weight, class_weight])
@@ -349,8 +341,7 @@ class WideDeep(nn.Module):
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self)
 
-        if use_cuda:
-            self.cuda()
+        if use_cuda: self.cuda()
 
     def fit(self,
         X_wide:Optional[np.ndarray]=None,
@@ -402,13 +393,14 @@ class WideDeep(nn.Module):
             Number of epochs without improving the target metric before we
             stop the fit
         warm_up: Boolean, Default=False
-            Warm up the models individually
+            Warm up the models individually before starting the joined training
         warm_epochs: Int, Default=4
             Number of warm up epochs
         warm_max_lr: Float, Default=0.01
             Warming up will happen using a slanted triangular learning rates
             (https://arxiv.org/pdf/1801.06146.pdf). warm_max_lr indicates the
-            maximum learning rate that will be used during the cycle
+            maximum learning rate that will be used during the cycle. The
+            minimum (base_lr) learning rate is warm_max_lr/10.
 
         **WideDeep assumes that X_wide, X_deep and target ALWAYS exist, while
         X_text and X_img are optional
@@ -534,7 +526,7 @@ class WideDeep(nn.Module):
 
     def predict_proba(self, X_wide:np.ndarray, X_deep:np.ndarray, X_text:Optional[np.ndarray]=None,
         X_img:Optional[np.ndarray]=None, X_test:Optional[Dict[str, np.ndarray]]=None)->np.ndarray:
-        """
+        r"""
         Returns
         -------
         preds: np.ndarray
@@ -553,7 +545,7 @@ class WideDeep(nn.Module):
 
     def get_embeddings(self, col_name:str,
         cat_encoding_dict:Dict[str,Dict[str,int]]) -> Dict[str,np.ndarray]:
-        """
+        r"""
         Get the learned embeddings for the categorical features passed through deepdense.
 
         Parameters
@@ -696,9 +688,9 @@ class WideDeep(nn.Module):
     def _warm_model(self, model:WDModel, model_name:str, loader:DataLoader, n_epochs:int,
         max_lr:float):
         r"""
-        To Warm up the different models that comprise WideDeep we will use a
-        triangular learning rate schedule and one single cycle over
-        The cycle will go from max_lr/10. to max_lr.
+        To Warm up individually the different models that comprise WideDeep we
+        will use a triangular learning rate schedule and one single cycle over
+        n_epochs The cycle will go from max_lr/10. to max_lr.
         """
         if self.verbose: print('Warming up {} for {} epochs'.format(model_name, n_epochs))
 
@@ -738,23 +730,23 @@ class WideDeep(nn.Module):
                         t.set_postfix(loss=np.sqrt(avg_loss))
 
     def _warm_up(self, loader:DataLoader, n_epochs:int, max_lr:float):
-
+        r"""
+        Simple wrappup to individually warm up model components
+        """
         if self.deephead is not None:
             raise ValueError(
                 "Currently warming up is only supported without a fully connected 'DeepHead'")
 
         self._warm_model(self.wide, 'wide', loader, n_epochs, max_lr)
         self._warm_model(self.deepdense, 'deepdense', loader, n_epochs, max_lr)
-        if self.deeptext is not None:
-            self._warm_model(self.deeptext, 'deeptext', loader, n_epochs, max_lr)
-        if self.deepimage is not None:
-            self._warm_model(self.deepimage, 'deepimage', loader, n_epochs, max_lr)
+        if self.deeptext: self._warm_model(self.deeptext, 'deeptext', loader, n_epochs, max_lr)
+        if self.deepimage: self._warm_model(self.deepimage, 'deepimage', loader, n_epochs, max_lr)
 
     def _lr_scheduler_step(self, step_location:str):
         r"""
         Function to execute the learning rate schedulers steps.
         If the lr_scheduler is Cyclic (i.e. CyclicLR or OneCycleLR), the step
-        must  happen after training each bach durig training. On the other
+        must happen after training each bach durig training. On the other
         hand, if the  scheduler is not Cyclic, is expected to be called after
         validation.
 
