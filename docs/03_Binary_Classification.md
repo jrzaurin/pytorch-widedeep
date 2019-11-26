@@ -1,4 +1,4 @@
-## <font color='MediumSeaGreen '>1. Simple Binary Classification with defaults.</font>
+## 1. Simple Binary Classification with defaults
 
 In this notebook we will use the Adult Census dataset. Download the data from [here](https://www.kaggle.com/wenruliu/adult-income-dataset/downloads/adult.csv/2).
 
@@ -299,7 +299,7 @@ df.head()
 
 
 
-### <font color='MediumSeaGreen '>1.1 Preparing the data</font>
+### 1.1 Preparing the data
 
 Have a look to notebooks one and two if you want to get a good understanding of the next few lines of code (although there is no need to use the package)
 
@@ -365,7 +365,7 @@ print(X_deep.shape)
     (48842, 7)
 
 
-### <font color='MediumSeaGreen '>1.2. Defining the model</font>
+### 1.2. Defining the model
 
 
 ```python
@@ -398,6 +398,7 @@ model
             (emb_layer_relationship): Embedding(6, 8)
             (emb_layer_workclass): Embedding(9, 16)
           )
+          (embed_dropout): Dropout(p=0.0, inplace=False)
           (dense): Sequential(
             (dense_layer_0): Sequential(
               (0): Linear(in_features=74, out_features=64, bias=True)
@@ -426,7 +427,7 @@ $$
 
 The architecture above will output the 1st and the second term in the parenthesis. `WideDeep` will then add them and apply an activation function (`sigmoid` in this case). For more details, please refer to the paper.
 
-### <font color='MediumSeaGreen '>1.3 Compiling and Running/Fitting</font>
+### 1.3 Compiling and Running/Fitting
 Once the model is built, we just need to compile it and run it
 
 
@@ -439,25 +440,74 @@ model.compile(method='binary', metrics=[BinaryAccuracy])
 model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=5, batch_size=256, val_split=0.2)
 ```
 
-    epoch 1: 100%|██████████| 153/153 [00:01<00:00, 87.08it/s, loss=0.421, metrics={'acc': 0.8067}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 136.50it/s, loss=0.364, metrics={'acc': 0.8115}]
-    epoch 2: 100%|██████████| 153/153 [00:01<00:00, 96.64it/s, loss=0.352, metrics={'acc': 0.8354}] 
-    valid: 100%|██████████| 39/39 [00:00<00:00, 146.08it/s, loss=0.354, metrics={'acc': 0.8356}]
-    epoch 3: 100%|██████████| 153/153 [00:01<00:00, 97.69it/s, loss=0.344, metrics={'acc': 0.8388}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 141.73it/s, loss=0.35, metrics={'acc': 0.8388}]
-    epoch 4: 100%|██████████| 153/153 [00:01<00:00, 99.13it/s, loss=0.34, metrics={'acc': 0.841}]   
-    valid: 100%|██████████| 39/39 [00:00<00:00, 139.63it/s, loss=0.348, metrics={'acc': 0.8407}]
-    epoch 5: 100%|██████████| 153/153 [00:01<00:00, 94.87it/s, loss=0.337, metrics={'acc': 0.8422}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 134.58it/s, loss=0.348, metrics={'acc': 0.8417}]
+      0%|          | 0/153 [00:00<?, ?it/s]
+
+    Training
+
+
+    epoch 1: 100%|██████████| 153/153 [00:02<00:00, 55.16it/s, loss=0.419, metrics={'acc': 0.7994}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 117.28it/s, loss=0.364, metrics={'acc': 0.8059}]
+    epoch 2: 100%|██████████| 153/153 [00:02<00:00, 57.51it/s, loss=0.352, metrics={'acc': 0.8351}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 117.51it/s, loss=0.355, metrics={'acc': 0.835}]
+    epoch 3: 100%|██████████| 153/153 [00:02<00:00, 57.71it/s, loss=0.345, metrics={'acc': 0.8379}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 107.89it/s, loss=0.352, metrics={'acc': 0.8375}]
+    epoch 4: 100%|██████████| 153/153 [00:02<00:00, 58.28it/s, loss=0.341, metrics={'acc': 0.8396}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 117.59it/s, loss=0.349, metrics={'acc': 0.8391}]
+    epoch 5: 100%|██████████| 153/153 [00:02<00:00, 57.90it/s, loss=0.338, metrics={'acc': 0.8408}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 115.33it/s, loss=0.348, metrics={'acc': 0.8406}]
 
 
 As you can see, you can run a wide and deep model in just a few lines of code
 
 Let's now see how to use `WideDeep` with varying parameters
 
-## <font color='MediumSeaGreen '>2. Binary Classification with varying parameters.</font>
+## 2. Binary Classification with varying parameters
 
-###  <font color='MediumSeaGreen '>2.1 Dropout and Batchnorm</font>
+### 2.1 Warm-up
+
+We can choose to warm up each model individually before the joined training begins. To warm up, the models will be trained during `warm_epochs` using a triangular one-cycle learning rate (referred as *slanted triangular learning rates* in [Howard & Ruder 2018](https://arxiv.org/pdf/1801.06146.pdf)) going from `warm_max_lr`/10. to `warm_max_lr` (default is 0.01). 10% of the training steps are used to increase the learning rate which then decreases back to `warm_max_lr`/10. for the remaining 90%.   
+
+
+```python
+wide = Wide(wide_dim=X_wide.shape[1], output_dim=1)
+deepdense = DeepDense(hidden_layers=[64,32], 
+                      deep_column_idx=preprocess_deep.deep_column_idx,
+                      embed_input=preprocess_deep.embeddings_input,
+                      continuous_cols=continuous_cols)
+model = WideDeep(wide=wide, deepdense=deepdense)
+model.compile(method='binary', metrics=[BinaryAccuracy])
+model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=4, batch_size=256, val_split=0.2, 
+          warm_up=True, warm_epochs=1)
+```
+
+      0%|          | 0/153 [00:00<?, ?it/s]
+
+    Warming up wide for 1 epochs
+
+
+    epoch 1: 100%|██████████| 153/153 [00:01<00:00, 141.42it/s, loss=0.45, metrics={'acc': 0.7909}]
+      0%|          | 0/153 [00:00<?, ?it/s]
+
+    Warming up deepdense for 1 epochs
+
+
+    epoch 1: 100%|██████████| 153/153 [00:02<00:00, 63.59it/s, loss=0.382, metrics={'acc': 0.8049}]
+      0%|          | 0/153 [00:00<?, ?it/s]
+
+    Training
+
+
+    epoch 1: 100%|██████████| 153/153 [00:02<00:00, 57.88it/s, loss=0.346, metrics={'acc': 0.8381}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 118.42it/s, loss=0.35, metrics={'acc': 0.8381}]
+    epoch 2: 100%|██████████| 153/153 [00:02<00:00, 56.82it/s, loss=0.34, metrics={'acc': 0.8414}] 
+    valid: 100%|██████████| 39/39 [00:00<00:00, 116.15it/s, loss=0.349, metrics={'acc': 0.8409}]
+    epoch 3: 100%|██████████| 153/153 [00:02<00:00, 57.64it/s, loss=0.338, metrics={'acc': 0.8424}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 114.68it/s, loss=0.348, metrics={'acc': 0.8418}]
+    epoch 4: 100%|██████████| 153/153 [00:02<00:00, 58.26it/s, loss=0.336, metrics={'acc': 0.8438}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 111.94it/s, loss=0.347, metrics={'acc': 0.843}]
+
+
+###  2.1 Dropout and Batchnorm
 
 
 ```python
@@ -491,17 +541,18 @@ model
             (emb_layer_relationship): Embedding(6, 8)
             (emb_layer_workclass): Embedding(9, 16)
           )
+          (embed_dropout): Dropout(p=0.0, inplace=False)
           (dense): Sequential(
             (dense_layer_0): Sequential(
               (0): Linear(in_features=74, out_features=64, bias=True)
-              (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-              (2): LeakyReLU(negative_slope=0.01, inplace=True)
+              (1): LeakyReLU(negative_slope=0.01, inplace=True)
+              (2): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
               (3): Dropout(p=0.5, inplace=False)
             )
             (dense_layer_1): Sequential(
               (0): Linear(in_features=64, out_features=32, bias=True)
-              (1): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-              (2): LeakyReLU(negative_slope=0.01, inplace=True)
+              (1): LeakyReLU(negative_slope=0.01, inplace=True)
+              (2): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
               (3): Dropout(p=0.5, inplace=False)
             )
           )
@@ -514,7 +565,7 @@ model
 
 We can use different initializers, optimizers and learning rate schedulers for each `branch` of the model
 
-###  <font color='MediumSeaGreen '>2.1 Optimizers, LR schedulers, Initializers and Callbacks</font>
+###  2.1 Optimizers, LR schedulers, Initializers and Callbacks
 
 
 ```python
@@ -559,26 +610,31 @@ model.compile(method='binary', optimizers=optimizers, lr_schedulers=schedulers,
 model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=10, batch_size=256, val_split=0.2)
 ```
 
-    epoch 1: 100%|██████████| 153/153 [00:02<00:00, 76.36it/s, loss=0.72, metrics={'acc': 0.6214}] 
-    valid: 100%|██████████| 39/39 [00:00<00:00, 133.66it/s, loss=0.433, metrics={'acc': 0.6602}]
-    epoch 2: 100%|██████████| 153/153 [00:02<00:00, 73.74it/s, loss=0.482, metrics={'acc': 0.7676}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 120.10it/s, loss=0.375, metrics={'acc': 0.7802}]
-    epoch 3: 100%|██████████| 153/153 [00:02<00:00, 73.27it/s, loss=0.42, metrics={'acc': 0.8017}] 
-    valid: 100%|██████████| 39/39 [00:00<00:00, 139.83it/s, loss=0.361, metrics={'acc': 0.8082}]
-    epoch 4: 100%|██████████| 153/153 [00:02<00:00, 72.46it/s, loss=0.395, metrics={'acc': 0.8108}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 136.43it/s, loss=0.357, metrics={'acc': 0.8158}]
-    epoch 5: 100%|██████████| 153/153 [00:02<00:00, 71.34it/s, loss=0.383, metrics={'acc': 0.818}] 
-    valid: 100%|██████████| 39/39 [00:00<00:00, 136.50it/s, loss=0.355, metrics={'acc': 0.8218}]
-    epoch 6: 100%|██████████| 153/153 [00:02<00:00, 72.82it/s, loss=0.378, metrics={'acc': 0.8181}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 128.62it/s, loss=0.354, metrics={'acc': 0.8219}]
-    epoch 7: 100%|██████████| 153/153 [00:02<00:00, 72.72it/s, loss=0.376, metrics={'acc': 0.8218}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 129.85it/s, loss=0.354, metrics={'acc': 0.8249}]
-    epoch 8: 100%|██████████| 153/153 [00:02<00:00, 71.97it/s, loss=0.375, metrics={'acc': 0.8209}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 128.82it/s, loss=0.354, metrics={'acc': 0.8243}]
-    epoch 9: 100%|██████████| 153/153 [00:02<00:00, 69.46it/s, loss=0.375, metrics={'acc': 0.8185}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 125.86it/s, loss=0.353, metrics={'acc': 0.8223}]
-    epoch 10: 100%|██████████| 153/153 [00:02<00:00, 69.66it/s, loss=0.374, metrics={'acc': 0.8202}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 131.28it/s, loss=0.353, metrics={'acc': 0.8238}]
+      0%|          | 0/153 [00:00<?, ?it/s]
+
+    Training
+
+
+    epoch 1: 100%|██████████| 153/153 [00:03<00:00, 48.30it/s, loss=0.911, metrics={'acc': 0.5729}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 117.93it/s, loss=0.521, metrics={'acc': 0.6051}]
+    epoch 2: 100%|██████████| 153/153 [00:03<00:00, 47.55it/s, loss=0.578, metrics={'acc': 0.7309}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 117.68it/s, loss=0.402, metrics={'acc': 0.7466}]
+    epoch 3: 100%|██████████| 153/153 [00:03<00:00, 48.88it/s, loss=0.477, metrics={'acc': 0.7783}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 117.25it/s, loss=0.373, metrics={'acc': 0.7879}]
+    epoch 4: 100%|██████████| 153/153 [00:03<00:00, 48.89it/s, loss=0.428, metrics={'acc': 0.8012}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 115.87it/s, loss=0.365, metrics={'acc': 0.807}]
+    epoch 5: 100%|██████████| 153/153 [00:03<00:00, 48.28it/s, loss=0.406, metrics={'acc': 0.8087}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 108.82it/s, loss=0.359, metrics={'acc': 0.814}]
+    epoch 6: 100%|██████████| 153/153 [00:03<00:00, 47.57it/s, loss=0.395, metrics={'acc': 0.8126}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 114.21it/s, loss=0.358, metrics={'acc': 0.8171}]
+    epoch 7: 100%|██████████| 153/153 [00:03<00:00, 46.31it/s, loss=0.391, metrics={'acc': 0.813}] 
+    valid: 100%|██████████| 39/39 [00:00<00:00, 113.62it/s, loss=0.357, metrics={'acc': 0.8175}]
+    epoch 8: 100%|██████████| 153/153 [00:03<00:00, 48.37it/s, loss=0.39, metrics={'acc': 0.8169}] 
+    valid: 100%|██████████| 39/39 [00:00<00:00, 113.52it/s, loss=0.357, metrics={'acc': 0.8207}]
+    epoch 9: 100%|██████████| 153/153 [00:03<00:00, 47.56it/s, loss=0.389, metrics={'acc': 0.8162}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 112.79it/s, loss=0.356, metrics={'acc': 0.8203}]
+    epoch 10: 100%|██████████| 153/153 [00:03<00:00, 47.69it/s, loss=0.386, metrics={'acc': 0.8171}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 109.54it/s, loss=0.356, metrics={'acc': 0.8212}]
 
 
 
@@ -620,10 +676,8 @@ dir(model)
      '__weakref__',
      '_activation_fn',
      '_apply',
-     '_backend',
      '_backward_hooks',
      '_buffers',
-     '_construct',
      '_forward_hooks',
      '_forward_pre_hooks',
      '_get_name',
@@ -645,6 +699,8 @@ dir(model)
      '_training_step',
      '_validation_step',
      '_version',
+     '_warm_model',
+     '_warm_up',
      'add_module',
      'apply',
      'batch_size',
@@ -693,6 +749,7 @@ dir(model)
      'register_forward_pre_hook',
      'register_parameter',
      'requires_grad_',
+     'seed',
      'share_memory',
      'state_dict',
      'to',
@@ -725,84 +782,18 @@ model.history.epoch
 
 
 ```python
-model.history._history
+print(model.history._history)
 ```
 
-
-
-
-    {'train_loss': [0.7201351490285661,
-      0.48229670855734086,
-      0.4197782385193445,
-      0.3953245247111601,
-      0.38271428147951764,
-      0.37770096071405346,
-      0.375562605515025,
-      0.37540602976200627,
-      0.3753419857399136,
-      0.3741065304653317],
-     'train_acc': [0.6214,
-      0.7676,
-      0.8017,
-      0.8108,
-      0.818,
-      0.8181,
-      0.8218,
-      0.8209,
-      0.8185,
-      0.8202],
-     'val_loss': [0.4325417692844684,
-      0.37463742876664186,
-      0.3612546171897497,
-      0.35738192154810977,
-      0.35490937798451155,
-      0.35429174930621415,
-      0.35409936461693203,
-      0.3539723998461014,
-      0.353485290820782,
-      0.35325784331712967],
-     'val_acc': [0.6602,
-      0.7802,
-      0.8082,
-      0.8158,
-      0.8218,
-      0.8219,
-      0.8249,
-      0.8243,
-      0.8223,
-      0.8238]}
-
+    {'train_loss': [0.9105595845023012, 0.5782874746649873, 0.47749636551133945, 0.4281357573527916, 0.4061133719347661, 0.3947428677206725, 0.3914796267849168, 0.38961343983419583, 0.38926642879941104, 0.386191635934356], 'train_acc': [0.5729, 0.7309, 0.7783, 0.8012, 0.8087, 0.8126, 0.813, 0.8169, 0.8162, 0.8171], 'val_loss': [0.5205524701338547, 0.4024948156796969, 0.37283383500881684, 0.36488463634099716, 0.35886253301913923, 0.35753893775817674, 0.35730381042529374, 0.35672229528427124, 0.3563888867696126, 0.35624249776204425], 'val_acc': [0.6051, 0.7466, 0.7879, 0.807, 0.814, 0.8171, 0.8175, 0.8207, 0.8203, 0.8212]}
 
 
 
 ```python
-model.lr_history
+print(model.lr_history)
 ```
 
-
-
-
-    {'lr_wide_0': [0.001,
-      0.001,
-      0.001,
-      0.0001,
-      0.0001,
-      0.0001,
-      1.0000000000000003e-05,
-      1.0000000000000003e-05,
-      1.0000000000000003e-05,
-      1.0000000000000002e-06],
-     'lr_deepdense_0': [0.001,
-      0.001,
-      0.001,
-      0.001,
-      0.001,
-      0.0001,
-      0.0001,
-      0.0001,
-      0.0001,
-      0.0001]}
-
+    {'lr_wide_0': [0.001, 0.001, 0.001, 0.0001, 0.0001, 0.0001, 1.0000000000000003e-05, 1.0000000000000003e-05, 1.0000000000000003e-05, 1.0000000000000002e-06], 'lr_deepdense_0': [0.001, 0.001, 0.001, 0.001, 0.001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]}
 
 
 We can see that the learning rate effectively decreases by a factor of 0.1 (the default) after the corresponding `step_size`. Note that the keys of the dictionary have a suffix `_0`. This is because if you pass different parameter groups to the torch optimizers, these will also be recorded. We'll see this in the `Regression` notebook. 
@@ -817,69 +808,70 @@ model.get_embeddings(col_name='education', cat_encoding_dict=preprocess_deep.enc
 
 
 
-    {'11th': array([ 0.23203531,  0.22896081, -0.40356618,  0.43150797, -0.24202456,
-            -0.15940084, -0.08549729,  0.4564645 ,  0.13446881, -0.16135852,
-            -0.1743799 , -0.4434135 , -0.18031678,  0.15880926,  0.02965698,
-            -0.22083491], dtype=float32),
-     'HS-grad': array([ 0.3114914 ,  0.36132628, -0.42488536, -0.44385988,  0.2485746 ,
-             0.01649826,  0.43731764, -0.16036318,  0.22887692, -0.25932702,
-            -0.02782134, -0.06970705,  0.19947569, -0.06710748, -0.10803316,
-             0.46665302], dtype=float32),
-     'Assoc-acdm': array([-0.24408445,  0.05876141, -0.04507849, -0.19578709, -0.14715208,
-             0.4983954 , -0.05527269,  0.16526866, -0.307099  ,  0.17685033,
-            -0.14156346, -0.06647427, -0.46975732,  0.16181333,  0.02914725,
-            -0.49256295], dtype=float32),
-     'Some-college': array([ 0.5198188 ,  0.12946902,  0.46062082,  0.44757575, -0.3287289 ,
-            -0.12341443, -0.11078605,  0.1642068 ,  0.7651399 ,  0.06216411,
-            -0.8117381 ,  0.6532599 , -0.00924105,  0.4417696 ,  0.09026518,
-            -0.12002172], dtype=float32),
-     '10th': array([ 0.5984684 ,  0.16307777, -0.0040624 ,  0.09925628,  0.20535131,
-            -0.15751003, -0.16682488, -0.1383966 , -0.04823777,  0.15658148,
-            -0.12845115, -0.1440473 ,  0.35936442,  0.01721832, -0.01479862,
-             0.1628472 ], dtype=float32),
-     'Prof-school': array([ 0.02319724,  0.3303704 ,  0.08904056, -0.21102089,  0.19608757,
-            -0.07665357,  0.15307519,  0.25392193, -0.03555196, -0.01884847,
-             0.03365186, -0.11260296, -0.13606223, -0.09259846,  0.27067274,
-            -0.16312157], dtype=float32),
-     '7th-8th': array([ 0.33061972,  0.1258869 , -0.18391465, -0.5522697 ,  0.14627822,
-             0.08831056,  0.00233046, -0.00830169, -0.07232173, -0.3524963 ,
-            -0.01687683, -0.28693867,  0.19178541, -0.17721641, -0.24398643,
-             0.15801452], dtype=float32),
-     'Bachelors': array([ 0.23301753,  0.11734378, -0.02250313, -0.31250337,  0.25254628,
-            -0.13198347,  0.32288718, -0.11564187,  0.08262251,  0.00897656,
-            -0.04101277,  0.2034123 ,  0.00600741,  0.11451315,  0.08216624,
-            -0.18260935], dtype=float32),
-     'Masters': array([-0.2682981 ,  0.03703215, -0.25879607, -0.40328467, -0.32078862,
-            -0.15390627, -0.00587583,  0.2890941 , -0.2309889 , -0.03192039,
-             0.42183968,  0.3534382 , -0.10053465,  0.20614813, -0.00845117,
-             0.13243063], dtype=float32),
-     'Doctorate': array([ 0.40153244, -0.15173616,  0.2734586 , -0.06986004, -0.14779176,
-             0.06517711,  0.43264598, -0.04060874,  0.09469996,  0.04779944,
-             0.11410471, -0.61585397, -0.33141896, -0.06763163,  0.19431648,
-             0.32619408], dtype=float32),
-     '5th-6th': array([-0.06580594, -0.15445694, -0.4775835 ,  0.28082463,  0.21930388,
-             0.15399367,  0.08140283,  0.12158986,  0.65451396, -0.3062649 ,
-            -0.4490934 ,  0.346769  , -0.36774218,  0.06957038,  0.1303332 ,
-             0.07054735], dtype=float32),
-     'Assoc-voc': array([ 0.3115598 ,  0.18573369,  0.17958838, -0.30102468, -0.35813195,
-             0.11202388,  0.2779358 ,  0.22348149,  0.09943093, -0.53038543,
-             0.03727521, -0.04638249, -0.09950424,  0.27130258,  0.07549058,
-            -0.49732867], dtype=float32),
-     '9th': array([ 0.2628104 , -0.2855187 , -0.25854272, -0.08381794, -0.2020421 ,
-            -0.02920138,  0.10086066, -0.10290657, -0.33239442, -0.2356638 ,
-            -0.248578  ,  0.01665138,  0.28796577,  0.07396127,  0.01030401,
-             0.37545788], dtype=float32),
-     '12th': array([ 0.11248264, -0.14112231, -0.18007489,  0.41162646,  0.27112672,
-            -0.02875315, -0.16151035, -0.4613239 , -0.41860878, -0.27310988,
-            -0.12612441, -0.26779214,  0.46872276,  0.50543463, -0.06184073,
-             0.01199363], dtype=float32),
-     '1st-4th': array([ 0.10582871, -0.22928524, -0.21345232,  0.27670494, -0.28263775,
-             0.06005969, -0.04883407, -0.04386626, -0.18646769, -0.28977564,
-             0.3295173 , -0.2891513 ,  0.3165016 , -0.30840456, -0.13870218,
-             0.24087428], dtype=float32),
-     'Preschool': array([ 0.06730541, -0.12282428, -0.0063521 ,  0.07224482,  0.24416964,
-            -0.09476493, -0.12492466, -0.1393237 , -0.36801594, -0.02907634,
-             0.44266376, -0.15134929,  0.24314906, -0.15032478,  0.20950297,
-            -0.12269441], dtype=float32)}
+    {'11th': array([ 0.41717738,  0.33800027,  0.14558531,  0.23621577,  0.18866219,
+             0.41959327, -0.40843502,  0.2764823 , -0.04228376, -0.2770995 ,
+            -0.04413053,  0.21518119,  0.54168355,  0.06607324, -0.25075328,
+             0.43814617], dtype=float32),
+     'HS-grad': array([-0.10619222,  0.08463281, -0.1720976 ,  0.16436636, -0.15246172,
+            -0.15992908, -0.07142664,  0.02854085, -0.38450843,  0.3621033 ,
+             0.00361137, -0.37991726, -0.00742414, -0.19315098,  0.23940389,
+             0.00427438], dtype=float32),
+     'Assoc-acdm': array([-0.10346556,  0.5880965 , -0.35604322, -0.28074315,  0.11279969,
+            -0.03097979,  0.1316176 ,  0.04005286,  0.22053859,  0.2822993 ,
+             0.2548561 , -0.00729926,  0.16980447,  0.00099144, -0.21386623,
+            -0.03788675], dtype=float32),
+     'Some-college': array([ 1.0774918e-01, -5.1934827e-02,  2.2199769e-01,  1.2707384e-01,
+            -6.6714182e-02, -1.2450726e-02, -4.7941156e-02, -1.1758558e-02,
+            -1.7372087e-02, -3.7972507e-01, -7.2314329e-03, -1.1348904e-02,
+            -2.8346037e-04, -1.8352264e-01,  6.1671283e-02,  2.2232330e-01],
+           dtype=float32),
+     '10th': array([ 0.29999158, -0.21744487,  0.06491452, -0.23188359, -0.36609316,
+            -0.38092315,  0.04983652,  0.32082322, -0.09453602, -0.07210832,
+             0.02355519, -0.34295735,  0.243176  , -0.12205487, -0.02939285,
+             0.03140339], dtype=float32),
+     'Prof-school': array([ 0.21009974, -0.17979464,  0.23510288, -0.4422548 ,  0.19806142,
+            -0.08493114,  0.06911367,  0.1785185 ,  0.17035176,  0.26042286,
+             0.20824155,  0.28717726, -0.33635965, -0.199471  , -0.00237502,
+            -0.15463887], dtype=float32),
+     '7th-8th': array([-0.28743556, -0.27534077, -0.2952116 ,  0.35380983,  0.530602  ,
+             0.24720307,  0.00427648, -0.35313243, -0.11463641, -0.13932341,
+             0.66691613,  0.46317872, -0.2385504 , -0.27184793, -0.14130774,
+            -0.18510057], dtype=float32),
+     'Bachelors': array([ 0.19901408,  0.13878398,  0.12359496, -0.1516372 ,  0.15461658,
+            -0.12157986,  0.28729957, -0.26748437,  0.07945791,  0.0911655 ,
+             0.3575531 ,  0.08508369, -0.1413984 , -0.10829177, -0.26311323,
+             0.20712389], dtype=float32),
+     'Masters': array([-0.02080029,  0.15801647,  0.3071945 ,  0.0232136 ,  0.18986145,
+             0.16438615, -0.12542671, -0.04688492, -0.07556052, -0.2942081 ,
+             0.05731679,  0.20982188, -0.37307253, -0.27664435,  0.5616179 ,
+            -0.13841839], dtype=float32),
+     'Doctorate': array([ 0.10035745, -0.08719181, -0.22271474, -0.17451538,  0.20309775,
+            -0.0911912 , -0.26586285,  0.09883135,  0.07470689,  0.5613913 ,
+            -0.12691443,  0.09585453,  0.08105591, -0.212968  , -0.12663043,
+            -0.15639608], dtype=float32),
+     '5th-6th': array([-0.19824742,  0.22895677,  0.3450842 ,  0.36915532,  0.02075848,
+            -0.18854013,  0.21759517,  0.10949593, -0.29776537,  0.06532905,
+             0.43095952, -0.3871383 , -0.13502343,  0.06983275, -0.12452139,
+            -0.47077683], dtype=float32),
+     'Assoc-voc': array([ 0.03224453, -0.06446365,  0.24354428,  0.15382324,  0.15567093,
+             0.03998892,  0.4248653 ,  0.22545348, -0.0560311 ,  0.16399181,
+             0.27097237, -0.06783602,  0.28948635, -0.5472932 , -0.06647005,
+            -0.02521862], dtype=float32),
+     '9th': array([-0.3762758 , -0.02360561,  0.05081445,  0.05898981, -0.02661294,
+             0.03272862,  0.14599569, -0.04475676, -0.39210543, -0.62865454,
+             0.04343129,  0.44932538, -0.15965058,  0.10564981, -0.12342159,
+            -0.21983312], dtype=float32),
+     '12th': array([ 0.36367476,  0.02930327, -0.03054986, -0.09188785,  0.08873531,
+             0.35568398,  0.37973958,  0.41732144, -0.21674553,  0.00693592,
+             0.19131127,  0.26841545, -0.0428647 ,  0.10508669,  0.03650329,
+            -0.05330637], dtype=float32),
+     '1st-4th': array([-0.71947837, -0.05691843,  0.16745438, -0.00462133, -0.36181843,
+            -0.11321898,  0.37750733,  0.3297556 ,  0.3258544 , -0.22029436,
+            -0.25121528, -0.04426979,  0.23183182, -0.09465475,  0.15154967,
+             0.05574629], dtype=float32),
+     'Preschool': array([ 0.8810191 ,  0.11680676,  0.18423152, -0.02020044,  0.20060717,
+             0.19240808, -0.21568672, -0.00838439,  0.32876205, -0.02553497,
+             0.0844057 ,  0.2446878 ,  0.16002655, -0.46517354,  0.2243812 ,
+            -0.2781279 ], dtype=float32)}
 
 

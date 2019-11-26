@@ -169,3 +169,24 @@ pytest --ignore=test_data_utils/test_du_deep_image.py
 cd test_data_utils
 pytest test_du_deep_image.py
 ```
+
+### Acknowledgments
+
+This library takes from a series of other libraries, so I think it is just
+fair to mention them here in the README (specific mentions are also included
+in the code).
+
+The `Callbacks` and `Initializers` structure and code is inspired by the
+[`torchsample`](https://github.com/ncullen93/torchsample) library, which in
+itself partially inspired by [`Keras`](https://keras.io/).
+
+The `TextProcessor` class in this library uses the
+[`fastai`](https://docs.fast.ai/text.transform.html#BaseTokenizer.tokenizer)'s
+`Tokenizer` and `Vocab`. The code at `utils.fastai_transforms` is a minor
+adaptation of their code so it functions within this library. To my experience
+their `Tokenizer` is the best in class.
+
+The `ImageProcessor` class in this library uses code from the fantastic [Deep
+Learning for Computer
+Vision](https://www.pyimagesearch.com/deep-learning-computer-vision-python-book/)
+(DL4CV) book by Adrian Rosebrock.

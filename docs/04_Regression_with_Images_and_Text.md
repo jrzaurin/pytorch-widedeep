@@ -1,8 +1,8 @@
-## <font color='Gold '>1. Regression with Images and Text.</font>
+## 1. Regression with Images and Text
 
-In this notebook we will go through a series of examples on how to combine all Wide & Deep components, the Wide component, the stack of dense layers for the "categorical embeddings" and numerical column (deepdense), the text data (deeptext) and images (deepimage). 
+In this notebook we will go through a series of examples on how to combine all Wide & Deep components, the Wide component (`wide`), the stack of dense layers for the "categorical embeddings" and numerical column (`deepdense`), the text data (`deeptext`) and images (`deepimage`). 
 
-To that aim I will use the Airbnb listings dataset for London, which you can download from [here](http://insideairbnb.com/get-the-data.html). I have taken a sample of 1000 listings to keep the data tractable in this notebook. Also, I have preprocess the data and prepared it for this excercise. All preprocessing steps can be found in the notebook `airbnb_data_preprocessing.ipynb` in this `examples` folder. Note that you do not need to go through that notebook to get an understanding on how to use this library. 
+To that aim I will use the Airbnb listings dataset for London, which you can download from [here](http://insideairbnb.com/get-the-data.html). I have taken a sample of 1000 listings to keep the data tractable in this notebook. Also, I have preprocess the data and prepared it for this excercise. All preprocessing steps can be found in the notebook `airbnb_data_preprocessing.ipynb` in this `examples` folder. Note that you do not need to go through that notebook to get an understanding on how to use the `pytorch-widedeep` library. 
 
 
 ```python
@@ -676,7 +676,7 @@ df.head()
 
 
 
-### <font color='Gold '>1.1 Regression with the defaults</font>
+### 1.1 Regression with the defaults
 
 
 ```python
@@ -700,7 +700,7 @@ img_path = 'data/airbnb/property_picture'
 target_col = 'yield'
 ```
 
-### <font color='Gold '>1.1.1 Prepare the data</font>
+### 1.1.1 Prepare the data
 
 I will focus here on how to prepare the data and run the model. Check notebooks 1 and 2 to see what's going on behind the scences
 
@@ -745,18 +745,18 @@ X_images = image_processor.fit_transform(df, img_col, img_path)
     Reading Images from data/airbnb/property_picture
 
 
-      4%|▍         | 44/1001 [00:00<00:02, 430.05it/s]
+      9%|▊         | 86/1001 [00:00<00:02, 423.21it/s]
 
     Resizing
 
 
-    100%|██████████| 1001/1001 [00:02<00:00, 405.33it/s]
+    100%|██████████| 1001/1001 [00:02<00:00, 423.31it/s]
 
 
     Computing normalisation metrics
 
 
-### <font color='Gold '>1.1.2. Build the model components</font>
+### 1.1.2. Build the model components
 
 
 ```python
@@ -767,11 +767,11 @@ deepdense = DeepDense(hidden_layers=[128,64], dropout=[0.5, 0.5],
                       deep_column_idx=deep_preprocessor.deep_column_idx,
                       embed_input=deep_preprocessor.embeddings_input,
                       continuous_cols=continuous_cols)
-# DeepText: 2 LSTMs
+# DeepText: a stack of 2 LSTMs
 deeptext = DeepText(vocab_size=len(text_preprocessor.vocab.itos), hidden_dim=64, 
                     n_layers=2, rnn_dropout=0.5, 
                     embedding_matrix=text_preprocessor.embedding_matrix)
-# Pretrained Resnet 18 (default is all but last 2 conv blocks) plus a FC-Head 512->256->128
+# Pretrained Resnet 18 (default is all but last 2 conv blocks frozen) plus a FC-Head 512->256->128
 deepimage = DeepImage(pretrained=True, head_layers=[512, 256, 128])
 ```
 
@@ -780,7 +780,7 @@ deepimage = DeepImage(pretrained=True, head_layers=[512, 256, 128])
 model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage)
 ```
 
-### <font color='Gold '>1.1.3. Compile and fit</font>
+### 1.1.3. Compile and fit
 
 
 ```python
@@ -793,11 +793,68 @@ model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images,
     target=target, n_epochs=1, batch_size=32, val_split=0.2)
 ```
 
-    epoch 1:  96%|█████████▌| 25/26 [02:04<00:04,  4.99s/it, loss=117]
-    valid: 100%|██████████| 7/7 [00:14<00:00,  2.06s/it, loss=98.9]
+      0%|          | 0/25 [00:00<?, ?it/s]
+
+    Training
 
 
-### <font color='Gold '>1.2 Regression with varying parameters and a FC-Head receiving the deep side</font>
+    epoch 1: 100%|██████████| 25/25 [02:03<00:00,  4.93s/it, loss=118]
+    valid: 100%|██████████| 7/7 [00:14<00:00,  2.06s/it, loss=99.3]
+
+
+### 1.1.4. Warming up before training
+
+
+```python
+wide = Wide(wide_dim=X_wide.shape[1], output_dim=1)
+deepdense = DeepDense(hidden_layers=[128,64], dropout=[0.5, 0.5], 
+                      deep_column_idx=deep_preprocessor.deep_column_idx,
+                      embed_input=deep_preprocessor.embeddings_input,
+                      continuous_cols=continuous_cols)
+deeptext = DeepText(vocab_size=len(text_preprocessor.vocab.itos), hidden_dim=64, 
+                    n_layers=2, rnn_dropout=0.5, 
+                    embedding_matrix=text_preprocessor.embedding_matrix)
+deepimage = DeepImage(pretrained=True, head_layers=[512, 256, 128])
+model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage)
+model.compile(method='regression')
+model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images, target=target, n_epochs=1, 
+          batch_size=32, val_split=0.2, warm_up=True, warm_epochs=1)
+```
+
+      0%|          | 0/25 [00:00<?, ?it/s]
+
+    Warming up wide for 1 epochs
+
+
+    epoch 1: 100%|██████████| 25/25 [00:00<00:00, 58.17it/s, loss=127]
+      0%|          | 0/25 [00:00<?, ?it/s]
+
+    Warming up deepdense for 1 epochs
+
+
+    epoch 1: 100%|██████████| 25/25 [00:00<00:00, 44.23it/s, loss=115]
+      0%|          | 0/25 [00:00<?, ?it/s]
+
+    Warming up deeptext for 1 epochs
+
+
+    epoch 1: 100%|██████████| 25/25 [00:03<00:00,  7.25it/s, loss=132]
+      0%|          | 0/25 [00:00<?, ?it/s]
+
+    Warming up deepimage for 1 epochs
+
+
+    epoch 1: 100%|██████████| 25/25 [02:00<00:00,  4.83s/it, loss=122]
+      0%|          | 0/25 [00:00<?, ?it/s]
+
+    Training
+
+
+    epoch 1: 100%|██████████| 25/25 [02:03<00:00,  4.95s/it, loss=105]
+    valid: 100%|██████████| 7/7 [00:14<00:00,  2.02s/it, loss=91.1]
+
+
+### 1.2 Regression with varying parameters and a FC-Head receiving the deep side
 
 This would be the second architecture shown in the README file
 
@@ -814,12 +871,170 @@ deeptext = DeepText(vocab_size=len(text_preprocessor.vocab.itos), hidden_dim=128
 deepimage = DeepImage(pretrained=True, head_layers=[512, 256, 128])
 ```
 
+The **FC-Head** is passed as a parameter
+
 
 ```python
 model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage, head_layers=[128, 64])
 ```
 
 Let's have a look to the model
+
+
+```python
+model
+```
+
+
+
+
+    WideDeep(
+      (wide): Wide(
+        (wide_linear): Linear(in_features=356, out_features=1, bias=True)
+      )
+      (deepdense): DeepDense(
+        (embed_layers): ModuleDict(
+          (emb_layer_accommodates_catg): Embedding(3, 16)
+          (emb_layer_bathrooms_catg): Embedding(3, 16)
+          (emb_layer_bedrooms_catg): Embedding(4, 16)
+          (emb_layer_beds_catg): Embedding(4, 16)
+          (emb_layer_cancellation_policy): Embedding(5, 16)
+          (emb_layer_guests_included_catg): Embedding(3, 16)
+          (emb_layer_host_listings_count_catg): Embedding(4, 16)
+          (emb_layer_minimum_nights_catg): Embedding(3, 16)
+          (emb_layer_neighbourhood_cleansed): Embedding(32, 64)
+        )
+        (embed_dropout): Dropout(p=0.0, inplace=False)
+        (dense): Sequential(
+          (dense_layer_0): Sequential(
+            (0): Linear(in_features=196, out_features=128, bias=True)
+            (1): LeakyReLU(negative_slope=0.01, inplace=True)
+            (2): Dropout(p=0.5, inplace=False)
+          )
+          (dense_layer_1): Sequential(
+            (0): Linear(in_features=128, out_features=64, bias=True)
+            (1): LeakyReLU(negative_slope=0.01, inplace=True)
+            (2): Dropout(p=0.5, inplace=False)
+          )
+        )
+      )
+      (deeptext): DeepText(
+        (word_embed): Embedding(2192, 100, padding_idx=1)
+        (rnn): LSTM(100, 128, num_layers=2, batch_first=True, dropout=0.5)
+      )
+      (deepimage): DeepImage(
+        (backbone): Sequential(
+          (0): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+          (1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+          (2): ReLU(inplace=True)
+          (3): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
+          (4): Sequential(
+            (0): BasicBlock(
+              (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): ReLU(inplace=True)
+              (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+            (1): BasicBlock(
+              (conv1): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): ReLU(inplace=True)
+              (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (5): Sequential(
+            (0): BasicBlock(
+              (conv1): Conv2d(64, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+              (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): ReLU(inplace=True)
+              (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (downsample): Sequential(
+                (0): Conv2d(64, 128, kernel_size=(1, 1), stride=(2, 2), bias=False)
+                (1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+            (1): BasicBlock(
+              (conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): ReLU(inplace=True)
+              (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (6): Sequential(
+            (0): BasicBlock(
+              (conv1): Conv2d(128, 256, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+              (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): ReLU(inplace=True)
+              (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (downsample): Sequential(
+                (0): Conv2d(128, 256, kernel_size=(1, 1), stride=(2, 2), bias=False)
+                (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+            (1): BasicBlock(
+              (conv1): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): ReLU(inplace=True)
+              (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (7): Sequential(
+            (0): BasicBlock(
+              (conv1): Conv2d(256, 512, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+              (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): ReLU(inplace=True)
+              (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (downsample): Sequential(
+                (0): Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
+                (1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              )
+            )
+            (1): BasicBlock(
+              (conv1): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+              (relu): ReLU(inplace=True)
+              (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+              (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+            )
+          )
+          (8): AdaptiveAvgPool2d(output_size=(1, 1))
+        )
+        (imagehead): Sequential(
+          (dense_layer_0): Sequential(
+            (0): Linear(in_features=512, out_features=256, bias=True)
+            (1): LeakyReLU(negative_slope=0.01, inplace=True)
+            (2): Dropout(p=0.0, inplace=False)
+          )
+          (dense_layer_1): Sequential(
+            (0): Linear(in_features=256, out_features=128, bias=True)
+            (1): LeakyReLU(negative_slope=0.01, inplace=True)
+            (2): Dropout(p=0.0, inplace=False)
+          )
+        )
+      )
+      (deephead): Sequential(
+        (head_layer_0): Sequential(
+          (0): Linear(in_features=320, out_features=128, bias=True)
+          (1): LeakyReLU(negative_slope=0.01, inplace=True)
+          (2): Dropout(p=0.0, inplace=False)
+        )
+        (head_layer_1): Sequential(
+          (0): Linear(in_features=128, out_features=64, bias=True)
+          (1): LeakyReLU(negative_slope=0.01, inplace=True)
+          (2): Dropout(p=0.0, inplace=False)
+        )
+        (head_out): Linear(in_features=64, out_features=1, bias=True)
+      )
+    )
+
+
 
 Both, the Text and Image components allow FC-heads on their own (referred very creatively as `texthead` and `imagehead`). Following this nomenclature, the FC-head that receives the concatenation of the whole deep component is called `deephead`. 
 
@@ -881,14 +1096,23 @@ model.compile(method='regression', initializers=initializers, optimizers=optimiz
     lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
 ```
 
+    /Users/javier/pytorch-widedeep/pytorch_widedeep/initializers.py:32: UserWarning: No initializer found for deephead
+      if self.verbose: warnings.warn("No initializer found for {}".format(name))
+
+
 
 ```python
 model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images,
     target=target, n_epochs=1, batch_size=32, val_split=0.2)
 ```
 
-    epoch 1:  96%|█████████▌| 25/26 [02:02<00:04,  4.91s/it, loss=132]
-    valid: 100%|██████████| 7/7 [00:14<00:00,  2.05s/it, loss=105] 
+      0%|          | 0/25 [00:00<?, ?it/s]
+
+    Training
+
+
+    epoch 1: 100%|██████████| 25/25 [02:04<00:00,  4.97s/it, loss=129]
+    valid: 100%|██████████| 7/7 [00:14<00:00,  2.06s/it, loss=95.6]
 
 
 
