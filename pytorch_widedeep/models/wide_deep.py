@@ -16,7 +16,6 @@ from ._wd_dataset import WideDeepDataset
 from ._multiple_optimizer import MultipleOptimizer
 from ._multiple_lr_scheduler import MultipleLRScheduler
 from ._multiple_transforms import MultipleTransforms
-from ._wdmodel_type import WDModel
 from ._warmup import WarmUp
 from .deep_dense import dense_layer
 
@@ -27,7 +26,6 @@ from torch.utils.data import DataLoader
 n_cpus = os.cpu_count()
 use_cuda = torch.cuda.is_available()
 
-import pdb
 
 class WideDeep(nn.Module):
     r""" Main collector class to combine all Wide, DeepDense, DeepText and
@@ -64,8 +62,8 @@ class WideDeep(nn.Module):
     head_dropout: List, Optional
         Dropout between the dense layers. e.g: [0.5, 0.5]
     head_batchnorm: Boolean, Optional
-        Whether or not to include batch normalizatin in the dense layers that
-        form the texthead
+        Specifies if batch normalizatin should be included in the dense layers
+        that form the texthead
     output_dim: Int
         Size of the final layer. 1 for regression and binary classification or
         'n_class' for multiclass classification
@@ -240,7 +238,7 @@ class WideDeep(nn.Module):
             yourself. See here:
             https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10
         with_focal_loss: Boolean, Optional. Default=False
-            Whether or not to use the Focal Loss. https://arxiv.org/pdf/1708.02002.pdf
+            Use the Focal Loss. https://arxiv.org/pdf/1708.02002.pdf
         alpha, gamma: Float. Default=0.25, 2
             Focal Loss parameters. See: https://arxiv.org/pdf/1708.02002.pdf
         verbose: Int
@@ -402,14 +400,36 @@ class WideDeep(nn.Module):
             Number of epochs without improving the target metric before we
             stop the fit
         warm_up: Boolean, Default=False
-            Warm up the models individually before starting the joined training
+            warm_up model components individually before the joined traininga
         warm_epochs: Int, Default=4
-            Number of warm up epochs
+            Number of warm up epochs for those model componenst that will not
+            be gradually warmed up
         warm_max_lr: Float, Default=0.01
-            Warming up will happen using a slanted triangular learning rates
-            (https://arxiv.org/pdf/1801.06146.pdf). warm_max_lr indicates the
-            maximum learning rate that will be used during the cycle. The
-            minimum (base_lr) learning rate is warm_max_lr/10.
+            Maximum learning rate during the Triangular Learning rate cycle
+            for those model componenst that will not be gradually warmed up
+        warm_deeptext_gradual: Boolean, Default=False
+            Boolean indicating if the deeptext component will be warmed
+            up gradually
+        warm_deeptext_max_lr: Float, Default=0.01
+            Maximum learning rate during the Triangular Learning rate cycle
+            for the deeptext component
+        warm_deeptext_layers: Optional, List, Default=None
+            List of nn.Modules that will be warmed up gradually. These have to
+            be in 'warm-up-order': the layers or blocks close to the output
+            neuron(s) first
+        warm_deepimage_gradual: Boolean, Default=False
+            Boolean indicating if the deepimage component will be warmed
+            up gradually
+        warm_deepimage_max_lr: Float, Default=0.01
+            Maximum learning rate during the Triangular Learning rate cycle
+            for the deepimage component
+        warm_deepimage_layers: Optional, List, Default=None
+            List of nn.Modules that will be warmed up gradually. These have to
+            be in 'warm-up-order': the layers or blocks close to the output
+            neuron(s) first
+        warm_routine: Str, Default='felbo'
+            Warm up routine. On of 'felbo' or 'howard'. See the WarmUp class
+            documentation for details
 
         **WideDeep assumes that X_wide, X_deep and target ALWAYS exist, while
         X_text and X_img are optional

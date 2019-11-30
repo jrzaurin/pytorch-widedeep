@@ -3,37 +3,36 @@ import torch
 
 from ..metrics import Metric
 from ..wdtypes import *
-from ._wdmodel_type import WDModel
 
 from tqdm import tqdm,trange
 from torch import nn
 
 use_cuda = torch.cuda.is_available()
 
-import pdb
 
 class WarmUp(object):
-	r"""Class containing the 'warm up' methods to be applied to the individual
-	models before the joined training. There are 3 warm up routines:
+	r"""
+	'Warm up' methods to be applied to the individual models before the joined
+	training. There are 3 warm up routines available:
 	1) Warm up all trainable layers at once
 	2) Gradual warm up inspired by the work of Felbo et al., 2017
 	3) Gradual warm up inspired by the work of Howard & Ruder 2018
 
-	The structure of the code in this class is highly customised to be
-	instantiated within the class WideDeep. This is not ideal, but represents a
-	compromise towards implementing a 'warm up' functionality for the current
-	overall structure of the package without having to re-structure most of the
-	existing code.
+	The structure of the code in this class is designed to be instantiated within
+	the class WideDeep. This is not ideal, but represents a compromise towards
+	implementing a 'warm up' functionality for the current overall structure of
+	the package without having to re-structure most of the existing code.
 
 	Parameters
 	----------
 	activation_fn: Any
 		any function with the same strucure as '_activation_fn' in the main class
-		WideDeep
+		WideDeep at pytorch_widedeep.models.wide_deep
 	loss_fn: Any
 		any function with the same strucure as '_loss_fn' in the main class WideDeep
+		at pytorch_widedeep.models.wide_deep
 	metric: Metric
-		object of class Metric (see metrics.Metric)
+		object of class Metric (see Metric in pytorch_widedeep.metrics)
 	method: str
 		one of 'binary', 'regression' or 'multiclass'
 	verbose: Boolean
@@ -47,30 +46,31 @@ class WarmUp(object):
 		self.method = method
 		self.verbose = verbose
 
-	def warm_all(self, model:WDModel, model_name:str, loader:DataLoader, n_epochs:int,
+	def warm_all(self, model:nn.Module, model_name:str, loader:DataLoader, n_epochs:int,
 		max_lr:float):
 		r"""
-		Warm up all trainable layers in a model using a one cycle triangular
-		learning rate. This is refereed as Slanted Triangular learing rate in Jeremy
-		Howard & Sebastian Ruder 2018 (https://arxiv.org/abs/1801.06146). The cycle
-		is described as follows:
+		Warm up all trainable layers in a model using a one cyclic learning rate
+		with a triangular pattern. This is refereed as Slanted Triangular learing
+		rate in Jeremy Howard & Sebastian Ruder 2018
+		(https://arxiv.org/abs/1801.06146). The cycle is described as follows:
 		1-The learning rate will gradually increase for 10% of the training steps
 			from max_lr/10 to max_lr.
-		2-It will then gradually decrease to max_lr/10 for the remaining 90%.
-		The optimizer used in the process is AdamW (not optional).
+		2-It will then gradually decrease to max_lr/10 for the remaining 90% of the
+			steps.
+		The optimizer used in the process is AdamW
 
 		Parameters:
 		----------
-		model: WDModel
-			WDModel object containing one the WideDeep model components (wide,
+		model: nn.Module
+			nn.Module object containing one the WideDeep model components (wide,
 			deepdense, deeptext or deepimage)
 		model_name: Str
 			string indicating the model name to access the corresponding parameters.
 			One of 'wide', 'deepdense', 'deeptext' or 'deepimage'
 		loader: DataLoader
-			Pytorch DataLoader containing the data to warm up with.
+			Pytorch DataLoader containing the data used to warm up
 		n_epochs: Int
-			number of epochs used to warm up the model.
+			number of epochs used to warm up the model
 		max_lr: Float
 			maximum learning rate value during the triangular cycle.
 		"""
@@ -85,7 +85,7 @@ class WarmUp(object):
 
 		self._warm(model, model_name, loader, optimizer, scheduler, n_epochs=n_epochs)
 
-	def warm_gradual(self, model:WDModel, model_name:str, loader:DataLoader,
+	def warm_gradual(self, model:nn.Module, model_name:str, loader:DataLoader,
 		max_lr:float, layers:List[nn.Module], routine:str):
 		r"""
 		Warm up certain layers within the model following a gradual warm up routine.
@@ -94,12 +94,11 @@ class WarmUp(object):
 		Howard & Sebastian Ruder 2018 ULMFit paper
 		(https://arxiv.org/abs/1801.06146).
 
-		As in the case of the 'warm_all' method, a one cycle triangular learning
-		rate is used. In both Felbo's and Howard's routines a gradual decreasing
-		learning rate is used as we go deeper into the network. The 'closest' layer
-		to the output neuron(s) will use a maximum learning rate of 'max_lr'. The
-		learning rate will then decrease by a factor of 2.5 per layer, i.e.:
-	    max_lrs = [0.01] + [0.01/(2.5*n) for n in range(1, len(layers))]
+		A one cycle triangular learning rate is used. In both Felbo's and Howard's
+		routines a gradually decreasing learning rate is used as we go deeper into
+		the network. The 'closest' layer to the output neuron(s) will use a maximum
+		learning rate of 'max_lr'. The learning rate will then decrease by a factor
+		of 2.5 per layer
 
 		1) The 'Felbo' routine:
 			warm up the first layer in 'layers' for one epoch. Then warm up the next
@@ -107,13 +106,13 @@ class WarmUp(object):
 			Repeat
 		2) The 'Howard' routine:
 			warm up the first layer in 'layers' for one epoch. Then warm the next layer
-			in the model for one epoch while keep the already warmed up layer(s)
+			in the model for one epoch while keeping the already warmed up layer(s)
 			trainable. Repeat.
 
 		Parameters:
 		----------
-		model: WDModel
-			WDModel object containing one the WideDeep model components (wide,
+		model: nn.Module
+			nn.Module object containing one the WideDeep model components (wide,
 			deepdense, deeptext or deepimage)
 		model_name: Str
 			string indicating the model name to access the corresponding parameters.
@@ -122,15 +121,12 @@ class WarmUp(object):
 			Pytorch DataLoader containing the data to warm up with.
 		max_lr: Float
 			maximum learning rate value during the triangular cycle for the layer
-			'closest' to the output neuron(s). Deeper layers in the model will be
-			trained with a gradual descending learning rate. The descending factor is
-			fixed and is 2.5, i.e:
-		    max_lrs = [0.01] + [0.01/(2.5*n) for n in range(1, len(layers))]
+			closest to the output neuron(s). Deeper layers in 'model' will be trained
+			with a gradually descending learning rate. The descending factor is fixed
+			and is 2.5
 		layers: List
 			List of nn.Module objects containing the layers that will be warmed up.
-			This must be in 'WARM-UP ORDER', i.e. the closest layer to the output
-			neuron(s) must be the first element of the list while the deepest layer
-			that will be warmed up must be the last element in the list
+			This must be in 'WARM-UP ORDER'.
 		routine: str
 			one of 'howard' or 'felbo'
 		"""
@@ -139,10 +135,10 @@ class WarmUp(object):
 		original_setup = {}
 		for n,p in model.named_parameters(): original_setup[n] = p.requires_grad
 
-		# decreasing learning rates
+		# gradually decreasing learning rates
 		max_lrs = [0.01] + [0.01/(2.5*n) for n in range(1, len(layers))]
 
-		# freezing the layers that have to be warmed up gradually
+		# freezing the layers that will be warmed up gradually
 		for layer in layers:
 			for p in layer.parameters(): p.requires_grad=False
 
@@ -169,12 +165,12 @@ class WarmUp(object):
 		# back to the original setup
 		for n,p in model.named_parameters(): p.requires_grad = original_setup[n]
 
-		# If felbo we train the whole model for one last epoch
+		# If 'felbo' we train the whole model for one last epoch
 		if routine is 'felbo':
-			print('Warming up one last epoch with all warmed up layers trainable')
+			if self.verbose: print('Warming up one last epoch with all warmed up layers trainable')
 			self._warm(model, model_name, loader, optimizer, scheduler)
 
-	def _warm(self, model:WDModel, model_name:str, loader:DataLoader, optimizer:Optimizer,
+	def _warm(self, model:nn.Module, model_name:str, loader:DataLoader, optimizer:Optimizer,
 		scheduler:LRScheduler, n_epochs:int=1):
 		r"""
 		Standard Pytorch training loop
