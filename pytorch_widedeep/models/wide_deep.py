@@ -17,6 +17,7 @@ from ._multiple_optimizer import MultipleOptimizer
 from ._multiple_lr_scheduler import MultipleLRScheduler
 from ._multiple_transforms import MultipleTransforms
 from ._wdmodel_type import WDModel
+from ._warmup import WarmUp
 from .deep_dense import dense_layer
 
 from tqdm import tqdm,trange
@@ -26,6 +27,7 @@ from torch.utils.data import DataLoader
 n_cpus = os.cpu_count()
 use_cuda = torch.cuda.is_available()
 
+import pdb
 
 class WideDeep(nn.Module):
     r""" Main collector class to combine all Wide, DeepDense, DeepText and
@@ -201,7 +203,7 @@ class WideDeep(nn.Module):
         Parameters
         ----------
         method: Str
-             One of ('regression', 'binary' or 'multiclass')
+            One of ('regression', 'binary' or 'multiclass')
         optimizers: Optimizer, Dict. Optional, Default=AdamW
             Either an optimizers object (e.g. torch.optim.Adam()) or a
             dictionary where there keys are the model's children (i.e. 'wide',
@@ -358,7 +360,14 @@ class WideDeep(nn.Module):
         patience:int=10,
         warm_up:bool=False,
         warm_epochs:int=4,
-        warm_max_lr:float=0.01):
+        warm_max_lr:float=0.01,
+        warm_deeptext_gradual:bool=False,
+        warm_deeptext_max_lr:float=0.01,
+        warm_deeptext_layers:Optional[List[nn.Module]]=None,
+        warm_deepimage_gradual:bool=False,
+        warm_deepimage_max_lr:float=0.01,
+        warm_deepimage_layers:Optional[List[nn.Module]]=None,
+        warm_routine:str='felbo'):
         r"""
         fit method that must run after calling 'compile'
 
@@ -437,11 +446,14 @@ class WideDeep(nn.Module):
         train_set, eval_set = self._train_val_split(X_wide, X_deep, X_text, X_img,
             X_train, X_val, val_split, target)
         train_loader = DataLoader(dataset=train_set, batch_size=batch_size, num_workers=n_cpus)
+        if warm_up:
+            # warm up...
+            self._warm_up(train_loader, warm_epochs, warm_max_lr, warm_deeptext_gradual,
+                warm_deeptext_layers, warm_deeptext_max_lr, warm_deepimage_gradual,
+                warm_deepimage_layers, warm_deepimage_max_lr, warm_routine)
         train_steps =  len(train_loader)
-        if warm_up: self._warm_up(train_loader, warm_epochs, warm_max_lr)
         self.callback_container.on_train_begin({'batch_size': batch_size,
             'train_steps': train_steps, 'n_epochs': n_epochs})
-
         if self.verbose: print('Training')
         for epoch in range(n_epochs):
             # train step...
@@ -685,62 +697,31 @@ class WideDeep(nn.Module):
             eval_set = WideDeepDataset(**X_val, transforms=self.transforms)
         return train_set, eval_set
 
-    def _warm_model(self, model:WDModel, model_name:str, loader:DataLoader, n_epochs:int,
-        max_lr:float):
-        r"""
-        To Warm up individually the different models that comprise WideDeep we
-        will use a triangular learning rate schedule and one single cycle over
-        n_epochs The cycle will go from max_lr/10. to max_lr.
-        """
-        if self.verbose: print('Warming up {} for {} epochs'.format(model_name, n_epochs))
-
-        model.train()
-
-        optimizer = torch.optim.AdamW(model.parameters(), lr=max_lr/10.)
-        steps = len(loader)
-        step_size_up = round((steps*n_epochs) * 0.1)
-        step_size_down = (steps*n_epochs) - step_size_up
-        scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=max_lr/10.,
-            max_lr=max_lr, step_size_up=step_size_up, step_size_down=step_size_down,
-            cycle_momentum=False)
-
-        for epoch in range(n_epochs):
-            running_loss=0.
-            with trange(steps, disable=self.verbose != 1) as t:
-                for batch_idx, (data, target) in zip(t, loader):
-                    t.set_description('epoch %i' % (epoch+1))
-                    X = data[model_name].cuda() if use_cuda else data[model_name]
-                    y = target.float() if self.method != 'multiclass' else target
-                    y = y.cuda() if use_cuda else y
-
-                    optimizer.zero_grad()
-                    y_pred = self._activation_fn(model(X))
-                    loss   = self._loss_fn(y_pred, y)
-                    loss.backward()
-                    optimizer.step()
-                    scheduler.step()
-
-                    running_loss += loss.item()
-                    avg_loss = running_loss/(batch_idx+1)
-
-                    if self.metric is not None:
-                        acc = self.metric(y_pred, y)
-                        t.set_postfix(metrics=acc, loss=avg_loss)
-                    else:
-                        t.set_postfix(loss=np.sqrt(avg_loss))
-
-    def _warm_up(self, loader:DataLoader, n_epochs:int, max_lr:float):
+    def _warm_up(self, loader:DataLoader, n_epochs:int, max_lr:float, deeptext_gradual:bool,
+        deeptext_layers:List[nn.Module], deeptext_max_lr:float, deepimage_gradual:bool,
+        deepimage_layers:List[nn.Module], deepimage_max_lr:float, routine:str='felbo'):
         r"""
         Simple wrappup to individually warm up model components
         """
         if self.deephead is not None:
             raise ValueError(
                 "Currently warming up is only supported without a fully connected 'DeepHead'")
-
-        self._warm_model(self.wide, 'wide', loader, n_epochs, max_lr)
-        self._warm_model(self.deepdense, 'deepdense', loader, n_epochs, max_lr)
-        if self.deeptext: self._warm_model(self.deeptext, 'deeptext', loader, n_epochs, max_lr)
-        if self.deepimage: self._warm_model(self.deepimage, 'deepimage', loader, n_epochs, max_lr)
+        # This is not the most elegant solution, but is a soluton "in-between"
+        # a non elegant one and re-factoring the whole code
+        warmer = WarmUp(self._activation_fn, self._loss_fn, self.metric, self.method,
+            self.verbose)
+        warmer.warm_all(self.wide, 'wide', loader, n_epochs, max_lr)
+        warmer.warm_all(self.deepdense, 'deepdense', loader, n_epochs, max_lr)
+        if self.deeptext:
+            if deeptext_gradual:
+                warmer.warm_gradual(self.deeptext, 'deeptext', loader, deeptext_max_lr,
+                    deeptext_layers, routine)
+            else: warmer.warm_all(self.deeptext, 'deeptext', loader, n_epochs, max_lr)
+        if self.deepimage:
+            if deepimage_gradual:
+                warmer.warm_gradual(self.deepimage, 'deepimage', loader, deepimage_max_lr,
+                    deepimage_layers, routine)
+            else: warmer.warm_all(self.deepimage, 'deepimage', loader, n_epochs, max_lr)
 
     def _lr_scheduler_step(self, step_location:str):
         r"""
