@@ -365,7 +365,7 @@ class WideDeep(nn.Module):
         warm_deepimage_gradual:bool=False,
         warm_deepimage_max_lr:float=0.01,
         warm_deepimage_layers:Optional[List[nn.Module]]=None,
-        warm_routine:str='felbo'):
+        warm_routine:str='howard'):
         r"""
         fit method that must run after calling 'compile'
 

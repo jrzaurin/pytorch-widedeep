@@ -103,7 +103,8 @@ class WarmUp(object):
 		1) The 'Felbo' routine:
 			warm up the first layer in 'layers' for one epoch. Then warm up the next
 			layer in 'layers' for one epoch freezing the already warmed up layer(s).
-			Repeat
+			Repeat untill all individual layers are warmed. Then warm one last epoch
+			with all warmed layers trainable
 		2) The 'Howard' routine:
 			warm up the first layer in 'layers' for one epoch. Then warm the next layer
 			in the model for one epoch while keeping the already warmed up layer(s)
@@ -134,41 +135,47 @@ class WarmUp(object):
 		step_size_up, step_size_down = self._steps_up_down(len(loader))
 		original_setup = {}
 		for n,p in model.named_parameters(): original_setup[n] = p.requires_grad
-
-		# gradually decreasing learning rates
 		max_lrs = [0.01] + [0.01/(2.5*n) for n in range(1, len(layers))]
 
-		# freezing the layers that will be warmed up gradually
 		for layer in layers:
 			for p in layer.parameters(): p.requires_grad=False
 
-		# Gradual defrosting
 		if routine is 'howard': params, max_lr, base_lr = [],[],[]
 		for i, (lr, layer) in enumerate(zip(max_lrs, layers)):
-			if self.verbose: print('Warming up {}, layer {} of {}'.format(model_name, i+1, len(layers)))
+			if self.verbose:
+				print('Warming up {}, layer {} of {}'.format(model_name, i+1, len(layers)))
 			for p in layer.parameters(): p.requires_grad=True
 			if routine is 'felbo':
 				params, max_lr, base_lr = layer.parameters(), lr, lr/10.
 			elif routine is 'howard':
-				params += [{'params': layer.parameters(), 'lr': lr/10.}]
-				max_lr += [lr]
+				params  += [{'params': layer.parameters(), 'lr': lr/10.}]
+				max_lr  += [lr]
 				base_lr += [lr/10.]
 			optimizer = torch.optim.AdamW(params)
 			scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=base_lr,
-		        max_lr=max_lr, step_size_up=step_size_up, step_size_down=step_size_down,
-		        cycle_momentum=False)
+				max_lr=max_lr, step_size_up=step_size_up, step_size_down=step_size_down,
+				cycle_momentum=False)
 			self._warm(model, model_name, loader, optimizer, scheduler)
 			if routine is 'felbo':
-				# freezing it again before we warm the next one
 				for p in layer.parameters(): p.requires_grad=False
 
-		# back to the original setup
-		for n,p in model.named_parameters(): p.requires_grad = original_setup[n]
-
-		# If 'felbo' we train the whole model for one last epoch
 		if routine is 'felbo':
-			if self.verbose: print('Warming up one last epoch with all warmed up layers trainable')
+			if self.verbose:
+				print('Warming up one last epoch with all warmed up layers trainable')
+			for layer in layers:
+				for p in layer.parameters(): p.requires_grad=True
+			params, max_lr, base_lr = [],[],[]
+			for lr, layer in zip(max_lrs, layers):
+				params  += [{'params': layer.parameters(), 'lr': lr/10.}]
+				max_lr  += [lr]
+				base_lr += [lr/10.]
+			optimizer = torch.optim.AdamW(params)
+			scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=base_lr,
+				max_lr=max_lr, step_size_up=step_size_up, step_size_down=step_size_down,
+				cycle_momentum=False)
 			self._warm(model, model_name, loader, optimizer, scheduler)
+
+		for n,p in model.named_parameters(): p.requires_grad = original_setup[n]
 
 	def _warm(self, model:nn.Module, model_name:str, loader:DataLoader, optimizer:Optimizer,
 		scheduler:LRScheduler, n_epochs:int=1):
