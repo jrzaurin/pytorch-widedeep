@@ -5,7 +5,6 @@ import cv2
 
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils.validation import check_is_fitted
 from sklearn.exceptions import NotFittedError
 from scipy.sparse import csc_matrix
 from tqdm import tqdm
@@ -99,7 +98,11 @@ class WidePreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df:pd.DataFrame)->Union[sparse_matrix, np.ndarray]:
-        check_is_fitted(self.one_hot_enc, 'categories_')
+        try:
+            self.one_hot_enc.categories_
+        except:
+            raise NotFittedError("This WidePreprocessor instance is not fitted yet. "
+                "Call 'fit' with appropriate arguments before using this estimator.")
         df_wide = df.copy()[self.wide_cols]
         if self.crossed_cols is not None:
             df_wide, _ = self._cross_cols(df_wide)
@@ -220,7 +223,11 @@ class DeepPreprocessor(BasePreprocessor):
         if self.continuous_cols is not None:
             df_cont = self._prepare_continuous(df)
             if self.scale:
-                check_is_fitted(self.scaler, 'mean_')
+                try:
+                    self.scaler.mean_
+                except:
+                    raise NotFittedError("This DeepPreprocessor instance is not fitted yet. "
+                        "Call 'fit' with appropriate arguments before using this estimator.")
                 df_std = df_cont[self.standardize_cols]
                 df_cont[self.standardize_cols] = self.scaler.transform(df_std.values)
         try:
@@ -369,7 +376,7 @@ class ImagePreprocessor(BasePreprocessor):
 
     def transform(self, df, img_col:str, img_path:str)->np.ndarray:
         try:
-            self.app
+            self.aap
         except:
             raise NotFittedError("This ImagePreprocessor instance is not fitted yet. "
                 "Call 'fit' with appropriate arguments before using this estimator.")
