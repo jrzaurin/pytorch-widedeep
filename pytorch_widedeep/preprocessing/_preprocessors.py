@@ -6,6 +6,7 @@ import cv2
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.validation import check_is_fitted
+from sklearn.exceptions import NotFittedError
 from scipy.sparse import csc_matrix
 from tqdm import tqdm
 
@@ -293,7 +294,11 @@ class TextPreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df:pd.DataFrame, text_col:str)->np.ndarray:
-        check_is_fitted(self, 'vocab')
+        try:
+            self.vocab
+        except:
+            raise NotFittedError("This TextPreprocessor instance is not fitted yet. "
+                "Call 'fit' with appropriate arguments before using this estimator.")
         self.text_col = text_col
         texts = df[self.text_col].tolist()
         self.tokens = get_texts(texts)
@@ -363,7 +368,11 @@ class ImagePreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df, img_col:str, img_path:str)->np.ndarray:
-        check_is_fitted(self, 'aap')
+        try:
+            self.app
+        except:
+            raise NotFittedError("This ImagePreprocessor instance is not fitted yet. "
+                "Call 'fit' with appropriate arguments before using this estimator.")
         self.img_col = img_col
         image_list = df[self.img_col].tolist()
         if self.verbose: print('Reading Images from {}'.format(img_path))
