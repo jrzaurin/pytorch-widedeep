@@ -101,9 +101,9 @@ pip install -e .
 
 ### Examples
 
-There are 4 main notebooks in the `examples` folder plus some additional
+There are a number of notebooks in the `examples` folder plus some additional
 files. These notebooks cover most of the utilities of this package and can
-also act as documentation. In the likely case that github does not render the
+also act as documentation. In the case that github does not render the
 notebooks, or it renders them missing some parts, they are saved as markdown
 files in the `docs` folder.
 
