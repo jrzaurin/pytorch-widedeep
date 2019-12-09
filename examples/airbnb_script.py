@@ -89,3 +89,13 @@ if __name__ == '__main__':
 
     model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images,
         target=target, n_epochs=1, batch_size=32, val_split=0.2)
+
+    # With warm_up
+    # child = list(model.deepimage.children())[0]
+    # img_layers = list(child.backbone.children())[4:8] + [list(model.deepimage.children())[1]]
+    # img_layers = img_layers[::-1]
+
+    # model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images,
+    #     target=target, n_epochs=1, batch_size=32, val_split=0.2, warm_up=True,
+    #     warm_epochs=1, warm_deepimage_gradual=True, warm_deepimage_layers=img_layers,
+    #     warm_deepimage_max_lr=0.01, warm_routine='howard')
