@@ -1,4 +1,4 @@
-## <font color='DarkViolet'>Model Components</font>
+## Model Components
 
 The 5 main components of a `WideDeep` model are:
 
@@ -10,7 +10,7 @@ The 5 main components of a `WideDeep` model are:
 
 The first 4 of them will be collected and combined by the `WideDeep` collector class, while the 5th one can be optionally added to the `WideDeep` model through its corresponding parameters: `deephead` or alternatively `head_layers`, `head_dropout` and `head_batchnorm`
 
-### <font color='DarkViolet'>1. Wide</font>
+### 1. Wide
 
 The wide component is simply a Linear layer "plugged" into the output neuron(s)
 
@@ -39,9 +39,9 @@ wide
 
 
 
-###  <font color='DarkViolet'>2. DeepDense</font>
+### 2. DeepDense
 
-The DeepDense component is comprised by a stack of dense layers that receive the embedding representation of the categorical features concatenated with numerical continuous features. Let's have a look
+The `DeepDense` component is comprised by a stack of dense layers that receive the embedding representation of the categorical features concatenated with numerical continuous features. For those familiar with Fastai's tabular API, DeepDense is almost identical to their tabular model, although `DeepDense` allows for more flexibility when defining the embedding dimensions. Let's have a look to `DeepDense`:
 
 
 ```python
@@ -86,17 +86,18 @@ deepdense
         (emb_layer_c): Embedding(4, 8)
         (emb_layer_d): Embedding(4, 8)
       )
+      (embed_dropout): Dropout(p=0.0, inplace=False)
       (dense): Sequential(
         (dense_layer_0): Sequential(
           (0): Linear(in_features=33, out_features=16, bias=True)
-          (1): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-          (2): LeakyReLU(negative_slope=0.01, inplace=True)
+          (1): LeakyReLU(negative_slope=0.01, inplace=True)
+          (2): BatchNorm1d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
           (3): Dropout(p=0.5, inplace=False)
         )
         (dense_layer_1): Sequential(
           (0): Linear(in_features=16, out_features=8, bias=True)
-          (1): BatchNorm1d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-          (2): LeakyReLU(negative_slope=0.01, inplace=True)
+          (1): LeakyReLU(negative_slope=0.01, inplace=True)
+          (2): BatchNorm1d(8, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
           (3): Dropout(p=0.5, inplace=False)
         )
       )
@@ -112,22 +113,18 @@ deepdense(X_deep)
 
 
 
-    tensor([[ 0.0000e+00,  8.2602e-01, -0.0000e+00, -0.0000e+00,  3.9417e-01,
-              1.8614e+00,  3.5864e+00,  3.6002e+00],
-            [-0.0000e+00,  0.0000e+00,  0.0000e+00, -0.0000e+00, -1.2635e-02,
-             -2.0737e-02, -2.3037e-02,  7.8004e-01],
-            [-6.8242e-04, -1.6744e-02,  3.7422e+00,  1.9094e+00,  0.0000e+00,
-              2.6764e+00, -0.0000e+00, -0.0000e+00],
-            [-0.0000e+00, -0.0000e+00, -1.9077e-02,  0.0000e+00, -0.0000e+00,
-             -0.0000e+00,  0.0000e+00, -1.5909e-02],
-            [-0.0000e+00,  0.0000e+00, -0.0000e+00, -0.0000e+00, -1.6877e-02,
-             -2.2338e-03, -0.0000e+00, -0.0000e+00]], grad_fn=<MulBackward0>)
+    tensor([[ 0.0000, -0.0000, -2.2326,  3.5109, -0.0000, -1.2939, -0.0000, -0.0000],
+            [-1.1958, -0.0000, -0.0000, -0.0000,  0.0000,  0.0000, -0.0000, -0.0000],
+            [-0.0000, -0.0000,  0.0000,  0.0000, -1.4503, -0.0000, -0.0000,  3.9983],
+            [-1.0092,  0.5101, -0.0000, -1.4664, -0.0000, -0.0000, -1.0064, -0.0000],
+            [-1.1821,  0.0000,  0.0000, -1.5362,  0.0000,  0.0000,  3.9992, -0.0000]],
+           grad_fn=<MulBackward0>)
 
 
 
-###  <font color='DarkViolet'>3. DeepText</font>
+###  3. DeepText
 
-The `DeepText` class within the `WideDeep` package is a standard and simple stack of LSTMs on top of word embeddings. You could also add a FC-Head on top of the LSTMs. The word embeddings can be pre-trained. 
+The `DeepText` class within the `WideDeep` package is a standard and simple stack of LSTMs on top of word embeddings. You could also add a FC-Head on top of the LSTMs. The word embeddings can be pre-trained. In the future I aim to include some simple pretrained models so that the combination between text and images is fair.  
 
 *While I recommend using the `Wide` and `DeepDense` classes within this package when building the corresponding model components, it is very likely that the user will want to use custom text and image models. That is perfectly possible. Simply, build them and pass them as the corresponding parameters. Note that the custom models MUST return a last layer of activations (i.e. not the final prediction) so that  these activations are collected by WideDeep and combined accordingly. In  addition, the models MUST also contain an attribute `output_dim` with the size of these last layers of activations.*
 
@@ -191,8 +188,8 @@ deeptext
       (texthead): Sequential(
         (dense_layer_0): Sequential(
           (0): Linear(in_features=8, out_features=4, bias=True)
-          (1): BatchNorm1d(4, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-          (2): LeakyReLU(negative_slope=0.01, inplace=True)
+          (1): LeakyReLU(negative_slope=0.01, inplace=True)
+          (2): BatchNorm1d(4, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
           (3): Dropout(p=0.5, inplace=False)
         )
       )
@@ -202,9 +199,9 @@ deeptext
 
 Note that since the FC-Head will receive the activations from the last hidden layer of the stack of RNNs, the corresponding dimensions must be consistent.
 
-###  <font color='DarkViolet'>4. DeepImage</font>
+###  4. DeepImage
 
-The `DeepImage` class within the `WideDeep` package is a pretrained ResNet (18, 34, or 50. Default is 18), to which one can add a FC-Head. You can chose how many layers you want to defrost deep into the network with the parameter `freeze`
+The `DeepImage` class within the `WideDeep` package is either a pretrained ResNet (18, 34, or 50. Default is 18) or a stack of CNNs, to which one can add a FC-Head. If is a pretrained ResNet, you can chose how many layers you want to defrost deep into the network with the parameter `freeze`
 
 
 ```python
@@ -342,9 +339,10 @@ deepimage(X_img)
 
 
 
-    tensor([[-0.0015,  0.1513, -0.0035,  0.0430,  0.0091,  0.0020, -0.0018,  0.2094],
-            [-0.0012,  0.1760, -0.0046,  0.0670, -0.0013, -0.0024, -0.0007,  0.1417]],
-           grad_fn=<LeakyReluBackward1>)
+    tensor([[-1.7624e-03,  8.7372e-03, -3.9061e-03,  2.2110e-01, -1.9655e-03,
+              7.9629e-02,  2.5455e-01, -1.6910e-03],
+            [-2.8030e-05,  1.6680e-01, -3.5123e-03,  1.5065e-01,  5.2558e-02,
+              5.4472e-02,  4.2029e-02,  2.3403e-02]], grad_fn=<LeakyReluBackward1>)
 
 
 
@@ -404,7 +402,7 @@ deepimage
 
 
 
-###  <font color='DarkViolet'>5. deephead</font>
+###  5. deephead
 
 Note that I do not use uppercase here. This is because, by default, the `deephead` is not defined outside `WideDeep` as the rest of the components. 
 

@@ -1,6 +1,6 @@
-##  <font color='Fuchsia'>Processors and Utils</font>
+##  Processors and Utils
 
-Here I describe the main tools and utilities that one needs to prepare the data for the `WideDeep` model constructor.
+Description of the main tools and utilities that one needs to prepare the data for the `WideDeep` model constructor.
 
 #### The `preprocessing`  module
 
@@ -33,7 +33,7 @@ They are accessible directly from `utils` (e.g. `wd.utils.label_encoder`).
 
 Let's have a look to what they do and how they might be useful to the user in general.
 
-##  <font color='Fuchsia'>1. WidePreprocessor</font>
+##  1. WidePreprocessor
 
 This class simply takes a dataset and one-hot encodes it, with a few additional rings and bells.
 
@@ -50,6 +50,7 @@ from pytorch_widedeep.preprocessing import WidePreprocessor
 
 
 ```python
+# have a look to the documentation
 ?WidePreprocessor
 ```
 
@@ -226,7 +227,9 @@ X_wide
 
 
 
-##  <font color='Fuchsia'>2. DeepPreprocessor</font>
+If you had a look to the documentation you will see that there is an option to return a sparse matrix. This will save memory on disk, but due to the batch generation process for `WideDeep` the running time will be notably slow. See [here](https://github.com/jrzaurin/pytorch-widedeep/blob/bfbe6e5d2309857db0dcc5cf3282dfa60504aa52/pytorch_widedeep/models/_wd_dataset.py#L47) for more details.
+
+##  2. DeepPreprocessor
 
 Label encodes the categorical columns and normalises the numerical ones (unless otherwised specified).
 
@@ -548,7 +551,7 @@ enc_dict
 
 
 
-##  <font color='Fuchsia'>3. TextPreprocessor</font>
+##  3. TextPreprocessor
 
 This preprocessor returns the tokenised, padded sequences that will be directly fed to the stack of LSTMs.
 
@@ -611,7 +614,7 @@ print(X_text[0])
 
 `text_utils` are: `simple_preprocess`, `get_texts`, `pad_sequences`, `build_embeddings_matrix`
 
-`fastai_utils` is the fastai's [transforms](https://github.com/fastai/fastai/blob/master/fastai/text/transform.py) module (with some minor adaptations to function outside the fastai library). Therefore, **all credit to Jeremy Howard and his team**. The reason for using fastai's `transforms` module instead of using directly the library is simply because the library is gigantic, and has a large number of dependencies. I wanted to keep this package minimalistic and "light", and the only functions/classes I need are in that module.
+`fastai_utils` is the fastai's [transforms](https://github.com/fastai/fastai/blob/master/fastai/text/transform.py) module (with some minor adaptations to function outside the fastai library). Therefore, **all credit to Jeremy Howard and his team**. The reason for using fastai's `transforms` module instead of using directly the library is simply because the library is gigantic, and has a large number of dependencies. I wanted to keep this package as light as possible, and the only functions/classes I need are in that module.
 
 All utilities within that module are available in `pytorch-widedeep` via the `utils` module, so make sure you have a look because some functions there are quite handy. Here I will only focus on two: `Tokenizer` and `Vocab`.
 
@@ -1672,7 +1675,7 @@ padded_seq[0]
 
 
 
-##  <font color='Fuchsia'>4. ImagePreprocessor</font>
+## 4. ImagePreprocessor
 
 `ImagePreprocessor` simply resizes the images, being aware of the aspect ratio.
 
@@ -1687,12 +1690,12 @@ X_images = image_preprocessor.fit_transform(df, img_col="id", img_path="data/air
     Reading Images from data/airbnb/property_picture/
 
 
-      4%|▍         | 43/1001 [00:00<00:02, 422.56it/s]
+      8%|▊         | 83/1001 [00:00<00:02, 410.41it/s]
 
     Resizing
 
 
-    100%|██████████| 1001/1001 [00:02<00:00, 421.08it/s]
+    100%|██████████| 1001/1001 [00:02<00:00, 419.09it/s]
 
 
     Computing normalisation metrics
@@ -1757,7 +1760,7 @@ for i,im in enumerate(prop_imgs):
 ```
 
 
-![png](figures/01_Preprocessors_and_utils_1.png)
+![png](figures/01_Preprocessors_and_utils_40_0.png)
 
 
 
@@ -1782,7 +1785,7 @@ for i,im in enumerate(prop_resized_imgs):
 ```
 
 
-![png](figures/01_Preprocessors_and_utils_2.png)
+![png](figures/01_Preprocessors_and_utils_43_0.png)
 
 
 
@@ -1807,7 +1810,7 @@ for i,im in enumerate(prop_aap_resized_imgs):
 ```
 
 
-![png](figures/01_Preprocessors_and_utils_3.png)
+![png](figures/01_Preprocessors_and_utils_46_0.png)
 
 
 
