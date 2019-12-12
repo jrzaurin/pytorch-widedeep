@@ -3,6 +3,8 @@
   <img width="450" src="docs/figures/widedeep_logo.png">
 </p>
 
+[![Build Status](https://travis-ci.org/jrzaurin/pytorch-widedeep.svg?branch=master)](https://travis-ci.org/jrzaurin/pytorch-widedeep)
+
 # pytorch-widedeep
 
 A flexible package to combine tabular data with text and images using wide and
