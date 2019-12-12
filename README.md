@@ -167,10 +167,7 @@ better understanding of the content of the package and its functionalities.
 ### Testing
 
 ```
-cd test
-pytest --ignore=test_data_utils/test_du_deep_image.py
-cd test_data_utils
-pytest test_du_deep_image.py
+pytest tests
 ```
 
 ### Acknowledgments
