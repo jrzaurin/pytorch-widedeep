@@ -1,14 +1,19 @@
 import numpy as np
 import pandas as pd
+import os
 import pytest
 
 from pytorch_widedeep.preprocessing import ImagePreprocessor
 
+
+full_path = os.path.realpath(__file__)
+path = os.path.split(full_path)[0]
 df = pd.DataFrame({'galaxies': ['galaxy1.png', 'galaxy2.png']})
 img_col = 'galaxies'
-imd_dir = 'images'
+imd_dir = os.path.join(path,'images')
 processor = ImagePreprocessor()
 X_imgs = processor.fit_transform(df, img_col, img_path=imd_dir)
+
 
 ###############################################################################
 # There is not much to test here, since I only resize.
