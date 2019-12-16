@@ -625,12 +625,12 @@ class WideDeep(nn.Module):
         return cat_embed_dict
 
     def _activation_fn(self, inp:Tensor) -> Tensor:
-        if self.method == 'regression':
-            return inp
         if self.method == 'binary':
             return torch.sigmoid(inp)
-        if self.method == 'multiclass':
-            return F.softmax(inp, dim=1)
+        else:
+            # F.cross_entropy will apply logSoftmax to the preds in the case
+            # of 'multiclass'
+            return inp
 
     def _loss_fn(self, y_pred:Tensor, y_true:Tensor) -> Tensor:
         if self.with_focal_loss:
