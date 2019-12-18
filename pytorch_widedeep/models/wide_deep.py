@@ -23,6 +23,8 @@ from tqdm import tqdm,trange
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
+import pdb
+
 n_cpus = os.cpu_count()
 use_cuda = torch.cuda.is_available()
 
@@ -698,18 +700,21 @@ class WideDeep(nn.Module):
                     X_wide, X_deep, target = X_train['X_wide'], X_train['X_deep'], X_train['target']
                     if 'X_text' in X_train.keys(): X_text = X_train['X_text']
                     if 'X_img' in X_train.keys(): X_img = X_train['X_img']
-                X_tr_wide, X_val_wide, X_tr_deep, X_val_deep, y_tr, y_val = train_test_split(X_wide,
-                    X_deep, target, test_size=val_split, random_state=self.seed)
+                X_tr_wide, X_val_wide, X_tr_deep, X_val_deep, y_tr, y_val = train_test_split(
+                    X_wide, X_deep, target, test_size=val_split, random_state=self.seed,
+                    stratify=target if self.method != 'regression' else None)
                 X_train = {'X_wide':X_tr_wide, 'X_deep': X_tr_deep, 'target': y_tr}
                 X_val = {'X_wide':X_val_wide, 'X_deep': X_val_deep, 'target': y_val}
                 try:
-                    X_tr_text, X_val_text = train_test_split(X_text, test_size=val_split,
-                        random_state=self.seed)
+                    X_tr_text, X_val_text = train_test_split(
+                        X_text, test_size=val_split, random_state=self.seed,
+                        stratify=target if self.method != 'regression' else None)
                     X_train.update({'X_text': X_tr_text}), X_val.update({'X_text': X_val_text})
                 except: pass
                 try:
-                    X_tr_img, X_val_img = train_test_split(X_img, test_size=val_split,
-                        random_state=self.seed)
+                    X_tr_img, X_val_img = train_test_split(
+                        X_img, test_size=val_split, random_state=self.seed,
+                        stratify=target if self.method != 'regression' else None)
                     X_train.update({'X_img': X_tr_img}), X_val.update({'X_img': X_val_img})
                 except: pass
             # At this point the X_train and X_val dictionaries have been built
@@ -838,7 +843,9 @@ class WideDeep(nn.Module):
                 for i, data in zip(t, test_loader):
                     t.set_description('predict')
                     X = {k:v.cuda() for k,v in data.items()} if use_cuda else data
-                    preds = self._activation_fn(self.forward(X)).cpu().data.numpy()
+                    preds = self._activation_fn(self.forward(X))
+                    if self.method is 'multiclass': preds = F.softmax(preds, dim=1)
+                    preds = preds.cpu().data.numpy()
                     preds_l.append(preds)
         self.train()
         return preds_l
