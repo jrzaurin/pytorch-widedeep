@@ -62,7 +62,7 @@ class CategoricalAccuracy(Metric):
 
     def __call__(self, y_pred:Tensor, y_true:Tensor) -> np.ndarray:
         top_k = (y_pred.topk(self.top_k,1)[1])
-        true_k = y_true.view(len(y_true),1).expand_as(top_k) # type: ignore (ignore len vs .size())
+        true_k = y_true.view(len(y_true),1).expand_as(top_k) # type: ignore
         self.correct_count += top_k.eq(true_k).float().sum().item()
         self.total_count += len(y_pred) # type: ignore
         accuracy = float(self.correct_count) / float(self.total_count)
