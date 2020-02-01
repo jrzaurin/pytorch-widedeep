@@ -16,22 +16,7 @@ from ..utils.fastai_transforms import *
 from ..utils.image_utils import *
 
 
-class BasePreprocessor(object):
-
-    def __init__(self):
-        pass
-
-    def fit(self):
-        pass
-
-    def predict(self):
-        pass
-
-    def fit_transform(self):
-        pass
-
-
-class WidePreprocessor(BasePreprocessor):
+class WidePreprocessor(object):
     r"""Preprocessor to prepare the wide input dataset
 
     Parameters
@@ -82,7 +67,7 @@ class WidePreprocessor(BasePreprocessor):
             crossed_colnames.append(colname)
         return df, crossed_colnames
 
-    def fit(self, df:pd.DataFrame)->BasePreprocessor:
+    def fit(self, df:pd.DataFrame):
         df_wide = df.copy()[self.wide_cols]
         if self.crossed_cols is not None:
             df_wide, crossed_colnames = self._cross_cols(df_wide)
@@ -97,7 +82,7 @@ class WidePreprocessor(BasePreprocessor):
             self.one_hot_enc.fit(df_wide[self.wide_crossed_cols])
         return self
 
-    def transform(self, df:pd.DataFrame)->Union[sparse_matrix, np.ndarray]:
+    def transform(self, df:pd.DataFrame) -> Union[sparse_matrix, np.ndarray]:
         try:
             self.one_hot_enc.categories_
         except:
@@ -107,7 +92,7 @@ class WidePreprocessor(BasePreprocessor):
         if self.crossed_cols is not None:
             df_wide, _ = self._cross_cols(df_wide)
         if self.already_dummies:
-            X_oh_1 = self.df_wide[self.already_dummies].values
+            X_oh_1 = df_wide[self.already_dummies].values
             dummy_cols = [c for c in self.wide_crossed_cols if c not in self.already_dummies]
             X_oh_2=self.one_hot_enc.transform(df_wide[dummy_cols])
             return np.hstack((X_oh_1, X_oh_2))
@@ -118,7 +103,7 @@ class WidePreprocessor(BasePreprocessor):
         return self.fit(df).transform(df)
 
 
-class DeepPreprocessor(BasePreprocessor):
+class DeepPreprocessor(object):
     r"""Preprocessor to prepare the deepdense input dataset
 
     Parameters
@@ -184,12 +169,12 @@ class DeepPreprocessor(BasePreprocessor):
         "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
 
     def _prepare_embed(self, df:pd.DataFrame)->pd.DataFrame:
-        if isinstance(self.embed_cols[0], Tuple):
-            self.embed_dim = dict(self.embed_cols)
+        if isinstance(self.embed_cols[0], tuple):
+            self.embed_dim = dict(self.embed_cols) # type: ignore
             embed_colname = [emb[0] for emb in self.embed_cols]
         else:
-            self.embed_dim = {e:self.default_embed_dim for e in self.embed_cols}
-            embed_colname = self.embed_cols
+            self.embed_dim = {e:self.default_embed_dim for e in self.embed_cols} # type: ignore
+            embed_colname = self.embed_cols # type: ignore
         return df.copy()[embed_colname]
 
     def _prepare_continuous(self, df:pd.DataFrame)->pd.DataFrame:
@@ -199,11 +184,11 @@ class DeepPreprocessor(BasePreprocessor):
             else: self.standardize_cols = self.continuous_cols
         return df.copy()[self.continuous_cols]
 
-    def fit(self, df:pd.DataFrame)->BasePreprocessor:
+    def fit(self, df:pd.DataFrame):
         if self.embed_cols is not None:
             df_emb = self._prepare_embed(df)
             _, self.encoding_dict = label_encoder(df_emb, cols=df_emb.columns.tolist())
-            self.embeddings_input = []
+            self.embeddings_input: List = []
             for k,v in self.encoding_dict.items():
                 self.embeddings_input.append((k, len(v), self.embed_dim[k]))
         if self.continuous_cols is not None:
@@ -244,7 +229,7 @@ class DeepPreprocessor(BasePreprocessor):
         return self.fit(df).transform(df)
 
 
-class TextPreprocessor(BasePreprocessor):
+class TextPreprocessor(object):
     r"""Preprocessor to prepare the deepdense input dataset
 
     Parameters
@@ -293,7 +278,7 @@ class TextPreprocessor(BasePreprocessor):
         self.word_vectors_path = word_vectors_path
         self.verbose = verbose
 
-    def fit(self, df:pd.DataFrame, text_col:str)->BasePreprocessor:
+    def fit(self, df:pd.DataFrame, text_col:str):
         text_col = text_col
         texts = df[text_col].tolist()
         tokens = get_texts(texts)
@@ -322,7 +307,7 @@ class TextPreprocessor(BasePreprocessor):
         return self.fit(df, text_col).transform(df, text_col)
 
 
-class ImagePreprocessor(BasePreprocessor):
+class ImagePreprocessor(object):
     r"""Preprocessor to prepare the deepdense input dataset
 
     Parameters
@@ -369,7 +354,7 @@ class ImagePreprocessor(BasePreprocessor):
         self.height = height
         self.verbose = verbose
 
-    def fit(self)->BasePreprocessor:
+    def fit(self):
         self.aap = AspectAwarePreprocessor(self.width, self.height)
         self.spp = SimplePreprocessor(self.width, self.height)
         return self
@@ -403,8 +388,12 @@ class ImagePreprocessor(BasePreprocessor):
         std_R, std_G, std_B = [], [], []
         for rsz_img in resized_imgs:
             (mean_b, mean_g, mean_r), (std_b, std_g, std_r) = cv2.meanStdDev(rsz_img)
-            mean_R.append(mean_r), mean_G.append(mean_g), mean_B.append(mean_b)
-            std_R.append(std_r), std_G.append(std_g), std_B.append(std_b)
+            mean_R.append(mean_r)
+            mean_G.append(mean_g)
+            mean_B.append(mean_b)
+            std_R.append(std_r)
+            std_G.append(std_g)
+            std_B.append(std_b)
         self.normalise_metrics = dict(
             mean = {"R": np.mean(mean_R)/255., "G": np.mean(mean_G)/255., "B": np.mean(mean_B)/255.},
             std = {"R": np.mean(std_R)/255., "G": np.mean(std_G)/255., "B": np.mean(std_B)/255.}
