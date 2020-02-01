@@ -7,6 +7,9 @@ from .wdtypes import *
 
 class Metric(object):
 
+    def __init__(self):
+        self._name = ''
+
     def reset(self):
         raise NotImplementedError('Custom Metrics must implement this function')
 
@@ -59,9 +62,9 @@ class CategoricalAccuracy(Metric):
 
     def __call__(self, y_pred:Tensor, y_true:Tensor) -> np.ndarray:
         top_k = (y_pred.topk(self.top_k,1)[1])
-        true_k = y_true.view(len(y_true),1).expand_as(top_k)
+        true_k = y_true.view(len(y_true),1).expand_as(top_k) # type: ignore (ignore len vs .size())
         self.correct_count += top_k.eq(true_k).float().sum().item()
-        self.total_count += len(y_pred)
+        self.total_count += len(y_pred) # type: ignore
         accuracy = float(self.correct_count) / float(self.total_count)
         return np.round(accuracy, 4)
 
@@ -81,6 +84,6 @@ class BinaryAccuracy(Metric):
     def __call__(self, y_pred:Tensor, y_true:Tensor) -> np.ndarray:
         y_pred_round = y_pred.round()
         self.correct_count += y_pred_round.eq(y_true.view(-1,1)).float().sum().item()
-        self.total_count += len(y_pred)
+        self.total_count += len(y_pred) # type: ignore
         accuracy = float(self.correct_count) / float(self.total_count)
         return np.round(accuracy, 4)

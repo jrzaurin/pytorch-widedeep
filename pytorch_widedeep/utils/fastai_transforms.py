@@ -24,7 +24,7 @@ from spacy.symbols import ORTH
 
 def partition(a:Collection, sz:int)->List[Collection]:
     "Split iterables `a` in equal parts of size `sz`"
-    return [a[i:i+sz] for i in range(0, len(a), sz)]
+    return [a[i:i+sz] for i in range(0, len(a), sz)] # type: ignore
 
 
 def partition_by_cores(a:Collection, n_cpus:int)->List[Collection]:
@@ -37,10 +37,12 @@ def ifnone(a:Any,b:Any)->Any:
     return b if a is None else a
 
 
-def num_cpus()->int:
+def num_cpus()->Optional[int]:
     "Get number of cpus"
-    try:                   return len(os.sched_getaffinity(0))
-    except AttributeError: return os.cpu_count()
+    try:
+        return len(os.sched_getaffinity(0))
+    except AttributeError:
+        return os.cpu_count()
 
 _default_cpus = min(16, num_cpus())
 defaults = SimpleNamespace(cpus=_default_cpus, cmap='viridis', return_fig=False, silent=False)
@@ -86,7 +88,7 @@ def rm_useless_spaces(t:str) -> str:
 
 def replace_rep(t:str) -> str:
     "Replace repetitions at the character level in `t`."
-    def _replace_rep(m:Collection[str]) -> str:
+    def _replace_rep(m:Match[str]) -> str:
         c,cc = m.groups()
         return f' {TK_REP} {len(cc)+1} {c} '
     re_rep = re.compile(r'(\S)(\1{3,})')
@@ -95,7 +97,7 @@ def replace_rep(t:str) -> str:
 
 def replace_wrep(t:str) -> str:
     "Replace word repetitions in `t`."
-    def _replace_wrep(m:Collection[str]) -> str:
+    def _replace_wrep(m:Match[str]) -> str:
         c,cc = m.groups()
         return f' {TK_WREP} {len(cc.split())+1} {c} '
     re_wrep = re.compile(r'(\b\w+\W+)(\1{3,})')
@@ -182,7 +184,7 @@ class Vocab():
 
     def textify(self, nums:Collection[int], sep=' ') -> List[str]:
         "Convert a list of `nums` to their tokens."
-        return sep.join([self.itos[i] for i in nums]) if sep is not None else [self.itos[i] for i in nums]
+        return sep.join([self.itos[i] for i in nums]) if sep is not None else [self.itos[i] for i in nums] # type: ignore
 
     def __getstate__(self):
         return {'itos':self.itos}

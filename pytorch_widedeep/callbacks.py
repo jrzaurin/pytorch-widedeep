@@ -38,7 +38,7 @@ class CallbackContainer(object):
         for callback in self.callbacks:
             callback.set_params(params)
 
-    def set_model(self, model:nn.Module):
+    def set_model(self, model:Any):
         self.model = model
         for callback in self.callbacks:
             callback.set_model(model)
@@ -89,7 +89,7 @@ class Callback(object):
     def set_params(self, params):
         self.params = params
 
-    def set_model(self, model:nn.Module):
+    def set_model(self, model:Any):
         self.model = model
 
     def on_epoch_begin(self, epoch:int, logs:Optional[Dict]=None):
@@ -117,8 +117,8 @@ class History(Callback):
     """
 
     def on_train_begin(self, logs:Optional[Dict]=None):
-        self.epoch = []
-        self._history = {}
+        self.epoch: List[int] = []
+        self._history: Dict[str, List[float]] = {}
 
     def on_epoch_begin(self, epoch:int, logs:Optional[Dict]=None):
         # avoid mutation during epoch run
@@ -253,7 +253,7 @@ class ModelCheckpoint(Callback):
             os.makedirs(root_dir)
 
         if self.max_save > 0:
-            self.old_files = []
+            self.old_files: List[str] = []
 
         if mode not in ['auto', 'min', 'max']:
             warnings.warn('ModelCheckpoint mode %s is unknown, '

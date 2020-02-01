@@ -38,7 +38,7 @@ def label_encoder(df_inp:pd.DataFrame, cols:Optional[List[str]]=None,
 
     if not val_to_idx:
         val_types = dict()
-        for c in cols:
+        for c in cols: # type: ignore
             val_types[c] = df[c].unique()
         val_to_idx = dict()
         for k, v in val_types.items():
