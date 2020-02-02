@@ -138,4 +138,4 @@ def build_embeddings_matrix(
             )
         )
 
-    return embedding_matrix
+    return embedding_matrix.astype("float32")

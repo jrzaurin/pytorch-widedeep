@@ -14,6 +14,7 @@ from pytorch_widedeep.initializers import KaimingNormal
 from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.optim import RAdam
 
+
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
@@ -51,11 +52,13 @@ if __name__ == "__main__":
     )
     X_deep = prepare_deep.fit_transform(df)
 
-    text_processor = TextPreprocessor(word_vectors_path=word_vectors_path)
-    X_text = text_processor.fit_transform(df, text_col)
+    text_processor = TextPreprocessor(
+        word_vectors_path=word_vectors_path, text_col=text_col
+    )
+    X_text = text_processor.fit_transform(df)
 
-    image_processor = ImagePreprocessor()
-    X_images = image_processor.fit_transform(df, img_col, img_path)
+    image_processor = ImagePreprocessor(img_col=img_col, img_path=img_path)
+    X_images = image_processor.fit_transform(df)
 
     wide = Wide(wide_dim=X_wide.shape[1], output_dim=1)
     deepdense = DeepDense(
@@ -131,7 +134,7 @@ if __name__ == "__main__":
         val_split=0.2,
     )
 
-    # With warm_up
+    # # With warm_up
     # child = list(model.deepimage.children())[0]
     # img_layers = list(child.backbone.children())[4:8] + [list(model.deepimage.children())[1]]
     # img_layers = img_layers[::-1]

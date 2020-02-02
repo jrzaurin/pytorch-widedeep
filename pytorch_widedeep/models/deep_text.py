@@ -103,6 +103,11 @@ class DeepText(nn.Module):
 
         # Pre-trained Embeddings
         if isinstance(embedding_matrix, np.ndarray):
+            assert (
+                embedding_matrix.dtype == "float32"
+            ), "'embedding_matrix' must be of dtype 'float32', got dtype '{}'".format(
+                str(embedding_matrix.dtype)
+            )
             self.word_embed = nn.Embedding(
                 vocab_size, embedding_matrix.shape[1], padding_idx=padding_idx
             )

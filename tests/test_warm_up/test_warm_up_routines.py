@@ -17,9 +17,9 @@ use_cuda = torch.cuda.is_available()
 
 
 # Define a series of simple models to quickly test the WarmUp class
-class DeepText(nn.Module):
+class TestDeepText(nn.Module):
     def __init__(self):
-        super(DeepText, self).__init__()
+        super(TestDeepText, self).__init__()
         self.word_embed = nn.Embedding(5, 16, padding_idx=0)
         self.rnn = nn.LSTM(16, 8, batch_first=True)
         self.linear = nn.Linear(8, 1)
@@ -30,9 +30,9 @@ class DeepText(nn.Module):
         return self.linear(h).view(-1, 1)
 
 
-class DeepImage(nn.Module):
+class TestDeepImage(nn.Module):
     def __init__(self):
-        super(DeepImage, self).__init__()
+        super(TestDeepImage, self).__init__()
 
         self.conv_block = nn.Sequential(
             conv_layer(3, 64, 3),
@@ -124,12 +124,12 @@ if use_cuda:
     deepdense.cuda()
 
 # text
-deeptext = DeepText()
+deeptext = TestDeepText()
 if use_cuda:
     deeptext.cuda()
 
 # image
-deepimage = DeepImage()
+deepimage = TestDeepImage()
 if use_cuda:
     deepimage.cuda()
 
