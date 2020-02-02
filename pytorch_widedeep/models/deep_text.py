@@ -67,73 +67,99 @@ class DeepText(nn.Module):
             [-0.0844,  0.0681, -0.1016, -0.0464],
             [-0.0268,  0.0294, -0.0988, -0.0666]], grad_fn=<SelectBackward>)
     """
-    def __init__(self,
-        vocab_size:int,
-        hidden_dim:int=64,
-        n_layers:int=3,
-        rnn_dropout:float=0.,
-        bidirectional:bool=False,
-        padding_idx:int=1,
-        embed_dim:Optional[int]=None,
-        embedding_matrix:Optional[np.ndarray]=None,
-        head_layers:Optional[List[int]] = None,
-        head_dropout:Optional[List[float]]=None,
-        head_batchnorm:Optional[bool] = False):
+
+    def __init__(
+        self,
+        vocab_size: int,
+        hidden_dim: int = 64,
+        n_layers: int = 3,
+        rnn_dropout: float = 0.0,
+        bidirectional: bool = False,
+        padding_idx: int = 1,
+        embed_dim: Optional[int] = None,
+        embedding_matrix: Optional[np.ndarray] = None,
+        head_layers: Optional[List[int]] = None,
+        head_dropout: Optional[List[float]] = None,
+        head_batchnorm: Optional[bool] = False,
+    ):
         super(DeepText, self).__init__()
 
-        if embed_dim is not None and embedding_matrix is not None and not embed_dim==embedding_matrix.shape[1]:
+        if (
+            embed_dim is not None
+            and embedding_matrix is not None
+            and not embed_dim == embedding_matrix.shape[1]
+        ):
             warnings.warn(
-                'the input embedding dimension {} and the dimension of the '
-                'pretrained embeddings {} do not match. The pretrained embeddings '
-                'dimension ({}) will be used'.format(embed_dim, embedding_matrix.shape[1],
-                    embedding_matrix.shape[1]), UserWarning)
+                "the input embedding dimension {} and the dimension of the "
+                "pretrained embeddings {} do not match. The pretrained embeddings "
+                "dimension ({}) will be used".format(
+                    embed_dim, embedding_matrix.shape[1], embedding_matrix.shape[1]
+                ),
+                UserWarning,
+            )
 
         self.bidirectional = bidirectional
         self.head_layers = head_layers
 
         # Pre-trained Embeddings
         if isinstance(embedding_matrix, np.ndarray):
-            self.word_embed = nn.Embedding(vocab_size, embedding_matrix.shape[1], padding_idx = padding_idx)
-            self.word_embed.weight = nn.Parameter(torch.Tensor(embedding_matrix))
+            self.word_embed = nn.Embedding(
+                vocab_size, embedding_matrix.shape[1], padding_idx=padding_idx
+            )
+            self.word_embed.weight = nn.Parameter(
+                torch.tensor(embedding_matrix), requires_grad=True
+            )
             embed_dim = embedding_matrix.shape[1]
         else:
-            self.word_embed = nn.Embedding(vocab_size, embed_dim, padding_idx = padding_idx)
+            self.word_embed = nn.Embedding(
+                vocab_size, embed_dim, padding_idx=padding_idx
+            )
 
         # stack of RNNs (LSTMs)
-        self.rnn = nn.LSTM(embed_dim,
+        self.rnn = nn.LSTM(
+            embed_dim,
             hidden_dim,
             num_layers=n_layers,
             bidirectional=bidirectional,
             dropout=rnn_dropout,
-            batch_first=True)
+            batch_first=True,
+        )
 
         # the output_dim attribute will be used as input_dim when "merging" the models
-        self.output_dim = hidden_dim*2 if bidirectional else hidden_dim
+        self.output_dim = hidden_dim * 2 if bidirectional else hidden_dim
 
         if self.head_layers is not None:
-            assert self.head_layers[0]==self.output_dim, (
+            assert self.head_layers[0] == self.output_dim, (
                 "The hidden dimension from the stack or RNNs ({}) is not consistent with "
                 "the expected input dimension ({}) of the fc-head".format(
-                    self.output_dim, self.head_layers[0]))
-            if not head_dropout: head_dropout = [0.]*len(head_layers)
+                    self.output_dim, self.head_layers[0]
+                )
+            )
+            if not head_dropout:
+                head_dropout = [0.0] * len(head_layers)
             self.texthead = nn.Sequential()
             for i in range(1, len(head_layers)):
                 self.texthead.add_module(
-                    'dense_layer_{}'.format(i-1),
-                    dense_layer(head_layers[i-1], head_layers[i], head_dropout[i-1], head_batchnorm)
-                    )
+                    "dense_layer_{}".format(i - 1),
+                    dense_layer(
+                        head_layers[i - 1],
+                        head_layers[i],
+                        head_dropout[i - 1],
+                        head_batchnorm,
+                    ),
+                )
             self.output_dim = head_layers[-1]
 
-    def forward(self, X:Tensor)->Tensor:
+    def forward(self, X: Tensor) -> Tensor:  # type: ignore
 
         embed = self.word_embed(X.long())
         o, (h, c) = self.rnn(embed)
         if self.bidirectional:
-            last_h = torch.cat((h[-2], h[-1]), dim = 1)
+            last_h = torch.cat((h[-2], h[-1]), dim=1)
         else:
             last_h = h[-1]
         if self.head_layers is not None:
-            out = self.head(last_h)
+            out = self.texthead(last_h)
             return out
         else:
             return last_h
