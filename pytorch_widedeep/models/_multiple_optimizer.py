@@ -1,10 +1,8 @@
-import torch
-
 from ..wdtypes import *
 
 
 class MultipleOptimizer(object):
-    def __init__(self, opts:Dict[str,Optimizer]):
+    def __init__(self, opts: Dict[str, Optimizer]):
         self._optimizers = opts
 
     def zero_grad(self):

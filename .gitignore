@@ -9,11 +9,15 @@ __pycache__*
 # jupyter / ipython
 .ipynb_checkpoints
 Untitled*.ipynb
+
+# data related dirs
 data/
 model_weights/
+weights/
 
 # tests
 .coverage
+.pytest_cache
 
 # sublime
 *.sublime-workspace
@@ -21,3 +25,6 @@ sftp*-config.json
 
 # misc
 .DS_store
+
+#mypy
+.mypy_cache

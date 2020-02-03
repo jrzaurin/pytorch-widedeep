@@ -586,10 +586,10 @@ texts[:2]
 
 
 ```python
-text_preprocessor = TextPreprocessor()
-X_text = text_preprocessor.fit_transform(df, text_col='description')
+text_preprocessor = TextPreprocessor(text_col='description')
+X_text = text_preprocessor.fit_transform(df)
 # From here on, any new observation can be prepared by simply running `.transform`
-# new_X_text = text_preprocessor.transform(new_df, text_col='description')
+# new_X_text = text_preprocessor.transform(new_df)
 ```
 
     The vocabulary contains 6400 tokens
@@ -1681,21 +1681,21 @@ padded_seq[0]
 
 
 ```python
-image_preprocessor = wd.preprocessing.ImagePreprocessor()
-X_images = image_preprocessor.fit_transform(df, img_col="id", img_path="data/airbnb/property_picture/")
+image_preprocessor = wd.preprocessing.ImagePreprocessor(img_col='id', img_path="data/airbnb/property_picture/")
+X_images = image_preprocessor.fit_transform(df)
 # From here on, any new observation can be prepared by simply running `.transform`
-# new_X_images = image_preprocessor.transform(new_df, img_col="id", img_path="data/airbnb/property_picture/")
+# new_X_images = image_preprocessor.transform(new_df)
 ```
 
     Reading Images from data/airbnb/property_picture/
 
 
-      8%|▊         | 83/1001 [00:00<00:02, 410.41it/s]
+      4%|▍         | 40/1001 [00:00<00:02, 391.71it/s]
 
     Resizing
 
 
-    100%|██████████| 1001/1001 [00:02<00:00, 419.09it/s]
+    100%|██████████| 1001/1001 [00:02<00:00, 415.12it/s]
 
 
     Computing normalisation metrics
@@ -1731,7 +1731,7 @@ prop_imgnames = sample(prop_imgnames, 10)
 print(prop_imgnames)
 ```
 
-    ['510940.jpg', '469775.jpg', '499555.jpg', '519598.jpg', '429444.jpg', '391898.jpg', '550146.jpg', '294247.jpg', '469630.jpg', '369374.jpg']
+    ['512853.jpg', '460396.jpg', '92352.jpg', '472203.jpg', '534665.jpg', '529070.jpg', '549281.jpg', '499163.jpg', '218915.jpg', '526627.jpg']
 
 
 
@@ -1768,7 +1768,7 @@ for i,im in enumerate(prop_imgs):
 print([im.shape for im in prop_imgs])
 ```
 
-    [(426, 639, 3), (426, 639, 3), (426, 639, 3), (426, 639, 3), (426, 639, 3), (426, 639, 3), (426, 639, 3), (426, 639, 3), (426, 639, 3), (426, 639, 3)]
+    [(426, 639, 3), (426, 639, 3), (426, 639, 3), (426, 639, 3), (426, 360, 3), (426, 639, 3), (426, 639, 3), (426, 639, 3), (426, 639, 3), (426, 639, 3)]
 
 
 

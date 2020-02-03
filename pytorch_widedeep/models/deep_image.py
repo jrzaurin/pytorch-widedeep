@@ -1,5 +1,3 @@
-import torch
-
 from ..wdtypes import *
 
 from .deep_dense import dense_layer
@@ -8,14 +6,23 @@ from torch import nn
 from torchvision import models
 
 
-def conv_layer(ni:int, nf:int, ks:int=3, stride:int=1, maxpool:bool=True,
-    adaptiveavgpool:bool=False):
+def conv_layer(
+    ni: int,
+    nf: int,
+    ks: int = 3,
+    stride: int = 1,
+    maxpool: bool = True,
+    adaptiveavgpool: bool = False,
+):
     layer = nn.Sequential(
-        nn.Conv2d(ni, nf, kernel_size=ks, bias=True, stride=stride, padding=ks//2),
+        nn.Conv2d(ni, nf, kernel_size=ks, bias=True, stride=stride, padding=ks // 2),
         nn.BatchNorm2d(nf, momentum=0.01),
-        nn.LeakyReLU(negative_slope=0.1, inplace=True))
-    if maxpool: layer.add_module('maxpool', nn.MaxPool2d(2, 2))
-    if adaptiveavgpool: layer.add_module('adaptiveavgpool', nn.AdaptiveAvgPool2d(output_size=(1, 1)))
+        nn.LeakyReLU(negative_slope=0.1, inplace=True),
+    )
+    if maxpool:
+        layer.add_module("maxpool", nn.MaxPool2d(2, 2))
+    if adaptiveavgpool:
+        layer.add_module("adaptiveavgpool", nn.AdaptiveAvgPool2d(output_size=(1, 1)))
     return layer
 
 
@@ -75,23 +82,25 @@ class DeepImage(nn.Module):
               1.5416e-01,  3.9227e-01,  5.5048e-01]], grad_fn=<LeakyReluBackward1>)
     """
 
-    def __init__(self,
-        pretrained:bool=True,
-        resnet:int=18,
-        freeze:Union[str,int]=6,
-        head_layers:Optional[List[int]] = None,
-        head_dropout:Optional[List[float]]=None,
-        head_batchnorm:Optional[bool] = False):
+    def __init__(
+        self,
+        pretrained: bool = True,
+        resnet: int = 18,
+        freeze: Union[str, int] = 6,
+        head_layers: Optional[List[int]] = None,
+        head_dropout: Optional[List[float]] = None,
+        head_batchnorm: Optional[bool] = False,
+    ):
         super(DeepImage, self).__init__()
 
         self.head_layers = head_layers
 
         if pretrained:
-            if resnet==18:
+            if resnet == 18:
                 vision_model = models.resnet18(pretrained=True)
-            elif resnet==34:
+            elif resnet == 34:
                 vision_model = models.resnet34(pretrained=True)
-            elif resnet==50:
+            elif resnet == 50:
                 vision_model = models.resnet50(pretrained=True)
 
             backbone_layers = list(vision_model.children())[:-1]
@@ -104,7 +113,9 @@ class DeepImage(nn.Module):
                     frozen_layers.append(layer)
                 self.backbone = nn.Sequential(*frozen_layers)
             if isinstance(freeze, int):
-                assert freeze < 8, "freeze' must be less than 8 when using resnet architectures"
+                assert (
+                    freeze < 8
+                ), "freeze' must be less than 8 when using resnet architectures"
                 frozen_layers = []
                 trainable_layers = backbone_layers[freeze:]
                 for layer in backbone_layers[:freeze]:
@@ -120,26 +131,34 @@ class DeepImage(nn.Module):
                 conv_layer(64, 128, 1, maxpool=False),
                 conv_layer(128, 256, 1, maxpool=False),
                 conv_layer(256, 512, 1, maxpool=False, adaptiveavgpool=True),
-                )
+            )
 
         # the output_dim attribute will be used as input_dim when "merging" the models
         self.output_dim = 512
 
         if self.head_layers is not None:
-            assert self.head_layers[0]==self.output_dim, (
+            assert self.head_layers[0] == self.output_dim, (
                 "The output dimension from the backbone ({}) is not consistent with "
                 "the expected input dimension ({}) of the fc-head".format(
-                    self.output_dim, self.head_layers[0]))
-            if not head_dropout: head_dropout = [0.]*len(head_layers)
+                    self.output_dim, self.head_layers[0]
+                )
+            )
+            if not head_dropout:
+                head_dropout = [0.0] * len(head_layers)
             self.imagehead = nn.Sequential()
             for i in range(1, len(head_layers)):
                 self.imagehead.add_module(
-                    'dense_layer_{}'.format(i-1),
-                    dense_layer(head_layers[i-1], head_layers[i], head_dropout[i-1], head_batchnorm)
-                    )
+                    "dense_layer_{}".format(i - 1),
+                    dense_layer(
+                        head_layers[i - 1],
+                        head_layers[i],
+                        head_dropout[i - 1],
+                        head_batchnorm,
+                    ),
+                )
             self.output_dim = head_layers[-1]
 
-    def forward(self, x:Tensor)->Tensor:
+    def forward(self, x: Tensor) -> Tensor:  # type: ignore
         x = self.backbone(x)
         x = x.view(x.size(0), -1)
         if self.head_layers is not None:

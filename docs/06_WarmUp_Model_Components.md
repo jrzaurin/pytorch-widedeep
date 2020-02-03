@@ -92,36 +92,36 @@ model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=5, batch_size=25
     Warming up wide for 5 epochs
 
 
-    epoch 1: 100%|██████████| 153/153 [00:01<00:00, 133.55it/s, loss=0.469, metrics={'acc': 0.7963}]
-    epoch 2: 100%|██████████| 153/153 [00:00<00:00, 156.42it/s, loss=0.372, metrics={'acc': 0.8119}]
-    epoch 3: 100%|██████████| 153/153 [00:01<00:00, 152.65it/s, loss=0.363, metrics={'acc': 0.8183}]
-    epoch 4: 100%|██████████| 153/153 [00:01<00:00, 144.01it/s, loss=0.36, metrics={'acc': 0.8218}] 
-    epoch 5: 100%|██████████| 153/153 [00:00<00:00, 155.56it/s, loss=0.359, metrics={'acc': 0.8241}]
+    epoch 1: 100%|██████████| 153/153 [00:01<00:00, 131.88it/s, loss=0.471, metrics={'acc': 0.7946}]
+    epoch 2: 100%|██████████| 153/153 [00:00<00:00, 154.81it/s, loss=0.373, metrics={'acc': 0.8115}]
+    epoch 3: 100%|██████████| 153/153 [00:01<00:00, 151.56it/s, loss=0.364, metrics={'acc': 0.8182}]
+    epoch 4: 100%|██████████| 153/153 [00:00<00:00, 154.22it/s, loss=0.362, metrics={'acc': 0.8216}]
+    epoch 5: 100%|██████████| 153/153 [00:01<00:00, 152.65it/s, loss=0.36, metrics={'acc': 0.8238}] 
       0%|          | 0/153 [00:00<?, ?it/s]
 
     Warming up deepdense for 5 epochs
 
 
-    epoch 1: 100%|██████████| 153/153 [00:02<00:00, 64.03it/s, loss=0.4, metrics={'acc': 0.8214}]  
-    epoch 2: 100%|██████████| 153/153 [00:02<00:00, 64.30it/s, loss=0.347, metrics={'acc': 0.8237}]
-    epoch 3: 100%|██████████| 153/153 [00:02<00:00, 64.18it/s, loss=0.341, metrics={'acc': 0.8258}]
-    epoch 4: 100%|██████████| 153/153 [00:02<00:00, 64.98it/s, loss=0.337, metrics={'acc': 0.8277}]
-    epoch 5: 100%|██████████| 153/153 [00:02<00:00, 65.70it/s, loss=0.333, metrics={'acc': 0.8294}]
+    epoch 1: 100%|██████████| 153/153 [00:02<00:00, 64.04it/s, loss=0.395, metrics={'acc': 0.8222}]
+    epoch 2: 100%|██████████| 153/153 [00:02<00:00, 65.34it/s, loss=0.349, metrics={'acc': 0.8242}]
+    epoch 3: 100%|██████████| 153/153 [00:02<00:00, 65.05it/s, loss=0.343, metrics={'acc': 0.8262}]
+    epoch 4: 100%|██████████| 153/153 [00:02<00:00, 64.93it/s, loss=0.339, metrics={'acc': 0.8279}]
+    epoch 5: 100%|██████████| 153/153 [00:02<00:00, 65.15it/s, loss=0.335, metrics={'acc': 0.8295}]
       0%|          | 0/153 [00:00<?, ?it/s]
 
     Training
 
 
-    epoch 1: 100%|██████████| 153/153 [00:02<00:00, 58.97it/s, loss=0.343, metrics={'acc': 0.8442}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 123.14it/s, loss=0.349, metrics={'acc': 0.8436}]
-    epoch 2: 100%|██████████| 153/153 [00:02<00:00, 59.48it/s, loss=0.333, metrics={'acc': 0.8457}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 114.05it/s, loss=0.346, metrics={'acc': 0.8447}]
-    epoch 3: 100%|██████████| 153/153 [00:02<00:00, 59.82it/s, loss=0.331, metrics={'acc': 0.8471}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 122.31it/s, loss=0.345, metrics={'acc': 0.8457}]
-    epoch 4: 100%|██████████| 153/153 [00:02<00:00, 59.20it/s, loss=0.329, metrics={'acc': 0.8474}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 113.66it/s, loss=0.345, metrics={'acc': 0.8459}]
-    epoch 5: 100%|██████████| 153/153 [00:02<00:00, 59.15it/s, loss=0.328, metrics={'acc': 0.8479}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 118.58it/s, loss=0.345, metrics={'acc': 0.8462}]
+    epoch 1: 100%|██████████| 153/153 [00:02<00:00, 58.31it/s, loss=0.345, metrics={'acc': 0.8415}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 120.77it/s, loss=0.346, metrics={'acc': 0.8416}]
+    epoch 2: 100%|██████████| 153/153 [00:02<00:00, 58.33it/s, loss=0.335, metrics={'acc': 0.8446}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 117.88it/s, loss=0.344, metrics={'acc': 0.8438}]
+    epoch 3: 100%|██████████| 153/153 [00:02<00:00, 58.43it/s, loss=0.331, metrics={'acc': 0.8457}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 109.26it/s, loss=0.343, metrics={'acc': 0.8449}]
+    epoch 4: 100%|██████████| 153/153 [00:02<00:00, 58.08it/s, loss=0.329, metrics={'acc': 0.8457}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 120.23it/s, loss=0.344, metrics={'acc': 0.8446}]
+    epoch 5: 100%|██████████| 153/153 [00:02<00:00, 58.75it/s, loss=0.327, metrics={'acc': 0.8464}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 119.22it/s, loss=0.344, metrics={'acc': 0.8453}]
 
 
 ### Warm up Gradually: The "felbo"  and the "howard" routines
@@ -187,11 +187,11 @@ X_wide = prepare_wide.fit_transform(df)
 prepare_deep = DeepPreprocessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
 X_deep = prepare_deep.fit_transform(df)
 
-text_processor = TextPreprocessor(word_vectors_path=word_vectors_path)
-X_text = text_processor.fit_transform(df, text_col)
+text_processor = TextPreprocessor(word_vectors_path=word_vectors_path, text_col=text_col)
+X_text = text_processor.fit_transform(df)
 
-image_processor = ImagePreprocessor()
-X_images = image_processor.fit_transform(df, img_col, img_path)
+image_processor = ImagePreprocessor(img_col=img_col, img_path=img_path)
+X_images = image_processor.fit_transform(df)
 ```
 
     The vocabulary contains 6400 tokens
@@ -202,12 +202,12 @@ X_images = image_processor.fit_transform(df, img_col, img_path)
     Reading Images from data/airbnb/property_picture
 
 
-      8%|▊         | 84/1001 [00:00<00:02, 413.82it/s]
+      3%|▎         | 29/1001 [00:00<00:03, 282.66it/s]
 
     Resizing
 
 
-    100%|██████████| 1001/1001 [00:02<00:00, 419.78it/s]
+    100%|██████████| 1001/1001 [00:03<00:00, 327.44it/s]
 
 
     Computing normalisation metrics
@@ -501,56 +501,56 @@ model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images, target=ta
     Warming up wide for 1 epochs
 
 
-    epoch 1: 100%|██████████| 25/25 [00:00<00:00, 42.89it/s, loss=127]
+    epoch 1: 100%|██████████| 25/25 [00:00<00:00, 57.98it/s, loss=127]
       0%|          | 0/25 [00:00<?, ?it/s]
 
     Warming up deepdense for 1 epochs
 
 
-    epoch 1: 100%|██████████| 25/25 [00:00<00:00, 43.28it/s, loss=117]
+    epoch 1: 100%|██████████| 25/25 [00:00<00:00, 45.81it/s, loss=116]
       0%|          | 0/25 [00:00<?, ?it/s]
 
     Warming up deeptext for 1 epochs
 
 
-    epoch 1: 100%|██████████| 25/25 [00:05<00:00,  4.78it/s, loss=132]
+    epoch 1: 100%|██████████| 25/25 [00:04<00:00,  5.37it/s, loss=132]
       0%|          | 0/25 [00:00<?, ?it/s]
 
     Warming up deepimage, layer 1 of 5
 
 
-    epoch 1: 100%|██████████| 25/25 [01:11<00:00,  2.86s/it, loss=119]
+    epoch 1: 100%|██████████| 25/25 [01:10<00:00,  2.83s/it, loss=119]
       0%|          | 0/25 [00:00<?, ?it/s]
 
     Warming up deepimage, layer 2 of 5
 
 
-    epoch 1: 100%|██████████| 25/25 [01:35<00:00,  3.81s/it, loss=108]
+    epoch 1: 100%|██████████| 25/25 [01:34<00:00,  3.76s/it, loss=108]
       0%|          | 0/25 [00:00<?, ?it/s]
 
     Warming up deepimage, layer 3 of 5
 
 
-    epoch 1: 100%|██████████| 25/25 [01:58<00:00,  4.76s/it, loss=105]
+    epoch 1: 100%|██████████| 25/25 [01:57<00:00,  4.69s/it, loss=106]
       0%|          | 0/25 [00:00<?, ?it/s]
 
     Warming up deepimage, layer 4 of 5
 
 
-    epoch 1: 100%|██████████| 25/25 [02:25<00:00,  5.80s/it, loss=105]
+    epoch 1: 100%|██████████| 25/25 [02:24<00:00,  5.79s/it, loss=105] 
       0%|          | 0/25 [00:00<?, ?it/s]
 
     Warming up deepimage, layer 5 of 5
 
 
-    epoch 1: 100%|██████████| 25/25 [03:04<00:00,  7.38s/it, loss=106] 
+    epoch 1: 100%|██████████| 25/25 [03:01<00:00,  7.26s/it, loss=105] 
       0%|          | 0/25 [00:00<?, ?it/s]
 
     Training
 
 
-    epoch 1: 100%|██████████| 25/25 [02:05<00:00,  5.00s/it, loss=130]
-    valid: 100%|██████████| 7/7 [00:14<00:00,  2.04s/it, loss=125] 
+    epoch 1: 100%|██████████| 25/25 [02:05<00:00,  5.03s/it, loss=129]
+    valid: 100%|██████████| 7/7 [00:14<00:00,  2.11s/it, loss=103] 
 
 
 And one would access to the `felbo` routine by changing the `param`, `warm_routine` to `'felbo'` 

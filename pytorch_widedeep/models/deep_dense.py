@@ -5,9 +5,10 @@ from torch import nn
 from ..wdtypes import *
 
 
-def dense_layer(inp:int, out:int, p:float=0., bn=False):
+def dense_layer(inp: int, out: int, p: float = 0.0, bn=False):
     layers = [nn.Linear(inp, out), nn.LeakyReLU(inplace=True)]
-    if bn: layers.append(nn.BatchNorm1d(out))
+    if bn:
+        layers.append(nn.BatchNorm1d(out))
     layers.append(nn.Dropout(p))
     return nn.Sequential(*layers)
 
@@ -70,14 +71,17 @@ class DeepDense(nn.Module):
             [ 6.7187e-02, -1.2821e-03, -3.0960e-04,  3.6123e-01]],
            grad_fn=<LeakyReluBackward1>)
     """
-    def __init__(self,
-        deep_column_idx:Dict[str,int],
-        hidden_layers:List[int],
-        batchnorm:bool=False,
-        dropout:Optional[List[float]]=None,
-        embed_input:Optional[List[Tuple[str,int,int]]]=None,
-        embed_p:float=0.,
-        continuous_cols:Optional[List[str]]=None):
+
+    def __init__(
+        self,
+        deep_column_idx: Dict[str, int],
+        hidden_layers: List[int],
+        batchnorm: bool = False,
+        dropout: Optional[List[float]] = None,
+        embed_input: Optional[List[Tuple[str, int, int]]] = None,
+        embed_p: float = 0.0,
+        continuous_cols: Optional[List[str]] = None,
+    ):
 
         super(DeepDense, self).__init__()
         self.embed_input = embed_input
@@ -86,38 +90,52 @@ class DeepDense(nn.Module):
 
         # Embeddings
         if self.embed_input is not None:
-            self.embed_layers = nn.ModuleDict({'emb_layer_'+col: nn.Embedding(val, dim)
-                for col, val, dim in self.embed_input})
+            self.embed_layers = nn.ModuleDict(
+                {
+                    "emb_layer_" + col: nn.Embedding(val, dim)
+                    for col, val, dim in self.embed_input
+                }
+            )
             self.embed_dropout = nn.Dropout(embed_p)
             emb_inp_dim = np.sum([embed[2] for embed in self.embed_input])
         else:
             emb_inp_dim = 0
 
         # Continuous
-        if self.continuous_cols is not None: cont_inp_dim = len(self.continuous_cols)
-        else: cont_inp_dim = 0
+        if self.continuous_cols is not None:
+            cont_inp_dim = len(self.continuous_cols)
+        else:
+            cont_inp_dim = 0
 
         # Dense Layers
         input_dim = emb_inp_dim + cont_inp_dim
         hidden_layers = [input_dim] + hidden_layers
-        if not dropout: dropout = [0.]*len(hidden_layers)
+        if not dropout:
+            dropout = [0.0] * len(hidden_layers)
         self.dense = nn.Sequential()
         for i in range(1, len(hidden_layers)):
             self.dense.add_module(
-                'dense_layer_{}'.format(i-1),
-                dense_layer( hidden_layers[i-1], hidden_layers[i], dropout[i-1], batchnorm))
+                "dense_layer_{}".format(i - 1),
+                dense_layer(
+                    hidden_layers[i - 1], hidden_layers[i], dropout[i - 1], batchnorm
+                ),
+            )
 
         # the output_dim attribute will be used as input_dim when "merging" the models
         self.output_dim = hidden_layers[-1]
 
-    def forward(self, X:Tensor)->Tensor:
+    def forward(self, X: Tensor) -> Tensor:  # type: ignore
         if self.embed_input is not None:
-            x = [self.embed_layers['emb_layer_'+col](X[:,self.deep_column_idx[col]].long())
-                for col,_,_ in self.embed_input]
-            x = torch.cat(x, 1)
-            x = self.embed_dropout(x)
+            x = [
+                self.embed_layers["emb_layer_" + col](
+                    X[:, self.deep_column_idx[col]].long()
+                )
+                for col, _, _ in self.embed_input
+            ]
+            x = torch.cat(x, 1)  # type: ignore
+            x = self.embed_dropout(x)  # type: ignore
         if self.continuous_cols is not None:
             cont_idx = [self.deep_column_idx[col] for col in self.continuous_cols]
             x_cont = X[:, cont_idx].float()
-            x = torch.cat([x, x_cont], 1) if self.embed_input is not None else x_cont
-        return self.dense(x)
+            x = torch.cat([x, x_cont], 1) if self.embed_input is not None else x_cont  # type: ignore
+        return self.dense(x)  # type: ignore
