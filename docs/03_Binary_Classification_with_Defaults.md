@@ -307,8 +307,7 @@ Have a look to notebooks one and two if you want to get a good understanding of 
 ```python
 wide_cols = ['education', 'relationship','workclass','occupation','native_country','gender']
 crossed_cols = [('education', 'occupation'), ('native_country', 'occupation')]
-cat_embed_cols = [('education',16), ('relationship',8), ('workclass',16),
-    ('occupation',16),('native_country',16)]
+cat_embed_cols = [('education',16), ('relationship',8), ('workclass',16), ('occupation',16),('native_country',16)]
 continuous_cols = ["age","hours_per_week"]
 target_col = 'income_label'
 ```
@@ -445,16 +444,16 @@ model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=5, batch_size=25
     Training
 
 
-    epoch 1: 100%|██████████| 153/153 [00:02<00:00, 55.95it/s, loss=0.41, metrics={'acc': 0.811}]  
-    valid: 100%|██████████| 39/39 [00:00<00:00, 119.88it/s, loss=0.362, metrics={'acc': 0.8152}]
-    epoch 2: 100%|██████████| 153/153 [00:02<00:00, 58.75it/s, loss=0.35, metrics={'acc': 0.8347}] 
-    valid: 100%|██████████| 39/39 [00:00<00:00, 99.19it/s, loss=0.353, metrics={'acc': 0.8352}]
-    epoch 3: 100%|██████████| 153/153 [00:02<00:00, 59.79it/s, loss=0.344, metrics={'acc': 0.8372}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 113.76it/s, loss=0.349, metrics={'acc': 0.8376}]
-    epoch 4: 100%|██████████| 153/153 [00:02<00:00, 56.89it/s, loss=0.341, metrics={'acc': 0.8389}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 104.95it/s, loss=0.347, metrics={'acc': 0.8388}]
-    epoch 5: 100%|██████████| 153/153 [00:02<00:00, 56.49it/s, loss=0.338, metrics={'acc': 0.8404}]
-    valid: 100%|██████████| 39/39 [00:00<00:00, 105.79it/s, loss=0.346, metrics={'acc': 0.8405}]
+    epoch 1: 100%|██████████| 153/153 [00:02<00:00, 56.52it/s, loss=0.412, metrics={'acc': 0.7993}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 123.12it/s, loss=0.352, metrics={'acc': 0.8071}]
+    epoch 2: 100%|██████████| 153/153 [00:02<00:00, 59.55it/s, loss=0.351, metrics={'acc': 0.8351}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 121.98it/s, loss=0.346, metrics={'acc': 0.8359}]
+    epoch 3: 100%|██████████| 153/153 [00:02<00:00, 59.82it/s, loss=0.346, metrics={'acc': 0.8377}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 121.88it/s, loss=0.344, metrics={'acc': 0.8384}]
+    epoch 4: 100%|██████████| 153/153 [00:02<00:00, 58.97it/s, loss=0.342, metrics={'acc': 0.8392}]
+    valid: 100%|██████████| 39/39 [00:00<00:00, 122.20it/s, loss=0.342, metrics={'acc': 0.84}] 
+    epoch 5: 100%|██████████| 153/153 [00:02<00:00, 58.28it/s, loss=0.34, metrics={'acc': 0.8406}] 
+    valid: 100%|██████████| 39/39 [00:00<00:00, 116.57it/s, loss=0.341, metrics={'acc': 0.8413}]
 
 
 As you can see, you can run a wide and deep model in just a few lines of code

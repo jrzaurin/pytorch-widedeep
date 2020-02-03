@@ -729,8 +729,8 @@ X_deep = deep_preprocessor.fit_transform(df)
 
 
 ```python
-text_preprocessor = TextPreprocessor(word_vectors_path=word_vectors_path)
-X_text = text_preprocessor.fit_transform(df, text_col)
+text_preprocessor = TextPreprocessor(word_vectors_path=word_vectors_path, text_col=text_col)
+X_text = text_preprocessor.fit_transform(df)
 ```
 
     The vocabulary contains 6400 tokens
@@ -742,19 +742,19 @@ X_text = text_preprocessor.fit_transform(df, text_col)
 
 
 ```python
-image_processor = ImagePreprocessor()
-X_images = image_processor.fit_transform(df, img_col, img_path)
+image_processor = ImagePreprocessor(img_col = img_col, img_path = img_path)
+X_images = image_processor.fit_transform(df)
 ```
 
     Reading Images from data/airbnb/property_picture
 
 
-      4%|▍         | 43/1001 [00:00<00:02, 428.36it/s]
+      9%|▊         | 87/1001 [00:00<00:02, 428.89it/s]
 
     Resizing
 
 
-    100%|██████████| 1001/1001 [00:02<00:00, 425.98it/s]
+    100%|██████████| 1001/1001 [00:02<00:00, 426.92it/s]
 
 
     Computing normalisation metrics
@@ -804,8 +804,8 @@ model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images,
     Training
 
 
-    epoch 1: 100%|██████████| 25/25 [02:04<00:00,  4.97s/it, loss=117]
-    valid: 100%|██████████| 7/7 [00:14<00:00,  2.00s/it, loss=122]
+    epoch 1: 100%|██████████| 25/25 [02:06<00:00,  5.05s/it, loss=118]
+    valid: 100%|██████████| 7/7 [00:14<00:00,  2.01s/it, loss=226]
 
 
 ### Regression with varying parameters and a FC-Head receiving the full deep side
@@ -1050,8 +1050,8 @@ model.compile(method='regression', initializers=initializers, optimizers=optimiz
     lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
 ```
 
-    /Users/javier/pytorch-widedeep/pytorch_widedeep/initializers.py:32: UserWarning: No initializer found for deephead
-      if self.verbose: warnings.warn("No initializer found for {}".format(name))
+    /Users/javier/pytorch-widedeep/pytorch_widedeep/initializers.py:31: UserWarning: No initializer found for deephead
+      warnings.warn("No initializer found for {}".format(name))
 
 
 
@@ -1221,8 +1221,8 @@ model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images,
     Training
 
 
-    epoch 1: 100%|██████████| 25/25 [02:08<00:00,  5.15s/it, loss=128]
-    valid: 100%|██████████| 7/7 [00:14<00:00,  2.05s/it, loss=95.5]
+    epoch 1: 100%|██████████| 25/25 [02:04<00:00,  4.97s/it, loss=127]
+    valid: 100%|██████████| 7/7 [00:14<00:00,  2.02s/it, loss=94]  
 
 
 we have only run one epoch, but let's check that the LRHistory callback records the lr values for each group
