@@ -16,14 +16,15 @@ from ..utils.image_utils import AspectAwarePreprocessor, SimplePreprocessor
 
 
 class BasePreprocessor(object):
+
     def fit(self, df: pd.DataFrame):
-        raise NotImplementedError("Initializer must implement this method")
+        raise NotImplementedError("BasePreprocessor must implement this method")
 
     def transform(self, df: pd.DataFrame):
-        raise NotImplementedError("Initializer must implement this method")
+        raise NotImplementedError("BasePreprocessor must implement this method")
 
     def fit_transform(self, df: pd.DataFrame):
-        raise NotImplementedError("Initializer must implement this method")
+        raise NotImplementedError("BasePreprocessor must implement this method")
 
 
 class WidePreprocessor(BasePreprocessor):

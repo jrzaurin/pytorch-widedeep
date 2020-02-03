@@ -3,7 +3,6 @@ language: python
 python:
   - "3.6"
   - "3.7"
-
 # matrix:
 #   fast_finish: true
 #     - name: "Code Style (Black/Flake8)"
@@ -18,7 +17,6 @@ python:
 #         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
 #         - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --ignore=E203,E266,E501,E722,F401,F403,F405,W503,C901 --statistics
 #       after_success: skip
-
 install:
   - pip install --upgrade pip
   - pip install .
