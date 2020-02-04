@@ -16,7 +16,6 @@ from ..utils.image_utils import AspectAwarePreprocessor, SimplePreprocessor
 
 
 class BasePreprocessor(object):
-
     def fit(self, df: pd.DataFrame):
         raise NotImplementedError("Preprocessor must implement this method")
 
