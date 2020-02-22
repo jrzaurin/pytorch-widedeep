@@ -5,12 +5,6 @@ import setuptools
 
 pwd = os.path.dirname(__file__)
 
-with open(os.path.join(pwd, "version.txt")) as f:
-    version = f.read().strip()
-    assert len(version.split(".")) == 3, "bad version spec"
-    majorminor = version.rsplit(".", 1)[0]
-
-
 dev_status = {
     "0.1": "Development Status :: 1 - Planning",  # v0.1 - skeleton
     "0.2": "Development Status :: 2 - Pre-Alpha",  # v0.2 - some basic functionality
@@ -21,20 +15,25 @@ dev_status = {
 }
 
 
-long_description = """
-pytorch-widedeep: Easy-to-use modular Wide and Deep learning frame to
-combine tabular, images and text datasets
-"""
+with open(os.path.join(pwd, "VERSION")) as f:
+    version = f.read().strip()
+    assert len(version.split(".")) == 3, "bad version spec"
+    majorminor = version.rsplit(".", 1)[0]
+
+
+with open("README.md", "r") as f:
+    long_description = f.read()
+
 
 # main setup kw args
 setup_kwargs = {
     "name": "pytorch-widedeep",
     "version": version,
-    "description": "Easy-to-use modular Wide and Deep learning frame in Pytorch",
+    "description": "A flexible package to combine tabular data with text and images using Wide and Deep models in Pytorch",
     "long_description": long_description,
     "author": "Javier Rodriguez Zaurin",
     "author_email": "jrzaurin@gmail.com",
-    "url": "",
+    "url": "https://github.com/jrzaurin/pytorch-widedeep",
     "license": "MIT",
     "install_requires": [
         "pytest",
