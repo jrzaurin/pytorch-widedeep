@@ -24,7 +24,7 @@ with open(os.path.join(pwd, "VERSION")) as f:
 # with open("README.md", "r") as f:
 #     long_description = f.read()
 
-long_description ="""
+long_description = """
 pytorch-widedeep: Modular and flexible package to combine tabular data with text and
 images using Wide and Deep models in Pytorch
 
