@@ -24,14 +24,22 @@ with open(os.path.join(pwd, "VERSION")) as f:
 # with open("README.md", "r") as f:
 #     long_description = f.read()
 
-long_description = """
-pytorch-widedeep: Modular, flexible package to combine tabular data with text and
+long_description ="""
+pytorch-widedeep: Modular and flexible package to combine tabular data with text and
 images using Wide and Deep models in Pytorch
 
+For an introduction to the package and a quick start, go to:
+
+    https://github.com/jrzaurin/pytorch-widedeep
+
 For a temporal documentation, go to:
+
     https://github.com/jrzaurin/pytorch-widedeep/tree/master/docs
+
 You can find the source code at:
+
     https://github.com/jrzaurin/pytorch-widedeep/tree/master/pytorch_widedeep
+
 """
 
 # main setup kw args
@@ -39,6 +47,7 @@ setup_kwargs = {
     "name": "pytorch-widedeep",
     "version": version,
     "description": "Combine tabular data with text and images using Wide and Deep models in Pytorch",
+    # "long_description_content_type": 'text/markdown',
     "long_description": long_description,
     "author": "Javier Rodriguez Zaurin",
     "author_email": "jrzaurin@gmail.com",

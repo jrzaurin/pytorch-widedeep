@@ -84,7 +84,13 @@ the user can use any custom model as long as it has an attribute called
 
 ### Installation
 
-Install directly from github
+Install using pip:
+
+```bash
+pip install pytorch-widedeep
+```
+
+Or install directly from github
 
 ```bash
 pip install git+https://github.com/jrzaurin/pytorch-widedeep.git
