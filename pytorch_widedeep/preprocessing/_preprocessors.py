@@ -66,12 +66,13 @@ class WidePreprocessor(BasePreprocessor):
         crossed_cols=None,
         already_dummies: Optional[List[str]] = None,
         sparse=False,
+        handle_unknown="ignore",
     ):
         super(WidePreprocessor, self).__init__()
         self.wide_cols = wide_cols
         self.crossed_cols = crossed_cols
         self.already_dummies = already_dummies
-        self.one_hot_enc = OneHotEncoder(sparse=sparse)
+        self.one_hot_enc = OneHotEncoder(sparse=sparse, handle_unknown=handle_unknown)
 
     def _cross_cols(self, df: pd.DataFrame):
         crossed_colnames = []

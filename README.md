@@ -118,49 +118,77 @@ files in the `docs` folder.
 ### Quick start
 
 Binary classification with the [adult
-dataset]([adult](https://www.kaggle.com/wenruliu/adult-income-dataset/downloads/adult.csv/2))
+dataset]([adult](https://www.kaggle.com/wenruliu/adult-income-dataset))
 using `Wide` and `DeepDense` and defaults settings.
 
 ```python
 import pandas as pd
+from sklearn.model_selection import train_test_split
+
 from pytorch_widedeep.preprocessing import WidePreprocessor, DeepPreprocessor
 from pytorch_widedeep.models import Wide, DeepDense, WideDeep
 from pytorch_widedeep.metrics import BinaryAccuracy
 
-# these next 3 lines are not directly related to pytorch-widedeep. I assume
+# these next 4 lines are not directly related to pytorch-widedeep. I assume
 # you have downloaded the dataset and place it in a dir called data/adult/
-df = pd.read_csv('data/adult/adult.csv.zip')
-df['income_label'] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
-df.drop('income', axis=1, inplace=True)
+df = pd.read_csv("data/adult/adult.csv.zip")
+df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
+df.drop("income", axis=1, inplace=True)
+df_train, df_test = train_test_split(df, test_size=0.2, stratify=df.income_label)
 
 # prepare wide, crossed, embedding and continuous columns
-wide_cols  = ['education', 'relationship', 'workclass', 'occupation','native-country', 'gender']
-cross_cols = [('education', 'occupation'), ('native-country', 'occupation')]
-embed_cols = [('education',16), ('workclass',16), ('occupation',16),('native-country',32)]
-cont_cols  = ["age", "hours-per-week"]
-target_col = 'income_label'
+wide_cols = [
+    "education",
+    "relationship",
+    "workclass",
+    "occupation",
+    "native-country",
+    "gender",
+]
+cross_cols = [("education", "occupation"), ("native-country", "occupation")]
+embed_cols = [
+    ("education", 16),
+    ("workclass", 16),
+    ("occupation", 16),
+    ("native-country", 32),
+]
+cont_cols = ["age", "hours-per-week"]
+target_col = "income_label"
 
 # target
-target = df[target_col].values
+target = df_train[target_col].values
 
 # wide
 preprocess_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=cross_cols)
-X_wide = preprocess_wide.fit_transform(df)
+X_wide = preprocess_wide.fit_transform(df_train)
 wide = Wide(wide_dim=X_wide.shape[1], output_dim=1)
 
 # deepdense
 preprocess_deep = DeepPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
-X_deep = preprocess_deep.fit_transform(df)
-deepdense = DeepDense(hidden_layers=[64,32],
-                      deep_column_idx=preprocess_deep.deep_column_idx,
-                      embed_input=preprocess_deep.embeddings_input,
-                      continuous_cols=cont_cols)
+X_deep = preprocess_deep.fit_transform(df_train)
+deepdense = DeepDense(
+    hidden_layers=[64, 32],
+    deep_column_idx=preprocess_deep.deep_column_idx,
+    embed_input=preprocess_deep.embeddings_input,
+    continuous_cols=cont_cols,
+)
 
-# build, compile, fit and predict
+# build, compile and fit
 model = WideDeep(wide=wide, deepdense=deepdense)
-model.compile(method='binary', metrics=[BinaryAccuracy])
-model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=5, batch_size=256, val_split=0.2)
-model.predict(X_wide=X_wide_te, X_deep=X_deep_te)
+model.compile(method="binary", metrics=[BinaryAccuracy])
+model.fit(
+    X_wide=X_wide,
+    X_deep=X_deep,
+    target=target,
+    n_epochs=5,
+    batch_size=256,
+    val_split=0.1,
+)
+
+# predict
+X_wide_te = preprocess_wide.transform(df_test)
+X_deep_te = preprocess_deep.transform(df_test)
+preds = model.predict(X_wide=X_wide_te, X_deep=X_deep_te)
 ```
 
 Of course, one can do much more, such as using different initializations,
