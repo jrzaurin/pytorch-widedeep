@@ -1,8 +1,9 @@
-import numpy as np
 import string
+
+import numpy as np
 import pytest
 
-from pytorch_widedeep.models import Wide, DeepDense, WideDeep
+from pytorch_widedeep.models import Wide, WideDeep, DeepDense
 
 # Wide array
 X_wide = np.random.choice(2, (100, 100), p=[0.8, 0.2])

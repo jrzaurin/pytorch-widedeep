@@ -1,27 +1,40 @@
+import warnings
+from abc import ABC, abstractmethod
+
+import cv2
 import numpy as np
 import pandas as pd
-import warnings
-import cv2
-
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import StandardScaler
-from sklearn.exceptions import NotFittedError
 from tqdm import tqdm
+from sklearn.exceptions import NotFittedError
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from ..wdtypes import *
+from ..utils.text_utils import (
+    get_texts,
+    pad_sequences,
+    build_embeddings_matrix,
+)
+from ..utils.dense_utils import LabelEncoder, label_encoder
+from ..utils.image_utils import SimplePreprocessor, AspectAwarePreprocessor
 from ..utils.fastai_transforms import Vocab
-from ..utils.dense_utils import label_encoder
-from ..utils.text_utils import get_texts, pad_sequences, build_embeddings_matrix
-from ..utils.image_utils import AspectAwarePreprocessor, SimplePreprocessor
 
 
-class BasePreprocessor(object):
+class BasePreprocessor(ABC):
+    """Base Abstract Class of All Preprocessors."""
+
+    @abstractmethod
+    def __init__(self, *args):
+        pass
+
+    @abstractmethod
     def fit(self, df: pd.DataFrame):
         raise NotImplementedError("Preprocessor must implement this method")
 
+    @abstractmethod
     def transform(self, df: pd.DataFrame):
         raise NotImplementedError("Preprocessor must implement this method")
 
+    @abstractmethod
     def fit_transform(self, df: pd.DataFrame):
         raise NotImplementedError("Preprocessor must implement this method")
 
@@ -218,8 +231,12 @@ class DeepPreprocessor(BasePreprocessor):
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         if self.embed_cols is not None:
             df_emb = self._prepare_embed(df)
+
+            # self.label_encoder = LabelEncoder(df_emb.columns.tolist()).fit(df_emb)
             _, self.encoding_dict = label_encoder(df_emb, cols=df_emb.columns.tolist())
+
             self.embeddings_input: List = []
+            # for k, v in self.label_encoder.encoding_dict.items():
             for k, v in self.encoding_dict.items():
                 self.embeddings_input.append((k, len(v), self.embed_dim[k]))
         if self.continuous_cols is not None:
@@ -234,6 +251,7 @@ class DeepPreprocessor(BasePreprocessor):
     def transform(self, df: pd.DataFrame) -> np.ndarray:
         if self.embed_cols is not None:
             df_emb = self._prepare_embed(df)
+            # df_emb = self.label_encoder.transform(df_emb)
             df_emb, _ = label_encoder(
                 df_emb, cols=df_emb.columns.tolist(), val_to_idx=self.encoding_dict
             )

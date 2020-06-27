@@ -1,19 +1,23 @@
-import pandas as pd
 import torch
-
+import pandas as pd
 from torchvision.transforms import ToTensor, Normalize
 
+from pytorch_widedeep.optim import RAdam
+from pytorch_widedeep.models import (
+    Wide,
+    DeepText,
+    WideDeep,
+    DeepDense,
+    DeepImage,
+)
+from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_widedeep.initializers import KaimingNormal
 from pytorch_widedeep.preprocessing import (
-    WidePreprocessor,
     DeepPreprocessor,
     TextPreprocessor,
+    WidePreprocessor,
     ImagePreprocessor,
 )
-from pytorch_widedeep.models import Wide, DeepDense, DeepText, DeepImage, WideDeep
-from pytorch_widedeep.initializers import KaimingNormal
-from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
-from pytorch_widedeep.optim import RAdam
-
 
 use_cuda = torch.cuda.is_available()
 

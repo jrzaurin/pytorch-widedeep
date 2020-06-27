@@ -1,7 +1,7 @@
 import numpy as np
 
-from .callbacks import Callback
 from .wdtypes import *
+from .callbacks import Callback
 
 
 class Metric(object):

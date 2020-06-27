@@ -1,15 +1,22 @@
-import numpy as np
 import string
+from copy import deepcopy as c
+
+import numpy as np
 import torch
 
-from pytorch_widedeep.models import Wide, DeepDense, DeepText, DeepImage, WideDeep
+from pytorch_widedeep.models import (
+    Wide,
+    DeepText,
+    WideDeep,
+    DeepDense,
+    DeepImage,
+)
 from pytorch_widedeep.initializers import (
     XavierNormal,
-    XavierUniform,
     KaimingNormal,
+    XavierUniform,
     KaimingUniform,
 )
-from copy import deepcopy as c
 
 # Wide array
 X_wide = np.random.choice(2, (100, 100), p=[0.8, 0.2])

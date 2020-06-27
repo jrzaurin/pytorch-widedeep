@@ -1,13 +1,17 @@
 import numpy as np
-import pandas as pd
 import torch
+import pandas as pd
 
-from pytorch_widedeep.preprocessing import WidePreprocessor, DeepPreprocessor
-from pytorch_widedeep.models import Wide, DeepDense, WideDeep
 from pytorch_widedeep.optim import RAdam
-from pytorch_widedeep.initializers import KaimingNormal, XavierNormal
-from pytorch_widedeep.callbacks import LRHistory, EarlyStopping, ModelCheckpoint
+from pytorch_widedeep.models import Wide, WideDeep, DeepDense
 from pytorch_widedeep.metrics import BinaryAccuracy
+from pytorch_widedeep.callbacks import (
+    LRHistory,
+    EarlyStopping,
+    ModelCheckpoint,
+)
+from pytorch_widedeep.initializers import XavierNormal, KaimingNormal
+from pytorch_widedeep.preprocessing import DeepPreprocessor, WidePreprocessor
 
 use_cuda = torch.cuda.is_available()
 
@@ -48,6 +52,10 @@ if __name__ == "__main__":
         embed_cols=cat_embed_cols, continuous_cols=continuous_cols
     )
     X_deep = prepare_deep.fit_transform(df)
+    import pdb
+
+    pdb.set_trace()  # breakpoint 0f0b9456 //
+
     wide = Wide(wide_dim=X_wide.shape[1], output_dim=1)
     deepdense = DeepDense(
         hidden_layers=[64, 32],

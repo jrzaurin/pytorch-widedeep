@@ -1,0 +1,8 @@
+# sort imports
+isort --recursive . pytorch_widedeep tests examples setup.py
+# Black code style
+black . pytorch_widedeep tests examples setup.py
+# flake8 standards
+flake8 . --max-complexity=10 --max-line-length=127 --ignore=W503,C901,E203
+# mypy
+mypy . --ignore-missing-imports --no-strict-optional

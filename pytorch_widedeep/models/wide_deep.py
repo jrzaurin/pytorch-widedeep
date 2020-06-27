@@ -1,27 +1,24 @@
-import numpy as np
 import os
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-from ..wdtypes import *
-
-from ..initializers import Initializer, MultipleInitializer
-from ..callbacks import Callback, History, CallbackContainer
-from ..metrics import Metric, MultipleMetrics, MetricCallback
-from ..losses import FocalLoss
-
-from ._wd_dataset import WideDeepDataset
-from ._multiple_optimizer import MultipleOptimizer
-from ._multiple_lr_scheduler import MultipleLRScheduler
-from ._multiple_transforms import MultipleTransforms
-from ._warmup import WarmUp
-from .deep_dense import dense_layer
-
 from tqdm import trange
-from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
+from sklearn.model_selection import train_test_split
 
+from ..losses import FocalLoss
+from ._warmup import WarmUp
+from ..metrics import Metric, MetricCallback, MultipleMetrics
+from ..wdtypes import *
+from ..callbacks import History, Callback, CallbackContainer
+from .deep_dense import dense_layer
+from ._wd_dataset import WideDeepDataset
+from ..initializers import Initializer, MultipleInitializer
+from ._multiple_optimizer import MultipleOptimizer
+from ._multiple_transforms import MultipleTransforms
+from ._multiple_lr_scheduler import MultipleLRScheduler
 
 n_cpus = os.cpu_count()
 use_cuda = torch.cuda.is_available()

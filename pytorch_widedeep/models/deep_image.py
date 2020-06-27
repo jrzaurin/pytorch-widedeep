@@ -1,9 +1,8 @@
-from ..wdtypes import *
-
-from .deep_dense import dense_layer
-
 from torch import nn
 from torchvision import models
+
+from ..wdtypes import *
+from .deep_dense import dense_layer
 
 
 def conv_layer(

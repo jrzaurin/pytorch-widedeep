@@ -7,13 +7,13 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Path setup --------------------------------------------------------------
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import re
+
 import os
+import re
 import sys
 
 # this adds the equivalent of "../../" to the python path
@@ -71,9 +71,9 @@ extensions = [
 # need to do this otherwise won't find numpy autodocs (yes, it's a shame)
 numpydoc_show_class_members = False
 
-autodoc_default_flags = ['members', 'inherited-members']
-autodoc_default_options = {'special-members': '__call__'}
-autodoc_member_order = 'alphabetical'
+autodoc_default_flags = ["members", "inherited-members"]
+autodoc_default_options = {"special-members": "__call__"}
+autodoc_member_order = "alphabetical"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

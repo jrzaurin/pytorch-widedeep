@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-
 from sklearn.datasets import fetch_20newsgroups
+
 from pytorch_widedeep.preprocessing import TextPreprocessor
 
 texts = np.random.choice(fetch_20newsgroups().data, 10)

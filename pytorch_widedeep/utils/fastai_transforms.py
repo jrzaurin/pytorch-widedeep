@@ -8,16 +8,16 @@ way I avoid the numerous fastai dependencies.
 Credit for the code here to Jeremy Howard and the fastai team
 """
 
-from ..wdtypes import *
-
 import os
 import re
 import html
-import spacy
-
-from concurrent.futures.process import ProcessPoolExecutor
 from collections import Counter, defaultdict
+from concurrent.futures.process import ProcessPoolExecutor
+
+import spacy
 from spacy.symbols import ORTH
+
+from ..wdtypes import *
 
 
 def partition(a: Collection, sz: int) -> List[Collection]:

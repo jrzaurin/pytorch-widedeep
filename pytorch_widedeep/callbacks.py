@@ -3,13 +3,14 @@ Code here is mostly based on the code from the torchsample and Keras packages
 
 CREDIT TO THE TORCHSAMPLE AND KERAS TEAMS
 """
-import numpy as np
 import os
 import datetime
 import warnings
+from copy import deepcopy
+
+import numpy as np
 import torch
 
-from copy import deepcopy
 from .wdtypes import *
 
 

@@ -1,8 +1,9 @@
-import numpy as np
-import torch
 import warnings
 
+import numpy as np
+import torch
 from torch import nn
+
 from ..wdtypes import *
 from .deep_dense import dense_layer
 

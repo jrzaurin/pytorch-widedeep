@@ -7,10 +7,9 @@ https://www.pyimagesearch.com/
 Credit for the code here to ADRIAN ROSEBROCK
 """
 
+import cv2
 import numpy as np
 import imutils
-import cv2
-
 
 __all__ = ["AspectAwarePreprocessor", "SimplePreprocessor"]
 

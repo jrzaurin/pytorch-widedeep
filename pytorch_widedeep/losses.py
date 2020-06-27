@@ -4,7 +4,6 @@ import torch.nn.functional as F
 
 from .wdtypes import *
 
-
 use_cuda = torch.cuda.is_available()
 
 

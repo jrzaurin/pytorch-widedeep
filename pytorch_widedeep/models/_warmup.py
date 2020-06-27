@@ -1,11 +1,10 @@
 import numpy as np
 import torch
+from tqdm import trange
+from torch import nn
 
 from ..metrics import Metric, MultipleMetrics
 from ..wdtypes import *
-
-from tqdm import trange
-from torch import nn
 
 use_cuda = torch.cuda.is_available()
 

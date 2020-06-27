@@ -1,17 +1,17 @@
-import pytest
-import numpy as np
 import string
-import torch
-import torch.nn.functional as F
 
+import numpy as np
+import torch
+import pytest
+import torch.nn.functional as F
 from torch import nn
 from sklearn.utils import Bunch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import Dataset, DataLoader
 
 from pytorch_widedeep.models import Wide, DeepDense
-from pytorch_widedeep.models.deep_image import conv_layer
 from pytorch_widedeep.metrics import BinaryAccuracy
 from pytorch_widedeep.models._warmup import WarmUp
+from pytorch_widedeep.models.deep_image import conv_layer
 
 use_cuda = torch.cuda.is_available()
 

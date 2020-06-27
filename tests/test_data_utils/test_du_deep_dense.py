@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.utils.dense_utils import label_encoder
 from pytorch_widedeep.preprocessing import DeepPreprocessor
+from pytorch_widedeep.utils.dense_utils import LabelEncoder, label_encoder
 
 
 def create_test_dataset(input_type, input_type_2=None):
@@ -22,6 +22,24 @@ some_numbers = [1, 2, 3, 4, 5]
 
 df_letters = create_test_dataset(some_letters)
 df_numbers = create_test_dataset(some_numbers)
+
+
+###############################################################################
+# Simple test of functionality: testing the label_encoder function
+###############################################################################
+le_letters = LabelEncoder(["col1", "col2"])
+df_letters_le = le_letters.fit_transform(df_letters)
+le_numbers = LabelEncoder(["col1", "col2"])
+df_numbers_le = le_numbers.fit_transform(df_numbers)
+
+
+@pytest.mark.parametrize(
+    "input_df, encoding_dict, output_df",
+    [(df_letters, le_letters, df_letters_le), (df_numbers, le_numbers, df_numbers_le),],
+)
+def test_label_encoder(input_df, encoder, output_df):
+    original_df = encoder.inverse_transform(output_df)
+    assert original_df.equals(input_df)
 
 
 ###############################################################################

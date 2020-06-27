@@ -1,10 +1,10 @@
-import pandas as pd
 import os
 import pickle
-
-from tqdm import tqdm
-from urllib.request import urlretrieve
 from pathlib import Path
+from urllib.request import urlretrieve
+
+import pandas as pd
+from tqdm import tqdm
 
 
 def download_images(df, out_path, id_col, img_col):

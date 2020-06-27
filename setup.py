@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # flake8: noqa
 import os
+
 import setuptools
 
 pwd = os.path.dirname(__file__)

@@ -1,15 +1,28 @@
-.. pytorch-widedeep documentation master file, created by
-   sphinx-quickstart on Fri Jun 26 15:15:30 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+pytorch-widedeep
+==========
 
-Welcome to pytorch-widedeep documentation
-============================================
+*A flexible package to combine tabular data with text and images using wide and deep models*
+
+``pytorch-widedeep`` is based on Google's Wide and Deep Algorithm [1][2].
+
+In general terms, ``pytorch-widedeep`` is a package to use deep learning with
+tabular data. In particular, is intended to facilitate the combination of text
+and images with corresponding tabular data using wide and deep models. With
+that in mind there are two architectures that can be implemented with just a
+few lines of code.
+
+Documentation
+-------------
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    :maxdepth: 1
 
+    Installation <installation>
+    Quick Start <quick_start>
+    .. Utilities <utilities>
+    .. Preprocessors <preprocessors>
+    .. Model Components <model_components>
+    .. Examples <examples>
 
 
 Indices and tables
