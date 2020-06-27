@@ -130,9 +130,9 @@ class WideDeep(nn.Module):
             if head_layers is not None:
                 input_dim: int = self.deepdense.output_dim  # type:ignore
                 if self.deeptext is not None:
-                    input_dim += self.deeptext.output_dim
+                    input_dim += self.deeptext.output_dim  # type:ignore
                 if self.deepimage is not None:
-                    input_dim += self.deepimage.output_dim
+                    input_dim += self.deepimage.output_dim  # type:ignore
                 head_layers = [input_dim] + head_layers
                 if not head_dropout:
                     head_dropout = [0.0] * (len(head_layers) - 1)

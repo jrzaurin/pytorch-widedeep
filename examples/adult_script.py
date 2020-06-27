@@ -52,9 +52,6 @@ if __name__ == "__main__":
         embed_cols=cat_embed_cols, continuous_cols=continuous_cols
     )
     X_deep = prepare_deep.fit_transform(df)
-    import pdb
-
-    pdb.set_trace()  # breakpoint 0f0b9456 //
 
     wide = Wide(wide_dim=X_wide.shape[1], output_dim=1)
     deepdense = DeepDense(

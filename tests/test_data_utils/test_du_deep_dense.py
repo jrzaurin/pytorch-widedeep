@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from pytorch_widedeep.preprocessing import DeepPreprocessor
-from pytorch_widedeep.utils.dense_utils import LabelEncoder, label_encoder
+from pytorch_widedeep.utils.dense_utils import LabelEncoder
 
 
 def create_test_dataset(input_type, input_type_2=None):
@@ -25,7 +25,7 @@ df_numbers = create_test_dataset(some_numbers)
 
 
 ###############################################################################
-# Simple test of functionality: testing the label_encoder function
+# Simple test of functionality: testing the LabelEncoder class
 ###############################################################################
 le_letters = LabelEncoder(["col1", "col2"])
 df_letters_le = le_letters.fit_transform(df_letters)
@@ -34,67 +34,12 @@ df_numbers_le = le_numbers.fit_transform(df_numbers)
 
 
 @pytest.mark.parametrize(
-    "input_df, encoding_dict, output_df",
-    [(df_letters, le_letters, df_letters_le), (df_numbers, le_numbers, df_numbers_le),],
+    "input_df, encoder, output_df",
+    [(df_letters, le_letters, df_letters_le), (df_numbers, le_numbers, df_numbers_le)],
 )
 def test_label_encoder(input_df, encoder, output_df):
     original_df = encoder.inverse_transform(output_df)
     assert original_df.equals(input_df)
-
-
-###############################################################################
-# Simple test of functionality: testing the label_encoder function
-###############################################################################
-df_letters_le, letters_enconding_dict = label_encoder(df_letters, ["col1", "col2"])
-df_numbers_le, numbers_enconding_dict = label_encoder(df_numbers, ["col1", "col2"])
-
-
-@pytest.mark.parametrize(
-    "input_df, encoding_dict, output_df",
-    [
-        (df_letters, letters_enconding_dict, df_letters_le),
-        (df_numbers, numbers_enconding_dict, df_numbers_le),
-    ],
-)
-def test_label_encoder(input_df, encoding_dict, output_df):
-    tmp_df = input_df.copy()
-    for c in input_df.columns:
-        tmp_df[c] = tmp_df[c].map(encoding_dict[c])
-    assert tmp_df.equals(output_df)
-
-
-################################################################################
-# Same as before but testing functioning when passed a custom encoding dict
-###############################################################################
-encoding_dict_1 = {
-    c: {k: v for v, k in enumerate(sorted(df_letters[c].unique()))}
-    for c in df_letters.columns
-}
-encoding_dict_2 = {
-    c: {k: v for v, k in enumerate(sorted(df_numbers[c].unique()))}
-    for c in df_numbers.columns
-}
-
-df_letters_le, letters_enconding_dict = label_encoder(
-    df_letters, cols=["col1", "col2"], val_to_idx=encoding_dict_1
-)
-df_numbers_le, numbers_enconding_dict = label_encoder(
-    df_numbers, cols=["col1", "col2"], val_to_idx=encoding_dict_2
-)
-
-
-@pytest.mark.parametrize(
-    "input_df, encoding_dict, output_df",
-    [
-        (df_letters, encoding_dict_1, df_letters_le),
-        (df_numbers, encoding_dict_2, df_numbers_le),
-    ],
-)
-def test_label_encoder_with_custom_encoder(input_df, encoding_dict, output_df):
-    tmp_df = input_df.copy()
-    for c in input_df.columns:
-        tmp_df[c] = tmp_df[c].map(encoding_dict[c])
-    assert tmp_df.equals(output_df)
 
 
 ################################################################################
@@ -105,46 +50,31 @@ cat_embed_cols = [("col1", 5), ("col2", 5)]
 
 preprocessor1 = DeepPreprocessor(cat_embed_cols)
 X_letters = preprocessor1.fit_transform(df_letters)
-embed_input_letters = preprocessor1.embeddings_input
-decoding_dict_letters = {
-    c: {k: v for v, k in preprocessor1.encoding_dict[c].items()}
-    for c in preprocessor1.encoding_dict.keys()
-}
 
 preprocessor2 = DeepPreprocessor(cat_embed_cols)
 X_numbers = preprocessor2.fit_transform(df_numbers)
-embed_input_numbers = preprocessor2.embeddings_input
-decoding_dict_numbers = {
-    c: {k: v for v, k in preprocessor2.encoding_dict[c].items()}
-    for c in preprocessor2.encoding_dict.keys()
-}
 
-
-errors = []
+error_list = []
 
 
 @pytest.mark.parametrize(
-    "input_df, X_deep, embed_input, decoding_dict, error_list",
-    [
-        (df_letters, X_letters, embed_input_letters, decoding_dict_letters, errors),
-        (df_numbers, X_numbers, embed_input_numbers, decoding_dict_numbers, errors),
-    ],
+    "input_df, X_deep, preprocessor",
+    [(df_letters, X_letters, preprocessor1), (df_numbers, X_numbers, preprocessor2)],
 )
-def test_prepare_deep_without_continous_columns(
-    input_df, X_deep, embed_input, decoding_dict, error_list
-):
+def test_prepare_deep_without_continous_columns(input_df, X_deep, preprocessor):
     for i, c in enumerate(input_df.columns):
         if (
-            input_df[c].nunique() != embed_input[i][1]
-            or cat_embed_cols[i][1] != embed_input[i][2]
+            # remember we have an "unseen class"
+            input_df[c].nunique() + 1 != preprocessor.embeddings_input[i][1]
+            or cat_embed_cols[i][1] != preprocessor.embeddings_input[i][2]
         ):
             error_list.append(
                 "error: the setup output does not match the intended input"
             )
 
-    tmp_df = pd.DataFrame({"col1": X_deep[:, 0], "col2": X_deep[:, 1]})
-    for c in input_df.columns:
-        tmp_df[c] = tmp_df[c].map(decoding_dict[c])
+    tmp_df = preprocessor.label_encoder.inverse_transform(
+        pd.DataFrame({"col1": X_deep[:, 0], "col2": X_deep[:, 1]})
+    )
 
     if not tmp_df.equals(input_df):
         error_list.append("error: the decoding does not match the encoding")
