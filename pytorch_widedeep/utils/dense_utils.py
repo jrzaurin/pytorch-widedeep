@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import warnings
 
 import numpy as np
@@ -54,7 +52,7 @@ class LabelEncoder(object):
 
         self.columns_to_encode = columns_to_encode
 
-    def fit(self, df: pd.DataFrame) -> LabelEncoder:
+    def fit(self, df: pd.DataFrame):
 
         df_inp = df.copy()
 
