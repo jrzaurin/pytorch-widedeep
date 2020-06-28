@@ -27,6 +27,7 @@ class AspectAwarePreprocessor:
     inter: interpolation method
         ``opencv`` interpolation method. See ``opencv`` ``InterpolationFlags``
     """
+
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
         self.width = width
         self.height = height
@@ -73,6 +74,7 @@ class SimplePreprocessor:
     inter: interpolation method
         ``opencv`` interpolation method. See ``opencv`` ``InterpolationFlags``
     """
+
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
         self.width = width
         self.height = height

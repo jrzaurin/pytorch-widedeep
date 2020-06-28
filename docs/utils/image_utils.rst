@@ -7,7 +7,7 @@ Image Utils
 taked from the great series of Books `Deep Learning for Computer Vision
 <https://www.pyimagesearch.com/deep-learning-computer-vision-python-book/>`_ by
 `Adrian <https://www.pyimagesearch.com/>`_. Therefore, all credit for the
-code here to *ADRIAN ROSEBROCK*
+code in the ``image_utils`` module goes to *Adrian Rosebrock*
 
 .. autosummary::
     :nosignatures:

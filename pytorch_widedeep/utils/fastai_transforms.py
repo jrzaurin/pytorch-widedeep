@@ -78,7 +78,8 @@ defaults.text_spec_tok = [UNK, PAD, BOS, EOS, FLD, TK_MAJ, TK_UP, TK_REP, TK_WRE
 
 
 class BaseTokenizer:
-    "Basic class for a tokenizer function."
+    """Basic class for a tokenizer function.
+    """
 
     def __init__(self, lang: str):
         self.lang = lang
@@ -91,15 +92,35 @@ class BaseTokenizer:
 
 
 class SpacyTokenizer(BaseTokenizer):
-    "Wrapper around a spacy tokenizer to make it a `BaseTokenizer`."
+    """Wrapper around a spacy tokenizer to make it a ``BaseTokenizer``.
+
+    Parameters
+    ----------
+    lang: str
+        Language of the text to be tokenized
+    """
 
     def __init__(self, lang: str):
         self.tok = spacy.blank(lang, disable=["parser", "tagger", "ner"])
 
-    def tokenizer(self, t: str) -> List[str]:
+    def tokenizer(self, t: str):
+        """Runs ``Spacy``'s ``tokenizer``
+
+        Parameters
+        ----------
+        t: str
+            text to be tokenized
+        """
         return [t.text for t in self.tok.tokenizer(t)]
 
     def add_special_cases(self, toks: Collection[str]):
+        """Runs ``Spacy``'s ``add_special_case`` method
+
+        Parameters
+        ----------
+        toks: Collection of str
+            `List`, `Tuple`, `Set` or `Dictionary` with special cases to add to the tokenizer
+        """
         for w in toks:
             self.tok.tokenizer.add_special_case(w, [{ORTH: w}])
 
@@ -193,7 +214,25 @@ defaults.text_post_rules = [replace_all_caps, deal_caps]
 
 
 class Tokenizer:
-    "Put together rules and a tokenizer function to tokenize text with multiprocessing."
+    """Class to combine a series of rules and a tokenizer function to tokenize
+    text with multiprocessing.
+
+    Parameters
+    ----------
+    tok_func: Callable, Default = ``SpacyTokenizer``
+        Tokenizer Object. See :class:`pytorch_widedeep.utils.fastai_transforms.SpacyTokenizer`
+    lang: str, Default = "en",
+        Text's Language
+    pre_rules: ListRules, Default = None,
+        Preprocessing Rules
+    post_rules: ListRules, Default = None,
+        Postprocessing Rules
+    special_cases: Collection of str, Default= None,
+        special cases to be added to the tokenizer via `Spacy``'s
+        ``add_special_case`` method
+    n_cpus: int, Default = None
+        number of CPUs to used during the tokenization process
+    """
 
     def __init__(
         self,
@@ -221,7 +260,19 @@ class Tokenizer:
         return res
 
     def process_text(self, t: str, tok: BaseTokenizer) -> List[str]:
-        "Process one text `t` with tokenizer `tok`."
+        """Process and tokenize one text ``t`` with tokenizer ``tok``.
+
+        Parameters
+        ----------
+        t: str
+            text to be processed and tokenized
+        tok: ``BaseTokenizer``
+            Instance of ``BaseTokenizer``
+
+        Returns
+        -------
+        List of strings that are the processed and tokenized text
+        """
         for rule in self.pre_rules:
             t = rule(t)
         toks = tok.tokenizer(t)
@@ -230,14 +281,18 @@ class Tokenizer:
         return toks
 
     def _process_all_1(self, texts: Collection[str]) -> List[List[str]]:
-        "Process a list of `texts` in one process."
+        """Process a list of ``texts`` in one process.
+        """
+
         tok = self.tok_func(self.lang)
         if self.special_cases:
             tok.add_special_cases(self.special_cases)
         return [self.process_text(str(t), tok) for t in texts]
 
     def process_all(self, texts: Collection[str]) -> List[List[str]]:
-        "Process a list of `texts`."
+        """Process a list of texts. Parallel execution of ``process_text``
+        """
+
         if self.n_cpus <= 1:
             return self._process_all_1(texts)
         with ProcessPoolExecutor(self.n_cpus) as e:
@@ -247,18 +302,33 @@ class Tokenizer:
 
 
 class Vocab:
-    "Contain the correspondence between numbers and tokens and numericalize."
+    """Contains the correspondence between numbers and tokens.
+
+    Parameters
+    ----------
+    itos: Collection of str
+        `index to str`. Collection of srt that are the tokens of the vocabulary
+
+    Attributes
+    ----------
+    stoi: defaultdict
+        `str to index`. Dict containing the tokens of the vocabulary and their
+        corresponding index
+
+    """
 
     def __init__(self, itos: Collection[str]):
         self.itos = itos
         self.stoi = defaultdict(int, {v: k for k, v in enumerate(self.itos)})
 
     def numericalize(self, t: Collection[str]) -> List[int]:
-        "Convert a list of tokens `t` to their ids."
+        """Convert a list of str (or tokens) ``t`` to their ids.
+        """
         return [self.stoi[w] for w in t]
 
     def textify(self, nums: Collection[int], sep=" ") -> List[str]:
-        "Convert a list of `nums` to their tokens."
+        """Convert a list of ``nums`` (or indexes) to their tokens.
+        """
         return sep.join([self.itos[i] for i in nums]) if sep is not None else [self.itos[i] for i in nums]  # type: ignore
 
     def __getstate__(self):
@@ -269,12 +339,29 @@ class Vocab:
         self.stoi = defaultdict(int, {v: k for k, v in enumerate(self.itos)})
 
     def save(self, path):
-        "Save `self.itos` in `path`"
+        """Save the  attribute ``self.itos`` in ``path``"""
         pickle.dump(self.itos, open(path, "wb"))
 
     @classmethod
     def create(cls, tokens: Tokens, max_vocab: int, min_freq: int) -> "Vocab":
-        "Create a vocabulary from a set of `tokens`."
+        """Create a vocabulary object from a set of tokens
+
+        Parameters
+        ----------
+        tokens: Tokens
+            collection of collection of str (e.g. list of tokenized sentences)
+        max_vocab: int
+            maximum vocabulary size
+        min_freq: int
+            minimum frequency that a token has to appear to be part of the
+            vocabulary
+
+        Returns
+        -------
+        Insance of ``Vocab``
+
+        :rtype: ``Vocab``
+        """
         freq = Counter(p for o in tokens for p in o)
         itos = [o for o, c in freq.most_common(max_vocab) if c >= min_freq]
         for o in reversed(defaults.text_spec_tok):
@@ -291,6 +378,6 @@ class Vocab:
 
     @classmethod
     def load(cls, path):
-        "Load the `Vocab` contained in `path`"
+        """Load an intance of ``Vocab`` contained in ``path``"""
         itos = pickle.load(open(path, "rb"))
         return cls(itos)

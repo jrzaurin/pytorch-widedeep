@@ -12,3 +12,5 @@ Objects
 
     dense_utils
     image_utils
+    fastai_transforms
+    text_utils

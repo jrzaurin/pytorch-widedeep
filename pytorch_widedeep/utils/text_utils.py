@@ -17,10 +17,28 @@ def simple_preprocess(
     max_len: int = 15,
 ) -> List[str]:
     r"""
-    Gensim's simple_preprocess adding a 'lower' param to indicate wether or not to
-    lower case all the token in the texts
+    ``Gensim``'s ``simple_preprocess`` adding a 'lower' param to indicate wether or not to
+    lower case all the token in the doc
 
-    For more informations see: https://radimrehurek.com/gensim/utils.html
+    For more information see: ``Gensim`` `utils module <https://radimrehurek.com/gensim/utils.html>`_.
+
+    Parameters
+    ----------
+    doc: str
+        Input document.
+    lower: bool, Default = False
+        Lower case tokens in the input doc
+    deacc: bool, Default = False
+        Remove accent marks from tokens using ``Gensim``'s ``deaccent()``
+    min_len: int, Default = 2
+        Minimum length of token (inclusive). Shorter tokens are discarded.
+    max_len: int, Default = 15
+        Maximum length of token in result (inclusive). Longer tokens are discarded.
+
+    Returns
+    -------
+    tokens: List
+        List of tokens for a given doc
     """
     tokens = [
         token
@@ -31,11 +49,20 @@ def simple_preprocess(
 
 
 def get_texts(texts: List[str]) -> List[List[str]]:
-    r"""
-    Uses fastai's Tokenizer because it does a series of very convenients things
-    during the tokenization process
+    r"""Tokenization using ``Fastai``'s Tokenizer because it does a series
+    of very convenients things during the tokenization process
 
-    See here: https://docs.fast.ai/text.transform.html#Tokenizer
+    See :class:`pytorch_widedeep.utils.fastai_utils.Tokenizer`
+
+    Parameters
+    ----------
+    texts: List
+        List of ``str`` with the texts (or documents). One ``str`` per document
+
+    Returns
+    -------
+    tok: List
+        List containing the tokens per text or document
     """
     processed_textx = [" ".join(simple_preprocess(t)) for t in texts]
     tok = Tokenizer().process_all(processed_textx)
@@ -46,24 +73,25 @@ def pad_sequences(
     seq: List[int], maxlen: int, pad_first: bool = True, pad_idx: int = 1
 ) -> List[List[int]]:
     r"""
-    Given a List of tokenized and 'numericalised' sequences it will return padded sequences
-    according to the input parameters maxlen, pad_first and pad_idx
+    Given a List of tokenized and `numericalised` sequences it will return
+    padded sequences according to the input parameters
 
     Parameters
     ----------
     seq: List
-        List of int tokens
-    maxlen: Int
+        List of ``int`` with the `numericalised` tokens
+    maxlen: int
         Maximum length of the padded sequences
-    pad_first: Boolean. Default=True
+    pad_first: bool,  Default = True
         Indicates whether the padding index will be added at the beginning or the
         end of the sequences
-    pad_idx: Int. Default=1
-        padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
+    pad_idx: int. Default = 1
+        padding index. ``Fastai``'s ``Tokenizer`` leaves 0 for the 'unknown' token.
 
-    Returns:
+    Returns
+    -------
     res: List
-       Padded sequences
+        List of padded senquences
     """
     if len(seq) >= maxlen:
         res = np.array(seq[-maxlen:]).astype("int32")
@@ -85,13 +113,14 @@ def build_embeddings_matrix(
 
     Parameters
     ----------
-    vocab: Fastai's Vocab object
-        see: https://docs.fast.ai/text.transform.html#Vocab
-    word_vectors_path:str
+    vocab: Instance of Fastai's ``Vocab``
+        see :class:`pytorch_widedeep.utils.fastai_utils.Vocab`
+    word_vectors_path: str
         path to the pretrained word embeddings
-    min_freq: Int
+    min_freq: int
         minimum frequency required for a word to be in the vocabulary
-    verbose: Int. Default=1
+    verbose: int. Default=1
+        ``int`` indicating verbosity. Set to 0 for no verbosity
 
     Returns
     -------

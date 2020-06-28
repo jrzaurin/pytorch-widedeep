@@ -58,7 +58,7 @@ with open(os.path.join(PACKAGEDIR, "pytorch_widedeep", "version.py")) as f:
 extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.autodoc",
-    'sphinx_autodoc_typehints',
+    "sphinx_autodoc_typehints",
     "numpydoc",
     "sphinx.ext.mathjax",
     "sphinx.ext.doctest",
@@ -78,9 +78,9 @@ autosummary_generate = True
 
 autoclass_content = "init"
 
-autodoc_default_flags = ['members', 'inherited-members']
+autodoc_default_flags = ["members", "inherited-members"]
 # autodoc_default_flags = ["show-inheritance"]
-autodoc_default_options = {'special-members': '__call__'}
+autodoc_default_options = {"special-members": "__call__"}
 # autodoc_member_order = 'alphabetical'
 autodoc_member_order = "bysource"
 
