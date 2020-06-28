@@ -13,8 +13,10 @@ __all__ = ["LabelEncoder"]
 
 
 class LabelEncoder(object):
-    """
-    Class to Label Encode the categorical features
+    """Class to Label Encode categorical values for multiple columns at once
+
+    .. note:: LabelEncoder will automatically add a new category and label for
+        `unseen` new categories
 
     Parameters
     ----------
@@ -23,28 +25,16 @@ class LabelEncoder(object):
 
     Attributes
     ----------
-    encoding_dict; Dict
+    encoding_dict: Dict
         Dictionary containing the encoding mappings in the format, e.g.
-        {'colname1': {'cat1': 0, 'cat2': 1, ...}, 'colname2': {'cat1': 0, 'cat2': 1, ...}, ...}
-    inverse_encoding_dict; Dict
+
+        `{'colname1': {'cat1': 0, 'cat2': 1, ...}, 'colname2': {'cat1': 0, 'cat2': 1, ...}, ...}`
+
+    inverse_encoding_dict: Dict
         Dictionary containing the insverse encoding mappings in the format, e.g.
-        {'colname1': {0: 'cat1', 1: 'cat2', ...}, 'colname2': {0: 'cat1', 1: 'cat2', ...}, ...}
 
-    Example
-    ----------
-    >>> df = pd.DataFrame({'col1': [1,2,3], 'col2': ['me', 'you', 'him']})
-    >>> columns_to_encode = ['col2']
-    >>> encoder = LabelEncoder(columns_to_encode)
-    >>> encoder.fit_transform(df)
-       col1  col2
-    0     1     0
-    1     2     1
-    2     3     2
-    >>> encoder.encoding_dict
-    {'col2': {'me': 0, 'you': 1, 'him': 2, 'unseen': 3}}
+        `{'colname1': {0: 'cat1', 1: 'cat2', ...}, 'colname2': {0: 'cat1', 1: 'cat2', ...}, ...}`
 
-    Note that LabelEncoder automatically adds a new category and label for
-    unseen new categories
     """
 
     def __init__(self, columns_to_encode: Optional[List[str]] = None):
@@ -53,6 +43,12 @@ class LabelEncoder(object):
         self.columns_to_encode = columns_to_encode
 
     def fit(self, df: pd.DataFrame):
+        """Creates encoding attributes
+
+        Returns
+        -------
+        self
+        """
 
         df_inp = df.copy()
 
@@ -84,7 +80,8 @@ class LabelEncoder(object):
         return self
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
-
+        """Label Encoded the categories in ``columns_to_encode``
+        """
         try:
             self.encoding_dict
         except AttributeError:
@@ -106,11 +103,33 @@ class LabelEncoder(object):
 
         return df_inp
 
+    def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Applies the full process
+
+        :Example:
+
+        >>> import pandas as pd
+        >>> from pytorch_widedeep.utils import LabelEncoder
+        >>> df = pd.DataFrame({'col1': [1,2,3], 'col2': ['me', 'you', 'him']})
+        >>> columns_to_encode = ['col2']
+        >>> encoder = LabelEncoder(columns_to_encode)
+        >>> encoder.fit_transform(df)
+           col1  col2
+        0     1     0
+        1     2     1
+        2     3     2
+        >>> encoder.encoding_dict
+        {'col2': {'me': 0, 'you': 1, 'him': 2, 'unseen': 3}}
+
+        .. note:: a new category (`unseen`) and label has been created
+
+        """
+        return self.fit(df).transform(df)
+
     def inverse_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Returns the original categories
+        """
         for k, v in self.inverse_encoding_dict.items():
             df[k] = df[k].apply(lambda x: v[x])
 
         return df
-
-    def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        return self.fit(df).transform(df)

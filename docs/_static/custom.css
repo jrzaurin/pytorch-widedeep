@@ -35,3 +35,7 @@ div.ethical-rtd {
 .rst-content dl:not(.docutils) dl dt a.reference.internal span.xref.std.std-term {
   color: #2980B9;
 }
+
+.wy-nav-content {
+    max-width: none; !important;
+}

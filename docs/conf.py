@@ -58,6 +58,7 @@ with open(os.path.join(PACKAGEDIR, "pytorch_widedeep", "version.py")) as f:
 extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.autodoc",
+    'sphinx_autodoc_typehints',
     "numpydoc",
     "sphinx.ext.mathjax",
     "sphinx.ext.doctest",
@@ -68,12 +69,20 @@ extensions = [
     "sphinx.ext.githubpages",
 ]
 
-# need to do this otherwise won't find numpy autodocs (yes, it's a shame)
-numpydoc_show_class_members = False
 
-autodoc_default_flags = ["members", "inherited-members"]
-autodoc_default_options = {"special-members": "__call__"}
-autodoc_member_order = "alphabetical"
+# need to do this otherwise won't find numpy autodocs (yes, it's a shame)
+numpydoc_class_members_toctree = False
+numpydoc_show_class_members = True
+add_module_names = False
+autosummary_generate = True
+
+autoclass_content = "init"
+
+autodoc_default_flags = ['members', 'inherited-members']
+# autodoc_default_flags = ["show-inheritance"]
+autodoc_default_options = {'special-members': '__call__'}
+# autodoc_member_order = 'alphabetical'
+autodoc_member_order = "bysource"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -202,5 +211,5 @@ todo_include_todos = True
 
 # add custom css and javascript
 def setup(app):
-    app.add_stylesheet("custom.css")
+    app.add_css_file("custom.css")
     # app.add_javascript('js/custom.js')

@@ -15,12 +15,35 @@ __all__ = ["AspectAwarePreprocessor", "SimplePreprocessor"]
 
 
 class AspectAwarePreprocessor:
+    """Class to resize an image to a certain width and height taking into account
+    the image aspect ratio
+
+    Parameters
+    ----------
+    width: int
+        output width
+    height: int
+        output height
+    inter: interpolation method
+        ``opencv`` interpolation method. See ``opencv`` ``InterpolationFlags``
+    """
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
         self.width = width
         self.height = height
         self.inter = inter
 
     def preprocess(self, image: np.ndarray) -> np.ndarray:
+        """Resize image
+
+        Parameters
+        ----------
+        image: np.ndarray
+
+        Returns
+        -------
+        resized image
+
+        """
         (h, w) = image.shape[:2]
         dW = 0
         dH = 0
@@ -39,10 +62,31 @@ class AspectAwarePreprocessor:
 
 
 class SimplePreprocessor:
+    """Class to resize an image to a certain width and height
+
+    Parameters
+    ----------
+    width: int
+        output width
+    height: int
+        output height
+    inter: interpolation method
+        ``opencv`` interpolation method. See ``opencv`` ``InterpolationFlags``
+    """
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
         self.width = width
         self.height = height
         self.inter = inter
 
     def preprocess(self, image: np.ndarray) -> np.ndarray:
+        """Resize image
+
+        Parameters
+        ----------
+        image: np.ndarray
+
+        Returns
+        -------
+        resized image
+        """
         return cv2.resize(image, (self.width, self.height), interpolation=self.inter)

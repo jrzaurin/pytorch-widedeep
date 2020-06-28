@@ -1,5 +1,5 @@
 pytorch-widedeep
-==========
+================
 
 *A flexible package to combine tabular data with text and images using wide and deep models*
 
@@ -19,10 +19,7 @@ Documentation
 
     Installation <installation>
     Quick Start <quick_start>
-    .. Utilities <utilities>
-    .. Preprocessors <preprocessors>
-    .. Model Components <model_components>
-    .. Examples <examples>
+    Utilities <utils/index>
 
 
 Indices and tables
