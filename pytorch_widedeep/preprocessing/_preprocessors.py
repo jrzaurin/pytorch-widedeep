@@ -51,26 +51,28 @@ class WidePreprocessor(BasePreprocessor):
         List of Tuples with the name of the columns that will be "crossed"
         and then one-hot encoded. e.g. (['education', 'occupation'], ...)
     already_dummies: List
-        List of columns that are already dummies/one-hot encoded
+        List of columns that are already dummies/one-hot encoded, and
+        therefore do not need to be processed
 
     Attributes
     ----------
-    one_hot_enc: sklearn's OneHotEncoder
+    one_hot_enc:
+        an instance of ``sklearn``'s ``OneHotEncoder``
     wide_crossed_cols: List
         List with the names of all columns that will be one-hot encoded
 
-    Example
+    Examples
     --------
-    Assuming we have a dataset loaded in memory as a pd.DataFrame
-
-    >>> wide_cols = ['age_buckets', 'education', 'relationship','workclass','occupation',
-    ... 'native_country','gender']
-    >>> crossed_cols = [('education', 'occupation'), ('native_country', 'occupation')]
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import WidePreprocessor
+    >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l']})
+    >>> wide_cols = ['color']
+    >>> crossed_cols = [('color', 'size')]
     >>> wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
-    >>> X_wide = wide_preprocessor.fit_transform(df)
-
-    From there on, for new data (loaded as a dataframe)
-    >>> new_X_wide = wide_preprocessor.transform(new_df)
+    >>> wide_preprocessor.fit_transform(df)
+    array([[0., 0., 1., 0., 0., 1.],
+           [1., 0., 0., 1., 0., 0.],
+           [0., 1., 0., 0., 1., 0.]])
     """
 
     def __init__(
@@ -87,25 +89,11 @@ class WidePreprocessor(BasePreprocessor):
         self.already_dummies = already_dummies
         self.one_hot_enc = OneHotEncoder(sparse=sparse, handle_unknown=handle_unknown)
 
-    def _cross_cols(self, df: pd.DataFrame):
-        crossed_colnames = []
-        for cols in self.crossed_cols:
-            cols = list(cols)
-            for c in cols:
-                df[c] = df[c].astype("str")
-            colname = "_".join(cols)
-            df[colname] = df[cols].apply(lambda x: "-".join(x), axis=1)
-            crossed_colnames.append(colname)
-        return df, crossed_colnames
-
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        df_wide = df.copy()[self.wide_cols]
-        if self.crossed_cols is not None:
-            df_wide, crossed_colnames = self._cross_cols(df_wide)
-            self.wide_crossed_cols = self.wide_cols + crossed_colnames
-        else:
-            self.wide_crossed_cols = self.wide_cols
-
+        """Fits the Preprocessor and creates required attributes
+        """
+        df_wide = self._prepare_wide(df)
+        self.wide_crossed_cols = df_wide.columns.tolist()
         if self.already_dummies:
             dummy_cols = [
                 c for c in self.wide_crossed_cols if c not in self.already_dummies
@@ -116,6 +104,8 @@ class WidePreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> Union[sparse_matrix, np.ndarray]:
+        """Returns the processed ``dataframe`` as an array or sparse matrix
+        """
         try:
             self.one_hot_enc.categories_
         except:
@@ -123,9 +113,7 @@ class WidePreprocessor(BasePreprocessor):
                 "This WidePreprocessor instance is not fitted yet. "
                 "Call 'fit' with appropriate arguments before using this estimator."
             )
-        df_wide = df.copy()[self.wide_cols]
-        if self.crossed_cols is not None:
-            df_wide, _ = self._cross_cols(df_wide)
+        df_wide = self._prepare_wide(df)
         if self.already_dummies:
             X_oh_1 = df_wide[self.already_dummies].values
             dummy_cols = [
@@ -137,7 +125,28 @@ class WidePreprocessor(BasePreprocessor):
             return self.one_hot_enc.transform(df_wide[self.wide_crossed_cols])
 
     def fit_transform(self, df: pd.DataFrame) -> Union[sparse_matrix, np.ndarray]:
+        """Combines ``fit`` and ``transform``
+        """
         return self.fit(df).transform(df)
+
+    def _cross_cols(self, df: pd.DataFrame):
+        df_cc = df.copy()
+        crossed_colnames = []
+        for cols in self.crossed_cols:
+            cols = list(cols)
+            for c in cols:
+                df_cc[c] = df_cc[c].astype("str")
+            colname = "_".join(cols)
+            df_cc[colname] = df_cc[cols].apply(lambda x: "-".join(x), axis=1)
+            crossed_colnames.append(colname)
+        return df_cc[crossed_colnames]
+
+    def _prepare_wide(self, df: pd.DataFrame):
+        if self.crossed_cols is not None:
+            df_cc = self._cross_cols(df)
+            return pd.concat([df[self.wide_cols], df_cc], axis=1)
+        else:
+            return df.copy()[self.wide_cols]
 
 
 class DeepPreprocessor(BasePreprocessor):
@@ -148,7 +157,7 @@ class DeepPreprocessor(BasePreprocessor):
     embed_cols: List
         List containing the name of the columns that will be represented with
         embeddings or a Tuple with the name and the embedding dimension. e.g.:
-         [('education',32), ('relationship',16)
+        [('education',32), ('relationship',16)
     continuous_cols: List
         List with the name of the so called continuous cols
     scale: Bool
@@ -162,8 +171,8 @@ class DeepPreprocessor(BasePreprocessor):
 
     Attributes
     ----------
-    encoding_dict: Dict
-        Dict with the categorical encoding
+    label_encoder: LabelEncoder
+        Instance of :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
     embed_cols: List
         List with the columns that will be represented with embeddings
     embed_dim: Dict
@@ -173,20 +182,25 @@ class DeepPreprocessor(BasePreprocessor):
     deep_column_idx: Dict
         Dict where keys are column names and values are column indexes. This
         will be neccesary to slice tensors
-    scaler: sklearn's StandardScaler
+    scaler:
+        an instance of ``sklearn``'s ``StandardScaler``
 
-    Example
+    Examples
     --------
-    Assuming we have a dataset loaded in memory as a pd.DataFrame
-
-    >>> cat_embed_cols = [('education',10), ('relationship',8), ('workclass',10),
-    ... ('occupation',10),('native_country',10)]
-    >>> continuous_cols = ["age","hours_per_week"]
-    >>> deep_preprocessor = DeepPreprocessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
-    >>> X_deep = deep_preprocessor.fit_transform(df)
-
-    From there on, for new data (loaded as a dataframe)
-    >>> new_X_deep = deep_preprocessor.transform(new_df)
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import DeepPreprocessor
+    >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l'], 'age': [25, 40, 55]})
+    >>> embed_cols = [('color',5), ('size',5)]
+    >>> cont_cols = ['age']
+    >>> deep_preprocessor = DeepPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+    >>> deep_preprocessor.fit_transform(df)
+    array([[ 0.        ,  0.        , -1.22474487],
+           [ 1.        ,  1.        ,  0.        ],
+           [ 2.        ,  2.        ,  1.22474487]])
+    >>> deep_preprocessor.embed_dim
+    {'color': 5, 'size': 5}
+    >>> deep_preprocessor.deep_column_idx
+    {'color': 0, 'size': 1, 'age': 2}
     """
 
     def __init__(
@@ -209,26 +223,9 @@ class DeepPreprocessor(BasePreprocessor):
             self.continuous_cols is not None
         ), "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
 
-    def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
-        if isinstance(self.embed_cols[0], tuple):
-            self.embed_dim = dict(self.embed_cols)  # type: ignore
-            embed_colname = [emb[0] for emb in self.embed_cols]
-        else:
-            self.embed_dim = {e: self.default_embed_dim for e in self.embed_cols}  # type: ignore
-            embed_colname = self.embed_cols  # type: ignore
-        return df.copy()[embed_colname]
-
-    def _prepare_continuous(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.scale:
-            if self.already_standard is not None:
-                self.standardize_cols = [
-                    c for c in self.continuous_cols if c not in self.already_standard
-                ]
-            else:
-                self.standardize_cols = self.continuous_cols
-        return df.copy()[self.continuous_cols]
-
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
+        """Fits the Preprocessor and creates required attributes
+        """
         if self.embed_cols is not None:
             df_emb = self._prepare_embed(df)
             self.label_encoder = LabelEncoder(df_emb.columns.tolist()).fit(df_emb)
@@ -245,6 +242,8 @@ class DeepPreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
+        """Returns the processed ``dataframe`` as a np.ndarray
+        """
         if self.embed_cols is not None:
             df_emb = self._prepare_embed(df)
             df_emb = self.label_encoder.transform(df_emb)
@@ -271,11 +270,32 @@ class DeepPreprocessor(BasePreprocessor):
         return df_deep.values
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
+        """Combines ``fit`` and ``transform``
+        """
         return self.fit(df).transform(df)
+
+    def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
+        if isinstance(self.embed_cols[0], tuple):
+            self.embed_dim = dict(self.embed_cols)  # type: ignore
+            embed_colname = [emb[0] for emb in self.embed_cols]
+        else:
+            self.embed_dim = {e: self.default_embed_dim for e in self.embed_cols}  # type: ignore
+            embed_colname = self.embed_cols  # type: ignore
+        return df.copy()[embed_colname]
+
+    def _prepare_continuous(self, df: pd.DataFrame) -> pd.DataFrame:
+        if self.scale:
+            if self.already_standard is not None:
+                self.standardize_cols = [
+                    c for c in self.continuous_cols if c not in self.already_standard
+                ]
+            else:
+                self.standardize_cols = self.continuous_cols
+        return df.copy()[self.continuous_cols]
 
 
 class TextPreprocessor(BasePreprocessor):
-    r"""Preprocessor to prepare the deepdense input dataset
+    r"""Preprocessor to prepare the deeptext input dataset
 
     Parameters
     ----------
@@ -294,8 +314,8 @@ class TextPreprocessor(BasePreprocessor):
 
     Attributes
     ----------
-    vocab: fastai Vocab object. See https://docs.fast.ai/text.transform.html#Vocab
-        Vocab object containing the information of the vocabulary
+    vocab: ``Vocab``
+        instance of ``Vocab``. See :class:`pytorch_widedeep.utils.Vocab`
     tokens: List
         List with Lists of str containing the tokenized texts
     embedding_matrix: np.ndarray
@@ -303,15 +323,9 @@ class TextPreprocessor(BasePreprocessor):
 
     Example
     --------
-    Assuming we have a dataset loaded in memory as a pd.DataFrame
-
     >>> text_preprocessor = TextPreprocessor()
-    >>> X_text = text_preprocessor.fit_transform(df, text_col)
-
-    from there on
-
-    From there on, for new data (loaded as a dataframe)
-    >>> new_X_text = text_preprocessor.transform(new_df)
+    >>> X_text_tr = text_preprocessor.fit_transform(df_train, text_col='description')
+    >>> X_text_te = text_preprocessor.transform(df_test)
     """
 
     def __init__(
@@ -364,7 +378,7 @@ class TextPreprocessor(BasePreprocessor):
 
 
 class ImagePreprocessor(BasePreprocessor):
-    r"""Preprocessor to prepare the deepdense input dataset
+    r"""Preprocessor to prepare the deepimage input dataset
 
     Parameters
     ----------

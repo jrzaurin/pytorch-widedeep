@@ -20,6 +20,7 @@ Documentation
     Installation <installation>
     Quick Start <quick_start>
     Utilities <utils/index>
+    Preprocessing <preprocessing>
 
 
 Indices and tables
