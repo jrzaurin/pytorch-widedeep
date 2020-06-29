@@ -39,6 +39,12 @@ def simple_preprocess(
     -------
     tokens: List
         List of tokens for a given doc
+
+    Examples
+    --------
+    >>> from pytorch_widedeep.utils import simple_preprocess
+    >>> simple_preprocess('Machine learning is great')
+    ['Machine', 'learning', 'is', 'great']
     """
     tokens = [
         token
@@ -63,6 +69,20 @@ def get_texts(texts: List[str]) -> List[List[str]]:
     -------
     tok: List
         List containing the tokens per text or document
+
+    Examples
+    --------
+    >>> from pytorch_widedeep.utils import get_texts
+    >>> texts = ['Machine learning is great', 'but building stuff is even better']
+    >>> get_texts(texts)
+    [['xxmaj', 'machine', 'learning', 'is', 'great'], ['but', 'building', 'stuff', 'is', 'even', 'better']]
+
+    .. note:: ``get_texts`` uses :class:`pytorch_widedeep.utils.fastai_transforms.Tokenizer`.
+        Such tokenizer uses a series of convenient processing steps, including
+        the  addition of some special tokens, such as ``TK_MAJ`` (`xxmaj`), used to
+        indicate the next word begins with a capital in the original text. For more
+        details of special tokens please see the ``fastai`` `docs
+        <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
     """
     processed_textx = [" ".join(simple_preprocess(t)) for t in texts]
     tok = Tokenizer().process_all(processed_textx)
@@ -71,7 +91,7 @@ def get_texts(texts: List[str]) -> List[List[str]]:
 
 def pad_sequences(
     seq: List[int], maxlen: int, pad_first: bool = True, pad_idx: int = 1
-) -> List[List[int]]:
+) -> np.ndarray:
     r"""
     Given a List of tokenized and `numericalised` sequences it will return
     padded sequences according to the input parameters
@@ -90,8 +110,15 @@ def pad_sequences(
 
     Returns
     -------
-    res: List
-        List of padded senquences
+    res: np.ndarray
+        padded senquence
+
+    Examples
+    --------
+    >>> from pytorch_widedeep.utils import pad_sequences
+    >>> seq = [1,2,3]
+    >>> pad_sequences(seq, maxlen=5, pad_idx=0)
+    array([0, 0, 1, 2, 3], dtype=int32)
     """
     if len(seq) >= maxlen:
         res = np.array(seq[-maxlen:]).astype("int32")
@@ -113,7 +140,7 @@ def build_embeddings_matrix(
 
     Parameters
     ----------
-    vocab: Instance of Fastai's ``Vocab``
+    vocab: Instance of Fastai's Vocab
         see :class:`pytorch_widedeep.utils.fastai_utils.Vocab`
     word_vectors_path: str
         path to the pretrained word embeddings

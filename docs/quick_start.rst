@@ -1,21 +1,22 @@
 Quick Start
 ***********
 
-Binary classification with the `adult census
+This is an example of a binary classification with the `adult census
 <https://www.kaggle.com/wenruliu/adult-income-dataset?select=adult.csv>`__
-dataset using ``Wide`` and ``DeepDense`` and defaults settings.
+dataset using a combination of a ``Wide`` and ``DeepDense`` model with
+defaults settings.
 
 
 Read and split the dataset
 --------------------------
+
+The following code snippet is not directly related to ``pytorch-widedeep``.
 
 .. code-block:: python
 
     import pandas as pd
     from sklearn.model_selection import train_test_split
 
-    # these next 4 lines are not directly related to pytorch-widedeep. I assume
-    # you have downloaded the dataset and place it in a dir called data/adult/
     df = pd.read_csv("data/adult/adult.csv.zip")
     df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
     df.drop("income", axis=1, inplace=True)

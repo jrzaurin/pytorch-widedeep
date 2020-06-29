@@ -34,16 +34,29 @@ class AspectAwarePreprocessor:
         self.inter = inter
 
     def preprocess(self, image: np.ndarray) -> np.ndarray:
-        """Resize image
+        """Resizes an input image taking into account the image aspect ratio
 
         Parameters
         ----------
         image: np.ndarray
+            Input image to be resized
+
+        Examples
+        --------
+        >>> import cv2
+        >>> from pytorch_widedeep.utils import AspectAwarePreprocessor
+        >>> img = cv2.imread("galaxy.png")
+        >>> img.shape
+        (694, 890, 3)
+        >>> app = AspectAwarePreprocessor(width=224, height=224)
+        >>> resized_img = app.preprocess(img)
+        >>> resized_img.shape
+        (224, 224, 3)
 
         Returns
         -------
-        resized image
-
+        resized_image: np.ndarray
+            resized image
         """
         (h, w) = image.shape[:2]
         dW = 0
@@ -59,7 +72,11 @@ class AspectAwarePreprocessor:
         (h, w) = image.shape[:2]
         image = image[dH : h - dH, dW : w - dW]
 
-        return cv2.resize(image, (self.width, self.height), interpolation=self.inter)
+        resized_image = cv2.resize(
+            image, (self.width, self.height), interpolation=self.inter
+        )
+
+        return resized_image
 
 
 class SimplePreprocessor:
@@ -81,14 +98,20 @@ class SimplePreprocessor:
         self.inter = inter
 
     def preprocess(self, image: np.ndarray) -> np.ndarray:
-        """Resize image
+        """Resizes an input image
 
         Parameters
         ----------
         image: np.ndarray
+            Input image to be resized
 
         Returns
         -------
-        resized image
+        resized_image: np.ndarray
+            resized image
         """
-        return cv2.resize(image, (self.width, self.height), interpolation=self.inter)
+        resized_image = cv2.resize(
+            image, (self.width, self.height), interpolation=self.inter
+        )
+
+        return resized_image

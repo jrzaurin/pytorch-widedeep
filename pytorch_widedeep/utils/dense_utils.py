@@ -42,12 +42,8 @@ class LabelEncoder(object):
 
         self.columns_to_encode = columns_to_encode
 
-    def fit(self, df: pd.DataFrame):
+    def fit(self, df: pd.DataFrame) -> "LabelEncoder":
         """Creates encoding attributes
-
-        Returns
-        -------
-        self
         """
 
         df_inp = df.copy()
@@ -106,7 +102,8 @@ class LabelEncoder(object):
     def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """Applies the full process
 
-        :Example:
+        Examples
+        --------
 
         >>> import pandas as pd
         >>> from pytorch_widedeep.utils import LabelEncoder

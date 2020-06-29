@@ -119,7 +119,8 @@ class SpacyTokenizer(BaseTokenizer):
         Parameters
         ----------
         toks: Collection of str
-            `List`, `Tuple`, `Set` or `Dictionary` with special cases to add to the tokenizer
+            ``List``, ``Tuple``, ``Set`` or ``Dictionary`` with special cases
+            to add to the tokenizer
         """
         for w in toks:
             self.tok.tokenizer.add_special_case(w, [{ORTH: w}])
@@ -219,7 +220,7 @@ class Tokenizer:
 
     Parameters
     ----------
-    tok_func: Callable, Default = ``SpacyTokenizer``
+    tok_func: Callable, Default = SpacyTokenizer
         Tokenizer Object. See :class:`pytorch_widedeep.utils.fastai_transforms.SpacyTokenizer`
     lang: str, Default = "en",
         Text's Language
@@ -271,7 +272,8 @@ class Tokenizer:
 
         Returns
         -------
-        List of strings that are the processed and tokenized text
+        toks: List
+            List of strings that are the processed and tokenized text
         """
         for rule in self.pre_rules:
             t = rule(t)
@@ -290,7 +292,21 @@ class Tokenizer:
         return [self.process_text(str(t), tok) for t in texts]
 
     def process_all(self, texts: Collection[str]) -> List[List[str]]:
-        """Process a list of texts. Parallel execution of ``process_text``
+        r"""Process a list of texts. Parallel execution of ``process_text``.
+
+        Examples
+        --------
+        >>> from pytorch_widedeep.utils import Tokenizer
+        >>> texts = ['Machine learning is great', 'but building stuff is even better']
+        >>> tok = Tokenizer()
+        >>> tok.process_all(texts)
+            [['xxmaj', 'machine', 'learning', 'is', 'great'],
+            ['but', 'building', 'stuff', 'is', 'even', 'better']]
+
+        .. note:: Note the token ``TK_MAJ`` (`xxmaj`), used to indicate the
+            next word begins with a capital in the original text. For more
+            details of special tokens please see the ``fastai`` `docs
+            <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
         """
 
         if self.n_cpus <= 1:
@@ -344,7 +360,7 @@ class Vocab:
 
     @classmethod
     def create(cls, tokens: Tokens, max_vocab: int, min_freq: int) -> "Vocab":
-        """Create a vocabulary object from a set of tokens
+        r"""Create a vocabulary object from a set of tokens.
 
         Parameters
         ----------
@@ -356,11 +372,24 @@ class Vocab:
             minimum frequency that a token has to appear to be part of the
             vocabulary
 
-        Returns
-        -------
-        Insance of ``Vocab``
+        Examples
+        --------
+        >>> from pytorch_widedeep.utils import Tokenizer, Vocab
+        >>> texts = ['Machine learning is great', 'but building stuff is even better']
+        >>> tokens = Tokenizer().process_all(texts)
+        >>> vocab = Vocab.create(tokens, max_vocab=18, min_freq=1)
+        >>> print(vocab.itos)
+        ['xxunk', 'xxpad', 'xxbos', 'xxeos', 'xxfld', 'xxmaj', 'xxup', 'xxrep', 'xxwrep',
+        'is', 'machine', 'learning', 'great', 'but', 'building', 'stuff', 'even', 'better']
+        >>> vocab.numericalize(['machine', 'learning', 'is', 'great'])
+        [10, 11, 9, 12]
+        >>> vocab.textify([10, 11, 9, 12])
+        'machine learning is great'
 
-        :rtype: ``Vocab``
+        .. note:: Note the many special tokens that ``fastai``'s' tokenizer
+            adds. These are particularly useful when building Language models and/or in
+            classification/Regression tasks. Please see the ``fastai``
+            `docs <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
         """
         freq = Counter(p for o in tokens for p in o)
         itos = [o for o, c in freq.most_common(max_vocab) if c >= min_freq]
