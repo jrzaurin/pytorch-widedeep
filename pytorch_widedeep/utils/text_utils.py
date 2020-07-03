@@ -21,6 +21,7 @@ def simple_preprocess(
     lower case all the token in the doc
 
     For more information see: ``Gensim`` `utils module <https://radimrehurek.com/gensim/utils.html>`_.
+    Returns the list of tokens for a given doc
 
     Parameters
     ----------
@@ -34,11 +35,6 @@ def simple_preprocess(
         Minimum length of token (inclusive). Shorter tokens are discarded.
     max_len: int, Default = 15
         Maximum length of token in result (inclusive). Longer tokens are discarded.
-
-    Returns
-    -------
-    tokens: List
-        List of tokens for a given doc
 
     Examples
     --------
@@ -60,15 +56,12 @@ def get_texts(texts: List[str]) -> List[List[str]]:
 
     See :class:`pytorch_widedeep.utils.fastai_utils.Tokenizer`
 
+    Returns a list containing the tokens per text or document
+
     Parameters
     ----------
-    texts: List
+    texts: List[str]
         List of ``str`` with the texts (or documents). One ``str`` per document
-
-    Returns
-    -------
-    tok: List
-        List containing the tokens per text or document
 
     Examples
     --------
@@ -94,11 +87,11 @@ def pad_sequences(
 ) -> np.ndarray:
     r"""
     Given a List of tokenized and `numericalised` sequences it will return
-    padded sequences according to the input parameters
+    padded sequences according to the input parameters.
 
     Parameters
     ----------
-    seq: List
+    seq: List[int]
         List of ``int`` with the `numericalised` tokens
     maxlen: int
         Maximum length of the padded sequences
@@ -107,11 +100,6 @@ def pad_sequences(
         end of the sequences
     pad_idx: int. Default = 1
         padding index. ``Fastai``'s ``Tokenizer`` leaves 0 for the 'unknown' token.
-
-    Returns
-    -------
-    res: np.ndarray
-        padded senquence
 
     Examples
     --------
@@ -138,6 +126,10 @@ def build_embeddings_matrix(
     r"""
     Build the embedding matrix using pretrained word vectors
 
+    Returns pretrained word embeddings. If a word in our vocabulary is not
+    among the pretrained embeddings it will be assigned the mean pretrained
+    word-embeddings vector
+
     Parameters
     ----------
     vocab: Instance of Fastai's Vocab
@@ -149,12 +141,6 @@ def build_embeddings_matrix(
     verbose: int. Default=1
         ``int`` indicating verbosity. Set to 0 for no verbosity
 
-    Returns
-    -------
-    embedding_matrix: np.ndarray
-        pretrained word embeddings. If a word in our vocabulary is not among the
-        pretrained embeddings it will be assigned the mean pretrained
-        word-embeddings vector
     """
     if not os.path.isfile(word_vectors_path):
         raise FileNotFoundError("{} not found".format(word_vectors_path))

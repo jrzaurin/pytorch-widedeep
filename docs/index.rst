@@ -21,6 +21,7 @@ Documentation
     Quick Start <quick_start>
     Utilities <utils/index>
     Preprocessing <preprocessing>
+    Model Components <model_components>
 
 
 Indices and tables

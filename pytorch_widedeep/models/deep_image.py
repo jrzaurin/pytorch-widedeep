@@ -27,26 +27,35 @@ def conv_layer(
 
 class DeepImage(nn.Module):
     r"""
-    Standard image classifier/regressor using a pretrained network freezing
-    some of the first layers, or all layers. I use Resnets which have 9
-    "components" before the last dense layers.
-    The first 4 are: conv->batchnorm->relu->maxpool.
-    After that we have 4 additional 'layers' (resnet blocks) (so 4+4=8)
-    comprised by a series of convolutions and then the final AdaptiveAvgPool2d
-    (8+1=9). The parameter freeze sets the layers to be frozen. For example,
-    freeze=6 will freeze all but the last 2 Layers and AdaptiveAvgPool2d
-    layer. If freeze='all' it freezes the entire network. In addition, there
-    is the option to add a Fully Connected (FC) set of dense layers (FC-Head,
-    referred as 'imagehead') on top of the stack of RNNs
+    Standard image classifier/regressor using a pretrained network (in
+    particular ResNets) or a sequence of 4 convolution layers.
+
+    If ``pretrained=False`` the `backbone` of ``DeepImage`` will be a sequence
+    of 4 convolutional layers comprised by: ``Conv2d -> BatchNorm2d ->
+    LeakyReLU``. The 4th one will also add a final ``AdaptiveAvgPool2d``
+    operation.
+
+    If ``pretrained=True`` the `backbone will be ResNets. ResNets have 9
+    `components` before the last dense layers. The first 4 are: ``Conv2d ->
+    BatchNorm2d -> ReLU -> MaxPool2d``. Then there are 4 additional resnet
+    blocks comprised by a series of convolutions and then the final
+    ``AdaptiveAvgPool2d``. Overall, ``4+4+1=9``. The parameter ``freeze`` sets
+    the layers to be frozen. For example, ``freeze=6`` will freeze all but the
+    last 2 layers and the ``AdaptiveAvgPool2d`` layer. If ``freeze=all`` the
+    entire network will be frozen.
+
+    In addition to all of the above, there is the option to add a fully
+    connected set of dense layers (referred as `imagehead`) on top of the
+    stack of RNNs
 
     Parameters
     ----------
-    pretrained: Boolean
+    pretrained: bool
         Indicates whether or not we use a pretrained Resnet network or a
         series of conv layers (see conv_layer function)
-    resnet: Int
+    resnet: int
         The resnet architecture. One of 18, 34 or 50
-    freeze: Int, Str
+    freeze: Union[str, int]
         number of layers to freeze. If int must be less than 8. The only
         string allowed is 'all' which will freeze the entire network
     head_layers: List, Optional
@@ -54,17 +63,17 @@ class DeepImage(nn.Module):
         e.g: [128, 64]
     head_dropout: List, Optional
         List with the dropout between the dense layers. e.g: [0.5, 0.5].
-    head_batchnorm: Boolean, Optional
+    head_batchnorm: bool, Optional
         Boolean indicating whether or not to include batch normalizatin in the
         dense layers that form the imagehead
 
     Attributes
     ----------
-    backbone: nn.Sequential
+    backbone: `nn.Sequential`
         Sequential stack of CNNs comprising the 'backbone' of the network
-    imagehead: nn.Sequential
+    imagehead: `nn.Sequential`
         Sequential stack of dense layers comprising the FC-Head (aka imagehead)
-    output_dim: Int
+    output_dim: `int`
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
 

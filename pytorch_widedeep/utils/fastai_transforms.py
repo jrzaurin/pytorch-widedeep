@@ -1,9 +1,9 @@
 """
 NLP data processing; tokenizes text and creates vocab indexes
 
-I have directly COPIED AND PASTE OF THE TRANSFORMS.PY FASTAI LIBRARY.  I only
-need the Tokenizer and the Vocab classes which are both in this module. This
-way I avoid the numerous fastai dependencies.
+I have directly copied and paste part of OF THE TRANSFORMS.PY FASTAI LIBRARY.
+I only need the Tokenizer and the Vocab classes which are both in this module.
+This way I avoid the numerous fastai dependencies.
 
 Credit for the code here to Jeremy Howard and the fastai team
 """
@@ -119,7 +119,7 @@ class SpacyTokenizer(BaseTokenizer):
         Parameters
         ----------
         toks: Collection of str
-            ``List``, ``Tuple``, ``Set`` or ``Dictionary`` with special cases
+            `List`, `Tuple`, `Set` or `Dictionary` with special cases
             to add to the tokenizer
         """
         for w in toks:
@@ -269,11 +269,6 @@ class Tokenizer:
             text to be processed and tokenized
         tok: ``BaseTokenizer``
             Instance of ``BaseTokenizer``
-
-        Returns
-        -------
-        toks: List
-            List of strings that are the processed and tokenized text
         """
         for rule in self.pre_rules:
             t = rule(t)

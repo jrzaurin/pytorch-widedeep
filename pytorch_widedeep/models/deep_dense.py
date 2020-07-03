@@ -14,10 +14,12 @@ def dense_layer(inp: int, out: int, p: float = 0.0, bn=False):
 
 
 class DeepDense(nn.Module):
-    r"""Dense branch of the deep side of the model. This class combines embedding
-    representations of the categorical features with numerical (aka
-    continuous) features. These are then passed through a series of dense
-    layers.
+    r"""Dense branch of the deep side of the model receiving continuous columns
+    and the embeddings for categorical columns.
+
+    This class combines embedding representations of the categorical features
+    with numerical (aka continuous) features. These are then passed through a
+    series of dense layers.
 
     Parameters
     ----------
@@ -40,17 +42,17 @@ class DeepDense(nn.Module):
     continuous_cols: List, Optional
         List with the name of the numeric (aka continuous) columns
 
-    **Either embeddings_input or continuous_cols (or both) should be passed to the
-    model
+        .. note:: Either ``embeddings_input`` or ``continuous_cols`` (or both) should be passed to the
+            model
 
     Attributes
     ----------
-    dense: nn.Sequential
+    dense: ``nn.Sequential``
         model of dense layers that will receive the concatenation of the
         embeddings and the continuous columns
-    embed_layers: nn.ModuleDict
+    embed_layers: ``nn.ModuleDict``
         ModuleDict with the embedding layers
-    output_dim: Int
+    output_dim: ``int``
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
 

@@ -4,22 +4,23 @@ from ..wdtypes import *
 
 
 class Wide(nn.Module):
-    r"""simple linear layer between the one-hot encoded wide input and the output
-    neuron.
+    r"""
+    Simple linear layer that will receive the one-hot encoded `wide` input and
+    connect it to the output neuron.
 
     Parameters
-    ----------
-    wide_dim: Int
+    -----------
+    wide_dim: int
         size of the input tensor
-    output_dim: Int
+    output_dim: int
         size of the ouput tensor
 
     Attributes
-    ----------
-    wide_linear: nn.Module
+    -----------
+    wide_linear: ``nn.Module``
         the linear layer that comprises the wide branch of the model
 
-    Example
+    Examples
     --------
     >>> import torch
     >>> from pytorch_widedeep.models import Wide
