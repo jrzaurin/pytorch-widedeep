@@ -1,5 +1,5 @@
 The ``models`` module
-================
+=====================
 
 .. autoclass:: pytorch_widedeep.models.wide.Wide
     :members:

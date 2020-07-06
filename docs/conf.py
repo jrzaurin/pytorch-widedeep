@@ -65,6 +65,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx.ext.coverage",
     "sphinx.ext.napoleon",
+    "sphinx.ext.mathjax",
     "recommonmark",
     "sphinx.ext.doctest",
     "sphinx.ext.todo",
