@@ -13,9 +13,9 @@ from pytorch_widedeep.models import (
 from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.initializers import KaimingNormal
 from pytorch_widedeep.preprocessing import (
-    DeepPreprocessor,
     TextPreprocessor,
     WidePreprocessor,
+    DensePreprocessor,
     ImagePreprocessor,
 )
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
 
-    prepare_deep = DeepPreprocessor(
+    prepare_deep = DensePreprocessor(
         embed_cols=cat_embed_cols, continuous_cols=continuous_cols
     )
     X_deep = prepare_deep.fit_transform(df)

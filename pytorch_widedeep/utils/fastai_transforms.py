@@ -234,6 +234,7 @@ class Tokenizer:
     n_cpus: int, Default = None
         number of CPUs to used during the tokenization process
     """
+
     def __init__(
         self,
         tok_func: Callable = SpacyTokenizer,

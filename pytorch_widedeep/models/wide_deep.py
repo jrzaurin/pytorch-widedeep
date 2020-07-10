@@ -120,15 +120,21 @@ class WideDeep(nn.Module):
         super(WideDeep, self).__init__()
 
         # check that model components have the required output_dim attribute
-        if not hasattr(deepdense, 'output_dim'):
-            raise AttributeError("deepdense model must have an 'output_dim' attribute. "
-                "See pytorch-widedeep.models.deep_dense.DeepDense")
-        if deeptext is not None and not hasattr(deeptext, 'output_dim'):
-            raise AttributeError("deeptext model must have an 'output_dim' attribute. "
-                "See pytorch-widedeep.models.deep_dense.DeepText")
-        if deepimage is not None and not hasattr(deepimage, 'output_dim'):
-            raise AttributeError("deepimage model must have an 'output_dim' attribute. "
-                "See pytorch-widedeep.models.deep_dense.DeepText")
+        if not hasattr(deepdense, "output_dim"):
+            raise AttributeError(
+                "deepdense model must have an 'output_dim' attribute. "
+                "See pytorch-widedeep.models.deep_dense.DeepDense"
+            )
+        if deeptext is not None and not hasattr(deeptext, "output_dim"):
+            raise AttributeError(
+                "deeptext model must have an 'output_dim' attribute. "
+                "See pytorch-widedeep.models.deep_dense.DeepText"
+            )
+        if deepimage is not None and not hasattr(deepimage, "output_dim"):
+            raise AttributeError(
+                "deepimage model must have an 'output_dim' attribute. "
+                "See pytorch-widedeep.models.deep_dense.DeepText"
+            )
 
         # The main 5 components of the wide and deep assemble
         self.wide = wide

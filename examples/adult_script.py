@@ -11,7 +11,7 @@ from pytorch_widedeep.callbacks import (
     ModelCheckpoint,
 )
 from pytorch_widedeep.initializers import XavierNormal, KaimingNormal
-from pytorch_widedeep.preprocessing import DeepPreprocessor, WidePreprocessor
+from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
 
 use_cuda = torch.cuda.is_available()
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     target = df[target].values
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
-    prepare_deep = DeepPreprocessor(
+    prepare_deep = DensePreprocessor(
         embed_cols=cat_embed_cols, continuous_cols=continuous_cols
     )
     X_deep = prepare_deep.fit_transform(df)
