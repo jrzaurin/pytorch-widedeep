@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.preprocessing import DeepPreprocessor
+from pytorch_widedeep.preprocessing import DensePreprocessor
 from pytorch_widedeep.utils.dense_utils import LabelEncoder
 
 
@@ -43,15 +43,15 @@ def test_label_encoder(input_df, encoder, output_df):
 
 
 ################################################################################
-# Test the DeepPreprocessor: only categorical columns to be represented with
+# Test the DensePreprocessor: only categorical columns to be represented with
 # embeddings
 ###############################################################################
 cat_embed_cols = [("col1", 5), ("col2", 5)]
 
-preprocessor1 = DeepPreprocessor(cat_embed_cols)
+preprocessor1 = DensePreprocessor(cat_embed_cols)
 X_letters = preprocessor1.fit_transform(df_letters)
 
-preprocessor2 = DeepPreprocessor(cat_embed_cols)
+preprocessor2 = DensePreprocessor(cat_embed_cols)
 X_numbers = preprocessor2.fit_transform(df_numbers)
 
 error_list = []
@@ -83,14 +83,14 @@ def test_prepare_deep_without_continous_columns(input_df, X_deep, preprocessor):
 
 
 ################################################################################
-# Test the DeepPreprocessor: only continouos columns
+# Test the DensePreprocessor: only continouos columns
 ###############################################################################
 def test_prepare_deep_without_embedding_columns():
 
     errors = []
     df_randint = pd.DataFrame(np.random.choice(np.arange(100), (100, 2)))
     df_randint.columns = ["col1", "col2"]
-    preprocessor3 = DeepPreprocessor(continuous_cols=["col1", "col2"])
+    preprocessor3 = DensePreprocessor(continuous_cols=["col1", "col2"])
 
     try:
         X_randint = preprocessor3.fit_transform(df_randint)

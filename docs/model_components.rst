@@ -1,6 +1,10 @@
 The ``models`` module
 =====================
 
+This module contains the four main Wide and Deep model component. These are:
+``Wide``, ``DeepDense``, ``DeepText`` and ``DeepImage``.
+
+
 .. autoclass:: pytorch_widedeep.models.wide.Wide
     :members:
     :undoc-members:

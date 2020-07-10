@@ -4,9 +4,8 @@ from ..wdtypes import *
 
 
 class Wide(nn.Module):
-    r"""
-    Simple linear layer that will receive the one-hot encoded `wide` input and
-    connect it to the output neuron.
+    r"""Simple linear layer that will receive the one-hot encoded `'wide'`
+    input and connect it to the output neuron.
 
     Parameters
     -----------
@@ -17,7 +16,7 @@ class Wide(nn.Module):
 
     Attributes
     -----------
-    wide_linear: ``nn.Module``
+    wide_linear: :obj:`nn.Module`
         the linear layer that comprises the wide branch of the model
 
     Examples
@@ -38,5 +37,7 @@ class Wide(nn.Module):
         self.wide_linear = nn.Linear(wide_dim, output_dim)
 
     def forward(self, X: Tensor) -> Tensor:  # type: ignore
+        r"""Forward pass. Simply connecting the one-hot encoded input with the
+        ouput neuron(s) """
         out = self.wide_linear(X.float())
         return out

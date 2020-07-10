@@ -1,22 +1,12 @@
-Callbacks
-=========
+Metrics
+=======
 
-.. autoclass:: pytorch_widedeep.callbacks.History
+.. autoclass:: pytorch_widedeep.metrics.BinaryAccuracy
 	:members:
 	:undoc-members:
 	:show-inheritance:
 
-.. autoclass:: pytorch_widedeep.callbacks.LRHistory
-	:members:
-	:undoc-members:
-	:show-inheritance:
-
-.. autoclass:: pytorch_widedeep.callbacks.ModelCheckpoint
-	:members:
-	:undoc-members:
-	:show-inheritance:
-
-.. autoclass:: pytorch_widedeep.callbacks.EarlyStopping
+.. autoclass:: pytorch_widedeep.metrics.CategoricalAccuracy
 	:members:
 	:undoc-members:
 	:show-inheritance:

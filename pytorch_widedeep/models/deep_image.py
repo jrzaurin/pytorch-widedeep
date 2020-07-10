@@ -30,19 +30,18 @@ class DeepImage(nn.Module):
     Standard image classifier/regressor using a pretrained network (in
     particular ResNets) or a sequence of 4 convolution layers.
 
-    If ``pretrained=False`` the `backbone` of ``DeepImage`` will be a sequence
-    of 4 convolutional layers comprised by: ``Conv2d -> BatchNorm2d ->
-    LeakyReLU``. The 4th one will also add a final ``AdaptiveAvgPool2d``
+    If ``pretrained=False`` the `'backbone'` of :obj:`DeepImage` will be a
+    sequence of 4 convolutional layers comprised by: ``Conv2d -> BatchNorm2d
+    -> LeakyReLU``. The 4th one will also add a final ``AdaptiveAvgPool2d``
     operation.
 
-    If ``pretrained=True`` the `backbone will be ResNets. ResNets have 9
-    `components` before the last dense layers. The first 4 are: ``Conv2d ->
+    If ``pretrained=True`` the `'backbone'` will be ResNets. ResNets have 9
+    `'components'` before the last dense layers. The first 4 are: ``Conv2d ->
     BatchNorm2d -> ReLU -> MaxPool2d``. Then there are 4 additional resnet
     blocks comprised by a series of convolutions and then the final
     ``AdaptiveAvgPool2d``. Overall, ``4+4+1=9``. The parameter ``freeze`` sets
     the layers to be frozen. For example, ``freeze=6`` will freeze all but the
-    last 2 layers and the ``AdaptiveAvgPool2d`` layer. If ``freeze=all`` the
-    entire network will be frozen.
+    last 3 layers. If ``freeze=all`` the entire network will be frozen.
 
     In addition to all of the above, there is the option to add a fully
     connected set of dense layers (referred as `imagehead`) on top of the
@@ -69,11 +68,11 @@ class DeepImage(nn.Module):
 
     Attributes
     ----------
-    backbone: `nn.Sequential`
+    backbone: :obj:`nn.Sequential`
         Sequential stack of CNNs comprising the 'backbone' of the network
-    imagehead: `nn.Sequential`
+    imagehead: :obj:`nn.Sequential`
         Sequential stack of dense layers comprising the FC-Head (aka imagehead)
-    output_dim: `int`
+    output_dim: :obj:`int`
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
 
@@ -167,6 +166,8 @@ class DeepImage(nn.Module):
             self.output_dim = head_layers[-1]
 
     def forward(self, x: Tensor) -> Tensor:  # type: ignore
+        r"""Forward pass connecting the `'backbone'` with the `'head layers'`
+        """
         x = self.backbone(x)
         x = x.view(x.size(0), -1)
         if self.head_layers is not None:

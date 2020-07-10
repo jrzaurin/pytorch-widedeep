@@ -29,7 +29,8 @@ class WideDeep(nn.Module):
     r"""Main collector class that combines all ``Wide``, ``DeepDense``,
     ``DeepText`` and ``DeepImage`` models.
 
-    There are two options to combine these models.
+    There are two options to combine these models that correspond to the two
+    architectures that ``pytorch-widedeep`` can build.
 
         - Directly connecting the output of the model components to an ouput neuron(s).
 
@@ -40,9 +41,10 @@ class WideDeep(nn.Module):
     Parameters
     ----------
     wide: nn.Module
-        Wide model. We recommend using the Wide class in this package. However,
-        can a custom model as long as is consistent with the required
-        architecture.
+        Wide model. We recommend using the ``Wide`` class in this package.
+        However, it is possible to use a custom model as long as is consistent
+        with the required architecture, see
+        :class:`pytorch_widedeep.models.wide.Wide`
     deepdense: nn.Module
         `Deep dense` model comprised by the embeddings for the categorical
         features combined with numerical (also referred as continuous)
@@ -63,14 +65,30 @@ class WideDeep(nn.Module):
         `Dense` model consisting in a stack of dense layers. The FC-Head.
     head_layers: List, Optional
         Alternatively, we can use ``head_layers`` to specify the sizes of the
-        stacked dense layers in the fc-head e.g: [128, 64]
+        stacked dense layers in the fc-head e.g: ``[128, 64]``
     head_dropout: List, Optional
-        Dropout between the layers in ``head_layers``. e.g: [0.5, 0.5]
+        Dropout between the layers in ``head_layers``. e.g: ``[0.5, 0.5]``
     head_batchnorm: bool, Optional
         Specifies if batch normalizatin should be included in the dense layers
-    output_dim: Int
-        Size of the final wide and deep output layer. `1` for regression and
-        binary classification or `number of classes` for multiclass classification.
+    pred_dim: int
+        Size of the final wide and deep output layer containing the
+        predictions. `1` for regression and binary classification or `number
+        of classes` for multiclass classification.
+
+
+    .. note:: With the exception of ``cyclic``, all attributes are direct assignations of
+        the corresponding parameters used when calling ``compile``.  Therefore,
+        see the parameters at
+        :class:`pytorch_widedeep.models.wide_deep.WideDeep.compile` for a full
+        list of the attributes of an instance of
+        :class:`pytorch_widedeep.models.wide_deep.Wide`
+
+
+    Attributes
+    ----------
+    cyclic: :obj:`bool`
+        Attribute that indicates if any of the lr_schedulers is cyclic (i.e. ``CyclicLR`` or
+        ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
 
 
     .. note:: While I recommend using the ``Wide`` and ``DeepDense`` classes within
@@ -82,13 +100,15 @@ class WideDeep(nn.Module):
         activations are collected by ``WideDeep`` and combined accordingly. In
         addition, the models MUST also contain an attribute ``output_dim`` with
         the size of these last layers of activations. See for example
-        :class:`pytorch_widedeep.models.deep_dense.DeepDense` """
+        :class:`pytorch_widedeep.models.deep_dense.DeepDense`
+
+    """
 
     def __init__(
         self,
         wide: nn.Module,
         deepdense: nn.Module,
-        output_dim: int = 1,
+        pred_dim: int = 1,
         deeptext: Optional[nn.Module] = None,
         deepimage: Optional[nn.Module] = None,
         deephead: Optional[nn.Module] = None,
@@ -98,6 +118,17 @@ class WideDeep(nn.Module):
     ):
 
         super(WideDeep, self).__init__()
+
+        # check that model components have the required output_dim attribute
+        if not hasattr(deepdense, 'output_dim'):
+            raise AttributeError("deepdense model must have an 'output_dim' attribute. "
+                "See pytorch-widedeep.models.deep_dense.DeepDense")
+        if deeptext is not None and not hasattr(deeptext, 'output_dim'):
+            raise AttributeError("deeptext model must have an 'output_dim' attribute. "
+                "See pytorch-widedeep.models.deep_dense.DeepText")
+        if deepimage is not None and not hasattr(deepimage, 'output_dim'):
+            raise AttributeError("deepimage model must have an 'output_dim' attribute. "
+                "See pytorch-widedeep.models.deep_dense.DeepText")
 
         # The main 5 components of the wide and deep assemble
         self.wide = wide
@@ -135,19 +166,19 @@ class WideDeep(nn.Module):
                         ),
                     )
                 self.deephead.add_module(
-                    "head_out", nn.Linear(head_layers[-1], output_dim)
+                    "head_out", nn.Linear(head_layers[-1], pred_dim)
                 )
             else:
                 self.deepdense = nn.Sequential(
-                    self.deepdense, nn.Linear(self.deepdense.output_dim, output_dim)  # type: ignore
+                    self.deepdense, nn.Linear(self.deepdense.output_dim, pred_dim)  # type: ignore
                 )
                 if self.deeptext is not None:
                     self.deeptext = nn.Sequential(
-                        self.deeptext, nn.Linear(self.deeptext.output_dim, output_dim)  # type: ignore
+                        self.deeptext, nn.Linear(self.deeptext.output_dim, pred_dim)  # type: ignore
                     )
                 if self.deepimage is not None:
                     self.deepimage = nn.Sequential(
-                        self.deepimage, nn.Linear(self.deepimage.output_dim, output_dim)  # type: ignore
+                        self.deepimage, nn.Linear(self.deepimage.output_dim, pred_dim)  # type: ignore
                     )
 
     def forward(self, X: Dict[str, Tensor]) -> Tensor:  # type: ignore
@@ -189,8 +220,7 @@ class WideDeep(nn.Module):
         verbose: int = 1,
         seed: int = 1,
     ):
-        r"""
-        Function to set a number of attributes that will be used during the
+        r"""Method to set the of attributes that will be used during the
         training process.
 
         Parameters
@@ -198,36 +228,41 @@ class WideDeep(nn.Module):
         method: str
             One of `regression`, `binary` or `multiclass`
         optimizers: Union[Optimizer, Dict[str, Optimizer]], Optional, Default=AdamW
-            - An instance of ``pytorch``'s ``Optimizer`` object (e.g. torch.optim.Adam()) or
-            - a dictionary where there keys are the model components (i.e. `wide`, `deepdense`,
-              `deeptext`, `deepimage` and/or `deephead`)  and the values are the corresponding optimizers.
-              If multiple optimizers are used the  dictionary MUST contain an optimizer per model component.
+            - An instance of ``pytorch``'s ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
+            - a dictionary where there keys are the model components (i.e.
+              `'wide'`, `'deepdense'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)  and
+              the values are the corresponding optimizers. If multiple optimizers are used
+              the  dictionary MUST contain an optimizer per model component.
 
             See `Pytorch optimizers <https://pytorch.org/docs/stable/optim.html>`_.
         lr_schedulers: Union[LRScheduler, Dict[str, LRScheduler]], Optional, Default=None
-            - An instance of ``pytorch``'s LRScheduler object (e.g
-              torch.optim.lr_scheduler.StepLR(opt, step_size=5)) or
-            - a dictionary where there keys are the model componenst (i.e. `wide`,
-              `deepdense`, `deeptext`, `deepimage` and/or `deephead`) and the
+            - An instance of ``pytorch``'s ``LRScheduler`` object (e.g
+              :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
+            - a dictionary where there keys are the model componenst (i.e. `'wide'`,
+              `'deepdense'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
               values are the corresponding learning rate schedulers.
 
             See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
         initializers: Dict[str, Initializer], Optional. Default=None
-            Dict where there keys are the model components (i.e. `wide`,
-            `deepdense`, `deeptext`, `deepimage` and/or `deephead`) and the
+            Dict where there keys are the model components (i.e. `'wide'`,
+            `'deepdense'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
             values are the corresponding initializers.
             See `Pytorch initializers <https://pytorch.org/docs/stable/nn.init.html>`_.
         transforms: List[Transforms], Optional. Default=None
-            List with ``torchvision.transforms`` to be applied to the image
-            component of the model (i.e. ``deepimage``)
-            See `torchvision transforms <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
+            ``Transforms`` is a custom type. See
+            :obj:`pytorch_widedeep.wdtypes`. List with
+            :obj:`torchvision.transforms` to be applied to the image component
+            of the model (i.e. ``deepimage``) See `torchvision transforms
+            <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
         callbacks: List[Callback], Optional. Default=None
-            Callbacks available are: ``ModelCheckpoint``, ``EarlyStopping``, and
-            ``LRHistory``. The ``History`` callback is used by default.
-            See the ``Callbacks`` section in this documentation
+            Callbacks available are: ``ModelCheckpoint``, ``EarlyStopping``,
+            and ``LRHistory``. The ``History`` callback is used by default.
+            See the ``Callbacks`` section in this documentation or
+            :obj:`pytorch_widedeep.callbacks`
         metrics: List[Metric], Optional. Default=None
-            Metrics available are: ``BinaryAccuracy`` and ``CategoricalAccuracy``
-            See the ``Metrics`` section in this documentation
+            Metrics available are: ``BinaryAccuracy`` and
+            ``CategoricalAccuracy`` See the ``Metrics`` section in this
+            documentation or :obj:`pytorch_widedeep.metrics`
         class_weight: Union[float, List[float], Tuple[float]]. Optional. Default=None
             - float indicating the weight of the minority class in binary classification
               problems (e.g. 9.)
@@ -241,8 +276,8 @@ class WideDeep(nn.Module):
               <https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10>`_.
         with_focal_loss: bool, Optional. Default=False
             Boolean indicating whether to use the Focal Loss for highly imbalanced problems.
-            See `here <https://arxiv.org/pdf/1708.02002.pdf>`_.
-            See also the ``alpha`` and ``gamma`` parameters.
+            For details on the focal loss see the `original paper
+            <https://arxiv.org/pdf/1708.02002.pdf>`_.
         alpha: float. Default=0.25
             Focal Loss alpha parameter.
         gamma: float. Default=2
@@ -251,12 +286,6 @@ class WideDeep(nn.Module):
             Setting it to 0 will print nothing during training.
         seed: int, Default=1
             Random seed to be used throughout all the methods
-
-        Attributes
-        ----------
-        self.cyclic: bool
-            Attribute that indicates if any of the lr_schedulers is cyclic (i.e. ``CyclicLR`` or
-            ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
 
         Example
         --------
@@ -381,7 +410,7 @@ class WideDeep(nn.Module):
         warm_deepimage_layers: Optional[List[nn.Module]] = None,
         warm_routine: str = "howard",
     ):
-        r"""Fit method. Must run after calling 'compile'
+        r"""Fit method. Must run after calling ``compile``
 
         Parameters
         ----------
@@ -399,11 +428,12 @@ class WideDeep(nn.Module):
             See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_train: Dict[str, np.ndarray], Optional. Default=None
             Training dataset for the different model components. Keys are
-            `X_wide`, `'X_deep'`, `'X_text'`, `'X_img'` and `'target'` the values are
+            `X_wide`, `'X_deep'`, `'X_text'`, `'X_img'` and `'target'`. Values are
             the corresponding matrices.
         X_val: Dict, Optional. Default=None
             Validation dataset for the different model component. Keys are
-            `'X_wide'`, `'X_deep'`, `'X_text'`, `'X_img'` and `'target'` the values are
+            `'X_wide'`, `'X_deep'`, `'X_text'`, `'X_img'` and `'target'`. Values are
+            the corresponding matrices.
         val_split: float, Optional. Default=None
             train/val split fraction
         target: np.ndarray, Optional. Default=None
@@ -414,20 +444,23 @@ class WideDeep(nn.Module):
             epochs validation frequency
         batch_size: int, Default=32
         patience: int, Default=10
-            Number of epochs without improving the target metric before we
-            stop the fit process
+            Number of epochs without improving the target metric before
+            the fit process stops
         warm_up: bool, Default=False
-            warm up model components individually before the joined training.
+            warm up model components individually before the joined training
+            starts.
+
             ``pytorch_widedeep`` implements 3 warm up routines.
 
             - Warm up all trainable layers at once. This routine is is
               inspired by the work of Howard & Sebastian Ruder 2018 in their
               `ULMfit paper <https://arxiv.org/abs/1801.06146>`_. Using a
-              Slanted Triangular learing, the process is the following: `i`) the
-              learning rate will gradually increase for 10% of the training
-              steps from max_lr/10 to max_lr. `ii`) It will then gradually
-              decrease to max_lr/10 for the remaining 90% of the steps. The
-              optimizer used in the process is ``AdamW``.
+              Slanted Triangular learing (see `Leslie N. Smith paper
+              <https://arxiv.org/pdf/1506.01186.pdf>`_), the process is the
+              following: `i`) the learning rate will gradually increase for
+              10% of the training steps from max_lr/10 to max_lr. `ii`) It
+              will then gradually decrease to max_lr/10 for the remaining 90%
+              of the steps. The optimizer used in the process is ``AdamW``.
 
             and two gradual warm up routines, where only certain layers are
             warmed up at each warm up step.
@@ -453,7 +486,7 @@ class WideDeep(nn.Module):
             Maximum learning rate during the Triangular Learning rate cycle
             for the deeptext component
         warm_deeptext_layers: List, Optional, Default=None
-            List of ``nn.Modules`` that will be warmed up gradually.
+            List of :obj:`nn.Modules` that will be warmed up gradually.
 
             .. note:: These have to be in `warm-up-order`: the layers or blocks
                 close to the output neuron(s) first
@@ -465,12 +498,12 @@ class WideDeep(nn.Module):
             Maximum learning rate during the Triangular Learning rate cycle
             for the deepimage component
         warm_deepimage_layers: List, Optional, Default=None
-            List of ``nn.Modules`` that will be warmed up gradually.
+            List of :obj:`nn.Modules` that will be warmed up gradually.
 
             .. note:: These have to be in `warm-up-order`: the layers or blocks
                 close to the output neuron(s) first
 
-        warm_routine: Str, Default=`felbo`
+        warm_routine: str, Default=`felbo`
             Warm up routine. On of `felbo` or `howard`. See the examples
             section in this documentation and the corresponding repo for
             details on how to use warm up routines
@@ -498,7 +531,7 @@ class WideDeep(nn.Module):
         >>> X_val = {'X_wide': X_wide_val, 'X_deep': X_deep_val, 'target': y_val}
         >>> model.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
 
-        .. note:: ``WideDeep`` assumes that `X_wide`, `X_deep` and `target` ALWAYS exist, while
+        .. note:: :obj:`WideDeep` assumes that `X_wide`, `X_deep` and `target` ALWAYS exist, while
             `X_text` and `X_img` are optional
 
         .. note:: Either `X_train` or the three `X_wide`, `X_deep` and `target` must be passed to the
@@ -660,9 +693,10 @@ class WideDeep(nn.Module):
         r"""Returns the learned embeddings for the categorical features passed through
         ``deepdense``.
 
-        This method is designed to take an encoding dictionary in the same format as
-        that of the LabelEncoder Attribute of the class DeepPreprocessor.
-        See :class:`pytorch_widedeep.preprocessing.DeepPreprocessor` and
+        This method is designed to take an encoding dictionary in the same
+        format as that of the :obj:`LabelEncoder` Attribute of the class
+        :obj:`DensePreprocessor`. See
+        :class:`pytorch_widedeep.preprocessing.DensePreprocessor` and
         :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`.
 
         Parameters
@@ -743,11 +777,13 @@ class WideDeep(nn.Module):
         Returns
         -------
         train_set: WideDeepDataset
-            WideDeepDataset object that will be loaded through
-            torch.utils.data.DataLoader
+            :obj:`WideDeepDataset` object that will be loaded through
+            :obj:`torch.utils.data.DataLoader`. See
+            :class:`pytorch_widedeep.models._wd_dataset`
         eval_set : WideDeepDataset
-            WideDeepDataset object that will be loaded through
-            torch.utils.data.DataLoader
+            :obj:`WideDeepDataset` object that will be loaded through
+            :obj:`torch.utils.data.DataLoader`. See
+            :class:`pytorch_widedeep.models._wd_dataset`
         """
         #  Without validation
         if X_val is None and val_split is None:
@@ -985,10 +1021,9 @@ class WideDeep(nn.Module):
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
     ) -> List:
-        r"""
-        Hidden method to avoid code repetition in predict and predict_proba.
-        For parameter information, please, see the .predict() method
-        documentation
+        r"""Hidden method to avoid code repetition in predict and
+        predict_proba. For parameter information, please, see the .predict()
+        method documentation
         """
         if X_test is not None:
             test_set = WideDeepDataset(**X_test)

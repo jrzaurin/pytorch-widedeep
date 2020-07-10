@@ -25,14 +25,14 @@ target_multic = np.random.choice(3, 100)
 # Test that the model runs with the focal loss
 ##############################################################################
 @pytest.mark.parametrize(
-    "X_wide, X_deep, target, method, output_dim, probs_dim",
+    "X_wide, X_deep, target, method, pred_dim, probs_dim",
     [
         (X_wide, X_deep, target_binary, "binary", 1, 2),
         (X_wide, X_deep, target_multic, "multiclass", 3, 3),
     ],
 )
-def test_focal_loss(X_wide, X_deep, target, method, output_dim, probs_dim):
-    wide = Wide(100, output_dim)
+def test_focal_loss(X_wide, X_deep, target, method, pred_dim, probs_dim):
+    wide = Wide(100, pred_dim)
     deepdense = DeepDense(
         hidden_layers=[32, 16],
         dropout=[0.5, 0.5],
@@ -40,7 +40,7 @@ def test_focal_loss(X_wide, X_deep, target, method, output_dim, probs_dim):
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
-    model = WideDeep(wide=wide, deepdense=deepdense, output_dim=output_dim)
+    model = WideDeep(wide=wide, deepdense=deepdense, pred_dim=pred_dim)
     model.compile(method=method, verbose=0, with_focal_loss=True)
     model.fit(X_wide=X_wide, X_deep=X_deep, target=target)
     probs = model.predict_proba(X_wide=X_wide, X_deep=X_deep)

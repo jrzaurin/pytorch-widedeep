@@ -73,7 +73,7 @@ def test_initializers_1():
         deepdense=deepdense,
         deeptext=deeptext,
         deepimage=deepimage,
-        output_dim=1,
+        pred_dim=1,
     )
     cmodel = c(model)
 
@@ -118,7 +118,7 @@ def test_initializers_with_pattern():
         continuous_cols=colnames[-5:],
     )
     deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
-    model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, output_dim=1)
+    model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, pred_dim=1)
     cmodel = c(model)
     org_word_embed = []
     for n, p in cmodel.named_parameters():

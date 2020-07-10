@@ -46,9 +46,9 @@ class WidePreprocessor(BasePreprocessor):
     ----------
     wide_cols: List[str]
         List with the name of the columns that will be one-hot encoded and
-        pass through the Wide model
+        passed through the Wide model
     crossed_cols: List[Tuple[str, str]]
-        List of Tuples with the name of the columns that will be "crossed"
+        List of Tuples with the name of the columns that will be `'crossed'`
         and then one-hot encoded. e.g. [('education', 'occupation'), ...]
     already_dummies: List[str]
         List of columns that are already dummies/one-hot encoded, and
@@ -56,9 +56,9 @@ class WidePreprocessor(BasePreprocessor):
 
     Attributes
     ----------
-    one_hot_enc:
-        an instance of ``sklearn``'s ``OneHotEncoder``
-    wide_crossed_cols: `List`
+    one_hot_enc: :obj:`OneHotEncoder`
+        an instance of :class:`sklearn.preprocessing.OneHotEncoder`
+    wide_crossed_cols: :obj:`List`
         List with the names of all columns that will be one-hot encoded
 
     Examples
@@ -104,7 +104,8 @@ class WidePreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> Union[sparse_matrix, np.ndarray]:
-        """Returns the processed ``dataframe`` as an array or sparse matrix
+        """Returns the processed dataframe as a one hot encoded dense or
+        sparse matrix
         """
         try:
             self.one_hot_enc.categories_
@@ -149,13 +150,13 @@ class WidePreprocessor(BasePreprocessor):
             return df.copy()[self.wide_cols]
 
 
-class DeepPreprocessor(BasePreprocessor):
+class DensePreprocessor(BasePreprocessor):
     r"""Preprocessor to prepare the deepdense input dataset
 
     Parameters
     ----------
     embed_cols: List[Union[str, Tuple[str, int]]]
-        List containing the name of the columns that will be represented with
+        List containing the name of the columns that will be represented by
         embeddings or a Tuple with the name and the embedding dimension. e.g.:
         [('education',32), ('relationship',16)
     continuous_cols: List[str]
@@ -171,28 +172,29 @@ class DeepPreprocessor(BasePreprocessor):
 
     Attributes
     ----------
-    label_encoder: `LabelEncoder`
-        Instance of :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
-    embed_cols: `List`
-        List with the columns that will be represented with embeddings
-    embed_dim: `Dict`
-        Dict where keys are the embed cols and values are the embed dimensions
-    standardize_cols: `List`
+    label_encoder: :obj:`LabelEncoder`
+        see :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
+    embed_cols: :obj:`List`
+        List with the columns that will be represented by embeddings
+    embed_dim: :obj:`Dict`
+        Dictionary where keys are the embed cols and values are the embed
+        dimensions
+    standardize_cols: :obj:`List`
         List of the columns that will be standarized
-    deep_column_idx: `Dict`
-        Dict where keys are column names and values are column indexes. This
-        will be neccesary to slice tensors
-    scaler:
-        an instance of ``sklearn``'s ``StandardScaler``
+    deep_column_idx: :obj:`Dict`
+        Dictionary where keys are column names and values are column indexes.
+        This will be neccesary to slice tensors
+    scaler: :obj:`StandardScaler`
+        an instance of :class:`sklearn.preprocessing.StandardScaler`
 
     Examples
     --------
     >>> import pandas as pd
-    >>> from pytorch_widedeep.preprocessing import DeepPreprocessor
+    >>> from pytorch_widedeep.preprocessing import DensePreprocessor
     >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l'], 'age': [25, 40, 55]})
     >>> embed_cols = [('color',5), ('size',5)]
     >>> cont_cols = ['age']
-    >>> deep_preprocessor = DeepPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+    >>> deep_preprocessor = DensePreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
     >>> deep_preprocessor.fit_transform(df)
     array([[ 0.        ,  0.        , -1.22474487],
            [ 1.        ,  1.        ,  0.        ],
@@ -211,7 +213,7 @@ class DeepPreprocessor(BasePreprocessor):
         default_embed_dim: int = 8,
         already_standard: Optional[List[str]] = None,
     ):
-        super(DeepPreprocessor, self).__init__()
+        super(DensePreprocessor, self).__init__()
 
         self.embed_cols = embed_cols
         self.continuous_cols = continuous_cols
@@ -254,7 +256,7 @@ class DeepPreprocessor(BasePreprocessor):
                     self.scaler.mean_
                 except:
                     raise NotFittedError(
-                        "This DeepPreprocessor instance is not fitted yet. "
+                        "This DensePreprocessor instance is not fitted yet. "
                         "Call 'fit' with appropriate arguments before using this estimator."
                     )
                 df_std = df_cont[self.standardize_cols]
@@ -300,7 +302,7 @@ class TextPreprocessor(BasePreprocessor):
     Parameters
     ----------
     text_col: str
-        column in the input pd.DataFrame containing the texts
+        column in the input dataframe containing the texts
     max_vocab: int, default=30000
         Maximum number of token in the vocabulary
     min_freq: int, default=5
@@ -314,11 +316,11 @@ class TextPreprocessor(BasePreprocessor):
 
     Attributes
     ----------
-    vocab: `Vocab`
-        instance of ``Vocab``. See :class:`pytorch_widedeep.utils.fastai_transforms.Vocab`
-    tokens: `List`
+    vocab: :obj:`Vocab`
+        an instance of :class:`pytorch_widedeep.utils.fastai_transforms.Vocab`
+    tokens: :obj:`List`
         List with Lists of str containing the tokenized texts
-    embedding_matrix: `np.ndarray`
+    embedding_matrix: :obj:`np.ndarray`
         Array with the pretrained embeddings
 
     Examples
@@ -413,13 +415,11 @@ class ImagePreprocessor(BasePreprocessor):
 
     Attributes
     ----------
-    aap: Class, AspectAwarePreprocessor()
-        Preprocessing tool taken from Adrian Rosebrock's book "Deep Learning
-        for Computer Vision".
-    spp: Class, SimplePreprocessor()
-        Preprocessing tool taken from Adrian Rosebrock's book "Deep Learning
-        for Computer Vision".
-    normalise_metrics: Dict
+    aap: :obj:`AspectAwarePreprocessor`
+        an instance of :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
+    spp: :obj:`SimplePreprocessor`
+        an instance of :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`
+    normalise_metrics: :obj:`Dict`
         Dict containing the normalisation metrics of the image dataset, i.e.
         mean and std for the R, G and B channels
 
@@ -457,10 +457,14 @@ class ImagePreprocessor(BasePreprocessor):
         self.verbose = verbose
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        """Simply instantiates the Preprocessors ``AspectAwarePreprocessor`` and
-        ``SimplePreprocessor`` for image resizing. See
+        r"""Simply instantiates the Preprocessors
+        :obj:`AspectAwarePreprocessor`` and :obj:`SimplePreprocessor` for image
+        resizing.
+
+        See
         :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
         and :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`.
+
         """
         self.aap = AspectAwarePreprocessor(self.width, self.height)
         self.spp = SimplePreprocessor(self.width, self.height)

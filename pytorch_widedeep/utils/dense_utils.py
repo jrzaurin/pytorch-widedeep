@@ -21,16 +21,18 @@ class LabelEncoder(object):
     Parameters
     ----------
     columns_to_encode: List[str], Optional
-        List of strings containing the names of the columns to encode
+        List of strings containing the names of the columns to encode. If
+        ``None`` all columns of type ``object`` in the dataframe will be label
+        encoded.
 
     Attributes
     ----------
-    encoding_dict: `Dict`
+    encoding_dict: :obj:`Dict`
         Dictionary containing the encoding mappings in the format, e.g.
 
         `{'colname1': {'cat1': 0, 'cat2': 1, ...}, 'colname2': {'cat1': 0, 'cat2': 1, ...}, ...}`
 
-    inverse_encoding_dict: `Dict`
+    inverse_encoding_dict: :obj:`Dict`
         Dictionary containing the insverse encoding mappings in the format, e.g.
 
         `{'colname1': {0: 'cat1', 1: 'cat2', ...}, 'colname2': {0: 'cat1', 1: 'cat2', ...}, ...}`

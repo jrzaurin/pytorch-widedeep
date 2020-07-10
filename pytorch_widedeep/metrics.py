@@ -47,12 +47,12 @@ class MetricCallback(Callback):
 
 
 class CategoricalAccuracy(Metric):
-    """Class to calculate the categorical accuracy for multicategorical problems
+    r"""Class to calculate the categorical accuracy for multicategorical problems
 
     Parameters
     ----------
     top_k: int
-        Accuracy will be computed using the ``top_k`` most likely classes
+        Accuracy will be computed using the top k most likely classes
 
     Examples
     --------

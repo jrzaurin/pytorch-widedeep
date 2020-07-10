@@ -1,5 +1,5 @@
 from ._preprocessors import (
-    DeepPreprocessor,
+    DensePreprocessor,
     TextPreprocessor,
     WidePreprocessor,
     ImagePreprocessor,

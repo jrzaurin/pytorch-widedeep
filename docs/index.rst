@@ -4,7 +4,8 @@ pytorch-widedeep
 *A flexible package to combine tabular data with text and images using wide and deep models*
 
 Below there is an introduction to the two architectures available in
-`pytorch-widedeep`. If you prefer go straight to the Documentation
+``pytorch-widedeep``. If you prefer to learn about the utilities and
+components go straight to the Documentation.
 
 Documentation
 -------------
@@ -24,8 +25,8 @@ Introduction
 ------------
 ``pytorch-widedeep`` is based on Google's Wide and Deep Algorithm. Details of
 the original algorithm can be found in this nice `tutorial
-<https://www.tensorflow.org/tutorials/wide_and_deep>`_, and the nice research
-paper can be found `here <https://arxiv.org/abs/1606.07792>`_ [1].
+<https://www.tensorflow.org/tutorials/wide_and_deep>`_, and the `research
+paper <https://arxiv.org/abs/1606.07792>`_ [1].
 
 In general terms, ``pytorch-widedeep`` is a package to use deep learning with
 tabular data. In particular, is intended to facilitate the combination of text
@@ -59,12 +60,13 @@ In math terms, and following the notation in the `paper
 
 Where *'W'* are the weight matrices applied to the wide model and to the final
 activations of the deep models, *'a'* are these final activations, and
-&phi;(x) are the cross product transformations of the original features *'x'*.
-In case you are wondering what are *"cross product transformations"*, here is
-a quote taken directly from the paper: *"For binary features, a cross-product
-transformation (e.g., “AND(gender=female, language=en)”) is 1 if and only if
-the constituent features (“gender=female” and “language=en”) are all 1, and 0
-otherwise".*
+:math:`{\phi}` (x) are the cross product transformations of the original
+features *'x'*. In case you are wondering what are *"cross product
+transformations"*, here is a quote taken directly from the paper: *"For binary
+features, a cross-product transformation (e.g., “AND(gender=female,
+language=en)”) is 1 if and only if the constituent features (“gender=female”
+and “language=en”) are all 1, and 0 otherwise".* Finally, :math:`{\sigma}` (.)
+is the activation function.
 
 
 **Architecture 2**

@@ -112,11 +112,11 @@ class Callback(object):
 
 
 class History(Callback):
-    r"""Callback that records events into a `History` object.
+    r"""Callback that records events into a :obj:`History` object.
 
-    This callback runs by default within ``WideDeep``. See
-    :class:`pytorch_widedeep.models.wide_deep.WideDeep`. Is included here for
-    completion.
+    This callback runs by default within :obj:`WideDeep`. See
+    :class:`pytorch_widedeep.models.wide_deep.WideDeep`. Documentation ss
+    included here for completion.
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):
@@ -137,9 +137,11 @@ class History(Callback):
 
 
 class LRHistory(Callback):
-    r"""Saves the learning rates during training. The saving procedure is a
-    bit convoluted given the fact that non-cyclic learning rates and cyclic
-    learning rates are called at different stages during training.
+    r"""Saves the learning rates during training.
+
+    The saving procedure is a bit convoluted given the fact that non-cyclic
+    learning rates and cyclic learning rates are called at different stages
+    during training.
 
     Parameters
     ----------
@@ -239,35 +241,35 @@ class ModelCheckpoint(Callback):
     r"""Saves the model after every epoch.
 
     This class is almost identical to the corresponding keras class.
-    Therefore, credit to the Keras Team.
+    Therefore, **credit** to the Keras Team.
 
     Parameters
     ----------
-    filepath: str,
+    filepath: str
         Full path to save the output weights. It must contain only the root of
-        the filenames. Epoch number and ``.pt`` extension (for pytorch) will be
-        added. e.g. ``filepath="path/to/output_weights/weights_out"``
-        And the saved files in that directory will be named
-        ``weights_out_1.pt``, ``weights_out_2.pt``, ...
-    monitor: str, default='val_loss'
-        quantity to monitor. ``ModelCheckpoint`` will infer if this is a loss
-        (i.e. contains the str `'loss'`) or a metric (i.e. contains the str
-        `'acc'` or starts with `'fmeasure'`).
-    verbose:int, default=0,
+        the filenames. Epoch number and ``.pt`` extension (for pytorch) will
+        be added. e.g. ``filepath="path/to/output_weights/weights_out"`` And
+        the saved files in that directory will be named: ``weights_out_1.pt,
+        weights_out_2.pt, ...``
+    monitor: str, Default='val_loss'
+        quantity to monitor. :obj:`ModelCheckpoint` will infer if this is a
+        loss (i.e. contains the str `'loss'`) or a metric (i.e. contains the
+        str `'acc'` or starts with `'fmeasure'`).
+    verbose:int, Default=0,
         verbosity mode
-    save_best_only: bool, default=False,
+    save_best_only: bool, Default=False,
         the latest best model according to the quantity monitored will not be
         overwritten.
-    mode: str, default='auto',
+    mode: str, Default='auto',
         If ``save_best_only=True``, the decision to overwrite the current save
         file is made based on either the maximization or the minimization of
         the monitored quantity. For `'val_acc'`, this should be `'max'`, for
         `'val_loss'` this should be `'min'`, etc. In `'auto'` mode, the
         direction is automatically inferred from the name of the monitored
         quantity.
-    period: int, default=1,
+    period: int, Default=1,
         Interval (number of epochs) between checkpoints.
-    max_save: int, default=-1
+    max_save: int, Default=-1
         Maximum number of outputs to save. If -1 will save all outputs
 
     Examples

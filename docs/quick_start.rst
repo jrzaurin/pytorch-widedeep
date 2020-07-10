@@ -23,8 +23,8 @@ The following code snippet is not directly related to ``pytorch-widedeep``.
     df_train, df_test = train_test_split(df, test_size=0.2, stratify=df.income_label)
 
 
-Fit a wide and deep model
---------------------------
+Prepare the wide and deep columns
+---------------------------------
 
 .. code-block:: python
 
@@ -50,13 +50,19 @@ Fit a wide and deep model
     # target
     target = df_train[target_col].values
 
+
+Preprocessing and model components definition
+---------------------------------------------
+
+.. code-block:: python
+
     # wide
     preprocess_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=cross_cols)
     X_wide = preprocess_wide.fit_transform(df_train)
     wide = Wide(wide_dim=X_wide.shape[1], output_dim=1)
 
     # deepdense
-    preprocess_deep = DeepPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+    preprocess_deep = DensePreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
     X_deep = preprocess_deep.fit_transform(df_train)
     deepdense = DeepDense(
         hidden_layers=[64, 32],
@@ -64,6 +70,12 @@ Fit a wide and deep model
         embed_input=preprocess_deep.embeddings_input,
         continuous_cols=cont_cols,
     )
+
+
+Build, compile, fit and predict
+-------------------------------
+
+.. code-block:: python
 
     # build, compile and fit
     model = WideDeep(wide=wide, deepdense=deepdense)

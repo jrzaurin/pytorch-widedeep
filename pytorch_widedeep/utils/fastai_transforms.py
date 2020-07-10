@@ -92,7 +92,7 @@ class BaseTokenizer:
 
 
 class SpacyTokenizer(BaseTokenizer):
-    """Wrapper around a spacy tokenizer to make it a ``BaseTokenizer``.
+    """Wrapper around a spacy tokenizer to make it a :obj:`BaseTokenizer`.
 
     Parameters
     ----------
@@ -118,7 +118,7 @@ class SpacyTokenizer(BaseTokenizer):
 
         Parameters
         ----------
-        toks: Collection of str
+        toks: Collection[str]
             `List`, `Tuple`, `Set` or `Dictionary` with special cases
             to add to the tokenizer
         """
@@ -225,16 +225,15 @@ class Tokenizer:
     lang: str, Default = "en",
         Text's Language
     pre_rules: ListRules, Default = None,
-        Preprocessing Rules
+        Custom type, see :obj:`pytorch_widedeep.wdtypes`. Preprocessing Rules
     post_rules: ListRules, Default = None,
-        Postprocessing Rules
-    special_cases: Collection of str, Default= None,
-        special cases to be added to the tokenizer via `Spacy``'s
+        Custom type, see :obj:`pytorch_widedeep.wdtypes`. Postprocessing Rules
+    special_cases: Collection[str], Default= None,
+        special cases to be added to the tokenizer via ``Spacy``'s
         ``add_special_case`` method
     n_cpus: int, Default = None
         number of CPUs to used during the tokenization process
     """
-
     def __init__(
         self,
         tok_func: Callable = SpacyTokenizer,
@@ -267,8 +266,8 @@ class Tokenizer:
         ----------
         t: str
             text to be processed and tokenized
-        tok: ``BaseTokenizer``
-            Instance of ``BaseTokenizer``
+        tok: BaseTokenizer
+            Instance of :obj:`BaseTokenizer`
         """
         for rule in self.pre_rules:
             t = rule(t)
@@ -317,15 +316,14 @@ class Vocab:
 
     Parameters
     ----------
-    itos: Collection of str
+    itos: Collection[str]
         `index to str`. Collection of srt that are the tokens of the vocabulary
 
     Attributes
     ----------
     stoi: defaultdict
-        `str to index`. Dict containing the tokens of the vocabulary and their
-        corresponding index
-
+        `str to index`. Dictionary containing the tokens of the vocabulary and
+        their corresponding index
     """
 
     def __init__(self, itos: Collection[str]):
@@ -360,7 +358,8 @@ class Vocab:
         Parameters
         ----------
         tokens: Tokens
-            collection of collection of str (e.g. list of tokenized sentences)
+            Custom type, see :obj:`pytorch_widedeep.wdtypes`. Collection of
+            collection of str (e.g. list of tokenized sentences)
         max_vocab: int
             maximum vocabulary size
         min_freq: int
@@ -402,6 +401,6 @@ class Vocab:
 
     @classmethod
     def load(cls, path):
-        """Load an intance of ``Vocab`` contained in ``path``"""
+        """Load an intance of :obj:`Vocab` contained in ``path``"""
         itos = pickle.load(open(path, "rb"))
         return cls(itos)

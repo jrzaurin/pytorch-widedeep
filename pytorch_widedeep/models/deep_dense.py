@@ -14,8 +14,8 @@ def dense_layer(inp: int, out: int, p: float = 0.0, bn=False):
 
 
 class DeepDense(nn.Module):
-    r"""Dense branch of the deep side of the model receiving continuous columns
-    and the embeddings for categorical columns.
+    r"""Dense branch of the deep side of the model receiving continuous
+    columns and the embeddings from categorical columns.
 
     This class combines embedding representations of the categorical features
     with numerical (aka continuous) features. These are then passed through a
@@ -29,7 +29,7 @@ class DeepDense(nn.Module):
         0, 'relationship': 1, 'workclass': 2, ...}
     hidden_layers: List
         List with the number of neurons per dense layer. e.g: [64,32]
-    batchnorm: Boolean
+    batchnorm: bool
         Boolean indicating whether or not to include batch normalizatin in the
         dense layers
     dropout: List, Optional
@@ -47,12 +47,12 @@ class DeepDense(nn.Module):
 
     Attributes
     ----------
-    dense: ``nn.Sequential``
+    dense: :obj:`nn.Sequential`
         model of dense layers that will receive the concatenation of the
         embeddings and the continuous columns
-    embed_layers: ``nn.ModuleDict``
+    embed_layers: :obj:`nn.ModuleDict`
         ModuleDict with the embedding layers
-    output_dim: ``int``
+    output_dim: :obj:`int`
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
 
@@ -127,6 +127,9 @@ class DeepDense(nn.Module):
         self.output_dim = hidden_layers[-1]
 
     def forward(self, X: Tensor) -> Tensor:  # type: ignore
+        r"""Forward pass that concatenates the continuous features with the
+        embeddings. The result is then passed through a series of dense layers
+        """
         if self.embed_input is not None:
             x = [
                 self.embed_layers["emb_layer_" + col](
