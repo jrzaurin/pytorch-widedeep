@@ -201,13 +201,13 @@ class WideDeep(nn.Module):
             if self.deepimage is not None:
                 deepside = torch.cat([deepside, self.deepimage(X["deepimage"])], axis=1)  # type: ignore
             deepside_out = self.deephead(deepside)
-            return out.add_(deepside_out)
+            return out.add(deepside_out)
         else:
-            out.add_(self.deepdense(X["deepdense"]))
+            out.add(self.deepdense(X["deepdense"]))
             if self.deeptext is not None:
-                out.add_(self.deeptext(X["deeptext"]))
+                out.add(self.deeptext(X["deeptext"]))
             if self.deepimage is not None:
-                out.add_(self.deepimage(X["deepimage"]))
+                out.add(self.deepimage(X["deepimage"]))
             return out
 
     def compile(
