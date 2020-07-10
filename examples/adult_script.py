@@ -53,7 +53,7 @@ if __name__ == "__main__":
     )
     X_deep = prepare_deep.fit_transform(df)
 
-    wide = Wide(wide_dim=X_wide.shape[1], output_dim=1)
+    wide = Wide(wide_dim=X_wide.shape[1], pred_dim=1)
     deepdense = DeepDense(
         hidden_layers=[64, 32],
         dropout=[0.2, 0.2],
