@@ -31,6 +31,6 @@ class FocalLoss(nn.Module):
             binary_target = binary_target.cuda()
         binary_target = binary_target.contiguous()
         weight = self.get_weight(input, binary_target)
-        return F.binary_cross_entropy_with_logits(
+        return F.binary_cross_entropy(
             input, binary_target, weight, reduction="mean"
         )
