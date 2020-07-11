@@ -31,6 +31,15 @@ class FocalLoss(nn.Module):
             binary_target = binary_target.cuda()
         binary_target = binary_target.contiguous()
         weight = self.get_weight(input, binary_target)
-        return F.binary_cross_entropy(
-            input, binary_target, weight, reduction="mean"
-        )
+
+        if num_class == 2:
+            # if is a binary classification problem the inputs have already
+            # gone through a sigmoid
+            return F.binary_cross_entropy(
+                input, binary_target, weight, reduction="mean"
+            )
+        else:
+            # if is multiclass they have not gone through softmax
+            return F.binary_cross_entropy_with_logits(
+                input, binary_target, weight, reduction="mean"
+            )
