@@ -743,21 +743,13 @@ class WideDeep(nn.Module):
             cat_embed_dict[value] = embed_mtx[idx]
         return cat_embed_dict
 
-    def _activation_fn(self, inp: Tensor) -> Tensor:
-        if self.method == "binary":
-            return torch.sigmoid(inp)
-        else:
-            # F.cross_entropy will apply logSoftmax to the preds in the case
-            # of 'multiclass'
-            return inp
-
     def _loss_fn(self, y_pred: Tensor, y_true: Tensor) -> Tensor:  # type: ignore
         if self.with_focal_loss:
             return FocalLoss(self.alpha, self.gamma)(y_pred, y_true)
         if self.method == "regression":
             return F.mse_loss(y_pred, y_true.view(-1, 1))
         if self.method == "binary":
-            return F.binary_cross_entropy(
+            return F.binary_cross_entropy_with_logits(
                 y_pred, y_true.view(-1, 1), weight=self.class_weight
             )
         if self.method == "multiclass":
@@ -909,9 +901,7 @@ class WideDeep(nn.Module):
             )
         # This is not the most elegant solution, but is a soluton "in-between"
         # a non elegant one and re-factoring the whole code
-        warmer = WarmUp(
-            self._activation_fn, self._loss_fn, self.metric, self.method, self.verbose
-        )
+        warmer = WarmUp(self._loss_fn, self.metric, self.method, self.verbose)
         warmer.warm_all(self.wide, "wide", loader, n_epochs, max_lr)
         warmer.warm_all(self.deepdense, "deepdense", loader, n_epochs, max_lr)
         if self.deeptext:
@@ -986,7 +976,7 @@ class WideDeep(nn.Module):
         y = y.cuda() if use_cuda else y
 
         self.optimizer.zero_grad()
-        y_pred = self._activation_fn(self.forward(X))
+        y_pred = self.forward(X)
         loss = self._loss_fn(y_pred, y)
         loss.backward()
         self.optimizer.step()
@@ -995,7 +985,10 @@ class WideDeep(nn.Module):
         avg_loss = self.train_running_loss / (batch_idx + 1)
 
         if self.metric is not None:
-            acc = self.metric(y_pred, y)
+            if self.method == "binary":
+                acc = self.metric(torch.sigmoid(y_pred), y)
+            if self.method == "multiclass":
+                acc = self.metric(F.softmax(y_pred, dim=1), y)
             return acc, avg_loss
         else:
             return None, avg_loss
@@ -1008,13 +1001,16 @@ class WideDeep(nn.Module):
             y = target.float() if self.method != "multiclass" else target
             y = y.cuda() if use_cuda else y
 
-            y_pred = self._activation_fn(self.forward(X))
+            y_pred = self.forward(X)
             loss = self._loss_fn(y_pred, y)
             self.valid_running_loss += loss.item()
             avg_loss = self.valid_running_loss / (batch_idx + 1)
 
         if self.metric is not None:
-            acc = self.metric(y_pred, y)
+            if self.method == "binary":
+                acc = self.metric(torch.sigmoid(y_pred), y)
+            if self.method == "multiclass":
+                acc = self.metric(F.softmax(y_pred, dim=1), y)
             return acc, avg_loss
         else:
             return None, avg_loss
@@ -1056,7 +1052,9 @@ class WideDeep(nn.Module):
                 for i, data in zip(t, test_loader):
                     t.set_description("predict")
                     X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
-                    preds = self._activation_fn(self.forward(X))
+                    preds = self.forward(X)
+                    if self.method == "binary":
+                        preds = torch.sigmoid(preds)
                     if self.method == "multiclass":
                         preds = F.softmax(preds, dim=1)
                     preds = preds.cpu().data.numpy()

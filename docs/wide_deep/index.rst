@@ -11,4 +11,5 @@ Objects
 
 	metrics
 	callbacks
+	losses
 	wide_deep
