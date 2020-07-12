@@ -76,6 +76,7 @@ class WDset(Dataset):
 # def activ_fn(inp):
 #     return torch.sigmoid(inp)
 
+
 def loss_fn(y_pred, y_true):
     return F.binary_cross_entropy_with_logits(y_pred, y_true.view(-1, 1))
 

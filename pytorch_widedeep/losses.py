@@ -19,6 +19,7 @@ class FocalLoss(nn.Module):
     gamma: float
         Focal Loss ``gamma`` parameter
     """
+
     def __init__(self, alpha: float = 0.25, gamma: float = 1.0):
         super().__init__()
         self.alpha = alpha
