@@ -1,9 +1,9 @@
-sphinx
-sphinx_rtd_theme
-recommonmark
-sphinx-markdown-tables
-sphinx-copybutton
-sphinx-autodoc-typehints
+sphinx==3.1.1
+sphinx_rtd_theme==0.5.0
+recommonmark==0.6.0
+sphinx-markdown-tables==0.0.15
+sphinx-copybutton==0.2.12
+sphinx-autodoc-typehints==1.11.0
 pandas
 numpy
 scipy
