@@ -1,0 +1,17 @@
+sphinx
+sphinx_rtd_theme
+recommonmark
+sphinx-markdown-tables
+sphinx-copybutton
+sphinx-autodoc-typehints
+pandas
+numpy
+scipy
+scikit-learn
+gensim
+spacy
+opencv-contrib-python
+imutils
+tqdm
+torch
+torchvision
