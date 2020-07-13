@@ -25,6 +25,7 @@ extras = {}
 extras["test"] = ["pytest"]
 extras["docs"] = [
     "sphinx",
+    "sphinx_rtd_theme",
     "recommonmark",
     "sphinx-markdown-tables",
     "sphinx-copybutton",
