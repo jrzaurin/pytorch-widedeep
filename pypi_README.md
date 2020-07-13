@@ -3,6 +3,8 @@
 A flexible package to combine tabular data with text and images using wide and
 deep models.
 
+**Documentation:** [https://pytorch-widedeep.readthedocs.io](https://pytorch-widedeep.readthedocs.io/en/latest/index.html)
+
 ### Introduction
 
 `pytorch-widedeep` is based on Google's Wide and Deep Algorithm. Details of
