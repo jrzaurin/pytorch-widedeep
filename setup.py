@@ -26,7 +26,7 @@ setup_kwargs = {
     "name": "pytorch-widedeep",
     "version": version,
     "description": "Combine tabular data with text and images using Wide and Deep models in Pytorch",
-    "long_description": open("docs/pypiREADME.md", "r", encoding="utf-8").read(),
+    "long_description": open("pypi_README.md", "r", encoding="utf-8").read(),
     "long_description_content_type": "text/markdown",
     # "long_description": long_description,
     "author": "Javier Rodriguez Zaurin",
