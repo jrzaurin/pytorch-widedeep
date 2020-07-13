@@ -62,7 +62,7 @@ using `Wide` and `DeepDense` and defaults settings.
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from pytorch_widedeep.preprocessing import WidePreprocessor, DeepPreprocessor
+from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
 from pytorch_widedeep.models import Wide, DeepDense, WideDeep
 from pytorch_widedeep.metrics import BinaryAccuracy
 
@@ -98,10 +98,10 @@ target = df_train[target_col].values
 # wide
 preprocess_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=cross_cols)
 X_wide = preprocess_wide.fit_transform(df_train)
-wide = Wide(wide_dim=X_wide.shape[1], output_dim=1)
+wide = Wide(wide_dim=X_wide.shape[1], pred_dim=1)
 
 # deepdense
-preprocess_deep = DeepPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+preprocess_deep = DensePreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
 X_deep = preprocess_deep.fit_transform(df_train)
 deepdense = DeepDense(
     hidden_layers=[64, 32],

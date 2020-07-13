@@ -28,6 +28,10 @@ Prepare the wide and deep columns
 
 .. code-block:: python
 
+    from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
+    from pytorch_widedeep.models import Wide, DeepDense, WideDeep
+    from pytorch_widedeep.metrics import BinaryAccuracy
+
     # prepare wide, crossed, embedding and continuous columns
     wide_cols = [
         "education",
@@ -59,7 +63,7 @@ Preprocessing and model components definition
     # wide
     preprocess_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=cross_cols)
     X_wide = preprocess_wide.fit_transform(df_train)
-    wide = Wide(wide_dim=X_wide.shape[1], output_dim=1)
+    wide = Wide(wide_dim=X_wide.shape[1], pred_dim=1)
 
     # deepdense
     preprocess_deep = DensePreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
