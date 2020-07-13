@@ -1,19 +1,23 @@
-import pandas as pd
 import torch
-
+import pandas as pd
 from torchvision.transforms import ToTensor, Normalize
 
+from pytorch_widedeep.optim import RAdam
+from pytorch_widedeep.models import (
+    Wide,
+    DeepText,
+    WideDeep,
+    DeepDense,
+    DeepImage,
+)
+from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_widedeep.initializers import KaimingNormal
 from pytorch_widedeep.preprocessing import (
-    WidePreprocessor,
-    DeepPreprocessor,
     TextPreprocessor,
+    WidePreprocessor,
+    DensePreprocessor,
     ImagePreprocessor,
 )
-from pytorch_widedeep.models import Wide, DeepDense, DeepText, DeepImage, WideDeep
-from pytorch_widedeep.initializers import KaimingNormal
-from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
-from pytorch_widedeep.optim import RAdam
-
 
 use_cuda = torch.cuda.is_available()
 
@@ -47,7 +51,7 @@ if __name__ == "__main__":
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
 
-    prepare_deep = DeepPreprocessor(
+    prepare_deep = DensePreprocessor(
         embed_cols=cat_embed_cols, continuous_cols=continuous_cols
     )
     X_deep = prepare_deep.fit_transform(df)
@@ -60,7 +64,7 @@ if __name__ == "__main__":
     image_processor = ImagePreprocessor(img_col=img_col, img_path=img_path)
     X_images = image_processor.fit_transform(df)
 
-    wide = Wide(wide_dim=X_wide.shape[1], output_dim=1)
+    wide = Wide(wide_dim=X_wide.shape[1], pred_dim=1)
     deepdense = DeepDense(
         hidden_layers=[64, 32],
         dropout=[0.2, 0.2],

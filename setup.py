@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # flake8: noqa
 import os
+
 import setuptools
 
 pwd = os.path.dirname(__file__)
@@ -20,35 +21,14 @@ with open(os.path.join(pwd, "VERSION")) as f:
     assert len(version.split(".")) == 3, "bad version spec"
     majorminor = version.rsplit(".", 1)[0]
 
-
-# with open("README.md", "r") as f:
-#     long_description = f.read()
-
-long_description = """
-pytorch-widedeep: Modular and flexible package to combine tabular data with text and
-images using Wide and Deep models in Pytorch
-
-For an introduction to the package and a quick start, go to:
-
-    https://github.com/jrzaurin/pytorch-widedeep
-
-For a temporal documentation, go to:
-
-    https://github.com/jrzaurin/pytorch-widedeep/tree/master/docs
-
-You can find the source code at:
-
-    https://github.com/jrzaurin/pytorch-widedeep/tree/master/pytorch_widedeep
-
-"""
-
 # main setup kw args
 setup_kwargs = {
     "name": "pytorch-widedeep",
     "version": version,
     "description": "Combine tabular data with text and images using Wide and Deep models in Pytorch",
-    # "long_description_content_type": 'text/markdown',
-    "long_description": long_description,
+    "long_description": open("pypi_README.md", "r", encoding="utf-8").read(),
+    "long_description_content_type": "text/markdown",
+    # "long_description": long_description,
     "author": "Javier Rodriguez Zaurin",
     "author_email": "jrzaurin@gmail.com",
     "url": "https://github.com/jrzaurin/pytorch-widedeep",

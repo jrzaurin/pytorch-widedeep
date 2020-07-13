@@ -1,10 +1,17 @@
-import numpy as np
 import string
-import pytest
 
+import numpy as np
+import pytest
 from torchvision.transforms import ToTensor, Normalize
 from sklearn.model_selection import train_test_split
-from pytorch_widedeep.models import Wide, DeepDense, DeepText, DeepImage, WideDeep
+
+from pytorch_widedeep.models import (
+    Wide,
+    DeepText,
+    WideDeep,
+    DeepDense,
+    DeepImage,
+)
 
 # Wide array
 X_wide = np.random.choice(2, (100, 100), p=[0.8, 0.2])

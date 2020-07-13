@@ -28,3 +28,8 @@ sftp*-config.json
 
 #mypy
 .mypy_cache
+
+# Documentation
+_build
+# _static
+_templates

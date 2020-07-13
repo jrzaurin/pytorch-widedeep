@@ -1,11 +1,10 @@
 import numpy as np
-import pandas as pd
 import torch
+import pandas as pd
 
-from pytorch_widedeep.preprocessing import WidePreprocessor, DeepPreprocessor
-from pytorch_widedeep.models import Wide, DeepDense, WideDeep
-
+from pytorch_widedeep.models import Wide, WideDeep, DeepDense
 from pytorch_widedeep.metrics import CategoricalAccuracy
+from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
 
 use_cuda = torch.cuda.is_available()
 
@@ -36,11 +35,11 @@ if __name__ == "__main__":
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
 
-    prepare_deep = DeepPreprocessor(
+    prepare_deep = DensePreprocessor(
         embed_cols=cat_embed_cols, continuous_cols=continuous_cols
     )
     X_deep = prepare_deep.fit_transform(df)
-    wide = Wide(wide_dim=X_wide.shape[1], output_dim=3)
+    wide = Wide(wide_dim=X_wide.shape[1], pred_dim=3)
     deepdense = DeepDense(
         hidden_layers=[64, 32],
         dropout=[0.2, 0.2],
@@ -48,7 +47,7 @@ if __name__ == "__main__":
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
     )
-    model = WideDeep(wide=wide, deepdense=deepdense, output_dim=3)
+    model = WideDeep(wide=wide, deepdense=deepdense, pred_dim=3)
     model.compile(method="multiclass", metrics=[CategoricalAccuracy])
 
     model.fit(

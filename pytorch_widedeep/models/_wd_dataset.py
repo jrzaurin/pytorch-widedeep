@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-
 from sklearn.utils import Bunch
 from torch.utils.data import Dataset
 

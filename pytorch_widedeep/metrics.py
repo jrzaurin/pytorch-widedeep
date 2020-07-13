@@ -1,7 +1,7 @@
 import numpy as np
 
-from .callbacks import Callback
 from .wdtypes import *
+from .callbacks import Callback
 
 
 class Metric(object):
@@ -47,6 +47,21 @@ class MetricCallback(Callback):
 
 
 class CategoricalAccuracy(Metric):
+    r"""Class to calculate the categorical accuracy for multicategorical problems
+
+    Parameters
+    ----------
+    top_k: int
+        Accuracy will be computed using the top k most likely classes
+
+    Examples
+    --------
+    >>> y_true = torch.from_numpy(np.random.choice(3, 100))
+    >>> y_pred = torch.from_numpy(np.random.rand(100, 3))
+    >>> metric = CategoricalAccuracy(top_k=top_k)
+    >>> acc = metric(y_pred, y_true)
+    """
+
     def __init__(self, top_k=1):
         self.top_k = top_k
         self.correct_count = 0
@@ -55,6 +70,9 @@ class CategoricalAccuracy(Metric):
         self._name = "acc"
 
     def reset(self):
+        """
+        resets counters to 0
+        """
         self.correct_count = 0
         self.total_count = 0
 
@@ -68,6 +86,16 @@ class CategoricalAccuracy(Metric):
 
 
 class BinaryAccuracy(Metric):
+    """Class to calculate accuracy for binary classification problems
+
+    Examples
+    --------
+    >>> y_true = torch.from_numpy(np.random.choice(2, 100)).float()
+    >>> y_pred = deepcopy(y_true.view(-1, 1)).float()
+    >>> metric = BinaryAccuracy()
+    >>> acc = metric(y_pred, y_true)
+    """
+
     def __init__(self):
         self.correct_count = 0
         self.total_count = 0
@@ -75,6 +103,9 @@ class BinaryAccuracy(Metric):
         self._name = "acc"
 
     def reset(self):
+        """
+        resets counters to 0
+        """
         self.correct_count = 0
         self.total_count = 0
 

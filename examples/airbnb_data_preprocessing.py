@@ -1,15 +1,16 @@
 # coding: utf-8
-import numpy as np
-import pandas as pd
-import warnings
 import os
-import gender_guesser.detector as gender
-
-from sklearn.preprocessing import MultiLabelBinarizer
+import warnings
+from pathlib import Path
 from functools import reduce
 from itertools import chain
 from collections import Counter
-from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import MultiLabelBinarizer
+
+import gender_guesser.detector as gender
 
 warnings.filterwarnings("ignore")
 

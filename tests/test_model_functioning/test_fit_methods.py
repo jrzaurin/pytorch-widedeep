@@ -1,8 +1,9 @@
-import numpy as np
 import string
+
+import numpy as np
 import pytest
 
-from pytorch_widedeep.models import Wide, DeepDense, WideDeep
+from pytorch_widedeep.models import Wide, WideDeep, DeepDense
 
 # Wide array
 X_wide = np.random.choice(2, (100, 100), p=[0.8, 0.2])
@@ -29,7 +30,7 @@ X_test = {"X_wide": X_wide, "X_deep": X_deep}
 # work well
 ##############################################################################
 @pytest.mark.parametrize(
-    "X_wide, X_deep, target, method, X_wide_test, X_deep_test, X_test, output_dim, probs_dim",
+    "X_wide, X_deep, target, method, X_wide_test, X_deep_test, X_test, pred_dim, probs_dim",
     [
         (X_wide, X_deep, target_regres, "regression", X_wide, X_deep, None, 1, None),
         (X_wide, X_deep, target_binary, "binary", X_wide, X_deep, None, 1, 2),
@@ -47,10 +48,10 @@ def test_fit_methods(
     X_wide_test,
     X_deep_test,
     X_test,
-    output_dim,
+    pred_dim,
     probs_dim,
 ):
-    wide = Wide(100, output_dim)
+    wide = Wide(100, pred_dim)
     deepdense = DeepDense(
         hidden_layers=[32, 16],
         dropout=[0.5, 0.5],
@@ -58,7 +59,7 @@ def test_fit_methods(
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
-    model = WideDeep(wide=wide, deepdense=deepdense, output_dim=output_dim)
+    model = WideDeep(wide=wide, deepdense=deepdense, pred_dim=pred_dim)
     model.compile(method=method, verbose=0)
     model.fit(X_wide=X_wide, X_deep=X_deep, target=target)
     preds = model.predict(X_wide=X_wide, X_deep=X_deep, X_test=X_test)

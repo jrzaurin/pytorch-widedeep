@@ -1,35 +1,37 @@
-import numpy as np
-import torch
 import warnings
 
+import numpy as np
+import torch
 from torch import nn
+
 from ..wdtypes import *
 from .deep_dense import dense_layer
 
 
 class DeepText(nn.Module):
     r"""Standard text classifier/regressor comprised by a stack of RNNs (LSTMs).
+
     In addition, there is the option to add a Fully Connected (FC) set of dense
-    layers (FC-Head, referred as 'texthead') on top of the stack of RNNs
+    layers (referred as `texthead`) on top of the stack of RNNs
 
     Parameters
     ----------
-    vocab_size: Int
+    vocab_size: int
         number of words in the vocabulary
-    hidden_dim: Int
+    hidden_dim: int
         number of features in the hidden state h of the LSTM
-    n_layers: Int
+    n_layers: int
         number of recurrent layers
-    rnn_dropout: Int
+    rnn_dropout: int
         dropout for the dropout layer on the outputs of each LSTM layer except
         the last layer
-    bidirectional: Boolean
+    bidirectional: bool
         indicates whether the staked RNNs are bidirectional
-    padding_idx: Int
+    padding_idx: int
         index of the padding token in the padded-tokenised sequences. default:
-        1. I use the fastai Tokenizer where the token index 0 is reserved for
-        the  unknown word token
-    embed_dim: Int, Optional
+        1. I use the ``fastai`` tokenizer where the token index 0 is reserved
+        for the `'unknown'` word token
+    embed_dim: int, Optional
         Dimension of the word embedding matrix
     embedding_matrix: np.ndarray, Optional
          Pretrained word embeddings
@@ -38,19 +40,20 @@ class DeepText(nn.Module):
         e.g: [128, 64]
     head_dropout: List, Optional
         List with the dropout between the dense layers. e.g: [0.5, 0.5].
-    head_batchnorm: Boolean, Optional
+    head_batchnorm: bool, Optional
         Whether or not to include batch normalizatin in the dense layers that
-        form the texthead
+        form the `'texthead'`
 
     Attributes
     ----------
-    word_embed: nn.Module
+    word_embed: :obj:`nn.Module`
         word embedding matrix
-    rnn: nn.Module
+    rnn: :obj:`nn.Module`
         Stack of LSTMs
-    texthead: nn.Sequential, Optional
-        Stack of dense layers
-    output_dim: Int
+    texthead: :obj:`nn.Sequential`
+        Stack of dense layers on top of the RNN. This will only exists if
+        `head_layers` is not `None`
+    output_dim: :obj:`int`
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
 
@@ -156,7 +159,9 @@ class DeepText(nn.Module):
             self.output_dim = head_layers[-1]
 
     def forward(self, X: Tensor) -> Tensor:  # type: ignore
-
+        r"""Forward pass that is simply a standard RNN-based
+        classifier/regressor with an optional `'Fully Connected head'`
+        """
         embed = self.word_embed(X.long())
         o, (h, c) = self.rnn(embed)
         if self.bidirectional:

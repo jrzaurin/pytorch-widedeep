@@ -3,13 +3,14 @@ Code here is mostly based on the code from the torchsample and Keras packages
 
 CREDIT TO THE TORCHSAMPLE AND KERAS TEAMS
 """
-import numpy as np
 import os
 import datetime
 import warnings
+from copy import deepcopy
+
+import numpy as np
 import torch
 
-from copy import deepcopy
 from .wdtypes import *
 
 
@@ -111,8 +112,11 @@ class Callback(object):
 
 
 class History(Callback):
-    """
-    Callback that records events into a `History` object.
+    r"""Callback that records events into a :obj:`History` object.
+
+    This callback runs by default within :obj:`WideDeep`. See
+    :class:`pytorch_widedeep.models.wide_deep.WideDeep`. Documentation ss
+    included here for completion.
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):
@@ -133,10 +137,27 @@ class History(Callback):
 
 
 class LRHistory(Callback):
-    r"""
-    Save the learning rates during training. Given the fact that non-cyclic
+    r"""Saves the learning rates during training.
+
+    The saving procedure is a bit convoluted given the fact that non-cyclic
     learning rates and cyclic learning rates are called at different stages
-    during training, the saving procedure is a bit convoluted.
+    during training.
+
+    Parameters
+    ----------
+    n_epochs: int
+        number of epochs durint training. This is neccesary because different
+        logging routines for different schedulers are used on epoch begin and
+        on epoch end
+
+    Examples
+    --------
+
+    Callbacks are passed as input parameters when calling ``compile``. see
+    :class:`pytorch_widedeep.models.wide_deep.WideDeep`
+
+    >>> # Do not run
+    >>> model.compile(callbacks=[LRHistory(n_epochs=10)])
     """
 
     def __init__(self, n_epochs):
@@ -217,37 +238,48 @@ class LRHistory(Callback):
 
 
 class ModelCheckpoint(Callback):
-    r"""
-    Save the model after every epoch. This class is almost identical to the
-    corresponding keras class. Therefore, credit to the Keras Team.
+    r"""Saves the model after every epoch.
+
+    This class is almost identical to the corresponding keras class.
+    Therefore, **credit** to the Keras Team.
 
     Parameters
     ----------
-    filepath: Str,
+    filepath: str
         Full path to save the output weights. It must contain only the root of
-        the filenames. Epoch number and '.pt' extension (for pytorch) will be
-        added.
-        e.g. filepath="path/to/output_weights/weights_out"
-        And the saved files in that directory will be named
-        weights_out_1.pt
-        weights_out_2.pt
-        ...
-    monitor: Str, default='val_loss'
-        quantity to monitor
-    verbose:Int, default=0,
-    save_best_only: Boolean, default=False,
+        the filenames. Epoch number and ``.pt`` extension (for pytorch) will
+        be added. e.g. ``filepath="path/to/output_weights/weights_out"`` And
+        the saved files in that directory will be named: ``weights_out_1.pt,
+        weights_out_2.pt, ...``
+    monitor: str, Default='val_loss'
+        quantity to monitor. :obj:`ModelCheckpoint` will infer if this is a
+        loss (i.e. contains the str `'loss'`) or a metric (i.e. contains the
+        str `'acc'` or starts with `'fmeasure'`).
+    verbose:int, Default=0,
+        verbosity mode
+    save_best_only: bool, Default=False,
         the latest best model according to the quantity monitored will not be
         overwritten.
-    mode: Str, default='auto',
-        If 'save_best_only=True', the decision to overwrite the current save
+    mode: str, Default='auto',
+        If ``save_best_only=True``, the decision to overwrite the current save
         file is made based on either the maximization or the minimization of
-        the monitored quantity. For 'val_acc', this should be 'max', for
-        'val_loss' this should be 'min', etc. In 'auto' mode, the direction is
-        automatically inferred from the name of the monitored quantity.
-    period: Int, default=1,
+        the monitored quantity. For `'val_acc'`, this should be `'max'`, for
+        `'val_loss'` this should be `'min'`, etc. In `'auto'` mode, the
+        direction is automatically inferred from the name of the monitored
+        quantity.
+    period: int, Default=1,
         Interval (number of epochs) between checkpoints.
-    max_save:Int, default=-1
-        Max number of outputs to save. If -1 will save all outputs
+    max_save: int, Default=-1
+        Maximum number of outputs to save. If -1 will save all outputs
+
+    Examples
+    --------
+
+    Callbacks are passed as input parameters when calling ``compile``. see
+    :class:`pytorch_widedeep.models.wide_deep.WideDeep`
+
+    >>> # Do not run
+    >>> model.compile(callbacks=[ModelCheckpoint()])
     """
 
     def __init__(
@@ -356,36 +388,46 @@ class ModelCheckpoint(Callback):
 
 
 class EarlyStopping(Callback):
-    r"""
-    Stop training when a monitored quantity has stopped improving. This class
-    is almost identical to the corresponding keras class. Therefore, credit to
-    the Keras Team.
+    r"""Stop training when a monitored quantity has stopped improving.
 
-    # Arguments
-        monitor: Str, default='val_loss'.
-            Quantity to be monitored.
-        min_delta: Float, default=0.
-            minimum change in the monitored quantity to qualify as an
-            improvement, i.e. an absolute change of less than min_delta, will
-            count as no improvement.
-        patience: Int, default=10.
-            Number of epochs that produced the monitored quantity with no
-            improvement after which training will be stopped.
-        verbose: Int.
-            verbosity mode.
-        mode: Str, default='auto'
-            one of {auto, min, max}. In `min` mode, training will stop when
-            the quantity monitored has stopped decreasing; in `max` mode it
-            will stop when the quantity monitored has stopped increasing; in
-            `auto` mode, the direction is automatically inferred from the name
-            of the monitored quantity.
-        baseline: Float, Optional. default=None.
-            Baseline value for the monitored quantity to reach. Training will
-            stop if the model doesn't show improvement over the baseline.
-        restore_best_weights: Boolean, default=None
-            Whether to restore model weights from the epoch with the best
-            value of the monitored quantity. If False, the model weights
-            obtained at the last step of training are used.
+    This class is almost identical to the corresponding keras class.
+    Therefore, credit to the Keras Team.
+
+    Parameters
+    -----------
+    monitor: str, default='val_loss'.
+        Quantity to be monitored.
+    min_delta: float, default=0.
+        minimum change in the monitored quantity to qualify as an
+        improvement, i.e. an absolute change of less than min_delta, will
+        count as no improvement.
+    patience: int, default=10.
+        Number of epochs that produced the monitored quantity with no
+        improvement after which training will be stopped.
+    verbose: int.
+        verbosity mode.
+    mode: str, default='auto'
+        one of {'`auto`', '`min`', '`max`'}. In `'min'` mode, training will
+        stop when the quantity monitored has stopped decreasing; in `'max'`
+        mode it will stop when the quantity monitored has stopped increasing;
+        in `'auto'` mode, the direction is automatically inferred from the
+        name of the monitored quantity.
+    baseline: float, Optional. default=None.
+        Baseline value for the monitored quantity to reach. Training will
+        stop if the model does not show improvement over the baseline.
+    restore_best_weights: bool, default=None
+        Whether to restore model weights from the epoch with the best
+        value of the monitored quantity. If ``False``, the model weights
+        obtained at the last step of training are used.
+
+    Examples
+    --------
+
+    Callbacks are passed as input parameters when calling ``compile``. see
+    :class:`pytorch_widedeep.models.wide_deep.WideDeep`
+
+    >>> # Do not run
+    >>> model.compile(callbacks=[EarlyStopping()])
     """
 
     def __init__(

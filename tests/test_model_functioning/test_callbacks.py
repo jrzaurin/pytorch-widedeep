@@ -1,16 +1,19 @@
-import numpy as np
 import os
 import string
-import torch
-import pytest
-
-from torch.optim.lr_scheduler import StepLR, CyclicLR
 from itertools import chain
 
-from pytorch_widedeep.models import Wide, DeepDense, WideDeep
-from pytorch_widedeep.callbacks import ModelCheckpoint, EarlyStopping, LRHistory
-from pytorch_widedeep.optim import RAdam
+import numpy as np
+import torch
+import pytest
+from torch.optim.lr_scheduler import StepLR, CyclicLR
 
+from pytorch_widedeep.optim import RAdam
+from pytorch_widedeep.models import Wide, WideDeep, DeepDense
+from pytorch_widedeep.callbacks import (
+    LRHistory,
+    EarlyStopping,
+    ModelCheckpoint,
+)
 
 # Wide array
 X_wide = np.random.choice(2, (100, 100), p=[0.8, 0.2])

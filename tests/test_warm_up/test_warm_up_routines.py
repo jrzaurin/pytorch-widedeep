@@ -1,17 +1,17 @@
-import pytest
-import numpy as np
 import string
-import torch
-import torch.nn.functional as F
 
+import numpy as np
+import torch
+import pytest
+import torch.nn.functional as F
 from torch import nn
 from sklearn.utils import Bunch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import Dataset, DataLoader
 
 from pytorch_widedeep.models import Wide, DeepDense
-from pytorch_widedeep.models.deep_image import conv_layer
 from pytorch_widedeep.metrics import BinaryAccuracy
 from pytorch_widedeep.models._warmup import WarmUp
+from pytorch_widedeep.models.deep_image import conv_layer
 
 use_cuda = torch.cuda.is_available()
 
@@ -73,12 +73,12 @@ class WDset(Dataset):
 # will take, among others, the activation_fn and the loss_fn of that class as
 # parameters. Therefore, we define equivalent classes to replicate the
 # scenario
-def activ_fn(inp):
-    return torch.sigmoid(inp)
+# def activ_fn(inp):
+#     return torch.sigmoid(inp)
 
 
 def loss_fn(y_pred, y_true):
-    return F.binary_cross_entropy(y_pred, y_true.view(-1, 1))
+    return F.binary_cross_entropy_with_logits(y_pred, y_true.view(-1, 1))
 
 
 #  Define the data components:
@@ -138,7 +138,7 @@ wdset = WDset(X_wide, X_deep, X_text, X_image, target)
 wdloader = DataLoader(wdset, batch_size=10, shuffle=True)
 
 # Instantiate the WarmUp class
-warmer = WarmUp(activ_fn, loss_fn, BinaryAccuracy(), "binary", False)
+warmer = WarmUp(loss_fn, BinaryAccuracy(), "binary", False)
 
 # List the layers for the warm_gradual method
 text_layers = [c for c in list(deeptext.children())[1:]][::-1]

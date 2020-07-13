@@ -1,27 +1,40 @@
+import warnings
+from abc import ABC, abstractmethod
+
+import cv2
 import numpy as np
 import pandas as pd
-import warnings
-import cv2
-
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import StandardScaler
-from sklearn.exceptions import NotFittedError
 from tqdm import tqdm
+from sklearn.exceptions import NotFittedError
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from ..wdtypes import *
+from ..utils.text_utils import (
+    get_texts,
+    pad_sequences,
+    build_embeddings_matrix,
+)
+from ..utils.dense_utils import LabelEncoder
+from ..utils.image_utils import SimplePreprocessor, AspectAwarePreprocessor
 from ..utils.fastai_transforms import Vocab
-from ..utils.dense_utils import label_encoder
-from ..utils.text_utils import get_texts, pad_sequences, build_embeddings_matrix
-from ..utils.image_utils import AspectAwarePreprocessor, SimplePreprocessor
 
 
-class BasePreprocessor(object):
+class BasePreprocessor(ABC):
+    """Base Abstract Class of All Preprocessors."""
+
+    @abstractmethod
+    def __init__(self, *args):
+        pass
+
+    @abstractmethod
     def fit(self, df: pd.DataFrame):
         raise NotImplementedError("Preprocessor must implement this method")
 
+    @abstractmethod
     def transform(self, df: pd.DataFrame):
         raise NotImplementedError("Preprocessor must implement this method")
 
+    @abstractmethod
     def fit_transform(self, df: pd.DataFrame):
         raise NotImplementedError("Preprocessor must implement this method")
 
@@ -31,33 +44,35 @@ class WidePreprocessor(BasePreprocessor):
 
     Parameters
     ----------
-    wide_cols: List
+    wide_cols: List[str]
         List with the name of the columns that will be one-hot encoded and
-        pass through the Wide model
-    crossed_cols: List
-        List of Tuples with the name of the columns that will be "crossed"
-        and then one-hot encoded. e.g. (['education', 'occupation'], ...)
-    already_dummies: List
-        List of columns that are already dummies/one-hot encoded
+        passed through the Wide model
+    crossed_cols: List[Tuple[str, str]]
+        List of Tuples with the name of the columns that will be `'crossed'`
+        and then one-hot encoded. e.g. [('education', 'occupation'), ...]
+    already_dummies: List[str]
+        List of columns that are already dummies/one-hot encoded, and
+        therefore do not need to be processed
 
     Attributes
     ----------
-    one_hot_enc: sklearn's OneHotEncoder
-    wide_crossed_cols: List
+    one_hot_enc: :obj:`OneHotEncoder`
+        an instance of :class:`sklearn.preprocessing.OneHotEncoder`
+    wide_crossed_cols: :obj:`List`
         List with the names of all columns that will be one-hot encoded
 
-    Example
+    Examples
     --------
-    Assuming we have a dataset loaded in memory as a pd.DataFrame
-
-    >>> wide_cols = ['age_buckets', 'education', 'relationship','workclass','occupation',
-    ... 'native_country','gender']
-    >>> crossed_cols = [('education', 'occupation'), ('native_country', 'occupation')]
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import WidePreprocessor
+    >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l']})
+    >>> wide_cols = ['color']
+    >>> crossed_cols = [('color', 'size')]
     >>> wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
-    >>> X_wide = wide_preprocessor.fit_transform(df)
-
-    From there on, for new data (loaded as a dataframe)
-    >>> new_X_wide = wide_preprocessor.transform(new_df)
+    >>> wide_preprocessor.fit_transform(df)
+    array([[0., 0., 1., 0., 0., 1.],
+           [1., 0., 0., 1., 0., 0.],
+           [0., 1., 0., 0., 1., 0.]])
     """
 
     def __init__(
@@ -74,25 +89,11 @@ class WidePreprocessor(BasePreprocessor):
         self.already_dummies = already_dummies
         self.one_hot_enc = OneHotEncoder(sparse=sparse, handle_unknown=handle_unknown)
 
-    def _cross_cols(self, df: pd.DataFrame):
-        crossed_colnames = []
-        for cols in self.crossed_cols:
-            cols = list(cols)
-            for c in cols:
-                df[c] = df[c].astype("str")
-            colname = "_".join(cols)
-            df[colname] = df[cols].apply(lambda x: "-".join(x), axis=1)
-            crossed_colnames.append(colname)
-        return df, crossed_colnames
-
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        df_wide = df.copy()[self.wide_cols]
-        if self.crossed_cols is not None:
-            df_wide, crossed_colnames = self._cross_cols(df_wide)
-            self.wide_crossed_cols = self.wide_cols + crossed_colnames
-        else:
-            self.wide_crossed_cols = self.wide_cols
-
+        """Fits the Preprocessor and creates required attributes
+        """
+        df_wide = self._prepare_wide(df)
+        self.wide_crossed_cols = df_wide.columns.tolist()
         if self.already_dummies:
             dummy_cols = [
                 c for c in self.wide_crossed_cols if c not in self.already_dummies
@@ -103,6 +104,9 @@ class WidePreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> Union[sparse_matrix, np.ndarray]:
+        """Returns the processed dataframe as a one hot encoded dense or
+        sparse matrix
+        """
         try:
             self.one_hot_enc.categories_
         except:
@@ -110,9 +114,7 @@ class WidePreprocessor(BasePreprocessor):
                 "This WidePreprocessor instance is not fitted yet. "
                 "Call 'fit' with appropriate arguments before using this estimator."
             )
-        df_wide = df.copy()[self.wide_cols]
-        if self.crossed_cols is not None:
-            df_wide, _ = self._cross_cols(df_wide)
+        df_wide = self._prepare_wide(df)
         if self.already_dummies:
             X_oh_1 = df_wide[self.already_dummies].values
             dummy_cols = [
@@ -124,56 +126,83 @@ class WidePreprocessor(BasePreprocessor):
             return self.one_hot_enc.transform(df_wide[self.wide_crossed_cols])
 
     def fit_transform(self, df: pd.DataFrame) -> Union[sparse_matrix, np.ndarray]:
+        """Combines ``fit`` and ``transform``
+        """
         return self.fit(df).transform(df)
 
+    def _cross_cols(self, df: pd.DataFrame):
+        df_cc = df.copy()
+        crossed_colnames = []
+        for cols in self.crossed_cols:
+            cols = list(cols)
+            for c in cols:
+                df_cc[c] = df_cc[c].astype("str")
+            colname = "_".join(cols)
+            df_cc[colname] = df_cc[cols].apply(lambda x: "-".join(x), axis=1)
+            crossed_colnames.append(colname)
+        return df_cc[crossed_colnames]
 
-class DeepPreprocessor(BasePreprocessor):
+    def _prepare_wide(self, df: pd.DataFrame):
+        if self.crossed_cols is not None:
+            df_cc = self._cross_cols(df)
+            return pd.concat([df[self.wide_cols], df_cc], axis=1)
+        else:
+            return df.copy()[self.wide_cols]
+
+
+class DensePreprocessor(BasePreprocessor):
     r"""Preprocessor to prepare the deepdense input dataset
 
     Parameters
     ----------
-    embed_cols: List
-        List containing the name of the columns that will be represented with
+    embed_cols: List[Union[str, Tuple[str, int]]]
+        List containing the name of the columns that will be represented by
         embeddings or a Tuple with the name and the embedding dimension. e.g.:
-         [('education',32), ('relationship',16)
-    continuous_cols: List
+        [('education',32), ('relationship',16)
+    continuous_cols: List[str]
         List with the name of the so called continuous cols
-    scale: Bool
+    scale: bool
         Bool indicating whether or not to scale/Standarise continuous cols.
         Should "almost always" be True.
-    default_embed_dim: Int, default=8
+    default_embed_dim: Int, Default=8
         Dimension for the embeddings used in the Deep-Dense model
-    already_standard: List, Optional,
+    already_standard: List[str], Optional,
         List with the name of the continuous cols that do not need to be
         Standarised.
 
     Attributes
     ----------
-    encoding_dict: Dict
-        Dict with the categorical encoding
-    embed_cols: List
-        List with the columns that will be represented with embeddings
-    embed_dim: Dict
-        Dict where keys are the embed cols and values are the embed dimensions
-    standardize_cols: List
+    label_encoder: :obj:`LabelEncoder`
+        see :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
+    embed_cols: :obj:`List`
+        List with the columns that will be represented by embeddings
+    embed_dim: :obj:`Dict`
+        Dictionary where keys are the embed cols and values are the embed
+        dimensions
+    standardize_cols: :obj:`List`
         List of the columns that will be standarized
-    deep_column_idx: Dict
-        Dict where keys are column names and values are column indexes. This
-        will be neccesary to slice tensors
-    scaler: sklearn's StandardScaler
+    deep_column_idx: :obj:`Dict`
+        Dictionary where keys are column names and values are column indexes.
+        This will be neccesary to slice tensors
+    scaler: :obj:`StandardScaler`
+        an instance of :class:`sklearn.preprocessing.StandardScaler`
 
-    Example
+    Examples
     --------
-    Assuming we have a dataset loaded in memory as a pd.DataFrame
-
-    >>> cat_embed_cols = [('education',10), ('relationship',8), ('workclass',10),
-    ... ('occupation',10),('native_country',10)]
-    >>> continuous_cols = ["age","hours_per_week"]
-    >>> deep_preprocessor = DeepPreprocessor(embed_cols=cat_embed_cols, continuous_cols=continuous_cols)
-    >>> X_deep = deep_preprocessor.fit_transform(df)
-
-    From there on, for new data (loaded as a dataframe)
-    >>> new_X_deep = deep_preprocessor.transform(new_df)
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import DensePreprocessor
+    >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l'], 'age': [25, 40, 55]})
+    >>> embed_cols = [('color',5), ('size',5)]
+    >>> cont_cols = ['age']
+    >>> deep_preprocessor = DensePreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+    >>> deep_preprocessor.fit_transform(df)
+    array([[ 0.        ,  0.        , -1.22474487],
+           [ 1.        ,  1.        ,  0.        ],
+           [ 2.        ,  2.        ,  1.22474487]])
+    >>> deep_preprocessor.embed_dim
+    {'color': 5, 'size': 5}
+    >>> deep_preprocessor.deep_column_idx
+    {'color': 0, 'size': 1, 'age': 2}
     """
 
     def __init__(
@@ -184,7 +213,7 @@ class DeepPreprocessor(BasePreprocessor):
         default_embed_dim: int = 8,
         already_standard: Optional[List[str]] = None,
     ):
-        super(DeepPreprocessor, self).__init__()
+        super(DensePreprocessor, self).__init__()
 
         self.embed_cols = embed_cols
         self.continuous_cols = continuous_cols
@@ -195,6 +224,57 @@ class DeepPreprocessor(BasePreprocessor):
         assert (self.embed_cols is not None) or (
             self.continuous_cols is not None
         ), "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
+
+    def fit(self, df: pd.DataFrame) -> BasePreprocessor:
+        """Fits the Preprocessor and creates required attributes
+        """
+        if self.embed_cols is not None:
+            df_emb = self._prepare_embed(df)
+            self.label_encoder = LabelEncoder(df_emb.columns.tolist()).fit(df_emb)
+            self.embeddings_input: List = []
+            for k, v in self.label_encoder.encoding_dict.items():
+                self.embeddings_input.append((k, len(v), self.embed_dim[k]))
+        if self.continuous_cols is not None:
+            df_cont = self._prepare_continuous(df)
+            if self.scale:
+                df_std = df_cont[self.standardize_cols]
+                self.scaler = StandardScaler().fit(df_std.values)
+            else:
+                warnings.warn("Continuous columns will not be normalised")
+        return self
+
+    def transform(self, df: pd.DataFrame) -> np.ndarray:
+        """Returns the processed ``dataframe`` as a np.ndarray
+        """
+        if self.embed_cols is not None:
+            df_emb = self._prepare_embed(df)
+            df_emb = self.label_encoder.transform(df_emb)
+        if self.continuous_cols is not None:
+            df_cont = self._prepare_continuous(df)
+            if self.scale:
+                try:
+                    self.scaler.mean_
+                except:
+                    raise NotFittedError(
+                        "This DensePreprocessor instance is not fitted yet. "
+                        "Call 'fit' with appropriate arguments before using this estimator."
+                    )
+                df_std = df_cont[self.standardize_cols]
+                df_cont[self.standardize_cols] = self.scaler.transform(df_std.values)
+        try:
+            df_deep = pd.concat([df_emb, df_cont], axis=1)
+        except:
+            try:
+                df_deep = df_emb.copy()
+            except:
+                df_deep = df_cont.copy()
+        self.deep_column_idx = {k: v for v, k in enumerate(df_deep.columns)}
+        return df_deep.values
+
+    def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
+        """Combines ``fit`` and ``transform``
+        """
+        return self.fit(df).transform(df)
 
     def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
         if isinstance(self.embed_cols[0], tuple):
@@ -215,92 +295,48 @@ class DeepPreprocessor(BasePreprocessor):
                 self.standardize_cols = self.continuous_cols
         return df.copy()[self.continuous_cols]
 
-    def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        if self.embed_cols is not None:
-            df_emb = self._prepare_embed(df)
-            _, self.encoding_dict = label_encoder(df_emb, cols=df_emb.columns.tolist())
-            self.embeddings_input: List = []
-            for k, v in self.encoding_dict.items():
-                self.embeddings_input.append((k, len(v), self.embed_dim[k]))
-        if self.continuous_cols is not None:
-            df_cont = self._prepare_continuous(df)
-            if self.scale:
-                df_std = df_cont[self.standardize_cols]
-                self.scaler = StandardScaler().fit(df_std.values)
-            else:
-                warnings.warn("Continuous columns will not be normalised")
-        return self
-
-    def transform(self, df: pd.DataFrame) -> np.ndarray:
-        if self.embed_cols is not None:
-            df_emb = self._prepare_embed(df)
-            df_emb, _ = label_encoder(
-                df_emb, cols=df_emb.columns.tolist(), val_to_idx=self.encoding_dict
-            )
-        if self.continuous_cols is not None:
-            df_cont = self._prepare_continuous(df)
-            if self.scale:
-                try:
-                    self.scaler.mean_
-                except:
-                    raise NotFittedError(
-                        "This DeepPreprocessor instance is not fitted yet. "
-                        "Call 'fit' with appropriate arguments before using this estimator."
-                    )
-                df_std = df_cont[self.standardize_cols]
-                df_cont[self.standardize_cols] = self.scaler.transform(df_std.values)
-        try:
-            df_deep = pd.concat([df_emb, df_cont], axis=1)
-        except:
-            try:
-                df_deep = df_emb.copy()
-            except:
-                df_deep = df_cont.copy()
-        self.deep_column_idx = {k: v for v, k in enumerate(df_deep.columns)}
-        return df_deep.values
-
-    def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
-        return self.fit(df).transform(df)
-
 
 class TextPreprocessor(BasePreprocessor):
-    r"""Preprocessor to prepare the deepdense input dataset
+    r"""Preprocessor to prepare the deeptext input dataset
 
     Parameters
     ----------
     text_col: str
-        column in the input pd.DataFrame containing the texts
-    max_vocab: Int, default=30000
+        column in the input dataframe containing the texts
+    max_vocab: int, default=30000
         Maximum number of token in the vocabulary
-    min_freq: Int, default=5
+    min_freq: int, default=5
         Minimum frequency for a token to be part of the vocabulary
-    maxlen: Int, default=80
+    maxlen: int, default=80
         Maximum length of the tokenized sequences
-    word_vectors_path: Optional, str
+    word_vectors_path: str, Optional
         Path to the pretrained word vectors
-    verbose: Int, Default 1
+    verbose: int, default 1
         Enable verbose output.
 
     Attributes
     ----------
-    vocab: fastai Vocab object. See https://docs.fast.ai/text.transform.html#Vocab
-        Vocab object containing the information of the vocabulary
-    tokens: List
+    vocab: :obj:`Vocab`
+        an instance of :class:`pytorch_widedeep.utils.fastai_transforms.Vocab`
+    tokens: :obj:`List`
         List with Lists of str containing the tokenized texts
-    embedding_matrix: np.ndarray
+    embedding_matrix: :obj:`np.ndarray`
         Array with the pretrained embeddings
 
-    Example
-    --------
-    Assuming we have a dataset loaded in memory as a pd.DataFrame
-
-    >>> text_preprocessor = TextPreprocessor()
-    >>> X_text = text_preprocessor.fit_transform(df, text_col)
-
-    from there on
-
-    From there on, for new data (loaded as a dataframe)
-    >>> new_X_text = text_preprocessor.transform(new_df)
+    Examples
+    ---------
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import TextPreprocessor
+    >>> df_train = pd.DataFrame({'text_column': ["life was like a box of chocolates",
+    ... "You never know what you're gonna get"]})
+    >>> text_preprocessor = TextPreprocessor(text_col='text_column', max_vocab=25, min_freq=1, maxlen=10)
+    >>> text_preprocessor.fit_transform(df_train)
+    The vocabulary contains 24 tokens
+    array([[ 1,  1,  1,  1, 10, 11, 12, 13, 14, 15],
+           [ 5,  9, 16, 17, 18,  9, 19, 20, 21, 22]], dtype=int32)
+    >>> df_te = pd.DataFrame({'text_column': ['you never know what is in the box']})
+    >>> text_preprocessor.transform(df_te)
+    array([[ 1,  1,  9, 16, 17, 18,  0,  0,  0, 13]], dtype=int32)
     """
 
     def __init__(
@@ -321,14 +357,20 @@ class TextPreprocessor(BasePreprocessor):
         self.verbose = verbose
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
+        """Builds the vocabulary
+        """
         texts = df[self.text_col].tolist()
         tokens = get_texts(texts)
         self.vocab = Vocab.create(
             tokens, max_vocab=self.max_vocab, min_freq=self.min_freq
         )
+        if self.verbose:
+            print("The vocabulary contains {} tokens".format(len(self.vocab.stoi)))
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
+        """Returns the padded, `numericalised` sequences
+        """
         try:
             self.vocab
         except:
@@ -340,8 +382,6 @@ class TextPreprocessor(BasePreprocessor):
         self.tokens = get_texts(texts)
         sequences = [self.vocab.numericalize(t) for t in self.tokens]
         padded_seq = np.array([pad_sequences(s, maxlen=self.maxlen) for s in sequences])
-        if self.verbose:
-            print("The vocabulary contains {} tokens".format(len(self.vocab.stoi)))
         if self.word_vectors_path is not None:
             self.embedding_matrix = build_embeddings_matrix(
                 self.vocab, self.word_vectors_path, self.min_freq
@@ -349,11 +389,14 @@ class TextPreprocessor(BasePreprocessor):
         return padded_seq
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
+        """Combines ``fit`` and ``transform``
+        """
         return self.fit(df).transform(df)
 
 
 class ImagePreprocessor(BasePreprocessor):
-    r"""Preprocessor to prepare the deepdense input dataset
+    r"""Preprocessor to prepare the deepimage input dataset. The Preprocessing
+    consists simply on resizing according to their aspect ratio
 
     Parameters
     ----------
@@ -367,33 +410,35 @@ class ImagePreprocessor(BasePreprocessor):
     height: Int, default=224
         width of the resulting processed image. 224 because the default
         architecture used by WideDeep is ResNet
-    verbose: Int, Default 1
+    verbose: Int, default 1
         Enable verbose output.
 
     Attributes
     ----------
-    aap: Class, AspectAwarePreprocessor()
-        Preprocessing tool taken from Adrian Rosebrock's book "Deep Learning
-        for Computer Vision".
-    spp: Class, SimplePreprocessor()
-        Preprocessing tool taken from Adrian Rosebrock's book "Deep Learning
-        for Computer Vision".
-    normalise_metrics: Dict
+    aap: :obj:`AspectAwarePreprocessor`
+        an instance of :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
+    spp: :obj:`SimplePreprocessor`
+        an instance of :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`
+    normalise_metrics: :obj:`Dict`
         Dict containing the normalisation metrics of the image dataset, i.e.
         mean and std for the R, G and B channels
 
-    Example
+    Examples
     --------
-    Assuming we have a dataset loaded in memory as a pd.DataFrame
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import ImagePreprocessor
+    >>> df_train = pd.DataFrame({'images_column': ['galaxy1.png', 'galaxy2.png']})
+    >>> df_test = pd.DataFrame({'images_column': ['galaxy3.png']})
+    >>> img_preprocessor = ImagePreprocessor(img_col='images_column', img_path='.', verbose=0)
+    >>> resized_images = img_preprocessor.fit_transform(df_train)
+    >>> new_resized_images = img_preprocessor.transform(df_train)
 
-    >>> image_preprocessor = ImagePreprocessor()
-    >>> img_path = 'path/to/my_images'
-    >>> X_images = image_preprocessor.fit_transform(df, img_col, img_path)
 
-    from there on
+    .. note:: Normalising metrics will only be computed when the
+        ``fit_transform`` method is run. Running ``transform`` only will not
+        change the computed metrics and running ``fit`` only simply
+        instantiates the resizing functions.
 
-    From there on, for new data (loaded as a dataframe)
-    >>> next_X_images = image_preprocessor.transform(new_df)
     """
 
     def __init__(
@@ -412,11 +457,23 @@ class ImagePreprocessor(BasePreprocessor):
         self.verbose = verbose
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
+        r"""Simply instantiates the Preprocessors
+        :obj:`AspectAwarePreprocessor`` and :obj:`SimplePreprocessor` for image
+        resizing.
+
+        See
+        :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
+        and :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`.
+
+        """
         self.aap = AspectAwarePreprocessor(self.width, self.height)
         self.spp = SimplePreprocessor(self.width, self.height)
+        self._compute_normalising_metrics = True
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
+        """Resizes the images to the input height and width.
+        """
         try:
             self.aap
         except:
@@ -441,33 +498,42 @@ class ImagePreprocessor(BasePreprocessor):
             if i in diff_idx:
                 resized_imgs.append(self.aap.preprocess(img))
             else:
+                # if aspect ratio is 1:1, no need for AspectAwarePreprocessor
                 resized_imgs.append(self.spp.preprocess(img))
 
-        if self.verbose:
-            print("Computing normalisation metrics")
-        mean_R, mean_G, mean_B = [], [], []
-        std_R, std_G, std_B = [], [], []
-        for rsz_img in resized_imgs:
-            (mean_b, mean_g, mean_r), (std_b, std_g, std_r) = cv2.meanStdDev(rsz_img)
-            mean_R.append(mean_r)
-            mean_G.append(mean_g)
-            mean_B.append(mean_b)
-            std_R.append(std_r)
-            std_G.append(std_g)
-            std_B.append(std_b)
-        self.normalise_metrics = dict(
-            mean={
-                "R": np.mean(mean_R) / 255.0,
-                "G": np.mean(mean_G) / 255.0,
-                "B": np.mean(mean_B) / 255.0,
-            },
-            std={
-                "R": np.mean(std_R) / 255.0,
-                "G": np.mean(std_G) / 255.0,
-                "B": np.mean(std_B) / 255.0,
-            },
-        )
+        if self._compute_normalising_metrics:
+            if self.verbose:
+                print("Computing normalisation metrics")
+            # mean and std deviation will only be computed when the fit method
+            # is called
+            mean_R, mean_G, mean_B = [], [], []
+            std_R, std_G, std_B = [], [], []
+            for rsz_img in resized_imgs:
+                (mean_b, mean_g, mean_r), (std_b, std_g, std_r) = cv2.meanStdDev(
+                    rsz_img
+                )
+                mean_R.append(mean_r)
+                mean_G.append(mean_g)
+                mean_B.append(mean_b)
+                std_R.append(std_r)
+                std_G.append(std_g)
+                std_B.append(std_b)
+            self.normalise_metrics = dict(
+                mean={
+                    "R": np.mean(mean_R) / 255.0,
+                    "G": np.mean(mean_G) / 255.0,
+                    "B": np.mean(mean_B) / 255.0,
+                },
+                std={
+                    "R": np.mean(std_R) / 255.0,
+                    "G": np.mean(std_G) / 255.0,
+                    "B": np.mean(std_B) / 255.0,
+                },
+            )
+            self._compute_normalising_metrics = False
         return np.asarray(resized_imgs)
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
+        """Combines ``fit`` and ``transform``
+        """
         return self.fit(df).transform(df)

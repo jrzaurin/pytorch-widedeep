@@ -1,11 +1,11 @@
 import numpy as np
 import torch
+import torch.nn.functional as F
+from tqdm import trange
+from torch import nn
 
 from ..metrics import Metric, MultipleMetrics
 from ..wdtypes import *
-
-from tqdm import trange
-from torch import nn
 
 use_cuda = torch.cuda.is_available()
 
@@ -25,9 +25,6 @@ class WarmUp(object):
 
     Parameters
     ----------
-    activation_fn: Any
-       any function with the same strucure as '_activation_fn' in the main class
-       WideDeep at pytorch_widedeep.models.wide_deep
     loss_fn: Any
        any function with the same strucure as '_loss_fn' in the main class WideDeep
        at pytorch_widedeep.models.wide_deep
@@ -40,14 +37,12 @@ class WarmUp(object):
 
     def __init__(
         self,
-        activation_fn: Any,
         loss_fn: Any,
         metric: Union[Metric, MultipleMetrics],
         method: str,
         verbose: int,
     ):
         super(WarmUp, self).__init__()
-        self.activation_fn = activation_fn
         self.loss_fn = loss_fn
         self.metric = metric
         self.method = method
@@ -252,7 +247,7 @@ class WarmUp(object):
                     y = y.cuda() if use_cuda else y
 
                     optimizer.zero_grad()
-                    y_pred = self.activation_fn(model(X))
+                    y_pred = model(X)
                     loss = self.loss_fn(y_pred, y)
                     loss.backward()
                     optimizer.step()
@@ -262,7 +257,10 @@ class WarmUp(object):
                     avg_loss = running_loss / (batch_idx + 1)
 
                     if self.metric is not None:
-                        acc = self.metric(y_pred, y)
+                        if self.method == "binary":
+                            acc = self.metric(torch.sigmoid(y_pred), y)
+                        if self.method == "multiclass":
+                            acc = self.metric(F.softmax(y_pred, dim=1), y)
                         t.set_postfix(metrics=acc, loss=avg_loss)
                     else:
                         t.set_postfix(loss=np.sqrt(avg_loss))

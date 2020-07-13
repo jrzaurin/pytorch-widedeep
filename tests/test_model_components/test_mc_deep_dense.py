@@ -1,9 +1,9 @@
 import string
+
 import numpy as np
 import torch
 
 from pytorch_widedeep.models import DeepDense
-
 
 colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 10) for _ in range(5)]

@@ -1,9 +1,9 @@
-import numpy as np
-import pandas as pd
 import os
 
-from pytorch_widedeep.preprocessing import ImagePreprocessor
+import numpy as np
+import pandas as pd
 
+from pytorch_widedeep.preprocessing import ImagePreprocessor
 
 full_path = os.path.realpath(__file__)
 path = os.path.split(full_path)[0]

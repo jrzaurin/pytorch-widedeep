@@ -1,55 +1,54 @@
 import sys
-
-from torch.nn import Module
-from torch import Tensor
-from torchvision.transforms import (
-    CenterCrop,
-    ColorJitter,
-    Compose,
-    FiveCrop,
-    Grayscale,
-    Lambda,
-    LinearTransformation,
-    Normalize,
-    Pad,
-    RandomAffine,
-    RandomApply,
-    RandomChoice,
-    RandomCrop,
-    RandomGrayscale,
-    RandomHorizontalFlip,
-    RandomOrder,
-    RandomResizedCrop,
-    RandomRotation,
-    RandomSizedCrop,
-    RandomVerticalFlip,
-    Resize,
-    Scale,
-    TenCrop,
-    ToPILImage,
-    ToTensor,
-)
-from torch.optim.optimizer import Optimizer
-from torch.utils.data.dataloader import DataLoader
-from torch.optim.lr_scheduler import _LRScheduler
-from pathlib import PosixPath
+from types import SimpleNamespace
 from typing import (
-    List,
     Any,
-    Union,
     Dict,
-    Callable,
-    Optional,
+    List,
+    Match,
     Tuple,
+    Union,
+    Callable,
+    Iterable,
+    Iterator,
+    Optional,
     Generator,
     Collection,
-    Iterable,
-    Match,
-    Iterator,
 )
-from scipy.sparse.csr import csr_matrix as sparse_matrix
-from types import SimpleNamespace
+from pathlib import PosixPath
 
+from torch import Tensor
+from torch.nn import Module
+from scipy.sparse.csr import csr_matrix as sparse_matrix
+from torch.optim.optimizer import Optimizer
+from torchvision.transforms import (
+    Pad,
+    Scale,
+    Lambda,
+    Resize,
+    Compose,
+    TenCrop,
+    FiveCrop,
+    ToTensor,
+    Grayscale,
+    Normalize,
+    CenterCrop,
+    RandomCrop,
+    ToPILImage,
+    ColorJitter,
+    RandomApply,
+    RandomOrder,
+    RandomAffine,
+    RandomChoice,
+    RandomRotation,
+    RandomGrayscale,
+    RandomSizedCrop,
+    RandomResizedCrop,
+    RandomVerticalFlip,
+    LinearTransformation,
+    RandomHorizontalFlip,
+)
+from torch.optim.lr_scheduler import _LRScheduler
+from torch.utils.data.dataloader import DataLoader
 
 ListRules = Collection[Callable[[str], str]]
 Tokens = Collection[Collection[str]]

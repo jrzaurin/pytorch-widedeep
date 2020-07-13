@@ -8,7 +8,4 @@ from pytorch_widedeep.version import __version__
 ##################################################
 # utils module accessible from pytorch-widedeep
 ##################################################
-from .utils import dense_utils
-from .utils import text_utils
-from .utils import fastai_transforms
-from .utils import image_utils
+from .utils import text_utils, dense_utils, image_utils, fastai_transforms
