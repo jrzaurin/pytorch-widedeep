@@ -46,6 +46,78 @@ class MetricCallback(Callback):
         self.container.reset()
 
 
+class Precision(Metric):
+
+    def __init__(self):
+        self.true_positives = 0
+        self.all_positives = 0
+        self.eps = 1e-20
+
+        self._name = "prec"
+
+    def reset(self) -> None:
+        self.true_positives = 0
+        self.all_positives = 0
+
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
+        num_class = y_pred.size(1)
+
+        if num_class == 1:
+            y_pred = y_pred.round()
+            y_true = y_true.view(-1, 1)
+        elif num_class > 1:
+            y_true = torch.eye(num_class)[y_true.long()]
+            y_pred = y_pred.topk(1, 1)[1].view(-1)
+            y_pred = torch.eye(num_class)[y_pred.long()]
+
+        self.true_positives += (y_true * y_pred).sum().item()
+        self.all_positives += y_pred.sum(dim=0)
+
+        precision = (self.true_positives / (self.all_positives + self.eps)).mean().item()
+
+        return precision
+
+
+class Accuracy(Metric):
+    r"""Class to calculate the accuracy for both binary and categorical problems
+
+    Parameters
+    ----------
+    top_k: int
+        Accuracy will be computed using the top k most likely classes in
+        multiclass problems
+    """
+
+    def __init__(self, top_k=1):
+        self.top_k = top_k
+        self.correct_count = 0
+        self.total_count = 0
+
+        self._name = "acc"
+
+    def reset(self):
+        """
+        resets counters to 0
+        """
+        self.correct_count = 0
+        self.total_count = 0
+
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
+        num_classes = y_pred.size(1)
+
+        if num_classes == 1:
+            y_pred_round = y_pred.round()
+            self.correct_count += y_pred_round.eq(y_true.view(-1, 1)).sum().item()
+        elif num_classes > 1:
+            top_k = y_pred.topk(self.top_k, 1)[1]
+            true_k = y_true.view(-1, 1).expand_as(top_k)  # type: ignore
+            self.correct_count += top_k.eq(true_k).sum().item()
+
+        self.total_count += len(y_pred)  # type: ignore
+        accuracy = float(self.correct_count) / float(self.total_count)
+        return accuracy
+
+
 class CategoricalAccuracy(Metric):
     r"""Class to calculate the categorical accuracy for multicategorical problems
 

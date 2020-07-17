@@ -4,7 +4,7 @@ import pandas as pd
 
 from pytorch_widedeep.optim import RAdam
 from pytorch_widedeep.models import Wide, WideDeep, DeepDense
-from pytorch_widedeep.metrics import BinaryAccuracy
+from pytorch_widedeep.metrics import BinaryAccuracy, Accuracy, Precision
 from pytorch_widedeep.callbacks import (
     LRHistory,
     EarlyStopping,
@@ -76,7 +76,7 @@ if __name__ == "__main__":
         EarlyStopping,
         ModelCheckpoint(filepath="model_weights/wd_out"),
     ]
-    metrics = [BinaryAccuracy]
+    metrics = [Precision]
 
     model.compile(
         method="binary",
