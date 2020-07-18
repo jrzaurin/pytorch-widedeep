@@ -19,7 +19,10 @@ from pytorch_widedeep.metrics import (
     FBetaScore,
 )
 
-f2_score = lambda y_true, y_pred: fbeta_score(y_true, y_pred, beta=2)
+
+def f2_score_bin(y_true, y_pred):
+    return fbeta_score(y_true, y_pred, beta=2)
+
 
 y_true_bin_np = np.array([1, 0, 0, 0, 1, 1, 0])
 y_pred_bin_np = np.array([0.6, 0.3, 0.2, 0.8, 0.4, 0.9, 0.6])
@@ -38,7 +41,7 @@ y_pred_bin_pt = torch.from_numpy(y_pred_bin_np).view(-1, 1)
         (precision_score, Precision()),
         (recall_score, Recall()),
         (f1_score, F1Score()),
-        (f2_score, FBetaScore(beta=2)),
+        (f2_score_bin, FBetaScore(beta=2)),
     ],
 )
 def test_binary_metrics(sklearn_metric, widedeep_metric):
@@ -82,7 +85,9 @@ y_pred_muli_np = np.array(
 y_true_multi_pt = torch.from_numpy(y_true_multi_np)
 y_pred_multi_pt = torch.from_numpy(y_pred_muli_np)
 
-f2_score = lambda y_true, y_pred, average: fbeta_score(y_true, y_pred, average=average, beta=2)
+
+def f2_score_multi(y_true, y_pred, average):
+    return fbeta_score(y_true, y_pred, average=average, beta=2)
 
 
 @pytest.mark.parametrize(
@@ -92,17 +97,19 @@ f2_score = lambda y_true, y_pred, average: fbeta_score(y_true, y_pred, average=a
         (precision_score, Precision()),
         (recall_score, Recall()),
         (f1_score, F1Score()),
-        (f2_score, FBetaScore(beta=2)),
+        (f2_score_multi, FBetaScore(beta=2)),
     ],
 )
 def test_muticlass_metrics(sklearn_metric, widedeep_metric):
-	if sklearn_metric.__name__ == "accuracy_score":
-	    assert np.isclose(
-	        sklearn_metric(y_true_multi_np, y_pred_muli_np.argmax(axis=1)),
-	        widedeep_metric(y_pred_multi_pt, y_true_multi_pt),
-	    )
-	else:
-	    assert np.isclose(
-	        sklearn_metric(y_true_multi_np, y_pred_muli_np.argmax(axis=1), average="macro"),
-	        widedeep_metric(y_pred_multi_pt, y_true_multi_pt),
-	    )
+    if sklearn_metric.__name__ == "accuracy_score":
+        assert np.isclose(
+            sklearn_metric(y_true_multi_np, y_pred_muli_np.argmax(axis=1)),
+            widedeep_metric(y_pred_multi_pt, y_true_multi_pt),
+        )
+    else:
+        assert np.isclose(
+            sklearn_metric(
+                y_true_multi_np, y_pred_muli_np.argmax(axis=1), average="macro"
+            ),
+            widedeep_metric(y_pred_multi_pt, y_true_multi_pt),
+        )
