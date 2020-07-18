@@ -9,7 +9,7 @@ from sklearn.utils import Bunch
 from torch.utils.data import Dataset, DataLoader
 
 from pytorch_widedeep.models import Wide, DeepDense
-from pytorch_widedeep.metrics import BinaryAccuracy
+from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.models._warmup import WarmUp
 from pytorch_widedeep.models.deep_image import conv_layer
 
@@ -138,7 +138,7 @@ wdset = WDset(X_wide, X_deep, X_text, X_image, target)
 wdloader = DataLoader(wdset, batch_size=10, shuffle=True)
 
 # Instantiate the WarmUp class
-warmer = WarmUp(loss_fn, BinaryAccuracy(), "binary", False)
+warmer = WarmUp(loss_fn, Accuracy(), "binary", False)
 
 # List the layers for the warm_gradual method
 text_layers = [c for c in list(deeptext.children())[1:]][::-1]
