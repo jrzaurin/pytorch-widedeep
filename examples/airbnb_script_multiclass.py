@@ -3,7 +3,7 @@ import torch
 import pandas as pd
 
 from pytorch_widedeep.models import Wide, WideDeep, DeepDense
-from pytorch_widedeep.metrics import CategoricalAccuracy, Accuracy
+from pytorch_widedeep.metrics import Accuracy, CategoricalAccuracy
 from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
 
 use_cuda = torch.cuda.is_available()
