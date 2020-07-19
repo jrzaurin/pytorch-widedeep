@@ -19,6 +19,7 @@ Documentation
     Preprocessing <preprocessing>
     Model Components <model_components>
     Wide and Deep Models <wide_deep/index>
+    Examples <examples>
 
 
 Introduction

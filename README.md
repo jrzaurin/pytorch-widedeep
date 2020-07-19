@@ -40,7 +40,9 @@ final output neuron or neurons, depending on whether we are performing a
 binary classification or regression, or a multi-class classification. The
 components within the faded-pink rectangles are concatenated.
 
-In math terms, and following the notation in the [paper](https://arxiv.org/abs/1606.07792), Architecture 1 can be formulated as:
+In math terms, and following the notation in the
+[paper](https://arxiv.org/abs/1606.07792), Architecture 1 can be formulated
+as:
 
 <p align="center">
   <img width="500" src="docs/figures/architecture_1_math.png">
@@ -130,7 +132,7 @@ from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
 from pytorch_widedeep.models import Wide, DeepDense, WideDeep
-from pytorch_widedeep.metrics import BinaryAccuracy
+from pytorch_widedeep.metrics import Accuracy
 
 # these next 4 lines are not directly related to pytorch-widedeep. I assume
 # you have downloaded the dataset and place it in a dir called data/adult/
@@ -178,7 +180,7 @@ deepdense = DeepDense(
 
 # build, compile and fit
 model = WideDeep(wide=wide, deepdense=deepdense)
-model.compile(method="binary", metrics=[BinaryAccuracy])
+model.compile(method="binary", metrics=[Accuracy])
 model.fit(
     X_wide=X_wide,
     X_deep=X_deep,

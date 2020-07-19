@@ -30,7 +30,7 @@ Prepare the wide and deep columns
 
     from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
     from pytorch_widedeep.models import Wide, DeepDense, WideDeep
-    from pytorch_widedeep.metrics import BinaryAccuracy
+    from pytorch_widedeep.metrics import Accuracy
 
     # prepare wide, crossed, embedding and continuous columns
     wide_cols = [
@@ -83,7 +83,7 @@ Build, compile, fit and predict
 
     # build, compile and fit
     model = WideDeep(wide=wide, deepdense=deepdense)
-    model.compile(method="binary", metrics=[BinaryAccuracy])
+    model.compile(method="binary", metrics=[Accuracy])
     model.fit(
         X_wide=X_wide,
         X_deep=X_deep,

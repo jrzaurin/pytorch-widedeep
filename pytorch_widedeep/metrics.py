@@ -66,7 +66,7 @@ class Accuracy(Metric):
 
     def reset(self):
         """
-        resets counters (correct_count, total_count) to 0
+        resets counters to 0
         """
         self.correct_count = 0
         self.total_count = 0
@@ -93,8 +93,8 @@ class Precision(Metric):
     Parameters
     ----------
     average: bool, default = True
-        if `True` calculate precision for each label, and find their
-        unweighted mean.
+        This applies only to multiclass problems. if `True` calculate
+        precision for each label, and find their unweighted mean.
     """
 
     def __init__(self, average: bool = True):
@@ -107,7 +107,7 @@ class Precision(Metric):
 
     def reset(self) -> None:
         """
-        resets counters (true_positives, all_positives) to 0
+        resets counters to 0
         """
         self.true_positives = 0
         self.all_positives = 0
@@ -140,8 +140,8 @@ class Recall(Metric):
     Parameters
     ----------
     average: bool, default = True
-        if `True` calculate recall for each label, and find their unweighted
-        mean.
+        This applies only to multiclass problems. if `True` calculate recall
+        for each label, and find their unweighted mean.
     """
 
     def __init__(self, average: bool = True):
@@ -154,7 +154,7 @@ class Recall(Metric):
 
     def reset(self) -> None:
         """
-        resets counters (true_positives, actual_positives) to 0
+        resets counters to 0
         """
         self.true_positives = 0
         self.actual_positives = 0
@@ -191,8 +191,8 @@ class FBetaScore(Metric):
     beta: int
         Coefficient to control the balance between precision and recall
     average: bool, default = True
-        if `True` calculate fbeta for each label, and find their unweighted
-        mean.
+        This applies only to multiclass problems. if `True` calculate fbeta
+        for each label, and find their unweighted mean.
     """
 
     def __init__(self, beta: int, average: bool = True):
@@ -232,7 +232,8 @@ class F1Score(Metric):
     Parameters
     ----------
     average: bool, default = True
-        if `True` calculate f1 for each label, and find their unweighted mean.
+        This applies only to multiclass problems. if `True` calculate f1 for
+        each label, and find their unweighted mean.
     """
 
     def __init__(self, average: bool = True):
@@ -247,74 +248,3 @@ class F1Score(Metric):
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
         return self.f1(y_pred, y_true)
-
-
-# class CategoricalAccuracy(Metric):
-#     r"""Class to calculate the categorical accuracy for multicategorical problems
-
-#     Parameters
-#     ----------
-#     top_k: int
-#         Accuracy will be computed using the top k most likely classes
-
-#     Examples
-#     --------
-#     >>> y_true = torch.from_numpy(np.random.choice(3, 100))
-#     >>> y_pred = torch.from_numpy(np.random.rand(100, 3))
-#     >>> metric = CategoricalAccuracy(top_k=top_k)
-#     >>> acc = metric(y_pred, y_true)
-#     """
-
-#     def __init__(self, top_k=1):
-#         self.top_k = top_k
-#         self.correct_count = 0
-#         self.total_count = 0
-
-#         self._name = "acc"
-
-#     def reset(self):
-#         """
-#         resets counters to 0
-#         """
-#         self.correct_count = 0
-#         self.total_count = 0
-
-#     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
-#         top_k = y_pred.topk(self.top_k, 1)[1]
-#         true_k = y_true.view(len(y_true), 1).expand_as(top_k)  # type: ignore
-#         self.correct_count += top_k.eq(true_k).float().sum().item()
-#         self.total_count += len(y_pred)  # type: ignore
-#         accuracy = float(self.correct_count) / float(self.total_count)
-#         return np.round(accuracy, 4)
-
-
-# class BinaryAccuracy(Metric):
-#     """Class to calculate accuracy for binary classification problems
-
-#     Examples
-#     --------
-#     >>> y_true = torch.from_numpy(np.random.choice(2, 100)).float()
-#     >>> y_pred = deepcopy(y_true.view(-1, 1)).float()
-#     >>> metric = BinaryAccuracy()
-#     >>> acc = metric(y_pred, y_true)
-#     """
-
-#     def __init__(self):
-#         self.correct_count = 0
-#         self.total_count = 0
-
-#         self._name = "acc"
-
-#     def reset(self):
-#         """
-#         resets counters to 0
-#         """
-#         self.correct_count = 0
-#         self.total_count = 0
-
-#     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
-#         y_pred_round = y_pred.round()
-#         self.correct_count += y_pred_round.eq(y_true.view(-1, 1)).float().sum().item()
-#         self.total_count += len(y_pred)  # type: ignore
-#         accuracy = float(self.correct_count) / float(self.total_count)
-#         return np.round(accuracy, 4)
