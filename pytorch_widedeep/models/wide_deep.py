@@ -266,9 +266,9 @@ class WideDeep(nn.Module):
             See the ``Callbacks`` section in this documentation or
             :obj:`pytorch_widedeep.callbacks`
         metrics: List[Metric], Optional. Default=None
-            Metrics available are: ``BinaryAccuracy`` and
-            ``CategoricalAccuracy`` See the ``Metrics`` section in this
-            documentation or :obj:`pytorch_widedeep.metrics`
+            Metrics available are: ``Accuracy``, ``Precision``, ``Recall``,
+            ``FBetaScore`` and ``F1Score``.  See the ``Metrics`` section in
+            this documentation or :obj:`pytorch_widedeep.metrics`
         class_weight: Union[float, List[float], Tuple[float]]. Optional. Default=None
             - float indicating the weight of the minority class in binary classification
               problems (e.g. 9.)
@@ -587,17 +587,22 @@ class WideDeep(nn.Module):
             with trange(train_steps, disable=self.verbose != 1) as t:
                 for batch_idx, (data, target) in zip(t, train_loader):
                     t.set_description("epoch %i" % (epoch + 1))
-                    acc, train_loss = self._training_step(data, target, batch_idx)
-                    if acc is not None:
-                        t.set_postfix(metrics=acc, loss=train_loss)
+                    score, train_loss = self._training_step(data, target, batch_idx)
+                    if score is not None:
+                        t.set_postfix(
+                            metrics={k: np.round(v, 4) for k, v in score.items()},
+                            loss=train_loss,
+                        )
                     else:
                         t.set_postfix(loss=np.sqrt(train_loss))
                     if self.lr_scheduler:
                         self._lr_scheduler_step(step_location="on_batch_end")
                     self.callback_container.on_batch_end(batch=batch_idx)
             epoch_logs["train_loss"] = train_loss
-            if acc is not None:
-                epoch_logs["train_acc"] = acc["acc"]
+            if score is not None:
+                for k, v in score.items():
+                    log_k = "_".join(["train", k])
+                    epoch_logs[log_k] = v
             # eval step...
             if epoch % validation_freq == (validation_freq - 1):
                 if eval_set is not None:
@@ -612,14 +617,21 @@ class WideDeep(nn.Module):
                     with trange(eval_steps, disable=self.verbose != 1) as v:
                         for i, (data, target) in zip(v, eval_loader):
                             v.set_description("valid")
-                            acc, val_loss = self._validation_step(data, target, i)
-                            if acc is not None:
-                                v.set_postfix(metrics=acc, loss=val_loss)
+                            score, val_loss = self._validation_step(data, target, i)
+                            if score is not None:
+                                v.set_postfix(
+                                    metrics={
+                                        k: np.round(v, 4) for k, v in score.items()
+                                    },
+                                    loss=val_loss,
+                                )
                             else:
                                 v.set_postfix(loss=np.sqrt(val_loss))
                     epoch_logs["val_loss"] = val_loss
-                    if acc is not None:
-                        epoch_logs["val_acc"] = acc["acc"]
+                    if score is not None:
+                        for k, v in score.items():
+                            log_k = "_".join(["val", k])
+                            epoch_logs[log_k] = v
             if self.lr_scheduler:
                 self._lr_scheduler_step(step_location="on_epoch_end")
             #  log and check if early_stop...
@@ -986,10 +998,10 @@ class WideDeep(nn.Module):
 
         if self.metric is not None:
             if self.method == "binary":
-                acc = self.metric(torch.sigmoid(y_pred), y)
+                score = self.metric(torch.sigmoid(y_pred), y)
             if self.method == "multiclass":
-                acc = self.metric(F.softmax(y_pred, dim=1), y)
-            return acc, avg_loss
+                score = self.metric(F.softmax(y_pred, dim=1), y)
+            return score, avg_loss
         else:
             return None, avg_loss
 
@@ -1008,10 +1020,10 @@ class WideDeep(nn.Module):
 
         if self.metric is not None:
             if self.method == "binary":
-                acc = self.metric(torch.sigmoid(y_pred), y)
+                score = self.metric(torch.sigmoid(y_pred), y)
             if self.method == "multiclass":
-                acc = self.metric(F.softmax(y_pred, dim=1), y)
-            return acc, avg_loss
+                score = self.metric(F.softmax(y_pred, dim=1), y)
+            return score, avg_loss
         else:
             return None, avg_loss
 

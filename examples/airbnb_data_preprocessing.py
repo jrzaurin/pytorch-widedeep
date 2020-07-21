@@ -8,9 +8,8 @@ from collections import Counter
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MultiLabelBinarizer
-
 import gender_guesser.detector as gender
+from sklearn.preprocessing import MultiLabelBinarizer
 
 warnings.filterwarnings("ignore")
 

@@ -3,7 +3,7 @@ import torch
 import pandas as pd
 
 from pytorch_widedeep.models import Wide, WideDeep, DeepDense
-from pytorch_widedeep.metrics import CategoricalAccuracy
+from pytorch_widedeep.metrics import F1Score, Accuracy
 from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
 
 use_cuda = torch.cuda.is_available()
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         continuous_cols=continuous_cols,
     )
     model = WideDeep(wide=wide, deepdense=deepdense, pred_dim=3)
-    model.compile(method="multiclass", metrics=[CategoricalAccuracy])
+    model.compile(method="multiclass", metrics=[Accuracy, F1Score])
 
     model.fit(
         X_wide=X_wide,
