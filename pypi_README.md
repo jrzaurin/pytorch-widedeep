@@ -58,7 +58,7 @@ Binary classification with the [adult
 dataset]([adult](https://www.kaggle.com/wenruliu/adult-income-dataset))
 using `Wide` and `DeepDense` and defaults settings.
 
-````python
+```python
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
