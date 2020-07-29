@@ -129,7 +129,7 @@ class WidePreprocessor(BasePreprocessor):
         else:
             encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)], dtype=np.long)
             for col_i, col in enumerate(self.wide_crossed_cols):
-                encoded[:, col_i] = df_wide[col].apply(lambda x: self.feature_dict[col + '_' + str(x)])
+                encoded[:, col_i] = df_wide[col].apply(lambda x: self.feature_dict[col + '_' + str(x)] if col + '_' + str(x) in self.feature_dict else 0)
             return encoded
 
     def fit_transform(self, df: pd.DataFrame) -> Union[sparse_matrix, np.ndarray]:
