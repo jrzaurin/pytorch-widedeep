@@ -127,7 +127,7 @@ class WidePreprocessor(BasePreprocessor):
             X_oh_2 = self.one_hot_enc.transform(df_wide[dummy_cols])
             return np.hstack((X_oh_1, X_oh_2))
         else:
-            encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)], dtype=np.int32)
+            encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)], dtype=np.long)
             for col_i, col in enumerate(self.wide_crossed_cols):
                 encoded[:, col_i] = df_wide[col].apply(lambda x: self.feature_dict[col + '_' + str(x)])
             return encoded
