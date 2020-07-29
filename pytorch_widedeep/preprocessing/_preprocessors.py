@@ -87,7 +87,9 @@ class WidePreprocessor(BasePreprocessor):
         self.wide_cols = wide_cols
         self.crossed_cols = crossed_cols
         self.already_dummies = already_dummies
-        self.one_hot_enc = OneHotEncoder(sparse=sparse, handle_unknown=handle_unknown)
+        if self.already_dummies:
+            self.one_hot_enc = OneHotEncoder(sparse=sparse, handle_unknown=handle_unknown)
+        self.feature_dict = {}
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Fits the Preprocessor and creates required attributes
@@ -100,20 +102,22 @@ class WidePreprocessor(BasePreprocessor):
             ]
             self.one_hot_enc.fit(df_wide[dummy_cols])
         else:
-            self.one_hot_enc.fit(df_wide[self.wide_crossed_cols])
+            vocab = self._make_vocab(df_wide[self.wide_crossed_cols])
+            # leave 0 as padding index
+            self.feature_dict = {v: i + 1 for i, v in enumerate(vocab)}
         return self
 
     def transform(self, df: pd.DataFrame) -> Union[sparse_matrix, np.ndarray]:
         """Returns the processed dataframe as a one hot encoded dense or
         sparse matrix
         """
-        try:
-            self.one_hot_enc.categories_
-        except:
-            raise NotFittedError(
-                "This WidePreprocessor instance is not fitted yet. "
-                "Call 'fit' with appropriate arguments before using this estimator."
-            )
+        # try:
+        #     self.one_hot_enc.categories_
+        # except:
+        #     raise NotFittedError(
+        #         "This WidePreprocessor instance is not fitted yet. "
+        #         "Call 'fit' with appropriate arguments before using this estimator."
+        #     )
         df_wide = self._prepare_wide(df)
         if self.already_dummies:
             X_oh_1 = df_wide[self.already_dummies].values
@@ -123,12 +127,24 @@ class WidePreprocessor(BasePreprocessor):
             X_oh_2 = self.one_hot_enc.transform(df_wide[dummy_cols])
             return np.hstack((X_oh_1, X_oh_2))
         else:
-            return self.one_hot_enc.transform(df_wide[self.wide_crossed_cols])
+            encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)], dtype=np.int32)
+            for col_i, col in enumerate(self.crossed_cols):
+                encoded[:, col_i] = df_wide[col].apply(lambda x: self.feature_dict['col' + '_' + str(x)])
+            return encoded
 
     def fit_transform(self, df: pd.DataFrame) -> Union[sparse_matrix, np.ndarray]:
         """Combines ``fit`` and ``transform``
         """
         return self.fit(df).transform(df)
+
+    def _make_vocab(self, df: pd.DataFrame) -> list:
+        vocab = []
+        for column in df.columns:
+            vocab += self._make_vocab_s(df[column])
+        return vocab
+
+    def _make_vocab_s(self, s: pd.Series) -> list:
+        return [s.name + '_' + str(x) for x in s.unique()]
 
     def _cross_cols(self, df: pd.DataFrame):
         df_cc = df.copy()

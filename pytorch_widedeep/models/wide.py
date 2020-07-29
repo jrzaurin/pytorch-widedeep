@@ -23,8 +23,8 @@ class Wide(nn.Module):
     --------
     >>> import torch
     >>> from pytorch_widedeep.models import Wide
-    >>> X = torch.empty(4, 4).random_(2)
-    >>> wide = Wide(wide_dim=X.size(0), pred_dim=1)
+    >>> X = torch.empty(4, 5).random_(2)
+    >>> wide = Wide(wide_dim=X.size(1), pred_dim=1)
     >>> wide(X)
     tensor([[-0.8841],
             [-0.8633],
@@ -32,12 +32,19 @@ class Wide(nn.Module):
             [-0.4762]], grad_fn=<AddmmBackward>)
     """
 
-    def __init__(self, wide_dim: int, pred_dim: int = 1):
+    def __init__(self, vocab_size: int, pred_dim: int = 1):
         super(Wide, self).__init__()
-        self.wide_linear = nn.Linear(wide_dim, pred_dim)
+        # self.wide_linear = nn.Linear(wide_dim, pred_dim)
+        self.wide_linear = nn.Embedding(vocab_size + 1, pred_dim, padding_idx=0)
 
     def forward(self, X: Tensor) -> Tensor:  # type: ignore
-        r"""Forward pass. Simply connecting the one-hot encoded input with the
-        ouput neuron(s) """
-        out = self.wide_linear(X.float())
+        r"""Forward pass.
+
+        Parameters
+        -----------
+        wide_dim: Tensor
+            idx of the feature. all type of categories in a dictionary. start from 1. 0 is for padding.
+        """
+        # out = self.wide_linear(X.float())
+        out = self.wide_linear(X).sum(dim=1)
         return out
