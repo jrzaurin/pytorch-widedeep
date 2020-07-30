@@ -2,6 +2,9 @@ from torch import nn
 
 from ..wdtypes import *
 
+import torch
+import math
+
 
 class Wide(nn.Module):
     r"""Simple linear layer that will receive the one-hot encoded `'wide'`
@@ -35,7 +38,19 @@ class Wide(nn.Module):
     def __init__(self, vocab_size: int, pred_dim: int = 1):
         super(Wide, self).__init__()
         # self.wide_linear = nn.Linear(wide_dim, pred_dim)
-        self.wide_linear = nn.Embedding(vocab_size + 1, pred_dim, padding_idx=0)
+        self.wide_linear = nn.Embedding(
+            vocab_size + 1, pred_dim, padding_idx=0)
+        # Sum(Embedding) + bias = OneHotVector + Linear
+        self.bias = nn.Parameter(torch.Tensor(pred_dim))
+        self.reset_parameters()
+
+    def reset_parameters(self) -> None:
+        # initialize Embedding and bias like nn.Linear
+        # Reference: https://pytorch.org/docs/master/_modules/torch/nn/modules/linear.html#Linear
+        nn.init.kaiming_uniform_(self.wide_linear.weight, a=math.sqrt(5))
+        fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.wide_linear.weight)
+        bound = 1 / math.sqrt(fan_in)
+        nn.init.uniform_(self.bias, -bound, bound)
 
     def forward(self, X: Tensor) -> Tensor:  # type: ignore
         r"""Forward pass.
@@ -46,5 +61,5 @@ class Wide(nn.Module):
             idx of the feature. all type of categories in a dictionary. start from 1. 0 is for padding.
         """
         # out = self.wide_linear(X.float())
-        out = self.wide_linear(X).sum(dim=1)
+        out = self.wide_linear(X).sum(dim=1) + self.bias
         return out
