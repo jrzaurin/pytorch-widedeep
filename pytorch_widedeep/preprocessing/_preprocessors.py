@@ -102,7 +102,7 @@ class WidePreprocessor(BasePreprocessor):
             ]
             self.one_hot_enc.fit(df_wide[dummy_cols])
         else:
-            vocab = self._make_vocab(df_wide[self.wide_crossed_cols])
+            vocab = self._make_global_feature_list(df_wide[self.wide_crossed_cols])
             # leave 0 as padding index
             self.feature_dict = {v: i + 1 for i, v in enumerate(vocab)}
         return self
@@ -137,13 +137,13 @@ class WidePreprocessor(BasePreprocessor):
         """
         return self.fit(df).transform(df)
 
-    def _make_vocab(self, df: pd.DataFrame) -> list:
+    def _make_global_feature_list(self, df: pd.DataFrame) -> list:
         vocab = []
         for column in df.columns:
-            vocab += self._make_vocab_s(df[column])
+            vocab += self._make_column_feature_list(df[column])
         return vocab
 
-    def _make_vocab_s(self, s: pd.Series) -> list:
+    def _make_column_feature_list(self, s: pd.Series) -> list:
         return [s.name + '_' + str(x) for x in s.unique()]
 
     def _cross_cols(self, df: pd.DataFrame):

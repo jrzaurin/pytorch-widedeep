@@ -35,11 +35,11 @@ class Wide(nn.Module):
             [-0.4762]], grad_fn=<AddmmBackward>)
     """
 
-    def __init__(self, vocab_size: int, pred_dim: int = 1):
+    def __init__(self, feature_dict_size: int, pred_dim: int = 1):
         super(Wide, self).__init__()
         # self.wide_linear = nn.Linear(wide_dim, pred_dim)
         self.wide_linear = nn.Embedding(
-            vocab_size + 1, pred_dim, padding_idx=0)
+            feature_dict_size + 1, pred_dim, padding_idx=0)
         # Sum(Embedding) + bias = OneHotVector + Linear
         self.bias = nn.Parameter(torch.Tensor(pred_dim))
         self.reset_parameters()
