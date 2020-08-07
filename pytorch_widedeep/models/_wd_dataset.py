@@ -11,12 +11,8 @@ class WideDeepDataset(Dataset):
 
     Parameters
     ----------
-    X_wide: np.ndarray, scipy csr sparse matrix.
-        wide input.Note that if a sparse matrix is passed to the
-        WideDeepDataset class, the loading process will be notably slow since
-        the transformation to a dense matrix is done on an index basis 'on the
-        fly'. At the moment this is the best option given the current support
-        offered for sparse tensors for pytorch.
+    X_wide: np.ndarray
+        wide input
     X_deep: np.ndarray
         deepdense input
     X_text: np.ndarray
@@ -24,13 +20,14 @@ class WideDeepDataset(Dataset):
     X_img: np.ndarray
         deepimage input
     target: np.ndarray
-    transforms: MultipleTransforms() object (which is in itself a torchvision
-        Compose). See in models/_multiple_transforms.py
+        target array
+    transforms: :obj:`MultipleTransforms`
+        torchvision Compose object. See models/_multiple_transforms.py
     """
 
     def __init__(
         self,
-        X_wide: Union[np.ndarray, sparse_matrix],
+        X_wide: np.ndarray,
         X_deep: np.ndarray,
         target: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
@@ -53,10 +50,7 @@ class WideDeepDataset(Dataset):
 
     def __getitem__(self, idx: int):
         # X_wide and X_deep are assumed to be *always* present
-        if isinstance(self.X_wide, sparse_matrix):
-            X = Bunch(wide=np.array(self.X_wide[idx].todense()).squeeze())
-        else:
-            X = Bunch(wide=self.X_wide[idx])
+        X = Bunch(wide=self.X_wide[idx])
         X.deepdense = self.X_deep[idx]
         if self.X_text is not None:
             X.deeptext = self.X_text[idx]

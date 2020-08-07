@@ -53,7 +53,7 @@ if __name__ == "__main__":
     )
     X_deep = prepare_deep.fit_transform(df)
 
-    wide = Wide(wide_dim=X_wide.shape[1], pred_dim=1)
+    wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
     deepdense = DeepDense(
         hidden_layers=[64, 32],
         dropout=[0.2, 0.2],
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     )
     model = WideDeep(wide=wide, deepdense=deepdense)
 
-    wide_opt = torch.optim.Adam(model.wide.parameters())
+    wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
     deep_opt = RAdam(model.deepdense.parameters())
     wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=3)
     deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=5)
@@ -92,6 +92,6 @@ if __name__ == "__main__":
         X_deep=X_deep,
         target=target,
         n_epochs=10,
-        batch_size=256,
+        batch_size=64,
         val_split=0.2,
     )

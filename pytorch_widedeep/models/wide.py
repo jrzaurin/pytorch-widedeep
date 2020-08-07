@@ -1,16 +1,24 @@
+import math
+
+import torch
 from torch import nn
 
 from ..wdtypes import *
 
 
 class Wide(nn.Module):
-    r"""Simple linear layer that will receive the one-hot encoded `'wide'`
-    input and connect it to the output neuron(s).
+    r"""Wide component
+
+    Linear model implemented via an Embedding layer connected to the output
+    neuron(s).
 
     Parameters
     -----------
     wide_dim: int
-        size of the input tensor
+        size of the Embedding layer. `wide_dim` is the summation of all the
+        individual values for all the features that go through the wide
+        component. For example, if the wide component receives 2 features with
+        5 individual values each, `wide_dim = 10`
     pred_dim: int
         size of the ouput tensor containing the predictions
 
@@ -23,21 +31,34 @@ class Wide(nn.Module):
     --------
     >>> import torch
     >>> from pytorch_widedeep.models import Wide
-    >>> X = torch.empty(4, 4).random_(2)
-    >>> wide = Wide(wide_dim=X.size(0), pred_dim=1)
+    >>> X = torch.empty(4, 4).random_(6)
+    >>> wide = Wide(wide_dim=X.unique().size(0), pred_dim=1)
     >>> wide(X)
-    tensor([[-0.8841],
-            [-0.8633],
-            [-1.2713],
-            [-0.4762]], grad_fn=<AddmmBackward>)
+    tensor([[-0.1138],
+            [ 0.4603],
+            [ 1.0762],
+            [ 0.8160]], grad_fn=<AddBackward0>)
     """
 
     def __init__(self, wide_dim: int, pred_dim: int = 1):
         super(Wide, self).__init__()
-        self.wide_linear = nn.Linear(wide_dim, pred_dim)
+        self.wide_linear = nn.Embedding(wide_dim + 1, pred_dim, padding_idx=0)
+        # (Sum(Embedding) + bias) is equivalent to (OneHotVector + Linear)
+        self.bias = nn.Parameter(torch.zeros(pred_dim))
+        self._reset_parameters()
+
+    def _reset_parameters(self) -> None:
+        r"""initialize Embedding and bias like nn.Linear. See `original
+        implementation
+        <https://pytorch.org/docs/stable/_modules/torch/nn/modules/linear.html#Linear>`_.
+        """
+        nn.init.kaiming_uniform_(self.wide_linear.weight, a=math.sqrt(5))
+        fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.wide_linear.weight)
+        bound = 1 / math.sqrt(fan_in)
+        nn.init.uniform_(self.bias, -bound, bound)
 
     def forward(self, X: Tensor) -> Tensor:  # type: ignore
-        r"""Forward pass. Simply connecting the one-hot encoded input with the
-        ouput neuron(s) """
-        out = self.wide_linear(X.float())
+        r"""Forward pass. Simply connecting the Embedding layer with the ouput
+        neuron(s)"""
+        out = self.wide_linear(X.long()).sum(dim=1) + self.bias
         return out
