@@ -6,7 +6,7 @@ import pytest
 from pytorch_widedeep.models import Wide, WideDeep, DeepDense
 
 # Wide array
-X_wide = np.random.choice(2, (100, 100), p=[0.8, 0.2])
+X_wide = np.random.choice(50, (100, 10))
 
 # Deep Array
 colnames = list(string.ascii_lowercase)[:10]
@@ -32,7 +32,7 @@ target_multic = np.random.choice(3, 100)
     ],
 )
 def test_focal_loss(X_wide, X_deep, target, method, pred_dim, probs_dim):
-    wide = Wide(100, pred_dim)
+    wide = Wide(np.unique(X_wide).shape[0], pred_dim)
     deepdense = DeepDense(
         hidden_layers=[32, 16],
         dropout=[0.5, 0.5],

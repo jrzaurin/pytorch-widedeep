@@ -19,7 +19,7 @@ from pytorch_widedeep.initializers import (
 )
 
 # Wide array
-X_wide = np.random.choice(2, (100, 100), p=[0.8, 0.2])
+X_wide = np.random.choice(50, (100, 100))
 
 # Deep Array
 colnames = list(string.ascii_lowercase)[:10]
@@ -58,7 +58,7 @@ test_layers_1 = [
 
 def test_initializers_1():
 
-    wide = Wide(100, 1)
+    wide = Wide(np.unique(X_wide).shape[0], 1)
     deepdense = DeepDense(
         hidden_layers=[32, 16],
         dropout=[0.5, 0.5],
