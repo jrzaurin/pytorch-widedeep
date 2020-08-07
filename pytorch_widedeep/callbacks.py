@@ -115,7 +115,7 @@ class History(Callback):
     r"""Callback that records events into a :obj:`History` object.
 
     This callback runs by default within :obj:`WideDeep`. See
-    :class:`pytorch_widedeep.models.wide_deep.WideDeep`. Documentation ss
+    :class:`pytorch_widedeep.models.wide_deep.WideDeep`. Documentation is
     included here for completion.
     """
 

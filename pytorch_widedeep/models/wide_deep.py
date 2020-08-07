@@ -232,7 +232,15 @@ class WideDeep(nn.Module):
         Parameters
         ----------
         method: str
-            One of `regression`, `binary` or `multiclass`
+            One of `regression`, `binary` or `multiclass`. The default when
+            performing a `regression`, a `binary` classification or a
+            `multiclass` classification is the `mean squared error
+            <https://pytorch.org/docs/stable/nn.functional.html#torch.nn.functional.mse_loss>`_
+            (MSE), `Binary Cross Entropy
+            <https://pytorch.org/docs/stable/nn.functional.html#torch.nn.functional.binary_cross_entropy>`_
+            (BCE) and `Cross Entropy
+            <https://pytorch.org/docs/stable/nn.functional.html#torch.nn.functional.cross_entropy>`_
+            (CE) respectively.
         optimizers: Union[Optimizer, Dict[str, Optimizer]], Optional, Default=AdamW
             - An instance of ``pytorch``'s ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
             - a dictionary where there keys are the model components (i.e.
@@ -594,7 +602,7 @@ class WideDeep(nn.Module):
                             loss=train_loss,
                         )
                     else:
-                        t.set_postfix(loss=np.sqrt(train_loss))
+                        t.set_postfix(loss=train_loss)
                     if self.lr_scheduler:
                         self._lr_scheduler_step(step_location="on_batch_end")
                     self.callback_container.on_batch_end(batch=batch_idx)
@@ -626,7 +634,7 @@ class WideDeep(nn.Module):
                                     loss=val_loss,
                                 )
                             else:
-                                v.set_postfix(loss=np.sqrt(val_loss))
+                                v.set_postfix(loss=val_loss)
                     epoch_logs["val_loss"] = val_loss
                     if score is not None:
                         for k, v in score.items():
