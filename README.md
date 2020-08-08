@@ -5,10 +5,12 @@
 
 [![Build Status](https://travis-ci.org/jrzaurin/pytorch-widedeep.svg?branch=master)](https://travis-ci.org/jrzaurin/pytorch-widedeep)
 [![Documentation Status](https://readthedocs.org/projects/pytorch-widedeep/badge/?version=latest)](https://pytorch-widedeep.readthedocs.io/en/latest/?badge=latest)
-[![Python 3.6 3.7
-3.8](https://img.shields.io/badge/python-3.6%20%203.7%203.8-blue.svg
-)](https://www.python.org/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
+
+Platform | Version Support
+---------|:---------------
+OSX      | [![Python 3.6 3.7](https://img.shields.io/badge/python-3.6%20%203.7-blue.svg)](https://www.python.org/)
+Linux    | [![Python 3.6 3.7 3.8](https://img.shields.io/badge/python-3.6%20%203.7%203.8-blue.svg)](https://www.python.org/)
 
 # pytorch-widedeep
 
@@ -38,11 +40,11 @@ few lines of code.
   <img width="600" src="docs/figures/architecture_1.png">
 </p>
 
-Architecture 1 combines the `Wide`, one-hot encoded features with the outputs
-from the `DeepDense`, `DeepText` and `DeepImage` components connected to a
-final output neuron or neurons, depending on whether we are performing a
-binary classification or regression, or a multi-class classification. The
-components within the faded-pink rectangles are concatenated.
+Architecture 1 combines the `Wide`, Linear model with the outputs from the
+`DeepDense`, `DeepText` and `DeepImage` components connected to a final output
+neuron or neurons, depending on whether we are performing a binary
+classification or regression, or a multi-class classification. The components
+within the faded-pink rectangles are concatenated.
 
 In math terms, and following the notation in the
 [paper](https://arxiv.org/abs/1606.07792), Architecture 1 can be formulated
@@ -69,10 +71,10 @@ otherwise".*
   <img width="600" src="docs/figures/architecture_2.png">
 </p>
 
-Architecture 2 combines the `Wide` one-hot encoded features with the Deep
-components of the model connected to the output neuron(s), after the different
-Deep components have been themselves combined through a FC-Head (that I refer
-as `deephead`).
+Architecture 2 combines the `Wide`, Linear model with the Deep components of
+the model connected to the output neuron(s), after the different Deep
+components have been themselves combined through a FC-Head (that I refer as
+`deephead`).
 
 In math terms, and following the notation in the
 [paper](https://arxiv.org/abs/1606.07792), Architecture 2 can be formulated
@@ -88,7 +90,8 @@ and `DeepImage` are optional. `pytorch-widedeep` includes standard text (stack
 of LSTMs) and image (pre-trained ResNets or stack of CNNs) models. However,
 the user can use any custom model as long as it has an attribute called
 `output_dim` with the size of the last layer of activations, so that
-`WideDeep` can be constructed. See the examples folder for more information.
+`WideDeep` can be constructed. See the examples folder or the docs for more
+information.
 
 
 ### Installation
@@ -115,14 +118,6 @@ cd pytorch-widedeep
 # Install in dev mode
 pip install -e .
 ```
-
-### Examples
-
-There are a number of notebooks in the `examples` folder plus some additional
-files. These notebooks cover most of the utilities of this package and can
-also act as documentation. In the case that github does not render the
-notebooks, or it renders them missing some parts, they are saved as markdown
-files in the `docs` folder.
 
 ### Quick start
 
