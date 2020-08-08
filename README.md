@@ -127,6 +127,7 @@ using `Wide` and `DeepDense` and defaults settings.
 
 ```python
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
@@ -165,7 +166,7 @@ target = df_train[target_col].values
 # wide
 preprocess_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=cross_cols)
 X_wide = preprocess_wide.fit_transform(df_train)
-wide = Wide(wide_dim=X_wide.shape[1], pred_dim=1)
+wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
 # deepdense
 preprocess_deep = DensePreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
