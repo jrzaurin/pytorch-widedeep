@@ -51,16 +51,16 @@ class WidePreprocessor(BasePreprocessor):
     Parameters
     ----------
     wide_cols: List[str]
-        List with the name of the columns that will be one-hot encoded and
-        passed through the Wide model
+        List with the name of the columns that will label encoded and passed
+        through the Wide model
     crossed_cols: List[Tuple[str, str]]
         List of Tuples with the name of the columns that will be `'crossed'`
-        and then one-hot encoded. e.g. [('education', 'occupation'), ...]
+        and then label encoded. e.g. [('education', 'occupation'), ...]
 
     Attributes
     ----------
     wide_crossed_cols: :obj:`List`
-        List with the names of all columns that will be one-hot encoded
+        List with the names of all columns that will be label encoded
     feature_dict: :obj:`Dict`
         Dictionary where the keys are the result of pasting `colname + '_' +
         column value` and the values are the corresponding mapped integer.

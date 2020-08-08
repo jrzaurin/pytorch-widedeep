@@ -15,12 +15,14 @@ The following code snippet is not directly related to ``pytorch-widedeep``.
 .. code-block:: python
 
     import pandas as pd
+    import numpy as np
     from sklearn.model_selection import train_test_split
 
     df = pd.read_csv("data/adult/adult.csv.zip")
     df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
     df.drop("income", axis=1, inplace=True)
     df_train, df_test = train_test_split(df, test_size=0.2, stratify=df.income_label)
+
 
 
 Prepare the wide and deep columns
@@ -63,7 +65,7 @@ Preprocessing and model components definition
     # wide
     preprocess_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=cross_cols)
     X_wide = preprocess_wide.fit_transform(df_train)
-    wide = Wide(wide_dim=X_wide.shape[1], pred_dim=1)
+    wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
     # deepdense
     preprocess_deep = DensePreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
