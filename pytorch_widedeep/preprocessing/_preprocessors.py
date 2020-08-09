@@ -42,24 +42,28 @@ class BasePreprocessor(ABC):
 class WidePreprocessor(BasePreprocessor):
     r"""Preprocessor to prepare the wide input dataset
 
+    This Preprocessor prepares the data for the wide, linear component. This
+    linear model is implemented via an Embedding layer that is connected to
+    the output neuron. ``WidePreprocessor`` simply numerically encodes all the
+    unique values of all categorical columns ``wide_cols + crossed_cols``. See
+    the Example below.
+
     Parameters
     ----------
     wide_cols: List[str]
-        List with the name of the columns that will be one-hot encoded and
-        passed through the Wide model
+        List with the name of the columns that will label encoded and passed
+        through the Wide model
     crossed_cols: List[Tuple[str, str]]
         List of Tuples with the name of the columns that will be `'crossed'`
-        and then one-hot encoded. e.g. [('education', 'occupation'), ...]
-    already_dummies: List[str]
-        List of columns that are already dummies/one-hot encoded, and
-        therefore do not need to be processed
+        and then label encoded. e.g. [('education', 'occupation'), ...]
 
     Attributes
     ----------
-    one_hot_enc: :obj:`OneHotEncoder`
-        an instance of :class:`sklearn.preprocessing.OneHotEncoder`
     wide_crossed_cols: :obj:`List`
-        List with the names of all columns that will be one-hot encoded
+        List with the names of all columns that will be label encoded
+    feature_dict: :obj:`Dict`
+        Dictionary where the keys are the result of pasting `colname + '_' +
+        column value` and the values are the corresponding mapped integer.
 
     Examples
     --------
@@ -69,66 +73,92 @@ class WidePreprocessor(BasePreprocessor):
     >>> wide_cols = ['color']
     >>> crossed_cols = [('color', 'size')]
     >>> wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
-    >>> wide_preprocessor.fit_transform(df)
-    array([[0., 0., 1., 0., 0., 1.],
-           [1., 0., 0., 1., 0., 0.],
-           [0., 1., 0., 0., 1., 0.]])
+    >>> X_wide = wide_preprocessor.fit_transform(df)
+    >>> X_wide
+    array([[1, 4],
+           [2, 5],
+           [3, 6]])
+    >>> wide_preprocessor.feature_dict
+    {'color_r': 1,
+     'color_b': 2,
+     'color_g': 3,
+     'color_size_r-s': 4,
+     'color_size_b-n': 5,
+     'color_size_g-l': 6}
+    >>> wide_preprocessor.inverse_transform(X_wide)
+      color color_size
+    0     r        r-s
+    1     b        b-n
+    2     g        g-l
     """
 
     def __init__(
-        self,
-        wide_cols: List[str],
-        crossed_cols=None,
-        already_dummies: Optional[List[str]] = None,
-        sparse=False,
-        handle_unknown="ignore",
+        self, wide_cols: List[str], crossed_cols=None,
     ):
         super(WidePreprocessor, self).__init__()
         self.wide_cols = wide_cols
         self.crossed_cols = crossed_cols
-        self.already_dummies = already_dummies
-        self.one_hot_enc = OneHotEncoder(sparse=sparse, handle_unknown=handle_unknown)
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Fits the Preprocessor and creates required attributes
         """
         df_wide = self._prepare_wide(df)
         self.wide_crossed_cols = df_wide.columns.tolist()
-        if self.already_dummies:
-            dummy_cols = [
-                c for c in self.wide_crossed_cols if c not in self.already_dummies
-            ]
-            self.one_hot_enc.fit(df_wide[dummy_cols])
-        else:
-            self.one_hot_enc.fit(df_wide[self.wide_crossed_cols])
+        vocab = self._make_global_feature_list(df_wide[self.wide_crossed_cols])
+        # leave 0 as padding index
+        self.feature_dict = {v: i + 1 for i, v in enumerate(vocab)}
         return self
 
-    def transform(self, df: pd.DataFrame) -> Union[sparse_matrix, np.ndarray]:
-        """Returns the processed dataframe as a one hot encoded dense or
-        sparse matrix
+    def transform(self, df: pd.DataFrame) -> np.array:
+        r"""Returns the processed dataframe
         """
         try:
-            self.one_hot_enc.categories_
+            self.feature_dict
         except:
             raise NotFittedError(
                 "This WidePreprocessor instance is not fitted yet. "
                 "Call 'fit' with appropriate arguments before using this estimator."
             )
         df_wide = self._prepare_wide(df)
-        if self.already_dummies:
-            X_oh_1 = df_wide[self.already_dummies].values
-            dummy_cols = [
-                c for c in self.wide_crossed_cols if c not in self.already_dummies
-            ]
-            X_oh_2 = self.one_hot_enc.transform(df_wide[dummy_cols])
-            return np.hstack((X_oh_1, X_oh_2))
-        else:
-            return self.one_hot_enc.transform(df_wide[self.wide_crossed_cols])
+        encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)], dtype=np.long)
+        for col_i, col in enumerate(self.wide_crossed_cols):
+            encoded[:, col_i] = df_wide[col].apply(
+                lambda x: self.feature_dict[col + "_" + str(x)]
+                if col + "_" + str(x) in self.feature_dict
+                else 0
+            )
+        return encoded.astype("int64")
 
-    def fit_transform(self, df: pd.DataFrame) -> Union[sparse_matrix, np.ndarray]:
+    def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:
+        r"""Takes as input the output from the ``transform`` method and it will
+        return the original values.
+
+        Parameters
+        ----------
+        encoded: np.ndarray
+            array with the output of the ``transform`` method
+        """
+        decoded = pd.DataFrame(encoded, columns=self.wide_crossed_cols)
+        inverse_dict = {k: v for v, k in self.feature_dict.items()}
+        decoded = decoded.applymap(lambda x: inverse_dict[x])
+        for col in decoded.columns:
+            rm_str = "".join([col, "_"])
+            decoded[col] = decoded[col].apply(lambda x: x.replace(rm_str, ""))
+        return decoded
+
+    def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
         """Combines ``fit`` and ``transform``
         """
         return self.fit(df).transform(df)
+
+    def _make_global_feature_list(self, df: pd.DataFrame) -> List:
+        vocab = []
+        for column in df.columns:
+            vocab += self._make_column_feature_list(df[column])
+        return vocab
+
+    def _make_column_feature_list(self, s: pd.Series) -> List:
+        return [s.name + "_" + str(x) for x in s.unique()]
 
     def _cross_cols(self, df: pd.DataFrame):
         df_cc = df.copy()

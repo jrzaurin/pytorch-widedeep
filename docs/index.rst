@@ -18,7 +18,10 @@ Documentation
     Utilities <utils/index>
     Preprocessing <preprocessing>
     Model Components <model_components>
-    Wide and Deep Models <wide_deep/index>
+    Metrics <metrics>
+    Callbacks <callbacks>
+    Focal Loss <losses>
+    Wide and Deep Models <wide_deep>
     Examples <examples>
 
 
@@ -45,12 +48,11 @@ Architectures
    :width: 600px
    :align: center
 
-Architecture 1 combines the ``Wide``, one-hot encoded features with the
-outputs from the ``DeepDense``, ``DeepText`` and ``DeepImage`` components
-connected to a final output neuron or neurons, depending on whether we are
-performing a binary classification or regression, or a multi-class
-classification. The components within the faded-pink rectangles are
-concatenated.
+Architecture 1 combines the `Wide`, Linear model with the outputs from the
+`DeepDense`, `DeepText` and `DeepImage` components connected to a final output
+neuron or neurons, depending on whether we are performing a binary
+classification or regression, or a multi-class classification. The components
+within the faded-pink rectangles are concatenated.
 
 In math terms, and following the notation in the `paper
 <https://arxiv.org/abs/1606.07792>`_, Architecture 1 can be formulated as:
@@ -76,10 +78,10 @@ is the activation function.
    :width: 600px
    :align: center
 
-Architecture 2 combines the ``Wide`` one-hot encoded features with the Deep
-components of the model connected to the output neuron(s), after the different
-Deep components have been themselves combined through a FC-Head (referred as
-as ``deephead``).
+Architecture 2 combines the `Wide`, Linear model with the Deep components of
+the model connected to the output neuron(s), after the different Deep
+components have been themselves combined through a FC-Head (that I refer as
+`deephead`).
 
 In math terms, and following the notation in the `paper
 <https://arxiv.org/abs/1606.07792>`_, Architecture 2 can be formulated as:

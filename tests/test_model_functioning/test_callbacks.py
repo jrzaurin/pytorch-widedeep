@@ -16,7 +16,7 @@ from pytorch_widedeep.callbacks import (
 )
 
 # Wide array
-X_wide = np.random.choice(2, (100, 100), p=[0.8, 0.2])
+X_wide = np.random.choice(50, (100, 10))
 
 # Deep Array
 colnames = list(string.ascii_lowercase)[:10]
@@ -38,7 +38,7 @@ target = np.random.choice(2, 100)
 ###############################################################################
 # Test that history saves the information adequately
 ###############################################################################
-wide = Wide(100, 1)
+wide = Wide(np.unique(X_wide).shape[0], 1)
 deepdense = DeepDense(
     hidden_layers=[32, 16],
     dropout=[0.5, 0.5],
@@ -92,7 +92,7 @@ def test_history_callback(optimizers, schedulers, len_loss_output, len_lr_output
 # Test that EarlyStopping stops as expected
 ###############################################################################
 def test_early_stop():
-    wide = Wide(100, 1)
+    wide = Wide(np.unique(X_wide).shape[0], 1)
     deepdense = DeepDense(
         hidden_layers=[32, 16],
         dropout=[0.5, 0.5],
@@ -105,7 +105,7 @@ def test_early_stop():
         method="binary",
         callbacks=[
             EarlyStopping(
-                min_delta=0.1, patience=3, restore_best_weights=True, verbose=1
+                min_delta=5.0, patience=3, restore_best_weights=True, verbose=1
             )
         ],
         verbose=1,
@@ -122,7 +122,7 @@ def test_early_stop():
     "save_best_only, max_save, n_files", [(True, 2, 2), (False, 2, 2), (False, 0, 5)]
 )
 def test_model_checkpoint(save_best_only, max_save, n_files):
-    wide = Wide(100, 1)
+    wide = Wide(np.unique(X_wide).shape[0], 1)
     deepdense = DeepDense(
         hidden_layers=[32, 16],
         dropout=[0.5, 0.5],

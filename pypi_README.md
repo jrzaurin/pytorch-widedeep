@@ -1,6 +1,11 @@
 [![Build Status](https://travis-ci.org/jrzaurin/pytorch-widedeep.svg?branch=master)](https://travis-ci.org/jrzaurin/pytorch-widedeep)
 [![Documentation Status](https://readthedocs.org/projects/pytorch-widedeep/badge/?version=latest)](https://pytorch-widedeep.readthedocs.io/en/latest/?badge=latest)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
 
+Platform | Version Support
+---------|:---------------
+OSX      | [![Python 3.6 3.7](https://img.shields.io/badge/python-3.6%20%203.7-blue.svg)](https://www.python.org/)
+Linux    | [![Python 3.6 3.7 3.8](https://img.shields.io/badge/python-3.6%20%203.7%203.8-blue.svg)](https://www.python.org/)
 
 # pytorch-widedeep
 
@@ -22,6 +27,7 @@ and images with corresponding tabular data using wide and deep models. With
 that in mind there are two architectures that can be implemented with just a
 few lines of code. For details on these architectures please visit the
 [repo](https://github.com/jrzaurin/pytorch-widedeep).
+
 
 ### Installation
 
@@ -48,14 +54,6 @@ cd pytorch-widedeep
 pip install -e .
 ```
 
-### Examples
-
-There are a number of notebooks in the `examples` folder plus some additional
-files. These notebooks cover most of the utilities of this package and can
-also act as documentation. In the case that github does not render the
-notebooks, or it renders them missing some parts, they are saved as markdown
-files in the `docs` folder.
-
 ### Quick start
 
 Binary classification with the [adult
@@ -64,6 +62,7 @@ using `Wide` and `DeepDense` and defaults settings.
 
 ```python
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
@@ -102,7 +101,7 @@ target = df_train[target_col].values
 # wide
 preprocess_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=cross_cols)
 X_wide = preprocess_wide.fit_transform(df_train)
-wide = Wide(wide_dim=X_wide.shape[1], pred_dim=1)
+wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
 # deepdense
 preprocess_deep = DensePreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)

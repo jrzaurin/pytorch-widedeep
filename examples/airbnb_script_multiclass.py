@@ -39,7 +39,8 @@ if __name__ == "__main__":
         embed_cols=cat_embed_cols, continuous_cols=continuous_cols
     )
     X_deep = prepare_deep.fit_transform(df)
-    wide = Wide(wide_dim=X_wide.shape[1], pred_dim=3)
+
+    wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=3)
     deepdense = DeepDense(
         hidden_layers=[64, 32],
         dropout=[0.2, 0.2],
@@ -48,7 +49,10 @@ if __name__ == "__main__":
         continuous_cols=continuous_cols,
     )
     model = WideDeep(wide=wide, deepdense=deepdense, pred_dim=3)
-    model.compile(method="multiclass", metrics=[Accuracy, F1Score])
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.03)
+    model.compile(
+        method="multiclass", metrics=[Accuracy, F1Score], optimizers=optimizer
+    )
 
     model.fit(
         X_wide=X_wide,

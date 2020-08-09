@@ -87,7 +87,7 @@ def loss_fn(y_pred, y_true):
 target = torch.empty(100, 1).random_(0, 2)
 
 # wide
-X_wide = torch.empty(100, 10).random_(0, 2)
+X_wide = torch.empty(100, 4).random_(1, 20)
 
 # deep
 colnames = list(string.ascii_lowercase)[:10]
@@ -107,7 +107,7 @@ X_image = torch.rand(100, 3, 28, 28)
 # Define the model components
 
 # wide
-wide = Wide(10, 1)
+wide = Wide(X_wide.unique().size(0), 1)
 if use_cuda:
     wide.cuda()
 

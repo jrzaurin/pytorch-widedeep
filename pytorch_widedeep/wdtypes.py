@@ -18,7 +18,6 @@ from pathlib import PosixPath
 
 from torch import Tensor
 from torch.nn import Module
-from scipy.sparse.csr import csr_matrix as sparse_matrix
 from torch.optim.optimizer import Optimizer
 from torchvision.transforms import (
     Pad,

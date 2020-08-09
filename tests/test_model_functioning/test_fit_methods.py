@@ -6,7 +6,7 @@ import pytest
 from pytorch_widedeep.models import Wide, WideDeep, DeepDense
 
 # Wide array
-X_wide = np.random.choice(2, (100, 100), p=[0.8, 0.2])
+X_wide = np.random.choice(50, (100, 100))
 
 # Deep Array
 colnames = list(string.ascii_lowercase)[:10]
@@ -51,7 +51,7 @@ def test_fit_methods(
     pred_dim,
     probs_dim,
 ):
-    wide = Wide(100, pred_dim)
+    wide = Wide(np.unique(X_wide).shape[0], pred_dim)
     deepdense = DeepDense(
         hidden_layers=[32, 16],
         dropout=[0.5, 0.5],

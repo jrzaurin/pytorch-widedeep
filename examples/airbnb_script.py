@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import pandas as pd
 from torchvision.transforms import ToTensor, Normalize
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     image_processor = ImagePreprocessor(img_col=img_col, img_path=img_path)
     X_images = image_processor.fit_transform(df)
 
-    wide = Wide(wide_dim=X_wide.shape[1], pred_dim=1)
+    wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
     deepdense = DeepDense(
         hidden_layers=[64, 32],
         dropout=[0.2, 0.2],
@@ -85,7 +86,7 @@ if __name__ == "__main__":
         wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage
     )
 
-    wide_opt = torch.optim.Adam(model.wide.parameters())
+    wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
     deep_opt = torch.optim.Adam(model.deepdense.parameters())
     text_opt = RAdam(model.deeptext.parameters())
     img_opt = RAdam(model.deepimage.parameters())

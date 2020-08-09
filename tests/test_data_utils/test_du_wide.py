@@ -39,7 +39,7 @@ preprocessor1 = WidePreprocessor(wide_cols, cross_cols)
 )
 def test_preprocessor1(input_df, expected_shape):
     wide_mtx = preprocessor1.fit_transform(input_df)
-    assert wide_mtx.shape[1] == expected_shape
+    assert np.unique(wide_mtx).shape[0] == expected_shape
 
 
 ###############################################################################
@@ -63,4 +63,4 @@ preprocessor2 = WidePreprocessor(wide_cols)
 )
 def test_prepare_wide_wo_crossed(input_df, expected_shape):
     wide_mtx = preprocessor2.fit_transform(input_df)
-    assert wide_mtx.shape[1] == expected_shape
+    assert np.unique(wide_mtx).shape[0] == expected_shape

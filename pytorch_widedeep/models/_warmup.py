@@ -263,7 +263,7 @@ class WarmUp(object):
                             acc = self.metric(F.softmax(y_pred, dim=1), y)
                         t.set_postfix(metrics=acc, loss=avg_loss)
                     else:
-                        t.set_postfix(loss=np.sqrt(avg_loss))
+                        t.set_postfix(loss=avg_loss)
 
     def _steps_up_down(self, steps: int, n_epochs: int = 1) -> Tuple[int, int]:
         r"""
