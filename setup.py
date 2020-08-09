@@ -11,8 +11,9 @@ dev_status = {
     "0.2": "Development Status :: 2 - Pre-Alpha",  # v0.2 - some basic functionality
     "0.3": "Development Status :: 3 - Alpha",  # v0.3 - most functionality
     "0.4": "Development Status :: 4 - Beta",  # v0.4 - most functionality + doc
-    "1.0": "Development Status :: 5 - Production/Stable",  # v1.0 - most functionality + doc + test  # noqa
-    "2.0": "Development Status :: 6 - Mature",  # v2.0 - new functionality?
+    "0.5": "Development Status :: 5 - Beta",  # v0.5 - most functionality + doc + improvements
+    "1.0": "Development Status :: 6 - Production/Stable",  # v1.0 - most functionality + doc + test  # noqa
+    "2.0": "Development Status :: 7 - Mature",  # v2.0 - new functionality?
 }
 
 
