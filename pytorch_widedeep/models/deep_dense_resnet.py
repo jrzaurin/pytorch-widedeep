@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import numpy as np
 import torch
 from torch import nn
@@ -11,14 +13,16 @@ class BasicBlock(nn.Module):
 
         self.lin1 = nn.Linear(inp, out)
         self.bn1 = nn.BatchNorm1d(out)
+        self.leaky_relu = nn.LeakyReLU(inplace=True)
         self.lin2 = nn.Linear(out, out)
         self.bn2 = nn.BatchNorm1d(out)
 
-        self.leaky_relu = nn.LeakyReLU(inplace=True)
-        if p > 0.:
+        if p > 0.0:
             self.dropout = True
             self.dp1 = nn.Dropout(p)
             self.dp2 = nn.Dropout(p)
+        else:
+            self.dropout = False
 
     def forward(self, x):
 
@@ -78,12 +82,17 @@ class DeepDenseResnet(nn.Module):
 
         # ResNet comprised of dense layers
         input_dim = emb_inp_dim + cont_inp_dim
-
         if input_dim != blocks[0]:
-            self.lin1 = nn.Linear(input_dim, blocks[0])
-            self.bn1 = nn.BatchNorm1d(blocks[0])
-
-        self.dense_resnet = nn.Sequential()
+            self.dense_resnet = nn.Sequential(
+                OrderedDict(
+                    [
+                        ("lin_resize", nn.Linear(input_dim, blocks[0])),
+                        ("bn_resize", nn.BatchNorm1d(blocks[0])),
+                    ]
+                )
+            )
+        else:
+            self.dense_resnet = nn.Sequential()
         for i in range(1, len(blocks)):
             self.dense_resnet.add_module(
                 "block_{}".format(i - 1), BasicBlock(blocks[i - 1], blocks[i], p)

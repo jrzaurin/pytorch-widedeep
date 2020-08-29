@@ -54,21 +54,21 @@ if __name__ == "__main__":
     X_deep = prepare_deep.fit_transform(df)
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
-    deepdense_resnet = DeepDenseResnet(
+
+    deepdense = DeepDenseResnet(
         blocks=[64, 64],
         deep_column_idx=prepare_deep.deep_column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
     )
-    import pdb; pdb.set_trace()  # breakpoint 2b888494 //
 
-    deepdense = DeepDense(
-        hidden_layers=[64, 32],
-        dropout=[0.2, 0.2],
-        deep_column_idx=prepare_deep.deep_column_idx,
-        embed_input=prepare_deep.embeddings_input,
-        continuous_cols=continuous_cols,
-    )
+    # deepdense = DeepDense(
+    #     hidden_layers=[64, 32],
+    #     dropout=[0.2, 0.2],
+    #     deep_column_idx=prepare_deep.deep_column_idx,
+    #     embed_input=prepare_deep.embeddings_input,
+    #     continuous_cols=continuous_cols,
+    # )
     model = WideDeep(wide=wide, deepdense=deepdense)
 
     wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         X_wide=X_wide,
         X_deep=X_deep,
         target=target,
-        n_epochs=10,
+        n_epochs=4,
         batch_size=64,
         val_split=0.2,
     )
