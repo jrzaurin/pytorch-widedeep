@@ -166,8 +166,7 @@ class DeepImage(nn.Module):
             self.output_dim = head_layers[-1]
 
     def forward(self, x: Tensor) -> Tensor:  # type: ignore
-        r"""Forward pass connecting the `'backbone'` with the `'head layers'`
-        """
+        r"""Forward pass connecting the `'backbone'` with the `'head layers'`"""
         x = self.backbone(x)
         x = x.view(x.size(0), -1)
         if self.head_layers is not None:

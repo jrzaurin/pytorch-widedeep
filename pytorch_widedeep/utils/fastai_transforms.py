@@ -78,8 +78,7 @@ defaults.text_spec_tok = [UNK, PAD, BOS, EOS, FLD, TK_MAJ, TK_UP, TK_REP, TK_WRE
 
 
 class BaseTokenizer:
-    """Basic class for a tokenizer function.
-    """
+    """Basic class for a tokenizer function."""
 
     def __init__(self, lang: str):
         self.lang = lang
@@ -278,8 +277,7 @@ class Tokenizer:
         return toks
 
     def _process_all_1(self, texts: Collection[str]) -> List[List[str]]:
-        """Process a list of ``texts`` in one process.
-        """
+        """Process a list of ``texts`` in one process."""
 
         tok = self.tok_func(self.lang)
         if self.special_cases:
@@ -332,13 +330,11 @@ class Vocab:
         self.stoi = defaultdict(int, {v: k for k, v in enumerate(self.itos)})
 
     def numericalize(self, t: Collection[str]) -> List[int]:
-        """Convert a list of str (or tokens) ``t`` to their ids.
-        """
+        """Convert a list of str (or tokens) ``t`` to their ids."""
         return [self.stoi[w] for w in t]
 
     def textify(self, nums: Collection[int], sep=" ") -> List[str]:
-        """Convert a list of ``nums`` (or indexes) to their tokens.
-        """
+        """Convert a list of ``nums`` (or indexes) to their tokens."""
         return sep.join([self.itos[i] for i in nums]) if sep is not None else [self.itos[i] for i in nums]  # type: ignore
 
     def __getstate__(self):

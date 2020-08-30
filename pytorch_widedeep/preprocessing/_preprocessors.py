@@ -93,15 +93,16 @@ class WidePreprocessor(BasePreprocessor):
     """
 
     def __init__(
-        self, wide_cols: List[str], crossed_cols=None,
+        self,
+        wide_cols: List[str],
+        crossed_cols=None,
     ):
         super(WidePreprocessor, self).__init__()
         self.wide_cols = wide_cols
         self.crossed_cols = crossed_cols
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        """Fits the Preprocessor and creates required attributes
-        """
+        """Fits the Preprocessor and creates required attributes"""
         df_wide = self._prepare_wide(df)
         self.wide_crossed_cols = df_wide.columns.tolist()
         vocab = self._make_global_feature_list(df_wide[self.wide_crossed_cols])
@@ -110,8 +111,7 @@ class WidePreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> np.array:
-        r"""Returns the processed dataframe
-        """
+        r"""Returns the processed dataframe"""
         try:
             self.feature_dict
         except:
@@ -147,8 +147,7 @@ class WidePreprocessor(BasePreprocessor):
         return decoded
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Combines ``fit`` and ``transform``
-        """
+        """Combines ``fit`` and ``transform``"""
         return self.fit(df).transform(df)
 
     def _make_global_feature_list(self, df: pd.DataFrame) -> List:
@@ -256,8 +255,7 @@ class DensePreprocessor(BasePreprocessor):
         ), "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        """Fits the Preprocessor and creates required attributes
-        """
+        """Fits the Preprocessor and creates required attributes"""
         if self.embed_cols is not None:
             df_emb = self._prepare_embed(df)
             self.label_encoder = LabelEncoder(df_emb.columns.tolist()).fit(df_emb)
@@ -274,8 +272,7 @@ class DensePreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Returns the processed ``dataframe`` as a np.ndarray
-        """
+        """Returns the processed ``dataframe`` as a np.ndarray"""
         if self.embed_cols is not None:
             df_emb = self._prepare_embed(df)
             df_emb = self.label_encoder.transform(df_emb)
@@ -302,8 +299,7 @@ class DensePreprocessor(BasePreprocessor):
         return df_deep.values
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Combines ``fit`` and ``transform``
-        """
+        """Combines ``fit`` and ``transform``"""
         return self.fit(df).transform(df)
 
     def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -387,8 +383,7 @@ class TextPreprocessor(BasePreprocessor):
         self.verbose = verbose
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        """Builds the vocabulary
-        """
+        """Builds the vocabulary"""
         texts = df[self.text_col].tolist()
         tokens = get_texts(texts)
         self.vocab = Vocab.create(
@@ -399,8 +394,7 @@ class TextPreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Returns the padded, `numericalised` sequences
-        """
+        """Returns the padded, `numericalised` sequences"""
         try:
             self.vocab
         except:
@@ -419,8 +413,7 @@ class TextPreprocessor(BasePreprocessor):
         return padded_seq
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Combines ``fit`` and ``transform``
-        """
+        """Combines ``fit`` and ``transform``"""
         return self.fit(df).transform(df)
 
 
@@ -502,8 +495,7 @@ class ImagePreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Resizes the images to the input height and width.
-        """
+        """Resizes the images to the input height and width."""
         try:
             self.aap
         except:
@@ -564,6 +556,5 @@ class ImagePreprocessor(BasePreprocessor):
         return np.asarray(resized_imgs)
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Combines ``fit`` and ``transform``
-        """
+        """Combines ``fit`` and ``transform``"""
         return self.fit(df).transform(df)

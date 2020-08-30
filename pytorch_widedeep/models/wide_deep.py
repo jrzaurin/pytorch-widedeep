@@ -701,7 +701,7 @@ class WideDeep(nn.Module):
         X_test: Optional[Dict[str, np.ndarray]] = None,
     ) -> np.ndarray:
         r"""Returns the predicted probabilities for the test dataset for  binary
-            and multiclass methods
+        and multiclass methods
         """
         preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)
         if self.method == "binary":

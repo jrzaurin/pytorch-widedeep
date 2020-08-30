@@ -45,8 +45,7 @@ class LabelEncoder(object):
         self.columns_to_encode = columns_to_encode
 
     def fit(self, df: pd.DataFrame) -> "LabelEncoder":
-        """Creates encoding attributes
-        """
+        """Creates encoding attributes"""
 
         df_inp = df.copy()
 
@@ -78,8 +77,7 @@ class LabelEncoder(object):
         return self
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Label Encoded the categories in ``columns_to_encode``
-        """
+        """Label Encoded the categories in ``columns_to_encode``"""
         try:
             self.encoding_dict
         except AttributeError:
@@ -126,8 +124,7 @@ class LabelEncoder(object):
         return self.fit(df).transform(df)
 
     def inverse_transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Returns the original categories
-        """
+        """Returns the original categories"""
         for k, v in self.inverse_encoding_dict.items():
             df[k] = df[k].apply(lambda x: v[x])
 
