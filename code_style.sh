@@ -1,5 +1,5 @@
 # sort imports
-isort . pytorch_widedeep tests examples setup.py
+isort --quiet . pytorch_widedeep tests examples setup.py
 # Black code style
 black . pytorch_widedeep tests examples setup.py
 # flake8 standards
