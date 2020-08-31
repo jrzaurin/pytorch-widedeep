@@ -55,20 +55,22 @@ if __name__ == "__main__":
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
-    deepdense = DeepDenseResnet(
-        blocks=[64, 64],
+    deepdense = DeepDense(
+        hidden_layers=[64, 32],
+        dropout=[0.2, 0.2],
         deep_column_idx=prepare_deep.deep_column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
     )
 
-    # deepdense = DeepDense(
-    #     hidden_layers=[64, 32],
-    #     dropout=[0.2, 0.2],
+    # # To use DeepDenseResnet as the deepdense component simply:
+    # deepdense = DeepDenseResnet(
+    #     blocks=[64, 32],
     #     deep_column_idx=prepare_deep.deep_column_idx,
     #     embed_input=prepare_deep.embeddings_input,
     #     continuous_cols=continuous_cols,
     # )
+
     model = WideDeep(wide=wide, deepdense=deepdense)
 
     wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
@@ -81,7 +83,7 @@ if __name__ == "__main__":
     initializers = {"wide": KaimingNormal, "deepdense": XavierNormal}
     callbacks = [
         LRHistory(n_epochs=10),
-        EarlyStopping,
+        EarlyStopping(patience=5),
         ModelCheckpoint(filepath="model_weights/wd_out"),
     ]
     metrics = [Accuracy, Precision]

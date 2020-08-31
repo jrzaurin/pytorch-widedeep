@@ -43,10 +43,11 @@ few lines of code.
 </p>
 
 Architecture 1 combines the `Wide`, Linear model with the outputs from the
-`DeepDense`, `DeepText` and `DeepImage` components connected to a final output
-neuron or neurons, depending on whether we are performing a binary
-classification or regression, or a multi-class classification. The components
-within the faded-pink rectangles are concatenated.
+`DeepDense` or `DeepDenseResnet`, `DeepText` and `DeepImage` components
+connected to a final output neuron or neurons, depending on whether we are
+performing a binary classification or regression, or a multi-class
+classification. The components within the faded-pink rectangles are
+concatenated.
 
 In math terms, and following the notation in the
 [paper](https://arxiv.org/abs/1606.07792), Architecture 1 can be formulated
@@ -87,13 +88,14 @@ as:
 </p>
 
 When using `pytorch-widedeep`, the assumption is that the so called `Wide` and
-`DeepDense` components in the figures are **always** present, while `DeepText`
-and `DeepImage` are optional. `pytorch-widedeep` includes standard text (stack
-of LSTMs) and image (pre-trained ResNets or stack of CNNs) models. However,
-the user can use any custom model as long as it has an attribute called
-`output_dim` with the size of the last layer of activations, so that
-`WideDeep` can be constructed. See the examples folder or the docs for more
-information.
+`deep dense` (this can be either `DeepDense` or `DeepDenseResnet`. See the
+documentation and examples folder for more details) components in the figures
+are **always** present, while `DeepText text` and `DeepImage` are optional.
+`pytorch-widedeep` includes standard text (stack of LSTMs) and image
+(pre-trained ResNets or stack of CNNs) models. However, the user can use any
+custom model as long as it has an attribute called `output_dim` with the size
+of the last layer of activations, so that `WideDeep` can be constructed. See
+the examples folder or the docs for more information.
 
 
 ### Installation

@@ -37,7 +37,7 @@ class DeepDense(nn.Module):
     embeddings_input: List, Optional
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
-    embed_p: float
+    embed_dropout: float
         embeddings dropout
     continuous_cols: List, Optional
         List with the name of the numeric (aka continuous) columns
@@ -48,10 +48,10 @@ class DeepDense(nn.Module):
     Attributes
     ----------
     dense: :obj:`nn.Sequential`
-        model of dense layers that will receive the concatenation of the
+        deep dense model that will receive the concatenation of the
         embeddings and the continuous columns
     embed_layers: :obj:`nn.ModuleDict`
-        ModuleDict with the embedding layers
+        :obj:`ModuleDict` with the embedding
     output_dim: :obj:`int`
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
@@ -81,7 +81,7 @@ class DeepDense(nn.Module):
         batchnorm: bool = False,
         dropout: Optional[List[float]] = None,
         embed_input: Optional[List[Tuple[str, int, int]]] = None,
-        embed_p: float = 0.0,
+        embed_dropout: float = 0.0,
         continuous_cols: Optional[List[str]] = None,
     ):
 
@@ -98,7 +98,7 @@ class DeepDense(nn.Module):
                     for col, val, dim in self.embed_input
                 }
             )
-            self.embed_dropout = nn.Dropout(embed_p)
+            self.embed_dropout = nn.Dropout(embed_dropout)
             emb_inp_dim = np.sum([embed[2] for embed in self.embed_input])
         else:
             emb_inp_dim = 0

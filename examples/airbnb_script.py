@@ -10,6 +10,7 @@ from pytorch_widedeep.models import (
     WideDeep,
     DeepDense,
     DeepImage,
+    DeepDenseResnet,
 )
 from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.initializers import KaimingNormal
@@ -53,7 +54,9 @@ if __name__ == "__main__":
     X_wide = prepare_wide.fit_transform(df)
 
     prepare_deep = DensePreprocessor(
-        embed_cols=cat_embed_cols, continuous_cols=continuous_cols
+        embed_cols=cat_embed_cols,  # type: ignore[arg-type]
+        continuous_cols=continuous_cols,
+        already_standard=already_standard,
     )
     X_deep = prepare_deep.fit_transform(df)
 
@@ -73,6 +76,14 @@ if __name__ == "__main__":
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
     )
+    # # To use DeepDenseResnet as the deepdense component simply:
+    # deepdense = DeepDenseResnet(
+    #     blocks=[64, 32],
+    #     dropout=0.2,
+    #     deep_column_idx=prepare_deep.deep_column_idx,
+    #     embed_input=prepare_deep.embeddings_input,
+    #     continuous_cols=continuous_cols,
+    # )
     deeptext = DeepText(
         vocab_size=len(text_processor.vocab.itos),
         hidden_dim=64,
