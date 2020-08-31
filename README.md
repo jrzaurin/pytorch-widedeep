@@ -181,6 +181,14 @@ deepdense = DeepDense(
     embed_input=preprocess_deep.embeddings_input,
     continuous_cols=cont_cols,
 )
+# # To use DeepDenseResnet as the deepdense component simply:
+# from pytorch_widedeep.models import DeepDenseResnet:
+# deepdense = DeepDenseResnet(
+#     blocks=[64, 32],
+#     deep_column_idx=preprocess_deep.deep_column_idx,
+#     embed_input=preprocess_deep.embeddings_input,
+#     continuous_cols=cont_cols,
+# )
 
 # build, compile and fit
 model = WideDeep(wide=wide, deepdense=deepdense)
