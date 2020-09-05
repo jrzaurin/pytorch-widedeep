@@ -30,7 +30,5 @@ script:
 after_success:
   # Combine coverage reports from Travis jobs
   - coverage combine
-  # Tell Coveralls to wait for all results before merging
-  - COVERALLS_PARALLEL=true coveralls
   # Send reports to Codecov. It automatically handles merging coverage results
   - codecov
