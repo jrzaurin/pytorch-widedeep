@@ -21,21 +21,21 @@ with open(os.path.join(pwd, "VERSION")) as f:
     assert len(version.split(".")) == 3, "bad version spec"
     majorminor = version.rsplit(".", 1)[0]
 
-# extras = {}
-# extras["test"] = ["pytest", "pytest-cov", "codecov"]
-# extras["docs"] = [
-#     "sphinx",
-#     "sphinx_rtd_theme",
-#     "recommonmark",
-#     "sphinx-markdown-tables",
-#     "sphinx-copybutton",
-#     "sphinx-autodoc-typehints",
-# ]
-# extras["quality"] = [
-#     "black",
-#     "isort @ git+git://github.com/timothycrosley/isort.git@e63ae06ec7d70b06df9e528357650281a3d3ec22#egg=isort",
-#     "flake8",
-# ]
+extras = {}
+extras["test"] = ["pytest", "pytest-cov", "codecov"]
+extras["docs"] = [
+    "sphinx",
+    "sphinx_rtd_theme",
+    "recommonmark",
+    "sphinx-markdown-tables",
+    "sphinx-copybutton",
+    "sphinx-autodoc-typehints",
+]
+extras["quality"] = [
+    "black",
+    "isort @ git+git://github.com/timothycrosley/isort.git@e63ae06ec7d70b06df9e528357650281a3d3ec22#egg=isort",
+    "flake8",
+]
 
 # main setup kw args
 setup_kwargs = {
@@ -62,22 +62,7 @@ setup_kwargs = {
         "torch",
         "torchvision",
     ],
-    "extra_requires": {
-        "test": ["pytest", "pytest-cov", "codecov"],
-        "docs": [
-            "sphinx",
-            "sphinx_rtd_theme",
-            "recommonmark",
-            "sphinx-markdown-tables",
-            "sphinx-copybutton",
-            "sphinx-autodoc-typehints",
-        ],
-        "quality": [
-            "black",
-            "isort @ git+git://github.com/timothycrosley/isort.git@e63ae06ec7d70b06df9e528357650281a3d3ec22#egg=isort",
-            "flake8",
-        ],
-    },
+    "extra_requires": extras,
     "python_requires": ">=3.6.0",
     "classifiers": [
         dev_status[majorminor],
