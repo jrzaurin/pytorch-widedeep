@@ -1,0 +1,9 @@
+[run]
+parallel = True
+omit =
+    pytorch_widedeep/optim/*
+
+[report]
+omit =
+    pytorch_widedeep/optim/*
+precision = 2

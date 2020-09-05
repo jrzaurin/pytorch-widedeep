@@ -28,4 +28,9 @@ script:
   - pytest --cov-report html --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep tests/
   # - pytest tests
 after_success:
+  # Combine coverage reports from Travis jobs
+  - coverage combine
+  # Tell Coveralls to wait for all results before merging
+  - COVERALLS_PARALLEL=true coveralls
+  # Send reports to Codecov. It automatically handles merging coverage results
   - codecov
