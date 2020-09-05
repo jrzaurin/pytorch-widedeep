@@ -196,6 +196,15 @@ model.fit(
 X_wide_te = preprocess_wide.transform(df_test)
 X_deep_te = preprocess_deep.transform(df_test)
 preds = model.predict(X_wide=X_wide_te, X_deep=X_deep_te)
+
+#  # save and load
+# torch.save(model, "model_weights/model.t")
+# model = torch.load("model_weights/model.t")
+
+#  # or via state dictionaries
+# torch.save(model.state_dict(), PATH)
+# model = WideDeep(*args)
+# model.load_state_dict(torch.load(PATH))
 ```
 
 Of course, one can do much more, such as using different initializations,
