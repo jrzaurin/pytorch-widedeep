@@ -15,9 +15,15 @@ data/
 model_weights/
 weights/
 
-# tests
+# Unit Tests/Coverage
 .coverage
+.coverage.*
+coverage.xml
+*.cover
+htmlcov*/
 .pytest_cache
+.cache
+.hypothesis/
 
 # sublime
 *.sublime-workspace

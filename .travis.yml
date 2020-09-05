@@ -23,4 +23,7 @@ install:
   - pip install --upgrade pip
   - pip install .
 script:
-  - pytest tests
+  - pytest --cov-report html --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep tests/
+  # - pytest tests
+after_success:
+  - codecov
