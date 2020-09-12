@@ -716,8 +716,10 @@ class WideDeep(nn.Module):
             `'X_wide'`, `'X_deep'`, `'X_text'`, `'X_img'` and `'target'` the values are
             the corresponding matrices.
 
+
         .. note:: WideDeep assumes that `X_wide`, `X_deep` and `target` ALWAYS exist,
             while `X_text` and `X_img` are optional.
+
         """
         preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)
         if self.method == "regression":
