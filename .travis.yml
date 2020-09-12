@@ -25,8 +25,7 @@ install:
   - pip install codecov
   - pip install .
 script:
-  - pytest --doctest-modules pytorch_widedeep
-
+  # - pytest --doctest-modules pytorch_widedeep
   - pytest \
         --cov-report html \
         --cov-report term \
