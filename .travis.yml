@@ -25,14 +25,14 @@ install:
   - pip install codecov
   - pip install .
 script:
+  - pytest --doctest-modules pytorch_widedeep
+
   - pytest \
-        --doctest-modules pytorch_widedeep \
         --cov-report html \
         --cov-report term \
         --disable-pytest-warnings \
         --cov=pytorch_widedeep \
         tests/
-
   # - pytest tests
 after_success:
   # Combine coverage reports from Travis jobs
