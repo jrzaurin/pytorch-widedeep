@@ -48,10 +48,10 @@ def test_label_encoder(input_df, encoder, output_df):
 ###############################################################################
 cat_embed_cols = [("col1", 5), ("col2", 5)]
 
-preprocessor1 = DensePreprocessor(cat_embed_cols)
+preprocessor1 = DensePreprocessor(cat_embed_cols)  # type: ignore[arg-type]
 X_letters = preprocessor1.fit_transform(df_letters)
 
-preprocessor2 = DensePreprocessor(cat_embed_cols)
+preprocessor2 = DensePreprocessor(cat_embed_cols)  # type: ignore[arg-type]
 X_numbers = preprocessor2.fit_transform(df_numbers)
 
 error_list = []

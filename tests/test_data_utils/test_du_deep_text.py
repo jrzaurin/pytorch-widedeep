@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import fetch_20newsgroups
 
+from pytorch_widedeep.utils import text_utils
 from pytorch_widedeep.preprocessing import TextPreprocessor
 
 texts = np.random.choice(fetch_20newsgroups().data, 10)
@@ -29,3 +30,13 @@ def test_text_processor():
             recovered_tokens.append(processor.vocab.itos[t])
 
     assert np.all([org == recv for org, recv in zip(original_tokens, recovered_tokens)])
+
+
+def test_pad_sequences():
+    out = []
+    seq = [1, 2, 3]
+    padded_seq_1 = text_utils.pad_sequences(seq, maxlen=5, pad_idx=0)
+    out.append(all([el == 0 for el in padded_seq_1[:2]]))
+    padded_seq_2 = text_utils.pad_sequences(seq, maxlen=5, pad_idx=1, pad_first=False)
+    out.append(all([el == 1 for el in padded_seq_2[-2:]]))
+    assert all(out)

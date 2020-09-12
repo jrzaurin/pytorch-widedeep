@@ -64,3 +64,22 @@ preprocessor2 = WidePreprocessor(wide_cols)
 def test_prepare_wide_wo_crossed(input_df, expected_shape):
     wide_mtx = preprocessor2.fit_transform(input_df)
     assert np.unique(wide_mtx).shape[0] == expected_shape
+
+
+###############################################################################
+# test that the inverse transform returns the original DataFrame
+###############################################################################
+@pytest.mark.parametrize(
+    "input_df",
+    [
+        (df_letters),
+        (df_numbers),
+    ],
+)
+def test_inverse_transform(input_df):
+    wide_mtx = preprocessor1.fit_transform(input_df)
+    org_df = preprocessor1.inverse_transform(wide_mtx)
+    org_df = org_df[input_df.columns.tolist()]
+    for c in org_df.columns:
+        org_df[c] = org_df[c].astype(input_df[c].dtype)
+    assert input_df.equals(org_df)

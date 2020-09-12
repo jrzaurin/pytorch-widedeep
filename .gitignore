@@ -37,5 +37,9 @@ sftp*-config.json
 
 # Documentation
 _build
+
 # _static
 _templates
+
+# test checkpoints
+checkpoints

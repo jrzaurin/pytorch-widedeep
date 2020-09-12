@@ -3,6 +3,7 @@ from copy import deepcopy as c
 
 import numpy as np
 import torch
+import pytest
 
 from pytorch_widedeep.models import (
     Wide,
@@ -12,10 +13,14 @@ from pytorch_widedeep.models import (
     DeepImage,
 )
 from pytorch_widedeep.initializers import (
+    Normal,
+    Uniform,
+    Orthogonal,
     XavierNormal,
     KaimingNormal,
     XavierUniform,
     KaimingUniform,
+    ConstantInitializer,
 )
 
 # Wide array
@@ -48,7 +53,15 @@ initializers_1 = {
     "deeptext": KaimingNormal,
     "deepimage": KaimingUniform,
 }
-test_layers_1 = [
+
+initializers_2 = {
+    "wide": Normal,
+    "deepdense": Uniform,
+    "deeptext": ConstantInitializer(value=1.0),
+    "deepimage": Orthogonal,
+}
+
+test_layers = [
     "wide.wlinear.weight",
     "deepdense.dense.dense_layer_1.0.weight",
     "deeptext.rnn.weight_hh_l1",
@@ -56,7 +69,14 @@ test_layers_1 = [
 ]
 
 
-def test_initializers_1():
+@pytest.mark.parametrize(
+    "initializers, test_layers",
+    [
+        (initializers_1, test_layers),
+        (initializers_2, test_layers),
+    ],
+)
+def test_initializers_1(initializers, test_layers):
 
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deepdense = DeepDense(
@@ -79,13 +99,13 @@ def test_initializers_1():
 
     org_weights = []
     for n, p in cmodel.named_parameters():
-        if n in test_layers_1:
+        if n in test_layers:
             org_weights.append(p)
 
-    model.compile(method="binary", verbose=0, initializers=initializers_1)
+    model.compile(method="binary", verbose=0, initializers=initializers)
     init_weights = []
     for n, p in model.named_parameters():
-        if n in test_layers_1:
+        if n in test_layers:
             init_weights.append(p)
 
     res = all(
@@ -103,7 +123,7 @@ def test_initializers_1():
 initializers_2 = {
     "wide": XavierNormal,
     "deepdense": XavierUniform,
-    "deeptext": KaimingNormal(pattern=r"^(?!.*word_embed).*$"),
+    "deeptext": KaimingNormal(pattern=r"^(?!.*word_embed).*$"),  # type: ignore[dict-item]
 }
 
 
