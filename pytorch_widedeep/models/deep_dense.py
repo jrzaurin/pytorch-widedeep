@@ -65,13 +65,7 @@ class DeepDense(nn.Module):
     >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
     >>> deep_column_idx = {k:v for v,k in enumerate(colnames)}
     >>> model = DeepDense(hidden_layers=[8,4], deep_column_idx=deep_column_idx, embed_input=embed_input)
-    >>> model(X_deep)
-    tensor([[ 3.4470e-02, -2.0089e-03,  4.7983e-02,  3.3500e-01],
-            [ 1.4329e-02, -1.3800e-03, -3.3617e-04,  4.1046e-01],
-            [-3.3546e-04,  3.2413e-02, -4.1198e-03,  4.8717e-01],
-            [-6.7882e-04,  7.9103e-03, -1.9960e-03,  4.2134e-01],
-            [ 6.7187e-02, -1.2821e-03, -3.0960e-04,  3.6123e-01]],
-           grad_fn=<LeakyReluBackward1>)
+    >>> out = model(X_deep)
     """
 
     def __init__(

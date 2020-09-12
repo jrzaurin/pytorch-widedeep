@@ -106,13 +106,7 @@ class DeepDenseResnet(nn.Module):
     >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
     >>> deep_column_idx = {k:v for v,k in enumerate(colnames)}
     >>> model = DeepDenseResnet(blocks=[16,4], deep_column_idx=deep_column_idx, embed_input=embed_input)
-    >>> model(X_deep)
-    tensor([[-9.8953e-03,  1.8113e+00,  1.0504e+00,  1.1469e+00],
-            [ 1.6808e+00, -5.6763e-05,  1.9661e+00, -1.3943e-02],
-            [ 1.8050e-01,  1.4286e+00, -6.7630e-03,  9.2765e-01],
-            [ 8.1933e-02, -2.8483e-02, -9.6164e-03, -1.0949e-02],
-            [-9.5366e-03, -3.8592e-03, -1.3786e-02,  4.1468e-01]],
-           grad_fn=<LeakyReluBackward1>)
+    >>> out = model(X_deep)
     """
 
     def __init__(

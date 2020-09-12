@@ -63,12 +63,7 @@ class DeepText(nn.Module):
     >>> from pytorch_widedeep.models import DeepText
     >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
     >>> model = DeepText(vocab_size=4, hidden_dim=4, n_layers=1, padding_idx=0, embed_dim=4)
-    >>> model(X_text)
-    tensor([[ 0.0315,  0.0393, -0.0618, -0.0561],
-            [-0.0674,  0.0297, -0.1118, -0.0668],
-            [-0.0446,  0.0814, -0.0921, -0.0338],
-            [-0.0844,  0.0681, -0.1016, -0.0464],
-            [-0.0268,  0.0294, -0.0988, -0.0666]], grad_fn=<SelectBackward>)
+    >>> out = model(X_text)
     """
 
     def __init__(

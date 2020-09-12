@@ -33,11 +33,7 @@ class Wide(nn.Module):
     >>> from pytorch_widedeep.models import Wide
     >>> X = torch.empty(4, 4).random_(6)
     >>> wide = Wide(wide_dim=X.unique().size(0), pred_dim=1)
-    >>> wide(X)
-    tensor([[-0.1138],
-            [ 0.4603],
-            [ 1.0762],
-            [ 0.8160]], grad_fn=<AddBackward0>)
+    >>> out = wide(X)
     """
 
     def __init__(self, wide_dim: int, pred_dim: int = 1):

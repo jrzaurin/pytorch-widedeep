@@ -82,11 +82,7 @@ class DeepImage(nn.Module):
     >>> from pytorch_widedeep.models import DeepImage
     >>> X_img = torch.rand((2,3,224,224))
     >>> model = DeepImage(head_layers=[512, 64, 8])
-    >>> model(X_img)
-    tensor([[ 7.7234e-02,  8.0923e-02,  2.3077e-01, -5.1122e-03, -4.3018e-03,
-              3.1193e-01,  3.0780e-01,  6.5098e-01],
-            [ 4.6191e-02,  6.7856e-02, -3.0163e-04, -3.7670e-03, -2.1437e-03,
-              1.5416e-01,  3.9227e-01,  5.5048e-01]], grad_fn=<LeakyReluBackward1>)
+    >>> out = model(X_img)
     """
 
     def __init__(
