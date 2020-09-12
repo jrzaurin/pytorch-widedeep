@@ -43,20 +43,20 @@ class FocalLoss(nn.Module):
         Examples
         --------
         >>> import torch
-        >>> import numpy as np
+        >>>
         >>> from pytorch_widedeep.losses import FocalLoss
         >>>
         >>> # BINARY
-        >>> target = torch.from_numpy(np.random.choice(2, 10))
-        >>> input = torch.rand(10,1)
+        >>> target = torch.tensor([0, 1, 0, 1])
+        >>> input = torch.tensor([[0.6, 0.7, 0.3, 0.8]]).t()
         >>> FocalLoss()(input, target)
-        tensor(0.1604)
+        tensor(0.1762)
         >>>
         >>> # MULTICLASS
-        >>> target = torch.from_numpy(np.random.choice(3, 10))
-        >>> input = torch.rand(10,3)
+        >>> target = torch.tensor([1, 0, 2])
+        >>> input = torch.tensor([[0.2, 0.5, 0.3], [0.8, 0.1, 0.1], [0.7, 0.2, 0.1]])
         >>> FocalLoss()(input, target)
-        tensor(0.3024)
+        tensor(0.2573)
         """
         input_prob = torch.sigmoid(input)
         if input.size(1) == 1:
