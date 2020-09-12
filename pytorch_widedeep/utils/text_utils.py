@@ -123,7 +123,7 @@ def pad_sequences(
 
 def build_embeddings_matrix(
     vocab: Vocab, word_vectors_path: str, min_freq: int, verbose: int = 1
-) -> np.ndarray:
+) -> np.ndarray:  # pragma: no cover
     r"""
     Build the embedding matrix using pretrained word vectors
 
