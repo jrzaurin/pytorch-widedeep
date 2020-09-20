@@ -3,7 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/pytorch-widedeep.svg)](https://badge.fury.io/py/pytorch-widedeep)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/jrzaurin/pytorch-widedeep/issues)
-[![codecov](https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/dense_resnet/graph/badge.svg)](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
+[![codecov](https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/master/graph/badge.svg)](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
 
 Platform | Version Support
 ---------|:---------------
