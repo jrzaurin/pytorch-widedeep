@@ -99,7 +99,7 @@ continuous_cols = colnames[-5:]
 X_deep = torch.from_numpy(np.vstack(embed_cols + cont_cols).transpose())
 
 # text
-X_text = torch.cat((torch.zeros([100, 1]), torch.empty(100, 4).random_(1, 4)), axis=1)
+X_text = torch.cat((torch.zeros([100, 1]), torch.empty(100, 4).random_(1, 4)), axis=1)  # type: ignore[call-overload]
 
 # image
 X_image = torch.rand(100, 3, 28, 28)
@@ -119,7 +119,7 @@ deepdense = DeepDense(
     embed_input=embed_input,
     continuous_cols=continuous_cols,
 )
-deepdense = nn.Sequential(deepdense, nn.Linear(8, 1))
+deepdense = nn.Sequential(deepdense, nn.Linear(8, 1))  # type: ignore[assignment]
 if use_cuda:
     deepdense.cuda()
 

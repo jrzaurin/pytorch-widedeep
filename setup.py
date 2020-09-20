@@ -22,7 +22,7 @@ with open(os.path.join(pwd, "VERSION")) as f:
     majorminor = version.rsplit(".", 1)[0]
 
 extras = {}
-extras["test"] = ["pytest"]
+extras["test"] = ["pytest", "pytest-cov", "codecov"]
 extras["docs"] = [
     "sphinx",
     "sphinx_rtd_theme",

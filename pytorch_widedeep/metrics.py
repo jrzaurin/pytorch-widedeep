@@ -55,6 +55,24 @@ class Accuracy(Metric):
     top_k: int, default = 1
         Accuracy will be computed using the top k most likely classes in
         multiclass problems
+
+    Examples
+    --------
+    >>> import torch
+    >>>
+    >>> from pytorch_widedeep.metrics import Accuracy
+    >>>
+    >>> acc = Accuracy()
+    >>> y_true = torch.tensor([0, 1, 0, 1])
+    >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).t()
+    >>> acc(y_pred, y_true)
+    0.5
+    >>>
+    >>> acc = Accuracy(top_k=2)
+    >>> y_true = torch.tensor([0, 1, 2])
+    >>> y_pred = torch.tensor([[0.3, 0.5, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
+    >>> acc(y_pred, y_true)
+    0.6666666666666666
     """
 
     def __init__(self, top_k: int = 1):
@@ -95,6 +113,24 @@ class Precision(Metric):
     average: bool, default = True
         This applies only to multiclass problems. if `True` calculate
         precision for each label, and find their unweighted mean.
+
+    Examples
+    --------
+    >>> import torch
+    >>>
+    >>> from pytorch_widedeep.metrics import Precision
+    >>>
+    >>> prec = Precision()
+    >>> y_true = torch.tensor([0, 1, 0, 1])
+    >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).t()
+    >>> prec(y_pred, y_true)
+    0.5
+    >>>
+    >>> prec = Precision(average=True)
+    >>> y_true = torch.tensor([0, 1, 2])
+    >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
+    >>> prec(y_pred, y_true)
+    0.3333333432674408
     """
 
     def __init__(self, average: bool = True):
@@ -142,6 +178,24 @@ class Recall(Metric):
     average: bool, default = True
         This applies only to multiclass problems. if `True` calculate recall
         for each label, and find their unweighted mean.
+
+    Examples
+    --------
+    >>> import torch
+    >>>
+    >>> from pytorch_widedeep.metrics import Recall
+    >>>
+    >>> rec = Recall()
+    >>> y_true = torch.tensor([0, 1, 0, 1])
+    >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).t()
+    >>> rec(y_pred, y_true)
+    0.5
+    >>>
+    >>> rec = Recall(average=True)
+    >>> y_true = torch.tensor([0, 1, 2])
+    >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
+    >>> rec(y_pred, y_true)
+    0.3333333432674408
     """
 
     def __init__(self, average: bool = True):
@@ -193,6 +247,24 @@ class FBetaScore(Metric):
     average: bool, default = True
         This applies only to multiclass problems. if `True` calculate fbeta
         for each label, and find their unweighted mean.
+
+    Examples
+    --------
+    >>> import torch
+    >>>
+    >>> from pytorch_widedeep.metrics import FBetaScore
+    >>>
+    >>> fbeta = FBetaScore(beta=2)
+    >>> y_true = torch.tensor([0, 1, 0, 1])
+    >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).t()
+    >>> fbeta(y_pred, y_true)
+    0.5
+    >>>
+    >>> fbeta = FBetaScore(beta=2)
+    >>> y_true = torch.tensor([0, 1, 2])
+    >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
+    >>> fbeta(y_pred, y_true)
+    0.3333333432674408
     """
 
     def __init__(self, beta: int, average: bool = True):
@@ -200,6 +272,7 @@ class FBetaScore(Metric):
 
         self.precision = Precision(average=False)
         self.recall = Recall(average=False)
+        self.eps = 1e-20
 
         self.beta = beta
 
@@ -218,7 +291,7 @@ class FBetaScore(Metric):
         rec = self.recall(y_pred, y_true)
         beta2 = self.beta ** 2
 
-        fbeta = ((1 + beta2) * prec * rec) / (beta2 * prec + rec)
+        fbeta = ((1 + beta2) * prec * rec) / (beta2 * prec + rec + self.eps)
 
         if self.average:
             return fbeta.mean().item()
@@ -234,6 +307,24 @@ class F1Score(Metric):
     average: bool, default = True
         This applies only to multiclass problems. if `True` calculate f1 for
         each label, and find their unweighted mean.
+
+    Examples
+    --------
+    >>> import torch
+    >>>
+    >>> from pytorch_widedeep.metrics import F1Score
+    >>>
+    >>> f1 = F1Score()
+    >>> y_true = torch.tensor([0, 1, 0, 1])
+    >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).t()
+    >>> f1(y_pred, y_true)
+    0.5
+    >>>
+    >>> f1 = F1Score()
+    >>> y_true = torch.tensor([0, 1, 2])
+    >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
+    >>> f1(y_pred, y_true)
+    0.3333333432674408
     """
 
     def __init__(self, average: bool = True):

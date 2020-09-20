@@ -21,6 +21,14 @@ matrix:
       after_success: skip
 install:
   - pip install --upgrade pip
+  - pip install pytest-cov
+  - pip install codecov
   - pip install .
 script:
-  - pytest tests
+  - pytest --doctest-modules pytorch_widedeep --cov-report html --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep tests/
+  # - pytest tests
+after_success:
+  # Combine coverage reports from Travis jobs
+  - coverage combine
+  # Send reports to Codecov. It automatically handles merging coverage results
+  - codecov

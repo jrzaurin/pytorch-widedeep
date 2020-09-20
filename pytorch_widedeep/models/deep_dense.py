@@ -37,7 +37,7 @@ class DeepDense(nn.Module):
     embeddings_input: List, Optional
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
-    embed_p: float
+    embed_dropout: float
         embeddings dropout
     continuous_cols: List, Optional
         List with the name of the numeric (aka continuous) columns
@@ -48,10 +48,10 @@ class DeepDense(nn.Module):
     Attributes
     ----------
     dense: :obj:`nn.Sequential`
-        model of dense layers that will receive the concatenation of the
+        deep dense model that will receive the concatenation of the
         embeddings and the continuous columns
     embed_layers: :obj:`nn.ModuleDict`
-        ModuleDict with the embedding layers
+        :obj:`ModuleDict` with the embedding
     output_dim: :obj:`int`
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
@@ -65,13 +65,7 @@ class DeepDense(nn.Module):
     >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
     >>> deep_column_idx = {k:v for v,k in enumerate(colnames)}
     >>> model = DeepDense(hidden_layers=[8,4], deep_column_idx=deep_column_idx, embed_input=embed_input)
-    >>> model(X_deep)
-    tensor([[ 3.4470e-02, -2.0089e-03,  4.7983e-02,  3.3500e-01],
-            [ 1.4329e-02, -1.3800e-03, -3.3617e-04,  4.1046e-01],
-            [-3.3546e-04,  3.2413e-02, -4.1198e-03,  4.8717e-01],
-            [-6.7882e-04,  7.9103e-03, -1.9960e-03,  4.2134e-01],
-            [ 6.7187e-02, -1.2821e-03, -3.0960e-04,  3.6123e-01]],
-           grad_fn=<LeakyReluBackward1>)
+    >>> out = model(X_deep)
     """
 
     def __init__(
@@ -81,7 +75,7 @@ class DeepDense(nn.Module):
         batchnorm: bool = False,
         dropout: Optional[List[float]] = None,
         embed_input: Optional[List[Tuple[str, int, int]]] = None,
-        embed_p: float = 0.0,
+        embed_dropout: float = 0.0,
         continuous_cols: Optional[List[str]] = None,
     ):
 
@@ -98,7 +92,7 @@ class DeepDense(nn.Module):
                     for col, val, dim in self.embed_input
                 }
             )
-            self.embed_dropout = nn.Dropout(embed_p)
+            self.embed_dropout = nn.Dropout(embed_dropout)
             emb_inp_dim = np.sum([embed[2] for embed in self.embed_input])
         else:
             emb_inp_dim = 0

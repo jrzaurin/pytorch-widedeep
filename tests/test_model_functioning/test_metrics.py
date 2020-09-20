@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 import numpy as np
 import torch
 import pytest
@@ -113,3 +111,67 @@ def test_muticlass_metrics(sklearn_metric, widedeep_metric):
             ),
             widedeep_metric(y_pred_multi_pt, y_true_multi_pt),
         )
+
+
+###############################################################################
+# Test the reset method
+###############################################################################
+@pytest.mark.parametrize(  # noqa: C901
+    "metric, metric_name",
+    [
+        (Accuracy(), "accuracy"),
+        (Precision(), "precision"),
+        (Recall(), "recall"),
+        (FBetaScore(beta=2), "fbeta"),
+        (F1Score(), "f1"),
+    ],
+)
+def test_reset_methods(metric, metric_name):  # noqa: C901
+
+    res = metric(y_pred_bin_pt, y_true_bin_pt)  # noqa: F841
+    out = []
+    if metric_name == "accuracy":
+        out.append(metric.correct_count != 0.0 and metric.total_count != 0.0)
+    elif metric_name == "precision":
+        out.append(metric.true_positives != 0.0 and metric.all_positives != 0.0)
+    elif metric_name == "recall":
+        out.append(metric.true_positives != 0.0 and metric.actual_positives != 0.0)
+    elif metric_name == "fbeta":
+        out.append(
+            metric.precision.true_positives != 0.0
+            and metric.precision.all_positives != 0.0
+            and metric.recall.true_positives != 0.0
+            and metric.recall.actual_positives != 0.0
+        )
+    elif metric_name == "f1":
+        out.append(
+            metric.f1.precision.true_positives != 0.0
+            and metric.f1.precision.all_positives != 0.0
+            and metric.f1.recall.true_positives != 0.0
+            and metric.f1.recall.actual_positives != 0.0
+        )
+
+    metric.reset()
+
+    if metric_name == "accuracy":
+        out.append(metric.correct_count == 0 and metric.total_count == 0)
+    elif metric_name == "precision":
+        out.append(metric.true_positives == 0 and metric.all_positives == 0)
+    elif metric_name == "recall":
+        out.append(metric.true_positives == 0 and metric.actual_positives == 0)
+    elif metric_name == "fbeta":
+        out.append(
+            metric.precision.true_positives == 0
+            and metric.precision.all_positives == 0
+            and metric.recall.true_positives == 0
+            and metric.recall.actual_positives == 0
+        )
+    elif metric_name == "f1":
+        out.append(
+            metric.f1.precision.true_positives == 0
+            and metric.f1.precision.all_positives == 0
+            and metric.f1.recall.true_positives == 0
+            and metric.f1.recall.actual_positives == 0
+        )
+
+    assert all(out)

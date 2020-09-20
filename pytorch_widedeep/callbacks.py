@@ -117,6 +117,22 @@ class History(Callback):
     This callback runs by default within :obj:`WideDeep`. See
     :class:`pytorch_widedeep.models.wide_deep.WideDeep`. Documentation is
     included here for completion.
+
+    Examples
+    --------
+
+    Callbacks are passed as input parameters when calling ``compile``. see
+    :class:`pytorch_widedeep.models.wide_deep.WideDeep`
+
+    >>> from pytorch_widedeep.callbacks import History
+    >>> from pytorch_widedeep.models import DeepDense, Wide, WideDeep
+    >>>
+    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+    >>> deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+    >>> wide = Wide(10, 1)
+    >>> deep = DeepDense(hidden_layers=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
+    >>> model = WideDeep(wide, deep)
+    >>> model.compile(method="regression", callbacks=[History()])
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):
@@ -156,8 +172,15 @@ class LRHistory(Callback):
     Callbacks are passed as input parameters when calling ``compile``. see
     :class:`pytorch_widedeep.models.wide_deep.WideDeep`
 
-    >>> # Do not run
-    >>> model.compile(callbacks=[LRHistory(n_epochs=10)])
+    >>> from pytorch_widedeep.callbacks import LRHistory
+    >>> from pytorch_widedeep.models import DeepDense, Wide, WideDeep
+    >>>
+    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+    >>> deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+    >>> wide = Wide(10, 1)
+    >>> deep = DeepDense(hidden_layers=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
+    >>> model = WideDeep(wide, deep)
+    >>> model.compile(method="regression", callbacks=[LRHistory(n_epochs=10)])
     """
 
     def __init__(self, n_epochs):
@@ -180,7 +203,7 @@ class LRHistory(Callback):
                             ).append(group["lr"])
             elif not self.model.cyclic:
                 # if we use one lr_scheduler and is not cyclic, save the
-                # learning rate for each param_group of the optimizer.
+                # learning rate for that param_group
                 for group_idx, group in enumerate(self.model.optimizer.param_groups):
                     self.model.lr_history.setdefault(
                         ("_").join(["lr", str(group_idx)]), []
@@ -205,7 +228,7 @@ class LRHistory(Callback):
                                 ).append(group["lr"])
             elif self.model.cyclic:
                 # if we use one lr_scheduler and IS CYCLIC, save the
-                # learning rate for each param_group of the optimizer.
+                # learning rate for that param_group
                 for group_idx, group in enumerate(self.model.optimizer.param_groups):
                     self.model.lr_history.setdefault(
                         ("_").join(["lr", str(group_idx)]), []
@@ -230,7 +253,7 @@ class LRHistory(Callback):
                                 ).append(group["lr"])
             elif not self.model.cyclic:
                 # if we use one lr_scheduler and IS NOT CYCLIC, save the
-                # learning rate for each param_group of the optimizer.
+                # learning rate for that param_group
                 for group_idx, group in enumerate(self.model.optimizer.param_groups):
                     self.model.lr_history.setdefault(
                         ("_").join(["lr", str(group_idx)]), []
@@ -278,8 +301,15 @@ class ModelCheckpoint(Callback):
     Callbacks are passed as input parameters when calling ``compile``. see
     :class:`pytorch_widedeep.models.wide_deep.WideDeep`
 
-    >>> # Do not run
-    >>> model.compile(callbacks=[ModelCheckpoint()])
+    >>> from pytorch_widedeep.callbacks import ModelCheckpoint
+    >>> from pytorch_widedeep.models import DeepDense, Wide, WideDeep
+    >>>
+    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+    >>> deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+    >>> wide = Wide(10, 1)
+    >>> deep = DeepDense(hidden_layers=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
+    >>> model = WideDeep(wide, deep)
+    >>> model.compile(method="regression", callbacks=[ModelCheckpoint(filepath='checkpoints/weights_out')])
     """
 
     def __init__(
@@ -300,6 +330,12 @@ class ModelCheckpoint(Callback):
         self.period = period
         self.epochs_since_last_save = 0
         self.max_save = max_save
+
+        if len(filepath.split("/")[:-1]) == 0:
+            raise ValueError(
+                "'filepath' must be the full path to save the output weights,"
+                " including the root of the filenames. e.g. 'checkpoints/weights_out'"
+            )
 
         root_dir = ("/").join(filepath.split("/")[:-1])
         if not os.path.exists(root_dir):
@@ -426,8 +462,15 @@ class EarlyStopping(Callback):
     Callbacks are passed as input parameters when calling ``compile``. see
     :class:`pytorch_widedeep.models.wide_deep.WideDeep`
 
-    >>> # Do not run
-    >>> model.compile(callbacks=[EarlyStopping()])
+    >>> from pytorch_widedeep.callbacks import EarlyStopping
+    >>> from pytorch_widedeep.models import DeepDense, Wide, WideDeep
+    >>>
+    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+    >>> deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+    >>> wide = Wide(10, 1)
+    >>> deep = DeepDense(hidden_layers=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
+    >>> model = WideDeep(wide, deep)
+    >>> model.compile(method="regression", callbacks=[EarlyStopping(patience=10)])
     """
 
     def __init__(

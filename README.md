@@ -8,6 +8,7 @@
 [![PyPI version](https://badge.fury.io/py/pytorch-widedeep.svg)](https://badge.fury.io/py/pytorch-widedeep)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/jrzaurin/pytorch-widedeep/issues)
+[![codecov](https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/dense_resnet/graph/badge.svg)](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
 
 Platform | Version Support
 ---------|:---------------
@@ -43,10 +44,11 @@ few lines of code.
 </p>
 
 Architecture 1 combines the `Wide`, Linear model with the outputs from the
-`DeepDense`, `DeepText` and `DeepImage` components connected to a final output
-neuron or neurons, depending on whether we are performing a binary
-classification or regression, or a multi-class classification. The components
-within the faded-pink rectangles are concatenated.
+`DeepDense` or `DeepDenseResnet`, `DeepText` and `DeepImage` components
+connected to a final output neuron or neurons, depending on whether we are
+performing a binary classification or regression, or a multi-class
+classification. The components within the faded-pink rectangles are
+concatenated.
 
 In math terms, and following the notation in the
 [paper](https://arxiv.org/abs/1606.07792), Architecture 1 can be formulated
@@ -87,13 +89,14 @@ as:
 </p>
 
 When using `pytorch-widedeep`, the assumption is that the so called `Wide` and
-`DeepDense` components in the figures are **always** present, while `DeepText`
-and `DeepImage` are optional. `pytorch-widedeep` includes standard text (stack
-of LSTMs) and image (pre-trained ResNets or stack of CNNs) models. However,
-the user can use any custom model as long as it has an attribute called
-`output_dim` with the size of the last layer of activations, so that
-`WideDeep` can be constructed. See the examples folder or the docs for more
-information.
+`deep dense` (this can be either `DeepDense` or `DeepDenseResnet`. See the
+documentation and examples folder for more details) components in the figures
+are **always** present, while `DeepText text` and `DeepImage` are optional.
+`pytorch-widedeep` includes standard text (stack of LSTMs) and image
+(pre-trained ResNets or stack of CNNs) models. However, the user can use any
+custom model as long as it has an attribute called `output_dim` with the size
+of the last layer of activations, so that `WideDeep` can be constructed. See
+the examples folder or the docs for more information.
 
 
 ### Installation
@@ -179,6 +182,14 @@ deepdense = DeepDense(
     embed_input=preprocess_deep.embeddings_input,
     continuous_cols=cont_cols,
 )
+# # To use DeepDenseResnet as the deepdense component simply:
+# from pytorch_widedeep.models import DeepDenseResnet:
+# deepdense = DeepDenseResnet(
+#     blocks=[64, 32],
+#     deep_column_idx=preprocess_deep.deep_column_idx,
+#     embed_input=preprocess_deep.embeddings_input,
+#     continuous_cols=cont_cols,
+# )
 
 # build, compile and fit
 model = WideDeep(wide=wide, deepdense=deepdense)

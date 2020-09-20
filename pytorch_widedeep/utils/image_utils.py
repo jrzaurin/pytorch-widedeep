@@ -45,7 +45,7 @@ class AspectAwarePreprocessor:
         --------
         >>> import cv2
         >>> from pytorch_widedeep.utils import AspectAwarePreprocessor
-        >>> img = cv2.imread("galaxy.png")
+        >>> img = cv2.imread("tests/test_data_utils/images/galaxy1.png")
         >>> img.shape
         (694, 890, 3)
         >>> app = AspectAwarePreprocessor(width=224, height=224)

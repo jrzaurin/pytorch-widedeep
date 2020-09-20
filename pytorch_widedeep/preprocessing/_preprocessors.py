@@ -79,12 +79,7 @@ class WidePreprocessor(BasePreprocessor):
            [2, 5],
            [3, 6]])
     >>> wide_preprocessor.feature_dict
-    {'color_r': 1,
-     'color_b': 2,
-     'color_g': 3,
-     'color_size_r-s': 4,
-     'color_size_b-n': 5,
-     'color_size_g-l': 6}
+    {'color_r': 1, 'color_b': 2, 'color_g': 3, 'color_size_r-s': 4, 'color_size_b-n': 5, 'color_size_g-l': 6}
     >>> wide_preprocessor.inverse_transform(X_wide)
       color color_size
     0     r        r-s
@@ -449,13 +444,17 @@ class ImagePreprocessor(BasePreprocessor):
     Examples
     --------
     >>> import pandas as pd
+    >>>
     >>> from pytorch_widedeep.preprocessing import ImagePreprocessor
-    >>> df_train = pd.DataFrame({'images_column': ['galaxy1.png', 'galaxy2.png']})
-    >>> df_test = pd.DataFrame({'images_column': ['galaxy3.png']})
+    >>>
+    >>> path_to_image1 = 'tests/test_data_utils/images/galaxy1.png'
+    >>> path_to_image2 = 'tests/test_data_utils/images/galaxy2.png'
+    >>>
+    >>> df_train = pd.DataFrame({'images_column': [path_to_image1]})
+    >>> df_test = pd.DataFrame({'images_column': [path_to_image2]})
     >>> img_preprocessor = ImagePreprocessor(img_col='images_column', img_path='.', verbose=0)
     >>> resized_images = img_preprocessor.fit_transform(df_train)
     >>> new_resized_images = img_preprocessor.transform(df_train)
-
 
     .. note:: Normalising metrics will only be computed when the
         ``fit_transform`` method is run. Running ``transform`` only will not

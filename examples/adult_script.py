@@ -3,7 +3,7 @@ import torch
 import pandas as pd
 
 from pytorch_widedeep.optim import RAdam
-from pytorch_widedeep.models import Wide, WideDeep, DeepDense
+from pytorch_widedeep.models import Wide, WideDeep, DeepDense, DeepDenseResnet
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.callbacks import (
     LRHistory,
@@ -49,11 +49,12 @@ if __name__ == "__main__":
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
     prepare_deep = DensePreprocessor(
-        embed_cols=cat_embed_cols, continuous_cols=continuous_cols
+        embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
     )
     X_deep = prepare_deep.fit_transform(df)
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
+
     deepdense = DeepDense(
         hidden_layers=[64, 32],
         dropout=[0.2, 0.2],
@@ -61,6 +62,15 @@ if __name__ == "__main__":
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
     )
+
+    # # To use DeepDenseResnet as the deepdense component simply:
+    # deepdense = DeepDenseResnet(
+    #     blocks=[64, 32],
+    #     deep_column_idx=prepare_deep.deep_column_idx,
+    #     embed_input=prepare_deep.embeddings_input,
+    #     continuous_cols=continuous_cols,
+    # )
+
     model = WideDeep(wide=wide, deepdense=deepdense)
 
     wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
@@ -73,7 +83,7 @@ if __name__ == "__main__":
     initializers = {"wide": KaimingNormal, "deepdense": XavierNormal}
     callbacks = [
         LRHistory(n_epochs=10),
-        EarlyStopping,
+        EarlyStopping(patience=5),
         ModelCheckpoint(filepath="model_weights/wd_out"),
     ]
     metrics = [Accuracy, Precision]
@@ -91,7 +101,7 @@ if __name__ == "__main__":
         X_wide=X_wide,
         X_deep=X_deep,
         target=target,
-        n_epochs=10,
+        n_epochs=4,
         batch_size=64,
         val_split=0.2,
     )

@@ -15,9 +15,15 @@ data/
 model_weights/
 weights/
 
-# tests
+# Unit Tests/Coverage
 .coverage
+.coverage.*
+coverage.xml
+*.cover
+htmlcov*/
 .pytest_cache
+.cache
+.hypothesis/
 
 # sublime
 *.sublime-workspace
@@ -31,5 +37,9 @@ sftp*-config.json
 
 # Documentation
 _build
+
 # _static
 _templates
+
+# test checkpoints
+checkpoints

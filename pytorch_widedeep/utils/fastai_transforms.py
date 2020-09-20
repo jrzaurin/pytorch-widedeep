@@ -293,8 +293,7 @@ class Tokenizer:
         >>> texts = ['Machine learning is great', 'but building stuff is even better']
         >>> tok = Tokenizer()
         >>> tok.process_all(texts)
-            [['xxmaj', 'machine', 'learning', 'is', 'great'],
-            ['but', 'building', 'stuff', 'is', 'even', 'better']]
+        [['xxmaj', 'machine', 'learning', 'is', 'great'], ['but', 'building', 'stuff', 'is', 'even', 'better']]
 
         .. note:: Note the token ``TK_MAJ`` (`xxmaj`), used to indicate the
             next word begins with a capital in the original text. For more
@@ -369,9 +368,6 @@ class Vocab:
         >>> texts = ['Machine learning is great', 'but building stuff is even better']
         >>> tokens = Tokenizer().process_all(texts)
         >>> vocab = Vocab.create(tokens, max_vocab=18, min_freq=1)
-        >>> print(vocab.itos)
-        ['xxunk', 'xxpad', 'xxbos', 'xxeos', 'xxfld', 'xxmaj', 'xxup', 'xxrep', 'xxwrep',
-        'is', 'machine', 'learning', 'great', 'but', 'building', 'stuff', 'even', 'better']
         >>> vocab.numericalize(['machine', 'learning', 'is', 'great'])
         [10, 11, 9, 12]
         >>> vocab.textify([10, 11, 9, 12])
