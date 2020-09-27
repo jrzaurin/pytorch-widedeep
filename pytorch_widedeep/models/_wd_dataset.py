@@ -68,6 +68,8 @@ class WideDeepDataset(Dataset):
             # then we need to  replicate what Tensor() does -> transpose axis
             # and normalize if necessary
             if not self.transforms or "ToTensor" not in self.transforms_names:
+                if xdi.ndim == 2:
+                    xdi = xdi[:, :, None]
                 xdi = xdi.transpose(2, 0, 1)
                 if "int" in str(xdi.dtype):
                     xdi = (xdi / xdi.max()).astype("float32")
