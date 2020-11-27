@@ -266,3 +266,49 @@ def test_widedeep_inputs(
         model.history.epoch[0] == nepoch
         and model.history._history["train_loss"] is not null
     )
+
+
+@pytest.mark.parametrize(
+    "X_wide, X_deep, X_text, X_img, X_train, X_val, target",
+    [
+        (
+            X_wide,
+            X_deep,
+            X_text,
+            X_img,
+            None,
+            {
+                "X_wide": X_wide_val,
+                "X_deep": X_deep_val,
+                "X_text": X_text_val,
+                "X_img": X_img_val,
+                "target": y_val,
+            },
+            target,
+        ),
+    ],
+)
+def test_xtrain_xval_assertion(
+    X_wide,
+    X_deep,
+    X_text,
+    X_img,
+    X_train,
+    X_val,
+    target,
+):
+    model = WideDeep(
+        wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage
+    )
+    model.compile(method="binary", verbose=0)
+    with pytest.raises(AssertionError):
+        model.fit(
+            X_wide=X_wide,
+            X_deep=X_deep,
+            X_text=X_text,
+            X_img=X_img,
+            X_train=X_train,
+            X_val=X_val,
+            target=target,
+            batch_size=16,
+        )
