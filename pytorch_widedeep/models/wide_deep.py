@@ -667,8 +667,8 @@ class WideDeep(nn.Module):
 
     def predict(
         self,
-        X_wide: np.ndarray,
-        X_deep: np.ndarray,
+        X_wide: Optional[np.ndarray] = None,
+        X_deep: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
@@ -711,8 +711,8 @@ class WideDeep(nn.Module):
 
     def predict_proba(
         self,
-        X_wide: np.ndarray,
-        X_deep: np.ndarray,
+        X_wide: Optional[np.ndarray] = None,
+        X_deep: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
@@ -998,8 +998,8 @@ class WideDeep(nn.Module):
 
     def _predict(
         self,
-        X_wide: np.ndarray,
-        X_deep: np.ndarray,
+        X_wide: Optional[np.ndarray] = None,
+        X_deep: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
@@ -1056,7 +1056,7 @@ class WideDeep(nn.Module):
             X_train["X_img"] = X_img
         return X_train
 
-    @staticmethod
+    @staticmethod  # noqa: C901
     def _check_params(
         deepdense, deeptext, deepimage, deephead, head_layers, head_dropout
     ):
@@ -1088,3 +1088,18 @@ class WideDeep(nn.Module):
             assert len(head_layers) == len(
                 head_dropout
             ), "'head_layers' and 'head_dropout' must have the same length"
+        if deephead is not None:
+            deephead_inp_feat = next(deephead.parameters()).size(1)
+            output_dim = 0
+            if deepdense is not None:
+                output_dim += deepdense.output_dim
+            if deeptext is not None:
+                output_dim += deeptext.output_dim
+            if deepimage is not None:
+                output_dim += deepimage.output_dim
+            assert deephead_inp_feat == output_dim, (
+                "if a custom 'deephead' is used its input features ({}) must be equal to "
+                "the output features of the deep component ({})".format(
+                    deephead_inp_feat, output_dim
+                )
+            )
