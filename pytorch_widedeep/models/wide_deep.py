@@ -574,12 +574,6 @@ class WideDeep(nn.Module):
         >>> # X_val = {'X_wide': X_wide_val, 'X_deep': X_deep_val, 'target': y_val}
         >>> # model.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
 
-        .. note:: :obj:`WideDeep` assumes that `X_wide`, `X_deep` and `target` ALWAYS exist, while
-            `X_text` and `X_img` are optional
-
-        .. note:: Either `X_train` or the three `X_wide`, `X_deep` and `target` must be passed to the
-            fit method
-
         """
 
         self.batch_size = batch_size
@@ -700,10 +694,6 @@ class WideDeep(nn.Module):
             Testing dataset for the different model components. Keys are
             `'X_wide'`, `'X_deep'`, `'X_text'`, `'X_img'` and `'target'` the values are
             the corresponding matrices.
-
-
-        .. note:: WideDeep assumes that `X_wide`, `X_deep` and `target` ALWAYS exist,
-            while `X_text` and `X_img` are optional.
 
         """
         preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)

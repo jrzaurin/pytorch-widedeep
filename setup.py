@@ -36,6 +36,7 @@ extras["quality"] = [
     "isort",
     "flake8",
 ]
+extras["all"] = extras["test"] + extras["docs"] + extras["quality"]
 
 # main setup kw args
 setup_kwargs = {
@@ -62,7 +63,7 @@ setup_kwargs = {
         "torch",
         "torchvision",
     ],
-    "extra_requires": extras,
+    "extras_require": extras,
     "python_requires": ">=3.6.0",
     "classifiers": [
         dev_status[majorminor],
