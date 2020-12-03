@@ -1,9 +1,8 @@
 import string
 
 import numpy as np
-import pytest
 import torch
-
+import pytest
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.models import (
@@ -13,8 +12,8 @@ from pytorch_widedeep.models import (
     DeepDense,
     DeepImage,
 )
-from pytorch_widedeep.callbacks import EarlyStopping
 from pytorch_widedeep.metrics import Accuracy, Precision
+from pytorch_widedeep.callbacks import EarlyStopping
 
 # Wide array
 X_wide = np.random.choice(50, (32, 10))
@@ -113,6 +112,7 @@ def test_multiple_metrics():
 #  test the train step with metrics runs well for a binary prediction
 ###############################################################################
 
+
 def test_basic_run_with_metrics_binary():
     model = WideDeep(wide=wide, deepdense=deepdense)
     model.compile(method="binary", metrics=[Accuracy], verbose=False)
@@ -133,6 +133,7 @@ def test_basic_run_with_metrics_binary():
 ###############################################################################
 #  test the train step with metrics runs well for a muticlass prediction
 ###############################################################################
+
 
 def test_basic_run_with_metrics_multiclass():
     wide = Wide(np.unique(X_wide).shape[0], 3)
@@ -162,6 +163,7 @@ def test_basic_run_with_metrics_multiclass():
 ###############################################################################
 #  test predict method for individual components
 ###############################################################################
+
 
 @pytest.mark.parametrize(
     "wide, deepdense, deeptext, deepimage, X_wide, X_deep, X_text, X_img, target",
