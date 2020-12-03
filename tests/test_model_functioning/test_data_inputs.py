@@ -2,8 +2,8 @@ import string
 
 import numpy as np
 import pytest
-from torchvision.transforms import ToTensor, Normalize
 from torch import nn
+from torchvision.transforms import ToTensor, Normalize
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.models import (

@@ -121,8 +121,15 @@ class WideDeep(nn.Module):
 
         super(WideDeep, self).__init__()
 
-        self._check_params(
-            deepdense, deeptext, deepimage, deephead, head_layers, head_dropout
+        self._check_model_components(
+            wide,
+            deepdense,
+            deeptext,
+            deepimage,
+            deephead,
+            head_layers,
+            head_dropout,
+            pred_dim,
         )
 
         # required as attribute just in case we pass a deephead
@@ -337,9 +344,9 @@ class WideDeep(nn.Module):
 
         if isinstance(optimizers, Dict) and not isinstance(lr_schedulers, Dict):
             raise ValueError(
-                "'parameters 'optimizers' and 'lr_schedulers' must have consistent type. "
-                "(Optimizer, LRScheduler) or (Dict[str, Optimizer], Dict[str, LRScheduler]) "
-                "Please, read the Documentation for more details"
+                "''optimizers' and 'lr_schedulers' must have consistent type: "
+                "(Optimizer and LRScheduler) or (Dict[str, Optimizer] and Dict[str, LRScheduler]) "
+                "Please, read the documentation or see the examples for more details"
             )
 
         self.verbose = verbose
@@ -1011,7 +1018,11 @@ class WideDeep(nn.Module):
         if X_test is not None:
             test_set = WideDeepDataset(**X_test)
         else:
-            load_dict = {"X_wide": X_wide, "X_deep": X_deep}
+            load_dict = {}
+            if X_wide is not None:
+                load_dict = {"X_wide": X_wide}
+            if X_deep is not None:
+                load_dict.update({"X_deep": X_deep})
             if X_text is not None:
                 load_dict.update({"X_text": X_text})
             if X_img is not None:
@@ -1057,10 +1068,24 @@ class WideDeep(nn.Module):
         return X_train
 
     @staticmethod  # noqa: C901
-    def _check_params(
-        deepdense, deeptext, deepimage, deephead, head_layers, head_dropout
+    def _check_model_components(
+        wide,
+        deepdense,
+        deeptext,
+        deepimage,
+        deephead,
+        head_layers,
+        head_dropout,
+        pred_dim,
     ):
 
+        if wide is not None:
+            assert wide.wide_linear.weight.size(1) == pred_dim, (
+                "the 'pred_dim' of the wide component ({}) must be equal to the 'pred_dim' "
+                "of the deep component and the overall model itself ({})".format(
+                    wide.wide_linear.weight.size(1), pred_dim
+                )
+            )
         if deepdense is not None and not hasattr(deepdense, "output_dim"):
             raise AttributeError(
                 "deepdense model must have an 'output_dim' attribute. "
