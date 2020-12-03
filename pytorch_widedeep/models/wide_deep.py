@@ -20,11 +20,10 @@ from ._multiple_optimizer import MultipleOptimizer
 from ._multiple_transforms import MultipleTransforms
 from ._multiple_lr_scheduler import MultipleLRScheduler
 
-# import warnings
-
-
 n_cpus = os.cpu_count()
+
 use_cuda = torch.cuda.is_available()
+device = torch.device("cuda" if use_cuda else "cpu")
 
 
 class WideDeep(nn.Module):
@@ -191,7 +190,7 @@ class WideDeep(nn.Module):
             out = self.wide(X["wide"])
         else:
             batch_size = X[list(X.keys())[0]].size(0)
-            out = torch.zeros(batch_size, self.pred_dim)
+            out = torch.zeros(batch_size, self.pred_dim).to(device)
 
         # Deep output: either connected directly to the output neuron(s) or
         # passed through a head first
@@ -199,14 +198,14 @@ class WideDeep(nn.Module):
             if self.deepdense is not None:
                 deepside = self.deepdense(X["deepdense"])
             else:
-                deepside = torch.FloatTensor()
+                deepside = torch.FloatTensor().to(device)
             if self.deeptext is not None:
                 deepside = torch.cat([deepside, self.deeptext(X["deeptext"])], axis=1)  # type: ignore
             if self.deepimage is not None:
                 deepside = torch.cat([deepside, self.deepimage(X["deepimage"])], axis=1)  # type: ignore
             deephead_out = self.deephead(deepside)
-            deepside_out = nn.Linear(deephead_out.size(1), self.pred_dim)(deephead_out)
-            return out.add_(deepside_out)
+            deepside_linear = nn.Linear(deephead_out.size(1), self.pred_dim).to(device)
+            return out.add_(deepside_linear(deephead_out))
         else:
             if self.deepdense is not None:
                 out.add_(self.deepdense(X["deepdense"]))
@@ -419,8 +418,7 @@ class WideDeep(nn.Module):
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self)
 
-        if use_cuda:
-            self.cuda()
+        self.to(device)
 
     def fit(  # noqa: C901
         self,
@@ -951,7 +949,7 @@ class WideDeep(nn.Module):
         self.train()
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
         y = target.float() if self.method != "multiclass" else target
-        y = y.cuda() if use_cuda else y
+        y = y.to(device)
 
         self.optimizer.zero_grad()
         y_pred = self.forward(X)
@@ -977,7 +975,7 @@ class WideDeep(nn.Module):
         with torch.no_grad():
             X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
             y = target.float() if self.method != "multiclass" else target
-            y = y.cuda() if use_cuda else y
+            y = y.to(device)
 
             y_pred = self.forward(X)
             loss = self._loss_fn(y_pred, y)
