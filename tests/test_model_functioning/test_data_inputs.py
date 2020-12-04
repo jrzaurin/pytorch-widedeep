@@ -2,6 +2,7 @@ import string
 
 import numpy as np
 import pytest
+from torch import nn
 from torchvision.transforms import ToTensor, Normalize
 from sklearn.model_selection import train_test_split
 
@@ -67,11 +68,16 @@ std = [0.225, 0.224, 0.229]  # BGR
 transforms1 = [ToTensor, Normalize(mean=mean, std=std)]
 transforms2 = [Normalize(mean=mean, std=std)]
 
+deephead_ds = nn.Sequential(nn.Linear(16, 8), nn.Linear(8, 4))
+deephead_dt = nn.Sequential(nn.Linear(64, 8), nn.Linear(8, 4))
+deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
 
-##############################################################################
+# #############################################################################
 # Test many possible scenarios of data inputs I can think off. Surely users
 # will input something unexpected
-##############################################################################
+# #############################################################################
+
+
 @pytest.mark.parametrize(
     "X_wide, X_deep, X_text, X_img, X_train, X_val, target, val_split, transforms, nepoch, null",
     [
@@ -266,3 +272,141 @@ def test_widedeep_inputs(
         model.history.epoch[0] == nepoch
         and model.history._history["train_loss"] is not null
     )
+
+
+@pytest.mark.parametrize(
+    "X_wide, X_deep, X_text, X_img, X_train, X_val, target",
+    [
+        (
+            X_wide,
+            X_deep,
+            X_text,
+            X_img,
+            None,
+            {
+                "X_wide": X_wide_val,
+                "X_deep": X_deep_val,
+                "X_text": X_text_val,
+                "X_img": X_img_val,
+                "target": y_val,
+            },
+            target,
+        ),
+    ],
+)
+def test_xtrain_xval_assertion(
+    X_wide,
+    X_deep,
+    X_text,
+    X_img,
+    X_train,
+    X_val,
+    target,
+):
+    model = WideDeep(
+        wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage
+    )
+    model.compile(method="binary", verbose=0)
+    with pytest.raises(AssertionError):
+        model.fit(
+            X_wide=X_wide,
+            X_deep=X_deep,
+            X_text=X_text,
+            X_img=X_img,
+            X_train=X_train,
+            X_val=X_val,
+            target=target,
+            batch_size=16,
+        )
+
+
+@pytest.mark.parametrize(
+    "wide, deepdense, deeptext, deepimage, X_wide, X_deep, X_text, X_img, target",
+    [
+        (wide, None, None, None, X_wide, None, None, None, target),
+        (None, deepdense, None, None, None, X_deep, None, None, target),
+        (None, None, deeptext, None, None, None, X_text, None, target),
+        (None, None, None, deepimage, None, None, None, X_img, target),
+    ],
+)
+def test_individual_inputs(
+    wide, deepdense, deeptext, deepimage, X_wide, X_deep, X_text, X_img, target
+):
+    model = WideDeep(
+        wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage
+    )
+    model.compile(method="binary", verbose=0)
+    model.fit(
+        X_wide=X_wide,
+        X_deep=X_deep,
+        X_text=X_text,
+        X_img=X_img,
+        target=target,
+        batch_size=16,
+    )
+    # check it has run succesfully
+    assert len(model.history._history) == 1
+
+
+###############################################################################
+#  test deephead is not None and individual components
+###############################################################################
+
+
+@pytest.mark.parametrize(
+    "deepdense, deeptext, deepimage, X_deep, X_text, X_img, deephead, target",
+    [
+        (deepdense, None, None, X_deep, None, None, deephead_ds, target),
+        (None, deeptext, None, None, X_text, None, deephead_dt, target),
+        (None, None, deepimage, None, None, X_img, deephead_di, target),
+    ],
+)
+def test_deephead_individual_components(
+    deepdense, deeptext, deepimage, X_deep, X_text, X_img, deephead, target
+):
+    model = WideDeep(
+        deepdense=deepdense, deeptext=deeptext, deepimage=deepimage, deephead=deephead
+    )  # noqa: F841
+    model.compile(method="binary", verbose=0)
+    model.fit(
+        X_wide=X_wide,
+        X_deep=X_deep,
+        X_text=X_text,
+        X_img=X_img,
+        target=target,
+        batch_size=16,
+    )
+    # check it has run succesfully
+    assert len(model.history._history) == 1
+
+
+###############################################################################
+#  test deephead is None and head_layers is not None and individual components
+###############################################################################
+
+
+@pytest.mark.parametrize(
+    "deepdense, deeptext, deepimage, X_deep, X_text, X_img, target",
+    [
+        (deepdense, None, None, X_deep, None, None, target),
+        (None, deeptext, None, None, X_text, None, target),
+        (None, None, deepimage, None, None, X_img, target),
+    ],
+)
+def test_head_layers_individual_components(
+    deepdense, deeptext, deepimage, X_deep, X_text, X_img, target
+):
+    model = WideDeep(
+        deepdense=deepdense, deeptext=deeptext, deepimage=deepimage, head_layers=[8, 4]
+    )  # noqa: F841
+    model.compile(method="binary", verbose=0)
+    model.fit(
+        X_wide=X_wide,
+        X_deep=X_deep,
+        X_text=X_text,
+        X_img=X_img,
+        target=target,
+        batch_size=16,
+    )
+    # check it has run succesfully
+    assert len(model.history._history) == 1

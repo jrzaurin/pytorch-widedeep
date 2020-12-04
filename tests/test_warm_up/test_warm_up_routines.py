@@ -161,7 +161,7 @@ def test_warm_all(model, modelname, loader, n_epochs, max_lr):
     has_run = True
     try:
         warmer.warm_all(model, modelname, loader, n_epochs, max_lr)
-    except:
+    except Exception:
         has_run = False
     assert has_run
 
@@ -182,6 +182,6 @@ def test_warm_gradual(model, modelname, loader, max_lr, layers, routine):
     has_run = True
     try:
         warmer.warm_gradual(model, modelname, loader, max_lr, layers, routine)
-    except:
+    except Exception:
         has_run = False
     assert has_run

@@ -55,7 +55,7 @@ def test_history_callback(deepcomponent, component_name):
 
 def test_deephead_and_head_layers():
     deephead = nn.Sequential(nn.Linear(32, 16), nn.Linear(16, 8))
-    with pytest.warns(UserWarning):
+    with pytest.raises(ValueError):
         model = WideDeep(  # noqa: F841
             wide=wide, deepdense=deepdense, head_layers=[16, 8], deephead=deephead
         )

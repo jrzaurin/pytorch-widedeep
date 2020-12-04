@@ -1,5 +1,4 @@
 import os
-import warnings
 
 import numpy as np
 import torch
@@ -22,7 +21,9 @@ from ._multiple_transforms import MultipleTransforms
 from ._multiple_lr_scheduler import MultipleLRScheduler
 
 n_cpus = os.cpu_count()
+
 use_cuda = torch.cuda.is_available()
+device = torch.device("cuda" if use_cuda else "cpu")
 
 
 class WideDeep(nn.Module):
@@ -104,37 +105,31 @@ class WideDeep(nn.Module):
 
     """
 
-    def __init__(
+    def __init__(  # noqa: C901
         self,
-        wide: nn.Module,
-        deepdense: nn.Module,
-        pred_dim: int = 1,
+        wide: Optional[nn.Module] = None,
+        deepdense: Optional[nn.Module] = None,
         deeptext: Optional[nn.Module] = None,
         deepimage: Optional[nn.Module] = None,
         deephead: Optional[nn.Module] = None,
         head_layers: Optional[List[int]] = None,
         head_dropout: Optional[List] = None,
         head_batchnorm: Optional[bool] = None,
+        pred_dim: int = 1,
     ):
 
         super(WideDeep, self).__init__()
 
-        # check that model components have the required output_dim attribute
-        if not hasattr(deepdense, "output_dim"):
-            raise AttributeError(
-                "deepdense model must have an 'output_dim' attribute. "
-                "See pytorch-widedeep.models.deep_dense.DeepDense"
-            )
-        if deeptext is not None and not hasattr(deeptext, "output_dim"):
-            raise AttributeError(
-                "deeptext model must have an 'output_dim' attribute. "
-                "See pytorch-widedeep.models.deep_dense.DeepText"
-            )
-        if deepimage is not None and not hasattr(deepimage, "output_dim"):
-            raise AttributeError(
-                "deepimage model must have an 'output_dim' attribute. "
-                "See pytorch-widedeep.models.deep_dense.DeepText"
-            )
+        self._check_model_components(
+            wide,
+            deepdense,
+            deeptext,
+            deepimage,
+            deephead,
+            head_layers,
+            head_dropout,
+            pred_dim,
+        )
 
         # required as attribute just in case we pass a deephead
         self.pred_dim = pred_dim
@@ -146,17 +141,11 @@ class WideDeep(nn.Module):
         self.deepimage = deepimage
         self.deephead = deephead
 
-        if deephead is not None and head_layers is not None:
-            warnings.simplefilter("module")
-            warnings.warn(
-                "both 'deephead' and 'head_layers' are not None."
-                "'deephead' takes priority and will be used",
-                UserWarning,
-            )
-
         if self.deephead is None:
             if head_layers is not None:
-                input_dim: int = self.deepdense.output_dim  # type:ignore
+                input_dim = 0
+                if self.deepdense is not None:
+                    input_dim += self.deepdense.output_dim  # type:ignore
                 if self.deeptext is not None:
                     input_dim += self.deeptext.output_dim  # type:ignore
                 if self.deepimage is not None:
@@ -179,9 +168,10 @@ class WideDeep(nn.Module):
                     "head_out", nn.Linear(head_layers[-1], pred_dim)
                 )
             else:
-                self.deepdense = nn.Sequential(
-                    self.deepdense, nn.Linear(self.deepdense.output_dim, pred_dim)  # type: ignore
-                )
+                if self.deepdense is not None:
+                    self.deepdense = nn.Sequential(
+                        self.deepdense, nn.Linear(self.deepdense.output_dim, pred_dim)  # type: ignore
+                    )
                 if self.deeptext is not None:
                     self.deeptext = nn.Sequential(
                         self.deeptext, nn.Linear(self.deeptext.output_dim, pred_dim)  # type: ignore
@@ -190,34 +180,42 @@ class WideDeep(nn.Module):
                     self.deepimage = nn.Sequential(
                         self.deepimage, nn.Linear(self.deepimage.output_dim, pred_dim)  # type: ignore
                     )
-        else:
-            self.deephead
+        # else:
+        #     self.deephead
 
-    def forward(self, X: Dict[str, Tensor]) -> Tensor:  # type: ignore
+    def forward(self, X: Dict[str, Tensor]) -> Tensor:  # type: ignore  # noqa: C901
 
         # Wide output: direct connection to the output neuron(s)
-        out = self.wide(X["wide"])
+        if self.wide is not None:
+            out = self.wide(X["wide"])
+        else:
+            batch_size = X[list(X.keys())[0]].size(0)
+            out = torch.zeros(batch_size, self.pred_dim).to(device)
 
         # Deep output: either connected directly to the output neuron(s) or
         # passed through a head first
         if self.deephead:
-            deepside = self.deepdense(X["deepdense"])
+            if self.deepdense is not None:
+                deepside = self.deepdense(X["deepdense"])
+            else:
+                deepside = torch.FloatTensor().to(device)
             if self.deeptext is not None:
                 deepside = torch.cat([deepside, self.deeptext(X["deeptext"])], axis=1)  # type: ignore
             if self.deepimage is not None:
                 deepside = torch.cat([deepside, self.deepimage(X["deepimage"])], axis=1)  # type: ignore
             deephead_out = self.deephead(deepside)
-            deepside_out = nn.Linear(deephead_out.size(1), self.pred_dim)(deephead_out)
-            return out.add(deepside_out)
+            deepside_linear = nn.Linear(deephead_out.size(1), self.pred_dim).to(device)
+            return out.add_(deepside_linear(deephead_out))
         else:
-            out.add(self.deepdense(X["deepdense"]))
+            if self.deepdense is not None:
+                out.add_(self.deepdense(X["deepdense"]))
             if self.deeptext is not None:
-                out.add(self.deeptext(X["deeptext"]))
+                out.add_(self.deeptext(X["deeptext"]))
             if self.deepimage is not None:
-                out.add(self.deepimage(X["deepimage"]))
+                out.add_(self.deepimage(X["deepimage"]))
             return out
 
-    def compile(
+    def compile(  # noqa: C901
         self,
         method: str,
         optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
@@ -345,9 +343,9 @@ class WideDeep(nn.Module):
 
         if isinstance(optimizers, Dict) and not isinstance(lr_schedulers, Dict):
             raise ValueError(
-                "'parameters 'optimizers' and 'lr_schedulers' must have consistent type. "
-                "(Optimizer, LRScheduler) or (Dict[str, Optimizer], Dict[str, LRScheduler]) "
-                "Please, read the Documentation for more details"
+                "''optimizers' and 'lr_schedulers' must have consistent type: "
+                "(Optimizer and LRScheduler) or (Dict[str, Optimizer] and Dict[str, LRScheduler]) "
+                "Please, read the documentation or see the examples for more details"
             )
 
         self.verbose = verbose
@@ -372,14 +370,7 @@ class WideDeep(nn.Module):
         if optimizers is not None:
             if isinstance(optimizers, Optimizer):
                 self.optimizer: Union[Optimizer, MultipleOptimizer] = optimizers
-            elif isinstance(optimizers, Dict) and len(optimizers) == 1:
-                raise ValueError(
-                    "The dictionary of optimizers must contain one item per model component, "
-                    "i.e. at least two for the 'wide' and 'deepdense' components. Otherwise "
-                    "pass one Optimizer object that will be used for all components"
-                    "i.e. optimizers = torch.optim.Adam(model.parameters())"
-                )
-            elif len(optimizers) > 1:
+            elif isinstance(optimizers, Dict):
                 opt_names = list(optimizers.keys())
                 mod_names = [n for n, c in self.named_children()]
                 for mn in mod_names:
@@ -427,10 +418,9 @@ class WideDeep(nn.Module):
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self)
 
-        if use_cuda:
-            self.cuda()
+        self.to(device)
 
-    def fit(
+    def fit(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
         X_deep: Optional[np.ndarray] = None,
@@ -582,20 +572,7 @@ class WideDeep(nn.Module):
         >>> # X_val = {'X_wide': X_wide_val, 'X_deep': X_deep_val, 'target': y_val}
         >>> # model.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
 
-        .. note:: :obj:`WideDeep` assumes that `X_wide`, `X_deep` and `target` ALWAYS exist, while
-            `X_text` and `X_img` are optional
-
-        .. note:: Either `X_train` or the three `X_wide`, `X_deep` and `target` must be passed to the
-            fit method
-
         """
-
-        if X_train is None and (X_wide is None or X_deep is None or target is None):
-            raise ValueError(
-                "Training data is missing. Either a dictionary (X_train) with "
-                "the training dataset or at least 3 arrays (X_wide, X_deep, "
-                "target) must be passed to the fit method"
-            )
 
         self.batch_size = batch_size
         train_set, eval_set = self._train_val_split(
@@ -689,8 +666,8 @@ class WideDeep(nn.Module):
 
     def predict(
         self,
-        X_wide: np.ndarray,
-        X_deep: np.ndarray,
+        X_wide: Optional[np.ndarray] = None,
+        X_deep: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
@@ -716,10 +693,6 @@ class WideDeep(nn.Module):
             `'X_wide'`, `'X_deep'`, `'X_text'`, `'X_img'` and `'target'` the values are
             the corresponding matrices.
 
-
-        .. note:: WideDeep assumes that `X_wide`, `X_deep` and `target` ALWAYS exist,
-            while `X_text` and `X_img` are optional.
-
         """
         preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)
         if self.method == "regression":
@@ -733,8 +706,8 @@ class WideDeep(nn.Module):
 
     def predict_proba(
         self,
-        X_wide: np.ndarray,
-        X_deep: np.ndarray,
+        X_wide: Optional[np.ndarray] = None,
+        X_deep: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
@@ -807,7 +780,7 @@ class WideDeep(nn.Module):
         if self.method == "multiclass":
             return F.cross_entropy(y_pred, y_true, weight=self.class_weight)
 
-    def _train_val_split(
+    def _train_val_split(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
         X_deep: Optional[np.ndarray] = None,
@@ -835,100 +808,51 @@ class WideDeep(nn.Module):
             :obj:`torch.utils.data.DataLoader`. See
             :class:`pytorch_widedeep.models._wd_dataset`
         """
-        #  Without validation
-        if X_val is None and val_split is None:
-            # if a train dictionary is passed, check if text and image datasets
-            # are present and instantiate the WideDeepDataset class
-            if X_train is not None:
-                X_wide, X_deep, target = (
-                    X_train["X_wide"],
-                    X_train["X_deep"],
-                    X_train["target"],
-                )
-                if "X_text" in X_train.keys():
-                    X_text = X_train["X_text"]
-                if "X_img" in X_train.keys():
-                    X_img = X_train["X_img"]
-            X_train = {"X_wide": X_wide, "X_deep": X_deep, "target": target}
-            try:
-                X_train.update({"X_text": X_text})
-            except:
-                pass
-            try:
-                X_train.update({"X_img": X_img})
-            except:
-                pass
-            train_set = WideDeepDataset(**X_train, transforms=self.transforms)  # type: ignore
-            eval_set = None
-        #  With validation
-        else:
-            if X_val is not None:
-                # if a validation dictionary is passed, then if not train
-                # dictionary is passed we build it with the input arrays
-                # (either the dictionary or the arrays must be passed)
-                if X_train is None:
-                    X_train = {"X_wide": X_wide, "X_deep": X_deep, "target": target}
-                    if X_text is not None:
-                        X_train.update({"X_text": X_text})
-                    if X_img is not None:
-                        X_train.update({"X_img": X_img})
-            else:
-                # if a train dictionary is passed, check if text and image
-                # datasets are present. The train/val split using val_split
-                if X_train is not None:
-                    X_wide, X_deep, target = (
-                        X_train["X_wide"],
-                        X_train["X_deep"],
-                        X_train["target"],
-                    )
-                    if "X_text" in X_train.keys():
-                        X_text = X_train["X_text"]
-                    if "X_img" in X_train.keys():
-                        X_img = X_train["X_img"]
-                (
-                    X_tr_wide,
-                    X_val_wide,
-                    X_tr_deep,
-                    X_val_deep,
-                    y_tr,
-                    y_val,
-                ) = train_test_split(
-                    X_wide,
-                    X_deep,
-                    target,
-                    test_size=val_split,
-                    random_state=self.seed,
-                    stratify=target if self.method != "regression" else None,
-                )
-                X_train = {"X_wide": X_tr_wide, "X_deep": X_tr_deep, "target": y_tr}
-                X_val = {"X_wide": X_val_wide, "X_deep": X_val_deep, "target": y_val}
-                try:
-                    X_tr_text, X_val_text = train_test_split(
-                        X_text,
-                        test_size=val_split,
-                        random_state=self.seed,
-                        stratify=target if self.method != "regression" else None,
-                    )
-                    X_train.update({"X_text": X_tr_text}), X_val.update(
-                        {"X_text": X_val_text}
-                    )
-                except:
-                    pass
-                try:
-                    X_tr_img, X_val_img = train_test_split(
-                        X_img,
-                        test_size=val_split,
-                        random_state=self.seed,
-                        stratify=target if self.method != "regression" else None,
-                    )
-                    X_train.update({"X_img": X_tr_img}), X_val.update(
-                        {"X_img": X_val_img}
-                    )
-                except:
-                    pass
-            # At this point the X_train and X_val dictionaries have been built
+
+        if X_val is not None:
+            assert (
+                X_train is not None
+            ), "if the validation set is passed as a dictionary, the training set must also be a dictionary"
             train_set = WideDeepDataset(**X_train, transforms=self.transforms)  # type: ignore
             eval_set = WideDeepDataset(**X_val, transforms=self.transforms)  # type: ignore
+        elif val_split is not None:
+            if not X_train:
+                X_train = self._build_train_dict(X_wide, X_deep, X_text, X_img, target)
+            y_tr, y_val, idx_tr, idx_val = train_test_split(
+                X_train["target"],
+                np.arange(len(X_train["target"])),
+                test_size=val_split,
+                stratify=X_train["target"] if self.method != "regression" else None,
+            )
+            X_tr, X_val = {"target": y_tr}, {"target": y_val}
+            if "X_wide" in X_train.keys():
+                X_tr["X_wide"], X_val["X_wide"] = (
+                    X_train["X_wide"][idx_tr],
+                    X_train["X_wide"][idx_val],
+                )
+            if "X_deep" in X_train.keys():
+                X_tr["X_deep"], X_val["X_deep"] = (
+                    X_train["X_deep"][idx_tr],
+                    X_train["X_deep"][idx_val],
+                )
+            if "X_text" in X_train.keys():
+                X_tr["X_text"], X_val["X_text"] = (
+                    X_train["X_text"][idx_tr],
+                    X_train["X_text"][idx_val],
+                )
+            if "X_img" in X_train.keys():
+                X_tr["X_img"], X_val["X_img"] = (
+                    X_train["X_img"][idx_tr],
+                    X_train["X_img"][idx_val],
+                )
+            train_set = WideDeepDataset(**X_tr, transforms=self.transforms)  # type: ignore
+            eval_set = WideDeepDataset(**X_val, transforms=self.transforms)  # type: ignore
+        else:
+            if not X_train:
+                X_train = self._build_train_dict(X_wide, X_deep, X_text, X_img, target)
+            train_set = WideDeepDataset(**X_train, transforms=self.transforms)  # type: ignore
+            eval_set = None
+
         return train_set, eval_set
 
     def _warm_up(
@@ -981,7 +905,7 @@ class WideDeep(nn.Module):
             else:
                 warmer.warm_all(self.deepimage, "deepimage", loader, n_epochs, max_lr)
 
-    def _lr_scheduler_step(self, step_location: str):
+    def _lr_scheduler_step(self, step_location: str):  # noqa: C901
         r"""
         Function to execute the learning rate schedulers steps.
         If the lr_scheduler is Cyclic (i.e. CyclicLR or OneCycleLR), the step
@@ -1025,7 +949,7 @@ class WideDeep(nn.Module):
         self.train()
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
         y = target.float() if self.method != "multiclass" else target
-        y = y.cuda() if use_cuda else y
+        y = y.to(device)
 
         self.optimizer.zero_grad()
         y_pred = self.forward(X)
@@ -1051,7 +975,7 @@ class WideDeep(nn.Module):
         with torch.no_grad():
             X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
             y = target.float() if self.method != "multiclass" else target
-            y = y.cuda() if use_cuda else y
+            y = y.to(device)
 
             y_pred = self.forward(X)
             loss = self._loss_fn(y_pred, y)
@@ -1069,8 +993,8 @@ class WideDeep(nn.Module):
 
     def _predict(
         self,
-        X_wide: np.ndarray,
-        X_deep: np.ndarray,
+        X_wide: Optional[np.ndarray] = None,
+        X_deep: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
@@ -1082,7 +1006,11 @@ class WideDeep(nn.Module):
         if X_test is not None:
             test_set = WideDeepDataset(**X_test)
         else:
-            load_dict = {"X_wide": X_wide, "X_deep": X_deep}
+            load_dict = {}
+            if X_wide is not None:
+                load_dict = {"X_wide": X_wide}
+            if X_deep is not None:
+                load_dict.update({"X_deep": X_deep})
             if X_text is not None:
                 load_dict.update({"X_text": X_text})
             if X_img is not None:
@@ -1095,7 +1023,7 @@ class WideDeep(nn.Module):
             num_workers=n_cpus,
             shuffle=False,
         )
-        test_steps = (len(test_loader.dataset) // test_loader.batch_size) + 1
+        test_steps = (len(test_loader.dataset) // test_loader.batch_size) + 1  # type: ignore[arg-type]
 
         self.eval()
         preds_l = []
@@ -1113,3 +1041,78 @@ class WideDeep(nn.Module):
                     preds_l.append(preds)
         self.train()
         return preds_l
+
+    @staticmethod
+    def _build_train_dict(X_wide, X_deep, X_text, X_img, target):
+        X_train = {"target": target}
+        if X_wide is not None:
+            X_train["X_wide"] = X_wide
+        if X_deep is not None:
+            X_train["X_deep"] = X_deep
+        if X_text is not None:
+            X_train["X_text"] = X_text
+        if X_img is not None:
+            X_train["X_img"] = X_img
+        return X_train
+
+    @staticmethod  # noqa: C901
+    def _check_model_components(
+        wide,
+        deepdense,
+        deeptext,
+        deepimage,
+        deephead,
+        head_layers,
+        head_dropout,
+        pred_dim,
+    ):
+
+        if wide is not None:
+            assert wide.wide_linear.weight.size(1) == pred_dim, (
+                "the 'pred_dim' of the wide component ({}) must be equal to the 'pred_dim' "
+                "of the deep component and the overall model itself ({})".format(
+                    wide.wide_linear.weight.size(1), pred_dim
+                )
+            )
+        if deepdense is not None and not hasattr(deepdense, "output_dim"):
+            raise AttributeError(
+                "deepdense model must have an 'output_dim' attribute. "
+                "See pytorch-widedeep.models.deep_dense.DeepText"
+            )
+        if deeptext is not None and not hasattr(deeptext, "output_dim"):
+            raise AttributeError(
+                "deeptext model must have an 'output_dim' attribute. "
+                "See pytorch-widedeep.models.deep_dense.DeepText"
+            )
+        if deepimage is not None and not hasattr(deepimage, "output_dim"):
+            raise AttributeError(
+                "deepimage model must have an 'output_dim' attribute. "
+                "See pytorch-widedeep.models.deep_dense.DeepText"
+            )
+        if deephead is not None and head_layers is not None:
+            raise ValueError(
+                "both 'deephead' and 'head_layers' are not None. Use one of the other, but not both"
+            )
+        if head_layers is not None and not deepdense and not deeptext and not deepimage:
+            raise ValueError(
+                "if 'head_layers' is not None, at least one deep component must be used"
+            )
+        if head_layers is not None and head_dropout is not None:
+            assert len(head_layers) == len(
+                head_dropout
+            ), "'head_layers' and 'head_dropout' must have the same length"
+        if deephead is not None:
+            deephead_inp_feat = next(deephead.parameters()).size(1)
+            output_dim = 0
+            if deepdense is not None:
+                output_dim += deepdense.output_dim
+            if deeptext is not None:
+                output_dim += deeptext.output_dim
+            if deepimage is not None:
+                output_dim += deepimage.output_dim
+            assert deephead_inp_feat == output_dim, (
+                "if a custom 'deephead' is used its input features ({}) must be equal to "
+                "the output features of the deep component ({})".format(
+                    deephead_inp_feat, output_dim
+                )
+            )

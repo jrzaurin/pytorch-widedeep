@@ -27,11 +27,11 @@ class WideDeepDataset(Dataset):
 
     def __init__(
         self,
-        X_wide: np.ndarray,
-        X_deep: np.ndarray,
-        target: Optional[np.ndarray] = None,
+        X_wide: Optional[np.ndarray] = None,
+        X_deep: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
+        target: Optional[np.ndarray] = None,
         transforms: Optional[Any] = None,
     ):
 
@@ -48,10 +48,12 @@ class WideDeepDataset(Dataset):
             self.transforms_names = []
         self.Y = target
 
-    def __getitem__(self, idx: int):
-        # X_wide and X_deep are assumed to be *always* present
-        X = Bunch(wide=self.X_wide[idx])
-        X.deepdense = self.X_deep[idx]
+    def __getitem__(self, idx: int):  # noqa: C901
+        X = Bunch()
+        if self.X_wide is not None:
+            X.wide = self.X_wide[idx]
+        if self.X_deep is not None:
+            X.deepdense = self.X_deep[idx]
         if self.X_text is not None:
             X.deeptext = self.X_text[idx]
         if self.X_img is not None:
@@ -68,6 +70,8 @@ class WideDeepDataset(Dataset):
             # then we need to  replicate what Tensor() does -> transpose axis
             # and normalize if necessary
             if not self.transforms or "ToTensor" not in self.transforms_names:
+                if xdi.ndim == 2:
+                    xdi = xdi[:, :, None]
                 xdi = xdi.transpose(2, 0, 1)
                 if "int" in str(xdi.dtype):
                     xdi = (xdi / xdi.max()).astype("float32")
@@ -87,4 +91,11 @@ class WideDeepDataset(Dataset):
             return X
 
     def __len__(self):
-        return len(self.X_deep)
+        if self.X_wide is not None:
+            return len(self.X_wide)
+        if self.X_deep is not None:
+            return len(self.X_deep)
+        if self.X_text is not None:
+            return len(self.X_text)
+        if self.X_img is not None:
+            return len(self.X_img)

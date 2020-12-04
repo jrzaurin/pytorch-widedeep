@@ -33,9 +33,10 @@ extras["docs"] = [
 ]
 extras["quality"] = [
     "black",
-    "isort @ git+git://github.com/timothycrosley/isort.git@e63ae06ec7d70b06df9e528357650281a3d3ec22#egg=isort",
+    "isort",
     "flake8",
 ]
+extras["all"] = extras["test"] + extras["docs"] + extras["quality"]
 
 # main setup kw args
 setup_kwargs = {
@@ -62,7 +63,7 @@ setup_kwargs = {
         "torch",
         "torchvision",
     ],
-    "extra_requires": extras,
+    "extras_require": extras,
     "python_requires": ">=3.6.0",
     "classifiers": [
         dev_status[majorminor],

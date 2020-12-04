@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img width="450" src="docs/figures/widedeep_logo.png">
+  <img width="300" src="docs/figures/widedeep_logo.png">
 </p>
 
 [![Build Status](https://travis-ci.org/jrzaurin/pytorch-widedeep.svg?branch=master)](https://travis-ci.org/jrzaurin/pytorch-widedeep)
@@ -9,11 +9,7 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/jrzaurin/pytorch-widedeep/issues)
 [![codecov](https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/master/graph/badge.svg)](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
-
-Platform | Version Support
----------|:---------------
-OSX      | [![Python 3.6 3.7](https://img.shields.io/badge/python-3.6%20%7C%203.7-blue.svg)](https://www.python.org/)
-Linux    | [![Python 3.6 3.7 3.8](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue.svg)](https://www.python.org/)
+[![Python 3.6 3.7 3.8](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue.svg)](https://www.python.org/)
 
 # pytorch-widedeep
 
@@ -88,15 +84,23 @@ as:
   <img width="300" src="docs/figures/architecture_2_math.png">
 </p>
 
-When using `pytorch-widedeep`, the assumption is that the so called `Wide` and
-`deep dense` (this can be either `DeepDense` or `DeepDenseResnet`. See the
-documentation and examples folder for more details) components in the figures
-are **always** present, while `DeepText text` and `DeepImage` are optional.
+Note that each individual component, `wide`, `deepdense` (either `DeepDense`
+or `DeepDenseResnet`), `deeptext` and `deepimage`, can be used independently
+and in isolation. For example, one could use only `wide`, which is in simply a
+linear model.
+
+On the other hand, while I recommend using the `Wide` and `DeepDense` (or
+`DeepDenseResnet`) classes in `pytorch-widedeep` to build the `wide` and
+`deepdense` component, it is very likely that users will want to use their own
+models in the case of the `deeptext` and `deepimage` components. That is
+perfectly possible as long as the the custom models have an attribute called
+`output_dim` with the size of the last layer of activations, so that
+`WideDeep` can be constructed
+
 `pytorch-widedeep` includes standard text (stack of LSTMs) and image
-(pre-trained ResNets or stack of CNNs) models. However, the user can use any
-custom model as long as it has an attribute called `output_dim` with the size
-of the last layer of activations, so that `WideDeep` can be constructed. See
-the examples folder or the docs for more information.
+(pre-trained ResNets or stack of CNNs) models.
+
+See the examples folder or the docs for more information.
 
 
 ### Installation
@@ -123,6 +127,28 @@ cd pytorch-widedeep
 # Install in dev mode
 pip install -e .
 ```
+
+**Important note for Mac users**: at the time of writing (Dec-2020) the latest
+`torch` release is `1.7`. This release has some
+[issues](https://stackoverflow.com/questions/64772335/pytorch-w-parallelnative-cpp206)
+when running on Mac and the data-loaders will not run in parallel. In
+addition, since `python 3.8`, [the `multiprocessing` library start method
+changed from `'fork'` to
+`'spawn'`](https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods).
+This also affects the data-loaders (for any `torch` version) and they will not
+run in parallel. Therefore, for Mac users I recommend using `python 3.6` or
+`3.7` and `torch <= 1.6` (with the corresponding, consistent version of
+`torchvision`, e.g. `0.7.0` for `torch 1.6`). I do not want to force this
+versioning in the `setup.py` file since I expect that all these issues are
+fixed in the future. Therefore, after installing `pytorch-widedeep` via pip or
+directly from github, downgrade `torch` and `torchvision` manually:
+
+```bash
+pip install pytorch-widedeep
+pip install torch==1.6.0 torchvision==0.7.0
+```
+
+None of these issues affect Linux users.
 
 ### Quick start
 
