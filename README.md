@@ -18,6 +18,8 @@ deep models.
 
 **Documentation:** [https://pytorch-widedeep.readthedocs.io](https://pytorch-widedeep.readthedocs.io/en/latest/index.html)
 
+**Companion posts:** [infinitoml](https://jrzaurin.github.io/infinitoml/)
+
 ### Introduction
 
 `pytorch-widedeep` is based on Google's Wide and Deep Algorithm. Details of
@@ -36,7 +38,7 @@ few lines of code.
 **Architecture 1**:
 
 <p align="center">
-  <img width="600" src="docs/figures/architecture_1.png">
+  <img width="750" src="docs/figures/architecture_1.png">
 </p>
 
 Architecture 1 combines the `Wide`, Linear model with the outputs from the
@@ -68,7 +70,7 @@ otherwise".*
 **Architecture 2**
 
 <p align="center">
-  <img width="600" src="docs/figures/architecture_2.png">
+  <img width="750" src="docs/figures/architecture_2.png">
 </p>
 
 Architecture 2 combines the `Wide`, Linear model with the Deep components of
