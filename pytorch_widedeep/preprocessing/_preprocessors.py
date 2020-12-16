@@ -109,7 +109,7 @@ class WidePreprocessor(BasePreprocessor):
         r"""Returns the processed dataframe"""
         try:
             self.feature_dict
-        except:
+        except AttributeError:
             raise NotFittedError(
                 "This WidePreprocessor instance is not fitted yet. "
                 "Call 'fit' with appropriate arguments before using this estimator."
@@ -276,7 +276,7 @@ class DensePreprocessor(BasePreprocessor):
             if self.scale:
                 try:
                     self.scaler.mean_
-                except:
+                except AttributeError:
                     raise NotFittedError(
                         "This DensePreprocessor instance is not fitted yet. "
                         "Call 'fit' with appropriate arguments before using this estimator."
@@ -285,13 +285,33 @@ class DensePreprocessor(BasePreprocessor):
                 df_cont[self.standardize_cols] = self.scaler.transform(df_std.values)
         try:
             df_deep = pd.concat([df_emb, df_cont], axis=1)
-        except:
+        except NameError:
             try:
                 df_deep = df_emb.copy()
-            except:
+            except NameError:
                 df_deep = df_cont.copy()
         self.deep_column_idx = {k: v for v, k in enumerate(df_deep.columns)}
         return df_deep.values
+
+    def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:
+        r"""Takes as input the output from the ``transform`` method and it will
+        return the original values.
+
+        Parameters
+        ----------
+        encoded: np.ndarray
+            array with the output of the ``transform`` method
+        """
+        decoded = pd.DataFrame(encoded, columns=self.deep_column_idx.keys())
+        for c in decoded.columns:
+            if c in self.embed_dim.keys():
+                decoded[c] = decoded[c].map(self.label_encoder.inverse_encoding_dict[c])
+            elif c in self.continuous_cols:
+                if self.already_standard is not None and c in self.already_standard:
+                    continue
+                else:
+                    decoded[c] = self.scaler.inverse_transform(decoded[c])
+        return decoded
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
         """Combines ``fit`` and ``transform``"""
