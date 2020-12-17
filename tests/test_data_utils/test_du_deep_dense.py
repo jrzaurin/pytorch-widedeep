@@ -94,7 +94,7 @@ def test_prepare_deep_without_embedding_columns():
 
     try:
         X_randint = preprocessor3.fit_transform(df_randint)
-    except:
+    except Exception:
         errors.append("Fundamental Error")
 
     out_booleans = []
@@ -108,3 +108,48 @@ def test_prepare_deep_without_embedding_columns():
         errors.append("There is something going on with the scaler")
 
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
+
+
+################################################################################
+# Test DensePreprocessor inverse_transform
+###############################################################################
+
+df = pd.DataFrame(
+    {
+        "col1": ["a", "b", "c"],
+        "col2": ["c", "d", "e"],
+        "col3": [10, 20, 30],
+        "col4": [2, 7, 9],
+    }
+)
+
+
+@pytest.mark.parametrize(
+    "embed_cols, continuous_cols, scale",
+    [
+        (["col1", "col2"], None, False),
+        (None, ["col3", "col4"], True),
+        (["col1", "col2"], ["col3", "col4"], False),
+        (["col1", "col2"], ["col3", "col4"], True),
+        ([("col1", 5), ("col2", 5)], ["col3", "col4"], True),
+    ],
+)
+def test_dense_preprocessor_inverse_transform(embed_cols, continuous_cols, scale):
+    dense_preprocessor = DensePreprocessor(
+        embed_cols=embed_cols, continuous_cols=continuous_cols, scale=scale
+    )
+    encoded = dense_preprocessor.fit_transform(df)
+    decoded = dense_preprocessor.inverse_transform(encoded)
+    try:
+        if isinstance(embed_cols[0], tuple):
+            embed_cols = [c[0] for c in embed_cols]
+        emb_df = df[embed_cols]
+    except Exception:
+        emb_df = pd.DataFrame()
+    try:
+        cont_df = df[continuous_cols]
+    except Exception:
+        cont_df = pd.DataFrame()
+    org_df = pd.concat([emb_df, cont_df], axis=1)
+    decoded = decoded.astype(org_df.dtypes.to_dict())
+    assert decoded.equals(org_df)

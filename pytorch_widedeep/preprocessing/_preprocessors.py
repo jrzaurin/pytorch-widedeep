@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from sklearn.exceptions import NotFittedError
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import StandardScaler
 
 from ..wdtypes import *
 from ..utils.text_utils import (
@@ -303,14 +303,19 @@ class DensePreprocessor(BasePreprocessor):
             array with the output of the ``transform`` method
         """
         decoded = pd.DataFrame(encoded, columns=self.deep_column_idx.keys())
-        for c in decoded.columns:
-            if c in self.embed_dim.keys():
+        # embeddings back to original category
+        if self.embed_cols is not None:
+            if isinstance(self.embed_cols[0], tuple):
+                emb_c: List = [c[0] for c in self.embed_cols]
+            else:
+                emb_c = self.embed_cols.copy()
+            for c in emb_c:
                 decoded[c] = decoded[c].map(self.label_encoder.inverse_encoding_dict[c])
-            elif c in self.continuous_cols:
-                if self.already_standard is not None and c in self.already_standard:
-                    continue
-                else:
-                    decoded[c] = self.scaler.inverse_transform(decoded[c])
+        # continuous_cols back to non-standarised
+        try:
+            decoded[self.continuous_cols] = self.scaler.inverse_transform(decoded[self.continuous_cols])
+        except AttributeError:
+            pass
         return decoded
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
@@ -412,7 +417,7 @@ class TextPreprocessor(BasePreprocessor):
         """Returns the padded, `numericalised` sequences"""
         try:
             self.vocab
-        except:
+        except AttributeError:
             raise NotFittedError(
                 "This TextPreprocessor instance is not fitted yet. "
                 "Call 'fit' with appropriate arguments before using this estimator."
@@ -517,7 +522,7 @@ class ImagePreprocessor(BasePreprocessor):
         """Resizes the images to the input height and width."""
         try:
             self.aap
-        except:
+        except AttributeError:
             raise NotFittedError(
                 "This ImagePreprocessor instance is not fitted yet. "
                 "Call 'fit' with appropriate arguments before using this estimator."
