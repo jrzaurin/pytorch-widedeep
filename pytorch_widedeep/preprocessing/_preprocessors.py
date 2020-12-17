@@ -313,7 +313,9 @@ class DensePreprocessor(BasePreprocessor):
                 decoded[c] = decoded[c].map(self.label_encoder.inverse_encoding_dict[c])
         # continuous_cols back to non-standarised
         try:
-            decoded[self.continuous_cols] = self.scaler.inverse_transform(decoded[self.continuous_cols])
+            decoded[self.continuous_cols] = self.scaler.inverse_transform(
+                decoded[self.continuous_cols]
+            )
         except AttributeError:
             pass
         return decoded
