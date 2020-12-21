@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from sklearn.exceptions import NotFittedError
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import StandardScaler
 
 from ..wdtypes import *
 from ..utils.text_utils import (
@@ -109,7 +109,7 @@ class WidePreprocessor(BasePreprocessor):
         r"""Returns the processed dataframe"""
         try:
             self.feature_dict
-        except:
+        except AttributeError:
             raise NotFittedError(
                 "This WidePreprocessor instance is not fitted yet. "
                 "Call 'fit' with appropriate arguments before using this estimator."
@@ -276,7 +276,7 @@ class DensePreprocessor(BasePreprocessor):
             if self.scale:
                 try:
                     self.scaler.mean_
-                except:
+                except AttributeError:
                     raise NotFittedError(
                         "This DensePreprocessor instance is not fitted yet. "
                         "Call 'fit' with appropriate arguments before using this estimator."
@@ -285,13 +285,40 @@ class DensePreprocessor(BasePreprocessor):
                 df_cont[self.standardize_cols] = self.scaler.transform(df_std.values)
         try:
             df_deep = pd.concat([df_emb, df_cont], axis=1)
-        except:
+        except NameError:
             try:
                 df_deep = df_emb.copy()
-            except:
+            except NameError:
                 df_deep = df_cont.copy()
         self.deep_column_idx = {k: v for v, k in enumerate(df_deep.columns)}
         return df_deep.values
+
+    def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:
+        r"""Takes as input the output from the ``transform`` method and it will
+        return the original values.
+
+        Parameters
+        ----------
+        encoded: np.ndarray
+            array with the output of the ``transform`` method
+        """
+        decoded = pd.DataFrame(encoded, columns=self.deep_column_idx.keys())
+        # embeddings back to original category
+        if self.embed_cols is not None:
+            if isinstance(self.embed_cols[0], tuple):
+                emb_c: List = [c[0] for c in self.embed_cols]
+            else:
+                emb_c = self.embed_cols.copy()
+            for c in emb_c:
+                decoded[c] = decoded[c].map(self.label_encoder.inverse_encoding_dict[c])
+        # continuous_cols back to non-standarised
+        try:
+            decoded[self.continuous_cols] = self.scaler.inverse_transform(
+                decoded[self.continuous_cols]
+            )
+        except AttributeError:
+            pass
+        return decoded
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
         """Combines ``fit`` and ``transform``"""
@@ -392,7 +419,7 @@ class TextPreprocessor(BasePreprocessor):
         """Returns the padded, `numericalised` sequences"""
         try:
             self.vocab
-        except:
+        except AttributeError:
             raise NotFittedError(
                 "This TextPreprocessor instance is not fitted yet. "
                 "Call 'fit' with appropriate arguments before using this estimator."
@@ -497,7 +524,7 @@ class ImagePreprocessor(BasePreprocessor):
         """Resizes the images to the input height and width."""
         try:
             self.aap
-        except:
+        except AttributeError:
             raise NotFittedError(
                 "This ImagePreprocessor instance is not fitted yet. "
                 "Call 'fit' with appropriate arguments before using this estimator."
