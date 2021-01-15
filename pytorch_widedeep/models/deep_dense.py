@@ -34,7 +34,7 @@ class DeepDense(nn.Module):
         dense layers
     dropout: List, Optional
         List with the dropout between the dense layers. e.g: [0.5,0.5]
-    embeddings_input: List, Optional
+    embed_input: List, Optional
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
     embed_dropout: float
@@ -42,7 +42,7 @@ class DeepDense(nn.Module):
     continuous_cols: List, Optional
         List with the name of the numeric (aka continuous) columns
 
-        .. note:: Either ``embeddings_input`` or ``continuous_cols`` (or both) should be passed to the
+        .. note:: Either ``embed_input`` or ``continuous_cols`` (or both) should be passed to the
             model
 
     Attributes
@@ -125,16 +125,16 @@ class DeepDense(nn.Module):
         embeddings. The result is then passed through a series of dense layers
         """
         if self.embed_input is not None:
-            x = [
+            embed = [
                 self.embed_layers["emb_layer_" + col](
                     X[:, self.deep_column_idx[col]].long()
                 )
                 for col, _, _ in self.embed_input
             ]
-            x = torch.cat(x, 1)  # type: ignore
-            x = self.embed_dropout(x)  # type: ignore
+            x = torch.cat(embed, 1)
+            x = self.embed_dropout(x)
         if self.continuous_cols is not None:
             cont_idx = [self.deep_column_idx[col] for col in self.continuous_cols]
             x_cont = X[:, cont_idx].float()
-            x = torch.cat([x, x_cont], 1) if self.embed_input is not None else x_cont  # type: ignore
-        return self.dense(x)  # type: ignore
+            x = torch.cat([x, x_cont], 1) if self.embed_input is not None else x_cont
+        return self.dense(x)

@@ -1,4 +1,6 @@
 import os
+import warnings
+import functools
 
 import numpy as np
 import torch
@@ -11,7 +13,7 @@ from sklearn.model_selection import train_test_split
 from ..losses import FocalLoss
 from ._warmup import WarmUp
 from ..metrics import Metric, MetricCallback, MultipleMetrics
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 from ..callbacks import History, Callback, CallbackContainer
 from .deep_dense import dense_layer
 from ._wd_dataset import WideDeepDataset
@@ -20,15 +22,43 @@ from ._multiple_optimizer import MultipleOptimizer
 from ._multiple_transforms import MultipleTransforms
 from ._multiple_lr_scheduler import MultipleLRScheduler
 
+warnings.filterwarnings("default", category=DeprecationWarning)
+
 n_cpus = os.cpu_count()
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
 
+def deprecated_alias(**aliases):
+    def deco(f):
+        @functools.wraps(f)
+        def wrapper(*args, **kwargs):
+            rename_kwargs(f.__name__, kwargs, aliases)
+            return f(*args, **kwargs)
+
+        return wrapper
+
+    return deco
+
+
+def rename_kwargs(func_name, kwargs, aliases):
+    for alias, new in aliases.items():
+        if alias in kwargs:
+            if new in kwargs:
+                raise TypeError(
+                    "{} received both {} and {}".format(func_name, alias, new)
+                )
+            warnings.warn(
+                "'{}' is deprecated; use '{}' instead".format(alias, new),
+                DeprecationWarning,
+            )
+            kwargs[new] = kwargs.pop(alias)
+
+
 class WideDeep(nn.Module):
-    r"""Main collector class that combines all ``Wide``, ``DeepDense``,
-    ``DeepText`` and ``DeepImage`` models.
+    r"""Main collector class that combines all ``wide``, ``deeptabular``
+    (which can be a number of architectures), ``deeptext`` and ``deepimage`` models.
 
     There are two options to combine these models that correspond to the two
     architectures that ``pytorch-widedeep`` can build.
@@ -36,8 +66,8 @@ class WideDeep(nn.Module):
         - Directly connecting the output of the model components to an ouput neuron(s).
 
         - Adding a `Fully-Connected Head` (FC-Head) on top of the deep models.
-          This FC-Head will combine the output form the ``DeepDense``, ``DeepText`` and
-          ``DeepImage`` and will be then connected to the output neuron(s).
+          This FC-Head will combine the output form the ``deeptabular``, ``deeptext`` and
+          ``deepimage`` and will be then connected to the output neuron(s).
 
     Parameters
     ----------
@@ -46,12 +76,24 @@ class WideDeep(nn.Module):
         However, it is possible to use a custom model as long as is consistent
         with the required architecture, see
         :class:`pytorch_widedeep.models.wide.Wide`
-    deepdense: nn.Module
-        `Deep dense` model comprised by the embeddings for the categorical
-        features combined with numerical (also referred as continuous)
-        features. We recommend using the ``DeepDense`` class in this package.
-        However, a custom model as long as is  consistent with the required
-        architecture. See :class:`pytorch_widedeep.models.deep_dense.DeepDense`.
+    deeptabular: nn.Module
+        currently we offer three possible architectures for the `deeptabular` component
+        implemented in this package. These are: ``DeepDense``, ``DeepDenseResnet`` and `
+        `TabTransformer``.
+            1. ``DeepDense`` is simply an embedding layer encoding the categorical
+            features that are then concatenated and passed through a series of
+            dense layers.
+            See: ``pytorch_widedeep.models.deep_dense.DeepDense``
+            2. ``DeepDenseResnet`` is an embedding layer encoding the categorical
+            features that are then concatenated and passed through a series of
+            `"dense"` ResNet blocks.
+            See ``pytorch_widedeep.models.deep_dense_resnet.DeepDenseResnet``
+            3. ``TabTransformer`` is detailed in `TabTransformer: Tabular Data Modeling
+            Using Contextual Embeddings<https://arxiv.org/pdf/2012.06678.pdf>`_.
+            See ``pytorch_widedeep.models.tab_transformer.TabTransformer``
+        We recommend using on of these as `deeptabular`. However, a custom
+        model as long as is  consistent with the required architecture. See
+        :class:`pytorch_widedeep.models.deep_dense.DeepDense`.
     deeptext: nn.Module, Optional
         `Deep text` model for the text input. Must be an object of class
         ``DeepText`` or a custom model as long as is consistent with the
@@ -92,23 +134,24 @@ class WideDeep(nn.Module):
         ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
 
 
-    .. note:: While I recommend using the ``Wide`` and ``DeepDense`` classes within
-        this package when building the corresponding model components, it is very
-        likely that the user will want to use custom text and image models. That
-        is perfectly possible. Simply, build them and pass them as the
-        corresponding parameters. Note that the custom models MUST return a last
-        layer of activations (i.e. not the final prediction) so that  these
-        activations are collected by ``WideDeep`` and combined accordingly. In
-        addition, the models MUST also contain an attribute ``output_dim`` with
-        the size of these last layers of activations. See for example
-        :class:`pytorch_widedeep.models.deep_dense.DeepDense`
+    .. note:: While I recommend using the ``wide`` and ``deeptabular`` components
+        within this package when building the corresponding model components,
+        it is very likely that the user will want to use custom text and image
+        models. That is perfectly possible. Simply, build them and pass them
+        as the corresponding parameters. Note that the custom models MUST
+        return a last layer of activations (i.e. not the final prediction) so
+        that  these activations are collected by ``WideDeep`` and combined
+        accordingly. In addition, the models MUST also contain an attribute
+        ``output_dim`` with the size of these last layers of activations. See
+        for example :class:`pytorch_widedeep.models.deep_dense.DeepDense`
 
     """
 
-    def __init__(  # noqa: C901
+    @deprecated_alias(deepdense="deeptabular")  # noqa: C901
+    def __init__(
         self,
         wide: Optional[nn.Module] = None,
-        deepdense: Optional[nn.Module] = None,
+        deeptabular: Optional[nn.Module] = None,
         deeptext: Optional[nn.Module] = None,
         deepimage: Optional[nn.Module] = None,
         deephead: Optional[nn.Module] = None,
@@ -122,7 +165,7 @@ class WideDeep(nn.Module):
 
         self._check_model_components(
             wide,
-            deepdense,
+            deeptabular,
             deeptext,
             deepimage,
             deephead,
@@ -136,7 +179,7 @@ class WideDeep(nn.Module):
 
         # The main 5 components of the wide and deep assemble
         self.wide = wide
-        self.deepdense = deepdense
+        self.deeptabular = deeptabular
         self.deeptext = deeptext
         self.deepimage = deepimage
         self.deephead = deephead
@@ -144,8 +187,8 @@ class WideDeep(nn.Module):
         if self.deephead is None:
             if head_layers is not None:
                 input_dim = 0
-                if self.deepdense is not None:
-                    input_dim += self.deepdense.output_dim  # type:ignore
+                if self.deeptabular is not None:
+                    input_dim += self.deeptabular.output_dim  # type:ignore
                 if self.deeptext is not None:
                     input_dim += self.deeptext.output_dim  # type:ignore
                 if self.deepimage is not None:
@@ -168,9 +211,9 @@ class WideDeep(nn.Module):
                     "head_out", nn.Linear(head_layers[-1], pred_dim)
                 )
             else:
-                if self.deepdense is not None:
-                    self.deepdense = nn.Sequential(
-                        self.deepdense, nn.Linear(self.deepdense.output_dim, pred_dim)  # type: ignore
+                if self.deeptabular is not None:
+                    self.deeptabular = nn.Sequential(
+                        self.deeptabular, nn.Linear(self.deeptabular.output_dim, pred_dim)  # type: ignore
                     )
                 if self.deeptext is not None:
                     self.deeptext = nn.Sequential(
@@ -195,8 +238,8 @@ class WideDeep(nn.Module):
         # Deep output: either connected directly to the output neuron(s) or
         # passed through a head first
         if self.deephead:
-            if self.deepdense is not None:
-                deepside = self.deepdense(X["deepdense"])
+            if self.deeptabular is not None:
+                deepside = self.deeptabular(X["deeptabular"])
             else:
                 deepside = torch.FloatTensor().to(device)
             if self.deeptext is not None:
@@ -207,8 +250,8 @@ class WideDeep(nn.Module):
             deepside_linear = nn.Linear(deephead_out.size(1), self.pred_dim).to(device)
             return out.add_(deepside_linear(deephead_out))
         else:
-            if self.deepdense is not None:
-                out.add_(self.deepdense(X["deepdense"]))
+            if self.deeptabular is not None:
+                out.add_(self.deeptabular(X["deeptabular"]))
             if self.deeptext is not None:
                 out.add_(self.deeptext(X["deeptext"]))
             if self.deepimage is not None:
@@ -249,7 +292,7 @@ class WideDeep(nn.Module):
         optimizers: Union[Optimizer, Dict[str, Optimizer]], Optional, Default=AdamW
             - An instance of ``pytorch``'s ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
             - a dictionary where there keys are the model components (i.e.
-              `'wide'`, `'deepdense'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)  and
+              `'wide'`, `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)  and
               the values are the corresponding optimizers. If multiple optimizers are used
               the  dictionary MUST contain an optimizer per model component.
 
@@ -258,13 +301,13 @@ class WideDeep(nn.Module):
             - An instance of ``pytorch``'s ``LRScheduler`` object (e.g
               :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
             - a dictionary where there keys are the model componenst (i.e. `'wide'`,
-              `'deepdense'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
+              `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
               values are the corresponding learning rate schedulers.
 
             See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
         initializers: Dict[str, Initializer], Optional. Default=None
             Dict where there keys are the model components (i.e. `'wide'`,
-            `'deepdense'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
+            `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
             values are the corresponding initializers.
             See `Pytorch initializers <https://pytorch.org/docs/stable/nn.init.html>`_.
         transforms: List[Transforms], Optional. Default=None
@@ -318,13 +361,13 @@ class WideDeep(nn.Module):
         >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
         >>> deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
         >>> wide = Wide(10, 1)
-        >>> deepdense = DeepDenseResnet(blocks=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
+        >>> deeptabular = DeepDenseResnet(blocks=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
         >>> deeptext = DeepText(vocab_size=10, embed_dim=4, padding_idx=0)
         >>> deepimage = DeepImage(pretrained=False)
-        >>> model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage)
+        >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
         >>>
         >>> wide_opt = torch.optim.Adam(model.wide.parameters())
-        >>> deep_opt = torch.optim.Adam(model.deepdense.parameters())
+        >>> deep_opt = torch.optim.Adam(model.deeptabular.parameters())
         >>> text_opt = RAdam(model.deeptext.parameters())
         >>> img_opt = RAdam(model.deepimage.parameters())
         >>>
@@ -332,9 +375,9 @@ class WideDeep(nn.Module):
         >>> deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)
         >>> text_sch = torch.optim.lr_scheduler.StepLR(text_opt, step_size=5)
         >>> img_sch = torch.optim.lr_scheduler.StepLR(img_opt, step_size=3)
-        >>> optimizers = {"wide": wide_opt, "deepdense": deep_opt, "deeptext": text_opt, "deepimage": img_opt}
-        >>> schedulers = {"wide": wide_sch, "deepdense": deep_sch, "deeptext": text_sch, "deepimage": img_sch}
-        >>> initializers = {"wide": Uniform, "deepdense": Normal, "deeptext": KaimingNormal, "deepimage": KaimingUniform}
+        >>> optimizers = {"wide": wide_opt, "deeptabular": deep_opt, "deeptext": text_opt, "deepimage": img_opt}
+        >>> schedulers = {"wide": wide_sch, "deeptabular": deep_sch, "deeptext": text_sch, "deepimage": img_sch}
+        >>> initializers = {"wide": Uniform, "deeptabular": Normal, "deeptext": KaimingNormal, "deepimage": KaimingUniform}
         >>> transforms = [ToTensor]
         >>> callbacks = [LRHistory(n_epochs=4), EarlyStopping]
         >>> model.compile(method="regression", initializers=initializers, optimizers=optimizers,
@@ -420,10 +463,11 @@ class WideDeep(nn.Module):
 
         self.to(device)
 
-    def fit(  # noqa: C901
+    @deprecated_alias(X_deep="X_tab")  # noqa: C901
+    def fit(
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_deep: Optional[np.ndarray] = None,
+        X_tab: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_train: Optional[Dict[str, np.ndarray]] = None,
@@ -452,9 +496,9 @@ class WideDeep(nn.Module):
         X_wide: np.ndarray, Optional. Default=None
             Input for the ``wide`` model component.
             See :class:`pytorch_widedeep.preprocessing.WidePreprocessor`
-        X_deep: np.ndarray, Optional. Default=None
-            Input for the ``deepdense`` model component.
-            See :class:`pytorch_widedeep.preprocessing.DensePreprocessor`
+        X_tab: np.ndarray, Optional. Default=None
+            Input for the ``deeptabular`` model component.
+            See :class:`pytorch_widedeep.preprocessing.TabPreprocessor`
         X_text: np.ndarray, Optional. Default=None
             Input for the ``deeptext`` model component.
             See :class:`pytorch_widedeep.preprocessing.TextPreprocessor`
@@ -463,11 +507,11 @@ class WideDeep(nn.Module):
             See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_train: Dict[str, np.ndarray], Optional. Default=None
             Training dataset for the different model components. Keys are
-            `X_wide`, `'X_deep'`, `'X_text'`, `'X_img'` and `'target'`. Values are
+            `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values are
             the corresponding matrices.
         X_val: Dict, Optional. Default=None
             Validation dataset for the different model component. Keys are
-            `'X_wide'`, `'X_deep'`, `'X_text'`, `'X_img'` and `'target'`. Values are
+            `'X_wide'`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values are
             the corresponding matrices.
         val_split: float, Optional. Default=None
             train/val split fraction
@@ -555,28 +599,28 @@ class WideDeep(nn.Module):
 
 
         >>> # Ex 1. using train input arrays directly and no validation
-        >>> # model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=10, batch_size=256)
+        >>> # model.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256)
 
 
         >>> # Ex 2: using train input arrays directly and validation with val_split
-        >>> # model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=10, batch_size=256, val_split=0.2)
+        >>> # model.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256, val_split=0.2)
 
 
         >>> # Ex 3: using train dict and val_split
-        >>> # X_train = {'X_wide': X_wide, 'X_deep': X_deep, 'target': y}
+        >>> # X_train = {'X_wide': X_wide, 'X_tab': X_tab, 'target': y}
         >>> # model.fit(X_train, n_epochs=10, batch_size=256, val_split=0.2)
 
 
         >>> # Ex 4: validation using training and validation dicts
-        >>> # X_train = {'X_wide': X_wide_tr, 'X_deep': X_deep_tr, 'target': y_tr}
-        >>> # X_val = {'X_wide': X_wide_val, 'X_deep': X_deep_val, 'target': y_val}
+        >>> # X_train = {'X_wide': X_wide_tr, 'X_tab': X_tab_tr, 'target': y_tr}
+        >>> # X_val = {'X_wide': X_wide_val, 'X_tab': X_tab_val, 'target': y_val}
         >>> # model.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
 
         """
 
         self.batch_size = batch_size
         train_set, eval_set = self._train_val_split(
-            X_wide, X_deep, X_text, X_img, X_train, X_val, val_split, target
+            X_wide, X_tab, X_text, X_img, X_train, X_val, val_split, target
         )
         train_loader = DataLoader(
             dataset=train_set, batch_size=batch_size, num_workers=n_cpus
@@ -664,10 +708,11 @@ class WideDeep(nn.Module):
             self.callback_container.on_train_end(epoch_logs)
         self.train()
 
+    @deprecated_alias(X_deep="X_tab")  # noqa: C901
     def predict(
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_deep: Optional[np.ndarray] = None,
+        X_tab: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
@@ -679,9 +724,9 @@ class WideDeep(nn.Module):
         X_wide: np.ndarray, Optional. Default=None
             Input for the ``wide`` model component.
             See :class:`pytorch_widedeep.preprocessing.WidePreprocessor`
-        X_deep: np.ndarray, Optional. Default=None
-            Input for the ``deepdense`` model component.
-            See :class:`pytorch_widedeep.preprocessing.DensePreprocessor`
+        X_tab: np.ndarray, Optional. Default=None
+            Input for the ``deeptabular`` model component.
+            See :class:`pytorch_widedeep.preprocessing.TabPreprocessor`
         X_text: np.ndarray, Optional. Default=None
             Input for the ``deeptext`` model component.
             See :class:`pytorch_widedeep.preprocessing.TextPreprocessor`
@@ -690,11 +735,12 @@ class WideDeep(nn.Module):
             See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_test: Dict[str, np.ndarray], Optional. Default=None
             Testing dataset for the different model components. Keys are
-            `'X_wide'`, `'X_deep'`, `'X_text'`, `'X_img'` and `'target'` the values are
+            `'X_wide'`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'` the values are
             the corresponding matrices.
 
         """
-        preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)
+
+        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test)
         if self.method == "regression":
             return np.vstack(preds_l).squeeze(1)
         if self.method == "binary":
@@ -704,10 +750,11 @@ class WideDeep(nn.Module):
             preds = np.vstack(preds_l)
             return np.argmax(preds, 1)
 
+    @deprecated_alias(X_deep="X_tab")
     def predict_proba(
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_deep: Optional[np.ndarray] = None,
+        X_tab: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
@@ -715,7 +762,8 @@ class WideDeep(nn.Module):
         r"""Returns the predicted probabilities for the test dataset for  binary
         and multiclass methods
         """
-        preds_l = self._predict(X_wide, X_deep, X_text, X_img, X_test)
+
+        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test)
         if self.method == "binary":
             preds = np.vstack(preds_l).squeeze(1)
             probs = np.zeros([preds.shape[0], 2])
@@ -729,12 +777,12 @@ class WideDeep(nn.Module):
         self, col_name: str, cat_encoding_dict: Dict[str, Dict[str, int]]
     ) -> Dict[str, np.ndarray]:  # pragma: no cover
         r"""Returns the learned embeddings for the categorical features passed through
-        ``deepdense``.
+        ``deeptabular``.
 
         This method is designed to take an encoding dictionary in the same
         format as that of the :obj:`LabelEncoder` Attribute of the class
-        :obj:`DensePreprocessor`. See
-        :class:`pytorch_widedeep.preprocessing.DensePreprocessor` and
+        :obj:`TabPreprocessor`. See
+        :class:`pytorch_widedeep.preprocessing.TabPreprocessor` and
         :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`.
 
         Parameters
@@ -783,7 +831,7 @@ class WideDeep(nn.Module):
     def _train_val_split(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_deep: Optional[np.ndarray] = None,
+        X_tab: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_train: Optional[Dict[str, np.ndarray]] = None,
@@ -817,7 +865,7 @@ class WideDeep(nn.Module):
             eval_set = WideDeepDataset(**X_val, transforms=self.transforms)  # type: ignore
         elif val_split is not None:
             if not X_train:
-                X_train = self._build_train_dict(X_wide, X_deep, X_text, X_img, target)
+                X_train = self._build_train_dict(X_wide, X_tab, X_text, X_img, target)
             y_tr, y_val, idx_tr, idx_val = train_test_split(
                 X_train["target"],
                 np.arange(len(X_train["target"])),
@@ -830,10 +878,10 @@ class WideDeep(nn.Module):
                     X_train["X_wide"][idx_tr],
                     X_train["X_wide"][idx_val],
                 )
-            if "X_deep" in X_train.keys():
-                X_tr["X_deep"], X_val["X_deep"] = (
-                    X_train["X_deep"][idx_tr],
-                    X_train["X_deep"][idx_val],
+            if "X_tab" in X_train.keys():
+                X_tr["X_tab"], X_val["X_tab"] = (
+                    X_train["X_tab"][idx_tr],
+                    X_train["X_tab"][idx_val],
                 )
             if "X_text" in X_train.keys():
                 X_tr["X_text"], X_val["X_text"] = (
@@ -849,7 +897,7 @@ class WideDeep(nn.Module):
             eval_set = WideDeepDataset(**X_val, transforms=self.transforms)  # type: ignore
         else:
             if not X_train:
-                X_train = self._build_train_dict(X_wide, X_deep, X_text, X_img, target)
+                X_train = self._build_train_dict(X_wide, X_tab, X_text, X_img, target)
             train_set = WideDeepDataset(**X_train, transforms=self.transforms)  # type: ignore
             eval_set = None
 
@@ -879,7 +927,7 @@ class WideDeep(nn.Module):
         # a non elegant one and re-factoring the whole code
         warmer = WarmUp(self._loss_fn, self.metric, self.method, self.verbose)
         warmer.warm_all(self.wide, "wide", loader, n_epochs, max_lr)
-        warmer.warm_all(self.deepdense, "deepdense", loader, n_epochs, max_lr)
+        warmer.warm_all(self.deeptabular, "deeptabular", loader, n_epochs, max_lr)
         if self.deeptext:
             if deeptext_gradual:
                 warmer.warm_gradual(
@@ -994,7 +1042,7 @@ class WideDeep(nn.Module):
     def _predict(
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_deep: Optional[np.ndarray] = None,
+        X_tab: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
@@ -1009,8 +1057,8 @@ class WideDeep(nn.Module):
             load_dict = {}
             if X_wide is not None:
                 load_dict = {"X_wide": X_wide}
-            if X_deep is not None:
-                load_dict.update({"X_deep": X_deep})
+            if X_tab is not None:
+                load_dict.update({"X_tab": X_tab})
             if X_text is not None:
                 load_dict.update({"X_text": X_text})
             if X_img is not None:
@@ -1043,12 +1091,12 @@ class WideDeep(nn.Module):
         return preds_l
 
     @staticmethod
-    def _build_train_dict(X_wide, X_deep, X_text, X_img, target):
+    def _build_train_dict(X_wide, X_tab, X_text, X_img, target):
         X_train = {"target": target}
         if X_wide is not None:
             X_train["X_wide"] = X_wide
-        if X_deep is not None:
-            X_train["X_deep"] = X_deep
+        if X_tab is not None:
+            X_train["X_tab"] = X_tab
         if X_text is not None:
             X_train["X_text"] = X_text
         if X_img is not None:
@@ -1058,7 +1106,7 @@ class WideDeep(nn.Module):
     @staticmethod  # noqa: C901
     def _check_model_components(
         wide,
-        deepdense,
+        deeptabular,
         deeptext,
         deepimage,
         deephead,
@@ -1074,9 +1122,9 @@ class WideDeep(nn.Module):
                     wide.wide_linear.weight.size(1), pred_dim
                 )
             )
-        if deepdense is not None and not hasattr(deepdense, "output_dim"):
+        if deeptabular is not None and not hasattr(deeptabular, "output_dim"):
             raise AttributeError(
-                "deepdense model must have an 'output_dim' attribute. "
+                "deeptabular model must have an 'output_dim' attribute. "
                 "See pytorch-widedeep.models.deep_dense.DeepText"
             )
         if deeptext is not None and not hasattr(deeptext, "output_dim"):
@@ -1093,7 +1141,12 @@ class WideDeep(nn.Module):
             raise ValueError(
                 "both 'deephead' and 'head_layers' are not None. Use one of the other, but not both"
             )
-        if head_layers is not None and not deepdense and not deeptext and not deepimage:
+        if (
+            head_layers is not None
+            and not deeptabular
+            and not deeptext
+            and not deepimage
+        ):
             raise ValueError(
                 "if 'head_layers' is not None, at least one deep component must be used"
             )
@@ -1104,8 +1157,8 @@ class WideDeep(nn.Module):
         if deephead is not None:
             deephead_inp_feat = next(deephead.parameters()).size(1)
             output_dim = 0
-            if deepdense is not None:
-                output_dim += deepdense.output_dim
+            if deeptabular is not None:
+                output_dim += deeptabular.output_dim
             if deeptext is not None:
                 output_dim += deeptext.output_dim
             if deepimage is not None:

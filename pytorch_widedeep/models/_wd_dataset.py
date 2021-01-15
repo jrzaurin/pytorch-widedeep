@@ -13,8 +13,8 @@ class WideDeepDataset(Dataset):
     ----------
     X_wide: np.ndarray
         wide input
-    X_deep: np.ndarray
-        deepdense input
+    X_tab: np.ndarray
+        deeptabular input
     X_text: np.ndarray
         deeptext input
     X_img: np.ndarray
@@ -28,7 +28,7 @@ class WideDeepDataset(Dataset):
     def __init__(
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_deep: Optional[np.ndarray] = None,
+        X_tab: Optional[np.ndarray] = None,
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         target: Optional[np.ndarray] = None,
@@ -36,7 +36,7 @@ class WideDeepDataset(Dataset):
     ):
 
         self.X_wide = X_wide
-        self.X_deep = X_deep
+        self.X_tab = X_tab
         self.X_text = X_text
         self.X_img = X_img
         self.transforms = transforms
@@ -52,8 +52,8 @@ class WideDeepDataset(Dataset):
         X = Bunch()
         if self.X_wide is not None:
             X.wide = self.X_wide[idx]
-        if self.X_deep is not None:
-            X.deepdense = self.X_deep[idx]
+        if self.X_tab is not None:
+            X.deeptabular = self.X_tab[idx]
         if self.X_text is not None:
             X.deeptext = self.X_text[idx]
         if self.X_img is not None:
@@ -93,8 +93,8 @@ class WideDeepDataset(Dataset):
     def __len__(self):
         if self.X_wide is not None:
             return len(self.X_wide)
-        if self.X_deep is not None:
-            return len(self.X_deep)
+        if self.X_tab is not None:
+            return len(self.X_tab)
         if self.X_text is not None:
             return len(self.X_text)
         if self.X_img is not None:

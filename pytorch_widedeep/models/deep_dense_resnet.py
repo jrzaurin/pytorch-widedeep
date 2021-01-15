@@ -180,16 +180,16 @@ class DeepDenseResnet(nn.Module):
         embeddings. The result is then passed through a series of dense Resnet
         blocks"""
         if self.embed_input is not None:
-            x = [
+            embed = [
                 self.embed_layers["emb_layer_" + col](
                     X[:, self.deep_column_idx[col]].long()
                 )
                 for col, _, _ in self.embed_input
             ]
-            x = torch.cat(x, 1)  # type: ignore
-            x = self.embed_dropout(x)  # type: ignore
+            x = torch.cat(embed, 1)
+            x = self.embed_dropout(x)
         if self.continuous_cols is not None:
             cont_idx = [self.deep_column_idx[col] for col in self.continuous_cols]
             x_cont = X[:, cont_idx].float()
-            x = torch.cat([x, x_cont], 1) if self.embed_input is not None else x_cont  # type: ignore
-        return self.dense_resnet(x)  # type: ignore
+            x = torch.cat([x, x_cont], 1) if self.embed_input is not None else x_cont
+        return self.dense_resnet(x)

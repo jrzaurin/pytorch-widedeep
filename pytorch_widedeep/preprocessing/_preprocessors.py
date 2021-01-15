@@ -8,14 +8,14 @@ from tqdm import tqdm
 from sklearn.exceptions import NotFittedError
 from sklearn.preprocessing import StandardScaler
 
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 from ..utils.text_utils import (
     get_texts,
     pad_sequences,
     build_embeddings_matrix,
 )
-from ..utils.dense_utils import LabelEncoder
 from ..utils.image_utils import SimplePreprocessor, AspectAwarePreprocessor
+from ..utils.deeptabular_utils import LabelEncoder
 from ..utils.fastai_transforms import Vocab
 
 
@@ -174,8 +174,8 @@ class WidePreprocessor(BasePreprocessor):
             return df.copy()[self.wide_cols]
 
 
-class DensePreprocessor(BasePreprocessor):
-    r"""Preprocessor to prepare the deepdense input dataset
+class TabPreprocessor(BasePreprocessor):
+    r"""Preprocessor to prepare the deeptabular input dataset
 
     Parameters
     ----------
@@ -193,6 +193,9 @@ class DensePreprocessor(BasePreprocessor):
     already_standard: List[str], Optional,
         List with the name of the continuous cols that do not need to be
         Standarised.
+    for_tabtransformer: bool, default = False
+        Boolean indicating whether the preprocessed data will be passed to a
+        TabTransformer model.
 
     Attributes
     ----------
@@ -201,8 +204,10 @@ class DensePreprocessor(BasePreprocessor):
     embed_cols: :obj:`List`
         List with the columns that will be represented by embeddings
     embed_dim: :obj:`Dict`
-        Dictionary where keys are the embed cols and values are the embed
-        dimensions
+        Dictionary where keys are the embed cols and values are the embedding
+        dimensions. If ``for_tabtransformer`` is set to 'True' the embedding
+        dimensions are the same for all columns and this attributes is not
+        generated during the fit process
     standardize_cols: :obj:`List`
         List of the columns that will be standarized
     deep_column_idx: :obj:`Dict`
@@ -214,11 +219,11 @@ class DensePreprocessor(BasePreprocessor):
     Examples
     --------
     >>> import pandas as pd
-    >>> from pytorch_widedeep.preprocessing import DensePreprocessor
+    >>> from pytorch_widedeep.preprocessing import TabPreprocessor
     >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l'], 'age': [25, 40, 55]})
     >>> embed_cols = [('color',5), ('size',5)]
     >>> cont_cols = ['age']
-    >>> deep_preprocessor = DensePreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+    >>> deep_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
     >>> deep_preprocessor.fit_transform(df)
     array([[ 0.        ,  0.        , -1.22474487],
            [ 1.        ,  1.        ,  0.        ],
@@ -236,18 +241,26 @@ class DensePreprocessor(BasePreprocessor):
         scale: bool = True,
         default_embed_dim: int = 8,
         already_standard: Optional[List[str]] = None,
+        for_tabtransformer: bool = False,
     ):
-        super(DensePreprocessor, self).__init__()
+        super(TabPreprocessor, self).__init__()
+
+        assert (embed_cols is not None) or (
+            continuous_cols is not None
+        ), "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
+
+        if for_tabtransformer and isinstance(embed_cols[0], tuple):
+            raise ValueError(
+                "If for_tabtransformer is 'True' embed_cols must be simply a list of "
+                "strings with the columns to be encoded as embeddings."
+            )
 
         self.embed_cols = embed_cols
         self.continuous_cols = continuous_cols
         self.already_standard = already_standard
         self.scale = scale
         self.default_embed_dim = default_embed_dim
-
-        assert (self.embed_cols is not None) or (
-            self.continuous_cols is not None
-        ), "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
+        self.for_tabtransformer = for_tabtransformer
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Fits the Preprocessor and creates required attributes"""
@@ -256,7 +269,10 @@ class DensePreprocessor(BasePreprocessor):
             self.label_encoder = LabelEncoder(df_emb.columns.tolist()).fit(df_emb)
             self.embeddings_input: List = []
             for k, v in self.label_encoder.encoding_dict.items():
-                self.embeddings_input.append((k, len(v), self.embed_dim[k]))
+                if self.for_tabtransformer:
+                    self.embeddings_input.append((k, len(v)))
+                else:
+                    self.embeddings_input.append((k, len(v), self.embed_dim[k]))
         if self.continuous_cols is not None:
             df_cont = self._prepare_continuous(df)
             if self.scale:
@@ -278,7 +294,7 @@ class DensePreprocessor(BasePreprocessor):
                     self.scaler.mean_
                 except AttributeError:
                     raise NotFittedError(
-                        "This DensePreprocessor instance is not fitted yet. "
+                        "This TabPreprocessor instance is not fitted yet. "
                         "Call 'fit' with appropriate arguments before using this estimator."
                     )
                 df_std = df_cont[self.standardize_cols]
@@ -325,13 +341,16 @@ class DensePreprocessor(BasePreprocessor):
         return self.fit(df).transform(df)
 
     def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
-        if isinstance(self.embed_cols[0], tuple):
-            self.embed_dim = dict(self.embed_cols)  # type: ignore
-            embed_colname = [emb[0] for emb in self.embed_cols]
+        if self.for_tabtransformer:
+            return df.copy()[self.embed_cols]
         else:
-            self.embed_dim = {e: self.default_embed_dim for e in self.embed_cols}  # type: ignore
-            embed_colname = self.embed_cols  # type: ignore
-        return df.copy()[embed_colname]
+            if isinstance(self.embed_cols[0], tuple):
+                self.embed_dim = dict(self.embed_cols)  # type: ignore
+                embed_colname = [emb[0] for emb in self.embed_cols]
+            else:
+                self.embed_dim = {e: self.default_embed_dim for e in self.embed_cols}  # type: ignore
+                embed_colname = self.embed_cols  # type: ignore
+            return df.copy()[embed_colname]
 
     def _prepare_continuous(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.scale:

@@ -16,7 +16,8 @@ class LabelEncoder(object):
     """Class to Label Encode categorical values for multiple columns at once
 
     .. note:: LabelEncoder will automatically add a new category and label for
-        `unseen` new categories
+        `unseen` new categories. Therefore, there is no need of saving the 0
+        embedding index for padding/unknown
 
     Parameters
     ----------
