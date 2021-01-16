@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torch.nn import Module
 
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 
 
 class BasicBlock(nn.Module):
@@ -75,7 +75,7 @@ class DeepDenseResnet(nn.Module):
     dropout: float, default = 0.0
        Block's `"internal"` dropout. This dropout is applied to the first of
        the two dense layers that comprise each ``BasicBlock``
-    embeddings_input: List, Optional
+    embed_input: List, Optional
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
     embed_dropout: float
@@ -83,7 +83,7 @@ class DeepDenseResnet(nn.Module):
     continuous_cols: List, Optional
         List with the name of the numeric (aka continuous) columns
 
-        .. note:: Either ``embeddings_input`` or ``continuous_cols`` (or both) should be passed to the
+        .. note:: Either ``embed_input`` or ``continuous_cols`` (or both) should be passed to the
             model
 
     Attributes
@@ -129,11 +129,11 @@ class DeepDenseResnet(nn.Module):
         self.continuous_cols = continuous_cols
         self.deep_column_idx = deep_column_idx
 
-        # Embeddings
+        # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
         if self.embed_input is not None:
             self.embed_layers = nn.ModuleDict(
                 {
-                    "emb_layer_" + col: nn.Embedding(val, dim)
+                    "emb_layer_" + col: nn.Embedding(val + 1, dim, padding_idx=0)
                     for col, val, dim in self.embed_input
                 }
             )

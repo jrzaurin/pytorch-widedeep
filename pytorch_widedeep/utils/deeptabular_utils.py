@@ -1,10 +1,9 @@
 import warnings
 
-import numpy as np
 import pandas as pd
 from sklearn.exceptions import NotFittedError
 
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 
 warnings.filterwarnings("ignore")
 pd.options.mode.chained_assignment = None
@@ -15,9 +14,8 @@ __all__ = ["LabelEncoder"]
 class LabelEncoder(object):
     """Class to Label Encode categorical values for multiple columns at once
 
-    .. note:: LabelEncoder will automatically add a new category and label for
-        `unseen` new categories. Therefore, there is no need of saving the 0
-        embedding index for padding/unknown
+    .. note:: LabelEncoder reserves 0 for `unseen` new categories. This is convenient
+        when defining the embedding layers, since we can just set padding idx to 0.
 
     Parameters
     ----------
@@ -31,12 +29,12 @@ class LabelEncoder(object):
     encoding_dict: :obj:`Dict`
         Dictionary containing the encoding mappings in the format, e.g.
 
-        `{'colname1': {'cat1': 0, 'cat2': 1, ...}, 'colname2': {'cat1': 0, 'cat2': 1, ...}, ...}`
+        `{'colname1': {'cat1': 1, 'cat2': 2, ...}, 'colname2': {'cat1': 1, 'cat2': 2, ...}, ...}`
 
     inverse_encoding_dict: :obj:`Dict`
         Dictionary containing the insverse encoding mappings in the format, e.g.
 
-        `{'colname1': {0: 'cat1', 1: 'cat2', ...}, 'colname2': {0: 'cat1', 1: 'cat2', ...}, ...}`
+        `{'colname1': {1: 'cat1', 2: 'cat2', ...}, 'colname2': {1: 'cat1', 2: 'cat2', ...}, ...}`
 
     """
 
@@ -65,15 +63,18 @@ class LabelEncoder(object):
             unique_column_vals[c] = df_inp[c].unique()
 
         self.encoding_dict = dict()
+        # leave 0 for padding/"unseen" categories
         for k, v in unique_column_vals.items():
-            self.encoding_dict[k] = {o: i for i, o in enumerate(unique_column_vals[k])}
-            self.encoding_dict[k]["unseen"] = len(self.encoding_dict[k])
+            self.encoding_dict[k] = {
+                o: i + 1 for i, o in enumerate(unique_column_vals[k])
+            }
 
         self.inverse_encoding_dict = dict()
         for c in self.encoding_dict:
             self.inverse_encoding_dict[c] = {
                 v: k for k, v in self.encoding_dict[c].items()
             }
+            self.inverse_encoding_dict[c][0] = "unseen"
 
         return self
 
@@ -94,9 +95,7 @@ class LabelEncoder(object):
             df_inp[col] = df_inp[col].astype("O")
 
         for k, v in self.encoding_dict.items():
-            original_values = [f for f in v.keys() if f != "unseen"]
-            df_inp[k] = np.where(df_inp[k].isin(original_values), df_inp[k], "unseen")
-            df_inp[k] = df_inp[k].apply(lambda x: v[x])
+            df_inp[k] = df_inp[k].apply(lambda x: v[x] if x in v.keys() else 0)
 
         return df_inp
 
@@ -113,14 +112,11 @@ class LabelEncoder(object):
         >>> encoder = LabelEncoder(columns_to_encode)
         >>> encoder.fit_transform(df)
            col1  col2
-        0     1     0
-        1     2     1
-        2     3     2
+        0     1     1
+        1     2     2
+        2     3     3
         >>> encoder.encoding_dict
-        {'col2': {'me': 0, 'you': 1, 'him': 2, 'unseen': 3}}
-
-        .. note:: a new category (`unseen`) and label has been created
-
+        {'col2': {'me': 1, 'you': 2, 'him': 3}}
         """
         return self.fit(df).transform(df)
 
@@ -128,5 +124,4 @@ class LabelEncoder(object):
         """Returns the original categories"""
         for k, v in self.inverse_encoding_dict.items():
             df[k] = df[k].apply(lambda x: v[x])
-
         return df

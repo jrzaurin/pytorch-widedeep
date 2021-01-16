@@ -32,7 +32,7 @@ embed_cols = [np.random.choice(np.arange(5), 100) for _ in range(5)]
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 cont_cols = [np.random.rand(100) for _ in range(5)]
 deep_column_idx = {k: v for v, k in enumerate(colnames)}
-X_deep = np.vstack(embed_cols + cont_cols).transpose()
+X_tab = np.vstack(embed_cols + cont_cols).transpose()
 
 #  Text Array
 padded_sequences = np.random.choice(np.arange(1, 100), (100, 48))
@@ -49,21 +49,21 @@ X_img = np.random.choice(256, (100, 224, 224, 3))
 ###############################################################################
 initializers_1 = {
     "wide": XavierNormal,
-    "deepdense": XavierUniform,
+    "deeptabular": XavierUniform,
     "deeptext": KaimingNormal,
     "deepimage": KaimingUniform,
 }
 
 initializers_2 = {
     "wide": Normal,
-    "deepdense": Uniform,
+    "deeptabular": Uniform,
     "deeptext": ConstantInitializer(value=1.0),
     "deepimage": Orthogonal,
 }
 
 test_layers = [
     "wide.wlinear.weight",
-    "deepdense.dense.dense_layer_1.0.weight",
+    "deeptabular.dense.dense_layer_1.0.weight",
     "deeptext.rnn.weight_hh_l1",
     "deepimage.dilinear.0.weight",
 ]
@@ -79,7 +79,7 @@ test_layers = [
 def test_initializers_1(initializers, test_layers):
 
     wide = Wide(np.unique(X_wide).shape[0], 1)
-    deepdense = DeepDense(
+    deeptabular = DeepDense(
         hidden_layers=[32, 16],
         dropout=[0.5, 0.5],
         deep_column_idx=deep_column_idx,
@@ -90,7 +90,7 @@ def test_initializers_1(initializers, test_layers):
     deepimage = DeepImage(pretrained=True)
     model = WideDeep(
         wide=wide,
-        deepdense=deepdense,
+        deeptabular=deeptabular,
         deeptext=deeptext,
         deepimage=deepimage,
         pred_dim=1,
@@ -122,7 +122,7 @@ def test_initializers_1(initializers, test_layers):
 ###############################################################################
 initializers_2 = {
     "wide": XavierNormal,
-    "deepdense": XavierUniform,
+    "deeptabular": XavierUniform,
     "deeptext": KaimingNormal(pattern=r"^(?!.*word_embed).*$"),  # type: ignore[dict-item]
 }
 
@@ -130,7 +130,7 @@ initializers_2 = {
 def test_initializers_with_pattern():
 
     wide = Wide(100, 1)
-    deepdense = DeepDense(
+    deeptabular = DeepDense(
         hidden_layers=[32, 16],
         dropout=[0.5, 0.5],
         deep_column_idx=deep_column_idx,
@@ -138,7 +138,7 @@ def test_initializers_with_pattern():
         continuous_cols=colnames[-5:],
     )
     deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
-    model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, pred_dim=1)
+    model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, pred_dim=1)
     cmodel = c(model)
     org_word_embed = []
     for n, p in cmodel.named_parameters():

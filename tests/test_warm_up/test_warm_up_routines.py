@@ -48,10 +48,10 @@ class TestDeepImage(nn.Module):
 
 #  Define a simple WideDeep Dataset
 class WDset(Dataset):
-    def __init__(self, X_wide, X_deep, X_text, X_img, target):
+    def __init__(self, X_wide, X_tab, X_text, X_img, target):
 
         self.X_wide = X_wide
-        self.X_deep = X_deep
+        self.X_tab = X_tab
         self.X_text = X_text
         self.X_img = X_img
         self.Y = target
@@ -59,14 +59,14 @@ class WDset(Dataset):
     def __getitem__(self, idx: int):
 
         X = Bunch(wide=self.X_wide[idx])
-        X.deepdense = self.X_deep[idx]
+        X.deeptabular = self.X_tab[idx]
         X.deeptext = self.X_text[idx]
         X.deepimage = self.X_img[idx]
         y = self.Y[idx]
         return X, y
 
     def __len__(self):
-        return len(self.X_deep)
+        return len(self.X_tab)
 
 
 # Remember that the WarmUp class will be instantiated inside the WideDeep and
@@ -96,7 +96,7 @@ cont_cols = [np.random.rand(100) for _ in range(5)]
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 deep_column_idx = {k: v for v, k in enumerate(colnames[:10])}
 continuous_cols = colnames[-5:]
-X_deep = torch.from_numpy(np.vstack(embed_cols + cont_cols).transpose())
+X_tab = torch.from_numpy(np.vstack(embed_cols + cont_cols).transpose())
 
 # text
 X_text = torch.cat((torch.zeros([100, 1]), torch.empty(100, 4).random_(1, 4)), axis=1)  # type: ignore[call-overload]
@@ -112,16 +112,16 @@ if use_cuda:
     wide.cuda()
 
 # deep
-deepdense = DeepDense(
+deeptabular = DeepDense(
     hidden_layers=[16, 8],
     dropout=[0.5, 0.2],
     deep_column_idx=deep_column_idx,
     embed_input=embed_input,
     continuous_cols=continuous_cols,
 )
-deepdense = nn.Sequential(deepdense, nn.Linear(8, 1))  # type: ignore[assignment]
+deeptabular = nn.Sequential(deeptabular, nn.Linear(8, 1))  # type: ignore[assignment]
 if use_cuda:
-    deepdense.cuda()
+    deeptabular.cuda()
 
 # text
 deeptext = TestDeepText()
@@ -134,7 +134,7 @@ if use_cuda:
     deepimage.cuda()
 
 # Define the loader
-wdset = WDset(X_wide, X_deep, X_text, X_image, target)
+wdset = WDset(X_wide, X_tab, X_text, X_image, target)
 wdloader = DataLoader(wdset, batch_size=10, shuffle=True)
 
 # Instantiate the WarmUp class
@@ -152,7 +152,7 @@ image_layers = [c for c in list(deepimage.children())][::-1]
     "model, modelname, loader, n_epochs, max_lr",
     [
         (wide, "wide", wdloader, 1, 0.01),
-        (deepdense, "deepdense", wdloader, 1, 0.01),
+        (deeptabular, "deeptabular", wdloader, 1, 0.01),
         (deeptext, "deeptext", wdloader, 1, 0.01),
         (deepimage, "deepimage", wdloader, 1, 0.01),
     ],

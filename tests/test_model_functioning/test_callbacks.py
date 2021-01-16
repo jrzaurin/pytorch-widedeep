@@ -8,7 +8,7 @@ import pytest
 from torch.optim.lr_scheduler import StepLR, CyclicLR
 
 from pytorch_widedeep.optim import RAdam
-from pytorch_widedeep.models import Wide, WideDeep, DeepDense
+from pytorch_widedeep.models import Wide, WideDeep, DeepDense, TabTransformer
 from pytorch_widedeep.callbacks import (
     LRHistory,
     EarlyStopping,
@@ -24,7 +24,7 @@ embed_cols = [np.random.choice(np.arange(5), 32) for _ in range(5)]
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 cont_cols = [np.random.rand(32) for _ in range(5)]
 deep_column_idx = {k: v for v, k in enumerate(colnames)}
-X_deep = np.vstack(embed_cols + cont_cols).transpose()
+X_tab = np.vstack(embed_cols + cont_cols).transpose()
 
 #  Text Array
 padded_sequences = np.random.choice(np.arange(1, 100), (32, 48))
@@ -39,14 +39,14 @@ target = np.random.choice(2, 32)
 # Test that history saves the information adequately
 ###############################################################################
 wide = Wide(np.unique(X_wide).shape[0], 1)
-deepdense = DeepDense(
+deeptabular = DeepDense(
     hidden_layers=[32, 16],
     dropout=[0.5, 0.5],
     deep_column_idx=deep_column_idx,
     embed_input=embed_input,
     continuous_cols=colnames[-5:],
 )
-model = WideDeep(wide=wide, deepdense=deepdense)
+model = WideDeep(wide=wide, deeptabular=deeptabular)
 
 # 1. Single optimizers_1, single scheduler, not cyclic and both passed directly
 optimizers_1 = RAdam(model.parameters())
@@ -55,30 +55,30 @@ lr_schedulers_1 = StepLR(optimizers_1, step_size=4)
 # 2. Multiple optimizers, single scheduler, cyclic and pass via a 1 item
 # dictionary
 wide_opt_2 = torch.optim.Adam(model.wide.parameters())
-deep_opt_2 = RAdam(model.deepdense.parameters())
+deep_opt_2 = RAdam(model.deeptabular.parameters())
 deep_sch_2 = CyclicLR(
     deep_opt_2, base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False
 )
-optimizers_2 = {"wide": wide_opt_2, "deepdense": deep_opt_2}
-lr_schedulers_2 = {"deepdense": deep_sch_2}
+optimizers_2 = {"wide": wide_opt_2, "deeptabular": deep_opt_2}
+lr_schedulers_2 = {"deeptabular": deep_sch_2}
 
 # 3. Multiple schedulers no cyclic
 wide_opt_3 = torch.optim.Adam(model.wide.parameters())
-deep_opt_3 = RAdam(model.deepdense.parameters())
+deep_opt_3 = RAdam(model.deeptabular.parameters())
 wide_sch_3 = StepLR(wide_opt_3, step_size=4)
 deep_sch_3 = StepLR(deep_opt_3, step_size=4)
-optimizers_3 = {"wide": wide_opt_3, "deepdense": deep_opt_3}
-lr_schedulers_3 = {"wide": wide_sch_3, "deepdense": deep_sch_3}
+optimizers_3 = {"wide": wide_opt_3, "deeptabular": deep_opt_3}
+lr_schedulers_3 = {"wide": wide_sch_3, "deeptabular": deep_sch_3}
 
 # 4. Multiple schedulers with cyclic
 wide_opt_4 = torch.optim.Adam(model.wide.parameters())
-deep_opt_4 = torch.optim.Adam(model.deepdense.parameters())
+deep_opt_4 = torch.optim.Adam(model.deeptabular.parameters())
 wide_sch_4 = StepLR(wide_opt_4, step_size=4)
 deep_sch_4 = CyclicLR(
     deep_opt_4, base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False
 )
-optimizers_4 = {"wide": wide_opt_4, "deepdense": deep_opt_4}
-lr_schedulers_4 = {"wide": wide_sch_4, "deepdense": deep_sch_4}
+optimizers_4 = {"wide": wide_opt_4, "deeptabular": deep_opt_4}
+lr_schedulers_4 = {"wide": wide_sch_4, "deeptabular": deep_sch_4}
 
 
 @pytest.mark.parametrize(
@@ -102,7 +102,7 @@ def test_history_callback(
     )
     model.fit(
         X_wide=X_wide,
-        X_deep=X_deep,
+        X_tab=X_tab,
         X_text=X_text,
         target=target,
         n_epochs=5,
@@ -111,9 +111,9 @@ def test_history_callback(
     out = []
     out.append(len(model.history._history["train_loss"]) == len_loss_output)
     try:
-        lr_list = list(chain.from_iterable(model.lr_history["lr_deepdense_0"]))
+        lr_list = list(chain.from_iterable(model.lr_history["lr_deeptabular_0"]))
     except TypeError:
-        lr_list = model.lr_history["lr_deepdense_0"]
+        lr_list = model.lr_history["lr_deeptabular_0"]
     except Exception:
         lr_list = model.lr_history["lr_0"]
     out.append(len(lr_list) == len_lr_output)
@@ -129,14 +129,14 @@ def test_history_callback(
 ###############################################################################
 def test_early_stop():
     wide = Wide(np.unique(X_wide).shape[0], 1)
-    deepdense = DeepDense(
+    deeptabular = DeepDense(
         hidden_layers=[32, 16],
         dropout=[0.5, 0.5],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
-    model = WideDeep(wide=wide, deepdense=deepdense)
+    model = WideDeep(wide=wide, deeptabular=deeptabular)
     model.compile(
         method="binary",
         callbacks=[
@@ -146,7 +146,7 @@ def test_early_stop():
         ],
         verbose=1,
     )
-    model.fit(X_wide=X_wide, X_deep=X_deep, target=target, val_split=0.2, n_epochs=5)
+    model.fit(X_wide=X_wide, X_tab=X_tab, target=target, val_split=0.2, n_epochs=5)
     # length of history = patience+1
     assert len(model.history._history["train_loss"]) == 3 + 1
 
@@ -159,14 +159,14 @@ def test_early_stop():
 )
 def test_model_checkpoint(save_best_only, max_save, n_files):
     wide = Wide(np.unique(X_wide).shape[0], 1)
-    deepdense = DeepDense(
+    deeptabular = DeepDense(
         hidden_layers=[32, 16],
         dropout=[0.5, 0.5],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
-    model = WideDeep(wide=wide, deepdense=deepdense)
+    model = WideDeep(wide=wide, deeptabular=deeptabular)
     model.compile(
         method="binary",
         callbacks=[
@@ -176,7 +176,7 @@ def test_model_checkpoint(save_best_only, max_save, n_files):
         ],
         verbose=0,
     )
-    model.fit(X_wide=X_wide, X_deep=X_deep, target=target, n_epochs=5, val_split=0.2)
+    model.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=5, val_split=0.2)
     n_saved = len(os.listdir("weights/"))
     for f in os.listdir("weights/"):
         os.remove("weights/" + f)
@@ -185,16 +185,117 @@ def test_model_checkpoint(save_best_only, max_save, n_files):
 
 def test_filepath_error():
     wide = Wide(np.unique(X_wide).shape[0], 1)
-    deepdense = DeepDense(
+    deeptabular = DeepDense(
         hidden_layers=[16, 4],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
-    model = WideDeep(wide=wide, deepdense=deepdense)
+    model = WideDeep(wide=wide, deeptabular=deeptabular)
     with pytest.raises(ValueError):
         model.compile(
             method="binary",
             callbacks=[ModelCheckpoint(filepath="wrong_file_path")],
             verbose=0,
         )
+
+
+###############################################################################
+# Repeat 1st set of tests for TabTransormer
+###############################################################################
+
+# Wide array
+X_wide = np.random.choice(50, (32, 10))
+
+# Tab Array
+colnames = list(string.ascii_lowercase)[:10]
+embed_cols = [np.random.choice(np.arange(5), 32) for _ in range(5)]
+embeds_input = [(i, j) for i, j in zip(colnames[:5], [5] * 5)]  # type: ignore[misc]
+cont_cols = [np.random.rand(32) for _ in range(5)]
+deep_column_idx = {k: v for v, k in enumerate(colnames)}
+X_tab = np.vstack(embed_cols + cont_cols).transpose()
+
+# target
+target = np.random.choice(2, 32)
+
+wide = Wide(np.unique(X_wide).shape[0], 1)
+tab_transformer = TabTransformer(
+    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    embed_input=embeds_input,
+    continuous_cols=colnames[5:],
+)
+model_tt = WideDeep(wide=wide, deeptabular=tab_transformer)
+
+# 1. Single optimizers_1, single scheduler, not cyclic and both passed directly
+optimizers_1 = RAdam(model_tt.parameters())
+lr_schedulers_1 = StepLR(optimizers_1, step_size=4)
+
+# 2. Multiple optimizers, single scheduler, cyclic and pass via a 1 item
+# dictionary
+wide_opt_2 = torch.optim.Adam(model_tt.wide.parameters())
+deep_opt_2 = RAdam(model_tt.deeptabular.parameters())
+deep_sch_2 = CyclicLR(
+    deep_opt_2, base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False
+)
+optimizers_2 = {"wide": wide_opt_2, "deeptabular": deep_opt_2}
+lr_schedulers_2 = {"deeptabular": deep_sch_2}
+
+# 3. Multiple schedulers no cyclic
+wide_opt_3 = torch.optim.Adam(model_tt.wide.parameters())
+deep_opt_3 = RAdam(model_tt.deeptabular.parameters())
+wide_sch_3 = StepLR(wide_opt_3, step_size=4)
+deep_sch_3 = StepLR(deep_opt_3, step_size=4)
+optimizers_3 = {"wide": wide_opt_3, "deeptabular": deep_opt_3}
+lr_schedulers_3 = {"wide": wide_sch_3, "deeptabular": deep_sch_3}
+
+# 4. Multiple schedulers with cyclic
+wide_opt_4 = torch.optim.Adam(model_tt.wide.parameters())
+deep_opt_4 = torch.optim.Adam(model_tt.deeptabular.parameters())
+wide_sch_4 = StepLR(wide_opt_4, step_size=4)
+deep_sch_4 = CyclicLR(
+    deep_opt_4, base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False
+)
+optimizers_4 = {"wide": wide_opt_4, "deeptabular": deep_opt_4}
+lr_schedulers_4 = {"wide": wide_sch_4, "deeptabular": deep_sch_4}
+
+
+@pytest.mark.parametrize(
+    "optimizers, schedulers, len_loss_output, len_lr_output, init_lr, schedulers_type",
+    [
+        (optimizers_1, lr_schedulers_1, 5, 5, 0.001, "step"),
+        (optimizers_2, lr_schedulers_2, 5, 11, 0.001, "cyclic"),
+        (optimizers_3, lr_schedulers_3, 5, 5, None, None),
+        (optimizers_4, lr_schedulers_4, 5, 11, None, None),
+    ],
+)
+def test_history_callback_w_tabtransformer(
+    optimizers, schedulers, len_loss_output, len_lr_output, init_lr, schedulers_type
+):
+    model_tt.compile(
+        method="binary",
+        optimizers=optimizers,
+        lr_schedulers=schedulers,
+        callbacks=[LRHistory(n_epochs=5)],
+        verbose=0,
+    )
+    model_tt.fit(
+        X_wide=X_wide,
+        X_tab=X_tab,
+        target=target,
+        n_epochs=5,
+        batch_size=16,
+    )
+    out = []
+    out.append(len(model_tt.history._history["train_loss"]) == len_loss_output)
+    try:
+        lr_list = list(chain.from_iterable(model_tt.lr_history["lr_deeptabular_0"]))
+    except TypeError:
+        lr_list = model_tt.lr_history["lr_deeptabular_0"]
+    except Exception:
+        lr_list = model_tt.lr_history["lr_0"]
+    out.append(len(lr_list) == len_lr_output)
+    if init_lr is not None and schedulers_type == "step":
+        out.append(lr_list[-1] == init_lr / 10)
+    elif init_lr is not None and schedulers_type == "cyclic":
+        out.append(lr_list[-1] == init_lr)
+    assert all(out)

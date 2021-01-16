@@ -152,7 +152,7 @@ class MLP(nn.Module):
         dropout: Optional[Union[float, List[float]]],
         activation: str = "relu",
     ):
-        super().__init__()
+        super(MLP, self).__init__()
 
         if not dropout:
             dropout = [0.0] * len(d_hidden)
@@ -178,33 +178,33 @@ class MLP(nn.Module):
 class SharedEmbeddings(nn.Module):
     def __init__(
         self,
-        num_unique_categories: int,
+        num_embed: int,
         embed_dim: int,
         dropout: float,
-        add_shared_embeddings: bool = False,
-        num_shared_embeddings=8,
+        add_shared_embed: bool = False,
+        frac_shared_embed=8,
     ):
-        super().__init__()
+        super(SharedEmbeddings, self).__init__()
         assert (
-            num_shared_embeddings <= embed_dim
-        ), "'num_shared_embeddings' must be lower than or equal to 'embed_dim'"
-        self.add_shared_embeddings = add_shared_embeddings
-        self.embed = nn.Embedding(num_unique_categories, embed_dim)
+            embed_dim % frac_shared_embed == 0
+        ), "'embed_dim' must be divisible by 'frac_shared_embed'"
+        self.add_shared_embed = add_shared_embed
+        self.embed = nn.Embedding(num_embed, embed_dim, padding_idx=0)
         self.embed.weight.data.clamp_(-2, 2)
-        if add_shared_embeddings:
+        if add_shared_embed:
             col_embed_dim = embed_dim
         else:
-            col_embed_dim = embed_dim // num_shared_embeddings
+            col_embed_dim = embed_dim // frac_shared_embed
         self.shared_embed = nn.Parameter(torch.empty(1, col_embed_dim).uniform_(-1, 1))
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, X: Tensor) -> Tensor:
         out = self.dropout(self.embed(X))
         shared_embed = self.shared_embed.expand(out.shape[0], -1)
-        if not self.add_shared_embededdings:
-            out[:, : shared_embed.shape[1]] = shared_embed
-        else:
+        if self.add_shared_embed:
             out += shared_embed
+        else:
+            out[:, : shared_embed.shape[1]] = shared_embed
         return out
 
 
@@ -224,24 +224,24 @@ class TabTransformer(nn.Module):
         List with the name of the numeric (aka continuous) columns
     embed_dropout: float, default = 0.
         embeddings dropout.
-    shared_embeddings: bool, default = False
-        The idea behind `shared_embeddings` is described in the Appendix A in the paper: `
+    shared_embed: bool, default = False
+        The idea behind `shared_embed` is described in the Appendix A in the paper: `
         'The goal of having column embedding is to enable the model to distinguish the
         classes in one column from those in the other columns'`. In other words, the idea
         is to let the model learn the which column is embedding.
-    add_shared_embeddings: bool, default = False,
+    add_shared_embed: bool, default = False,
         The two embedding sharing strategies are to add the shared embeddings to the column
-        embeddings or to replace the first ``num_shared_embeddings`` with the shared
+        embeddings or to replace the first ``frac_shared_embed`` with the shared
         embeddings. See ``pytorch_widedeep.models.tab_transformer.SharedEmbeddings``
-    num_shared_embeddings: int, default = 8
-        The number of embeddings that will be shared by all the different categories for
+    frac_shared_embed: int, default = 8
+        The fraction of embeddings that will be shared by all the different categories for
         one particular column.
     input_dim: int, default = 32
         The so-called dimension of the model. Is the number of embeddings used to encode
         the categorical columns
     num_heads: int, default = 8
         Number of attention heads per Transformer block
-    n_blocks: int, default = 6
+    num_blocks: int, default = 6
         Number of Transformer blocks
     dropout: float, default = 0.1
         Dropout that will be applied internally to the TransformerEncoder and the output MLP
@@ -298,12 +298,12 @@ class TabTransformer(nn.Module):
         embed_input: List[Tuple[str, int]],
         continuous_cols: Optional[List[str]] = None,
         embed_dropout: float = 0.0,
-        shared_embeddings: bool = False,
-        add_shared_embeddings: bool = False,
-        num_shared_embeddings: int = 8,
+        shared_embed: bool = False,
+        add_shared_embed: bool = False,
+        frac_shared_embed: int = 8,
         input_dim: int = 32,
         num_heads: int = 8,
-        n_blocks: int = 6,
+        num_blocks: int = 6,
         dropout: float = 0.1,
         keep_attn_weights: bool = False,
         fixed_attention: bool = False,
@@ -317,21 +317,34 @@ class TabTransformer(nn.Module):
 
         self.deep_column_idx = deep_column_idx
         self.embed_input = embed_input
-        self.shared_embeddings = shared_embeddings
         self.continuous_cols = continuous_cols
+        self.embed_dropout = embed_dropout
+        self.shared_embed = shared_embed
+        self.add_shared_embed = add_shared_embed
+        self.frac_shared_embed = frac_shared_embed
+        self.input_dim = input_dim
+        self.num_heads = num_heads
+        self.num_blocks = num_blocks
+        self.dropout = dropout
         self.keep_attn_weights = keep_attn_weights
+        self.fixed_attention = fixed_attention
+        self.num_cat_columns = num_cat_columns
+        self.ff_hidden_dim = ff_hidden_dim
+        self.transformer_activation = transformer_activation
+        self.mlp_activation = mlp_activation
+        self.mlp_hidden_dims = mlp_hidden_dims
 
-        # Embeddings
-        if shared_embeddings:
+        # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
+        if shared_embed:
             self.embed_layers = nn.ModuleDict(
                 {
                     "emb_layer_"
                     + col: SharedEmbeddings(
-                        val,
+                        val + 1,
                         input_dim,
                         embed_dropout,
-                        add_shared_embeddings,
-                        num_shared_embeddings,
+                        add_shared_embed,
+                        frac_shared_embed,
                     )
                     for col, val in self.embed_input
                 }
@@ -339,11 +352,11 @@ class TabTransformer(nn.Module):
         else:
             self.embed_layers = nn.ModuleDict(
                 {
-                    "emb_layer_" + col: nn.Embedding(val, input_dim)
+                    "emb_layer_" + col: nn.Embedding(val + 1, input_dim, padding_idx=0)
                     for col, val in self.embed_input
                 }
             )
-            self.embed_dropout = nn.Dropout(embed_dropout)
+            self.embedding_dropout = nn.Dropout(embed_dropout)
 
         # Continuous
         if self.continuous_cols is not None:
@@ -352,7 +365,7 @@ class TabTransformer(nn.Module):
             cont_inp_dim = 0
 
         self.blks = nn.Sequential()
-        for i in range(n_blocks):
+        for i in range(num_blocks):
             self.blks.add_module(
                 "block" + str(i),
                 TransformerEncoder(
@@ -368,7 +381,7 @@ class TabTransformer(nn.Module):
             )
 
         if keep_attn_weights:
-            self.attention_weights = [None] * n_blocks
+            self.attention_weights = [None] * num_blocks
 
         if not mlp_hidden_dims:
             mlp_inp_l = len(embed_input) * input_dim + cont_inp_dim
@@ -388,8 +401,8 @@ class TabTransformer(nn.Module):
             for col, _ in self.embed_input
         ]
         x = torch.cat(embed, 1)
-        if not self.shared_embeddings and self.embed_dropout is not None:
-            x = self.embed_dropout(x)
+        if not self.shared_embed and self.embedding_dropout is not None:
+            x = self.embedding_dropout(x)
 
         for i, blk in enumerate(self.blks):
             x = blk(x)

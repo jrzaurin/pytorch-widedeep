@@ -22,7 +22,7 @@ colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 32) for _ in range(5)]
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 cont_cols = [np.random.rand(32) for _ in range(5)]
-X_deep = np.vstack(embed_cols + cont_cols).transpose()
+X_tab = np.vstack(embed_cols + cont_cols).transpose()
 
 #  Text Array
 padded_sequences = np.random.choice(np.arange(1, 100), (32, 48))
@@ -40,19 +40,19 @@ target = np.random.choice(2, 32)
 (
     X_wide_tr,
     X_wide_val,
-    X_deep_tr,
-    X_deep_val,
+    X_tab_tr,
+    X_tab_val,
     X_text_tr,
     X_text_val,
     X_img_tr,
     X_img_val,
     y_train,
     y_val,
-) = train_test_split(X_wide, X_deep, X_text, X_img, target)
+) = train_test_split(X_wide, X_tab, X_text, X_img, target)
 
 # build model components
 wide = Wide(np.unique(X_wide).shape[0], 1)
-deepdense = DeepDense(
+deeptabular = DeepDense(
     hidden_layers=[32, 16],
     dropout=[0.5, 0.5],
     deep_column_idx={k: v for v, k in enumerate(colnames)},
@@ -79,14 +79,14 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
 
 
 @pytest.mark.parametrize(
-    "X_wide, X_deep, X_text, X_img, X_train, X_val, target, val_split, transforms, nepoch, null",
+    "X_wide, X_tab, X_text, X_img, X_train, X_val, target, val_split, transforms, nepoch, null",
     [
-        (X_wide, X_deep, X_text, X_img, None, None, target, None, transforms1, 0, None),
-        (X_wide, X_deep, X_text, X_img, None, None, target, None, transforms2, 0, None),
-        (X_wide, X_deep, X_text, X_img, None, None, target, None, None, 0, None),
+        (X_wide, X_tab, X_text, X_img, None, None, target, None, transforms1, 0, None),
+        (X_wide, X_tab, X_text, X_img, None, None, target, None, transforms2, 0, None),
+        (X_wide, X_tab, X_text, X_img, None, None, target, None, None, 0, None),
         (
             X_wide,
-            X_deep,
+            X_tab,
             X_text,
             X_img_norm,
             None,
@@ -99,7 +99,7 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
         ),
         (
             X_wide,
-            X_deep,
+            X_tab,
             X_text,
             X_img_norm,
             None,
@@ -110,8 +110,8 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             0,
             None,
         ),
-        (X_wide, X_deep, X_text, X_img_norm, None, None, target, None, None, 0, None),
-        (X_wide, X_deep, X_text, X_img, None, None, target, 0.2, None, 0, None),
+        (X_wide, X_tab, X_text, X_img_norm, None, None, target, None, None, 0, None),
+        (X_wide, X_tab, X_text, X_img, None, None, target, 0.2, None, 0, None),
         (
             None,
             None,
@@ -119,7 +119,7 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             {
                 "X_wide": X_wide,
-                "X_deep": X_deep,
+                "X_tab": X_tab,
                 "X_text": X_text,
                 "X_img": X_img,
                 "target": target,
@@ -138,7 +138,7 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             {
                 "X_wide": X_wide,
-                "X_deep": X_deep,
+                "X_tab": X_tab,
                 "X_text": X_text,
                 "X_img": X_img,
                 "target": target,
@@ -157,7 +157,7 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             {
                 "X_wide": X_wide,
-                "X_deep": X_deep,
+                "X_tab": X_tab,
                 "X_text": X_text,
                 "X_img": X_img,
                 "target": target,
@@ -176,7 +176,7 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             {
                 "X_wide": X_wide,
-                "X_deep": X_deep,
+                "X_tab": X_tab,
                 "X_text": X_text,
                 "X_img": X_img,
                 "target": target,
@@ -195,14 +195,14 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             {
                 "X_wide": X_wide_tr,
-                "X_deep": X_deep_tr,
+                "X_tab": X_tab_tr,
                 "X_text": X_text_tr,
                 "X_img": X_img_tr,
                 "target": y_train,
             },
             {
                 "X_wide": X_wide_val,
-                "X_deep": X_deep_val,
+                "X_tab": X_tab_val,
                 "X_text": X_text_val,
                 "X_img": X_img_val,
                 "target": y_val,
@@ -220,14 +220,14 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             {
                 "X_wide": X_wide_tr,
-                "X_deep": X_deep_tr,
+                "X_tab": X_tab_tr,
                 "X_text": X_text_tr,
                 "X_img": X_img_tr,
                 "target": y_train,
             },
             {
                 "X_wide": X_wide_val,
-                "X_deep": X_deep_val,
+                "X_tab": X_tab_val,
                 "X_text": X_text_val,
                 "X_img": X_img_val,
                 "target": y_val,
@@ -242,7 +242,7 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
 )
 def test_widedeep_inputs(
     X_wide,
-    X_deep,
+    X_tab,
     X_text,
     X_img,
     X_train,
@@ -254,12 +254,12 @@ def test_widedeep_inputs(
     null,
 ):
     model = WideDeep(
-        wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage
+        wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage
     )
     model.compile(method="binary", transforms=transforms, verbose=0)
     model.fit(
         X_wide=X_wide,
-        X_deep=X_deep,
+        X_tab=X_tab,
         X_text=X_text,
         X_img=X_img,
         X_train=X_train,
@@ -275,17 +275,17 @@ def test_widedeep_inputs(
 
 
 @pytest.mark.parametrize(
-    "X_wide, X_deep, X_text, X_img, X_train, X_val, target",
+    "X_wide, X_tab, X_text, X_img, X_train, X_val, target",
     [
         (
             X_wide,
-            X_deep,
+            X_tab,
             X_text,
             X_img,
             None,
             {
                 "X_wide": X_wide_val,
-                "X_deep": X_deep_val,
+                "X_tab": X_tab_val,
                 "X_text": X_text_val,
                 "X_img": X_img_val,
                 "target": y_val,
@@ -296,7 +296,7 @@ def test_widedeep_inputs(
 )
 def test_xtrain_xval_assertion(
     X_wide,
-    X_deep,
+    X_tab,
     X_text,
     X_img,
     X_train,
@@ -304,13 +304,13 @@ def test_xtrain_xval_assertion(
     target,
 ):
     model = WideDeep(
-        wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage
+        wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage
     )
     model.compile(method="binary", verbose=0)
     with pytest.raises(AssertionError):
         model.fit(
             X_wide=X_wide,
-            X_deep=X_deep,
+            X_tab=X_tab,
             X_text=X_text,
             X_img=X_img,
             X_train=X_train,
@@ -321,24 +321,24 @@ def test_xtrain_xval_assertion(
 
 
 @pytest.mark.parametrize(
-    "wide, deepdense, deeptext, deepimage, X_wide, X_deep, X_text, X_img, target",
+    "wide, deeptabular, deeptext, deepimage, X_wide, X_tab, X_text, X_img, target",
     [
         (wide, None, None, None, X_wide, None, None, None, target),
-        (None, deepdense, None, None, None, X_deep, None, None, target),
+        (None, deeptabular, None, None, None, X_tab, None, None, target),
         (None, None, deeptext, None, None, None, X_text, None, target),
         (None, None, None, deepimage, None, None, None, X_img, target),
     ],
 )
 def test_individual_inputs(
-    wide, deepdense, deeptext, deepimage, X_wide, X_deep, X_text, X_img, target
+    wide, deeptabular, deeptext, deepimage, X_wide, X_tab, X_text, X_img, target
 ):
     model = WideDeep(
-        wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage
+        wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage
     )
     model.compile(method="binary", verbose=0)
     model.fit(
         X_wide=X_wide,
-        X_deep=X_deep,
+        X_tab=X_tab,
         X_text=X_text,
         X_img=X_img,
         target=target,
@@ -354,23 +354,23 @@ def test_individual_inputs(
 
 
 @pytest.mark.parametrize(
-    "deepdense, deeptext, deepimage, X_deep, X_text, X_img, deephead, target",
+    "deeptabular, deeptext, deepimage, X_tab, X_text, X_img, deephead, target",
     [
-        (deepdense, None, None, X_deep, None, None, deephead_ds, target),
+        (deeptabular, None, None, X_tab, None, None, deephead_ds, target),
         (None, deeptext, None, None, X_text, None, deephead_dt, target),
         (None, None, deepimage, None, None, X_img, deephead_di, target),
     ],
 )
 def test_deephead_individual_components(
-    deepdense, deeptext, deepimage, X_deep, X_text, X_img, deephead, target
+    deeptabular, deeptext, deepimage, X_tab, X_text, X_img, deephead, target
 ):
     model = WideDeep(
-        deepdense=deepdense, deeptext=deeptext, deepimage=deepimage, deephead=deephead
+        deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage, deephead=deephead
     )  # noqa: F841
     model.compile(method="binary", verbose=0)
     model.fit(
         X_wide=X_wide,
-        X_deep=X_deep,
+        X_tab=X_tab,
         X_text=X_text,
         X_img=X_img,
         target=target,
@@ -386,23 +386,23 @@ def test_deephead_individual_components(
 
 
 @pytest.mark.parametrize(
-    "deepdense, deeptext, deepimage, X_deep, X_text, X_img, target",
+    "deeptabular, deeptext, deepimage, X_tab, X_text, X_img, target",
     [
-        (deepdense, None, None, X_deep, None, None, target),
+        (deeptabular, None, None, X_tab, None, None, target),
         (None, deeptext, None, None, X_text, None, target),
         (None, None, deepimage, None, None, X_img, target),
     ],
 )
 def test_head_layers_individual_components(
-    deepdense, deeptext, deepimage, X_deep, X_text, X_img, target
+    deeptabular, deeptext, deepimage, X_tab, X_text, X_img, target
 ):
     model = WideDeep(
-        deepdense=deepdense, deeptext=deeptext, deepimage=deepimage, head_layers=[8, 4]
+        deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage, head_layers=[8, 4]
     )  # noqa: F841
     model.compile(method="binary", verbose=0)
     model.fit(
         X_wide=X_wide,
-        X_deep=X_deep,
+        X_tab=X_tab,
         X_text=X_text,
         X_img=X_img,
         target=target,

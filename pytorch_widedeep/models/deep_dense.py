@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 
 
 def dense_layer(inp: int, out: int, p: float = 0.0, bn=False):
@@ -84,11 +84,11 @@ class DeepDense(nn.Module):
         self.continuous_cols = continuous_cols
         self.deep_column_idx = deep_column_idx
 
-        # Embeddings
+        # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
         if self.embed_input is not None:
             self.embed_layers = nn.ModuleDict(
                 {
-                    "emb_layer_" + col: nn.Embedding(val, dim)
+                    "emb_layer_" + col: nn.Embedding(val + 1, dim, padding_idx=0)
                     for col, val, dim in self.embed_input
                 }
             )

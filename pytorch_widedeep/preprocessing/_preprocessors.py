@@ -61,7 +61,7 @@ class WidePreprocessor(BasePreprocessor):
     ----------
     wide_crossed_cols: :obj:`List`
         List with the names of all columns that will be label encoded
-    feature_dict: :obj:`Dict`
+    encoding_dict: :obj:`Dict`
         Dictionary where the keys are the result of pasting `colname + '_' +
         column value` and the values are the corresponding mapped integer.
 
@@ -78,7 +78,7 @@ class WidePreprocessor(BasePreprocessor):
     array([[1, 4],
            [2, 5],
            [3, 6]])
-    >>> wide_preprocessor.feature_dict
+    >>> wide_preprocessor.encoding_dict
     {'color_r': 1, 'color_b': 2, 'color_g': 3, 'color_size_r-s': 4, 'color_size_b-n': 5, 'color_size_g-l': 6}
     >>> wide_preprocessor.inverse_transform(X_wide)
       color color_size
@@ -100,15 +100,19 @@ class WidePreprocessor(BasePreprocessor):
         """Fits the Preprocessor and creates required attributes"""
         df_wide = self._prepare_wide(df)
         self.wide_crossed_cols = df_wide.columns.tolist()
-        vocab = self._make_global_feature_list(df_wide[self.wide_crossed_cols])
-        # leave 0 as padding index
-        self.feature_dict = {v: i + 1 for i, v in enumerate(vocab)}
+        glob_feature_list = self._make_global_feature_list(
+            df_wide[self.wide_crossed_cols]
+        )
+        # leave 0 for padding/"unseen" categories
+        self.encoding_dict = {v: i + 1 for i, v in enumerate(glob_feature_list)}
+        self.inverse_encoding_dict = {k: v for v, k in self.encoding_dict.items()}
+        self.inverse_encoding_dict[0] = "unseen"
         return self
 
     def transform(self, df: pd.DataFrame) -> np.array:
         r"""Returns the processed dataframe"""
         try:
-            self.feature_dict
+            self.encoding_dict
         except AttributeError:
             raise NotFittedError(
                 "This WidePreprocessor instance is not fitted yet. "
@@ -118,8 +122,8 @@ class WidePreprocessor(BasePreprocessor):
         encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)], dtype=np.long)
         for col_i, col in enumerate(self.wide_crossed_cols):
             encoded[:, col_i] = df_wide[col].apply(
-                lambda x: self.feature_dict[col + "_" + str(x)]
-                if col + "_" + str(x) in self.feature_dict
+                lambda x: self.encoding_dict[col + "_" + str(x)]
+                if col + "_" + str(x) in self.encoding_dict
                 else 0
             )
         return encoded.astype("int64")
@@ -134,8 +138,7 @@ class WidePreprocessor(BasePreprocessor):
             array with the output of the ``transform`` method
         """
         decoded = pd.DataFrame(encoded, columns=self.wide_crossed_cols)
-        inverse_dict = {k: v for v, k in self.feature_dict.items()}
-        decoded = decoded.applymap(lambda x: inverse_dict[x])
+        decoded = decoded.applymap(lambda x: self.inverse_encoding_dict[x])
         for col in decoded.columns:
             rm_str = "".join([col, "_"])
             decoded[col] = decoded[col].apply(lambda x: x.replace(rm_str, ""))
@@ -146,10 +149,10 @@ class WidePreprocessor(BasePreprocessor):
         return self.fit(df).transform(df)
 
     def _make_global_feature_list(self, df: pd.DataFrame) -> List:
-        vocab = []
+        glob_feature_list = []
         for column in df.columns:
-            vocab += self._make_column_feature_list(df[column])
-        return vocab
+            glob_feature_list += self._make_column_feature_list(df[column])
+        return glob_feature_list
 
     def _make_column_feature_list(self, s: pd.Series) -> List:
         return [s.name + "_" + str(x) for x in s.unique()]
@@ -248,12 +251,14 @@ class TabPreprocessor(BasePreprocessor):
         assert (embed_cols is not None) or (
             continuous_cols is not None
         ), "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
-
+        tabtransformer_error_message = (
+            "If for_tabtransformer is 'True' embed_cols must be simply "
+            "a list of strings with the columns to be encoded as embeddings."
+        )
+        if for_tabtransformer and embed_cols is None:
+            raise ValueError(tabtransformer_error_message)
         if for_tabtransformer and isinstance(embed_cols[0], tuple):
-            raise ValueError(
-                "If for_tabtransformer is 'True' embed_cols must be simply a list of "
-                "strings with the columns to be encoded as embeddings."
-            )
+            raise ValueError(tabtransformer_error_message)
 
         self.embed_cols = embed_cols
         self.continuous_cols = continuous_cols

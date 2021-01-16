@@ -38,6 +38,7 @@ class Wide(nn.Module):
 
     def __init__(self, wide_dim: int, pred_dim: int = 1):
         super(Wide, self).__init__()
+        # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
         self.wide_linear = nn.Embedding(wide_dim + 1, pred_dim, padding_idx=0)
         # (Sum(Embedding) + bias) is equivalent to (OneHotVector + Linear)
         self.bias = nn.Parameter(torch.zeros(pred_dim))

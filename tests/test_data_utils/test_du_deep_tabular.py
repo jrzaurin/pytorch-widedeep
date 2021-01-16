@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.preprocessing import DensePreprocessor
-from pytorch_widedeep.utils.dense_utils import LabelEncoder
+from pytorch_widedeep.preprocessing import TabPreprocessor
+from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
 
 
 def create_test_dataset(input_type, input_type_2=None):
@@ -43,15 +43,15 @@ def test_label_encoder(input_df, encoder, output_df):
 
 
 ################################################################################
-# Test the DensePreprocessor: only categorical columns to be represented with
+# Test the TabPreprocessor: only categorical columns to be represented with
 # embeddings
 ###############################################################################
 cat_embed_cols = [("col1", 5), ("col2", 5)]
 
-preprocessor1 = DensePreprocessor(cat_embed_cols)  # type: ignore[arg-type]
+preprocessor1 = TabPreprocessor(cat_embed_cols)  # type: ignore[arg-type]
 X_letters = preprocessor1.fit_transform(df_letters)
 
-preprocessor2 = DensePreprocessor(cat_embed_cols)  # type: ignore[arg-type]
+preprocessor2 = TabPreprocessor(cat_embed_cols)  # type: ignore[arg-type]
 X_numbers = preprocessor2.fit_transform(df_numbers)
 
 error_list = []
@@ -65,7 +65,7 @@ def test_prepare_deep_without_continous_columns(input_df, X_deep, preprocessor):
     for i, c in enumerate(input_df.columns):
         if (
             # remember we have an "unseen class"
-            input_df[c].nunique() + 1 != preprocessor.embeddings_input[i][1]
+            input_df[c].nunique() != preprocessor.embeddings_input[i][1]
             or cat_embed_cols[i][1] != preprocessor.embeddings_input[i][2]
         ):
             error_list.append(
@@ -83,14 +83,14 @@ def test_prepare_deep_without_continous_columns(input_df, X_deep, preprocessor):
 
 
 ################################################################################
-# Test the DensePreprocessor: only continouos columns
+# Test the TabPreprocessor: only continouos columns
 ###############################################################################
 def test_prepare_deep_without_embedding_columns():
 
     errors = []
     df_randint = pd.DataFrame(np.random.choice(np.arange(100), (100, 2)))
     df_randint.columns = ["col1", "col2"]
-    preprocessor3 = DensePreprocessor(continuous_cols=["col1", "col2"])
+    preprocessor3 = TabPreprocessor(continuous_cols=["col1", "col2"])
 
     try:
         X_randint = preprocessor3.fit_transform(df_randint)
@@ -111,7 +111,7 @@ def test_prepare_deep_without_embedding_columns():
 
 
 ################################################################################
-# Test DensePreprocessor inverse_transform
+# Test TabPreprocessor inverse_transform
 ###############################################################################
 
 df = pd.DataFrame(
@@ -134,12 +134,12 @@ df = pd.DataFrame(
         ([("col1", 5), ("col2", 5)], ["col3", "col4"], True),
     ],
 )
-def test_dense_preprocessor_inverse_transform(embed_cols, continuous_cols, scale):
-    dense_preprocessor = DensePreprocessor(
+def test_tab_preprocessor_inverse_transform(embed_cols, continuous_cols, scale):
+    tab_preprocessor = TabPreprocessor(
         embed_cols=embed_cols, continuous_cols=continuous_cols, scale=scale
     )
-    encoded = dense_preprocessor.fit_transform(df)
-    decoded = dense_preprocessor.inverse_transform(encoded)
+    encoded = tab_preprocessor.fit_transform(df)
+    decoded = tab_preprocessor.inverse_transform(encoded)
     try:
         if isinstance(embed_cols[0], tuple):
             embed_cols = [c[0] for c in embed_cols]
@@ -153,3 +153,57 @@ def test_dense_preprocessor_inverse_transform(embed_cols, continuous_cols, scale
     org_df = pd.concat([emb_df, cont_df], axis=1)
     decoded = decoded.astype(org_df.dtypes.to_dict())
     assert decoded.equals(org_df)
+
+
+################################################################################
+# Test TabPreprocessor for the TabTransformer
+###############################################################################
+
+
+@pytest.mark.parametrize(
+    "embed_cols, continuous_cols, scale",
+    [
+        (["col1", "col2"], None, False),
+        (["col1", "col2"], ["col3", "col4"], False),
+        (["col1", "col2"], ["col3", "col4"], True),
+    ],
+)
+def test_tab_preprocessor_trasformer(embed_cols, continuous_cols, scale):
+    tab_preprocessor = TabPreprocessor(
+        embed_cols=embed_cols,
+        continuous_cols=continuous_cols,
+        scale=scale,
+        for_tabtransformer=True,
+    )
+    encoded = tab_preprocessor.fit_transform(df)
+    decoded = tab_preprocessor.inverse_transform(encoded)
+    try:
+        if isinstance(embed_cols[0], tuple):
+            embed_cols = [c[0] for c in embed_cols]
+        emb_df = df[embed_cols]
+    except Exception:
+        emb_df = pd.DataFrame()
+    try:
+        cont_df = df[continuous_cols]
+    except Exception:
+        cont_df = pd.DataFrame()
+    org_df = pd.concat([emb_df, cont_df], axis=1)
+    decoded = decoded.astype(org_df.dtypes.to_dict())
+    assert decoded.equals(org_df)
+
+
+@pytest.mark.parametrize(
+    "embed_cols, continuous_cols, scale",
+    [
+        (None, ["col3", "col4"], True),
+        ([("col1", 5), ("col2", 5)], ["col3", "col4"], True),
+    ],
+)
+def test_tab_preprocessor_trasformer_raise_error(embed_cols, continuous_cols, scale):
+    with pytest.raises(ValueError):
+        tab_preprocessor = TabPreprocessor(  # noqa: F841
+            embed_cols=embed_cols,
+            continuous_cols=continuous_cols,
+            scale=scale,
+            for_tabtransformer=True,
+        )
