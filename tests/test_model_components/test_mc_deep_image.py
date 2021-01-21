@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import pytest
 
 from pytorch_widedeep.models import DeepImage
 
@@ -18,7 +19,7 @@ def test_deep_image_1():
 
 
 ###############################################################################
-# Testing with custome backbone
+# Testing with 'custom' backbone
 ###############################################################################
 model2 = DeepImage(pretrained=False)
 
@@ -29,20 +30,9 @@ def test_deep_image_custom_backbone():
 
 
 ###############################################################################
-# Testing with freeze='all'
+# Testing freeze_n
 ###############################################################################
-model3 = DeepImage(freeze="all")
-
-
-def test_deep_image_freeze_all():
-    out = model3(X_images)
-    assert out.size(0) == 10 and out.size(1) == 512
-
-
-###############################################################################
-# Testing with freeze=int
-###############################################################################
-model4 = DeepImage(freeze=5)
+model4 = DeepImage(freeze_n=5)
 
 
 def test_deep_image_freeze_int():
@@ -53,7 +43,7 @@ def test_deep_image_freeze_int():
 ###############################################################################
 # Testing with resnet 34
 ###############################################################################
-model5 = DeepImage(resnet=34)
+model5 = DeepImage(resnet_architecture=34)
 
 
 def test_deep_image_resnet_34():
@@ -70,3 +60,26 @@ model6 = DeepImage(head_layers=[512, 256, 128], head_dropout=[0.0, 0.0])
 def test_deep_image_2():
     out = model6(X_images)
     assert out.size(0) == 10 and out.size(1) == 128
+
+
+###############################################################################
+# Make sure is frozen
+###############################################################################
+
+model7 = DeepImage(freeze_n=8)
+
+
+def test_all_frozen():
+    is_trainable = []
+    for p in model7.parameters():
+        is_trainable.append(not p.requires_grad)
+    assert all(is_trainable)
+
+
+###############################################################################
+# Catch Exception
+###############################################################################
+
+def test_too_cold():
+    with pytest.raises(ValueError):
+        mod = DeepImage(freeze_n=10)  # noqa: F841

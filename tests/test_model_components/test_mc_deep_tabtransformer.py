@@ -1,10 +1,9 @@
+import string
+
 import numpy as np
 import torch
 
-import string
-
 from pytorch_widedeep.models.tab_transformer import *  # noqa: F403
-
 
 # I am going over test this model due to the number of components
 

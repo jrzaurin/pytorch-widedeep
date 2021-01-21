@@ -14,6 +14,8 @@ from pytorch_widedeep.models import (
     DeepImage,
 )
 
+np.random.seed(1)
+
 # Wide array
 X_wide = np.random.choice(50, (32, 10))
 
@@ -27,7 +29,7 @@ X_tab = np.vstack(embed_cols + cont_cols).transpose()
 #  Text Array
 padded_sequences = np.random.choice(np.arange(1, 100), (32, 48))
 X_text = np.hstack((np.repeat(np.array([[0, 0]]), 32, axis=0), padded_sequences))
-vocab_size = 100
+vocab_size = 110
 
 #  Image Array
 X_img = np.random.choice(256, (32, 224, 224, 3))
@@ -269,8 +271,8 @@ def test_widedeep_inputs(
         batch_size=16,
     )
     assert (
-        model.history.epoch[0] == nepoch
-        and model.history._history["train_loss"] is not null
+        model.epoch[0] == nepoch
+        and model.history["train_loss"] is not null
     )
 
 
@@ -345,7 +347,7 @@ def test_individual_inputs(
         batch_size=16,
     )
     # check it has run succesfully
-    assert len(model.history._history) == 1
+    assert len(model.history) == 1
 
 
 ###############################################################################
@@ -365,7 +367,10 @@ def test_deephead_individual_components(
     deeptabular, deeptext, deepimage, X_tab, X_text, X_img, deephead, target
 ):
     model = WideDeep(
-        deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage, deephead=deephead
+        deeptabular=deeptabular,
+        deeptext=deeptext,
+        deepimage=deepimage,
+        deephead=deephead,
     )  # noqa: F841
     model.compile(method="binary", verbose=0)
     model.fit(
@@ -377,7 +382,7 @@ def test_deephead_individual_components(
         batch_size=16,
     )
     # check it has run succesfully
-    assert len(model.history._history) == 1
+    assert len(model.history) == 1
 
 
 ###############################################################################
@@ -397,7 +402,10 @@ def test_head_layers_individual_components(
     deeptabular, deeptext, deepimage, X_tab, X_text, X_img, target
 ):
     model = WideDeep(
-        deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage, head_layers=[8, 4]
+        deeptabular=deeptabular,
+        deeptext=deeptext,
+        deepimage=deepimage,
+        head_layers=[8, 4],
     )  # noqa: F841
     model.compile(method="binary", verbose=0)
     model.fit(
@@ -409,4 +417,4 @@ def test_head_layers_individual_components(
         batch_size=16,
     )
     # check it has run succesfully
-    assert len(model.history._history) == 1
+    assert len(model.history) == 1

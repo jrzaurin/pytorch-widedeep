@@ -11,7 +11,7 @@ from pytorch_widedeep.callbacks import (
     ModelCheckpoint,
 )
 from pytorch_widedeep.initializers import XavierNormal, KaimingNormal
-from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
+from pytorch_widedeep.preprocessing import WidePreprocessor, TabPreprocessor
 
 use_cuda = torch.cuda.is_available()
 
@@ -48,10 +48,10 @@ if __name__ == "__main__":
     target = df[target].values
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
-    prepare_deep = DensePreprocessor(
+    prepare_deep = TabPreprocessor(
         embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
     )
-    X_deep = prepare_deep.fit_transform(df)
+    X_tab = prepare_deep.fit_transform(df)
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
@@ -71,16 +71,16 @@ if __name__ == "__main__":
     #     continuous_cols=continuous_cols,
     # )
 
-    model = WideDeep(wide=wide, deepdense=deepdense)
+    model = WideDeep(wide=wide, deeptabular=deepdense)
 
     wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
-    deep_opt = RAdam(model.deepdense.parameters())
+    deep_opt = RAdam(model.deeptabular.parameters())
     wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=3)
     deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=5)
 
-    optimizers = {"wide": wide_opt, "deepdense": deep_opt}
-    schedulers = {"wide": wide_sch, "deepdense": deep_sch}
-    initializers = {"wide": KaimingNormal, "deepdense": XavierNormal}
+    optimizers = {"wide": wide_opt, "deeptabular": deep_opt}
+    schedulers = {"wide": wide_sch, "deeptabular": deep_sch}
+    initializers = {"wide": KaimingNormal, "deeptabular": XavierNormal}
     callbacks = [
         LRHistory(n_epochs=10),
         EarlyStopping(patience=5),
@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     model.fit(
         X_wide=X_wide,
-        X_deep=X_deep,
+        X_tab=X_tab,
         target=target,
         n_epochs=4,
         batch_size=64,

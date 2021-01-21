@@ -17,7 +17,7 @@ from pytorch_widedeep.initializers import KaimingNormal
 from pytorch_widedeep.preprocessing import (
     TextPreprocessor,
     WidePreprocessor,
-    DensePreprocessor,
+    TabPreprocessor,
     ImagePreprocessor,
 )
 
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     df = pd.read_csv("data/airbnb/airbnb_sample.csv")
 
-    crossed_cols = (["property_type", "room_type"],)
+    crossed_cols = [("property_type", "room_type")]
     already_dummies = [c for c in df.columns if "amenity" in c] + ["has_house_rules"]
     wide_cols = [
         "is_location_exact",
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
 
-    prepare_deep = DensePreprocessor(
+    prepare_deep = TabPreprocessor(
         embed_cols=cat_embed_cols,  # type: ignore[arg-type]
         continuous_cols=continuous_cols,
         already_standard=already_standard,
@@ -90,15 +90,15 @@ if __name__ == "__main__":
         n_layers=3,
         rnn_dropout=0.5,
         padding_idx=1,
-        embedding_matrix=text_processor.embedding_matrix,
+        embed_matrix=text_processor.embedding_matrix,
     )
     deepimage = DeepImage(pretrained=True, head_layers=None)
     model = WideDeep(
-        wide=wide, deepdense=deepdense, deeptext=deeptext, deepimage=deepimage
+        wide=wide, deeptabular=deepdense, deeptext=deeptext, deepimage=deepimage
     )
 
     wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
-    deep_opt = torch.optim.Adam(model.deepdense.parameters())
+    deep_opt = torch.optim.Adam(model.deeptabular.parameters())
     text_opt = RAdam(model.deeptext.parameters())
     img_opt = RAdam(model.deepimage.parameters())
 
@@ -109,19 +109,19 @@ if __name__ == "__main__":
 
     optimizers = {
         "wide": wide_opt,
-        "deepdense": deep_opt,
+        "deeptabular": deep_opt,
         "deeptext": text_opt,
         "deepimage": img_opt,
     }
     schedulers = {
         "wide": wide_sch,
-        "deepdense": deep_sch,
+        "deeptabular": deep_sch,
         "deeptext": text_sch,
         "deepimage": img_sch,
     }
     initializers = {
         "wide": KaimingNormal,
-        "deepdense": KaimingNormal,
+        "deeptabular": KaimingNormal,
         "deeptext": KaimingNormal,
         "deepimage": KaimingNormal,
     }
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
     model.fit(
         X_wide=X_wide,
-        X_deep=X_deep,
+        X_tab=X_deep,
         X_text=X_text,
         X_img=X_images,
         target=target,

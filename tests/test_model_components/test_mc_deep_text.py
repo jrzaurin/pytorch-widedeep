@@ -27,7 +27,7 @@ def test_deep_text():
 # With Pretrained Embeddings
 ###############################################################################
 model2 = DeepText(
-    vocab_size=vocab_size, embedding_matrix=pretrained_embeddings, padding_idx=0
+    vocab_size=vocab_size, embed_matrix=pretrained_embeddings, padding_idx=0
 )
 
 
@@ -45,7 +45,7 @@ def test_catch_warning():
         model3 = DeepText(
             vocab_size=vocab_size,
             embed_dim=32,
-            embedding_matrix=pretrained_embeddings,
+            embed_matrix=pretrained_embeddings,
             padding_idx=0,
         )
     out = model3(torch.from_numpy(padded_sequences))
@@ -78,3 +78,20 @@ model5 = DeepText(
 def test_deep_text_bidirectional():
     out = model1(torch.from_numpy(padded_sequences))
     assert out.size(0) == 100 and out.size(1) == 64
+
+
+###############################################################################
+# Pretrained Embeddings made non-trainable
+###############################################################################
+
+model6 = DeepText(
+    vocab_size=vocab_size,
+    embed_matrix=pretrained_embeddings,
+    embed_trainable=False,
+    padding_idx=0,
+)
+
+
+def test_embed_non_trainable():
+    out = model6(torch.from_numpy(padded_sequences))  # noqa: F841
+    assert np.allclose(model6.word_embed.weight.numpy(), pretrained_embeddings)

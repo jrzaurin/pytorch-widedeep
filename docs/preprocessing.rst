@@ -9,7 +9,7 @@ being passed to the Wide and Deep `constructor` class
 	:undoc-members:
 	:show-inheritance:
 
-.. autoclass:: pytorch_widedeep.preprocessing.DensePreprocessor
+.. autoclass:: pytorch_widedeep.preprocessing.TabPreprocessor
 	:members:
 	:undoc-members:
 	:show-inheritance:

@@ -29,6 +29,8 @@ class AspectAwarePreprocessor:
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
+        super(AspectAwarePreprocessor, self).__init__()
+
         self.width = width
         self.height = height
         self.inter = inter
@@ -55,8 +57,7 @@ class AspectAwarePreprocessor:
 
         Returns
         -------
-        resized_image: np.ndarray
-            resized image
+        resized_image
         """
         (h, w) = image.shape[:2]
         dW = 0
@@ -93,6 +94,8 @@ class SimplePreprocessor:
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
+        super(SimplePreprocessor, self).__init__()
+
         self.width = width
         self.height = height
         self.inter = inter
@@ -107,8 +110,7 @@ class SimplePreprocessor:
 
         Returns
         -------
-        resized_image: np.ndarray
-            resized image
+        resized_image
         """
         resized_image = cv2.resize(
             image, (self.width, self.height), interpolation=self.inter

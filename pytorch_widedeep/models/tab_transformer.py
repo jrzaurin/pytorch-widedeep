@@ -1,3 +1,19 @@
+"""
+The code in this module is inspired by a number of implementations:
+
+Classes PositionwiseFF and AddNorm are 'stolen' with much gratitude from the fantastic d2l.ai book:
+https://d2l.ai/chapter_attention-mechanisms/transformer.html
+
+MultiHeadedAttention is inspired by the TabTransformer implementation here:
+https://github.com/lucidrains/tab-transformer-pytorch. General comment: just go and have a look to
+https://github.com/lucidrains
+
+The fixed attention implementation and SharedEmbeddings are inspired by the
+TabTransformer available in AutoGluon:
+https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular/models/tab_transformer
+If you have not checked that library, you should.
+"""
+
 import math
 
 import torch
@@ -87,7 +103,9 @@ class MultiHeadedAttention(nn.Module):
         self.keep_attn_weights = keep_attn_weights
 
     def forward(self, X: Tensor) -> Tensor:
-
+        # b: batch size, s: src seq length (num of categorical features
+        # encoded as embeddings), l: target sequence (l = s), e: embeddings
+        # dimensions, h: number of attention heads, d: d_k
         if self.fixed_attention:
             v = self.inp_proj(X)
             k = einops.repeat(self.fixed_key, "b s e -> (b copy) s e", copy=X.shape[0])
@@ -96,13 +114,10 @@ class MultiHeadedAttention(nn.Module):
             )
         else:
             q, k, v = self.inp_proj(X).chunk(3, dim=2)
-        # b: batch size, s: src seq length (num of categorical features
-        # encoded as embeddings), h: number of attention heads, d: d_k
         q, k, v = map(
             lambda t: einops.rearrange(t, "b s (h d) -> b h s d", h=self.num_heads),
             (q, k, v),
         )
-        # l: target sequence (l = s)
         scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.d_k)
         attn_weights = self.dropout(scores.softmax(dim=-1))
         if self.keep_attn_weights:
@@ -313,6 +328,7 @@ class TabTransformer(nn.Module):
         mlp_activation: str = "relu",
         mlp_hidden_dims: Optional[List[int]] = None,
     ):
+
         super(TabTransformer, self).__init__()
 
         self.deep_column_idx = deep_column_idx

@@ -4,7 +4,7 @@ import pandas as pd
 
 from pytorch_widedeep.models import Wide, WideDeep, DeepDense
 from pytorch_widedeep.metrics import F1Score, Accuracy
-from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
+from pytorch_widedeep.preprocessing import WidePreprocessor, TabPreprocessor
 
 use_cuda = torch.cuda.is_available()
 
@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     df = pd.read_csv("data/airbnb/airbnb_sample.csv")
 
-    crossed_cols = (["property_type", "room_type"],)
+    crossed_cols = [("property_type", "room_type")]
     already_dummies = [c for c in df.columns if "amenity" in c] + ["has_house_rules"]
     wide_cols = [
         "is_location_exact",
@@ -35,8 +35,8 @@ if __name__ == "__main__":
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
 
-    prepare_deep = DensePreprocessor(
-        embed_cols=cat_embed_cols, continuous_cols=continuous_cols
+    prepare_deep = TabPreprocessor(
+        embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
     )
     X_deep = prepare_deep.fit_transform(df)
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
     )
-    model = WideDeep(wide=wide, deepdense=deepdense, pred_dim=3)
+    model = WideDeep(wide=wide, deeptabular=deepdense, pred_dim=3)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.03)
     model.compile(
         method="multiclass", metrics=[Accuracy, F1Score], optimizers=optimizer
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     model.fit(
         X_wide=X_wide,
-        X_deep=X_deep,
+        X_tab=X_deep,
         target=target,
         n_epochs=1,
         batch_size=32,

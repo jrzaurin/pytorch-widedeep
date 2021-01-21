@@ -79,21 +79,24 @@ class WideDeep(nn.Module):
     deeptabular: nn.Module
         currently we offer three possible architectures for the `deeptabular` component
         implemented in this package. These are: ``DeepDense``, ``DeepDenseResnet`` and `
-        `TabTransformer``.
-            1. ``DeepDense`` is simply an embedding layer encoding the categorical
-            features that are then concatenated and passed through a series of
-            dense layers.
-            See: ``pytorch_widedeep.models.deep_dense.DeepDense``
-            2. ``DeepDenseResnet`` is an embedding layer encoding the categorical
-            features that are then concatenated and passed through a series of
-            `"dense"` ResNet blocks.
-            See ``pytorch_widedeep.models.deep_dense_resnet.DeepDenseResnet``
-            3. ``TabTransformer`` is detailed in `TabTransformer: Tabular Data Modeling
-            Using Contextual Embeddings<https://arxiv.org/pdf/2012.06678.pdf>`_.
-            See ``pytorch_widedeep.models.tab_transformer.TabTransformer``
+        ``TabTransformer``.
+
+        1. ``DeepDense`` is simply an embedding layer encoding the categorical
+        features that are then concatenated and passed through a series of
+        dense layers.
+        See: ``pytorch_widedeep.models.deep_dense.DeepDense``
+
+        2. ``DeepDenseResnet`` is an embedding layer encoding the categorical
+        features that are then concatenated and passed through a series of
+        `"dense"` ResNet blocks.
+        See ``pytorch_widedeep.models.deep_dense_resnet.DeepDenseResnet``
+
+        3. ``TabTransformer`` is detailed in `TabTransformer: Tabular Data Modeling
+        Using Contextual Embeddings <https://arxiv.org/pdf/2012.06678.pdf>`_.
+        See ``pytorch_widedeep.models.tab_transformer.TabTransformer``
         We recommend using on of these as `deeptabular`. However, a custom
         model as long as is  consistent with the required architecture. See
-        :class:`pytorch_widedeep.models.deep_dense.DeepDense`.
+        :class:`pytorch_widedeep.models.deep_dense.TabTransformer`.
     deeptext: nn.Module, Optional
         `Deep text` model for the text input. Must be an object of class
         ``DeepText`` or a custom model as long as is consistent with the
@@ -119,7 +122,7 @@ class WideDeep(nn.Module):
         of classes` for multiclass classification.
 
 
-    .. note:: With the exception of ``cyclic``, all attributes are direct assignations of
+    .. note:: With the exception of ``cyclic_lr``, all attributes are direct assignations of
         the corresponding parameters used when calling ``compile``.  Therefore,
         see the parameters at
         :class:`pytorch_widedeep.models.wide_deep.WideDeep.compile` for a full
@@ -129,8 +132,8 @@ class WideDeep(nn.Module):
 
     Attributes
     ----------
-    cyclic: :obj:`bool`
-        Attribute that indicates if any of the lr_schedulers is cyclic (i.e. ``CyclicLR`` or
+    cyclic_lr: :obj:`bool`
+        Attribute that indicates if any of the lr_schedulers is cyclic_lr (i.e. ``CyclicLR`` or
         ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
 
 
@@ -428,24 +431,23 @@ class WideDeep(nn.Module):
                     LRScheduler,
                     MultipleLRScheduler,
                 ] = lr_schedulers
-                self.cyclic = "cycl" in self.lr_scheduler.__class__.__name__.lower()
+                self.cyclic_lr = "cycl" in self.lr_scheduler.__class__.__name__.lower()
             else:
                 self.lr_scheduler = MultipleLRScheduler(lr_schedulers)
                 scheduler_names = [
                     sc.__class__.__name__.lower()
                     for _, sc in self.lr_scheduler._schedulers.items()
                 ]
-                self.cyclic = any(["cycl" in sn for sn in scheduler_names])
+                self.cyclic_lr = any(["cycl" in sn for sn in scheduler_names])
         else:
-            self.lr_scheduler, self.cyclic = None, False
+            self.lr_scheduler, self.cyclic_lr = None, False
 
         if transforms is not None:
             self.transforms: MultipleTransforms = MultipleTransforms(transforms)()
         else:
             self.transforms = None
 
-        self.history = History()
-        self.callbacks: List = [self.history]
+        self.callbacks: List = [History()]
         if callbacks is not None:
             for callback in callbacks:
                 if isinstance(callback, type):
@@ -968,7 +970,7 @@ class WideDeep(nn.Module):
         """
         if (
             self.lr_scheduler.__class__.__name__ == "MultipleLRScheduler"
-            and self.cyclic
+            and self.cyclic_lr
         ):
             if step_location == "on_batch_end":
                 for model_name, scheduler in self.lr_scheduler._schedulers.items():  # type: ignore
@@ -978,7 +980,7 @@ class WideDeep(nn.Module):
                 for scheduler_name, scheduler in self.lr_scheduler._schedulers.items():  # type: ignore
                     if "cycl" not in scheduler.__class__.__name__.lower():
                         scheduler.step()  # type: ignore
-        elif self.cyclic:
+        elif self.cyclic_lr:
             if step_location == "on_batch_end":
                 self.lr_scheduler.step()  # type: ignore
             else:

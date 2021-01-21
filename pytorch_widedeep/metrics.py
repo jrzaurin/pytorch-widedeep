@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from .wdtypes import *
+from .wdtypes import *  # noqa: F403
 from .callbacks import Callback
 
 
@@ -74,12 +74,13 @@ class Accuracy(Metric):
     >>> acc(y_pred, y_true)
     0.6666666666666666
     """
-
     def __init__(self, top_k: int = 1):
+
+        super(Accuracy, self).__init__()
+
         self.top_k = top_k
         self.correct_count = 0
         self.total_count = 0
-
         self._name = "acc"
 
     def reset(self):
@@ -134,11 +135,13 @@ class Precision(Metric):
     """
 
     def __init__(self, average: bool = True):
+
+        super(Precision, self).__init__()
+
         self.average = average
         self.true_positives = 0
         self.all_positives = 0
         self.eps = 1e-20
-
         self._name = "prec"
 
     def reset(self) -> None:
@@ -199,11 +202,13 @@ class Recall(Metric):
     """
 
     def __init__(self, average: bool = True):
+
+        super(Recall, self).__init__()
+
         self.average = average
         self.true_positives = 0
         self.actual_positives = 0
         self.eps = 1e-20
-
         self._name = "rec"
 
     def reset(self) -> None:
@@ -268,15 +273,15 @@ class FBetaScore(Metric):
     """
 
     def __init__(self, beta: int, average: bool = True):
-        self.average = average
 
+        super(FBetaScore, self).__init__()
+
+        self.beta = beta
+        self.average = average
         self.precision = Precision(average=False)
         self.recall = Recall(average=False)
         self.eps = 1e-20
-
-        self.beta = beta
-
-        self._name = "".join(["f", str(beta)])
+        self._name = "".join(["f", str(self.beta)])
 
     def reset(self) -> None:
         """
@@ -328,7 +333,11 @@ class F1Score(Metric):
     """
 
     def __init__(self, average: bool = True):
-        self.f1 = FBetaScore(beta=1, average=average)
+
+        super(F1Score, self).__init__()
+
+        self.average = average
+        self.f1 = FBetaScore(beta=1, average=self.average)
         self._name = self.f1._name
 
     def reset(self) -> None:

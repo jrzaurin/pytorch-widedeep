@@ -14,8 +14,8 @@ def dense_layer(inp: int, out: int, p: float = 0.0, bn=False):
 
 
 class DeepDense(nn.Module):
-    r"""Dense branch of the deep side of the model receiving continuous
-    columns and the embeddings from categorical columns.
+    r"""Defines a so-called ``DeepDense`` model that can be used as the
+    ``deeptabular`` component of a Wide & Deep model.
 
     This class combines embedding representations of the categorical features
     with numerical (aka continuous) features. These are then passed through a
@@ -80,9 +80,14 @@ class DeepDense(nn.Module):
     ):
 
         super(DeepDense, self).__init__()
-        self.embed_input = embed_input
-        self.continuous_cols = continuous_cols
+
         self.deep_column_idx = deep_column_idx
+        self.hidden_layers = hidden_layers
+        self.batchnorm = batchnorm
+        self.dropout = dropout
+        self.embed_input = embed_input
+        self.embed_dropout = embed_dropout
+        self.continuous_cols = continuous_cols
 
         # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
         if self.embed_input is not None:
@@ -92,7 +97,7 @@ class DeepDense(nn.Module):
                     for col, val, dim in self.embed_input
                 }
             )
-            self.embed_dropout = nn.Dropout(embed_dropout)
+            self.embedding_dropout = nn.Dropout(embed_dropout)
             emb_inp_dim = np.sum([embed[2] for embed in self.embed_input])
         else:
             emb_inp_dim = 0
@@ -132,7 +137,7 @@ class DeepDense(nn.Module):
                 for col, _, _ in self.embed_input
             ]
             x = torch.cat(embed, 1)
-            x = self.embed_dropout(x)
+            x = self.embedding_dropout(x)
         if self.continuous_cols is not None:
             cont_idx = [self.deep_column_idx[col] for col in self.continuous_cols]
             x_cont = X[:, cont_idx].float()

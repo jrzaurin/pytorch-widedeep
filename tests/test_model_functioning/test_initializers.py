@@ -32,7 +32,7 @@ embed_cols = [np.random.choice(np.arange(5), 100) for _ in range(5)]
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 cont_cols = [np.random.rand(100) for _ in range(5)]
 deep_column_idx = {k: v for v, k in enumerate(colnames)}
-X_tab = np.vstack(embed_cols + cont_cols).transpose()
+X_deep = np.vstack(embed_cols + cont_cols).transpose()
 
 #  Text Array
 padded_sequences = np.random.choice(np.arange(1, 100), (100, 48))

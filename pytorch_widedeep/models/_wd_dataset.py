@@ -3,11 +3,12 @@ import torch
 from sklearn.utils import Bunch
 from torch.utils.data import Dataset
 
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 
 
 class WideDeepDataset(Dataset):
-    r"""Dataset object to load WideDeep data to the model
+    r"""
+    Defines the Dataset object to load WideDeep data to the model
 
     Parameters
     ----------
@@ -24,7 +25,6 @@ class WideDeepDataset(Dataset):
     transforms: :obj:`MultipleTransforms`
         torchvision Compose object. See models/_multiple_transforms.py
     """
-
     def __init__(
         self,
         X_wide: Optional[np.ndarray] = None,
@@ -34,7 +34,7 @@ class WideDeepDataset(Dataset):
         target: Optional[np.ndarray] = None,
         transforms: Optional[Any] = None,
     ):
-
+        super(WideDeepDataset, self).__init__()
         self.X_wide = X_wide
         self.X_tab = X_tab
         self.X_text = X_text

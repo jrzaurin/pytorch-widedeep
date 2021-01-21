@@ -109,7 +109,7 @@ def test_history_callback(
         batch_size=16,
     )
     out = []
-    out.append(len(model.history._history["train_loss"]) == len_loss_output)
+    out.append(len(model.history["train_loss"]) == len_loss_output)
     try:
         lr_list = list(chain.from_iterable(model.lr_history["lr_deeptabular_0"]))
     except TypeError:
@@ -148,7 +148,7 @@ def test_early_stop():
     )
     model.fit(X_wide=X_wide, X_tab=X_tab, target=target, val_split=0.2, n_epochs=5)
     # length of history = patience+1
-    assert len(model.history._history["train_loss"]) == 3 + 1
+    assert len(model.history["train_loss"]) == 3 + 1
 
 
 ###############################################################################
@@ -286,7 +286,7 @@ def test_history_callback_w_tabtransformer(
         batch_size=16,
     )
     out = []
-    out.append(len(model_tt.history._history["train_loss"]) == len_loss_output)
+    out.append(len(model_tt.history["train_loss"]) == len_loss_output)
     try:
         lr_list = list(chain.from_iterable(model_tt.lr_history["lr_deeptabular_0"]))
     except TypeError:

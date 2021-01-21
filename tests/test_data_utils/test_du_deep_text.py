@@ -40,3 +40,30 @@ def test_pad_sequences():
     padded_seq_2 = text_utils.pad_sequences(seq, maxlen=5, pad_idx=1, pad_first=False)
     out.append(all([el == 1 for el in padded_seq_2[-2:]]))
     assert all(out)
+
+
+###############################################################################
+# Test inverse transform
+###############################################################################
+def test_inverse_transform():
+
+    df = pd.DataFrame(
+        {
+            "text_column": [
+                "life is like a box of chocolates",
+                "You never know what you're going to get",
+            ]
+        }
+    )
+
+    text_preprocessor = TextPreprocessor(
+        text_col="text_column", max_vocab=25, min_freq=1, maxlen=10, verbose=False
+    )
+    padded_seq = text_preprocessor.fit_transform(df)
+    org_df = text_preprocessor.inverse_transform(padded_seq)
+
+    texts = org_df.text_column.values
+
+    assert ("life is like box of chocolates" in texts[0]) and (
+        "you never know what you re going to get" in texts[1]
+    )

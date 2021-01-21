@@ -10,9 +10,9 @@ from pytorch_widedeep.models import (
     DeepText,
     WideDeep,
     DeepDense,
-    DeepDenseResnet,
-    TabTransformer,
     DeepImage,
+    TabTransformer,
+    DeepDenseResnet,
 )
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.callbacks import EarlyStopping
@@ -85,7 +85,9 @@ deepimage = DeepImage(pretrained=True)
 
 def test_optimizer_scheduler_format():
     model = WideDeep(deeptabular=deepdense)
-    optimizers = {"deeptabular": torch.optim.Adam(model.deeptabular.parameters(), lr=0.01)}
+    optimizers = {
+        "deeptabular": torch.optim.Adam(model.deeptabular.parameters(), lr=0.01)
+    }
     schedulers = torch.optim.lr_scheduler.StepLR(optimizers["deeptabular"], step_size=3)
     with pytest.raises(ValueError):
         model.compile(
@@ -147,8 +149,8 @@ def test_basic_run_with_metrics_binary(wide, deeptabular):
         val_split=0.2,
     )
     assert (
-        "train_loss" in model.history._history.keys()
-        and "train_acc" in model.history._history.keys()
+        "train_loss" in model.history.keys()
+        and "train_acc" in model.history.keys()
     )
 
 
@@ -177,8 +179,8 @@ def test_basic_run_with_metrics_multiclass():
         val_split=0.2,
     )
     assert (
-        "train_loss" in model.history._history.keys()
-        and "train_acc" in model.history._history.keys()
+        "train_loss" in model.history.keys()
+        and "train_acc" in model.history.keys()
     )
 
 
@@ -217,4 +219,4 @@ def test_predict_with_individual_component(
     # simply checking that runs and produces outputs
     preds = model.predict(X_wide=X_wide, X_tab=X_tab, X_text=X_text, X_img=X_img)
 
-    assert preds.shape[0] == 32 and "train_loss" in model.history._history
+    assert preds.shape[0] == 32 and "train_loss" in model.history

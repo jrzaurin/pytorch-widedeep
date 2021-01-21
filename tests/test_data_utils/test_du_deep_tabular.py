@@ -136,7 +136,10 @@ df = pd.DataFrame(
 )
 def test_tab_preprocessor_inverse_transform(embed_cols, continuous_cols, scale):
     tab_preprocessor = TabPreprocessor(
-        embed_cols=embed_cols, continuous_cols=continuous_cols, scale=scale
+        embed_cols=embed_cols,
+        continuous_cols=continuous_cols,
+        scale=scale,
+        verbose=False,
     )
     encoded = tab_preprocessor.fit_transform(df)
     decoded = tab_preprocessor.inverse_transform(encoded)
@@ -174,6 +177,7 @@ def test_tab_preprocessor_trasformer(embed_cols, continuous_cols, scale):
         continuous_cols=continuous_cols,
         scale=scale,
         for_tabtransformer=True,
+        verbose=False,
     )
     encoded = tab_preprocessor.fit_transform(df)
     decoded = tab_preprocessor.inverse_transform(encoded)

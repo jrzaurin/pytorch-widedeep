@@ -1,4 +1,4 @@
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 
 
 class MultipleOptimizer(object):

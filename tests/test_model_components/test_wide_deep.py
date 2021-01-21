@@ -39,12 +39,12 @@ def test_history_callback(deepcomponent, component_name):
     deepcomponent.__dict__.pop("output_dim")
     with pytest.raises(AttributeError):
         if component_name == "dense":
-            model = WideDeep(wide, deepdense=deepcomponent)
+            model = WideDeep(wide, deeptabular=deepcomponent)
         elif component_name == "text":
-            model = WideDeep(wide, deepdense=deepdense, deeptext=deepcomponent)
+            model = WideDeep(wide, deeptabular=deepdense, deeptext=deepcomponent)
         elif component_name == "image":
             model = WideDeep(  # noqa: F841
-                wide, deepdense=deepdense, deepimage=deepcomponent
+                wide, deeptabular=deepdense, deepimage=deepcomponent
             )
 
 
@@ -57,7 +57,7 @@ def test_deephead_and_head_layers():
     deephead = nn.Sequential(nn.Linear(32, 16), nn.Linear(16, 8))
     with pytest.raises(ValueError):
         model = WideDeep(  # noqa: F841
-            wide=wide, deepdense=deepdense, head_layers=[16, 8], deephead=deephead
+            wide=wide, deeptabular=deepdense, head_layers=[16, 8], deephead=deephead
         )
 
 
@@ -68,7 +68,7 @@ def test_deephead_and_head_layers():
 
 def test_no_deephead_and_head_layers():
     out = []
-    model = WideDeep(wide=wide, deepdense=deepdense, head_layers=[8, 4])  # noqa: F841
+    model = WideDeep(wide=wide, deeptabular=deepdense, head_layers=[8, 4])  # noqa: F841
     for n, p in model.named_parameters():
         if n == "deephead.head_layer_0.0.weight":
             out.append(p.size(0) == 8 and p.size(1) == 8)

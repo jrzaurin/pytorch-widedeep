@@ -3,7 +3,7 @@ import os
 import numpy as np
 from gensim.utils import tokenize
 
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 from .fastai_transforms import Vocab, Tokenizer
 
 __all__ = ["simple_preprocess", "get_texts", "pad_sequences", "build_embeddings_matrix"]

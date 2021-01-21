@@ -1,5 +1,4 @@
 import warnings
-
 import pandas as pd
 from sklearn.exceptions import NotFittedError
 
@@ -121,7 +120,23 @@ class LabelEncoder(object):
         return self.fit(df).transform(df)
 
     def inverse_transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Returns the original categories"""
+        """Returns the original categories
+
+        Examples
+        --------
+
+        >>> import pandas as pd
+        >>> from pytorch_widedeep.utils import LabelEncoder
+        >>> df = pd.DataFrame({'col1': [1,2,3], 'col2': ['me', 'you', 'him']})
+        >>> columns_to_encode = ['col2']
+        >>> encoder = LabelEncoder(columns_to_encode)
+        >>> df_enc = encoder.fit_transform(df)
+        >>> encoder.inverse_transform(df_enc)
+           col1 col2
+        0     1   me
+        1     2  you
+        2     3  him
+        """
         for k, v in self.inverse_encoding_dict.items():
             df[k] = df[k].apply(lambda x: v[x])
         return df

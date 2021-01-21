@@ -1,5 +1,4 @@
 import warnings
-from abc import ABC, abstractmethod
 
 import cv2
 import numpy as np
@@ -19,22 +18,28 @@ from ..utils.deeptabular_utils import LabelEncoder
 from ..utils.fastai_transforms import Vocab
 
 
-class BasePreprocessor(ABC):
-    """Base Abstract Class of All Preprocessors."""
+__all__ = [
+    "WidePreprocessor",
+    "TabPreprocessor",
+    "TextPreprocessor",
+    "ImagePreprocessor",
+]
 
-    @abstractmethod
+
+# This class does not represent any sctructural advantage, but I keep it to
+# keep things tidy and also as guidance for contribution
+class BasePreprocessor:
+    """Base Class of All Preprocessors."""
+
     def __init__(self, *args):
         pass
 
-    @abstractmethod
     def fit(self, df: pd.DataFrame):
         raise NotImplementedError("Preprocessor must implement this method")
 
-    @abstractmethod
     def transform(self, df: pd.DataFrame):
         raise NotImplementedError("Preprocessor must implement this method")
 
-    @abstractmethod
     def fit_transform(self, df: pd.DataFrame):
         raise NotImplementedError("Preprocessor must implement this method")
 
@@ -88,11 +93,10 @@ class WidePreprocessor(BasePreprocessor):
     """
 
     def __init__(
-        self,
-        wide_cols: List[str],
-        crossed_cols=None,
+        self, wide_cols: List[str], crossed_cols: List[Tuple[str, str]] = None
     ):
         super(WidePreprocessor, self).__init__()
+
         self.wide_cols = wide_cols
         self.crossed_cols = crossed_cols
 
@@ -228,9 +232,9 @@ class TabPreprocessor(BasePreprocessor):
     >>> cont_cols = ['age']
     >>> deep_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
     >>> deep_preprocessor.fit_transform(df)
-    array([[ 0.        ,  0.        , -1.22474487],
-           [ 1.        ,  1.        ,  0.        ],
-           [ 2.        ,  2.        ,  1.22474487]])
+    array([[ 1.        ,  1.        , -1.22474487],
+           [ 2.        ,  2.        ,  0.        ],
+           [ 3.        ,  3.        ,  1.22474487]])
     >>> deep_preprocessor.embed_dim
     {'color': 5, 'size': 5}
     >>> deep_preprocessor.deep_column_idx
@@ -245,27 +249,32 @@ class TabPreprocessor(BasePreprocessor):
         default_embed_dim: int = 8,
         already_standard: Optional[List[str]] = None,
         for_tabtransformer: bool = False,
+        verbose: bool = True,
     ):
         super(TabPreprocessor, self).__init__()
 
-        assert (embed_cols is not None) or (
-            continuous_cols is not None
-        ), "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
-        tabtransformer_error_message = (
-            "If for_tabtransformer is 'True' embed_cols must be simply "
-            "a list of strings with the columns to be encoded as embeddings."
-        )
-        if for_tabtransformer and embed_cols is None:
-            raise ValueError(tabtransformer_error_message)
-        if for_tabtransformer and isinstance(embed_cols[0], tuple):
-            raise ValueError(tabtransformer_error_message)
-
         self.embed_cols = embed_cols
         self.continuous_cols = continuous_cols
-        self.already_standard = already_standard
         self.scale = scale
         self.default_embed_dim = default_embed_dim
+        self.already_standard = already_standard
         self.for_tabtransformer = for_tabtransformer
+        self.verbose = verbose
+
+        if (self.embed_cols is None) and (self.continuous_cols is None):
+            raise ValueError(
+                "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
+            )
+
+        tabtransformer_error_message = (
+            "If for_tabtransformer is 'True' embed_cols must be not 'None', "
+            " and must be a list of strings with the columns to be encoded "
+            " as embeddings."
+        )
+        if self.for_tabtransformer and self.embed_cols is None:
+            raise ValueError(tabtransformer_error_message)
+        if self.for_tabtransformer and isinstance(self.embed_cols[0], tuple):  # type: ignore[index]
+            raise ValueError(tabtransformer_error_message)
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Fits the Preprocessor and creates required attributes"""
@@ -283,7 +292,7 @@ class TabPreprocessor(BasePreprocessor):
             if self.scale:
                 df_std = df_cont[self.standardize_cols]
                 self.scaler = StandardScaler().fit(df_std.values)
-            else:
+            elif self.verbose:
                 warnings.warn("Continuous columns will not be normalised")
         return self
 
@@ -399,7 +408,7 @@ class TextPreprocessor(BasePreprocessor):
     ---------
     >>> import pandas as pd
     >>> from pytorch_widedeep.preprocessing import TextPreprocessor
-    >>> df_train = pd.DataFrame({'text_column': ["life was like a box of chocolates",
+    >>> df_train = pd.DataFrame({'text_column': ["life is like a box of chocolates",
     ... "You never know what you're gonna get"]})
     >>> text_preprocessor = TextPreprocessor(text_col='text_column', max_vocab=25, min_freq=1, maxlen=10)
     >>> text_preprocessor.fit_transform(df_train)
@@ -408,7 +417,7 @@ class TextPreprocessor(BasePreprocessor):
            [ 5,  9, 16, 17, 18,  9, 19, 20, 21, 22]], dtype=int32)
     >>> df_te = pd.DataFrame({'text_column': ['you never know what is in the box']})
     >>> text_preprocessor.transform(df_te)
-    array([[ 1,  1,  9, 16, 17, 18,  0,  0,  0, 13]], dtype=int32)
+    array([[ 1,  1,  9, 16, 17, 18, 11,  0,  0, 13]], dtype=int32)
     """
 
     def __init__(
@@ -420,7 +429,9 @@ class TextPreprocessor(BasePreprocessor):
         word_vectors_path: Optional[str] = None,
         verbose: int = 1,
     ):
+
         super(TextPreprocessor, self).__init__()
+
         self.text_col = text_col
         self.max_vocab = max_vocab
         self.min_freq = min_freq
@@ -461,6 +472,11 @@ class TextPreprocessor(BasePreprocessor):
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
         """Combines ``fit`` and ``transform``"""
         return self.fit(df).transform(df)
+
+    def inverse_transform(self, padded_seq: np.ndarray) -> pd.DataFrame:
+        """Returns the original text plus the added 'special' tokens"""
+        texts = [self.vocab.textify(num) for num in padded_seq]
+        return pd.DataFrame({self.text_col: texts})
 
 
 class ImagePreprocessor(BasePreprocessor):
@@ -523,6 +539,7 @@ class ImagePreprocessor(BasePreprocessor):
         verbose: int = 1,
     ):
         super(ImagePreprocessor, self).__init__()
+
         self.img_col = img_col
         self.img_path = img_path
         self.width = width
@@ -608,3 +625,8 @@ class ImagePreprocessor(BasePreprocessor):
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
         """Combines ``fit`` and ``transform``"""
         return self.fit(df).transform(df)
+
+    def inverse_transform(self, transformed_image):
+        raise NotImplementedError(
+            "'inverse_transform' method is not implemented for 'ImagePreprocessor'"
+        )

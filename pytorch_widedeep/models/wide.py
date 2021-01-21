@@ -3,11 +3,11 @@ import math
 import torch
 from torch import nn
 
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 
 
 class Wide(nn.Module):
-    r"""Wide component
+    r"""wide (linear) component
 
     Linear model implemented via an Embedding layer connected to the output
     neuron(s).
@@ -19,7 +19,7 @@ class Wide(nn.Module):
         individual values for all the features that go through the wide
         component. For example, if the wide component receives 2 features with
         5 individual values each, `wide_dim = 10`
-    pred_dim: int
+    pred_dim: int, default = 1
         size of the ouput tensor containing the predictions
 
     Attributes
@@ -37,6 +37,7 @@ class Wide(nn.Module):
     """
 
     def __init__(self, wide_dim: int, pred_dim: int = 1):
+
         super(Wide, self).__init__()
         # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
         self.wide_linear = nn.Embedding(wide_dim + 1, pred_dim, padding_idx=0)

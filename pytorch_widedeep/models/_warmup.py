@@ -1,11 +1,10 @@
-import numpy as np
 import torch
 import torch.nn.functional as F
 from tqdm import trange
 from torch import nn
 
 from ..metrics import Metric, MultipleMetrics
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 
 use_cuda = torch.cuda.is_available()
 
@@ -99,7 +98,7 @@ class WarmUp(object):
 
         self._warm(model, model_name, loader, optimizer, scheduler, n_epochs=n_epochs)
 
-    def warm_gradual(
+    def warm_gradual(  # noqa: C901
         self,
         model: nn.Module,
         model_name: str,

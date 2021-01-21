@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 from .deep_dense import dense_layer
 
 
@@ -18,23 +18,25 @@ class DeepText(nn.Module):
     ----------
     vocab_size: int
         number of words in the vocabulary
-    hidden_dim: int
+    hidden_dim: int, default = 64
         number of features in the hidden state h of the LSTM
-    n_layers: int
+    n_layers: int, default = 3
         number of recurrent layers
-    rnn_dropout: int
+    rnn_dropout: int, default = 0.
         dropout for the dropout layer on the outputs of each LSTM layer except
         the last layer
-    bidirectional: bool
+    bidirectional: bool, default = True
         indicates whether the staked RNNs are bidirectional
-    padding_idx: int
+    padding_idx: int, default = 1
         index of the padding token in the padded-tokenised sequences. default:
         1. I use the ``fastai`` tokenizer where the token index 0 is reserved
         for the `'unknown'` word token
     embed_dim: int, Optional
         Dimension of the word embedding matrix
-    embedding_matrix: np.ndarray, Optional
+    embed_matrix: np.ndarray, Optional
          Pretrained word embeddings
+    embed_trainable: bool, Optional. default = False
+        Boolean indicating if the pretrained embeddings are trainable
     head_layers: List, Optional
         List with the sizes of the stacked dense layers in the head
         e.g: [128, 64]
@@ -75,44 +77,60 @@ class DeepText(nn.Module):
         bidirectional: bool = False,
         padding_idx: int = 1,
         embed_dim: Optional[int] = None,
-        embedding_matrix: Optional[np.ndarray] = None,
+        embed_matrix: Optional[np.ndarray] = None,
+        embed_trainable: Optional[bool] = True,
         head_layers: Optional[List[int]] = None,
         head_dropout: Optional[List[float]] = None,
         head_batchnorm: Optional[bool] = False,
     ):
+
         super(DeepText, self).__init__()
 
         if (
             embed_dim is not None
-            and embedding_matrix is not None
-            and not embed_dim == embedding_matrix.shape[1]
+            and embed_matrix is not None
+            and not embed_dim == embed_matrix.shape[1]
         ):
             warnings.warn(
                 "the input embedding dimension {} and the dimension of the "
                 "pretrained embeddings {} do not match. The pretrained embeddings "
                 "dimension ({}) will be used".format(
-                    embed_dim, embedding_matrix.shape[1], embedding_matrix.shape[1]
+                    embed_dim, embed_matrix.shape[1], embed_matrix.shape[1]
                 ),
                 UserWarning,
             )
 
+        self.vocab_size = vocab_size
+        self.hidden_dim = hidden_dim
+        self.n_layers = n_layers
+        self.rnn_dropout = rnn_dropout
         self.bidirectional = bidirectional
+        self.padding_idx = padding_idx
+        self.embed_dim = embed_dim
+        self.embed_trainable = embed_trainable
         self.head_layers = head_layers
+        self.head_dropout = head_dropout
+        self.head_batchnorm = head_batchnorm
 
         # Pre-trained Embeddings
-        if isinstance(embedding_matrix, np.ndarray):
+        if isinstance(embed_matrix, np.ndarray):
             assert (
-                embedding_matrix.dtype == "float32"
-            ), "'embedding_matrix' must be of dtype 'float32', got dtype '{}'".format(
-                str(embedding_matrix.dtype)
+                embed_matrix.dtype == "float32"
+            ), "'embed_matrix' must be of dtype 'float32', got dtype '{}'".format(
+                str(embed_matrix.dtype)
             )
             self.word_embed = nn.Embedding(
-                vocab_size, embedding_matrix.shape[1], padding_idx=padding_idx
+                vocab_size, embed_matrix.shape[1], padding_idx=padding_idx
             )
-            self.word_embed.weight = nn.Parameter(
-                torch.tensor(embedding_matrix), requires_grad=True
-            )
-            embed_dim = embedding_matrix.shape[1]
+            if embed_trainable:
+                self.word_embed.weight = nn.Parameter(
+                    torch.tensor(embed_matrix), requires_grad=True
+                )
+            else:
+                self.word_embed.weight = nn.Parameter(
+                    torch.tensor(embed_matrix), requires_grad=False
+                )
+            embed_dim = embed_matrix.shape[1]
         else:
             self.word_embed = nn.Embedding(
                 vocab_size, embed_dim, padding_idx=padding_idx

@@ -11,7 +11,7 @@ from copy import deepcopy
 import numpy as np
 import torch
 
-from .wdtypes import *
+from .wdtypes import *  # noqa: F403
 
 
 def _get_current_time():
@@ -80,7 +80,7 @@ class CallbackContainer(object):
 
 class Callback(object):
     """
-    Abstract base class used to build new callbacks.
+    Base class used to build new callbacks.
     """
 
     def __init__(self):
@@ -136,20 +136,20 @@ class History(Callback):
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):
-        self.epoch: List[int] = []
-        self._history: Dict[str, List[float]] = {}
+        self.model.epoch = []
+        self.model.history = {}
 
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
         # avoid mutation during epoch run
         logs = deepcopy(logs) or {}
         for k, v in logs.items():
-            self._history.setdefault(k, []).append(v)
+            self.model.history.setdefault(k, []).append(v)
 
     def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
         logs = logs or {}
-        self.epoch.append(epoch)
+        self.model.epoch.append(epoch)
         for k, v in logs.items():
-            self._history.setdefault(k, []).append(v)
+            self.model.history.setdefault(k, []).append(v)
 
 
 class LRHistory(Callback):
@@ -183,81 +183,65 @@ class LRHistory(Callback):
     >>> model.compile(method="regression", callbacks=[LRHistory(n_epochs=10)])
     """
 
-    def __init__(self, n_epochs):
+    def __init__(self, n_epochs: int):
         super(LRHistory, self).__init__()
         self.n_epochs = n_epochs
 
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
         if epoch == 0 and self.model.lr_scheduler:
-            # If is the first epoch and we use a scheduler, define the
-            # lr_history Dict and save
             self.model.lr_history = {}
-            if self.model.lr_scheduler.__class__.__name__ == "MultipleLRScheduler":
-                # if we use multiple schedulers, we save the learning rate for
-                # each param_group of the optimizer.
-                for model_name, opt in self.model.optimizer._optimizers.items():
-                    if model_name in self.model.lr_scheduler._schedulers:
-                        for group_idx, group in enumerate(opt.param_groups):
-                            self.model.lr_history.setdefault(
-                                ("_").join(["lr", model_name, str(group_idx)]), []
-                            ).append(group["lr"])
-            elif not self.model.cyclic:
-                # if we use one lr_scheduler and is not cyclic, save the
-                # learning rate for that param_group
-                for group_idx, group in enumerate(self.model.optimizer.param_groups):
-                    self.model.lr_history.setdefault(
-                        ("_").join(["lr", str(group_idx)]), []
-                    ).append(group["lr"])
+            if self._multiple_scheduler():
+                self._save_group_lr_mulitple_scheduler(step_location="on_epoch_begin")
+            elif not self.model.cyclic_lr:
+                self._save_group_lr(self.model.optimizer)
 
     def on_batch_end(self, batch: int, logs: Optional[Dict] = None):
         if self.model.lr_scheduler:
-            if self.model.lr_scheduler.__class__.__name__ == "MultipleLRScheduler":
-                # if we use multiple schedulers, we save the learning rate for
-                # each param_group of the optimizer IF IS CYCLIC
-                for model_name, opt in self.model.optimizer._optimizers.items():
-                    if model_name in self.model.lr_scheduler._schedulers:
-                        if (
-                            "cycl"
-                            in self.model.lr_scheduler._schedulers[
-                                model_name
-                            ].__class__.__name__.lower()
-                        ):
-                            for group_idx, group in enumerate(opt.param_groups):
-                                self.model.lr_history.setdefault(
-                                    ("_").join(["lr", model_name, str(group_idx)]), []
-                                ).append(group["lr"])
-            elif self.model.cyclic:
-                # if we use one lr_scheduler and IS CYCLIC, save the
-                # learning rate for that param_group
-                for group_idx, group in enumerate(self.model.optimizer.param_groups):
-                    self.model.lr_history.setdefault(
-                        ("_").join(["lr", str(group_idx)]), []
-                    ).append(group["lr"])
+            if self._multiple_scheduler():
+                self._save_group_lr_mulitple_scheduler(step_location="on_batch_end")
+            elif self.model.cyclic_lr:
+                self._save_group_lr(self.model.optimizer)
 
     def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
         if epoch != (self.n_epochs - 1) and self.model.lr_scheduler:
-            if self.model.lr_scheduler.__class__.__name__ == "MultipleLRScheduler":
-                # if we use multiple schedulers, we save the learning rate for
-                # each param_group of the optimizer IF IS NOT CYCLIC
-                for model_name, opt in self.model.optimizer._optimizers.items():
-                    if model_name in self.model.lr_scheduler._schedulers:
-                        if (
-                            "cycl"
-                            not in self.model.lr_scheduler._schedulers[
-                                model_name
-                            ].__class__.__name__.lower()
-                        ):
-                            for group_idx, group in enumerate(opt.param_groups):
-                                self.model.lr_history.setdefault(
-                                    ("_").join(["lr", model_name, str(group_idx)]), []
-                                ).append(group["lr"])
-            elif not self.model.cyclic:
-                # if we use one lr_scheduler and IS NOT CYCLIC, save the
-                # learning rate for that param_group
-                for group_idx, group in enumerate(self.model.optimizer.param_groups):
-                    self.model.lr_history.setdefault(
-                        ("_").join(["lr", str(group_idx)]), []
-                    ).append(group["lr"])
+            if self._multiple_scheduler():
+                self._save_group_lr_mulitple_scheduler(step_location="on_epoch_end")
+            elif not self.model.cyclic_lr:
+                self._save_group_lr(self.model.optimizer)
+
+    def _save_group_lr_mulitple_scheduler(self, step_location: str):
+        for model_name, opt in self.model.optimizer._optimizers.items():
+            if step_location == "on_epoch_begin":
+                self._save_group_lr(opt, model_name)
+            if step_location == "on_batch_end":
+                if self._is_cyclic(model_name):
+                    self._save_group_lr(opt, model_name)
+            if step_location == "on_epoch_end":
+                if not self._is_cyclic(model_name):
+                    self._save_group_lr(opt, model_name)
+
+    def _save_group_lr(self, opt: Optimizer, model_name: Optional[str] = None):
+        for group_idx, group in enumerate(opt.param_groups):
+            if model_name is not None:
+                group_name = ("_").join(["lr", model_name, str(group_idx)])
+            else:
+                group_name = ("_").join(["lr", str(group_idx)])
+            self.model.lr_history.setdefault(group_name, []).append(group["lr"])
+
+    def _multiple_scheduler(self):
+        return self.model.lr_scheduler.__class__.__name__ == "MultipleLRScheduler"
+
+    def _is_cyclic(self, model_name: str):
+        return (
+            self._has_scheduler(model_name)
+            and "cycl"
+            in self.model.lr_scheduler._schedulers[
+                model_name
+            ].__class__.__name__.lower()
+        )
+
+    def _has_scheduler(self, model_name: str):
+        return model_name in self.model.lr_scheduler._schedulers
 
 
 class ModelCheckpoint(Callback):
@@ -322,39 +306,43 @@ class ModelCheckpoint(Callback):
         period: int = 1,
         max_save: int = -1,
     ):
+
         super(ModelCheckpoint, self).__init__()
+
+        self.filepath = filepath
         self.monitor = monitor
         self.verbose = verbose
-        self.filepath = filepath
         self.save_best_only = save_best_only
+        self.mode = mode
         self.period = period
-        self.epochs_since_last_save = 0
         self.max_save = max_save
 
-        if len(filepath.split("/")[:-1]) == 0:
+        self.epochs_since_last_save = 0
+
+        if len(self.filepath.split("/")[:-1]) == 0:
             raise ValueError(
                 "'filepath' must be the full path to save the output weights,"
                 " including the root of the filenames. e.g. 'checkpoints/weights_out'"
             )
 
-        root_dir = ("/").join(filepath.split("/")[:-1])
+        root_dir = ("/").join(self.filepath.split("/")[:-1])
         if not os.path.exists(root_dir):
             os.makedirs(root_dir)
 
         if self.max_save > 0:
             self.old_files: List[str] = []
 
-        if mode not in ["auto", "min", "max"]:
+        if self.mode not in ["auto", "min", "max"]:
             warnings.warn(
                 "ModelCheckpoint mode %s is unknown, "
-                "fallback to auto mode." % (mode),
+                "fallback to auto mode." % (self.mode),
                 RuntimeWarning,
             )
-            mode = "auto"
-        if mode == "min":
+            self.mode = "auto"
+        if self.mode == "min":
             self.monitor_op = np.less
             self.best = np.Inf
-        elif mode == "max":
+        elif self.mode == "max":
             self.monitor_op = np.greater
             self.best = -np.Inf
         else:
@@ -365,7 +353,7 @@ class ModelCheckpoint(Callback):
                 self.monitor_op = np.less
                 self.best = np.Inf
 
-    def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
+    def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):  # noqa: C901
         logs = logs or {}
         self.epochs_since_last_save += 1
         if self.epochs_since_last_save >= self.period:
@@ -399,7 +387,7 @@ class ModelCheckpoint(Callback):
                             if len(self.old_files) == self.max_save:
                                 try:
                                     os.remove(self.old_files[0])
-                                except:
+                                except FileNotFoundError:
                                     pass
                                 self.old_files = self.old_files[1:]
                             self.old_files.append(filepath)
@@ -417,7 +405,7 @@ class ModelCheckpoint(Callback):
                     if len(self.old_files) == self.max_save:
                         try:
                             os.remove(self.old_files[0])
-                        except:
+                        except FileNotFoundError:
                             pass
                         self.old_files = self.old_files[1:]
                     self.old_files.append(filepath)
@@ -487,25 +475,28 @@ class EarlyStopping(Callback):
         super(EarlyStopping, self).__init__()
 
         self.monitor = monitor
-        self.baseline = baseline
+        self.min_delta = min_delta
         self.patience = patience
         self.verbose = verbose
-        self.min_delta = min_delta
+        self.mode = mode
+        self.baseline = baseline
+        self.restore_best_weights = restore_best_weights
+
         self.wait = 0
         self.stopped_epoch = 0
-        self.restore_best_weights = restore_best_weights
         self.state_dict = None
 
-        if mode not in ["auto", "min", "max"]:
+        if self.mode not in ["auto", "min", "max"]:
             warnings.warn(
-                "EarlyStopping mode %s is unknown, " "fallback to auto mode." % mode,
+                "EarlyStopping mode %s is unknown, "
+                "fallback to auto mode." % self.mode,
                 RuntimeWarning,
             )
-            mode = "auto"
+            self.mode = "auto"
 
-        if mode == "min":
+        if self.mode == "min":
             self.monitor_op = np.less
-        elif mode == "max":
+        elif self.mode == "max":
             self.monitor_op = np.greater
         else:
             if "acc" in self.monitor:

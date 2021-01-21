@@ -1,6 +1,1 @@
-from ._preprocessors import (
-    TabPreprocessor,
-    TextPreprocessor,
-    WidePreprocessor,
-    ImagePreprocessor,
-)
+from ._preprocessors import *
