@@ -3,8 +3,8 @@ Copied and pasted, with great gratitude from: https://github.com/LiyuanLucasLiu/
 """
 
 import math
-import torch
 
+import torch
 from torch.optim.optimizer import Optimizer
 
 

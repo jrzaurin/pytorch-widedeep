@@ -148,10 +148,7 @@ def test_basic_run_with_metrics_binary(wide, deeptabular):
         batch_size=16,
         val_split=0.2,
     )
-    assert (
-        "train_loss" in model.history.keys()
-        and "train_acc" in model.history.keys()
-    )
+    assert "train_loss" in model.history.keys() and "train_acc" in model.history.keys()
 
 
 ###############################################################################
@@ -178,10 +175,7 @@ def test_basic_run_with_metrics_multiclass():
         batch_size=16,
         val_split=0.2,
     )
-    assert (
-        "train_loss" in model.history.keys()
-        and "train_acc" in model.history.keys()
-    )
+    assert "train_loss" in model.history.keys() and "train_acc" in model.history.keys()
 
 
 ###############################################################################

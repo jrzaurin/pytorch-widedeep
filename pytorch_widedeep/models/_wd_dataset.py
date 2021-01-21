@@ -25,6 +25,7 @@ class WideDeepDataset(Dataset):
     transforms: :obj:`MultipleTransforms`
         torchvision Compose object. See models/_multiple_transforms.py
     """
+
     def __init__(
         self,
         X_wide: Optional[np.ndarray] = None,

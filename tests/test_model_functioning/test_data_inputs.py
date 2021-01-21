@@ -270,10 +270,7 @@ def test_widedeep_inputs(
         val_split=val_split,
         batch_size=16,
     )
-    assert (
-        model.epoch[0] == nepoch
-        and model.history["train_loss"] is not null
-    )
+    assert model.epoch[0] == nepoch and model.history["train_loss"] is not null
 
 
 @pytest.mark.parametrize(

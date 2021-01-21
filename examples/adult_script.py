@@ -11,7 +11,7 @@ from pytorch_widedeep.callbacks import (
     ModelCheckpoint,
 )
 from pytorch_widedeep.initializers import XavierNormal, KaimingNormal
-from pytorch_widedeep.preprocessing import WidePreprocessor, TabPreprocessor
+from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 
 use_cuda = torch.cuda.is_available()
 

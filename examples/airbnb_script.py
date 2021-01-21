@@ -15,9 +15,9 @@ from pytorch_widedeep.models import (
 from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.initializers import KaimingNormal
 from pytorch_widedeep.preprocessing import (
+    TabPreprocessor,
     TextPreprocessor,
     WidePreprocessor,
-    TabPreprocessor,
     ImagePreprocessor,
 )
 

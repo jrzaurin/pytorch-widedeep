@@ -1,8 +1,8 @@
 import os
-import pytest
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from pytorch_widedeep.preprocessing import ImagePreprocessor
 

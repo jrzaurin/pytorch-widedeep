@@ -74,6 +74,7 @@ class Accuracy(Metric):
     >>> acc(y_pred, y_true)
     0.6666666666666666
     """
+
     def __init__(self, top_k: int = 1):
 
         super(Accuracy, self).__init__()

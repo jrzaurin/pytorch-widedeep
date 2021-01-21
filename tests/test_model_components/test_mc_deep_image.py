@@ -80,6 +80,7 @@ def test_all_frozen():
 # Catch Exception
 ###############################################################################
 
+
 def test_too_cold():
     with pytest.raises(ValueError):
         mod = DeepImage(freeze_n=10)  # noqa: F841

@@ -17,7 +17,6 @@ from ..utils.image_utils import SimplePreprocessor, AspectAwarePreprocessor
 from ..utils.deeptabular_utils import LabelEncoder
 from ..utils.fastai_transforms import Vocab
 
-
 __all__ = [
     "WidePreprocessor",
     "TabPreprocessor",
@@ -165,11 +164,10 @@ class WidePreprocessor(BasePreprocessor):
         df_cc = df.copy()
         crossed_colnames = []
         for cols in self.crossed_cols:
-            cols = list(cols)
             for c in cols:
                 df_cc[c] = df_cc[c].astype("str")
             colname = "_".join(cols)
-            df_cc[colname] = df_cc[cols].apply(lambda x: "-".join(x), axis=1)
+            df_cc[colname] = df_cc[list(cols)].apply(lambda x: "-".join(x), axis=1)
             crossed_colnames.append(colname)
         return df_cc[crossed_colnames]
 
