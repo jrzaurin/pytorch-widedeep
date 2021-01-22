@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import pandas as pd
 
-from pytorch_widedeep.models import Wide, WideDeep, DeepDense
+from pytorch_widedeep.models import Wide, WideDeep, TabMlp
 from pytorch_widedeep.metrics import F1Score, Accuracy
 from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 
@@ -41,8 +41,8 @@ if __name__ == "__main__":
     X_deep = prepare_deep.fit_transform(df)
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=3)
-    deepdense = DeepDense(
-        hidden_layers=[64, 32],
+    deepdense = TabMlp(
+        mlp_hidden_dims=[64, 32],
         dropout=[0.2, 0.2],
         deep_column_idx=prepare_deep.deep_column_idx,
         embed_input=prepare_deep.embeddings_input,

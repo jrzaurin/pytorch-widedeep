@@ -8,9 +8,9 @@ from pytorch_widedeep.models import (
     Wide,
     DeepText,
     WideDeep,
-    DeepDense,
+    TabMlp,
     DeepImage,
-    DeepDenseResnet,
+    TabResnet,  # noqa: F401
 )
 from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.initializers import KaimingNormal
@@ -69,15 +69,15 @@ if __name__ == "__main__":
     X_images = image_processor.fit_transform(df)
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
-    deepdense = DeepDense(
-        hidden_layers=[64, 32],
+    deepdense = TabMlp(
+        mlp_hidden_dims=[64, 32],
         dropout=[0.2, 0.2],
         deep_column_idx=prepare_deep.deep_column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
     )
-    # # To use DeepDenseResnet as the deepdense component simply:
-    # deepdense = DeepDenseResnet(
+    # # To use TabResnet as the deepdense component simply:
+    # deepdense = TabResnet(
     #     blocks=[64, 32],
     #     dropout=0.2,
     #     deep_column_idx=prepare_deep.deep_column_idx,
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         padding_idx=1,
         embed_matrix=text_processor.embedding_matrix,
     )
-    deepimage = DeepImage(pretrained=True, head_layers=None)
+    deepimage = DeepImage(pretrained=True, head_layers_dim=None)
     model = WideDeep(
         wide=wide, deeptabular=deepdense, deeptext=deeptext, deepimage=deepimage
     )

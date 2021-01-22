@@ -8,7 +8,7 @@ from torch import nn
 from sklearn.utils import Bunch
 from torch.utils.data import Dataset, DataLoader
 
-from pytorch_widedeep.models import Wide, DeepDense
+from pytorch_widedeep.models import Wide, TabMlp
 from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.models._warmup import WarmUp
 from pytorch_widedeep.models.deep_image import conv_layer
@@ -112,8 +112,8 @@ if use_cuda:
     wide.cuda()
 
 # deep
-deeptabular = DeepDense(
-    hidden_layers=[16, 8],
+deeptabular = TabMlp(
+    mlp_hidden_dims=[16, 8],
     dropout=[0.5, 0.2],
     deep_column_idx=deep_column_idx,
     embed_input=embed_input,

@@ -20,6 +20,7 @@ import torch
 import einops
 from torch import nn, einsum
 
+from .tab_mlp import MLP
 from ..wdtypes import *  # noqa: F403
 
 
@@ -160,36 +161,6 @@ class TransformerEncoder(nn.Module):
         return self.ff_addnorm(Y, self.feed_forward(Y))
 
 
-class MLP(nn.Module):
-    def __init__(
-        self,
-        d_hidden: List[int],
-        dropout: Optional[Union[float, List[float]]],
-        activation: str = "relu",
-    ):
-        super(MLP, self).__init__()
-
-        if not dropout:
-            dropout = [0.0] * len(d_hidden)
-        elif isinstance(dropout, float):
-            dropout = [dropout] * len(d_hidden)
-
-        self.mlp = nn.Sequential()
-        for i in range(1, len(d_hidden)):
-            self.mlp.add_module(
-                "dense_layer_{}".format(i - 1),
-                _dense_layer(
-                    d_hidden[i - 1],
-                    d_hidden[i],
-                    activation,
-                    dropout[i - 1],
-                ),
-            )
-
-    def forward(self, X: Tensor) -> Tensor:
-        return self.mlp(X)
-
-
 class SharedEmbeddings(nn.Module):
     def __init__(
         self,
@@ -240,8 +211,8 @@ class TabTransformer(nn.Module):
     embed_dropout: float, default = 0.
         embeddings dropout.
     shared_embed: bool, default = False
-        The idea behind `shared_embed` is described in the Appendix A in the paper: `
-        'The goal of having column embedding is to enable the model to distinguish the
+        The idea behind `shared_embed` is described in the Appendix A in the paper:
+        `'The goal of having column embedding is to enable the model to distinguish the
         classes in one column from those in the other columns'`. In other words, the idea
         is to let the model learn the which column is embedding.
     add_shared_embed: bool, default = False,
@@ -325,8 +296,11 @@ class TabTransformer(nn.Module):
         num_cat_columns: Optional[int] = None,
         ff_hidden_dim: int = 32 * 4,
         transformer_activation: str = "gelu",
-        mlp_activation: str = "relu",
         mlp_hidden_dims: Optional[List[int]] = None,
+        mlp_activation: Optional[str] = "relu",
+        mlp_batchnorm: Optional[bool] = False,
+        mlp_batchnorm_last: Optional[bool] = False,
+        mlp_linear_first: Optional[bool] = True,
     ):
 
         super(TabTransformer, self).__init__()
@@ -347,8 +321,11 @@ class TabTransformer(nn.Module):
         self.num_cat_columns = num_cat_columns
         self.ff_hidden_dim = ff_hidden_dim
         self.transformer_activation = transformer_activation
-        self.mlp_activation = mlp_activation
         self.mlp_hidden_dims = mlp_hidden_dims
+        self.mlp_activation = mlp_activation
+        self.mlp_batchnorm = mlp_batchnorm
+        self.mlp_batchnorm_last = mlp_batchnorm_last
+        self.mlp_linear_first = mlp_linear_first
 
         # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
         if shared_embed:
@@ -403,7 +380,14 @@ class TabTransformer(nn.Module):
             mlp_inp_l = len(embed_input) * input_dim + cont_inp_dim
             mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
 
-        self.mlp = MLP(mlp_hidden_dims, dropout, mlp_activation)
+        self.tab_transformer_mlp = MLP(
+            mlp_hidden_dims,
+            mlp_activation,
+            dropout,
+            mlp_batchnorm,
+            mlp_batchnorm_last,
+            mlp_linear_first,
+        )
 
         # the output_dim attribute will be used as input_dim when "merging" the models
         self.output_dim = mlp_hidden_dims[-1]
@@ -431,4 +415,4 @@ class TabTransformer(nn.Module):
             x_cont = X[:, cont_idx].float()
             x = torch.cat([x, x_cont], 1)
 
-        return self.mlp(x)
+        return self.tab_transformer_mlp(x)

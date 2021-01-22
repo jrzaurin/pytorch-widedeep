@@ -39,3 +39,4 @@ Dependencies
 * tqdm
 * torch
 * torchvision
+* einops

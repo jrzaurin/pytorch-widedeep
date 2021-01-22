@@ -3,7 +3,7 @@ import string
 import numpy as np
 import pytest
 
-from pytorch_widedeep.models import Wide, WideDeep, DeepDense
+from pytorch_widedeep.models import Wide, TabMlp, WideDeep
 
 # Wide array
 X_wide = np.random.choice(50, (100, 10))
@@ -33,8 +33,8 @@ target_multic = np.random.choice(3, 100)
 )
 def test_focal_loss(X_wide, X_tab, target, method, pred_dim, probs_dim):
     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
-    deeptabular = DeepDense(
-        hidden_layers=[32, 16],
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
         dropout=[0.5, 0.5],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,

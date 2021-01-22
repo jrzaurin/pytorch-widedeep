@@ -5,13 +5,7 @@ import numpy as np
 import torch
 import pytest
 
-from pytorch_widedeep.models import (
-    Wide,
-    DeepText,
-    WideDeep,
-    DeepDense,
-    DeepImage,
-)
+from pytorch_widedeep.models import Wide, TabMlp, DeepText, WideDeep, DeepImage
 from pytorch_widedeep.initializers import (
     Normal,
     Uniform,
@@ -79,8 +73,8 @@ test_layers = [
 def test_initializers_1(initializers, test_layers):
 
     wide = Wide(np.unique(X_wide).shape[0], 1)
-    deeptabular = DeepDense(
-        hidden_layers=[32, 16],
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
         dropout=[0.5, 0.5],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,
@@ -130,8 +124,8 @@ initializers_2 = {
 def test_initializers_with_pattern():
 
     wide = Wide(100, 1)
-    deeptabular = DeepDense(
-        hidden_layers=[32, 16],
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
         dropout=[0.5, 0.5],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,

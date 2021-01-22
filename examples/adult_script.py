@@ -3,7 +3,7 @@ import torch
 import pandas as pd
 
 from pytorch_widedeep.optim import RAdam
-from pytorch_widedeep.models import Wide, WideDeep, DeepDense, DeepDenseResnet
+from pytorch_widedeep.models import Wide, WideDeep, TabMlp, TabResnet  # noqa: F401
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.callbacks import (
     LRHistory,
@@ -55,16 +55,16 @@ if __name__ == "__main__":
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
-    deepdense = DeepDense(
-        hidden_layers=[64, 32],
+    deepdense = TabMlp(
+        mlp_hidden_dims=[64, 32],
         dropout=[0.2, 0.2],
         deep_column_idx=prepare_deep.deep_column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
     )
 
-    # # To use DeepDenseResnet as the deepdense component simply:
-    # deepdense = DeepDenseResnet(
+    # # To use TabResnet as the deepdense component simply:
+    # deepdense = TabMlpResnet(
     #     blocks=[64, 32],
     #     deep_column_idx=prepare_deep.deep_column_idx,
     #     embed_input=prepare_deep.embeddings_input,

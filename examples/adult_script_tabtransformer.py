@@ -61,7 +61,7 @@ if __name__ == "__main__":
         continuous_cols=continuous_cols,
     )
 
-    model = WideDeep(wide=wide, deepdense=deeptabular)
+    model = WideDeep(wide=wide, deeptabular=deeptabular)
 
     wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
     deep_opt = RAdam(model.deeptabular.parameters())

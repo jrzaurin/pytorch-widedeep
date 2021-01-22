@@ -7,12 +7,12 @@ from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.models import (
     Wide,
+    TabMlp,
     DeepText,
     WideDeep,
-    DeepDense,
     DeepImage,
+    TabResnet,
     TabTransformer,
-    DeepDenseResnet,
 )
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.callbacks import EarlyStopping
@@ -57,15 +57,15 @@ target_multi = np.random.choice(3, 32)
 
 # build model components
 wide = Wide(np.unique(X_wide).shape[0], 1)
-deepdense = DeepDense(
-    hidden_layers=[32, 16],
+deepdense = TabMlp(
+    mlp_hidden_dims=[32, 16],
     dropout=[0.5, 0.5],
     deep_column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=colnames[-5:],
 )
-deepdenseresnet = DeepDenseResnet(
-    blocks=[32, 16],
+deepdenseresnet = TabResnet(
+    blocks_dim=[32, 16],
     deep_column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=colnames[-5:],
@@ -158,8 +158,8 @@ def test_basic_run_with_metrics_binary(wide, deeptabular):
 
 def test_basic_run_with_metrics_multiclass():
     wide = Wide(np.unique(X_wide).shape[0], 3)
-    deeptabular = DeepDense(
-        hidden_layers=[32, 16],
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
         dropout=[0.5, 0.5],
         deep_column_idx={k: v for v, k in enumerate(colnames)},
         embed_input=embed_input,

@@ -1,8 +1,8 @@
 from torch import nn
 from torchvision import models
 
+from .tab_mlp import MLP
 from ..wdtypes import *  # noqa: F403
-from .deep_dense import dense_layer
 
 
 def conv_layer(
@@ -57,7 +57,7 @@ class DeepImage(nn.Module):
     freeze_n: int, default = 6
         number of layers to freeze. Must be less than or equal to 8. If 8
         the entire 'backbone' of the nwtwork will be frozen
-    head_layers: List, Optional
+    head_layers_dim: List, Optional
         List with the sizes of the stacked dense layers in the head
         e.g: [128, 64]
     head_dropout: List, Optional
@@ -81,7 +81,7 @@ class DeepImage(nn.Module):
     >>> import torch
     >>> from pytorch_widedeep.models import DeepImage
     >>> X_img = torch.rand((2,3,224,224))
-    >>> model = DeepImage(head_layers=[512, 64, 8])
+    >>> model = DeepImage(head_layers_dim=[512, 64, 8])
     >>> out = model(X_img)
     """
 
@@ -90,9 +90,12 @@ class DeepImage(nn.Module):
         pretrained: bool = True,
         resnet_architecture: int = 18,
         freeze_n: int = 6,
-        head_layers: Optional[List[int]] = None,
-        head_dropout: Optional[List[float]] = None,
+        head_layers_dim: Optional[List[int]] = None,
+        head_activation: Optional[str] = "relu",
+        head_dropout: Optional[Union[float, List[float]]] = None,
         head_batchnorm: Optional[bool] = False,
+        head_batchnorm_last: Optional[bool] = False,
+        head_linear_first: Optional[bool] = False,
     ):
 
         super(DeepImage, self).__init__()
@@ -100,9 +103,12 @@ class DeepImage(nn.Module):
         self.pretrained = pretrained
         self.resnet_architecture = resnet_architecture
         self.freeze_n = freeze_n
-        self.head_layers = head_layers
+        self.head_layers_dim = head_layers_dim
+        self.head_activation = head_activation
         self.head_dropout = head_dropout
         self.head_batchnorm = head_batchnorm
+        self.head_batchnorm_last = head_batchnorm_last
+        self.head_linear_first = head_linear_first
 
         if pretrained:
             vision_model = self.select_resnet_architecture(resnet_architecture)
@@ -114,33 +120,28 @@ class DeepImage(nn.Module):
         # the output_dim attribute will be used as input_dim when "merging" the models
         self.output_dim = 512
 
-        if self.head_layers is not None:
-            assert self.head_layers[0] == self.output_dim, (
+        if self.head_layers_dim is not None:
+            assert self.head_layers_dim[0] == self.output_dim, (
                 "The output dimension from the backbone ({}) is not consistent with "
                 "the expected input dimension ({}) of the fc-head".format(
-                    self.output_dim, self.head_layers[0]
+                    self.output_dim, self.head_layers_dim[0]
                 )
             )
-            if not head_dropout:
-                head_dropout = [0.0] * len(head_layers)
-            self.imagehead = nn.Sequential()
-            for i in range(1, len(head_layers)):
-                self.imagehead.add_module(
-                    "dense_layer_{}".format(i - 1),
-                    dense_layer(
-                        head_layers[i - 1],
-                        head_layers[i],
-                        head_dropout[i - 1],
-                        head_batchnorm,
-                    ),
-                )
-            self.output_dim = head_layers[-1]
+            self.imagehead = MLP(
+                head_layers_dim,
+                head_activation,
+                head_dropout,
+                head_batchnorm,
+                head_batchnorm_last,
+                head_linear_first,
+            )
+            self.output_dim = head_layers_dim[-1]
 
     def forward(self, x: Tensor) -> Tensor:  # type: ignore
         r"""Forward pass connecting the `'backbone'` with the `'head layers'`"""
         x = self.backbone(x)
         x = x.view(x.size(0), -1)
-        if self.head_layers is not None:
+        if self.head_layers_dim is not None:
             out = self.imagehead(x)
             return out
         else:

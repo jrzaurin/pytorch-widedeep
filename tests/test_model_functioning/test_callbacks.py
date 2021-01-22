@@ -8,7 +8,7 @@ import pytest
 from torch.optim.lr_scheduler import StepLR, CyclicLR
 
 from pytorch_widedeep.optim import RAdam
-from pytorch_widedeep.models import Wide, WideDeep, DeepDense, TabTransformer
+from pytorch_widedeep.models import Wide, TabMlp, WideDeep, TabTransformer
 from pytorch_widedeep.callbacks import (
     LRHistory,
     EarlyStopping,
@@ -39,8 +39,8 @@ target = np.random.choice(2, 32)
 # Test that history saves the information adequately
 ###############################################################################
 wide = Wide(np.unique(X_wide).shape[0], 1)
-deeptabular = DeepDense(
-    hidden_layers=[32, 16],
+deeptabular = TabMlp(
+    mlp_hidden_dims=[32, 16],
     dropout=[0.5, 0.5],
     deep_column_idx=deep_column_idx,
     embed_input=embed_input,
@@ -129,8 +129,8 @@ def test_history_callback(
 ###############################################################################
 def test_early_stop():
     wide = Wide(np.unique(X_wide).shape[0], 1)
-    deeptabular = DeepDense(
-        hidden_layers=[32, 16],
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
         dropout=[0.5, 0.5],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,
@@ -159,8 +159,8 @@ def test_early_stop():
 )
 def test_model_checkpoint(save_best_only, max_save, n_files):
     wide = Wide(np.unique(X_wide).shape[0], 1)
-    deeptabular = DeepDense(
-        hidden_layers=[32, 16],
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
         dropout=[0.5, 0.5],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,
@@ -185,8 +185,8 @@ def test_model_checkpoint(save_best_only, max_save, n_files):
 
 def test_filepath_error():
     wide = Wide(np.unique(X_wide).shape[0], 1)
-    deeptabular = DeepDense(
-        hidden_layers=[16, 4],
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[16, 4],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,
         continuous_cols=colnames[-5:],

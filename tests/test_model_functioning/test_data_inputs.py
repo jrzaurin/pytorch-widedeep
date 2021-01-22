@@ -6,13 +6,7 @@ from torch import nn
 from torchvision.transforms import ToTensor, Normalize
 from sklearn.model_selection import train_test_split
 
-from pytorch_widedeep.models import (
-    Wide,
-    DeepText,
-    WideDeep,
-    DeepDense,
-    DeepImage,
-)
+from pytorch_widedeep.models import Wide, TabMlp, DeepText, WideDeep, DeepImage
 
 np.random.seed(1)
 
@@ -54,8 +48,8 @@ target = np.random.choice(2, 32)
 
 # build model components
 wide = Wide(np.unique(X_wide).shape[0], 1)
-deeptabular = DeepDense(
-    hidden_layers=[32, 16],
+deeptabular = TabMlp(
+    mlp_hidden_dims=[32, 16],
     dropout=[0.5, 0.5],
     deep_column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
@@ -402,7 +396,7 @@ def test_head_layers_individual_components(
         deeptabular=deeptabular,
         deeptext=deeptext,
         deepimage=deepimage,
-        head_layers=[8, 4],
+        head_layers_dim=[8, 4],
     )  # noqa: F841
     model.compile(method="binary", verbose=0)
     model.fit(

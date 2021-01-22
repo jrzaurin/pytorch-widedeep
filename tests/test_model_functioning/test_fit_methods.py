@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from torch import nn
 
-from pytorch_widedeep.models import Wide, WideDeep, DeepDense, TabTransformer
+from pytorch_widedeep.models import Wide, TabMlp, WideDeep, TabTransformer
 
 # Wide array
 X_wide = np.random.choice(50, (32, 10))
@@ -54,8 +54,8 @@ def test_fit_methods(
     probs_dim,
 ):
     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
-    deeptabular = DeepDense(
-        hidden_layers=[32, 16],
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
         dropout=[0.5, 0.5],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,
@@ -77,8 +77,8 @@ def test_fit_methods(
 ##############################################################################
 def test_fit_with_deephead():
     wide = Wide(np.unique(X_wide).shape[0], 1)
-    deeptabular = DeepDense(
-        hidden_layers=[32, 16],
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
         deep_column_idx=deep_column_idx,
         embed_input=embed_input,
         continuous_cols=colnames[-5:],

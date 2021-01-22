@@ -4,8 +4,8 @@ import numpy as np
 import torch
 from torch import nn
 
+from .tab_mlp import MLP
 from ..wdtypes import *  # noqa: F403
-from .deep_dense import dense_layer
 
 
 class DeepText(nn.Module):
@@ -37,7 +37,7 @@ class DeepText(nn.Module):
          Pretrained word embeddings
     embed_trainable: bool, Optional. default = False
         Boolean indicating if the pretrained embeddings are trainable
-    head_layers: List, Optional
+    head_layers_dim: List, Optional
         List with the sizes of the stacked dense layers in the head
         e.g: [128, 64]
     head_dropout: List, Optional
@@ -54,7 +54,7 @@ class DeepText(nn.Module):
         Stack of LSTMs
     texthead: :obj:`nn.Sequential`
         Stack of dense layers on top of the RNN. This will only exists if
-        `head_layers` is not `None`
+        `head_layers_dim` is not `None`
     output_dim: :obj:`int`
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
@@ -79,9 +79,12 @@ class DeepText(nn.Module):
         embed_dim: Optional[int] = None,
         embed_matrix: Optional[np.ndarray] = None,
         embed_trainable: Optional[bool] = True,
-        head_layers: Optional[List[int]] = None,
-        head_dropout: Optional[List[float]] = None,
+        head_layers_dim: Optional[List[int]] = None,
+        head_activation: Optional[str] = "relu",
+        head_dropout: Optional[Union[float, List[float]]] = None,
         head_batchnorm: Optional[bool] = False,
+        head_batchnorm_last: Optional[bool] = False,
+        head_linear_first: Optional[bool] = False,
     ):
 
         super(DeepText, self).__init__()
@@ -108,9 +111,12 @@ class DeepText(nn.Module):
         self.padding_idx = padding_idx
         self.embed_dim = embed_dim
         self.embed_trainable = embed_trainable
-        self.head_layers = head_layers
+        self.head_layers_dim = head_layers_dim
+        self.head_activation = head_activation
         self.head_dropout = head_dropout
         self.head_batchnorm = head_batchnorm
+        self.head_batchnorm_last = head_batchnorm_last
+        self.head_linear_first = head_linear_first
 
         # Pre-trained Embeddings
         if isinstance(embed_matrix, np.ndarray):
@@ -149,27 +155,22 @@ class DeepText(nn.Module):
         # the output_dim attribute will be used as input_dim when "merging" the models
         self.output_dim = hidden_dim * 2 if bidirectional else hidden_dim
 
-        if self.head_layers is not None:
-            assert self.head_layers[0] == self.output_dim, (
+        if self.head_layers_dim is not None:
+            assert self.head_layers_dim[0] == self.output_dim, (
                 "The hidden dimension from the stack or RNNs ({}) is not consistent with "
                 "the expected input dimension ({}) of the fc-head".format(
-                    self.output_dim, self.head_layers[0]
+                    self.output_dim, self.head_layers_dim[0]
                 )
             )
-            if not head_dropout:
-                head_dropout = [0.0] * len(head_layers)
-            self.texthead = nn.Sequential()
-            for i in range(1, len(head_layers)):
-                self.texthead.add_module(
-                    "dense_layer_{}".format(i - 1),
-                    dense_layer(
-                        head_layers[i - 1],
-                        head_layers[i],
-                        head_dropout[i - 1],
-                        head_batchnorm,
-                    ),
-                )
-            self.output_dim = head_layers[-1]
+            self.texthead = MLP(
+                head_layers_dim,
+                head_activation,
+                head_dropout,
+                head_batchnorm,
+                head_batchnorm_last,
+                head_linear_first,
+            )
+            self.output_dim = head_layers_dim[-1]
 
     def forward(self, X: Tensor) -> Tensor:  # type: ignore
         r"""Forward pass that is simply a standard RNN-based
@@ -181,7 +182,7 @@ class DeepText(nn.Module):
             last_h = torch.cat((h[-2], h[-1]), dim=1)
         else:
             last_h = h[-1]
-        if self.head_layers is not None:
+        if self.head_layers_dim is not None:
             out = self.texthead(last_h)
             return out
         else:

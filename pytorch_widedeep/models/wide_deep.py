@@ -12,10 +12,10 @@ from sklearn.model_selection import train_test_split
 
 from ..losses import FocalLoss
 from ._warmup import WarmUp
+from .tab_mlp import MLP
 from ..metrics import Metric, MetricCallback, MultipleMetrics
 from ..wdtypes import *  # noqa: F403
 from ..callbacks import History, Callback, CallbackContainer
-from .deep_dense import dense_layer
 from ._wd_dataset import WideDeepDataset
 from ..initializers import Initializer, MultipleInitializer
 from ._multiple_optimizer import MultipleOptimizer
@@ -71,25 +71,25 @@ class WideDeep(nn.Module):
 
     Parameters
     ----------
-    wide: nn.Module
+    wide: nn.Module, Optional
         Wide model. We recommend using the ``Wide`` class in this package.
         However, it is possible to use a custom model as long as is consistent
         with the required architecture, see
         :class:`pytorch_widedeep.models.wide.Wide`
-    deeptabular: nn.Module
+    deeptabular: nn.Module, Optional
         currently we offer three possible architectures for the `deeptabular` component
-        implemented in this package. These are: ``DeepDense``, ``DeepDenseResnet`` and `
+        implemented in this package. These are: ``TabMlp``, ``TabResnet`` and `
         ``TabTransformer``.
 
-        1. ``DeepDense`` is simply an embedding layer encoding the categorical
+        1. ``TabMlp`` is simply an embedding layer encoding the categorical
         features that are then concatenated and passed through a series of
-        dense layers.
-        See: ``pytorch_widedeep.models.deep_dense.DeepDense``
+        dense (hidden) layers (i.e. and MLP).
+        See: ``pytorch_widedeep.models.deep_dense.TabMlp``
 
-        2. ``DeepDenseResnet`` is an embedding layer encoding the categorical
+        2. ``TabResnet`` is an embedding layer encoding the categorical
         features that are then concatenated and passed through a series of
         `"dense"` ResNet blocks.
-        See ``pytorch_widedeep.models.deep_dense_resnet.DeepDenseResnet``
+        See ``pytorch_widedeep.models.deep_dense_resnet.TabResnet``
 
         3. ``TabTransformer`` is detailed in `TabTransformer: Tabular Data Modeling
         Using Contextual Embeddings <https://arxiv.org/pdf/2012.06678.pdf>`_.
@@ -108,14 +108,25 @@ class WideDeep(nn.Module):
         required architecture. See
         :class:`pytorch_widedeep.models.deep_dense.DeepImage`
     deephead: nn.Module, Optional
-        `Dense` model consisting in a stack of dense layers. The FC-Head.
-    head_layers: List, Optional
-        Alternatively, we can use ``head_layers`` to specify the sizes of the
+        Custom model by the user that will receive the outtput of the deep
+        component. Typically a FC-Head
+    head_layers_dim: List, Optional
+        Alternatively, we can use ``head_layers_dim`` to specify the sizes of the
         stacked dense layers in the fc-head e.g: ``[128, 64]``
-    head_dropout: List, Optional
-        Dropout between the layers in ``head_layers``. e.g: ``[0.5, 0.5]``
+    head_dropout: float or List, Optional
+        Dropout between the layers in ``head_layers_dim``. e.g: ``[0.5, 0.5]``
+    head_activation: str, default = "relu"
+        activation function of the head layers. One of "relu", gelu" or
+        "leaky_relu"
     head_batchnorm: bool, Optional
-        Specifies if batch normalizatin should be included in the dense layers
+        Specifies if batch normalizatin should be included in the head layers
+    head_batchnorm_last: bool, default = False
+        Boolean indicating whether or not to apply batch normalization to the
+        last of the dense layers
+    head__linear_first: bool, default = False
+        Boolean indicating whether the order of the operations in the dense
+        layer. If 'True': [LIN -> ACT -> BN -> DP]. If 'False': [BN -> DP ->
+        LIN -> ACT]
     pred_dim: int
         Size of the final wide and deep output layer containing the
         predictions. `1` for regression and binary classification or `number
@@ -146,7 +157,7 @@ class WideDeep(nn.Module):
         that  these activations are collected by ``WideDeep`` and combined
         accordingly. In addition, the models MUST also contain an attribute
         ``output_dim`` with the size of these last layers of activations. See
-        for example :class:`pytorch_widedeep.models.deep_dense.DeepDense`
+        for example :class:`pytorch_widedeep.models.tab_mlp.TabMlp`
 
     """
 
@@ -158,9 +169,12 @@ class WideDeep(nn.Module):
         deeptext: Optional[nn.Module] = None,
         deepimage: Optional[nn.Module] = None,
         deephead: Optional[nn.Module] = None,
-        head_layers: Optional[List[int]] = None,
-        head_dropout: Optional[List] = None,
-        head_batchnorm: Optional[bool] = None,
+        head_layers_dim: Optional[List[int]] = None,
+        head_activation: Optional[str] = "relu",
+        head_dropout: Optional[Union[float, List[float]]] = None,
+        head_batchnorm: Optional[bool] = False,
+        head_batchnorm_last: Optional[bool] = False,
+        head_linear_first: Optional[bool] = False,
         pred_dim: int = 1,
     ):
 
@@ -172,8 +186,7 @@ class WideDeep(nn.Module):
             deeptext,
             deepimage,
             deephead,
-            head_layers,
-            head_dropout,
+            head_layers_dim,
             pred_dim,
         )
 
@@ -188,30 +201,25 @@ class WideDeep(nn.Module):
         self.deephead = deephead
 
         if self.deephead is None:
-            if head_layers is not None:
-                input_dim = 0
+            if head_layers_dim is not None:
+                deep_dim = 0
                 if self.deeptabular is not None:
-                    input_dim += self.deeptabular.output_dim  # type:ignore
+                    deep_dim += self.deeptabular.output_dim  # type:ignore
                 if self.deeptext is not None:
-                    input_dim += self.deeptext.output_dim  # type:ignore
+                    deep_dim += self.deeptext.output_dim  # type:ignore
                 if self.deepimage is not None:
-                    input_dim += self.deepimage.output_dim  # type:ignore
-                head_layers = [input_dim] + head_layers
-                if not head_dropout:
-                    head_dropout = [0.0] * (len(head_layers) - 1)
-                self.deephead = nn.Sequential()
-                for i in range(1, len(head_layers)):
-                    self.deephead.add_module(
-                        "head_layer_{}".format(i - 1),
-                        dense_layer(
-                            head_layers[i - 1],
-                            head_layers[i],
-                            head_dropout[i - 1],
-                            head_batchnorm,
-                        ),
-                    )
+                    deep_dim += self.deepimage.output_dim  # type:ignore
+                head_layers_dim = [deep_dim] + head_layers_dim
+                self.deephead = MLP(
+                    head_layers_dim,
+                    head_activation,
+                    head_dropout,
+                    head_batchnorm,
+                    head_batchnorm_last,
+                    head_linear_first,
+                )
                 self.deephead.add_module(
-                    "head_out", nn.Linear(head_layers[-1], pred_dim)
+                    "head_out", nn.Linear(head_layers_dim[-1], pred_dim)
                 )
             else:
                 if self.deeptabular is not None:
@@ -359,12 +367,12 @@ class WideDeep(nn.Module):
         >>>
         >>> from pytorch_widedeep.callbacks import EarlyStopping, LRHistory
         >>> from pytorch_widedeep.initializers import KaimingNormal, KaimingUniform, Normal, Uniform
-        >>> from pytorch_widedeep.models import DeepDenseResnet, DeepImage, DeepText, Wide, WideDeep
+        >>> from pytorch_widedeep.models import TabResnet, DeepImage, DeepText, Wide, WideDeep
         >>> from pytorch_widedeep.optim import RAdam
         >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
         >>> deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
         >>> wide = Wide(10, 1)
-        >>> deeptabular = DeepDenseResnet(blocks=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
+        >>> deeptabular = TabResnet(blocks=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
         >>> deeptext = DeepText(vocab_size=10, embed_dim=4, padding_idx=0)
         >>> deepimage = DeepImage(pretrained=False)
         >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
@@ -1112,8 +1120,7 @@ class WideDeep(nn.Module):
         deeptext,
         deepimage,
         deephead,
-        head_layers,
-        head_dropout,
+        head_layers_dim,
         pred_dim,
     ):
 
@@ -1139,23 +1146,19 @@ class WideDeep(nn.Module):
                 "deepimage model must have an 'output_dim' attribute. "
                 "See pytorch-widedeep.models.deep_dense.DeepText"
             )
-        if deephead is not None and head_layers is not None:
+        if deephead is not None and head_layers_dim is not None:
             raise ValueError(
-                "both 'deephead' and 'head_layers' are not None. Use one of the other, but not both"
+                "both 'deephead' and 'head_layers_dim' are not None. Use one of the other, but not both"
             )
         if (
-            head_layers is not None
+            head_layers_dim is not None
             and not deeptabular
             and not deeptext
             and not deepimage
         ):
             raise ValueError(
-                "if 'head_layers' is not None, at least one deep component must be used"
+                "if 'head_layers_dim' is not None, at least one deep component must be used"
             )
-        if head_layers is not None and head_dropout is not None:
-            assert len(head_layers) == len(
-                head_dropout
-            ), "'head_layers' and 'head_dropout' must have the same length"
         if deephead is not None:
             deephead_inp_feat = next(deephead.parameters()).size(1)
             output_dim = 0
