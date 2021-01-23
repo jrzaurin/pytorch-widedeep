@@ -2,9 +2,62 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .wdtypes import *
+from .wdtypes import *  # noqa: F403
 
 use_cuda = torch.cuda.is_available()
+
+method_to_objective = {
+    "binary": [
+        "binary",
+        "logistic",
+        "binary_logloss",
+        "binary_cross_entropy",
+        "binary_focal_loss",
+    ],
+    "multiclass": [
+        "multiclass",
+        "multi_logloss",
+        "cross_entropy",
+        "categorical_cross_entropy",
+        "multiclass_focal_loss",
+    ],
+    "regression": [
+        "regression",
+        "mse",
+        "l2",
+        "mean_squared_error",
+        "mean_absolute_error",
+        "mae",
+        "l1",
+        "mean_squared_log_error",
+        "msle",
+        "root_mean_squared_error",
+        "rmse",
+        "root_mean_squared_log_error",
+        "rmsle",
+    ],
+}
+
+
+objective_to_method = {
+    obj: method for method, objs in method_to_objective.items() for obj in objs
+}
+
+
+loss_aliases = {
+    "binary": ["binary", "logistic", "binary_logloss", "binary_cross_entropy"],
+    "multiclass": [
+        "multiclass",
+        "multi_logloss",
+        "cross_entropy",
+        "categorical_cross_entropy",
+    ],
+    "regression": ["regression", "mse", "l2", "mean_squared_error"],
+    "mean_absolute_error": ["mean_absolute_error", "mae", "l1"],
+    "mean_squared_log_error": ["mean_squared_log_error", "msle"],
+    "root_mean_squared_error": ["root_mean_squared_error", "rmse"],
+    "root_mean_squared_log_error": ["root_mean_squared_log_error", "rmsle"],
+}
 
 
 class FocalLoss(nn.Module):
@@ -30,7 +83,7 @@ class FocalLoss(nn.Module):
         w = self.alpha * t + (1 - self.alpha) * (1 - t)  # type: ignore
         return (w * (1 - pt).pow(self.gamma)).detach()  # type: ignore
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:  # type: ignore
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
         r"""Focal Loss computation
 
         Parameters
@@ -47,13 +100,13 @@ class FocalLoss(nn.Module):
         >>> from pytorch_widedeep.losses import FocalLoss
         >>>
         >>> # BINARY
-        >>> target = torch.tensor([0, 1, 0, 1])
+        >>> target = torch.tensor([0, 1, 0, 1]).view(-1, 1)
         >>> input = torch.tensor([[0.6, 0.7, 0.3, 0.8]]).t()
         >>> FocalLoss()(input, target)
         tensor(0.1762)
         >>>
         >>> # MULTICLASS
-        >>> target = torch.tensor([1, 0, 2])
+        >>> target = torch.tensor([1, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([[0.2, 0.5, 0.3], [0.8, 0.1, 0.1], [0.7, 0.2, 0.1]])
         >>> FocalLoss()(input, target)
         tensor(0.2573)
@@ -64,7 +117,7 @@ class FocalLoss(nn.Module):
             num_class = 2
         else:
             num_class = input_prob.size(1)
-        binary_target = torch.eye(num_class)[target.long()]
+        binary_target = torch.eye(num_class)[target.squeeze().long()]
         if use_cuda:
             binary_target = binary_target.cuda()
         binary_target = binary_target.contiguous()
@@ -72,3 +125,30 @@ class FocalLoss(nn.Module):
         return F.binary_cross_entropy(
             input_prob, binary_target, weight, reduction="mean"
         )
+
+
+class MSLELoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        return self.mse(torch.log(input + 1), torch.log(target + 1))
+
+
+class RMSELoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        return torch.sqrt(self.mse(input, target))
+
+
+class RMSLELoss(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        return torch.sqrt(self.mse(torch.log(input + 1), torch.log(target + 1)))

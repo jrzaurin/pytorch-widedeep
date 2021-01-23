@@ -96,10 +96,10 @@ class Accuracy(Metric):
 
         if num_classes == 1:
             y_pred = y_pred.round()
-            y_true = y_true.view(-1, 1)
+            y_true = y_true
         elif num_classes > 1:
             y_pred = y_pred.topk(self.top_k, 1)[1]
-            y_true = y_true.view(-1, 1).expand_as(y_pred)  # type: ignore
+            y_true = y_true.expand_as(y_pred)  # type: ignore
 
         self.correct_count += y_pred.eq(y_true).sum().item()  # type: ignore
         self.total_count += len(y_pred)  # type: ignore
@@ -157,9 +157,9 @@ class Precision(Metric):
 
         if num_class == 1:
             y_pred = y_pred.round()
-            y_true = y_true.view(-1, 1)
+            y_true = y_true
         elif num_class > 1:
-            y_true = torch.eye(num_class)[y_true.long()]
+            y_true = torch.eye(num_class)[y_true.squeeze().long()]
             y_pred = y_pred.topk(1, 1)[1].view(-1)
             y_pred = torch.eye(num_class)[y_pred.long()]
 
@@ -224,9 +224,9 @@ class Recall(Metric):
 
         if num_class == 1:
             y_pred = y_pred.round()
-            y_true = y_true.view(-1, 1)
+            y_true = y_true
         elif num_class > 1:
-            y_true = torch.eye(num_class)[y_true.long()]
+            y_true = torch.eye(num_class)[y_true.squeeze().long()]
             y_pred = y_pred.topk(1, 1)[1].view(-1)
             y_pred = torch.eye(num_class)[y_pred.long()]
 

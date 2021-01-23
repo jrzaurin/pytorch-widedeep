@@ -3,7 +3,12 @@ import torch
 import pandas as pd
 
 from pytorch_widedeep.optim import RAdam
-from pytorch_widedeep.models import Wide, WideDeep, TabMlp, TabResnet  # noqa: F401
+from pytorch_widedeep.models import (  # noqa: F401
+    Wide,
+    TabMlp,
+    WideDeep,
+    TabResnet,
+)
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.callbacks import (
     LRHistory,
@@ -89,7 +94,7 @@ if __name__ == "__main__":
     metrics = [Accuracy, Precision]
 
     model.compile(
-        method="binary",
+        objective="l2",
         optimizers=optimizers,
         lr_schedulers=schedulers,
         initializers=initializers,
@@ -105,10 +110,10 @@ if __name__ == "__main__":
         batch_size=64,
         val_split=0.2,
     )
+
     # # to save/load the model
     # torch.save(model, "model_weights/model.t")
     # model = torch.load("model_weights/model.t")
-
     # # or via state dictionaries
     # torch.save(model.state_dict(), "model_weights/model_dict.t")
     # model = WideDeep(wide=wide, deepdense=deepdense)

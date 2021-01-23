@@ -4,14 +4,8 @@ import pandas as pd
 from torchvision.transforms import ToTensor, Normalize
 
 from pytorch_widedeep.optim import RAdam
-from pytorch_widedeep.models import (
-    Wide,
-    DeepText,
-    WideDeep,
-    TabMlp,
-    DeepImage,
-    TabResnet,  # noqa: F401
-)
+from pytorch_widedeep.models import TabResnet  # noqa: F401
+from pytorch_widedeep.models import Wide, TabMlp, DeepText, WideDeep, DeepImage
 from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.initializers import KaimingNormal
 from pytorch_widedeep.preprocessing import (

@@ -1,6 +1,5 @@
 import os
 import warnings
-import functools
 
 import numpy as np
 import torch
@@ -10,7 +9,14 @@ from tqdm import trange
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
-from ..losses import FocalLoss
+from ..losses import (
+    MSLELoss,
+    RMSELoss,
+    FocalLoss,
+    RMSLELoss,
+    loss_aliases,
+    objective_to_method,
+)
 from ._warmup import WarmUp
 from .tab_mlp import MLP
 from ..metrics import Metric, MetricCallback, MultipleMetrics
@@ -19,6 +25,7 @@ from ..callbacks import History, Callback, CallbackContainer
 from ._wd_dataset import WideDeepDataset
 from ..initializers import Initializer, MultipleInitializer
 from ._multiple_optimizer import MultipleOptimizer
+from ..utils.general_utils import Alias
 from ._multiple_transforms import MultipleTransforms
 from ._multiple_lr_scheduler import MultipleLRScheduler
 
@@ -28,32 +35,6 @@ n_cpus = os.cpu_count()
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
-
-
-def deprecated_alias(**aliases):
-    def deco(f):
-        @functools.wraps(f)
-        def wrapper(*args, **kwargs):
-            rename_kwargs(f.__name__, kwargs, aliases)
-            return f(*args, **kwargs)
-
-        return wrapper
-
-    return deco
-
-
-def rename_kwargs(func_name, kwargs, aliases):
-    for alias, new in aliases.items():
-        if alias in kwargs:
-            if new in kwargs:
-                raise TypeError(
-                    "{} received both {} and {}".format(func_name, alias, new)
-                )
-            warnings.warn(
-                "'{}' is deprecated; use '{}' instead".format(alias, new),
-                DeprecationWarning,
-            )
-            kwargs[new] = kwargs.pop(alias)
 
 
 class WideDeep(nn.Module):
@@ -161,7 +142,6 @@ class WideDeep(nn.Module):
 
     """
 
-    @deprecated_alias(deepdense="deeptabular")  # noqa: C901
     def __init__(
         self,
         wide: Optional[nn.Module] = None,
@@ -234,8 +214,6 @@ class WideDeep(nn.Module):
                     self.deepimage = nn.Sequential(
                         self.deepimage, nn.Linear(self.deepimage.output_dim, pred_dim)  # type: ignore
                     )
-        # else:
-        #     self.deephead
 
     def forward(self, X: Dict[str, Tensor]) -> Tensor:  # type: ignore  # noqa: C901
 
@@ -269,9 +247,14 @@ class WideDeep(nn.Module):
                 out.add_(self.deepimage(X["deepimage"]))
             return out
 
-    def compile(  # noqa: C901
+    @Alias(  # noqa: C901
+        "objective",
+        ["loss_function", "loss_fn", "loss", "cost_function", "cost_fn", "cost"],
+    )
+    def compile(
         self,
-        method: str,
+        objective: str,
+        loss_function: Optional[Module] = None,
         optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
         lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]] = None,
         initializers: Optional[Dict[str, Initializer]] = None,
@@ -279,7 +262,6 @@ class WideDeep(nn.Module):
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[List[Metric]] = None,
         class_weight: Optional[Union[float, List[float], Tuple[float]]] = None,
-        with_focal_loss: bool = False,
         alpha: float = 0.25,
         gamma: float = 2,
         verbose: int = 1,
@@ -290,7 +272,7 @@ class WideDeep(nn.Module):
 
         Parameters
         ----------
-        method: str
+        objective: str
             One of `regression`, `binary` or `multiclass`. The default when
             performing a `regression`, a `binary` classification or a
             `multiclass` classification is the `mean squared error
@@ -391,7 +373,7 @@ class WideDeep(nn.Module):
         >>> initializers = {"wide": Uniform, "deeptabular": Normal, "deeptext": KaimingNormal, "deepimage": KaimingUniform}
         >>> transforms = [ToTensor]
         >>> callbacks = [LRHistory(n_epochs=4), EarlyStopping]
-        >>> model.compile(method="regression", initializers=initializers, optimizers=optimizers,
+        >>> model.compile(objective="regression", initializers=initializers, optimizers=optimizers,
         ... lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
         """
 
@@ -402,13 +384,25 @@ class WideDeep(nn.Module):
                 "Please, read the documentation or see the examples for more details"
             )
 
+        if loss_function is not None and objective not in [
+            "binary",
+            "multiclass",
+            "regression",
+        ]:
+            raise ValueError(
+                "If 'loss_function' is not None, 'objective' might be 'binary' "
+                "'multiclass' or 'regression', consistent with the loss function"
+            )
+
         self.verbose = verbose
         self.seed = seed
         self.early_stop = False
-        self.method = method
-        self.with_focal_loss = with_focal_loss
-        if self.with_focal_loss:
-            self.alpha, self.gamma = alpha, gamma
+        self.objective = objective
+        self.method = objective_to_method[objective]
+        self.custom_loss_function = loss_function
+        if "focal_loss" in objective:
+            self.alpha = alpha
+            self.gamma = gamma
 
         if isinstance(class_weight, float):
             self.class_weight = torch.tensor([1.0 - class_weight, class_weight])
@@ -473,8 +467,7 @@ class WideDeep(nn.Module):
 
         self.to(device)
 
-    @deprecated_alias(X_deep="X_tab")  # noqa: C901
-    def fit(
+    def fit(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
@@ -718,7 +711,6 @@ class WideDeep(nn.Module):
             self.callback_container.on_train_end(epoch_logs)
         self.train()
 
-    @deprecated_alias(X_deep="X_tab")  # noqa: C901
     def predict(
         self,
         X_wide: Optional[np.ndarray] = None,
@@ -760,7 +752,6 @@ class WideDeep(nn.Module):
             preds = np.vstack(preds_l)
             return np.argmax(preds, 1)
 
-    @deprecated_alias(X_deep="X_tab")
     def predict_proba(
         self,
         X_wide: Optional[np.ndarray] = None,
@@ -826,17 +817,27 @@ class WideDeep(nn.Module):
             cat_embed_dict[value] = embed_mtx[idx]
         return cat_embed_dict
 
-    def _loss_fn(self, y_pred: Tensor, y_true: Tensor) -> Tensor:  # type: ignore
-        if self.with_focal_loss:
-            return FocalLoss(self.alpha, self.gamma)(y_pred, y_true)
-        if self.method == "regression":
-            return F.mse_loss(y_pred, y_true.view(-1, 1))
-        if self.method == "binary":
+    def loss_fn(self, y_pred: Tensor, y_true: Tensor) -> Tensor:  # type: ignore
+        if self.custom_loss_function is not None:
+            return self.custom_loss_function()(y_pred, y_true)
+        if self.objective in loss_aliases["binary"]:
             return F.binary_cross_entropy_with_logits(
-                y_pred, y_true.view(-1, 1), weight=self.class_weight
+                y_pred, y_true, weight=self.class_weight
             )
-        if self.method == "multiclass":
+        if self.objective in loss_aliases["multiclass"]:
             return F.cross_entropy(y_pred, y_true, weight=self.class_weight)
+        if self.objective in loss_aliases["regression"]:
+            return F.mse_loss(y_pred, y_true)
+        if self.objective in loss_aliases["mean_absolute_error"]:
+            return F.l1_loss(y_pred, y_true)
+        if self.objective in loss_aliases["mean_squared_log_error"]:
+            return MSLELoss()(y_pred, y_true)
+        if self.objective in loss_aliases["root_mean_squared_error"]:
+            return RMSELoss()(y_pred, y_true)
+        if self.objective in loss_aliases["root_mean_squared_log_error"]:
+            return RMSLELoss()(y_pred, y_true)
+        if "focal_loss" in self.objective:
+            return FocalLoss(self.alpha, self.gamma)(y_pred, y_true)
 
     def _train_val_split(  # noqa: C901
         self,
@@ -935,7 +936,7 @@ class WideDeep(nn.Module):
             )
         # This is not the most elegant solution, but is a soluton "in-between"
         # a non elegant one and re-factoring the whole code
-        warmer = WarmUp(self._loss_fn, self.metric, self.method, self.verbose)
+        warmer = WarmUp(self.loss_fn, self.metric, self.method, self.verbose)
         warmer.warm_all(self.wide, "wide", loader, n_epochs, max_lr)
         warmer.warm_all(self.deeptabular, "deeptabular", loader, n_epochs, max_lr)
         if self.deeptext:
@@ -1006,12 +1007,12 @@ class WideDeep(nn.Module):
     def _training_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
         self.train()
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
-        y = target.float() if self.method != "multiclass" else target
+        y = target.view(-1, 1).float() if self.method != "multiclass" else target
         y = y.to(device)
 
         self.optimizer.zero_grad()
         y_pred = self.forward(X)
-        loss = self._loss_fn(y_pred, y)
+        loss = self.loss_fn(y_pred, y)
         loss.backward()
         self.optimizer.step()
 
@@ -1032,11 +1033,11 @@ class WideDeep(nn.Module):
         self.eval()
         with torch.no_grad():
             X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
-            y = target.float() if self.method != "multiclass" else target
+            y = target.view(-1, 1).float() if self.method != "multiclass" else target
             y = y.to(device)
 
             y_pred = self.forward(X)
-            loss = self._loss_fn(y_pred, y)
+            loss = self.loss_fn(y_pred, y)
             self.valid_running_loss += loss.item()
             avg_loss = self.valid_running_loss / (batch_idx + 1)
 

@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import pandas as pd
 
-from pytorch_widedeep.models import Wide, WideDeep, TabMlp
+from pytorch_widedeep.models import Wide, TabMlp, WideDeep
 from pytorch_widedeep.metrics import F1Score, Accuracy
 from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 
