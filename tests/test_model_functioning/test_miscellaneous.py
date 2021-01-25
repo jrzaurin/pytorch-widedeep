@@ -15,6 +15,7 @@ from pytorch_widedeep.models import (
     TabTransformer,
 )
 from pytorch_widedeep.metrics import Accuracy, Precision
+from pytorch_widedeep.trainer import Trainer
 from pytorch_widedeep.callbacks import EarlyStopping
 
 # Wide array
@@ -90,8 +91,9 @@ def test_optimizer_scheduler_format():
     }
     schedulers = torch.optim.lr_scheduler.StepLR(optimizers["deeptabular"], step_size=3)
     with pytest.raises(ValueError):
-        model.compile(
-            method="binary",
+        trainer = Trainer(  # noqa: F841
+            model,
+            objective="binary",
             optimizers=optimizers,
             lr_schedulers=schedulers,
         )
@@ -105,8 +107,8 @@ def test_optimizer_scheduler_format():
 def test_non_instantiated_callbacks():
     model = WideDeep(wide=wide, deeptabular=deepdense)
     callbacks = [EarlyStopping]
-    model.compile(method="binary", callbacks=callbacks)
-    assert model.callbacks[1].__class__.__name__ == "EarlyStopping"
+    trainer = Trainer(model, objective="binary", callbacks=callbacks)
+    assert trainer.callbacks[1].__class__.__name__ == "EarlyStopping"
 
 
 ###############################################################################
@@ -117,10 +119,10 @@ def test_non_instantiated_callbacks():
 def test_multiple_metrics():
     model = WideDeep(wide=wide, deeptabular=deepdense)
     metrics = [Accuracy, Precision]
-    model.compile(method="binary", metrics=metrics)
+    trainer = Trainer(model, objective="binary", metrics=metrics)
     assert (
-        model.metric._metrics[0].__class__.__name__ == "Accuracy"
-        and model.metric._metrics[1].__class__.__name__ == "Precision"
+        trainer.metric._metrics[0].__class__.__name__ == "Accuracy"
+        and trainer.metric._metrics[1].__class__.__name__ == "Precision"
     )
 
 
@@ -139,8 +141,8 @@ def test_multiple_metrics():
 )
 def test_basic_run_with_metrics_binary(wide, deeptabular):
     model = WideDeep(wide=wide, deeptabular=deeptabular)
-    model.compile(method="binary", metrics=[Accuracy], verbose=False)
-    model.fit(
+    trainer = Trainer(model, objective="binary", metrics=[Accuracy], verbose=False)
+    trainer.fit(
         X_wide=X_wide,
         X_tab=X_tab,
         target=target,
@@ -148,7 +150,9 @@ def test_basic_run_with_metrics_binary(wide, deeptabular):
         batch_size=16,
         val_split=0.2,
     )
-    assert "train_loss" in model.history.keys() and "train_acc" in model.history.keys()
+    assert (
+        "train_loss" in trainer.history.keys() and "train_acc" in trainer.history.keys()
+    )
 
 
 ###############################################################################
@@ -166,8 +170,8 @@ def test_basic_run_with_metrics_multiclass():
         continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=3)
-    model.compile(method="multiclass", metrics=[Accuracy], verbose=False)
-    model.fit(
+    trainer = Trainer(model, objective="multiclass", metrics=[Accuracy], verbose=False)
+    trainer.fit(
         X_wide=X_wide,
         X_tab=X_tab,
         target=target_multi,
@@ -175,7 +179,9 @@ def test_basic_run_with_metrics_multiclass():
         batch_size=16,
         val_split=0.2,
     )
-    assert "train_loss" in model.history.keys() and "train_acc" in model.history.keys()
+    assert (
+        "train_loss" in trainer.history.keys() and "train_acc" in trainer.history.keys()
+    )
 
 
 ###############################################################################
@@ -201,8 +207,8 @@ def test_predict_with_individual_component(
     model = WideDeep(
         wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage
     )
-    model.compile(method="binary", verbose=0)
-    model.fit(
+    trainer = Trainer(model, objective="binary", verbose=0)
+    trainer.fit(
         X_wide=X_wide,
         X_tab=X_tab,
         X_text=X_text,
@@ -211,6 +217,6 @@ def test_predict_with_individual_component(
         batch_size=16,
     )
     # simply checking that runs and produces outputs
-    preds = model.predict(X_wide=X_wide, X_tab=X_tab, X_text=X_text, X_img=X_img)
+    preds = trainer.predict(X_wide=X_wide, X_tab=X_tab, X_text=X_text, X_img=X_img)
 
-    assert preds.shape[0] == 32 and "train_loss" in model.history
+    assert preds.shape[0] == 32 and "train_loss" in trainer.history

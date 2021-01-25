@@ -43,6 +43,11 @@ class CallbackContainer(object):
         for callback in self.callbacks:
             callback.set_model(model)
 
+    def set_trainer(self, trainer: Any):
+        self.trainer = trainer
+        for callback in self.callbacks:
+            callback.set_trainer(trainer)
+
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
         logs = logs or {}
         for callback in self.callbacks:
@@ -92,6 +97,9 @@ class Callback(object):
     def set_model(self, model: Any):
         self.model = model
 
+    def set_trainer(self, trainer: Any):
+        self.trainer = trainer
+
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
         pass
 
@@ -136,20 +144,20 @@ class History(Callback):
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):
-        self.model.epoch = []
-        self.model.history = {}
+        self.trainer.epoch = []
+        self.trainer.history = {}
 
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
         # avoid mutation during epoch run
         logs = deepcopy(logs) or {}
         for k, v in logs.items():
-            self.model.history.setdefault(k, []).append(v)
+            self.trainer.history.setdefault(k, []).append(v)
 
     def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
         logs = logs or {}
-        self.model.epoch.append(epoch)
+        self.trainer.epoch.append(epoch)
         for k, v in logs.items():
-            self.model.history.setdefault(k, []).append(v)
+            self.trainer.history.setdefault(k, []).append(v)
 
 
 class LRHistory(Callback):
@@ -188,29 +196,29 @@ class LRHistory(Callback):
         self.n_epochs = n_epochs
 
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
-        if epoch == 0 and self.model.lr_scheduler:
-            self.model.lr_history = {}
+        if epoch == 0 and self.trainer.lr_scheduler is not None:
+            self.trainer.lr_history = {}
             if self._multiple_scheduler():
                 self._save_group_lr_mulitple_scheduler(step_location="on_epoch_begin")
-            elif not self.model.cyclic_lr:
-                self._save_group_lr(self.model.optimizer)
+            elif not self.trainer.cyclic_lr:
+                self._save_group_lr(self.trainer.optimizer)
 
     def on_batch_end(self, batch: int, logs: Optional[Dict] = None):
-        if self.model.lr_scheduler:
+        if self.trainer.lr_scheduler is not None:
             if self._multiple_scheduler():
                 self._save_group_lr_mulitple_scheduler(step_location="on_batch_end")
-            elif self.model.cyclic_lr:
-                self._save_group_lr(self.model.optimizer)
+            elif self.trainer.cyclic_lr:
+                self._save_group_lr(self.trainer.optimizer)
 
     def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
-        if epoch != (self.n_epochs - 1) and self.model.lr_scheduler:
+        if epoch != (self.n_epochs - 1) and self.trainer.lr_scheduler is not None:
             if self._multiple_scheduler():
                 self._save_group_lr_mulitple_scheduler(step_location="on_epoch_end")
-            elif not self.model.cyclic_lr:
-                self._save_group_lr(self.model.optimizer)
+            elif not self.trainer.cyclic_lr:
+                self._save_group_lr(self.trainer.optimizer)
 
     def _save_group_lr_mulitple_scheduler(self, step_location: str):
-        for model_name, opt in self.model.optimizer._optimizers.items():
+        for model_name, opt in self.trainer.optimizer._optimizers.items():
             if step_location == "on_epoch_begin":
                 self._save_group_lr(opt, model_name)
             if step_location == "on_batch_end":
@@ -226,22 +234,22 @@ class LRHistory(Callback):
                 group_name = ("_").join(["lr", model_name, str(group_idx)])
             else:
                 group_name = ("_").join(["lr", str(group_idx)])
-            self.model.lr_history.setdefault(group_name, []).append(group["lr"])
+            self.trainer.lr_history.setdefault(group_name, []).append(group["lr"])
 
     def _multiple_scheduler(self):
-        return self.model.lr_scheduler.__class__.__name__ == "MultipleLRScheduler"
+        return self.trainer.lr_scheduler.__class__.__name__ == "MultipleLRScheduler"
 
     def _is_cyclic(self, model_name: str):
         return (
             self._has_scheduler(model_name)
             and "cycl"
-            in self.model.lr_scheduler._schedulers[
+            in self.trainer.lr_scheduler._schedulers[
                 model_name
             ].__class__.__name__.lower()
         )
 
     def _has_scheduler(self, model_name: str):
-        return model_name in self.model.lr_scheduler._schedulers
+        return model_name in self.trainer.lr_scheduler._schedulers
 
 
 class ModelCheckpoint(Callback):
@@ -532,7 +540,7 @@ class EarlyStopping(Callback):
             self.wait += 1
             if self.wait >= self.patience:
                 self.stopped_epoch = epoch
-                self.model.early_stop = True
+                self.trainer.early_stop = True
                 if self.restore_best_weights:
                     if self.verbose > 0:
                         print(

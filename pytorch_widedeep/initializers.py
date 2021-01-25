@@ -3,7 +3,7 @@ import warnings
 
 from torch import nn
 
-from .wdtypes import *
+from .wdtypes import *  # noqa: F403
 
 
 class Initializer(object):
@@ -27,7 +27,7 @@ class MultipleInitializer(object):
         for name, child in model.named_children():
             try:
                 self._initializers[name](child)
-            except:
+            except KeyError:
                 if self.verbose:
                     warnings.warn("No initializer found for {}".format(name))
 

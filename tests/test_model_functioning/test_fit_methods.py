@@ -5,6 +5,7 @@ import pytest
 from torch import nn
 
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep, TabTransformer
+from pytorch_widedeep.trainer import Trainer
 
 # Wide array
 X_wide = np.random.choice(50, (32, 10))
@@ -32,7 +33,7 @@ X_test = {"X_wide": X_wide, "X_tab": X_tab}
 # work well
 ##############################################################################
 @pytest.mark.parametrize(
-    "X_wide, X_tab, target, method, X_wide_test, X_tab_test, X_test, pred_dim, probs_dim",
+    "X_wide, X_tab, target, objective, X_wide_test, X_tab_test, X_test, pred_dim, probs_dim",
     [
         (X_wide, X_tab, target_regres, "regression", X_wide, X_tab, None, 1, None),
         (X_wide, X_tab, target_binary, "binary", X_wide, X_tab, None, 1, 2),
@@ -42,11 +43,11 @@ X_test = {"X_wide": X_wide, "X_tab": X_tab}
         (X_wide, X_tab, target_multic, "multiclass", None, None, X_test, 3, 3),
     ],
 )
-def test_fit_methods(
+def test_fit_objectives(
     X_wide,
     X_tab,
     target,
-    method,
+    objective,
     X_wide_test,
     X_tab_test,
     X_test,
@@ -62,13 +63,13 @@ def test_fit_methods(
         continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=pred_dim)
-    model.compile(method=method, verbose=0)
-    model.fit(X_wide=X_wide, X_tab=X_tab, target=target, batch_size=16)
-    preds = model.predict(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
-    if method == "binary":
+    trainer = Trainer(model, objective=objective, verbose=0)
+    trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, batch_size=16)
+    preds = trainer.predict(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
+    if objective == "binary":
         pass
     else:
-        probs = model.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
+        probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
     assert preds.shape[0] == 32, probs.shape[1] == probs_dim
 
 
@@ -85,10 +86,10 @@ def test_fit_with_deephead():
     )
     deephead = nn.Sequential(nn.Linear(16, 8), nn.Linear(8, 4))
     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=1, deephead=deephead)
-    model.compile(method="binary", verbose=0)
-    model.fit(X_wide=X_wide, X_tab=X_tab, target=target_binary, batch_size=16)
-    preds = model.predict(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
-    probs = model.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
+    trainer = Trainer(model, objective="binary", verbose=0)
+    trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target_binary, batch_size=16)
+    preds = trainer.predict(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
+    probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
     assert preds.shape[0] == 32, probs.shape[1] == 2
 
 
@@ -98,7 +99,7 @@ def test_fit_with_deephead():
 
 
 @pytest.mark.parametrize(
-    "X_wide, X_tab, target, method, X_wide_test, X_tab_test, X_test, pred_dim, probs_dim",
+    "X_wide, X_tab, target, objective, X_wide_test, X_tab_test, X_test, pred_dim, probs_dim",
     [
         (X_wide, X_tab, target_regres, "regression", X_wide, X_tab, None, 1, None),
         (X_wide, X_tab, target_binary, "binary", X_wide, X_tab, None, 1, 2),
@@ -108,11 +109,11 @@ def test_fit_with_deephead():
         (X_wide, X_tab, target_multic, "multiclass", None, None, X_test, 3, 3),
     ],
 )
-def test_fit_methods_tab_transformer(
+def test_fit_objectives_tab_transformer(
     X_wide,
     X_tab,
     target,
-    method,
+    objective,
     X_wide_test,
     X_tab_test,
     X_test,
@@ -126,11 +127,11 @@ def test_fit_methods_tab_transformer(
         continuous_cols=colnames[5:],
     )
     model = WideDeep(wide=wide, deeptabular=tab_transformer, pred_dim=pred_dim)
-    model.compile(method=method, verbose=0)
-    model.fit(X_wide=X_wide, X_tab=X_tab, target=target, batch_size=16)
-    preds = model.predict(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
-    if method == "binary":
+    trainer = Trainer(model, objective=objective, verbose=0)
+    trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, batch_size=16)
+    preds = trainer.predict(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
+    if objective == "binary":
         pass
     else:
-        probs = model.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
+        probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
     assert preds.shape[0] == 32, probs.shape[1] == probs_dim

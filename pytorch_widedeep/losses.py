@@ -6,7 +6,7 @@ from .wdtypes import *  # noqa: F403
 
 use_cuda = torch.cuda.is_available()
 
-method_to_objective = {
+method_to_objec = {
     "binary": [
         "binary",
         "logistic",
@@ -40,7 +40,7 @@ method_to_objective = {
 
 
 objective_to_method = {
-    obj: method for method, objs in method_to_objective.items() for obj in objs
+    obj: method for method, objs in method_to_objec.items() for obj in objs
 }
 
 
@@ -58,6 +58,31 @@ loss_aliases = {
     "root_mean_squared_error": ["root_mean_squared_error", "rmse"],
     "root_mean_squared_log_error": ["root_mean_squared_log_error", "rmsle"],
 }
+
+
+def get_loss_function(loss_fn: str, **kwargs):
+    if loss_fn not in objective_to_method.keys():
+        raise ValueError(
+            "objective or loss function is not supported. Please consider passing a callable "
+            "directly to the compile method (see docs) or use one of the supported objectives "
+            "or loss functions: {}".format(", ".join(objective_to_method.keys()))
+        )
+    if loss_fn in loss_aliases["binary"]:
+        return nn.BCEWithLogitsLoss(weight=kwargs["weight"])
+    if loss_fn in loss_aliases["multiclass"]:
+        return nn.CrossEntropyLoss(weight=kwargs["weight"])
+    if loss_fn in loss_aliases["regression"]:
+        return nn.MSELoss()
+    if loss_fn in loss_aliases["mean_absolute_error"]:
+        return nn.L1Loss()
+    if loss_fn in loss_aliases["mean_squared_log_error"]:
+        return MSLELoss()
+    if loss_fn in loss_aliases["root_mean_squared_error"]:
+        return RMSELoss()
+    if loss_fn in loss_aliases["root_mean_squared_log_error"]:
+        return RMSLELoss()
+    if "focal_loss" in loss_fn:
+        return FocalLoss(**kwargs)
 
 
 class FocalLoss(nn.Module):

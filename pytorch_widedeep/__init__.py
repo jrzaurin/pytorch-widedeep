@@ -14,3 +14,4 @@ from .utils import (
     deeptabular_utils,
     fastai_transforms,
 )
+from .trainer import Trainer

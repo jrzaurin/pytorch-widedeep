@@ -7,6 +7,7 @@ from torchvision.transforms import ToTensor, Normalize
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.models import Wide, TabMlp, DeepText, WideDeep, DeepImage
+from pytorch_widedeep.trainer import Trainer
 
 np.random.seed(1)
 
@@ -252,8 +253,8 @@ def test_widedeep_inputs(
     model = WideDeep(
         wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage
     )
-    model.compile(method="binary", transforms=transforms, verbose=0)
-    model.fit(
+    trainer = Trainer(model, objective="binary", transforms=transforms, verbose=0)
+    trainer.fit(
         X_wide=X_wide,
         X_tab=X_tab,
         X_text=X_text,
@@ -264,7 +265,7 @@ def test_widedeep_inputs(
         val_split=val_split,
         batch_size=16,
     )
-    assert model.epoch[0] == nepoch and model.history["train_loss"] is not null
+    assert trainer.epoch[0] == nepoch and trainer.history["train_loss"] is not null
 
 
 @pytest.mark.parametrize(
@@ -299,9 +300,9 @@ def test_xtrain_xval_assertion(
     model = WideDeep(
         wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage
     )
-    model.compile(method="binary", verbose=0)
+    trainer = Trainer(model, objective="binary", verbose=0)
     with pytest.raises(AssertionError):
-        model.fit(
+        trainer.fit(
             X_wide=X_wide,
             X_tab=X_tab,
             X_text=X_text,
@@ -328,8 +329,8 @@ def test_individual_inputs(
     model = WideDeep(
         wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage
     )
-    model.compile(method="binary", verbose=0)
-    model.fit(
+    trainer = Trainer(model, objective="binary", verbose=0)
+    trainer.fit(
         X_wide=X_wide,
         X_tab=X_tab,
         X_text=X_text,
@@ -338,7 +339,7 @@ def test_individual_inputs(
         batch_size=16,
     )
     # check it has run succesfully
-    assert len(model.history) == 1
+    assert len(trainer.history) == 1
 
 
 ###############################################################################
@@ -363,8 +364,8 @@ def test_deephead_individual_components(
         deepimage=deepimage,
         deephead=deephead,
     )  # noqa: F841
-    model.compile(method="binary", verbose=0)
-    model.fit(
+    trainer = Trainer(model, objective="binary", verbose=0)
+    trainer.fit(
         X_wide=X_wide,
         X_tab=X_tab,
         X_text=X_text,
@@ -373,7 +374,7 @@ def test_deephead_individual_components(
         batch_size=16,
     )
     # check it has run succesfully
-    assert len(model.history) == 1
+    assert len(trainer.history) == 1
 
 
 ###############################################################################
@@ -398,8 +399,8 @@ def test_head_layers_individual_components(
         deepimage=deepimage,
         head_layers_dim=[8, 4],
     )  # noqa: F841
-    model.compile(method="binary", verbose=0)
-    model.fit(
+    trainer = Trainer(model, objective="binary", verbose=0)
+    trainer.fit(
         X_wide=X_wide,
         X_tab=X_tab,
         X_text=X_text,
@@ -408,4 +409,4 @@ def test_head_layers_individual_components(
         batch_size=16,
     )
     # check it has run succesfully
-    assert len(model.history) == 1
+    assert len(trainer.history) == 1

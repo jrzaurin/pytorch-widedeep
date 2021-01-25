@@ -9,6 +9,7 @@ from torch.optim.lr_scheduler import StepLR, CyclicLR
 
 from pytorch_widedeep.optim import RAdam
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep, TabTransformer
+from pytorch_widedeep.trainer import Trainer
 from pytorch_widedeep.callbacks import (
     LRHistory,
     EarlyStopping,
@@ -93,14 +94,16 @@ lr_schedulers_4 = {"wide": wide_sch_4, "deeptabular": deep_sch_4}
 def test_history_callback(
     optimizers, schedulers, len_loss_output, len_lr_output, init_lr, schedulers_type
 ):
-    model.compile(
-        method="binary",
+
+    trainer = Trainer(
+        model=model,
+        objective="binary",
         optimizers=optimizers,
         lr_schedulers=schedulers,
         callbacks=[LRHistory(n_epochs=5)],
         verbose=0,
     )
-    model.fit(
+    trainer.fit(
         X_wide=X_wide,
         X_tab=X_tab,
         X_text=X_text,
@@ -109,13 +112,13 @@ def test_history_callback(
         batch_size=16,
     )
     out = []
-    out.append(len(model.history["train_loss"]) == len_loss_output)
+    out.append(len(trainer.history["train_loss"]) == len_loss_output)
     try:
-        lr_list = list(chain.from_iterable(model.lr_history["lr_deeptabular_0"]))
+        lr_list = list(chain.from_iterable(trainer.lr_history["lr_deeptabular_0"]))
     except TypeError:
-        lr_list = model.lr_history["lr_deeptabular_0"]
+        lr_list = trainer.lr_history["lr_deeptabular_0"]
     except Exception:
-        lr_list = model.lr_history["lr_0"]
+        lr_list = trainer.lr_history["lr_0"]
     out.append(len(lr_list) == len_lr_output)
     if init_lr is not None and schedulers_type == "step":
         out.append(lr_list[-1] == init_lr / 10)
@@ -137,8 +140,9 @@ def test_early_stop():
         continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular)
-    model.compile(
-        method="binary",
+    trainer = Trainer(
+        model=model,
+        objective="binary",
         callbacks=[
             EarlyStopping(
                 min_delta=5.0, patience=3, restore_best_weights=True, verbose=1
@@ -146,9 +150,9 @@ def test_early_stop():
         ],
         verbose=1,
     )
-    model.fit(X_wide=X_wide, X_tab=X_tab, target=target, val_split=0.2, n_epochs=5)
+    trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, val_split=0.2, n_epochs=5)
     # length of history = patience+1
-    assert len(model.history["train_loss"]) == 3 + 1
+    assert len(trainer.history["train_loss"]) == 3 + 1
 
 
 ###############################################################################
@@ -167,8 +171,9 @@ def test_model_checkpoint(save_best_only, max_save, n_files):
         continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular)
-    model.compile(
-        method="binary",
+    trainer = Trainer(
+        model=model,
+        objective="binary",
         callbacks=[
             ModelCheckpoint(
                 "weights/test_weights", save_best_only=save_best_only, max_save=max_save
@@ -176,7 +181,7 @@ def test_model_checkpoint(save_best_only, max_save, n_files):
         ],
         verbose=0,
     )
-    model.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=5, val_split=0.2)
+    trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=5, val_split=0.2)
     n_saved = len(os.listdir("weights/"))
     for f in os.listdir("weights/"):
         os.remove("weights/" + f)
@@ -193,8 +198,9 @@ def test_filepath_error():
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular)
     with pytest.raises(ValueError):
-        model.compile(
-            method="binary",
+        trainer = Trainer(  # noqa: F841
+            model=model,
+            objective="binary",
             callbacks=[ModelCheckpoint(filepath="wrong_file_path")],
             verbose=0,
         )
@@ -271,14 +277,15 @@ lr_schedulers_4 = {"wide": wide_sch_4, "deeptabular": deep_sch_4}
 def test_history_callback_w_tabtransformer(
     optimizers, schedulers, len_loss_output, len_lr_output, init_lr, schedulers_type
 ):
-    model_tt.compile(
-        method="binary",
+    trainer_tt = Trainer(
+        model_tt,
+        objective="binary",
         optimizers=optimizers,
         lr_schedulers=schedulers,
         callbacks=[LRHistory(n_epochs=5)],
         verbose=0,
     )
-    model_tt.fit(
+    trainer_tt.fit(
         X_wide=X_wide,
         X_tab=X_tab,
         target=target,
@@ -286,13 +293,13 @@ def test_history_callback_w_tabtransformer(
         batch_size=16,
     )
     out = []
-    out.append(len(model_tt.history["train_loss"]) == len_loss_output)
+    out.append(len(trainer_tt.history["train_loss"]) == len_loss_output)
     try:
-        lr_list = list(chain.from_iterable(model_tt.lr_history["lr_deeptabular_0"]))
+        lr_list = list(chain.from_iterable(trainer_tt.lr_history["lr_deeptabular_0"]))
     except TypeError:
-        lr_list = model_tt.lr_history["lr_deeptabular_0"]
+        lr_list = trainer_tt.lr_history["lr_deeptabular_0"]
     except Exception:
-        lr_list = model_tt.lr_history["lr_0"]
+        lr_list = trainer_tt.lr_history["lr_0"]
     out.append(len(lr_list) == len_lr_output)
     if init_lr is not None and schedulers_type == "step":
         out.append(lr_list[-1] == init_lr / 10)

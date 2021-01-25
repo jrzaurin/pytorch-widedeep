@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import pandas as pd
 
+from pytorch_widedeep import Trainer
 from pytorch_widedeep.optim import RAdam
 from pytorch_widedeep.models import (  # noqa: F401
     Wide,
@@ -93,8 +94,9 @@ if __name__ == "__main__":
     ]
     metrics = [Accuracy, Precision]
 
-    model.compile(
-        objective="msle",
+    trainer = Trainer(
+        model,
+        objective="binary",
         optimizers=optimizers,
         lr_schedulers=schedulers,
         initializers=initializers,
@@ -102,7 +104,7 @@ if __name__ == "__main__":
         metrics=metrics,
     )
 
-    model.fit(
+    trainer.fit(
         X_wide=X_wide,
         X_tab=X_tab,
         target=target,

@@ -6,6 +6,7 @@ import torch
 import pytest
 
 from pytorch_widedeep.models import Wide, TabMlp, DeepText, WideDeep, DeepImage
+from pytorch_widedeep.trainer import Trainer
 from pytorch_widedeep.initializers import (
     Normal,
     Uniform,
@@ -96,9 +97,9 @@ def test_initializers_1(initializers, test_layers):
         if n in test_layers:
             org_weights.append(p)
 
-    model.compile(method="binary", verbose=0, initializers=initializers)
+    trainer = Trainer(model, objective="binary", verbose=0, initializers=initializers)
     init_weights = []
-    for n, p in model.named_parameters():
+    for n, p in trainer.model.named_parameters():
         if n in test_layers:
             init_weights.append(p)
 
@@ -138,9 +139,9 @@ def test_initializers_with_pattern():
     for n, p in cmodel.named_parameters():
         if "word_embed" in n:
             org_word_embed.append(p)
-    model.compile(method="binary", verbose=0, initializers=initializers_2)
+    trainer = Trainer(model, objective="binary", verbose=0, initializers=initializers_2)
     init_word_embed = []
-    for n, p in model.named_parameters():
+    for n, p in trainer.model.named_parameters():
         if "word_embed" in n:
             init_word_embed.append(p)
 

@@ -10,7 +10,7 @@ from torch.utils.data import Dataset, DataLoader
 
 from pytorch_widedeep.models import Wide, TabMlp
 from pytorch_widedeep.metrics import Accuracy
-from pytorch_widedeep.models._warmup import WarmUp
+from pytorch_widedeep.trainer._warmup import WarmUp
 from pytorch_widedeep.models.deep_image import conv_layer
 
 use_cuda = torch.cuda.is_available()

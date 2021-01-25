@@ -99,7 +99,7 @@ class Accuracy(Metric):
             y_true = y_true
         elif num_classes > 1:
             y_pred = y_pred.topk(self.top_k, 1)[1]
-            y_true = y_true.expand_as(y_pred)  # type: ignore
+            y_true = y_true.view(-1, 1).expand_as(y_pred)  # type: ignore
 
         self.correct_count += y_pred.eq(y_true).sum().item()  # type: ignore
         self.total_count += len(y_pred)  # type: ignore
@@ -349,3 +349,34 @@ class F1Score(Metric):
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
         return self.f1(y_pred, y_true)
+
+
+class R2Score(Metric):
+    r"""
+    Calculates the R-Squared, the
+    `coefficient of determination <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_:
+
+    :math:`R^2 = 1 - \frac{\sum_{j=1}^n(A_j - P_j)^2}{\sum_{j=1}^n(A_j - \bar{A})^2}`,
+
+    where :math:`A_j` is the ground truth, :math:`P_j` is the predicted value and
+    :math:`\bar{A}` is the mean of the ground truth.
+    """
+
+    def __init__(self):
+        self._name = "r2"
+
+    def reset(self):
+        self.numerator = 0
+        self.num_examples = 0
+        self.y_true_sum = 0
+
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
+
+        self.numerator += ((y_pred - y_true) ** 2).sum().item()
+
+        self.num_examples += y_true.shape[0]
+        self.y_true_sum += y_true.sum().item()
+        y_true_avg = self.y_true_sum / self.num_examples
+        self.denominator = ((y_true - y_true_avg) ** 2).sum().item()
+
+        return 1 - (self.numerator / self.denominator)
