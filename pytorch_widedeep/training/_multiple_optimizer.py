@@ -1,4 +1,4 @@
-from ..wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 class MultipleOptimizer(object):

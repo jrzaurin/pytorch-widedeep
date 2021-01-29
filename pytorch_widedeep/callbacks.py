@@ -11,7 +11,7 @@ from copy import deepcopy
 import numpy as np
 import torch
 
-from .wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 def _get_current_time():
@@ -122,25 +122,24 @@ class Callback(object):
 class History(Callback):
     r"""Callback that records events into a :obj:`History` object.
 
-    This callback runs by default within :obj:`WideDeep`. See
-    :class:`pytorch_widedeep.models.wide_deep.WideDeep`. Documentation is
-    included here for completion.
+    This callback runs by default within :obj:`Trainer`. Callbacks are passed
+    as input parameters to the ``Trainer`` class See
+    :class:`pytorch_widedeep.trainer.Trainer`. Documentation is included here
+    for completion.
+
 
     Examples
     --------
-
-    Callbacks are passed as input parameters when calling ``compile``. see
-    :class:`pytorch_widedeep.models.wide_deep.WideDeep`
-
     >>> from pytorch_widedeep.callbacks import History
-    >>> from pytorch_widedeep.models import DeepDense, Wide, WideDeep
+    >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
+    >>> from pytorch_widedeep.training import Trainer
     >>>
     >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-    >>> deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+    >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
     >>> wide = Wide(10, 1)
-    >>> deep = DeepDense(hidden_layers=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
+    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
     >>> model = WideDeep(wide, deep)
-    >>> model.compile(method="regression", callbacks=[History()])
+    >>> trainer = Trainer(model, objective="regression", callbacks=[History()])
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):
@@ -161,37 +160,30 @@ class History(Callback):
 
 
 class LRHistory(Callback):
-    r"""Saves the learning rates during training.
-
-    The saving procedure is a bit convoluted given the fact that non-cyclic
-    learning rates and cyclic learning rates are called at different stages
-    during training.
-
-    Parameters
-    ----------
-    n_epochs: int
-        number of epochs durint training. This is neccesary because different
-        logging routines for different schedulers are used on epoch begin and
-        on epoch end
-
-    Examples
-    --------
-
-    Callbacks are passed as input parameters when calling ``compile``. see
-    :class:`pytorch_widedeep.models.wide_deep.WideDeep`
-
-    >>> from pytorch_widedeep.callbacks import LRHistory
-    >>> from pytorch_widedeep.models import DeepDense, Wide, WideDeep
-    >>>
-    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-    >>> deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
-    >>> wide = Wide(10, 1)
-    >>> deep = DeepDense(hidden_layers=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
-    >>> model = WideDeep(wide, deep)
-    >>> model.compile(method="regression", callbacks=[LRHistory(n_epochs=10)])
-    """
-
     def __init__(self, n_epochs: int):
+        r"""Saves the learning rates during training.
+
+        Callbacks are passed as input parameters to the ``Trainer`` class. See
+        :class:`pytorch_widedeep.trainer.Trainer`
+
+        Parameters
+        ----------
+        n_epochs: int
+            number of epochs durint training
+
+        Examples
+        --------
+        >>> from pytorch_widedeep.callbacks import LRHistory
+        >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
+        >>> from pytorch_widedeep.training import Trainer
+        >>>
+        >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+        >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+        >>> wide = Wide(10, 1)
+        >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
+        >>> model = WideDeep(wide, deep)
+        >>> trainer = Trainer(model, objective="regression", callbacks=[LRHistory(n_epochs=10)])
+        """
         super(LRHistory, self).__init__()
         self.n_epochs = n_epochs
 
@@ -253,57 +245,6 @@ class LRHistory(Callback):
 
 
 class ModelCheckpoint(Callback):
-    r"""Saves the model after every epoch.
-
-    This class is almost identical to the corresponding keras class.
-    Therefore, **credit** to the Keras Team.
-
-    Parameters
-    ----------
-    filepath: str
-        Full path to save the output weights. It must contain only the root of
-        the filenames. Epoch number and ``.pt`` extension (for pytorch) will
-        be added. e.g. ``filepath="path/to/output_weights/weights_out"`` And
-        the saved files in that directory will be named: ``weights_out_1.pt,
-        weights_out_2.pt, ...``
-    monitor: str, Default='val_loss'
-        quantity to monitor. :obj:`ModelCheckpoint` will infer if this is a
-        loss (i.e. contains the str `'loss'`) or a metric (i.e. contains the
-        str `'acc'` or starts with `'fmeasure'`).
-    verbose:int, Default=0,
-        verbosity mode
-    save_best_only: bool, Default=False,
-        the latest best model according to the quantity monitored will not be
-        overwritten.
-    mode: str, Default='auto',
-        If ``save_best_only=True``, the decision to overwrite the current save
-        file is made based on either the maximization or the minimization of
-        the monitored quantity. For `'val_acc'`, this should be `'max'`, for
-        `'val_loss'` this should be `'min'`, etc. In `'auto'` mode, the
-        direction is automatically inferred from the name of the monitored
-        quantity.
-    period: int, Default=1,
-        Interval (number of epochs) between checkpoints.
-    max_save: int, Default=-1
-        Maximum number of outputs to save. If -1 will save all outputs
-
-    Examples
-    --------
-
-    Callbacks are passed as input parameters when calling ``compile``. see
-    :class:`pytorch_widedeep.models.wide_deep.WideDeep`
-
-    >>> from pytorch_widedeep.callbacks import ModelCheckpoint
-    >>> from pytorch_widedeep.models import DeepDense, Wide, WideDeep
-    >>>
-    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-    >>> deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
-    >>> wide = Wide(10, 1)
-    >>> deep = DeepDense(hidden_layers=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
-    >>> model = WideDeep(wide, deep)
-    >>> model.compile(method="regression", callbacks=[ModelCheckpoint(filepath='checkpoints/weights_out')])
-    """
-
     def __init__(
         self,
         filepath: str,
@@ -314,7 +255,56 @@ class ModelCheckpoint(Callback):
         period: int = 1,
         max_save: int = -1,
     ):
+        r"""Saves the model after every epoch.
 
+        This class is almost identical to the corresponding keras class.
+        Therefore, **credit** to the Keras Team.
+
+        Callbacks are passed as input parameters to the ``Trainer`` class. See
+        :class:`pytorch_widedeep.trainer.Trainer`
+
+        Parameters
+        ----------
+        filepath: str
+            Full path to save the output weights. It must contain only the root of
+            the filenames. Epoch number and ``.pt`` extension (for pytorch) will
+            be added. e.g. ``filepath="path/to/output_weights/weights_out"`` And
+            the saved files in that directory will be named: ``weights_out_1.pt,
+            weights_out_2.pt, ...``
+        monitor: str, default="val_loss"
+            quantity to monitor. :obj:`ModelCheckpoint` will infer if this is a
+            loss (i.e. contains the str `'loss'`) or a metric (i.e. contains the
+            str `'acc'` or starts with `'fmeasure'`).
+        verbose:int, default=0,
+            verbosity mode
+        save_best_only: bool, default=False,
+            the latest best model according to the quantity monitored will not be
+            overwritten.
+        mode: str, default="auto",
+            If ``save_best_only=True``, the decision to overwrite the current save
+            file is made based on either the maximization or the minimization of
+            the monitored quantity. For `'val_acc'`, this should be `'max'`, for
+            `'val_loss'` this should be `'min'`, etc. In `'auto'` mode, the
+            direction is automatically inferred from the name of the monitored
+            quantity.
+        period: int, default=1,
+            Interval (number of epochs) between checkpoints.
+        max_save: int, default=-1
+            Maximum number of outputs to save. If -1 will save all outputs
+
+        Examples
+        --------
+        >>> from pytorch_widedeep.callbacks import ModelCheckpoint
+        >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
+        >>> from pytorch_widedeep.training import Trainer
+        >>>
+        >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+        >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+        >>> wide = Wide(10, 1)
+        >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
+        >>> model = WideDeep(wide, deep)
+        >>> trainer = Trainer(model, objective="regression", callbacks=[ModelCheckpoint(filepath='checkpoints/weights_out')])
+        """
         super(ModelCheckpoint, self).__init__()
 
         self.filepath = filepath
@@ -420,55 +410,6 @@ class ModelCheckpoint(Callback):
 
 
 class EarlyStopping(Callback):
-    r"""Stop training when a monitored quantity has stopped improving.
-
-    This class is almost identical to the corresponding keras class.
-    Therefore, credit to the Keras Team.
-
-    Parameters
-    -----------
-    monitor: str, default='val_loss'.
-        Quantity to be monitored.
-    min_delta: float, default=0.
-        minimum change in the monitored quantity to qualify as an
-        improvement, i.e. an absolute change of less than min_delta, will
-        count as no improvement.
-    patience: int, default=10.
-        Number of epochs that produced the monitored quantity with no
-        improvement after which training will be stopped.
-    verbose: int.
-        verbosity mode.
-    mode: str, default='auto'
-        one of {'`auto`', '`min`', '`max`'}. In `'min'` mode, training will
-        stop when the quantity monitored has stopped decreasing; in `'max'`
-        mode it will stop when the quantity monitored has stopped increasing;
-        in `'auto'` mode, the direction is automatically inferred from the
-        name of the monitored quantity.
-    baseline: float, Optional. default=None.
-        Baseline value for the monitored quantity to reach. Training will
-        stop if the model does not show improvement over the baseline.
-    restore_best_weights: bool, default=None
-        Whether to restore model weights from the epoch with the best
-        value of the monitored quantity. If ``False``, the model weights
-        obtained at the last step of training are used.
-
-    Examples
-    --------
-
-    Callbacks are passed as input parameters when calling ``compile``. see
-    :class:`pytorch_widedeep.models.wide_deep.WideDeep`
-
-    >>> from pytorch_widedeep.callbacks import EarlyStopping
-    >>> from pytorch_widedeep.models import DeepDense, Wide, WideDeep
-    >>>
-    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-    >>> deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
-    >>> wide = Wide(10, 1)
-    >>> deep = DeepDense(hidden_layers=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
-    >>> model = WideDeep(wide, deep)
-    >>> model.compile(method="regression", callbacks=[EarlyStopping(patience=10)])
-    """
-
     def __init__(
         self,
         monitor: str = "val_loss",
@@ -479,7 +420,54 @@ class EarlyStopping(Callback):
         baseline: Optional[float] = None,
         restore_best_weights: bool = False,
     ):
+        r"""Stop training when a monitored quantity has stopped improving.
 
+        This class is almost identical to the corresponding keras class.
+        Therefore, **credit** to the Keras Team.
+
+        Callbacks are passed as input parameters to the ``Trainer`` class. See
+        :class:`pytorch_widedeep.trainer.Trainer`
+
+        Parameters
+        -----------
+        monitor: str, default='val_loss'.
+            Quantity to be monitored.
+        min_delta: float, default=0.
+            minimum change in the monitored quantity to qualify as an
+            improvement, i.e. an absolute change of less than min_delta, will
+            count as no improvement.
+        patience: int, default=10.
+            Number of epochs that produced the monitored quantity with no
+            improvement after which training will be stopped.
+        verbose: int.
+            verbosity mode.
+        mode: str, default='auto'
+            one of {'`auto`', '`min`', '`max`'}. In `'min'` mode, training will
+            stop when the quantity monitored has stopped decreasing; in `'max'`
+            mode it will stop when the quantity monitored has stopped increasing;
+            in `'auto'` mode, the direction is automatically inferred from the
+            name of the monitored quantity.
+        baseline: float, Optional. default=None.
+            Baseline value for the monitored quantity to reach. Training will
+            stop if the model does not show improvement over the baseline.
+        restore_best_weights: bool, default=None
+            Whether to restore model weights from the epoch with the best
+            value of the monitored quantity. If ``False``, the model weights
+            obtained at the last step of training are used.
+
+        Examples
+        --------
+        >>> from pytorch_widedeep.callbacks import EarlyStopping
+        >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
+        >>> from pytorch_widedeep.training import Trainer
+        >>>
+        >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+        >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+        >>> wide = Wide(10, 1)
+        >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
+        >>> model = WideDeep(wide, deep)
+        >>> trainer = Trainer(model, objective="regression", callbacks=[EarlyStopping(patience=10)])
+        """
         super(EarlyStopping, self).__init__()
 
         self.monitor = monitor

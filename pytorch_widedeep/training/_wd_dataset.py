@@ -3,7 +3,7 @@ import torch
 from sklearn.utils import Bunch
 from torch.utils.data import Dataset
 
-from ..wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 class WideDeepDataset(Dataset):

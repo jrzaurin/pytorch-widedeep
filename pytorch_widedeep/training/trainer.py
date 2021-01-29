@@ -9,18 +9,20 @@ from tqdm import trange
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
-from ..losses import get_loss_function, objective_to_method
-from ..models import WideDeep
-from ._warmup import WarmUp
-from ..metrics import Metric, MetricCallback, MultipleMetrics
-from ..wdtypes import *  # noqa: F403
-from ..callbacks import History, Callback, CallbackContainer
-from ._wd_dataset import WideDeepDataset
-from ..initializers import Initializer, MultipleInitializer
-from ._multiple_optimizer import MultipleOptimizer
-from ..utils.general_utils import Alias
-from ._multiple_transforms import MultipleTransforms
-from ._multiple_lr_scheduler import MultipleLRScheduler
+from pytorch_widedeep.losses import MSLELoss, RMSELoss, FocalLoss, RMSLELoss
+from pytorch_widedeep.models import WideDeep
+from pytorch_widedeep.metrics import Metric, MetricCallback, MultipleMetrics
+from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.callbacks import History, Callback, CallbackContainer
+from pytorch_widedeep.initializers import Initializer, MultipleInitializer
+from pytorch_widedeep.training._warmup import WarmUp
+from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.training._wd_dataset import WideDeepDataset
+from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
+from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
+from pytorch_widedeep.training._multiple_lr_scheduler import (
+    MultipleLRScheduler,
+)
 
 warnings.filterwarnings("default", category=DeprecationWarning)
 
@@ -28,6 +30,59 @@ n_cpus = os.cpu_count()
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
+
+method_to_objecive = {
+    "binary": [
+        "binary",
+        "logistic",
+        "binary_logloss",
+        "binary_cross_entropy",
+        "binary_focal_loss",
+    ],
+    "multiclass": [
+        "multiclass",
+        "multi_logloss",
+        "cross_entropy",
+        "categorical_cross_entropy",
+        "multiclass_focal_loss",
+    ],
+    "regression": [
+        "regression",
+        "mse",
+        "l2",
+        "mean_squared_error",
+        "mean_absolute_error",
+        "mae",
+        "l1",
+        "mean_squared_log_error",
+        "msle",
+        "root_mean_squared_error",
+        "rmse",
+        "root_mean_squared_log_error",
+        "rmsle",
+    ],
+}
+
+
+objective_to_method = {
+    obj: method for method, objs in method_to_objecive.items() for obj in objs
+}
+
+
+loss_aliases = {
+    "binary": ["binary", "logistic", "binary_logloss", "binary_cross_entropy"],
+    "multiclass": [
+        "multiclass",
+        "multi_logloss",
+        "cross_entropy",
+        "categorical_cross_entropy",
+    ],
+    "regression": ["regression", "mse", "l2", "mean_squared_error"],
+    "mean_absolute_error": ["mean_absolute_error", "mae", "l1"],
+    "mean_squared_log_error": ["mean_squared_log_error", "msle"],
+    "root_mean_squared_error": ["root_mean_squared_error", "rmse"],
+    "root_mean_squared_log_error": ["root_mean_squared_log_error", "rmsle"],
+}
 
 
 class Trainer(object):
@@ -57,53 +112,75 @@ class Trainer(object):
 
         Parameters
         ----------
+        model: ``WideDeep``
+            An object of class ``WideDeep``. See pytorch.models.wide_deep.WideDeep
         objective: str
-            One of `regression`, `binary` or `multiclass`. The default when
-            performing a `regression`, a `binary` classification or a
-            `multiclass` classification is the `mean squared error
-            <https://pytorch.org/docs/stable/nn.functional.html#torch.nn.functional.mse_loss>`_
-            (MSE), `Binary Cross Entropy
-            <https://pytorch.org/docs/stable/nn.functional.html#torch.nn.functional.binary_cross_entropy>`_
-            (BCE) and `Cross Entropy
-            <https://pytorch.org/docs/stable/nn.functional.html#torch.nn.functional.cross_entropy>`_
-            (CE) respectively.
-        optimizers: Union[Optimizer, Dict[str, Optimizer]], Optional, Default=AdamW
-            - An instance of ``pytorch``'s ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
+            Defines the objective, loss or cost function.
+
+            param aliases: ``loss_function``, ``loss_fn``, ``loss``,
+            ``cost_function``, ``cost_fn``, ``cost``
+
+            Possible values are:
+
+            - ``binary``, aliases: ``logistic``, ``binary_logloss``, ``binary_cross_entropy``
+
+            - ``binary_focal_loss``
+
+            - ``multiclass``, aliases: ``multi_logloss``, ``cross_entropy``, ``categorical_cross_entropy``,
+
+            - ``multiclass_focal_loss``
+
+            - ``regression``, aliases: ``mse``, ``l2``, ``mean_squared_error``
+
+            - ``mean_absolute_error``, aliases: ``mae``, ``l1``
+
+            - ``mean_squared_log_error``, aliases: ``msle``
+
+            - ``root_mean_squared_error``, aliases:  ``rmse``
+
+            - ``root_mean_squared_log_error``, aliases: ``rmsle``
+        custom_loss: ``nn.Module``, Optional, default = None
+            object of class ``nn.Module``. If none of the loss functions
+            available suits the user, it is possible to pass a custom loss
+            function. See for example
+            :class:`pytorch_widedeep.losses.FocalLoss` for the required
+            structure of the object or the Examples folder.
+        optimizers: ``Optimzer`` or Dict, Optional, default= ``AdamW``
+            - An instance of Pytorch's ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
             - a dictionary where there keys are the model components (i.e.
               `'wide'`, `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)  and
               the values are the corresponding optimizers. If multiple optimizers are used
-              the  dictionary MUST contain an optimizer per model component.
-
-            See `Pytorch optimizers <https://pytorch.org/docs/stable/optim.html>`_.
-        lr_schedulers: Union[LRScheduler, Dict[str, LRScheduler]], Optional, Default=None
-            - An instance of ``pytorch``'s ``LRScheduler`` object (e.g
+              the  dictionary **MUST** contain an optimizer per model component.
+        lr_schedulers: ``LRScheduler`` or Dict, Optional, default=None
+            - An instance of Pytorch's ``LRScheduler`` object (e.g
               :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
             - a dictionary where there keys are the model componenst (i.e. `'wide'`,
               `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
               values are the corresponding learning rate schedulers.
-
-            See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
-        initializers: Dict[str, Initializer], Optional. Default=None
+        initializers: Dict, Optional. default=None
             Dict where there keys are the model components (i.e. `'wide'`,
-            `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
-            values are the corresponding initializers.
-            See `Pytorch initializers <https://pytorch.org/docs/stable/nn.init.html>`_.
-        transforms: List[Transforms], Optional. Default=None
-            ``Transforms`` is a custom type. See
-            :obj:`pytorch_widedeep.wdtypes`. List with
-            :obj:`torchvision.transforms` to be applied to the image component
-            of the model (i.e. ``deepimage``) See `torchvision transforms
+            `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)
+            and the values are the corresponding initializers. See module
+            ``pytorch_widedeep.initializers``.
+        transforms: List, Optional, default=None
+            List with :obj:`torchvision.transforms` to be applied to the image
+            component of the model (i.e. ``deepimage``) See `torchvision
+            transforms
             <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
-        callbacks: List[Callback], Optional. Default=None
-            Callbacks available are: ``ModelCheckpoint``, ``EarlyStopping``,
+        callbacks: List, Optional, default=None
+            List with ``Callback`` objects. The four callbacks available in
+            ``pytorch-widedeep`` are: ``ModelCheckpoint``, ``EarlyStopping``,
             and ``LRHistory``. The ``History`` callback is used by default.
-            See the ``Callbacks`` section in this documentation or
-            :obj:`pytorch_widedeep.callbacks`
-        metrics: List[Metric], Optional. Default=None
-            Metrics available are: ``Accuracy``, ``Precision``, ``Recall``,
-            ``FBetaScore`` and ``F1Score``.  See the ``Metrics`` section in
-            this documentation or :obj:`pytorch_widedeep.metrics`
-        class_weight: Union[float, List[float], Tuple[float]]. Optional. Default=None
+            This can also be a custom callback as long as the object of type
+            ``Callback``. See ``pytorch_widedeep.callbacks.Callback``
+            or the Examples folder
+        metrics: List, Optional, default=None
+            List of objects of type ``Metric``. Metrics available are:
+            ``Accuracy``, ``Precision``, ``Recall``, ``FBetaScore``,
+            ``F1Score`` and ``R2Score``. This can also be a custom metric as
+            long as it is an object of type ``Metric``. See
+            ``pytorch_widedeep.metrics.Metric`` or the Examples folder
+        class_weight: float, List or Tuple. Optional. default=None
             - float indicating the weight of the minority class in binary classification
               problems (e.g. 9.)
             - a list or tuple with weights for the different classes in multiclass
@@ -114,17 +191,16 @@ class Trainer(object):
               using reduction='none', you would have to take care of the
               normalization yourself. See `this discussion
               <https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10>`_.
-        with_focal_loss: bool, Optional. Default=False
-            Boolean indicating whether to use the Focal Loss for highly imbalanced problems.
-            For details on the focal loss see the `original paper
-            <https://arxiv.org/pdf/1708.02002.pdf>`_.
-        alpha: float. Default=0.25
-            Focal Loss alpha parameter.
-        gamma: float. Default=2
-            Focal Loss gamma parameter.
-        verbose: int
+        alpha: float. default=0.25
+            if ``objective`` is ``binary_focal_loss`` or
+            ``multiclass_focal_loss``, the Focal Loss alpha and gamma
+            parameters can be set directly in the ``Trainer`` via the
+            ``alpha`` and ``gamma`` parameters
+        gamma: float. default=2
+            Focal Loss alpha gamma parameter
+        verbose: int, default=1
             Setting it to 0 will print nothing during training.
-        seed: int, Default=1
+        seed: int, default=1
             Random seed to be used throughout all the methods
 
         Example
@@ -135,11 +211,13 @@ class Trainer(object):
         >>> from pytorch_widedeep.callbacks import EarlyStopping, LRHistory
         >>> from pytorch_widedeep.initializers import KaimingNormal, KaimingUniform, Normal, Uniform
         >>> from pytorch_widedeep.models import TabResnet, DeepImage, DeepText, Wide, WideDeep
+        >>> from pytorch_widedeep import Trainer
         >>> from pytorch_widedeep.optim import RAdam
+        >>>
         >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-        >>> deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+        >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
         >>> wide = Wide(10, 1)
-        >>> deeptabular = TabResnet(blocks=[8, 4], deep_column_idx=deep_column_idx, embed_input=embed_input)
+        >>> deeptabular = TabResnet(blocks_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
         >>> deeptext = DeepText(vocab_size=10, embed_dim=4, padding_idx=0)
         >>> deepimage = DeepImage(pretrained=False)
         >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
@@ -158,7 +236,7 @@ class Trainer(object):
         >>> initializers = {"wide": Uniform, "deeptabular": Normal, "deeptext": KaimingNormal, "deepimage": KaimingUniform}
         >>> transforms = [ToTensor]
         >>> callbacks = [LRHistory(n_epochs=4), EarlyStopping]
-        >>> model.compile(objective="regression", initializers=initializers, optimizers=optimizers,
+        >>> trainer = Trainer(model, objective="regression", initializers=initializers, optimizers=optimizers,
         ... lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
         """
 
@@ -226,39 +304,39 @@ class Trainer(object):
 
         Parameters
         ----------
-        X_wide: np.ndarray, Optional. Default=None
+        X_wide: np.ndarray, Optional. default=None
             Input for the ``wide`` model component.
             See :class:`pytorch_widedeep.preprocessing.WidePreprocessor`
-        X_tab: np.ndarray, Optional. Default=None
+        X_tab: np.ndarray, Optional. default=None
             Input for the ``deeptabular`` model component.
             See :class:`pytorch_widedeep.preprocessing.TabPreprocessor`
-        X_text: np.ndarray, Optional. Default=None
+        X_text: np.ndarray, Optional. default=None
             Input for the ``deeptext`` model component.
             See :class:`pytorch_widedeep.preprocessing.TextPreprocessor`
-        X_img : np.ndarray, Optional. Default=None
+        X_img : np.ndarray, Optional. default=None
             Input for the ``deepimage`` model component.
             See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
-        X_train: Dict[str, np.ndarray], Optional. Default=None
+        X_train: Dict, Optional. default=None
             Training dataset for the different model components. Keys are
             `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values are
             the corresponding matrices.
-        X_val: Dict, Optional. Default=None
+        X_val: Dict, Optional. default=None
             Validation dataset for the different model component. Keys are
             `'X_wide'`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values are
             the corresponding matrices.
-        val_split: float, Optional. Default=None
+        val_split: float, Optional. default=None
             train/val split fraction
-        target: np.ndarray, Optional. Default=None
+        target: np.ndarray, Optional. default=None
             target values
-        n_epochs: int, Default=1
+        n_epochs: int, default=1
             number of epochs
-        validation_freq: int, Default=1
+        validation_freq: int, default=1
             epochs validation frequency
-        batch_size: int, Default=32
-        patience: int, Default=10
-            Number of epochs without improving the target metric before
-            the fit process stops
-        warm_up: bool, Default=False
+        batch_size: int, default=32
+        patience: int, default=10
+            Number of epochs without improving the target metric or loss
+            before the fit process stops
+        warm_up: bool, default=False
             warm up model components individually before the joined training
             starts.
 
@@ -275,7 +353,8 @@ class Trainer(object):
               of the steps. The optimizer used in the process is ``AdamW``.
 
             and two gradual warm up routines, where only certain layers are
-            warmed up at each warm up step.
+            warmed up at each warm up step. Gradual warmm up is only
+            implemented for the ``deeptext`` and the ``deepimage`` components
 
             - The so called `Felbo` gradual warm up rourine, inpired by the Felbo et al., 2017
               `DeepEmoji paper <https://arxiv.org/abs/1708.00524>`_.
@@ -284,38 +363,38 @@ class Trainer(object):
 
             For details on how these routines work, please see the examples
             section in this documentation and the corresponding repo.
-        warm_epochs: int, Default=4
+        warm_epochs: int, default=4
             Number of warm up epochs for those model components that will NOT
             be gradually warmed up. Those components with gradual warm up
             follow their corresponding specific routine.
-        warm_max_lr: float, Default=0.01
+        warm_max_lr: float, default=0.01
             Maximum learning rate during the Triangular Learning rate cycle
             for those model componenst that will NOT be gradually warmed up
-        warm_deeptext_gradual: bool, Default=False
-            Boolean indicating if the deeptext component will be warmed
+        warm_deeptext_gradual: bool, default=False
+            Boolean indicating if the ``deeptext`` component will be warmed
             up gradually
-        warm_deeptext_max_lr: float, Default=0.01
+        warm_deeptext_max_lr: float, default=0.01
             Maximum learning rate during the Triangular Learning rate cycle
             for the deeptext component
-        warm_deeptext_layers: List, Optional, Default=None
+        warm_deeptext_layers: List, Optional, default=None
             List of :obj:`nn.Modules` that will be warmed up gradually.
 
             .. note:: These have to be in `warm-up-order`: the layers or blocks
                 close to the output neuron(s) first
 
-        warm_deepimage_gradual: bool, Default=False
-            Boolean indicating if the deepimage component will be warmed
+        warm_deepimage_gradual: bool, default=False
+            Boolean indicating if the ``deepimage`` component will be warmed
             up gradually
-        warm_deepimage_max_lr: Float, Default=0.01
+        warm_deepimage_max_lr: float, default=0.01
             Maximum learning rate during the Triangular Learning rate cycle
-            for the deepimage component
-        warm_deepimage_layers: List, Optional, Default=None
+            for the ``deepimage`` component
+        warm_deepimage_layers: List, Optional, default=None
             List of :obj:`nn.Modules` that will be warmed up gradually.
 
             .. note:: These have to be in `warm-up-order`: the layers or blocks
                 close to the output neuron(s) first
 
-        warm_routine: str, Default=`felbo`
+        warm_routine: str, default=`felbo`
             Warm up routine. On of `felbo` or `howard`. See the examples
             section in this documentation and the corresponding repo for
             details on how to use warm up routines
@@ -327,28 +406,35 @@ class Trainer(object):
         <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_.
         folder in the repo
 
-        For completion, here we include some `"fabricated"` examples, i.e. these assume
-        you have already built and compiled the model
+        For completion, here we include some `"fabricated"` examples, i.e.
+        these assume you have already built a model and instantiated a
+        ``Trainer``, that is ready to fit
+
+        .. code-block:: python
+
+            # Ex 1. using train input arrays directly and no validation
+            trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256)
 
 
-        >>> # Ex 1. using train input arrays directly and no validation
-        >>> # model.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256)
+        .. code-block:: python
+
+            # Ex 2: using train input arrays directly and validation with val_split
+            trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256, val_split=0.2)
 
 
-        >>> # Ex 2: using train input arrays directly and validation with val_split
-        >>> # model.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256, val_split=0.2)
+        .. code-block:: python
+
+            # Ex 3: using train dict and val_split
+            X_train = {'X_wide': X_wide, 'X_tab': X_tab, 'target': y}
+            trainer.fit(X_train, n_epochs=10, batch_size=256, val_split=0.2)
 
 
-        >>> # Ex 3: using train dict and val_split
-        >>> # X_train = {'X_wide': X_wide, 'X_tab': X_tab, 'target': y}
-        >>> # model.fit(X_train, n_epochs=10, batch_size=256, val_split=0.2)
+        .. code-block:: python
 
-
-        >>> # Ex 4: validation using training and validation dicts
-        >>> # X_train = {'X_wide': X_wide_tr, 'X_tab': X_tab_tr, 'target': y_tr}
-        >>> # X_val = {'X_wide': X_wide_val, 'X_tab': X_tab_val, 'target': y_val}
-        >>> # model.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
-
+            # Ex 4: validation using training and validation dicts
+            X_train = {'X_wide': X_wide_tr, 'X_tab': X_tab_tr, 'target': y_tr}
+            X_val = {'X_wide': X_wide_val, 'X_tab': X_tab_val, 'target': y_val}
+            trainer.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
         """
 
         self.batch_size = batch_size
@@ -453,23 +539,22 @@ class Trainer(object):
 
         Parameters
         ----------
-        X_wide: np.ndarray, Optional. Default=None
+        X_wide: np.ndarray, Optional. default=None
             Input for the ``wide`` model component.
             See :class:`pytorch_widedeep.preprocessing.WidePreprocessor`
-        X_tab: np.ndarray, Optional. Default=None
+        X_tab: np.ndarray, Optional. default=None
             Input for the ``deeptabular`` model component.
             See :class:`pytorch_widedeep.preprocessing.TabPreprocessor`
-        X_text: np.ndarray, Optional. Default=None
+        X_text: np.ndarray, Optional. default=None
             Input for the ``deeptext`` model component.
             See :class:`pytorch_widedeep.preprocessing.TextPreprocessor`
-        X_img : np.ndarray, Optional. Default=None
+        X_img : np.ndarray, Optional. default=None
             Input for the ``deepimage`` model component.
             See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
-        X_test: Dict[str, np.ndarray], Optional. Default=None
-            Testing dataset for the different model components. Keys are
-            `'X_wide'`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'` the values are
-            the corresponding matrices.
-
+        X_test: Dict, Optional. default=None
+            Dictionary with the resting dataset for the different model
+            components. Keys are `'X_wide'`, `'X_tab'`, `'X_text'` and
+            `'X_img'` and the values are the corresponding matrices.
         """
 
         preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test)
@@ -492,6 +577,25 @@ class Trainer(object):
     ) -> np.ndarray:
         r"""Returns the predicted probabilities for the test dataset for  binary
         and multiclass methods
+
+        Parameters
+        ----------
+        X_wide: np.ndarray, Optional. default=None
+            Input for the ``wide`` model component.
+            See :class:`pytorch_widedeep.preprocessing.WidePreprocessor`
+        X_tab: np.ndarray, Optional. default=None
+            Input for the ``deeptabular`` model component.
+            See :class:`pytorch_widedeep.preprocessing.TabPreprocessor`
+        X_text: np.ndarray, Optional. default=None
+            Input for the ``deeptext`` model component.
+            See :class:`pytorch_widedeep.preprocessing.TextPreprocessor`
+        X_img : np.ndarray, Optional. default=None
+            Input for the ``deepimage`` model component.
+            See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
+        X_test: Dict, Optional. default=None
+            Dictionary with the resting dataset for the different model
+            components. Keys are `'X_wide'`, `'X_tab'`, `'X_text'` and
+            `'X_img'` and the values are the corresponding matrices.
         """
 
         preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test)
@@ -511,7 +615,7 @@ class Trainer(object):
         ``deeptabular``.
 
         This method is designed to take an encoding dictionary in the same
-        format as that of the :obj:`LabelEncoder` Attribute of the class
+        format as that of the :obj:`LabelEncoder` Attribute in the class
         :obj:`TabPreprocessor`. See
         :class:`pytorch_widedeep.preprocessing.TabPreprocessor` and
         :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`.
@@ -520,8 +624,13 @@ class Trainer(object):
         ----------
         col_name: str,
             Column name of the feature we want to get the embeddings for
-        cat_encoding_dict: Dict[str, Dict[str, int]]
-            Dictionary containing the categorical encodings, e.g:
+        cat_encoding_dict: Dict
+            Dictionary where the keys are the name of the column for which we
+            want to retrieve the embeddings and the values are also of type
+            Dict. These Dict values have keys that are the categories for that
+            column and the values are the corresponding numberical encodings
+
+            e.g.: {'column': {'cat_0': 1, 'cat_1': 2, ...}}
 
         Examples
         --------
@@ -535,7 +644,9 @@ class Trainer(object):
         categorical encodings in a dictionary name ``encoding_dict``, and that
         there is a column called `'education'`:
 
-        >>> # model.get_embeddings(col_name='education', cat_encoding_dict=encoding_dict)
+        .. code-block:: python
+
+            trainer.get_embeddings(col_name="education", cat_encoding_dict=encoding_dict)
         """
         for n, p in self.model.named_parameters():
             if "embed_layers" in n and col_name in n:
@@ -546,6 +657,49 @@ class Trainer(object):
         for idx, value in inv_encoding_dict.items():
             cat_embed_dict[value] = embed_mtx[idx]
         return cat_embed_dict
+
+    def save_model(self, path: str):
+        """Saves the model to disk
+
+        Parameters
+        ----------
+        path: str
+            full path to the directory where the model will be saved
+        """
+        torch.save(self.model, path)
+
+    @staticmethod
+    def load_model(path: str) -> nn.Module:
+        """Loads the model from disk
+
+        Parameters
+        ----------
+        path: str
+            full path to the directory from where the model will be read
+        """
+        return torch.load(path)
+
+    def save_model_state_dict(self, path: str):
+        """Saves the state dictionary to disk
+
+        Parameters
+        ----------
+        path: str
+            full path to the directory where the model's state dictionary will
+            be saved
+        """
+        torch.save(self.model.state_dict(), path)
+
+    def load_model_state_dict(self, path: str):
+        """Saves the state dictionary to disk
+
+        Parameters
+        ----------
+        path: str
+            full path to the directory from where the model's state dictionary
+            will be loaded
+        """
+        self.model.load_state_dict(torch.load(path))
 
     def _train_val_split(  # noqa: C901
         self,
@@ -770,7 +924,7 @@ class Trainer(object):
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
     ) -> List:
-        r"""Hidden method to avoid code repetition in predict and
+        r"""Private method to avoid code repetition in predict and
         predict_proba. For parameter information, please, see the .predict()
         method documentation
         """
@@ -826,6 +980,31 @@ class Trainer(object):
             X_train["X_img"] = X_img
         return X_train
 
+    @staticmethod
+    def _alias_to_loss(loss_fn: str, **kwargs):
+        if loss_fn not in objective_to_method.keys():
+            raise ValueError(
+                "objective or loss function is not supported. Please consider passing a callable "
+                "directly to the compile method (see docs) or use one of the supported objectives "
+                "or loss functions: {}".format(", ".join(objective_to_method.keys()))
+            )
+        if loss_fn in loss_aliases["binary"]:
+            return nn.BCEWithLogitsLoss(weight=kwargs["weight"])
+        if loss_fn in loss_aliases["multiclass"]:
+            return nn.CrossEntropyLoss(weight=kwargs["weight"])
+        if loss_fn in loss_aliases["regression"]:
+            return nn.MSELoss()
+        if loss_fn in loss_aliases["mean_absolute_error"]:
+            return nn.L1Loss()
+        if loss_fn in loss_aliases["mean_squared_log_error"]:
+            return MSLELoss()
+        if loss_fn in loss_aliases["root_mean_squared_error"]:
+            return RMSELoss()
+        if loss_fn in loss_aliases["root_mean_squared_log_error"]:
+            return RMSLELoss()
+        if "focal_loss" in loss_fn:
+            return FocalLoss(**kwargs)
+
     def _get_loss_fn(self, objective, class_weight, custom_loss_function, alpha, gamma):
         if isinstance(class_weight, float):
             class_weight = torch.tensor([1.0 - class_weight, class_weight])
@@ -835,12 +1014,12 @@ class Trainer(object):
             class_weight = None
         if custom_loss_function is not None:
             return custom_loss_function
-        elif self.method != "regression":
-            return get_loss_function(objective, weight=class_weight)
+        elif self.method != "regression" and "focal_loss" not in objective:
+            return self._alias_to_loss(objective, weight=class_weight)
         elif "focal_loss" in objective:
-            return get_loss_function(objective, alpha=alpha, gamma=gamma)
+            return self._alias_to_loss(objective, alpha=alpha, gamma=gamma)
         else:
-            return get_loss_function(objective)
+            return self._alias_to_loss(objective)
 
     def _initialize(self, initializers):
         if initializers is not None:

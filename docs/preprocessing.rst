@@ -2,7 +2,9 @@ The ``preprocessing`` module
 ============================
 
 This module contains the classes that are used to prepare the data before
-being passed to the Wide and Deep `constructor` class
+being passed to the Wide and Deep `constructor` class. There is one
+Preprocessor per model component: ``wide``, ``deeptabular``, ``deepimage`` and
+``deeptext``.
 
 .. autoclass:: pytorch_widedeep.preprocessing.WidePreprocessor
 	:members:

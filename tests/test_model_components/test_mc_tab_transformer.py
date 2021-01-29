@@ -26,7 +26,7 @@ X_tab_cont = X_tab[:, n_cols:]
 
 embed_input = [(u, i) for u, i in zip(colnames[:2], [n_embed] * 2)]
 model1 = TabTransformer(
-    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=colnames[n_cols:],
 )
@@ -84,7 +84,7 @@ def test_tabtransformer_shared_embeddings():
 
 
 model2 = TabTransformer(
-    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=colnames[n_cols:],
     shared_embed=True,
@@ -109,7 +109,7 @@ def test_tabtransformer_w_shared_emb_output():
 ###############################################################################
 
 model3 = TabTransformer(
-    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=None,
 )
@@ -125,7 +125,7 @@ def test_tabtransformer_output_no_cont():
 ###############################################################################
 
 model4 = TabTransformer(
-    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=None,
     keep_attn_weights=True,

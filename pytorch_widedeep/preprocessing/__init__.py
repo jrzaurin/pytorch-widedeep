@@ -1,1 +1,1 @@
-from ._preprocessors import *
+from pytorch_widedeep.preprocessing.preprocessors import *

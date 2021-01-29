@@ -3,6 +3,7 @@ import torch
 import pytest
 from sklearn.metrics import (
     f1_score,
+    r2_score,
     fbeta_score,
     recall_score,
     accuracy_score,
@@ -12,6 +13,7 @@ from sklearn.metrics import (
 from pytorch_widedeep.metrics import (
     Recall,
     F1Score,
+    R2Score,
     Accuracy,
     Precision,
     FBetaScore,
@@ -22,11 +24,11 @@ def f2_score_bin(y_true, y_pred):
     return fbeta_score(y_true, y_pred, beta=2)
 
 
-y_true_bin_np = np.array([1, 0, 0, 0, 1, 1, 0])
-y_pred_bin_np = np.array([0.6, 0.3, 0.2, 0.8, 0.4, 0.9, 0.6])
+y_true_bin_np = np.array([1, 0, 0, 0, 1, 1, 0]).reshape((-1, 1))
+y_pred_bin_np = np.array([0.6, 0.3, 0.2, 0.8, 0.4, 0.9, 0.6]).reshape((-1, 1))
 
 y_true_bin_pt = torch.from_numpy(y_true_bin_np)
-y_pred_bin_pt = torch.from_numpy(y_pred_bin_np).view(-1, 1)
+y_pred_bin_pt = torch.from_numpy(y_pred_bin_np)
 
 
 ###############################################################################
@@ -116,6 +118,13 @@ def test_muticlass_metrics(sklearn_metric, widedeep_metric):
 ###############################################################################
 # Test the reset method
 ###############################################################################
+y_true_reg_np = np.array([3, -0.5, 2, 7]).reshape(-1, 1)
+y_pred_reg_np = np.array([2.5, 0.0, 2, 8]).reshape(-1, 1)
+
+y_true_reg_pt = torch.from_numpy(y_true_reg_np)
+y_pred_reg_pt = torch.from_numpy(y_pred_reg_np)
+
+
 @pytest.mark.parametrize(  # noqa: C901
     "metric, metric_name",
     [
@@ -124,11 +133,15 @@ def test_muticlass_metrics(sklearn_metric, widedeep_metric):
         (Recall(), "recall"),
         (FBetaScore(beta=2), "fbeta"),
         (F1Score(), "f1"),
+        (R2Score(), "r2"),
     ],
 )
 def test_reset_methods(metric, metric_name):  # noqa: C901
 
-    res = metric(y_pred_bin_pt, y_true_bin_pt)  # noqa: F841
+    if metric_name == "r2":
+        res = metric(y_pred_reg_np, y_true_reg_np)
+    else:
+        res = metric(y_pred_bin_pt, y_true_bin_pt)  # noqa: F841
     out = []
     if metric_name == "accuracy":
         out.append(metric.correct_count != 0.0 and metric.total_count != 0.0)
@@ -149,6 +162,12 @@ def test_reset_methods(metric, metric_name):  # noqa: C901
             and metric.f1.precision.all_positives != 0.0
             and metric.f1.recall.true_positives != 0.0
             and metric.f1.recall.actual_positives != 0.0
+        )
+    elif metric_name == "r2":
+        out.append(
+            metric.numerator != 0.0
+            and metric.num_examples != 0.0
+            and metric.y_true_sum != 0.0
         )
 
     metric.reset()
@@ -173,5 +192,28 @@ def test_reset_methods(metric, metric_name):  # noqa: C901
             and metric.f1.recall.true_positives == 0
             and metric.f1.recall.actual_positives == 0
         )
+    elif metric_name == "r2":
+        out.append(
+            metric.numerator == 0.0
+            and metric.num_examples == 0.0
+            and metric.y_true_sum == 0.0
+        )
 
     assert all(out)
+
+
+###############################################################################
+# test R2Score
+###############################################################################
+
+y_true_reg_np = np.array([3, -0.5, 2, 7]).reshape(-1, 1)
+y_pred_reg_np = np.array([2.5, 0.0, 2, 8]).reshape(-1, 1)
+
+y_true_reg_pt = torch.from_numpy(y_true_reg_np)
+y_pred_reg_pt = torch.from_numpy(y_pred_reg_np)
+
+
+def test_r2_score():
+    assert r2_score(y_true_reg_np, y_pred_reg_np) == R2Score()(
+        y_pred_reg_pt, y_true_reg_pt
+    )

@@ -19,9 +19,9 @@ Documentation
     Preprocessing <preprocessing>
     Model Components <model_components>
     Metrics <metrics>
+    Losses <losses>
     Callbacks <callbacks>
-    Focal Loss <losses>
-    Wide and Deep Models <wide_deep>
+    The Trainer <trainer>
     Examples <examples>
 
 

@@ -13,14 +13,11 @@ advise the user to read the ``fastai`` `documentation
 .. autoclass:: pytorch_widedeep.utils.fastai_transforms.SpacyTokenizer
 	:members:
 	:undoc-members:
-	:show-inheritance:
 
 .. autoclass:: pytorch_widedeep.utils.fastai_transforms.Tokenizer
 	:members:
 	:undoc-members:
-	:show-inheritance:
 
 .. autoclass:: pytorch_widedeep.utils.fastai_transforms.Vocab
 	:members:
 	:undoc-members:
-	:show-inheritance:

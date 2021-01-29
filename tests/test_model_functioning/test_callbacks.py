@@ -9,7 +9,7 @@ from torch.optim.lr_scheduler import StepLR, CyclicLR
 
 from pytorch_widedeep.optim import RAdam
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep, TabTransformer
-from pytorch_widedeep.trainer import Trainer
+from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.callbacks import (
     LRHistory,
     EarlyStopping,
@@ -24,7 +24,7 @@ colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 32) for _ in range(5)]
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 cont_cols = [np.random.rand(32) for _ in range(5)]
-deep_column_idx = {k: v for v, k in enumerate(colnames)}
+column_idx = {k: v for v, k in enumerate(colnames)}
 X_tab = np.vstack(embed_cols + cont_cols).transpose()
 
 #  Text Array
@@ -42,8 +42,8 @@ target = np.random.choice(2, 32)
 wide = Wide(np.unique(X_wide).shape[0], 1)
 deeptabular = TabMlp(
     mlp_hidden_dims=[32, 16],
-    dropout=[0.5, 0.5],
-    deep_column_idx=deep_column_idx,
+    mlp_dropout=[0.5, 0.5],
+    column_idx=column_idx,
     embed_input=embed_input,
     continuous_cols=colnames[-5:],
 )
@@ -134,8 +134,8 @@ def test_early_stop():
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deeptabular = TabMlp(
         mlp_hidden_dims=[32, 16],
-        dropout=[0.5, 0.5],
-        deep_column_idx=deep_column_idx,
+        mlp_dropout=[0.5, 0.5],
+        column_idx=column_idx,
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
@@ -165,8 +165,8 @@ def test_model_checkpoint(save_best_only, max_save, n_files):
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deeptabular = TabMlp(
         mlp_hidden_dims=[32, 16],
-        dropout=[0.5, 0.5],
-        deep_column_idx=deep_column_idx,
+        mlp_dropout=[0.5, 0.5],
+        column_idx=column_idx,
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
@@ -192,7 +192,7 @@ def test_filepath_error():
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deeptabular = TabMlp(
         mlp_hidden_dims=[16, 4],
-        deep_column_idx=deep_column_idx,
+        column_idx=column_idx,
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
@@ -218,7 +218,7 @@ colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 32) for _ in range(5)]
 embeds_input = [(i, j) for i, j in zip(colnames[:5], [5] * 5)]  # type: ignore[misc]
 cont_cols = [np.random.rand(32) for _ in range(5)]
-deep_column_idx = {k: v for v, k in enumerate(colnames)}
+column_idx = {k: v for v, k in enumerate(colnames)}
 X_tab = np.vstack(embed_cols + cont_cols).transpose()
 
 # target
@@ -226,7 +226,7 @@ target = np.random.choice(2, 32)
 
 wide = Wide(np.unique(X_wide).shape[0], 1)
 tab_transformer = TabTransformer(
-    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embeds_input,
     continuous_cols=colnames[5:],
 )

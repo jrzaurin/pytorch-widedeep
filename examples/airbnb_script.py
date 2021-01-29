@@ -3,6 +3,7 @@ import torch
 import pandas as pd
 from torchvision.transforms import ToTensor, Normalize
 
+import pytorch_widedeep as wd
 from pytorch_widedeep.optim import RAdam
 from pytorch_widedeep.models import TabResnet  # noqa: F401
 from pytorch_widedeep.models import Wide, TabMlp, DeepText, WideDeep, DeepImage
@@ -44,15 +45,15 @@ if __name__ == "__main__":
 
     target = df[target].values
 
-    prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
-    X_wide = prepare_wide.fit_transform(df)
+    wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+    X_wide = wide_preprocessor.fit_transform(df)
 
-    prepare_deep = TabPreprocessor(
+    tab_preprocessor = TabPreprocessor(
         embed_cols=cat_embed_cols,  # type: ignore[arg-type]
         continuous_cols=continuous_cols,
         already_standard=already_standard,
     )
-    X_deep = prepare_deep.fit_transform(df)
+    X_tab = tab_preprocessor.fit_transform(df)
 
     text_processor = TextPreprocessor(
         word_vectors_path=word_vectors_path, text_col=text_col
@@ -65,17 +66,17 @@ if __name__ == "__main__":
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
     deepdense = TabMlp(
         mlp_hidden_dims=[64, 32],
-        dropout=[0.2, 0.2],
-        deep_column_idx=prepare_deep.deep_column_idx,
-        embed_input=prepare_deep.embeddings_input,
+        mlp_dropout=[0.2, 0.2],
+        column_idx=tab_preprocessor.column_idx,
+        embed_input=tab_preprocessor.embeddings_input,
         continuous_cols=continuous_cols,
     )
     # # To use TabResnet as the deepdense component simply:
     # deepdense = TabResnet(
-    #     blocks=[64, 32],
+    #     blocks_dims=[64, 32],
     #     dropout=0.2,
-    #     deep_column_idx=prepare_deep.deep_column_idx,
-    #     embed_input=prepare_deep.embeddings_input,
+    #     column_idx=tab_preprocessor.column_idx,
+    #     embed_input=tab_preprocessor.embeddings_input,
     #     continuous_cols=continuous_cols,
     # )
     deeptext = DeepText(
@@ -86,7 +87,7 @@ if __name__ == "__main__":
         padding_idx=1,
         embed_matrix=text_processor.embedding_matrix,
     )
-    deepimage = DeepImage(pretrained=True, head_layers_dim=None)
+    deepimage = DeepImage(pretrained=True, head_hidden_dims=None)
     model = WideDeep(
         wide=wide, deeptabular=deepdense, deeptext=deeptext, deepimage=deepimage
     )
@@ -124,8 +125,9 @@ if __name__ == "__main__":
     transforms = [ToTensor, Normalize(mean=mean, std=std)]
     callbacks = [EarlyStopping, ModelCheckpoint(filepath="model_weights/wd_out.pt")]
 
-    model.compile(
-        method="regression",
+    trainer = wd.Trainer(
+        model,
+        objective="regression",
         initializers=initializers,
         optimizers=optimizers,
         lr_schedulers=schedulers,
@@ -133,9 +135,9 @@ if __name__ == "__main__":
         transforms=transforms,
     )
 
-    model.fit(
+    trainer.fit(
         X_wide=X_wide,
-        X_tab=X_deep,
+        X_tab=X_tab,
         X_text=X_text,
         X_img=X_images,
         target=target,
@@ -145,11 +147,25 @@ if __name__ == "__main__":
     )
 
     # # With warm_up
-    # child = list(model.deepimage.children())[0]
-    # img_layers = list(child.backbone.children())[4:8] + [list(model.deepimage.children())[1]]
+    # child = list(trainer.model.deepimage.children())[0]
+    # img_layers = list(child.backbone.children())[4:8] + [
+    #     list(trainer.model.deepimage.children())[1]
+    # ]
     # img_layers = img_layers[::-1]
 
-    # model.fit(X_wide=X_wide, X_deep=X_deep, X_text=X_text, X_img=X_images,
-    #     target=target, n_epochs=1, batch_size=32, val_split=0.2, warm_up=True,
-    #     warm_epochs=1, warm_deepimage_gradual=True, warm_deepimage_layers=img_layers,
-    #     warm_deepimage_max_lr=0.01, warm_routine='howard')
+    # trainer.fit(
+    #     X_wide=X_wide,
+    #     X_tab=X_tab,
+    #     X_text=X_text,
+    #     X_img=X_images,
+    #     target=target,
+    #     n_epochs=1,
+    #     batch_size=32,
+    #     val_split=0.2,
+    #     warm_up=True,
+    #     warm_epochs=1,
+    #     warm_deepimage_gradual=True,
+    #     warm_deepimage_layers=img_layers,
+    #     warm_deepimage_max_lr=0.01,
+    #     warm_routine="howard",
+    # )

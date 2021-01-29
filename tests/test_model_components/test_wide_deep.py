@@ -6,10 +6,10 @@ from torch import nn
 from pytorch_widedeep.models import Wide, TabMlp, DeepText, WideDeep, DeepImage
 
 embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-deep_column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
 wide = Wide(10, 1)
 deepdense = TabMlp(
-    mlp_hidden_dims=[16, 8], deep_column_idx=deep_column_idx, embed_input=embed_input
+    mlp_hidden_dims=[16, 8], column_idx=column_idx, embed_input=embed_input
 )
 deeptext = DeepText(vocab_size=100, embed_dim=8)
 deepimage = DeepImage(pretrained=False)

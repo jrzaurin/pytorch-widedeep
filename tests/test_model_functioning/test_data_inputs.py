@@ -7,7 +7,7 @@ from torchvision.transforms import ToTensor, Normalize
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.models import Wide, TabMlp, DeepText, WideDeep, DeepImage
-from pytorch_widedeep.trainer import Trainer
+from pytorch_widedeep.training import Trainer
 
 np.random.seed(1)
 
@@ -51,8 +51,8 @@ target = np.random.choice(2, 32)
 wide = Wide(np.unique(X_wide).shape[0], 1)
 deeptabular = TabMlp(
     mlp_hidden_dims=[32, 16],
-    dropout=[0.5, 0.5],
-    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    mlp_dropout=[0.5, 0.5],
+    column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=colnames[-5:],
 )

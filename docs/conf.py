@@ -16,6 +16,9 @@ import os
 import re
 import sys
 
+import pytorch_sphinx_theme
+from sphinx.ext.napoleon.docstring import GoogleDocstring
+
 # this adds the equivalent of "../../" to the python path
 PACKAGEDIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PACKAGEDIR)
@@ -24,7 +27,7 @@ sys.path.insert(0, PACKAGEDIR)
 # -- Project information -----------------------------------------------------
 
 project = "pytorch-widedeep"
-copyright = "2020, Javier Rodriguez Zaurin"
+copyright = "2021, Javier Rodriguez Zaurin"
 author = "Javier Rodriguez Zaurin"
 
 # # The full version, including alpha/beta/rc tags
@@ -37,7 +40,7 @@ author = "Javier Rodriguez Zaurin"
 #     String
 #         Of the form "<major>.<minor>.<micro>", in which "major", "minor" and "micro" are numbers
 
-# 	"""
+#   """
 #     with open("../pytorch_widedeep/VERSION") as f:
 #         return f.read().strip()
 # release = get_version()
@@ -45,8 +48,8 @@ author = "Javier Rodriguez Zaurin"
 with open(os.path.join(PACKAGEDIR, "pytorch_widedeep", "version.py")) as f:
     version = re.search(r"__version__ \= \"(\d+\.\d+\.\d+)\"", f.read())
     assert version is not None, "can't parse __version__ from __init__.py"
-    version = version.groups()[0]
-    assert len(version.split(".")) == 3, "bad version spec"
+    version = version.groups()[0]  # type: ignore[assignment]
+    assert len(version.split(".")) == 3, "bad version spec"  # type: ignore[attr-defined]
     release = version
 
 # -- General configuration ---------------------------------------------------
@@ -75,7 +78,12 @@ extensions = [
     "sphinx.ext.githubpages",
 ]
 
+# If true, `todo` and `todoList` produce output, else they produce nothing.
+todo_include_todos = True
+
 autosummary_generate = True
+
+napoleon_use_ivar = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -107,33 +115,22 @@ pygments_style = "sphinx"
 # Remove the prompt when copying examples
 copybutton_prompt_text = ">>> "
 
+autoclass_content = "init"  # 'both'
+autodoc_member_order = "bysource"
+# autodoc_default_flags = ["show-inheritance"]
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+# html_theme = "sphinx_rtd_theme"
+html_theme = "pytorch_sphinx_theme"
+html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
-html_theme_options = {"analytics_id": "UA-83738774-2"}
-
-# html_theme_options = {
-#     "canonical_url": "",
-#     # 'analytics_id': 'UA-XXXXXXX-1',  #  Provided by Google in your dashboard
-#     "logo_only": False,
-#     "display_version": True,
-#     "prev_next_buttons_location": "bottom",
-#     "style_external_links": False,
-#     # Toc options
-#     "collapse_navigation": True,
-#     "sticky_navigation": True,
-#     "navigation_depth": 4,
-#     "includehidden": True,
-#     "titles_only": False,
-# }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -154,9 +151,14 @@ html_static_path = ["_static"]
 # directory) that is the favicon of the docs. Modern browsers use this as
 # the icon for tabs, windows and bookmarks. It should be a Windows-style
 # icon file (.ico).
-html_favicon = "infinitoml.ico"
-
-
+html_favicon = "_static/img/infinitoml.ico"
+html_logo = "_static/img/widedeep_logo.png"
+html_theme_options = {
+    "canonical_url": "https://pytorch-widedeep.readthedocs.io/en/latest/",
+    "collapse_navigation": False,
+    "logo_only": True,
+    "display_version": True,
+}
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
@@ -165,7 +167,7 @@ htmlhelp_basename = "pytorch_widedeepdoc"
 
 # -- Options for LaTeX output ------------------------------------------------
 
-latex_elements = {
+latex_elements = {  # type: ignore[var-annotated]
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
@@ -238,9 +240,41 @@ epub_title = project
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ["search.html"]
 
-# If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = True
-
 
 def setup(app):
-    app.add_css_file("custom.css")
+    app.add_css_file("ignite_style.css")
+
+
+# -- Extensions to the  Napoleon GoogleDocstring class ---------------------
+# first, we define new methods for any new sections and add them to the class
+def parse_keys_section(self, section):
+    return self._format_fields("Keys", self._consume_fields())
+
+
+GoogleDocstring._parse_keys_section = parse_keys_section  # type: ignore[attr-defined]
+
+
+def parse_attributes_section(self, section):
+    return self._format_fields("Attributes", self._consume_fields())
+
+
+GoogleDocstring._parse_attributes_section = parse_attributes_section  # type: ignore[assignment]
+
+
+def parse_class_attributes_section(self, section):
+    return self._format_fields("Class Attributes", self._consume_fields())
+
+
+GoogleDocstring._parse_class_attributes_section = parse_class_attributes_section  # type: ignore[attr-defined]
+
+
+# we now patch the parse method to guarantee that the the above methods are
+# assigned to the _section dict
+def patched_parse(self):
+    self._sections["keys"] = self._parse_keys_section
+    self._sections["class attributes"] = self._parse_class_attributes_section
+    self._unpatched_parse()
+
+
+GoogleDocstring._unpatched_parse = GoogleDocstring._parse  # type: ignore[attr-defined]
+GoogleDocstring._parse = patched_parse  # type: ignore[assignment]

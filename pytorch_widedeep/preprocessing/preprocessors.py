@@ -7,15 +7,18 @@ from tqdm import tqdm
 from sklearn.exceptions import NotFittedError
 from sklearn.preprocessing import StandardScaler
 
-from ..wdtypes import *  # noqa: F403
-from ..utils.text_utils import (
+from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.utils.text_utils import (
     get_texts,
     pad_sequences,
     build_embeddings_matrix,
 )
-from ..utils.image_utils import SimplePreprocessor, AspectAwarePreprocessor
-from ..utils.deeptabular_utils import LabelEncoder
-from ..utils.fastai_transforms import Vocab
+from pytorch_widedeep.utils.image_utils import (
+    SimplePreprocessor,
+    AspectAwarePreprocessor,
+)
+from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
+from pytorch_widedeep.utils.fastai_transforms import Vocab
 
 __all__ = [
     "WidePreprocessor",
@@ -44,63 +47,62 @@ class BasePreprocessor:
 
 
 class WidePreprocessor(BasePreprocessor):
-    r"""Preprocessor to prepare the wide input dataset
-
-    This Preprocessor prepares the data for the wide, linear component. This
-    linear model is implemented via an Embedding layer that is connected to
-    the output neuron. ``WidePreprocessor`` simply numerically encodes all the
-    unique values of all categorical columns ``wide_cols + crossed_cols``. See
-    the Example below.
-
-    Parameters
-    ----------
-    wide_cols: List[str]
-        List with the name of the columns that will label encoded and passed
-        through the Wide model
-    crossed_cols: List[Tuple[str, str]]
-        List of Tuples with the name of the columns that will be `'crossed'`
-        and then label encoded. e.g. [('education', 'occupation'), ...]
-
-    Attributes
-    ----------
-    wide_crossed_cols: :obj:`List`
-        List with the names of all columns that will be label encoded
-    encoding_dict: :obj:`Dict`
-        Dictionary where the keys are the result of pasting `colname + '_' +
-        column value` and the values are the corresponding mapped integer.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> from pytorch_widedeep.preprocessing import WidePreprocessor
-    >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l']})
-    >>> wide_cols = ['color']
-    >>> crossed_cols = [('color', 'size')]
-    >>> wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
-    >>> X_wide = wide_preprocessor.fit_transform(df)
-    >>> X_wide
-    array([[1, 4],
-           [2, 5],
-           [3, 6]])
-    >>> wide_preprocessor.encoding_dict
-    {'color_r': 1, 'color_b': 2, 'color_g': 3, 'color_size_r-s': 4, 'color_size_b-n': 5, 'color_size_g-l': 6}
-    >>> wide_preprocessor.inverse_transform(X_wide)
-      color color_size
-    0     r        r-s
-    1     b        b-n
-    2     g        g-l
-    """
-
     def __init__(
         self, wide_cols: List[str], crossed_cols: List[Tuple[str, str]] = None
     ):
+        r"""Preprocessor to prepare the wide input dataset
+
+        This Preprocessor prepares the data for the wide, linear component.
+        This linear model is implemented via an Embedding layer that is
+        connected to the output neuron. ``WidePreprocessor`` numerically
+        encodes all the unique values of all categorical columns ``wide_cols +
+        crossed_cols``. See the Example below.
+
+        Parameters
+        ----------
+        wide_cols: List
+            List of strings with the name of the columns that will label
+            encoded and passed through the ``wide`` component
+        crossed_cols: List, default = None
+            List of Tuples with the name of the columns that will be `'crossed'`
+            and then label encoded. e.g. [('education', 'occupation'), ...]
+
+        Attributes
+        ----------
+        wide_crossed_cols: List
+            List with the names of all columns that will be label encoded
+        encoding_dict: Dict
+            Dictionary where the keys are the result of pasting `colname + '_' +
+            column value` and the values are the corresponding mapped integer.
+
+        Example
+        -------
+        >>> import pandas as pd
+        >>> from pytorch_widedeep.preprocessing import WidePreprocessor
+        >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l']})
+        >>> wide_cols = ['color']
+        >>> crossed_cols = [('color', 'size')]
+        >>> wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+        >>> X_wide = wide_preprocessor.fit_transform(df)
+        >>> X_wide
+        array([[1, 4],
+               [2, 5],
+               [3, 6]])
+        >>> wide_preprocessor.encoding_dict
+        {'color_r': 1, 'color_b': 2, 'color_g': 3, 'color_size_r-s': 4, 'color_size_b-n': 5, 'color_size_g-l': 6}
+        >>> wide_preprocessor.inverse_transform(X_wide)
+          color color_size
+        0     r        r-s
+        1     b        b-n
+        2     g        g-l
+        """
         super(WidePreprocessor, self).__init__()
 
         self.wide_cols = wide_cols
         self.crossed_cols = crossed_cols
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        """Fits the Preprocessor and creates required attributes"""
+        r"""Fits the Preprocessor and creates required attributes"""
         df_wide = self._prepare_wide(df)
         self.wide_crossed_cols = df_wide.columns.tolist()
         glob_feature_list = self._make_global_feature_list(
@@ -134,11 +136,6 @@ class WidePreprocessor(BasePreprocessor):
     def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:
         r"""Takes as input the output from the ``transform`` method and it will
         return the original values.
-
-        Parameters
-        ----------
-        encoded: np.ndarray
-            array with the output of the ``transform`` method
         """
         decoded = pd.DataFrame(encoded, columns=self.wide_crossed_cols)
         decoded = decoded.applymap(lambda x: self.inverse_encoding_dict[x])
@@ -180,65 +177,6 @@ class WidePreprocessor(BasePreprocessor):
 
 
 class TabPreprocessor(BasePreprocessor):
-    r"""Preprocessor to prepare the deeptabular input dataset
-
-    Parameters
-    ----------
-    embed_cols: List[Union[str, Tuple[str, int]]]
-        List containing the name of the columns that will be represented by
-        embeddings or a Tuple with the name and the embedding dimension. e.g.:
-        [('education',32), ('relationship',16)
-    continuous_cols: List[str]
-        List with the name of the so called continuous cols
-    scale: bool
-        Bool indicating whether or not to scale/Standarise continuous cols.
-        Should "almost always" be True.
-    default_embed_dim: Int, Default=8
-        Dimension for the embeddings used in the Deep-Dense model
-    already_standard: List[str], Optional,
-        List with the name of the continuous cols that do not need to be
-        Standarised.
-    for_tabtransformer: bool, default = False
-        Boolean indicating whether the preprocessed data will be passed to a
-        TabTransformer model.
-
-    Attributes
-    ----------
-    label_encoder: :obj:`LabelEncoder`
-        see :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
-    embed_cols: :obj:`List`
-        List with the columns that will be represented by embeddings
-    embed_dim: :obj:`Dict`
-        Dictionary where keys are the embed cols and values are the embedding
-        dimensions. If ``for_tabtransformer`` is set to 'True' the embedding
-        dimensions are the same for all columns and this attributes is not
-        generated during the fit process
-    standardize_cols: :obj:`List`
-        List of the columns that will be standarized
-    deep_column_idx: :obj:`Dict`
-        Dictionary where keys are column names and values are column indexes.
-        This will be neccesary to slice tensors
-    scaler: :obj:`StandardScaler`
-        an instance of :class:`sklearn.preprocessing.StandardScaler`
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> from pytorch_widedeep.preprocessing import TabPreprocessor
-    >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l'], 'age': [25, 40, 55]})
-    >>> embed_cols = [('color',5), ('size',5)]
-    >>> cont_cols = ['age']
-    >>> deep_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
-    >>> deep_preprocessor.fit_transform(df)
-    array([[ 1.        ,  1.        , -1.22474487],
-           [ 2.        ,  2.        ,  0.        ],
-           [ 3.        ,  3.        ,  1.22474487]])
-    >>> deep_preprocessor.embed_dim
-    {'color': 5, 'size': 5}
-    >>> deep_preprocessor.deep_column_idx
-    {'color': 0, 'size': 1, 'age': 2}
-    """
-
     def __init__(
         self,
         embed_cols: List[Union[str, Tuple[str, int]]] = None,
@@ -247,8 +185,73 @@ class TabPreprocessor(BasePreprocessor):
         default_embed_dim: int = 8,
         already_standard: Optional[List[str]] = None,
         for_tabtransformer: bool = False,
-        verbose: bool = True,
+        verbose: int = 1,
     ):
+        r"""Preprocessor to prepare the ``deeptabular`` component input dataset
+
+        Parameters
+        ----------
+        embed_cols: List, default = None
+            List containing the name of the columns that will be represented by
+            embeddings or a Tuple with the name and the embedding dimension. e.g.:
+            [('education',32), ('relationship',16)
+        continuous_cols: List, default = None
+            List with the name of the so called continuous cols
+        scale: bool, default = True
+            Bool indicating whether or not to scale/Standarise continuous
+            cols. The user should bear in mind that the ``deeptabular``
+            components available within ``pytorch-widedeep`` they all have the
+            possibility of normalising the input continuous features via a
+            ``BatchNorm`` or a ``LayerNorm`` layer.
+            see :class:`pytorch_widedeep.models`
+        default_embed_dim: int, default=8
+            Dimension for the embeddings used for the ``deeptabular``
+            component
+        already_standard: List, Optional, default = None
+            List with the name of the continuous cols that do not need to be
+            Standarised.
+        for_tabtransformer: bool, default = False
+            Boolean indicating whether the preprocessed data will be passed to a
+            ``TabTransformer`` model.
+            see :class:`pytorch_widedeep.models.tab_transformer.TabTransformer`
+        verbose: int, default = 1
+
+        Attributes
+        ----------
+        label_encoder: LabelEncoder
+            see :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
+        embed_cols: List
+            List with the columns that will be represented by embeddings
+        embed_dim: Dict
+            Dictionary where keys are the embed cols and values are the embedding
+            dimensions. If ``for_tabtransformer`` is set to ``True`` the embedding
+            dimensions are the same for all columns and this attributes is not
+            generated during the fit process
+        standardize_cols: List
+            List of the columns that will be standarized
+        column_idx: Dict
+            Dictionary where keys are column names and values are column indexes.
+            This will be neccesary to slice tensors
+        scaler: StandardScaler
+            an instance of :class:`sklearn.preprocessing.StandardScaler`
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>> from pytorch_widedeep.preprocessing import TabPreprocessor
+        >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l'], 'age': [25, 40, 55]})
+        >>> embed_cols = [('color',5), ('size',5)]
+        >>> cont_cols = ['age']
+        >>> deep_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+        >>> deep_preprocessor.fit_transform(df)
+        array([[ 1.        ,  1.        , -1.22474487],
+               [ 2.        ,  2.        ,  0.        ],
+               [ 3.        ,  3.        ,  1.22474487]])
+        >>> deep_preprocessor.embed_dim
+        {'color': 5, 'size': 5}
+        >>> deep_preprocessor.column_idx
+        {'color': 0, 'size': 1, 'age': 2}
+        """
         super(TabPreprocessor, self).__init__()
 
         self.embed_cols = embed_cols
@@ -318,7 +321,7 @@ class TabPreprocessor(BasePreprocessor):
                 df_deep = df_emb.copy()
             except NameError:
                 df_deep = df_cont.copy()
-        self.deep_column_idx = {k: v for v, k in enumerate(df_deep.columns)}
+        self.column_idx = {k: v for v, k in enumerate(df_deep.columns)}
         return df_deep.values
 
     def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:
@@ -330,7 +333,7 @@ class TabPreprocessor(BasePreprocessor):
         encoded: np.ndarray
             array with the output of the ``transform`` method
         """
-        decoded = pd.DataFrame(encoded, columns=self.deep_column_idx.keys())
+        decoded = pd.DataFrame(encoded, columns=self.column_idx.keys())
         # embeddings back to original category
         if self.embed_cols is not None:
             if isinstance(self.embed_cols[0], tuple):
@@ -376,48 +379,6 @@ class TabPreprocessor(BasePreprocessor):
 
 
 class TextPreprocessor(BasePreprocessor):
-    r"""Preprocessor to prepare the deeptext input dataset
-
-    Parameters
-    ----------
-    text_col: str
-        column in the input dataframe containing the texts
-    max_vocab: int, default=30000
-        Maximum number of token in the vocabulary
-    min_freq: int, default=5
-        Minimum frequency for a token to be part of the vocabulary
-    maxlen: int, default=80
-        Maximum length of the tokenized sequences
-    word_vectors_path: str, Optional
-        Path to the pretrained word vectors
-    verbose: int, default 1
-        Enable verbose output.
-
-    Attributes
-    ----------
-    vocab: :obj:`Vocab`
-        an instance of :class:`pytorch_widedeep.utils.fastai_transforms.Vocab`
-    tokens: :obj:`List`
-        List with Lists of str containing the tokenized texts
-    embedding_matrix: :obj:`np.ndarray`
-        Array with the pretrained embeddings
-
-    Examples
-    ---------
-    >>> import pandas as pd
-    >>> from pytorch_widedeep.preprocessing import TextPreprocessor
-    >>> df_train = pd.DataFrame({'text_column': ["life is like a box of chocolates",
-    ... "You never know what you're gonna get"]})
-    >>> text_preprocessor = TextPreprocessor(text_col='text_column', max_vocab=25, min_freq=1, maxlen=10)
-    >>> text_preprocessor.fit_transform(df_train)
-    The vocabulary contains 24 tokens
-    array([[ 1,  1,  1,  1, 10, 11, 12, 13, 14, 15],
-           [ 5,  9, 16, 17, 18,  9, 19, 20, 21, 22]], dtype=int32)
-    >>> df_te = pd.DataFrame({'text_column': ['you never know what is in the box']})
-    >>> text_preprocessor.transform(df_te)
-    array([[ 1,  1,  9, 16, 17, 18, 11,  0,  0, 13]], dtype=int32)
-    """
-
     def __init__(
         self,
         text_col: str,
@@ -427,7 +388,47 @@ class TextPreprocessor(BasePreprocessor):
         word_vectors_path: Optional[str] = None,
         verbose: int = 1,
     ):
+        r"""Preprocessor to prepare the deeptext input dataset
 
+        Parameters
+        ----------
+        text_col: str
+            column in the input dataframe containing the texts
+        max_vocab: int, default=30000
+            Maximum number of token in the vocabulary
+        min_freq: int, default=5
+            Minimum frequency for a token to be part of the vocabulary
+        maxlen: int, default=80
+            Maximum length of the tokenized sequences
+        word_vectors_path: str, Optional
+            Path to the pretrained word vectors
+        verbose: int, default 1
+            Enable verbose output.
+
+        Attributes
+        ----------
+        vocab: Vocab
+            an instance of :class:`pytorch_widedeep.utils.fastai_transforms.Vocab`
+        tokens: List
+            List with Lists of str containing the tokenized texts
+        embedding_matrix: np.ndarray
+            Array with the pretrained embeddings
+
+        Examples
+        ---------
+        >>> import pandas as pd
+        >>> from pytorch_widedeep.preprocessing import TextPreprocessor
+        >>> df_train = pd.DataFrame({'text_column': ["life is like a box of chocolates",
+        ... "You never know what you're gonna get"]})
+        >>> text_preprocessor = TextPreprocessor(text_col='text_column', max_vocab=25, min_freq=1, maxlen=10)
+        >>> text_preprocessor.fit_transform(df_train)
+        The vocabulary contains 24 tokens
+        array([[ 1,  1,  1,  1, 10, 11, 12, 13, 14, 15],
+               [ 5,  9, 16, 17, 18,  9, 19, 20, 21, 22]], dtype=int32)
+        >>> df_te = pd.DataFrame({'text_column': ['you never know what is in the box']})
+        >>> text_preprocessor.transform(df_te)
+        array([[ 1,  1,  9, 16, 17, 18, 11,  0,  0, 13]], dtype=int32)
+        """
         super(TextPreprocessor, self).__init__()
 
         self.text_col = text_col
@@ -478,56 +479,6 @@ class TextPreprocessor(BasePreprocessor):
 
 
 class ImagePreprocessor(BasePreprocessor):
-    r"""Preprocessor to prepare the deepimage input dataset. The Preprocessing
-    consists simply on resizing according to their aspect ratio
-
-    Parameters
-    ----------
-    img_col: str
-        name of the column with the images filenames
-    img_path: str
-        path to the dicrectory where the images are stored
-    width: Int, default=224
-        width of the resulting processed image. 224 because the default
-        architecture used by WideDeep is ResNet
-    height: Int, default=224
-        width of the resulting processed image. 224 because the default
-        architecture used by WideDeep is ResNet
-    verbose: Int, default 1
-        Enable verbose output.
-
-    Attributes
-    ----------
-    aap: :obj:`AspectAwarePreprocessor`
-        an instance of :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
-    spp: :obj:`SimplePreprocessor`
-        an instance of :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`
-    normalise_metrics: :obj:`Dict`
-        Dict containing the normalisation metrics of the image dataset, i.e.
-        mean and std for the R, G and B channels
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>>
-    >>> from pytorch_widedeep.preprocessing import ImagePreprocessor
-    >>>
-    >>> path_to_image1 = 'tests/test_data_utils/images/galaxy1.png'
-    >>> path_to_image2 = 'tests/test_data_utils/images/galaxy2.png'
-    >>>
-    >>> df_train = pd.DataFrame({'images_column': [path_to_image1]})
-    >>> df_test = pd.DataFrame({'images_column': [path_to_image2]})
-    >>> img_preprocessor = ImagePreprocessor(img_col='images_column', img_path='.', verbose=0)
-    >>> resized_images = img_preprocessor.fit_transform(df_train)
-    >>> new_resized_images = img_preprocessor.transform(df_train)
-
-    .. note:: Normalising metrics will only be computed when the
-        ``fit_transform`` method is run. Running ``transform`` only will not
-        change the computed metrics and running ``fit`` only simply
-        instantiates the resizing functions.
-
-    """
-
     def __init__(
         self,
         img_col: str,
@@ -536,6 +487,54 @@ class ImagePreprocessor(BasePreprocessor):
         height: int = 224,
         verbose: int = 1,
     ):
+        r"""Preprocessor to prepare the deepimage input dataset. The Preprocessing
+        consists simply on resizing according to their aspect ratio
+
+        Parameters
+        ----------
+        img_col: str
+            name of the column with the images filenames
+        img_path: str
+            path to the dicrectory where the images are stored
+        width: int, default=224
+            width of the resulting processed image. 224 because the default
+            architecture used by WideDeep is ResNet
+        height: int, default=224
+            width of the resulting processed image. 224 because the default
+            architecture used by WideDeep is ResNet
+        verbose: int, default 1
+            Enable verbose output.
+
+        Attributes
+        ----------
+        aap: AspectAwarePreprocessor
+            an instance of :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
+        spp: SimplePreprocessor
+            an instance of :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`
+        normalise_metrics: Dict
+            Dict containing the normalisation metrics of the image dataset, i.e.
+            mean and std for the R, G and B channels
+
+        Examples
+        --------
+        >>> import pandas as pd
+        >>>
+        >>> from pytorch_widedeep.preprocessing import ImagePreprocessor
+        >>>
+        >>> path_to_image1 = 'tests/test_data_utils/images/galaxy1.png'
+        >>> path_to_image2 = 'tests/test_data_utils/images/galaxy2.png'
+        >>>
+        >>> df_train = pd.DataFrame({'images_column': [path_to_image1]})
+        >>> df_test = pd.DataFrame({'images_column': [path_to_image2]})
+        >>> img_preprocessor = ImagePreprocessor(img_col='images_column', img_path='.', verbose=0)
+        >>> resized_images = img_preprocessor.fit_transform(df_train)
+        >>> new_resized_images = img_preprocessor.transform(df_train)
+
+        .. note:: Normalising metrics will only be computed when the
+            ``fit_transform`` method is run. Running ``transform`` only will not
+            change the computed metrics and running ``fit`` only simply
+            instantiates the resizing functions.
+        """
         super(ImagePreprocessor, self).__init__()
 
         self.img_col = img_col
@@ -545,7 +544,7 @@ class ImagePreprocessor(BasePreprocessor):
         self.verbose = verbose
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        r"""Simply instantiates the Preprocessors
+        r"""Instantiates the Preprocessors
         :obj:`AspectAwarePreprocessor`` and :obj:`SimplePreprocessor` for image
         resizing.
 

@@ -3,7 +3,7 @@ import warnings
 
 from torch import nn
 
-from .wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 class Initializer(object):

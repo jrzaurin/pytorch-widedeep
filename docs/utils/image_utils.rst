@@ -12,10 +12,8 @@ code in the ``image_utils`` module goes to *Adrian Rosebrock*
 .. autoclass:: pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor
 	:members:
 	:undoc-members:
-	:show-inheritance:
 
 .. autoclass:: pytorch_widedeep.utils.image_utils.SimplePreprocessor
 	:members:
 	:undoc-members:
-	:show-inheritance:
 

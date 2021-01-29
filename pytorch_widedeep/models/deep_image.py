@@ -1,8 +1,8 @@
 from torch import nn
 from torchvision import models
 
-from .tab_mlp import MLP
-from ..wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.models.tab_mlp import MLP
 
 
 def conv_layer(
@@ -26,84 +26,90 @@ def conv_layer(
 
 
 class DeepImage(nn.Module):
-    r"""
-    Standard image classifier/regressor using a pretrained network (in
-    particular ResNets) or a sequence of 4 convolution layers.
-
-    If ``pretrained=False`` the `'backbone'` of :obj:`DeepImage` will be a
-    sequence of 4 convolutional layers comprised by: ``Conv2d -> BatchNorm2d
-    -> LeakyReLU``. The 4th one will also add a final ``AdaptiveAvgPool2d``
-    operation.
-
-    If ``pretrained=True`` the `'backbone'` will be ResNets. ResNets have
-    9 `'components'` before the last dense layers. The first 4 are:
-    ``Conv2d -> BatchNorm2d -> ReLU -> MaxPool2d``. Then there are 4
-    additional resnet blocks comprised by a series of convolutions and
-    then the final ``AdaptiveAvgPool2d``. Overall, ``4+4+1=9``. The
-    parameter ``freeze_n`` sets the number of layers to be frozen. For
-    example, ``freeze_n=6`` will freeze all but the last 3 layers.
-
-    In addition to all of the above, there is the option to add a fully
-    connected set of dense layers (referred as `imagehead`) on top of the
-    stack of CNNs
-
-    Parameters
-    ----------
-    pretrained: bool, default = True
-        Indicates whether or not we use a pretrained Resnet network or a
-        series of conv layers (see conv_layer function)
-    resnet_architecture: int, default = 18
-        The resnet architecture. One of 18, 34 or 50
-    freeze_n: int, default = 6
-        number of layers to freeze. Must be less than or equal to 8. If 8
-        the entire 'backbone' of the nwtwork will be frozen
-    head_layers_dim: List, Optional
-        List with the sizes of the stacked dense layers in the head
-        e.g: [128, 64]
-    head_dropout: List, Optional
-        List with the dropout between the dense layers. e.g: [0.5, 0.5].
-    head_batchnorm: bool, Optional, default = False
-        Boolean indicating whether or not to include batch normalizatin in the
-        dense layers that form the imagehead
-
-    Attributes
-    ----------
-    backbone: :obj:`nn.Sequential`
-        Sequential stack of CNNs comprising the 'backbone' of the network
-    imagehead: :obj:`nn.Sequential`
-        Sequential stack of dense layers comprising the FC-Head (aka imagehead)
-    output_dim: :obj:`int`
-        The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
-
-    Example
-    --------
-    >>> import torch
-    >>> from pytorch_widedeep.models import DeepImage
-    >>> X_img = torch.rand((2,3,224,224))
-    >>> model = DeepImage(head_layers_dim=[512, 64, 8])
-    >>> out = model(X_img)
-    """
-
     def __init__(
         self,
         pretrained: bool = True,
         resnet_architecture: int = 18,
         freeze_n: int = 6,
-        head_layers_dim: Optional[List[int]] = None,
+        head_hidden_dims: Optional[List[int]] = None,
         head_activation: Optional[str] = "relu",
-        head_dropout: Optional[Union[float, List[float]]] = None,
+        head_dropout: float = None,
         head_batchnorm: Optional[bool] = False,
         head_batchnorm_last: Optional[bool] = False,
         head_linear_first: Optional[bool] = False,
     ):
+        r"""
+        Standard image classifier/regressor using a pretrained network (in
+        particular ResNets) or a sequence of 4 convolution layers.
 
+        If ``pretrained=False`` the `'backbone'` of :obj:`DeepImage` will be a
+        sequence of 4 convolutional layers comprised by: ``Conv2d -> BatchNorm2d
+        -> LeakyReLU``. The 4th one will also add a final ``AdaptiveAvgPool2d``
+        operation.
+
+        If ``pretrained=True`` the `'backbone'` will be ResNets. ResNets have
+        9 `'components'` before the last dense layers. The first 4 are:
+        ``Conv2d -> BatchNorm2d -> ReLU -> MaxPool2d``. Then there are 4
+        additional resnet blocks comprised by a series of convolutions and
+        then the final ``AdaptiveAvgPool2d``. Overall, ``4+4+1=9``. The
+        parameter ``freeze_n`` sets the number of layers to be frozen. For
+        example, ``freeze_n=6`` will freeze all but the last 3 layers.
+
+        In addition to all of the above, there is the option to add a fully
+        connected set of dense layers (referred as `imagehead`) on top of the
+        stack of CNNs
+
+        Parameters
+        ----------
+        pretrained: bool, default = True
+            Indicates whether or not we use a pretrained Resnet network or a
+            series of conv layers (see conv_layer function)
+        resnet_architecture: int, default = 18
+            The resnet architecture. One of 18, 34 or 50
+        freeze_n: int, default = 6
+            number of layers to freeze. Must be less than or equal to 8. If 8
+            the entire 'backbone' of the nwtwork will be frozen
+        head_hidden_dims: List
+            List with the number of neurons per dense layer in the head. e.g: [64,32]
+        head_activation: str, default = "relu"
+            Activation function for the dense layers in the head.
+        head_dropout: float, Optional, default = 0.
+            float indicating teh dropout between the dense layers.
+        head_batchnorm: bool, default = False
+            Boolean indicating whether or not batch normalization will be applied
+            to the dense layers
+        head_batchnorm_last: bool, default = False
+            Boolean indicating whether or not batch normalization will be applied
+            to the last of the dense layers
+        head_linear_first: bool, default = False
+            Boolean indicating the order of the operations in the dense
+            layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+            LIN -> ACT]``
+
+        Attributes
+        ----------
+        backbone: ``nn.Sequential``
+            Sequential stack of CNNs comprising the 'backbone' of the network
+        imagehead: ``nn.Sequential``
+            Sequential stack of dense layers comprising the FC-Head (aka imagehead)
+        output_dim: int
+            The output dimension of the model. This is a required attribute
+            neccesary to build the WideDeep class
+
+        Example
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.models import DeepImage
+        >>> X_img = torch.rand((2,3,224,224))
+        >>> model = DeepImage(head_hidden_dims=[512, 64, 8])
+        >>> out = model(X_img)
+        """
         super(DeepImage, self).__init__()
 
         self.pretrained = pretrained
         self.resnet_architecture = resnet_architecture
         self.freeze_n = freeze_n
-        self.head_layers_dim = head_layers_dim
+        self.head_hidden_dims = head_hidden_dims
         self.head_activation = head_activation
         self.head_dropout = head_dropout
         self.head_batchnorm = head_batchnorm
@@ -120,28 +126,28 @@ class DeepImage(nn.Module):
         # the output_dim attribute will be used as input_dim when "merging" the models
         self.output_dim = 512
 
-        if self.head_layers_dim is not None:
-            assert self.head_layers_dim[0] == self.output_dim, (
+        if self.head_hidden_dims is not None:
+            assert self.head_hidden_dims[0] == self.output_dim, (
                 "The output dimension from the backbone ({}) is not consistent with "
                 "the expected input dimension ({}) of the fc-head".format(
-                    self.output_dim, self.head_layers_dim[0]
+                    self.output_dim, self.head_hidden_dims[0]
                 )
             )
             self.imagehead = MLP(
-                head_layers_dim,
+                head_hidden_dims,
                 head_activation,
                 head_dropout,
                 head_batchnorm,
                 head_batchnorm_last,
                 head_linear_first,
             )
-            self.output_dim = head_layers_dim[-1]
+            self.output_dim = head_hidden_dims[-1]
 
     def forward(self, x: Tensor) -> Tensor:  # type: ignore
         r"""Forward pass connecting the `'backbone'` with the `'head layers'`"""
         x = self.backbone(x)
         x = x.view(x.size(0), -1)
-        if self.head_layers_dim is not None:
+        if self.head_hidden_dims is not None:
             out = self.imagehead(x)
             return out
         else:

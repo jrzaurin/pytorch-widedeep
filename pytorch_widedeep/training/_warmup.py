@@ -3,8 +3,8 @@ import torch.nn.functional as F
 from tqdm import trange
 from torch import nn
 
-from ..metrics import Metric, MultipleMetrics
-from ..wdtypes import *  # noqa: F403
+from pytorch_widedeep.metrics import Metric, MultipleMetrics
+from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 use_cuda = torch.cuda.is_available()
 

@@ -3,15 +3,14 @@
 ##################################################
 import os.path
 
-from pytorch_widedeep.version import __version__
-
 ###############################################################
 # utils module accessible directly from pytorch-widedeep.<util>
 ##############################################################
-from .utils import (
+from pytorch_widedeep.utils import (
     text_utils,
     image_utils,
     deeptabular_utils,
     fastai_transforms,
 )
-from .trainer import Trainer
+from pytorch_widedeep.version import __version__
+from pytorch_widedeep.training import Trainer

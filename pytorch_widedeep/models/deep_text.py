@@ -4,70 +4,11 @@ import numpy as np
 import torch
 from torch import nn
 
-from .tab_mlp import MLP
-from ..wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.models.tab_mlp import MLP
 
 
 class DeepText(nn.Module):
-    r"""Standard text classifier/regressor comprised by a stack of RNNs (LSTMs).
-
-    In addition, there is the option to add a Fully Connected (FC) set of dense
-    layers (referred as `texthead`) on top of the stack of RNNs
-
-    Parameters
-    ----------
-    vocab_size: int
-        number of words in the vocabulary
-    hidden_dim: int, default = 64
-        number of features in the hidden state h of the LSTM
-    n_layers: int, default = 3
-        number of recurrent layers
-    rnn_dropout: int, default = 0.
-        dropout for the dropout layer on the outputs of each LSTM layer except
-        the last layer
-    bidirectional: bool, default = True
-        indicates whether the staked RNNs are bidirectional
-    padding_idx: int, default = 1
-        index of the padding token in the padded-tokenised sequences. default:
-        1. I use the ``fastai`` tokenizer where the token index 0 is reserved
-        for the `'unknown'` word token
-    embed_dim: int, Optional
-        Dimension of the word embedding matrix
-    embed_matrix: np.ndarray, Optional
-         Pretrained word embeddings
-    embed_trainable: bool, Optional. default = False
-        Boolean indicating if the pretrained embeddings are trainable
-    head_layers_dim: List, Optional
-        List with the sizes of the stacked dense layers in the head
-        e.g: [128, 64]
-    head_dropout: List, Optional
-        List with the dropout between the dense layers. e.g: [0.5, 0.5].
-    head_batchnorm: bool, Optional
-        Whether or not to include batch normalizatin in the dense layers that
-        form the `'texthead'`
-
-    Attributes
-    ----------
-    word_embed: :obj:`nn.Module`
-        word embedding matrix
-    rnn: :obj:`nn.Module`
-        Stack of LSTMs
-    texthead: :obj:`nn.Sequential`
-        Stack of dense layers on top of the RNN. This will only exists if
-        `head_layers_dim` is not `None`
-    output_dim: :obj:`int`
-        The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
-
-    Example
-    --------
-    >>> import torch
-    >>> from pytorch_widedeep.models import DeepText
-    >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
-    >>> model = DeepText(vocab_size=4, hidden_dim=4, n_layers=1, padding_idx=0, embed_dim=4)
-    >>> out = model(X_text)
-    """
-
     def __init__(
         self,
         vocab_size: int,
@@ -79,14 +20,80 @@ class DeepText(nn.Module):
         embed_dim: Optional[int] = None,
         embed_matrix: Optional[np.ndarray] = None,
         embed_trainable: Optional[bool] = True,
-        head_layers_dim: Optional[List[int]] = None,
+        head_hidden_dims: Optional[List[int]] = None,
         head_activation: Optional[str] = "relu",
-        head_dropout: Optional[Union[float, List[float]]] = None,
+        head_dropout: float = None,
         head_batchnorm: Optional[bool] = False,
         head_batchnorm_last: Optional[bool] = False,
         head_linear_first: Optional[bool] = False,
     ):
+        r"""Standard text classifier/regressor comprised by a stack of RNNs (LSTMs).
 
+        In addition, there is the option to add a Fully Connected (FC) set of dense
+        layers (referred as `texthead`) on top of the stack of RNNs
+
+        Parameters
+        ----------
+        vocab_size: int
+            number of words in the vocabulary
+        hidden_dim: int, default = 64
+            number of features in the hidden state h of the LSTM
+        n_layers: int, default = 3
+            number of recurrent layers
+        rnn_dropout: int, default = 0.
+            dropout for the dropout layer on the outputs of each LSTM layer except
+            the last layer
+        bidirectional: bool, default = True
+            indicates whether the staked RNNs are bidirectional
+        padding_idx: int, default = 1
+            index of the padding token in the padded-tokenised sequences. default:
+            1. I use the ``fastai`` tokenizer where the token index 0 is reserved
+            for the `'unknown'` word token
+        embed_dim: int, Optional
+            Dimension of the word embedding matrix
+        embed_matrix: np.ndarray, Optional
+             Pretrained word embeddings
+        embed_trainable: bool, Optional. default = False
+            Boolean indicating if the pretrained embeddings are trainable
+        head_hidden_dims: List, Optional
+            List with the sizes of the stacked dense layers in the head
+            e.g: [128, 64]
+        head_activation: str, default = "relu"
+            Activation function for the dense layers in the head
+        head_dropout: float, Optional
+            dropout between the dense layers in the head
+        head_batchnorm: bool, Optional
+            Whether or not to include batch normalizatin in the dense layers that
+            form the `'texthead'`
+        head_batchnorm_last: bool, default = False
+            Boolean indicating whether or not to apply batch normalization to the
+            last of the dense layers in the head
+        head_linear_first: bool, default = False
+            Boolean indicating whether the order of the operations in the dense
+            layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+            LIN -> ACT]``
+
+        Attributes
+        ----------
+        word_embed: ``nn.Module``
+            word embedding matrix
+        rnn: ``nn.Module``
+            Stack of LSTMs
+        texthead: ``nn.Sequential``
+            Stack of dense layers on top of the RNN. This will only exists if
+            ``head_layers_dim`` is not ``None``
+        output_dim: int
+            The output dimension of the model. This is a required attribute
+            neccesary to build the WideDeep class
+
+        Example
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.models import DeepText
+        >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
+        >>> model = DeepText(vocab_size=4, hidden_dim=4, n_layers=1, padding_idx=0, embed_dim=4)
+        >>> out = model(X_text)
+        """
         super(DeepText, self).__init__()
 
         if (
@@ -111,7 +118,7 @@ class DeepText(nn.Module):
         self.padding_idx = padding_idx
         self.embed_dim = embed_dim
         self.embed_trainable = embed_trainable
-        self.head_layers_dim = head_layers_dim
+        self.head_hidden_dims = head_hidden_dims
         self.head_activation = head_activation
         self.head_dropout = head_dropout
         self.head_batchnorm = head_batchnorm
@@ -155,22 +162,22 @@ class DeepText(nn.Module):
         # the output_dim attribute will be used as input_dim when "merging" the models
         self.output_dim = hidden_dim * 2 if bidirectional else hidden_dim
 
-        if self.head_layers_dim is not None:
-            assert self.head_layers_dim[0] == self.output_dim, (
+        if self.head_hidden_dims is not None:
+            assert self.head_hidden_dims[0] == self.output_dim, (
                 "The hidden dimension from the stack or RNNs ({}) is not consistent with "
                 "the expected input dimension ({}) of the fc-head".format(
-                    self.output_dim, self.head_layers_dim[0]
+                    self.output_dim, self.head_hidden_dims[0]
                 )
             )
             self.texthead = MLP(
-                head_layers_dim,
+                head_hidden_dims,
                 head_activation,
                 head_dropout,
                 head_batchnorm,
                 head_batchnorm_last,
                 head_linear_first,
             )
-            self.output_dim = head_layers_dim[-1]
+            self.output_dim = head_hidden_dims[-1]
 
     def forward(self, X: Tensor) -> Tensor:  # type: ignore
         r"""Forward pass that is simply a standard RNN-based
@@ -182,7 +189,7 @@ class DeepText(nn.Module):
             last_h = torch.cat((h[-2], h[-1]), dim=1)
         else:
             last_h = h[-1]
-        if self.head_layers_dim is not None:
+        if self.head_hidden_dims is not None:
             out = self.texthead(last_h)
             return out
         else:

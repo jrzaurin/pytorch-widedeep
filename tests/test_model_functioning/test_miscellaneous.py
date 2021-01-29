@@ -15,7 +15,7 @@ from pytorch_widedeep.models import (
     TabTransformer,
 )
 from pytorch_widedeep.metrics import Accuracy, Precision
-from pytorch_widedeep.trainer import Trainer
+from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.callbacks import EarlyStopping
 
 # Wide array
@@ -60,19 +60,19 @@ target_multi = np.random.choice(3, 32)
 wide = Wide(np.unique(X_wide).shape[0], 1)
 deepdense = TabMlp(
     mlp_hidden_dims=[32, 16],
-    dropout=[0.5, 0.5],
-    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    mlp_dropout=[0.5, 0.5],
+    column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=colnames[-5:],
 )
 deepdenseresnet = TabResnet(
-    blocks_dim=[32, 16],
-    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    blocks_dims=[32, 16],
+    column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=colnames[-5:],
 )
 tabtransformer = TabTransformer(
-    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input_tt,
     continuous_cols=colnames[5:],
 )
@@ -164,8 +164,8 @@ def test_basic_run_with_metrics_multiclass():
     wide = Wide(np.unique(X_wide).shape[0], 3)
     deeptabular = TabMlp(
         mlp_hidden_dims=[32, 16],
-        dropout=[0.5, 0.5],
-        deep_column_idx={k: v for v, k in enumerate(colnames)},
+        mlp_dropout=[0.5, 0.5],
+        column_idx={k: v for v, k in enumerate(colnames)},
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )

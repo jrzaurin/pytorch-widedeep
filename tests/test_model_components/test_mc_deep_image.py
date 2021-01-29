@@ -54,7 +54,7 @@ def test_deep_image_resnet_34():
 ###############################################################################
 # Testing the head
 ###############################################################################
-model6 = DeepImage(head_layers_dim=[512, 256, 128], head_dropout=[0.0, 0.5])
+model6 = DeepImage(head_hidden_dims=[512, 256, 128], head_dropout=[0.0, 0.5])
 
 
 def test_deep_image_2():

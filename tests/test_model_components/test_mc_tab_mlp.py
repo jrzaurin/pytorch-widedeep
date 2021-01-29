@@ -21,8 +21,8 @@ X_deep_cont = X_deep[:, 5:]
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 model1 = TabMlp(
     mlp_hidden_dims=[32, 16],
-    dropout=[0.5, 0.2],
-    deep_column_idx={k: v for v, k in enumerate(colnames[:5])},
+    mlp_dropout=[0.5, 0.2],
+    column_idx={k: v for v, k in enumerate(colnames[:5])},
     embed_input=embed_input,
 )
 
@@ -38,8 +38,8 @@ def test_deep_dense_embed():
 continuous_cols = colnames[-5:]
 model2 = TabMlp(
     mlp_hidden_dims=[32, 16],
-    dropout=[0.5, 0.2],
-    deep_column_idx={k: v for v, k in enumerate(colnames[5:])},
+    mlp_dropout=[0.5, 0.2],
+    column_idx={k: v for v, k in enumerate(colnames[5:])},
     continuous_cols=continuous_cols,
 )
 
@@ -53,12 +53,12 @@ def test_deep_dense_cont():
 # All parameters
 ###############################################################################
 model3 = TabMlp(
-    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    column_idx={k: v for v, k in enumerate(colnames)},
     mlp_hidden_dims=[32, 16, 8],
-    dropout=0.1,
+    mlp_dropout=0.1,
     mlp_batchnorm=True,
     mlp_batchnorm_last=False,
-    linear_first=False,
+    mlp_linear_first=False,
     embed_input=embed_input,
     embed_dropout=0.1,
     continuous_cols=continuous_cols,
@@ -80,9 +80,9 @@ def test_act_fn_ValueError():
     with pytest.raises(ValueError):
         model4 = TabMlp(  # noqa: F841
             mlp_hidden_dims=[32, 16],
-            dropout=[0.5, 0.2],
-            activation="javier",
-            deep_column_idx={k: v for v, k in enumerate(colnames)},
+            mlp_dropout=[0.5, 0.2],
+            mlp_activation="javier",
+            column_idx={k: v for v, k in enumerate(colnames)},
             embed_input=embed_input,
             continuous_cols=continuous_cols,
         )

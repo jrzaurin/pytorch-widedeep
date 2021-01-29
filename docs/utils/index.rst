@@ -18,6 +18,6 @@ Objects
 .. toctree::
 
     deeptabular_utils
-    image_utils
     fastai_transforms
+    image_utils
     text_utils

@@ -129,7 +129,7 @@ preprocess_deep = DensePreprocessor(embed_cols=embed_cols, continuous_cols=cont_
 X_deep = preprocess_deep.fit_transform(df_train)
 deepdense = DeepDense(
     hidden_layers=[64, 32],
-    deep_column_idx=preprocess_deep.deep_column_idx,
+    column_idx=preprocess_deep.column_idx,
     embed_input=preprocess_deep.embeddings_input,
     continuous_cols=cont_cols,
 )
@@ -137,7 +137,7 @@ deepdense = DeepDense(
 # from pytorch_widedeep.models import DeepDenseResnet:
 # deepdense = DeepDenseResnet(
 #     blocks=[64, 32],
-#     deep_column_idx=preprocess_deep.deep_column_idx,
+#     column_idx=preprocess_deep.column_idx,
 #     embed_input=preprocess_deep.embeddings_input,
 #     continuous_cols=cont_cols,
 # )

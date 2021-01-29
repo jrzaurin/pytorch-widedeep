@@ -10,7 +10,7 @@ from torch.utils.data import Dataset, DataLoader
 
 from pytorch_widedeep.models import Wide, TabMlp
 from pytorch_widedeep.metrics import Accuracy
-from pytorch_widedeep.trainer._warmup import WarmUp
+from pytorch_widedeep.training._warmup import WarmUp
 from pytorch_widedeep.models.deep_image import conv_layer
 
 use_cuda = torch.cuda.is_available()
@@ -94,7 +94,7 @@ colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 100) for _ in range(5)]
 cont_cols = [np.random.rand(100) for _ in range(5)]
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
-deep_column_idx = {k: v for v, k in enumerate(colnames[:10])}
+column_idx = {k: v for v, k in enumerate(colnames[:10])}
 continuous_cols = colnames[-5:]
 X_tab = torch.from_numpy(np.vstack(embed_cols + cont_cols).transpose())
 
@@ -114,8 +114,8 @@ if use_cuda:
 # deep
 deeptabular = TabMlp(
     mlp_hidden_dims=[16, 8],
-    dropout=[0.5, 0.2],
-    deep_column_idx=deep_column_idx,
+    mlp_dropout=[0.5, 0.2],
+    column_idx=column_idx,
     embed_input=embed_input,
     continuous_cols=continuous_cols,
 )

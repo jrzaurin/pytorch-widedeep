@@ -2,103 +2,30 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 use_cuda = torch.cuda.is_available()
 
-method_to_objec = {
-    "binary": [
-        "binary",
-        "logistic",
-        "binary_logloss",
-        "binary_cross_entropy",
-        "binary_focal_loss",
-    ],
-    "multiclass": [
-        "multiclass",
-        "multi_logloss",
-        "cross_entropy",
-        "categorical_cross_entropy",
-        "multiclass_focal_loss",
-    ],
-    "regression": [
-        "regression",
-        "mse",
-        "l2",
-        "mean_squared_error",
-        "mean_absolute_error",
-        "mae",
-        "l1",
-        "mean_squared_log_error",
-        "msle",
-        "root_mean_squared_error",
-        "rmse",
-        "root_mean_squared_log_error",
-        "rmsle",
-    ],
-}
-
-
-objective_to_method = {
-    obj: method for method, objs in method_to_objec.items() for obj in objs
-}
-
-
-loss_aliases = {
-    "binary": ["binary", "logistic", "binary_logloss", "binary_cross_entropy"],
-    "multiclass": [
-        "multiclass",
-        "multi_logloss",
-        "cross_entropy",
-        "categorical_cross_entropy",
-    ],
-    "regression": ["regression", "mse", "l2", "mean_squared_error"],
-    "mean_absolute_error": ["mean_absolute_error", "mae", "l1"],
-    "mean_squared_log_error": ["mean_squared_log_error", "msle"],
-    "root_mean_squared_error": ["root_mean_squared_error", "rmse"],
-    "root_mean_squared_log_error": ["root_mean_squared_log_error", "rmsle"],
-}
-
-
-def get_loss_function(loss_fn: str, **kwargs):
-    if loss_fn not in objective_to_method.keys():
-        raise ValueError(
-            "objective or loss function is not supported. Please consider passing a callable "
-            "directly to the compile method (see docs) or use one of the supported objectives "
-            "or loss functions: {}".format(", ".join(objective_to_method.keys()))
-        )
-    if loss_fn in loss_aliases["binary"]:
-        return nn.BCEWithLogitsLoss(weight=kwargs["weight"])
-    if loss_fn in loss_aliases["multiclass"]:
-        return nn.CrossEntropyLoss(weight=kwargs["weight"])
-    if loss_fn in loss_aliases["regression"]:
-        return nn.MSELoss()
-    if loss_fn in loss_aliases["mean_absolute_error"]:
-        return nn.L1Loss()
-    if loss_fn in loss_aliases["mean_squared_log_error"]:
-        return MSLELoss()
-    if loss_fn in loss_aliases["root_mean_squared_error"]:
-        return RMSELoss()
-    if loss_fn in loss_aliases["root_mean_squared_log_error"]:
-        return RMSLELoss()
-    if "focal_loss" in loss_fn:
-        return FocalLoss(**kwargs)
-
 
 class FocalLoss(nn.Module):
-    r"""Implementation of the `focal loss
-    <https://arxiv.org/pdf/1708.02002.pdf>`_ for both binary and
-    multiclass classification
-
-    Parameters
-    ----------
-    alpha: float
-        Focal Loss ``alpha`` parameter
-    gamma: float
-        Focal Loss ``gamma`` parameter
-    """
-
     def __init__(self, alpha: float = 0.25, gamma: float = 1.0):
+        r"""Implementation of the `focal loss
+        <https://arxiv.org/pdf/1708.02002.pdf>`_ for both binary and
+        multiclass classification
+
+        :math:`FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)`
+
+        where, for a case of a binary classification problem
+
+        :math:`\begin{equation} p_t= \begin{cases}p, & \text{if $y=1$}.\\1-p, & \text{otherwise}. \end{cases} \end{equation}`
+
+        Parameters
+        ----------
+        alpha: float
+            Focal Loss ``alpha`` parameter
+        gamma: float
+            Focal Loss ``gamma`` parameter
+        """
         super().__init__()
         self.alpha = alpha
         self.gamma = gamma
@@ -109,8 +36,7 @@ class FocalLoss(nn.Module):
         return (w * (1 - pt).pow(self.gamma)).detach()  # type: ignore
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
-        r"""Focal Loss computation
-
+        r"""
         Parameters
         ----------
         input: Tensor
@@ -154,26 +80,83 @@ class FocalLoss(nn.Module):
 
 class MSLELoss(nn.Module):
     def __init__(self):
+        r"""mean squared log error"""
         super().__init__()
         self.mse = nn.MSELoss()
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions (not probabilities)
+        target: Tensor
+            target tensor with the actual classes
+
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import MSLELoss
+        >>>
+        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+        >>> MSLELoss()(input, target)
+        tensor(0.1115)
+        """
         return self.mse(torch.log(input + 1), torch.log(target + 1))
 
 
 class RMSELoss(nn.Module):
     def __init__(self):
+        """root mean squared error"""
         super().__init__()
         self.mse = nn.MSELoss()
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions (not probabilities)
+        target: Tensor
+            target tensor with the actual classes
+
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import RMSELoss
+        >>>
+        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+        >>> RMSELoss()(input, target)
+        tensor(0.6964)
+        """
         return torch.sqrt(self.mse(input, target))
 
 
 class RMSLELoss(nn.Module):
     def __init__(self):
+        """root mean squared log error"""
         super().__init__()
         self.mse = nn.MSELoss()
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions (not probabilities)
+        target: Tensor
+            target tensor with the actual classes
+
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import RMSLELoss
+        >>>
+        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+        >>> RMSLELoss()(input, target)
+        tensor(0.3339)
+        """
         return torch.sqrt(self.mse(torch.log(input + 1), torch.log(target + 1)))

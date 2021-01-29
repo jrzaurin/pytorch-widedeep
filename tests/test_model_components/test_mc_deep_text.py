@@ -57,7 +57,7 @@ def test_catch_warning():
 ###############################################################################
 
 model4 = DeepText(
-    vocab_size=vocab_size, embed_dim=32, padding_idx=0, head_layers_dim=[64, 16]
+    vocab_size=vocab_size, embed_dim=32, padding_idx=0, head_hidden_dims=[64, 16]
 )
 
 

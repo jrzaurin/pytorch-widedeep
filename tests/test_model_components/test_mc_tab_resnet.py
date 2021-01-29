@@ -20,9 +20,10 @@ X_tab_cont = X_tab[:, 5:]
 ###############################################################################
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 model1 = TabResnet(
-    blocks_dim=[32, 16],
-    dropout=0.5,
-    deep_column_idx={k: v for v, k in enumerate(colnames[:5])},
+    blocks_dims=[32, 16],
+    blocks_dropout=0.5,
+    mlp_dropout=0.5,
+    column_idx={k: v for v, k in enumerate(colnames[:5])},
     embed_input=embed_input,
 )
 
@@ -37,9 +38,10 @@ def test_tab_resnet_embed():
 ###############################################################################
 continuous_cols = colnames[-5:]
 model2 = TabResnet(
-    blocks_dim=[32, 16, 8],
-    dropout=0.5,
-    deep_column_idx={k: v for v, k in enumerate(colnames)},
+    blocks_dims=[32, 16, 8],
+    blocks_dropout=0.5,
+    mlp_dropout=0.5,
+    column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=continuous_cols,
 )
@@ -66,9 +68,10 @@ continuous_cols = colnames[-5:]
 )
 def test_cont_contat(concat_cont_first):
     model3 = TabResnet(
-        blocks_dim=[32, 16, 8],
-        dropout=0.5,
-        deep_column_idx={k: v for v, k in enumerate(colnames)},
+        blocks_dims=[32, 16, 8],
+        blocks_dropout=0.5,
+        mlp_dropout=0.5,
+        column_idx={k: v for v, k in enumerate(colnames)},
         embed_input=embed_input,
         continuous_cols=continuous_cols,
         concat_cont_first=concat_cont_first,
@@ -93,9 +96,10 @@ def test_cont_contat(concat_cont_first):
 def test_full_setup(concat_cont_first):
     model4 = TabResnet(
         embed_input=embed_input,
-        deep_column_idx={k: v for v, k in enumerate(colnames)},
-        blocks_dim=[32, 16, 8],
-        dropout=0.1,
+        column_idx={k: v for v, k in enumerate(colnames)},
+        blocks_dims=[32, 16, 8],
+        blocks_dropout=0.5,
+        mlp_dropout=0.5,
         mlp_hidden_dims=[32, 16],
         mlp_batchnorm=True,
         mlp_batchnorm_last=False,
@@ -111,9 +115,9 @@ def test_full_setup(concat_cont_first):
     ].size(1)
 
     if concat_cont_first:
-        expected_mlp_inp_dim = model4.blocks_dim[-1]
+        expected_mlp_inp_dim = model4.blocks_dims[-1]
     else:
-        expected_mlp_inp_dim = model4.blocks_dim[-1] + len(continuous_cols)
+        expected_mlp_inp_dim = model4.blocks_dims[-1] + len(continuous_cols)
 
     assert (
         out.size(0) == 10
