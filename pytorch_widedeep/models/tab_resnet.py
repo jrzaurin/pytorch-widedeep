@@ -183,7 +183,8 @@ class TabResnet(nn.Module):
         >>> colnames = ['a', 'b', 'c', 'd', 'e']
         >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
         >>> column_idx = {k:v for v,k in enumerate(colnames)}
-        >>> model = TabResnet(blocks_dims=[16,4], column_idx=column_idx, embed_input=embed_input)
+        >>> model = TabResnet(blocks_dims=[16,4], column_idx=column_idx, embed_input=embed_input,
+        ... continuous_cols = ['e'])
         >>> out = model(X_deep)
         """
         super(TabResnet, self).__init__()

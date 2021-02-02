@@ -13,8 +13,11 @@ class WarmUp(object):
     r"""
     'Warm up' methods to be applied to the individual models before the joined
     training. There are 3 warm up routines available:
+
     1) Warm up all trainable layers at once
+
     2) Gradual warm up inspired by the work of Felbo et al., 2017
+
     3) Gradual warm up inspired by the work of Howard & Ruder 2018
 
     The structure of the code in this class is designed to be instantiated within
@@ -27,7 +30,7 @@ class WarmUp(object):
     loss_fn: Any
        any function with the same strucure as '_loss_fn' in the main class WideDeep
        at pytorch_widedeep.models.wide_deep
-    metric: Metric
+    metric: Metric or MultipleMetrics
        object of class Metric (see Metric in pytorch_widedeep.metrics)
     method: str
        one of 'binary', 'regression' or 'multiclass'
@@ -55,15 +58,17 @@ class WarmUp(object):
         n_epochs: int,
         max_lr: float,
     ):
-        r"""
-        Warm up all trainable layers in a model using a one cyclic learning rate
-        with a triangular pattern. This is refereed as Slanted Triangular learing
-        rate in Jeremy Howard & Sebastian Ruder 2018
+        r"""Warm up all trainable layers in a model using a one cyclic learning rate
+        with a triangular pattern. This is refereed as Slanted Triangular
+        learing rate in Jeremy Howard & Sebastian Ruder 2018
         (https://arxiv.org/abs/1801.06146). The cycle is described as follows:
-        1-The learning rate will gradually increase for 10% of the training steps
+
+        1) The learning rate will gradually increase for 10% of the training steps
             from max_lr/10 to max_lr.
-        2-It will then gradually decrease to max_lr/10 for the remaining 90% of the
+
+        2) It will then gradually decrease to max_lr/10 for the remaining 90% of the
             steps.
+
         The optimizer used in the process is AdamW
 
         Parameters:
@@ -71,14 +76,14 @@ class WarmUp(object):
         model: nn.Module
             nn.Module object containing one the WideDeep model components (wide,
             deepdense, deeptext or deepimage)
-        model_name: Str
+        model_name: str
             string indicating the model name to access the corresponding parameters.
             One of 'wide', 'deepdense', 'deeptext' or 'deepimage'
         loader: DataLoader
             Pytorch DataLoader containing the data used to warm up
-        n_epochs: Int
+        n_epochs: int
             number of epochs used to warm up the model
-        max_lr: Float
+        max_lr: float
             maximum learning rate value during the triangular cycle.
         """
         if self.verbose:
@@ -107,12 +112,11 @@ class WarmUp(object):
         layers: List[nn.Module],
         routine: str,
     ):
-        r"""
-        Warm up certain layers within the model following a gradual warm up routine.
-        The approaches implemented in this method are inspired by the work of Felbo
-        et al., 2017 in their DeepEmoji paper (https://arxiv.org/abs/1708.00524) and
-        Howard & Sebastian Ruder 2018 ULMFit paper
-        (https://arxiv.org/abs/1801.06146).
+        r"""Warm up certain layers within the model following a gradual warm up
+        routine. The approaches implemented in this method are inspired by the
+        work of Felbo et al., 2017 in their DeepEmoji paper
+        (https://arxiv.org/abs/1708.00524) and Howard & Sebastian Ruder 2018
+        ULMFit paper (https://arxiv.org/abs/1801.06146).
 
         A one cycle triangular learning rate is used. In both Felbo's and Howard's
         routines a gradually decreasing learning rate is used as we go deeper into
@@ -125,6 +129,7 @@ class WarmUp(object):
            layer in 'layers' for one epoch freezing the already warmed up layer(s).
            Repeat untill all individual layers are warmed. Then warm one last epoch
            with all warmed layers trainable
+
         2) The 'Howard' routine:
            warm up the first layer in 'layers' for one epoch. Then warm the next layer
            in the model for one epoch while keeping the already warmed up layer(s)
@@ -135,12 +140,12 @@ class WarmUp(object):
         model: nn.Module
            nn.Module object containing one the WideDeep model components (wide,
            deepdense, deeptext or deepimage)
-        model_name: Str
+        model_name: str
            string indicating the model name to access the corresponding parameters.
            One of 'wide', 'deepdense', 'deeptext' or 'deepimage'
         loader: DataLoader
            Pytorch DataLoader containing the data to warm up with.
-        last_layer_max_lr: Float
+        last_layer_max_lr: float
            maximum learning rate value during the triangular cycle for the layer
            closest to the output neuron(s). Deeper layers in 'model' will be trained
            with a gradually descending learning rate. The descending factor is fixed
@@ -242,7 +247,11 @@ class WarmUp(object):
                 for batch_idx, (data, target) in zip(t, loader):
                     t.set_description("epoch %i" % (epoch + 1))
                     X = data[model_name].cuda() if use_cuda else data[model_name]
-                    y = target.float() if self.method != "multiclass" else target
+                    y = (
+                        target.view(-1, 1).float()
+                        if self.method != "multiclass"
+                        else target
+                    )
                     y = y.cuda() if use_cuda else y
 
                     optimizer.zero_grad()
@@ -257,10 +266,10 @@ class WarmUp(object):
 
                     if self.metric is not None:
                         if self.method == "binary":
-                            acc = self.metric(torch.sigmoid(y_pred), y)
+                            score = self.metric(torch.sigmoid(y_pred), y)
                         if self.method == "multiclass":
-                            acc = self.metric(F.softmax(y_pred, dim=1), y)
-                        t.set_postfix(metrics=acc, loss=avg_loss)
+                            score = self.metric(F.softmax(y_pred, dim=1), y)
+                        t.set_postfix(metrics=score, loss=avg_loss)
                     else:
                         t.set_postfix(loss=avg_loss)
 
@@ -271,14 +280,14 @@ class WarmUp(object):
 
         Parameters:
         ----------
-        steps: Int
+        steps: int
             steps per epoch
-        n_epochs: Int. Default=1
+        n_epochs: int. Default=1
             number of warm up epochs
 
         Returns:
         -------
-        up, down: Tuple, Int
+        up, down: Tuple, int
             number of steps increasing/decreasing the learning rate during the cycle
         """
         up = round((steps * n_epochs) * 0.1)

@@ -13,8 +13,8 @@
 
 # pytorch-widedeep
 
-A flexible package to combine tabular data with text and images using wide and
-deep models.
+A flexible package to use Deep Learning with tabular data, text and images
+using wide and deep models.
 
 **Documentation:** [https://pytorch-widedeep.readthedocs.io](https://pytorch-widedeep.readthedocs.io/en/latest/index.html)
 
@@ -24,33 +24,38 @@ deep models.
 
 `pytorch-widedeep` is based on Google's Wide and Deep Algorithm. Details of
 the original algorithm can be found
-[here](https://www.tensorflow.org/tutorials/wide_and_deep), and the nice
-research paper can be found [here](https://arxiv.org/abs/1606.07792).
+[here](https://www.tensorflow.org/tutorials/wide_and_deep), and the  research
+paper can be found [here](https://arxiv.org/abs/1606.07792).
 
 In general terms, `pytorch-widedeep` is a package to use deep learning with
 tabular data. In particular, is intended to facilitate the combination of text
 and images with corresponding tabular data using wide and deep models. With
-that in mind there are two architectures that can be implemented with just a
-few lines of code.
+that in mind there are a number of architectures that can be implemented with
+just a few lines of code. The main components of those architectures are shown
+in the Figure below:
 
-### Architectures
-
-**Architecture 1**:
 
 <p align="center">
-  <img width="750" src="docs/figures/architecture_1.png">
+  <img width="750" src="docs/figures/widedeep_arch.png">
 </p>
 
-Architecture 1 combines the `Wide`, Linear model with the outputs from the
-`DeepDense` or `DeepDenseResnet`, `DeepText` and `DeepImage` components
-connected to a final output neuron or neurons, depending on whether we are
-performing a binary classification or regression, or a multi-class
-classification. The components within the faded-pink rectangles are
-concatenated.
+The dashed boxes in the figure represent optional, overall components, and the
+dashed lines indicate the corresponding connections, depending on whether or
+not certain components are present. For example, the dashed, blue-lines
+indicate that the ``deeptabular``, ``deeptext`` and ``deepimage`` components
+are connected directly to the output neuron or neurons (depending on whether
+we are performing a binary classification or regression, or a multi-class
+classification) if the optional ``deephead`` is not present. The components
+within the faded-pink rectangle are concatenated.
+
+Note that it is not possible to illustrate the number of possible
+architectures and components available in ``pytorch-widedeep`` in one Figure.
+Therefore, for more details on possible architectures (and more) please, see
+the documentation, or the Examples folders and the notebooks there.
 
 In math terms, and following the notation in the
-[paper](https://arxiv.org/abs/1606.07792), Architecture 1 can be formulated
-as:
+[paper](https://arxiv.org/abs/1606.07792), the expression for the architecture
+without a ``deephead`` component can be formulated as:
 
 <p align="center">
   <img width="500" src="docs/figures/architecture_1_math.png">
@@ -67,42 +72,46 @@ the constituent features (“gender=female” and “language=en”) are all 1, 
 otherwise".*
 
 
-**Architecture 2**
-
-<p align="center">
-  <img width="750" src="docs/figures/architecture_2.png">
-</p>
-
-Architecture 2 combines the `Wide`, Linear model with the Deep components of
-the model connected to the output neuron(s), after the different Deep
-components have been themselves combined through a FC-Head (that I refer as
-`deephead`).
-
-In math terms, and following the notation in the
-[paper](https://arxiv.org/abs/1606.07792), Architecture 2 can be formulated
-as:
+While if there is a ``deephead`` component, the previous expression turns
+into:
 
 <p align="center">
   <img width="300" src="docs/figures/architecture_2_math.png">
 </p>
 
-Note that each individual component, `wide`, `deepdense` (either `DeepDense`
-or `DeepDenseResnet`), `deeptext` and `deepimage`, can be used independently
-and in isolation. For example, one could use only `wide`, which is in simply a
-linear model.
+It is important to emphasize that **each individual component, `wide`,
+`deeptabular`, `deeptext` and `deepimage`, can be used independently** and in
+isolation. For example, one could use only `wide`, which is in simply a linear
+model. In fact, one of the most interesting aspects in ``pytorch-widedeep`` is
+the ``deeptabular`` component. Currently, ``pytorch-widedeep`` offers 3 models
+for that component:
 
-On the other hand, while I recommend using the `Wide` and `DeepDense` (or
-`DeepDenseResnet`) classes in `pytorch-widedeep` to build the `wide` and
-`deepdense` component, it is very likely that users will want to use their own
-models in the case of the `deeptext` and `deepimage` components. That is
-perfectly possible as long as the the custom models have an attribute called
-`output_dim` with the size of the last layer of activations, so that
-`WideDeep` can be constructed
+1. ``TabMlp``: this is almost identical to the [tabular
+model](https://docs.fast.ai/tutorial.tabular.html) in the fantastic
+[fastai](https://docs.fast.ai/) library, and consists simply in embeddings
+representing the categorical features, concatenated with the continuous
+features, and passed then through a MLP.
 
-`pytorch-widedeep` includes standard text (stack of LSTMs) and image
+2. ``TabRenset``: This is similar to the previous model but the embeddings are
+passed through a series of ResNet blocks built with dense layers.
+
+3. ``TabTransformer``: Details on the TabTransformer can be found in:
+[TabTransformer: Tabular Data Modeling Using Contextual
+Embeddings](https://arxiv.org/pdf/2012.06678.pdf)
+
+
+For details on these 3 models and their options please see the examples in the
+Examples folder and the documentation.
+
+Finally, while I recommend using the ``wide`` and ``deeptabular`` models in
+``pytorch-widedeep`` it is very likely that users will want to use their own
+models for the ``deeptext`` and ``deepimage`` components. That is perfectly
+possible as long as the the custom models have an attribute called
+``output_dim`` with the size of the last layer of activations, so that
+``WideDeep`` can be constructed. Again, examples on how to use custom
+components can be found in the Examples folder. Just in case
+``pytorch-widedeep`` includes standard text (stack of LSTMs) and image
 (pre-trained ResNets or stack of CNNs) models.
-
-See the examples folder or the docs for more information.
 
 
 ### Installation
@@ -130,8 +139,8 @@ cd pytorch-widedeep
 pip install -e .
 ```
 
-**Important note for Mac users**: at the time of writing (Dec-2020) the latest
-`torch` release is `1.7`. This release has some
+**Important note for Mac users**: at the time of writing (Feb-2020) the latest
+`torch` release is `1.7.1`. This release has some
 [issues](https://stackoverflow.com/questions/64772335/pytorch-w-parallelnative-cpp206)
 when running on Mac and the data-loaders will not run in parallel. In
 addition, since `python 3.8`, [the `multiprocessing` library start method
@@ -158,17 +167,27 @@ Binary classification with the [adult
 dataset]([adult](https://www.kaggle.com/wenruliu/adult-income-dataset))
 using `Wide` and `DeepDense` and defaults settings.
 
+
 ```python
+```
+
+Building a wide (linear) and deep model with ``pytorch-widedeep``:
+
+```python
+
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
-from pytorch_widedeep.models import Wide, DeepDense, WideDeep
+from pytorch_widedeep import Trainer
+from pytorch_widedeep.preprocessing import WidePreprocessor, TabPreprocessor
+from pytorch_widedeep.models import Wide, TabMlp, WideDeep
 from pytorch_widedeep.metrics import Accuracy
 
-# these next 4 lines are not directly related to pytorch-widedeep. I assume
-# you have downloaded the dataset and place it in a dir called data/adult/
+# the following 4 lines are not directly related to ``pytorch-widedeep``. I
+# assume you have downloaded the dataset and place it in a dir called
+# data/adult/
+
 df = pd.read_csv("data/adult/adult.csv.zip")
 df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
 df.drop("income", axis=1, inplace=True)
@@ -197,34 +216,28 @@ target_col = "income_label"
 target = df_train[target_col].values
 
 # wide
-preprocess_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=cross_cols)
-X_wide = preprocess_wide.fit_transform(df_train)
+wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=cross_cols)
+X_wide = wide_preprocessor.fit_transform(df_train)
 wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
-# deepdense
-preprocess_deep = DensePreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
-X_deep = preprocess_deep.fit_transform(df_train)
-deepdense = DeepDense(
-    hidden_layers=[64, 32],
-    column_idx=preprocess_deep.column_idx,
-    embed_input=preprocess_deep.embeddings_input,
+# deeptabular
+tab_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+X_tab = tab_preprocessor.fit_transform(df_train)
+deeptabular = TabMlp(
+    mlp_hidden_dims=[64, 32],
+    column_idx=tab_preprocessor.column_idx,
+    embed_input=tab_preprocessor.embeddings_input,
     continuous_cols=cont_cols,
 )
-# # To use DeepDenseResnet as the deepdense component simply:
-# from pytorch_widedeep.models import DeepDenseResnet:
-# deepdense = DeepDenseResnet(
-#     blocks=[64, 32],
-#     column_idx=preprocess_deep.column_idx,
-#     embed_input=preprocess_deep.embeddings_input,
-#     continuous_cols=cont_cols,
-# )
 
-# build, compile and fit
-model = WideDeep(wide=wide, deepdense=deepdense)
-model.compile(method="binary", metrics=[Accuracy])
-model.fit(
+# wide and deep
+model = WideDeep(wide=wide, deeptabular=deeptabular)
+
+# train the model
+trainer = Trainer(model, objective="binary", metrics=[Accuracy])
+trainer.fit(
     X_wide=X_wide,
-    X_deep=X_deep,
+    X_tab=X_tab,
     target=target,
     n_epochs=5,
     batch_size=256,
@@ -232,26 +245,17 @@ model.fit(
 )
 
 # predict
-X_wide_te = preprocess_wide.transform(df_test)
-X_deep_te = preprocess_deep.transform(df_test)
-preds = model.predict(X_wide=X_wide_te, X_deep=X_deep_te)
+X_wide_te = wide_preprocessor.transform(df_test)
+X_tab_te = tab_preprocessor.transform(df_test)
+preds = trainer.predict(X_wide=X_wide_te, X_tab=X_tab_te)
 
-#  # save and load
-# torch.save(model, "model_weights/model.t")
-# model = torch.load("model_weights/model.t")
-
-#  # or via state dictionaries
-# torch.save(model.state_dict(), PATH)
-# model = WideDeep(*args)
-# model.load_state_dict(torch.load(PATH))
+# save and load
+trainer.save_model("model_weights/model.t")
 ```
 
-Of course, one can do much more, such as using different initializations,
-optimizers or learning rate schedulers for each component of the overall
-model. Adding FC-Heads to the Text and Image components. Using the [Focal
-Loss](https://arxiv.org/abs/1708.02002), warming up individual components
-before joined training, etc. See the `examples` or the `docs` folders for a
-better understanding of the content of the package and its functionalities.
+Of course, one can do **much more**. See the Examples folder, the
+documentation or the companion posts for a better understanding of the content
+of the package and its functionalities.
 
 ### Testing
 

@@ -143,12 +143,13 @@ class TabMlp(nn.Module):
         --------
         >>> import torch
         >>> from pytorch_widedeep.models import TabMlp
-        >>> X_deep = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
+        >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
         >>> colnames = ['a', 'b', 'c', 'd', 'e']
         >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
         >>> column_idx = {k:v for v,k in enumerate(colnames)}
-        >>> model = TabMlp(mlp_hidden_dims=[8,4], column_idx=column_idx, embed_input=embed_input)
-        >>> out = model(X_deep)
+        >>> model = TabMlp(mlp_hidden_dims=[8,4], column_idx=column_idx, embed_input=embed_input,
+        ... continuous_cols = ['e'])
+        >>> out = model(X_tab)
         """
         super(TabMlp, self).__init__()
 
@@ -165,7 +166,8 @@ class TabMlp(nn.Module):
 
         if self.mlp_activation not in allowed_activations:
             raise ValueError(
-                "the activation function for the dense layers must be one of {}. Got {} instead".format(
+                "Currently, only the following activation functions are supported "
+                "for for the MLP's dense layers: {}. Got {} instead".format(
                     ", ".join(allowed_activations), self.mlp_activation
                 )
             )

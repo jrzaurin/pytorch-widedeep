@@ -161,12 +161,25 @@ class TransformerEncoder(nn.Module):
         return self.ff_addnorm(Y, self.feed_forward(Y))
 
 
+class FullEmbeddingDropout(nn.Module):
+    def __init__(self, dropout: float):
+        super(FullEmbeddingDropout, self).__init__()
+        self.dropout = dropout
+
+    def forward(self, X: Tensor) -> Tensor:
+        mask = X.new().resize_((X.size(1), 1)).bernoulli_(1 - self.dropout).expand_as(
+            X
+        ) / (1 - self.dropout)
+        return mask * X
+
+
 class SharedEmbeddings(nn.Module):
     def __init__(
         self,
         num_embed: int,
         embed_dim: int,
-        dropout: float,
+        embed_dropout: float,
+        full_embed_dropout: bool = False,
         add_shared_embed: bool = False,
         frac_shared_embed=8,
     ):
@@ -174,6 +187,7 @@ class SharedEmbeddings(nn.Module):
         assert (
             embed_dim % frac_shared_embed == 0
         ), "'embed_dim' must be divisible by 'frac_shared_embed'"
+
         self.add_shared_embed = add_shared_embed
         self.embed = nn.Embedding(num_embed, embed_dim, padding_idx=0)
         self.embed.weight.data.clamp_(-2, 2)
@@ -182,7 +196,11 @@ class SharedEmbeddings(nn.Module):
         else:
             col_embed_dim = embed_dim // frac_shared_embed
         self.shared_embed = nn.Parameter(torch.empty(1, col_embed_dim).uniform_(-1, 1))
-        self.dropout = nn.Dropout(dropout)
+
+        if full_embed_dropout:
+            self.dropout = FullEmbeddingDropout(embed_dropout)
+        else:
+            self.dropout = nn.Dropout(embed_dropout)  # type: ignore[assignment]
 
     def forward(self, X: Tensor) -> Tensor:
         out = self.dropout(self.embed(X))
@@ -201,6 +219,7 @@ class TabTransformer(nn.Module):
         embed_input: List[Tuple[str, int]],
         continuous_cols: Optional[List[str]] = None,
         embed_dropout: float = 0.0,
+        full_embed_dropout: bool = False,
         shared_embed: bool = False,
         add_shared_embed: bool = False,
         frac_shared_embed: int = 8,
@@ -303,13 +322,13 @@ class TabTransformer(nn.Module):
         --------
         >>> import torch
         >>> from pytorch_widedeep.models import TabTransformer
-        >>> X_deep = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
+        >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
         >>> colnames = ['a', 'b', 'c', 'd', 'e']
         >>> embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
         >>> continuous_cols = ['e']
         >>> column_idx = {k:v for v,k in enumerate(colnames)}
         >>> model = TabTransformer(column_idx=column_idx, embed_input=embed_input, continuous_cols=continuous_cols)
-        >>> out = model(X_deep)
+        >>> out = model(X_tab)
         """
         super(TabTransformer, self).__init__()
 
@@ -317,6 +336,7 @@ class TabTransformer(nn.Module):
         self.embed_input = embed_input
         self.continuous_cols = continuous_cols
         self.embed_dropout = embed_dropout
+        self.full_embed_dropout = full_embed_dropout
         self.shared_embed = shared_embed
         self.add_shared_embed = add_shared_embed
         self.frac_shared_embed = frac_shared_embed
@@ -344,6 +364,7 @@ class TabTransformer(nn.Module):
                         val + 1,
                         input_dim,
                         embed_dropout,
+                        full_embed_dropout,
                         add_shared_embed,
                         frac_shared_embed,
                     )
@@ -357,8 +378,10 @@ class TabTransformer(nn.Module):
                     for col, val in self.embed_input
                 }
             )
-            self.embedding_dropout = nn.Dropout(embed_dropout)
-
+            if full_embed_dropout:
+                self.embedding_dropout = FullEmbeddingDropout(embed_dropout)
+            else:
+                self.embedding_dropout = nn.Dropout(embed_dropout)  # type: ignore[assignment]
         # Continuous
         if self.continuous_cols is not None:
             cont_inp_dim = len(self.continuous_cols)

@@ -57,7 +57,7 @@ def test_tabtransformer_shared_embeddings():
     shared_embeddings = SharedEmbeddings(
         num_embed=5,
         embed_dim=16,
-        dropout=0.0,
+        embed_dropout=0.0,
         add_shared_embed=False,
         frac_shared_embed=8,
     )
@@ -70,7 +70,7 @@ def test_tabtransformer_shared_embeddings():
     shared_embeddings = SharedEmbeddings(
         num_embed=5,
         embed_dim=16,
-        dropout=0.0,
+        embed_dropout=0.0,
         add_shared_embed=True,
         frac_shared_embed=8,
     )

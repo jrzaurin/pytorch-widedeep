@@ -179,7 +179,7 @@ class WidePreprocessor(BasePreprocessor):
 class TabPreprocessor(BasePreprocessor):
     def __init__(
         self,
-        embed_cols: List[Union[str, Tuple[str, int]]] = None,
+        embed_cols: Union[List[str], List[Tuple[str, int]]] = None,
         continuous_cols: List[str] = None,
         scale: bool = True,
         default_embed_dim: int = 8,

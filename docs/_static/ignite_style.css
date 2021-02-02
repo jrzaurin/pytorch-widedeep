@@ -6,7 +6,7 @@ article.pytorch-article table tr td:first-of-type {
 div.container a.header-logo {
   height: 80px;
   width: 160px;
-  background-image: url("img/widedeep_logo.png");
+  background-image: url("img/widedeep_logo_docs.png");
   background-size: 160px;
 }
 

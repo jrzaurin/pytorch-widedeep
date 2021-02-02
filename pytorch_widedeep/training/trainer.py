@@ -1,5 +1,4 @@
 import os
-import warnings
 
 import numpy as np
 import torch
@@ -20,69 +19,18 @@ from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
 from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
+from pytorch_widedeep.training._loss_and_obj_aliases import (
+    _LossAliases,
+    _ObjectiveToMethod,
+)
 from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
-
-warnings.filterwarnings("default", category=DeprecationWarning)
 
 n_cpus = os.cpu_count()
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
-
-method_to_objecive = {
-    "binary": [
-        "binary",
-        "logistic",
-        "binary_logloss",
-        "binary_cross_entropy",
-        "binary_focal_loss",
-    ],
-    "multiclass": [
-        "multiclass",
-        "multi_logloss",
-        "cross_entropy",
-        "categorical_cross_entropy",
-        "multiclass_focal_loss",
-    ],
-    "regression": [
-        "regression",
-        "mse",
-        "l2",
-        "mean_squared_error",
-        "mean_absolute_error",
-        "mae",
-        "l1",
-        "mean_squared_log_error",
-        "msle",
-        "root_mean_squared_error",
-        "rmse",
-        "root_mean_squared_log_error",
-        "rmsle",
-    ],
-}
-
-
-objective_to_method = {
-    obj: method for method, objs in method_to_objecive.items() for obj in objs
-}
-
-
-loss_aliases = {
-    "binary": ["binary", "logistic", "binary_logloss", "binary_cross_entropy"],
-    "multiclass": [
-        "multiclass",
-        "multi_logloss",
-        "cross_entropy",
-        "categorical_cross_entropy",
-    ],
-    "regression": ["regression", "mse", "l2", "mean_squared_error"],
-    "mean_absolute_error": ["mean_absolute_error", "mae", "l1"],
-    "mean_squared_log_error": ["mean_squared_log_error", "msle"],
-    "root_mean_squared_error": ["root_mean_squared_error", "rmse"],
-    "root_mean_squared_log_error": ["root_mean_squared_log_error", "rmsle"],
-}
 
 
 class Trainer(object):
@@ -97,7 +45,7 @@ class Trainer(object):
         custom_loss_function: Optional[Module] = None,
         optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
         lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]] = None,
-        initializers: Optional[Dict[str, Initializer]] = None,
+        initializers: Optional[Union[Initializer, Dict[str, Initializer]]] = None,
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[List[Metric]] = None,
@@ -113,7 +61,7 @@ class Trainer(object):
         Parameters
         ----------
         model: ``WideDeep``
-            An object of class ``WideDeep``. See pytorch.models.wide_deep.WideDeep
+            An object of class ``WideDeep``.
         objective: str
             Defines the objective, loss or cost function.
 
@@ -157,11 +105,11 @@ class Trainer(object):
             - a dictionary where there keys are the model componenst (i.e. `'wide'`,
               `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
               values are the corresponding learning rate schedulers.
-        initializers: Dict, Optional. default=None
-            Dict where there keys are the model components (i.e. `'wide'`,
-            `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)
-            and the values are the corresponding initializers. See module
-            ``pytorch_widedeep.initializers``.
+        initializers: ``Initializer`` or Dict, Optional. default=None
+            - An instance of an `Initializer`` object see ``pytorch-widedeep.initializers`` or
+            - a dictionary where there keys are the model components (i.e. `'wide'`,
+              `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)
+              and the values are the corresponding initializers.
         transforms: List, Optional, default=None
             List with :obj:`torchvision.transforms` to be applied to the image
             component of the model (i.e. ``deepimage``) See `torchvision
@@ -262,7 +210,7 @@ class Trainer(object):
         self.seed = seed
         self.early_stop = False
         self.objective = objective
-        self.method = objective_to_method[objective]
+        self.method = _ObjectiveToMethod.get(objective)
 
         self.loss_fn = self._get_loss_fn(
             objective, class_weight, custom_loss_function, alpha, gamma
@@ -982,25 +930,25 @@ class Trainer(object):
 
     @staticmethod
     def _alias_to_loss(loss_fn: str, **kwargs):
-        if loss_fn not in objective_to_method.keys():
+        if loss_fn not in _ObjectiveToMethod.keys():
             raise ValueError(
                 "objective or loss function is not supported. Please consider passing a callable "
                 "directly to the compile method (see docs) or use one of the supported objectives "
-                "or loss functions: {}".format(", ".join(objective_to_method.keys()))
+                "or loss functions: {}".format(", ".join(_ObjectiveToMethod.keys()))
             )
-        if loss_fn in loss_aliases["binary"]:
+        if loss_fn in _LossAliases.get("binary"):
             return nn.BCEWithLogitsLoss(weight=kwargs["weight"])
-        if loss_fn in loss_aliases["multiclass"]:
+        if loss_fn in _LossAliases.get("multiclass"):
             return nn.CrossEntropyLoss(weight=kwargs["weight"])
-        if loss_fn in loss_aliases["regression"]:
+        if loss_fn in _LossAliases.get("regression"):
             return nn.MSELoss()
-        if loss_fn in loss_aliases["mean_absolute_error"]:
+        if loss_fn in _LossAliases.get("mean_absolute_error"):
             return nn.L1Loss()
-        if loss_fn in loss_aliases["mean_squared_log_error"]:
+        if loss_fn in _LossAliases.get("mean_squared_log_error"):
             return MSLELoss()
-        if loss_fn in loss_aliases["root_mean_squared_error"]:
+        if loss_fn in _LossAliases.get("root_mean_squared_error"):
             return RMSELoss()
-        if loss_fn in loss_aliases["root_mean_squared_log_error"]:
+        if loss_fn in _LossAliases.get("root_mean_squared_log_error"):
             return RMSLELoss()
         if "focal_loss" in loss_fn:
             return FocalLoss(**kwargs)
@@ -1023,24 +971,31 @@ class Trainer(object):
 
     def _initialize(self, initializers):
         if initializers is not None:
-            self.initializer = MultipleInitializer(initializers, verbose=self.verbose)
-            self.initializer.apply(self.model)
+            if isinstance(initializers, Dict):
+                self.initializer = MultipleInitializer(
+                    initializers, verbose=self.verbose
+                )
+                self.initializer.apply(self.model)
+            elif isinstance(initializers, type):
+                self.initializer = initializers()
+                self.initializer(self.model)
+            elif isinstance(initializers, Initializer):
+                self.initializer = initializers
+                self.initializer(self.model)
 
     def _get_optimizer(self, optimizers):
         if optimizers is not None:
             if isinstance(optimizers, Optimizer):
-                optimzer: Union[Optimizer, MultipleOptimizer] = optimizers
+                optimizer: Union[Optimizer, MultipleOptimizer] = optimizers
             elif isinstance(optimizers, Dict):
                 opt_names = list(optimizers.keys())
-                mod_names = [
-                    n for n, c in self.model.named_children() if n != "loss_fn"
-                ]
+                mod_names = [n for n, c in self.model.named_children()]
                 for mn in mod_names:
                     assert mn in opt_names, "No optimizer found for {}".format(mn)
-                optimzer = MultipleOptimizer(optimizers)
+                optimizer = MultipleOptimizer(optimizers)
         else:
-            optimzer = torch.optim.AdamW(self.model.parameters())  # type: ignore
-        return optimzer
+            optimizer = torch.optim.AdamW(self.model.parameters())  # type: ignore
+        return optimizer
 
     def _get_lr_scheduler(self, lr_schedulers):
         if lr_schedulers is not None:

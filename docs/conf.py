@@ -151,8 +151,8 @@ html_static_path = ["_static"]
 # directory) that is the favicon of the docs. Modern browsers use this as
 # the icon for tabs, windows and bookmarks. It should be a Windows-style
 # icon file (.ico).
-html_favicon = "_static/img/infinitoml.ico"
-html_logo = "_static/img/widedeep_logo.png"
+html_favicon = "_static/img/widedeep_logo_docs.ico"
+html_logo = "_static/img/widedeep_logo_docs.png"
 html_theme_options = {
     "canonical_url": "https://pytorch-widedeep.readthedocs.io/en/latest/",
     "collapse_navigation": False,
