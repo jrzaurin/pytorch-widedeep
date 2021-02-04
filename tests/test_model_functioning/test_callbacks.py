@@ -28,11 +28,6 @@ cont_cols = [np.random.rand(32) for _ in range(5)]
 column_idx = {k: v for v, k in enumerate(colnames)}
 X_tab = np.vstack(embed_cols + cont_cols).transpose()
 
-#  Text Array
-padded_sequences = np.random.choice(np.arange(1, 100), (32, 48))
-vocab_size = 100
-X_text = np.hstack((np.repeat(np.array([[0, 0]]), 32, axis=0), padded_sequences))
-
 # target
 target = np.random.choice(2, 32)
 
@@ -107,7 +102,6 @@ def test_history_callback(
     trainer.fit(
         X_wide=X_wide,
         X_tab=X_tab,
-        X_text=X_text,
         target=target,
         n_epochs=5,
         batch_size=16,

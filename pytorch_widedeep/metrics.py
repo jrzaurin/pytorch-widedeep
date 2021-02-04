@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 
 from pytorch_widedeep.callbacks import Callback
@@ -90,7 +89,7 @@ class Accuracy(Metric):
         self.correct_count = 0
         self.total_count = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor):
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
         num_classes = y_pred.size(1)
 
         if num_classes == 1:
@@ -149,7 +148,7 @@ class Precision(Metric):
         self.true_positives = 0
         self.all_positives = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor):
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
         num_class = y_pred.size(1)
 
         if num_class == 1:
@@ -214,7 +213,7 @@ class Recall(Metric):
         self.true_positives = 0
         self.actual_positives = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor):
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
         num_class = y_pred.size(1)
 
         if num_class == 1:
@@ -284,7 +283,7 @@ class FBetaScore(Metric):
         self.precision.reset()
         self.recall.reset()
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor):
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
 
         prec = self.precision(y_pred, y_true)
         rec = self.recall(y_pred, y_true)
@@ -293,7 +292,7 @@ class FBetaScore(Metric):
         fbeta = ((1 + beta2) * prec * rec) / (beta2 * prec + rec + self.eps)
 
         if self.average:
-            return fbeta.mean().item()
+            return fbeta.mean().item()  # type: ignore[attr-defined]
         else:
             return fbeta
 
@@ -338,7 +337,7 @@ class F1Score(Metric):
         """
         self.f1.reset()
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
         return self.f1(y_pred, y_true)
 
 
@@ -381,7 +380,7 @@ class R2Score(Metric):
         self.num_examples = 0
         self.y_true_sum = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor):
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
 
         self.numerator += ((y_pred - y_true) ** 2).sum().item()
 
