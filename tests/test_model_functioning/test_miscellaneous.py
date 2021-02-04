@@ -1,4 +1,6 @@
+import shutil
 import string
+from copy import deepcopy
 
 import numpy as np
 import torch
@@ -58,14 +60,14 @@ target_multi = np.random.choice(3, 32)
 
 # build model components
 wide = Wide(np.unique(X_wide).shape[0], 1)
-deepdense = TabMlp(
+tabmlp = TabMlp(
     mlp_hidden_dims=[32, 16],
     mlp_dropout=[0.5, 0.5],
     column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
     continuous_cols=colnames[-5:],
 )
-deepdenseresnet = TabResnet(
+tabresnet = TabResnet(
     blocks_dims=[32, 16],
     column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input,
@@ -85,7 +87,7 @@ deepimage = DeepImage(pretrained=True)
 
 
 def test_optimizer_scheduler_format():
-    model = WideDeep(deeptabular=deepdense)
+    model = WideDeep(deeptabular=tabmlp)
     optimizers = {
         "deeptabular": torch.optim.Adam(model.deeptabular.parameters(), lr=0.01)
     }
@@ -105,7 +107,7 @@ def test_optimizer_scheduler_format():
 
 
 def test_non_instantiated_callbacks():
-    model = WideDeep(wide=wide, deeptabular=deepdense)
+    model = WideDeep(wide=wide, deeptabular=tabmlp)
     callbacks = [EarlyStopping]
     trainer = Trainer(model, objective="binary", callbacks=callbacks)
     assert trainer.callbacks[1].__class__.__name__ == "EarlyStopping"
@@ -117,7 +119,7 @@ def test_non_instantiated_callbacks():
 
 
 def test_multiple_metrics():
-    model = WideDeep(wide=wide, deeptabular=deepdense)
+    model = WideDeep(wide=wide, deeptabular=tabmlp)
     metrics = [Accuracy, Precision]
     trainer = Trainer(model, objective="binary", metrics=metrics)
     assert (
@@ -134,8 +136,8 @@ def test_multiple_metrics():
 @pytest.mark.parametrize(
     "wide, deeptabular",
     [
-        (wide, deepdense),
-        (wide, deepdenseresnet),
+        (wide, tabmlp),
+        (wide, tabresnet),
         (wide, tabtransformer),
     ],
 )
@@ -193,8 +195,8 @@ def test_basic_run_with_metrics_multiclass():
     "wide, deeptabular, deeptext, deepimage, X_wide, X_tab, X_text, X_img, target",
     [
         (wide, None, None, None, X_wide, None, None, None, target),
-        (None, deepdense, None, None, None, X_tab, None, None, target),
-        (None, deepdenseresnet, None, None, None, X_tab, None, None, target),
+        (None, tabmlp, None, None, None, X_tab, None, None, target),
+        (None, tabresnet, None, None, None, X_tab, None, None, target),
         (None, tabtransformer, None, None, None, X_tab, None, None, target),
         (None, None, deeptext, None, None, None, X_text, None, target),
         (None, None, None, deepimage, None, None, None, X_img, target),
@@ -220,3 +222,49 @@ def test_predict_with_individual_component(
     preds = trainer.predict(X_wide=X_wide, X_tab=X_tab, X_text=X_text, X_img=X_img)
 
     assert preds.shape[0] == 32 and "train_loss" in trainer.history
+
+
+###############################################################################
+#  test save and load
+###############################################################################
+
+
+def test_save_and_load():
+    model = WideDeep(wide=wide, deeptabular=tabmlp)
+    trainer = Trainer(model, objective="binary", verbose=0)
+    trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, batch_size=16)
+    wide_weights = model.wide.wide_linear.weight.data
+    trainer.save_model("tests/test_model_functioning/model_dir/model.t")
+    n_model = Trainer.load_model("tests/test_model_functioning/model_dir/model.t")
+    n_wide_weights = n_model.wide.wide_linear.weight.data
+    assert torch.allclose(wide_weights, n_wide_weights)
+
+
+def test_save_and_load_dict():
+    wide = Wide(np.unique(X_wide).shape[0], 1)
+    tabmlp = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        column_idx={k: v for v, k in enumerate(colnames)},
+        embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+    )
+    model1 = WideDeep(wide=deepcopy(wide), deeptabular=deepcopy(tabmlp))
+    trainer1 = Trainer(model1, objective="binary", verbose=0)
+    trainer1.fit(
+        X_wide=X_wide,
+        X_tab=X_tab,
+        X_text=X_text,
+        X_img=X_img,
+        target=target,
+        batch_size=16,
+    )
+    wide_weights = model1.wide.wide_linear.weight.data
+    trainer1.save_model_state_dict("tests/test_model_functioning/model_dir/model_d.t")
+    model2 = WideDeep(wide=wide, deeptabular=tabmlp)
+    trainer2 = Trainer(model2, objective="binary", verbose=0)
+    trainer2.load_model_state_dict("tests/test_model_functioning/model_dir/model_d.t")
+    n_wide_weights = trainer2.model.wide.wide_linear.weight.data
+
+    shutil.rmtree("tests/test_model_functioning/model_dir/")
+
+    assert torch.allclose(wide_weights, n_wide_weights)

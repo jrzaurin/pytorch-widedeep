@@ -5,6 +5,7 @@ import pytest
 from torch import nn
 
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep, TabTransformer
+from pytorch_widedeep.metrics import R2Score
 from pytorch_widedeep.training import Trainer
 
 # Wide array
@@ -135,3 +136,23 @@ def test_fit_objectives_tab_transformer(
     else:
         probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
     assert preds.shape[0] == 32, probs.shape[1] == probs_dim
+
+
+##############################################################################
+# Test fit with R2 for regression
+##############################################################################
+
+
+def test_fit_with_regression_and_metric():
+    wide = Wide(np.unique(X_wide).shape[0], 1)
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+        column_idx=column_idx,
+        embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+    )
+    model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=1)
+    trainer = Trainer(model, objective="regression", metrics=[R2Score], verbose=0)
+    trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target_regres, batch_size=16)
+    assert "train_r2" in trainer.history.keys()

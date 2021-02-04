@@ -9,34 +9,7 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 use_cuda = torch.cuda.is_available()
 
 
-class WarmUp(object):
-    r"""
-    'Warm up' methods to be applied to the individual models before the joined
-    training. There are 3 warm up routines available:
-
-    1) Warm up all trainable layers at once
-
-    2) Gradual warm up inspired by the work of Felbo et al., 2017
-
-    3) Gradual warm up inspired by the work of Howard & Ruder 2018
-
-    The structure of the code in this class is designed to be instantiated within
-    the class WideDeep. This is not ideal, but represents a compromise towards
-    implementing a 'warm up' functionality for the current overall structure of
-    the package without having to re-structure most of the existing code.
-
-    Parameters
-    ----------
-    loss_fn: Any
-       any function with the same strucure as '_loss_fn' in the main class WideDeep
-       at pytorch_widedeep.models.wide_deep
-    metric: Metric or MultipleMetrics
-       object of class Metric (see Metric in pytorch_widedeep.metrics)
-    method: str
-       one of 'binary', 'regression' or 'multiclass'
-    verbose: Boolean
-    """
-
+class WarmUp:
     def __init__(
         self,
         loss_fn: Any,
@@ -44,7 +17,32 @@ class WarmUp(object):
         method: str,
         verbose: int,
     ):
-        super(WarmUp, self).__init__()
+        r"""
+        'Warm up' methods to be applied to the individual models before the joined
+        training. There are 3 warm up routines available:
+
+        1) Warm up all trainable layers at once
+
+        2) Gradual warm up inspired by the work of Felbo et al., 2017
+
+        3) Gradual warm up inspired by the work of Howard & Ruder 2018
+
+        The structure of the code in this class is designed to be instantiated
+        within the class WideDeep. This is not ideal, but represents a compromise
+        towards implementing a 'warm up' functionality for the current overall
+        structure of the package without having to re-structure most of the
+        existing code. This will change in future releases.
+
+        Parameters
+        ----------
+        loss_fn: Any
+           any function with the same strucure as 'loss_fn' in the class ``Trainer``
+        metric: ``Metric`` or ``MultipleMetrics``
+           object of class Metric (see Metric in pytorch_widedeep.metrics)
+        method: str
+           one of 'binary', 'regression' or 'multiclass'
+        verbose: Boolean
+        """
         self.loss_fn = loss_fn
         self.metric = metric
         self.method = method
@@ -73,13 +71,13 @@ class WarmUp(object):
 
         Parameters:
         ----------
-        model: nn.Module
-            nn.Module object containing one the WideDeep model components (wide,
-            deepdense, deeptext or deepimage)
+        model: `Module``
+            ``Module`` object containing one the WideDeep model components (wide,
+            deeptabular, deeptext or deepimage)
         model_name: str
             string indicating the model name to access the corresponding parameters.
-            One of 'wide', 'deepdense', 'deeptext' or 'deepimage'
-        loader: DataLoader
+            One of 'wide', 'deeptabular', 'deeptext' or 'deepimage'
+        loader: ``DataLoader``
             Pytorch DataLoader containing the data used to warm up
         n_epochs: int
             number of epochs used to warm up the model
@@ -114,15 +112,16 @@ class WarmUp(object):
     ):
         r"""Warm up certain layers within the model following a gradual warm up
         routine. The approaches implemented in this method are inspired by the
-        work of Felbo et al., 2017 in their DeepEmoji paper
-        (https://arxiv.org/abs/1708.00524) and Howard & Sebastian Ruder 2018
-        ULMFit paper (https://arxiv.org/abs/1801.06146).
+        finetunning routines described in the the work of Felbo et al., 2017
+        in their DeepEmoji paper (https://arxiv.org/abs/1708.00524) and Howard
+        & Sebastian Ruder 2018 ULMFit paper
+        (https://arxiv.org/abs/1801.06146).
 
-        A one cycle triangular learning rate is used. In both Felbo's and Howard's
-        routines a gradually decreasing learning rate is used as we go deeper into
-        the network. The 'closest' layer to the output neuron(s) will use a maximum
-        learning rate of 'last_layer_max_lr'. The learning rate will then decrease by a factor
-        of 2.5 per layer
+        A one cycle triangular learning rate is used. In both Felbo's and
+        Howard's routines a gradually decreasing learning rate is used as we
+        go deeper into the network. The 'closest' layer to the output
+        neuron(s) will use a maximum learning rate of 'last_layer_max_lr'. The
+        learning rate will then decrease by a factor of 2.5 per layer
 
         1) The 'Felbo' routine:
            warm up the first layer in 'layers' for one epoch. Then warm up the next
@@ -137,27 +136,29 @@ class WarmUp(object):
 
         Parameters:
         ----------
-        model: nn.Module
-           nn.Module object containing one the WideDeep model components (wide,
-           deepdense, deeptext or deepimage)
+        model: ``Module``
+           ``Module`` object containing one the WideDeep model components (wide,
+           deeptabular, deeptext or deepimage)
         model_name: str
            string indicating the model name to access the corresponding parameters.
-           One of 'wide', 'deepdense', 'deeptext' or 'deepimage'
-        loader: DataLoader
+           One of 'wide', 'deeptabular', 'deeptext' or 'deepimage'
+        loader: ``DataLoader``
            Pytorch DataLoader containing the data to warm up with.
         last_layer_max_lr: float
            maximum learning rate value during the triangular cycle for the layer
            closest to the output neuron(s). Deeper layers in 'model' will be trained
            with a gradually descending learning rate. The descending factor is fixed
            and is 2.5
-        layers: List
-           List of nn.Module objects containing the layers that will be warmed up.
-           This must be in 'WARM-UP ORDER'.
+        layers: list
+           List of ``Module`` objects containing the layers that will be warmed up.
+           This must be in *'WARM-UP ORDER'*.
         routine: str
            one of 'howard' or 'felbo'
         """
         model.train()
+
         step_size_up, step_size_down = self._steps_up_down(len(loader))
+
         original_setup = {}
         for n, p in model.named_parameters():
             original_setup[n] = p.requires_grad
@@ -282,7 +283,7 @@ class WarmUp(object):
         ----------
         steps: int
             steps per epoch
-        n_epochs: int. Default=1
+        n_epochs: int, default=1
             number of warm up epochs
 
         Returns:

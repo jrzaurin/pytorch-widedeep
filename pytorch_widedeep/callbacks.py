@@ -143,7 +143,6 @@ class History(Callback):
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):
-        self.trainer.epoch = []
         self.trainer.history = {}
 
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
@@ -154,7 +153,6 @@ class History(Callback):
 
     def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
         logs = logs or {}
-        self.trainer.epoch.append(epoch)
         for k, v in logs.items():
             self.trainer.history.setdefault(k, []).append(v)
 

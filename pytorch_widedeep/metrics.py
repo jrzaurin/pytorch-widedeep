@@ -90,7 +90,7 @@ class Accuracy(Metric):
         self.correct_count = 0
         self.total_count = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
+    def __call__(self, y_pred: Tensor, y_true: Tensor):
         num_classes = y_pred.size(1)
 
         if num_classes == 1:
@@ -98,10 +98,10 @@ class Accuracy(Metric):
             y_true = y_true
         elif num_classes > 1:
             y_pred = y_pred.topk(self.top_k, 1)[1]
-            y_true = y_true.view(-1, 1).expand_as(y_pred)  # type: ignore
+            y_true = y_true.view(-1, 1).expand_as(y_pred)
 
-        self.correct_count += y_pred.eq(y_true).sum().item()  # type: ignore
-        self.total_count += len(y_pred)  # type: ignore
+        self.correct_count += y_pred.eq(y_true).sum().item()  # type: ignore[assignment]
+        self.total_count += len(y_pred)
         accuracy = float(self.correct_count) / float(self.total_count)
         return accuracy
 
@@ -149,7 +149,7 @@ class Precision(Metric):
         self.true_positives = 0
         self.all_positives = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
+    def __call__(self, y_pred: Tensor, y_true: Tensor):
         num_class = y_pred.size(1)
 
         if num_class == 1:
@@ -214,7 +214,7 @@ class Recall(Metric):
         self.true_positives = 0
         self.actual_positives = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
+    def __call__(self, y_pred: Tensor, y_true: Tensor):
         num_class = y_pred.size(1)
 
         if num_class == 1:
@@ -284,7 +284,7 @@ class FBetaScore(Metric):
         self.precision.reset()
         self.recall.reset()
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
+    def __call__(self, y_pred: Tensor, y_true: Tensor):
 
         prec = self.precision(y_pred, y_true)
         rec = self.recall(y_pred, y_true)
@@ -381,7 +381,7 @@ class R2Score(Metric):
         self.num_examples = 0
         self.y_true_sum = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
+    def __call__(self, y_pred: Tensor, y_true: Tensor):
 
         self.numerator += ((y_pred - y_true) ** 2).sum().item()
 

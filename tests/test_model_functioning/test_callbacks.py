@@ -1,4 +1,5 @@
 import os
+import shutil
 import string
 from itertools import chain
 
@@ -176,15 +177,18 @@ def test_model_checkpoint(save_best_only, max_save, n_files):
         objective="binary",
         callbacks=[
             ModelCheckpoint(
-                "weights/test_weights", save_best_only=save_best_only, max_save=max_save
+                "tests/test_model_functioning/weights/test_weights",
+                save_best_only=save_best_only,
+                max_save=max_save,
             )
         ],
         verbose=0,
     )
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=5, val_split=0.2)
-    n_saved = len(os.listdir("weights/"))
-    for f in os.listdir("weights/"):
-        os.remove("weights/" + f)
+    n_saved = len(os.listdir("tests/test_model_functioning/weights/"))
+
+    shutil.rmtree("tests/test_model_functioning/weights/")
+
     assert n_saved <= n_files
 
 

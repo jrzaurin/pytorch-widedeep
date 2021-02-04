@@ -99,7 +99,7 @@ class SpacyTokenizer(BaseTokenizer):
         lang: str
             Language of the text to be tokenized
         """
-        self.tok = spacy.blank(lang, disable=["parser", "tagger", "ner"])
+        self.tok = spacy.blank(lang)
 
     def tokenizer(self, t: str):
         """Runs ``Spacy``'s ``tokenizer``

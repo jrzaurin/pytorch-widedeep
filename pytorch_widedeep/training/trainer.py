@@ -238,7 +238,7 @@ class Trainer(object):
         batch_size: int = 32,
         patience: int = 10,
         warm_up: bool = False,
-        warm_epochs: int = 4,
+        warm_epochs: int = 5,
         warm_max_lr: float = 0.01,
         warm_deeptext_gradual: bool = False,
         warm_deeptext_max_lr: float = 0.01,
@@ -392,8 +392,17 @@ class Trainer(object):
         train_loader = DataLoader(
             dataset=train_set, batch_size=batch_size, num_workers=n_cpus
         )
+        train_steps = len(train_loader)
+        if eval_set is not None:
+            eval_loader = DataLoader(
+                dataset=eval_set,
+                batch_size=batch_size,
+                num_workers=n_cpus,
+                shuffle=False,
+            )
+            eval_steps = len(eval_loader)
+
         if warm_up:
-            # warm up...
             self._warm_up(
                 train_loader,
                 warm_epochs,
@@ -406,21 +415,17 @@ class Trainer(object):
                 warm_deepimage_max_lr,
                 warm_routine,
             )
-        train_steps = len(train_loader)
         self.callback_container.on_train_begin(
             {"batch_size": batch_size, "train_steps": train_steps, "n_epochs": n_epochs}
         )
-        if self.verbose:
-            print("Training")
         for epoch in range(n_epochs):
-            # train step...
             epoch_logs: Dict[str, float] = {}
             self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
             self.train_running_loss = 0.0
             with trange(train_steps, disable=self.verbose != 1) as t:
-                for batch_idx, (data, target) in zip(t, train_loader):
+                for batch_idx, (data, targett) in zip(t, train_loader):
                     t.set_description("epoch %i" % (epoch + 1))
-                    score, train_loss = self._training_step(data, target, batch_idx)
+                    score, train_loss = self._training_step(data, targett, batch_idx)
                     if score is not None:
                         t.set_postfix(
                             metrics={k: np.round(v, 4) for k, v in score.items()},
@@ -436,46 +441,36 @@ class Trainer(object):
                 for k, v in score.items():
                     log_k = "_".join(["train", k])
                     epoch_logs[log_k] = v
-            # eval step...
-            if epoch % validation_freq == (validation_freq - 1):
-                if eval_set is not None:
-                    eval_loader = DataLoader(
-                        dataset=eval_set,
-                        batch_size=batch_size,
-                        num_workers=n_cpus,
-                        shuffle=False,
-                    )
-                    eval_steps = len(eval_loader)
-                    self.valid_running_loss = 0.0
-                    with trange(eval_steps, disable=self.verbose != 1) as v:
-                        for i, (data, target) in zip(v, eval_loader):
-                            v.set_description("valid")
-                            score, val_loss = self._validation_step(data, target, i)
-                            if score is not None:
-                                v.set_postfix(
-                                    metrics={
-                                        k: np.round(v, 4) for k, v in score.items()
-                                    },
-                                    loss=val_loss,
-                                )
-                            else:
-                                v.set_postfix(loss=val_loss)
-                    epoch_logs["val_loss"] = val_loss
-                    if score is not None:
-                        for k, v in score.items():
-                            log_k = "_".join(["val", k])
-                            epoch_logs[log_k] = v
+            if eval_set is not None and epoch % validation_freq == (
+                validation_freq - 1
+            ):
+                self.valid_running_loss = 0.0
+                with trange(eval_steps, disable=self.verbose != 1) as v:
+                    for i, (data, targett) in zip(v, eval_loader):
+                        v.set_description("valid")
+                        score, val_loss = self._validation_step(data, targett, i)
+                        if score is not None:
+                            v.set_postfix(
+                                metrics={k: np.round(v, 4) for k, v in score.items()},
+                                loss=val_loss,
+                            )
+                        else:
+                            v.set_postfix(loss=val_loss)
+                epoch_logs["val_loss"] = val_loss
+                if score is not None:
+                    for k, v in score.items():
+                        log_k = "_".join(["val", k])
+                        epoch_logs[log_k] = v
             if self.lr_scheduler:
                 self._lr_scheduler_step(step_location="on_epoch_end")
-            #  log and check if early_stop...
             self.callback_container.on_epoch_end(epoch, epoch_logs)
             if self.early_stop:
                 self.callback_container.on_train_end(epoch_logs)
                 break
-            self.callback_container.on_train_end(epoch_logs)
+        self.callback_container.on_train_end(epoch_logs)
         self.model.train()
 
-    def predict(
+    def predict(  # type: ignore[return]
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
@@ -513,9 +508,9 @@ class Trainer(object):
             return (preds > 0.5).astype("int")
         if self.method == "multiclass":
             preds = np.vstack(preds_l)
-            return np.argmax(preds, 1)
+            return np.argmax(preds, 1)  # type: ignore[return-value]
 
-    def predict_proba(
+    def predict_proba(  # type: ignore[return]
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
@@ -614,6 +609,7 @@ class Trainer(object):
         path: str
             full path to the directory where the model will be saved
         """
+        self._makedir_if_not_exist(path)
         torch.save(self.model, path)
 
     @staticmethod
@@ -636,6 +632,7 @@ class Trainer(object):
             full path to the directory where the model's state dictionary will
             be saved
         """
+        self._makedir_if_not_exist(path)
         torch.save(self.model.state_dict(), path)
 
     def load_model_state_dict(self, path: str):
@@ -723,6 +720,19 @@ class Trainer(object):
             eval_set = None
 
         return train_set, eval_set
+
+    @staticmethod
+    def _build_train_dict(X_wide, X_tab, X_text, X_img, target):
+        X_train = {"target": target}
+        if X_wide is not None:
+            X_train["X_wide"] = X_wide
+        if X_tab is not None:
+            X_train["X_tab"] = X_tab
+        if X_text is not None:
+            X_train["X_text"] = X_text
+        if X_img is not None:
+            X_train["X_img"] = X_img
+        return X_train
 
     def _warm_up(
         self,
@@ -833,14 +843,7 @@ class Trainer(object):
         self.train_running_loss += loss.item()
         avg_loss = self.train_running_loss / (batch_idx + 1)
 
-        if self.metric is not None:
-            if self.method == "binary":
-                score = self.metric(torch.sigmoid(y_pred), y)
-            if self.method == "multiclass":
-                score = self.metric(F.softmax(y_pred, dim=1), y)
-            return score, avg_loss
-        else:
-            return None, avg_loss
+        return self._get_score(y_pred, y), avg_loss
 
     def _validation_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
 
@@ -855,14 +858,19 @@ class Trainer(object):
             self.valid_running_loss += loss.item()
             avg_loss = self.valid_running_loss / (batch_idx + 1)
 
+        return self._get_score(y_pred, y), avg_loss
+
+    def _get_score(self, y_pred, y):
         if self.metric is not None:
+            if self.method == "regression":
+                score = self.metric(y_pred, y)
             if self.method == "binary":
                 score = self.metric(torch.sigmoid(y_pred), y)
             if self.method == "multiclass":
                 score = self.metric(F.softmax(y_pred, dim=1), y)
-            return score, avg_loss
+            return score
         else:
-            return None, avg_loss
+            return None
 
     def _predict(
         self,
@@ -916,17 +924,15 @@ class Trainer(object):
         return preds_l
 
     @staticmethod
-    def _build_train_dict(X_wide, X_tab, X_text, X_img, target):
-        X_train = {"target": target}
-        if X_wide is not None:
-            X_train["X_wide"] = X_wide
-        if X_tab is not None:
-            X_train["X_tab"] = X_tab
-        if X_text is not None:
-            X_train["X_text"] = X_text
-        if X_img is not None:
-            X_train["X_img"] = X_img
-        return X_train
+    def _makedir_if_not_exist(path):
+        if len(path.split("/")[:-1]) == 0:
+            raise ValueError(
+                "'path' must be the full path to save the model, including"
+                " the root of the filenames. e.g. 'model/model.t'"
+            )
+        root_dir = ("/").join(path.split("/")[:-1])
+        if not os.path.exists(root_dir):
+            os.makedirs(root_dir)
 
     @staticmethod
     def _alias_to_loss(loss_fn: str, **kwargs):
@@ -997,7 +1003,8 @@ class Trainer(object):
             optimizer = torch.optim.AdamW(self.model.parameters())  # type: ignore
         return optimizer
 
-    def _get_lr_scheduler(self, lr_schedulers):
+    @staticmethod
+    def _get_lr_scheduler(lr_schedulers):
         if lr_schedulers is not None:
             if isinstance(lr_schedulers, LRScheduler):
                 lr_scheduler: Union[
@@ -1016,7 +1023,8 @@ class Trainer(object):
             lr_scheduler, cyclic_lr = None, False
         return lr_scheduler, cyclic_lr
 
-    def _get_transforms(self, transforms):
+    @staticmethod
+    def _get_transforms(transforms):
         if transforms is not None:
             return MultipleTransforms(transforms)()
         else:

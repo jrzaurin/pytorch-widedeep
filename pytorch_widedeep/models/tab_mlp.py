@@ -183,7 +183,7 @@ class TabMlp(nn.Module):
             self.embedding_dropout = nn.Dropout(embed_dropout)
             emb_inp_dim = np.sum([embed[2] for embed in self.embed_input])
         else:
-            emb_inp_dim = 0
+            emb_inp_dim = 0  # type: ignore[assignment]
 
         # Continuous
         if self.continuous_cols is not None:
@@ -195,7 +195,7 @@ class TabMlp(nn.Module):
 
         # MLP
         input_dim = emb_inp_dim + cont_inp_dim
-        mlp_hidden_dims = [input_dim] + mlp_hidden_dims
+        mlp_hidden_dims = [input_dim] + mlp_hidden_dims  # type: ignore[assignment, operator]
         self.tab_mlp = MLP(
             mlp_hidden_dims,
             mlp_activation,

@@ -70,17 +70,17 @@ deephead_dt = nn.Sequential(nn.Linear(64, 8), nn.Linear(8, 4))
 deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
 
 # #############################################################################
-# Test many possible scenarios of data inputs I can think off. Surely users
-# will input something unexpected
+# Test that runs many possible scenarios of data inputs I can think off.
+# Surely users will input something unexpected
 # #############################################################################
 
 
 @pytest.mark.parametrize(
-    "X_wide, X_tab, X_text, X_img, X_train, X_val, target, val_split, transforms, nepoch, null",
+    "X_wide, X_tab, X_text, X_img, X_train, X_val, target, val_split, transforms",
     [
-        (X_wide, X_tab, X_text, X_img, None, None, target, None, transforms1, 0, None),
-        (X_wide, X_tab, X_text, X_img, None, None, target, None, transforms2, 0, None),
-        (X_wide, X_tab, X_text, X_img, None, None, target, None, None, 0, None),
+        (X_wide, X_tab, X_text, X_img, None, None, target, None, transforms1),
+        (X_wide, X_tab, X_text, X_img, None, None, target, None, transforms2),
+        (X_wide, X_tab, X_text, X_img, None, None, target, None, None),
         (
             X_wide,
             X_tab,
@@ -91,8 +91,6 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             target,
             None,
             transforms2,
-            0,
-            None,
         ),
         (
             X_wide,
@@ -104,11 +102,9 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             target,
             None,
             transforms1,
-            0,
-            None,
         ),
-        (X_wide, X_tab, X_text, X_img_norm, None, None, target, None, None, 0, None),
-        (X_wide, X_tab, X_text, X_img, None, None, target, 0.2, None, 0, None),
+        (X_wide, X_tab, X_text, X_img_norm, None, None, target, None, None),
+        (X_wide, X_tab, X_text, X_img, None, None, target, 0.2, None),
         (
             None,
             None,
@@ -124,8 +120,6 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             None,
             None,
-            None,
-            0,
             None,
         ),
         (
@@ -144,8 +138,6 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             None,
             transforms1,
-            0,
-            None,
         ),
         (
             None,
@@ -162,8 +154,6 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             None,
             0.2,
-            None,
-            0,
             None,
         ),
         (
@@ -182,8 +172,6 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             0.2,
             transforms2,
-            0,
-            None,
         ),
         (
             None,
@@ -207,8 +195,6 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             None,
             None,
-            0,
-            None,
         ),
         (
             None,
@@ -232,8 +218,6 @@ deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
             None,
             None,
             transforms1,
-            0,
-            None,
         ),
     ],
 )
@@ -247,8 +231,6 @@ def test_widedeep_inputs(
     target,
     val_split,
     transforms,
-    nepoch,
-    null,
 ):
     model = WideDeep(
         wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage
@@ -265,7 +247,7 @@ def test_widedeep_inputs(
         val_split=val_split,
         batch_size=16,
     )
-    assert trainer.epoch[0] == nepoch and trainer.history["train_loss"] is not null
+    assert trainer.history["train_loss"] is not None
 
 
 @pytest.mark.parametrize(

@@ -114,7 +114,7 @@ class WidePreprocessor(BasePreprocessor):
         self.inverse_encoding_dict[0] = "unseen"
         return self
 
-    def transform(self, df: pd.DataFrame) -> np.array:
+    def transform(self, df: pd.DataFrame) -> np.ndarray:
         r"""Returns the processed dataframe"""
         try:
             self.encoding_dict
@@ -124,7 +124,7 @@ class WidePreprocessor(BasePreprocessor):
                 "Call 'fit' with appropriate arguments before using this estimator."
             )
         df_wide = self._prepare_wide(df)
-        encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)], dtype=np.long)
+        encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)])
         for col_i, col in enumerate(self.wide_crossed_cols):
             encoded[:, col_i] = df_wide[col].apply(
                 lambda x: self.encoding_dict[col + "_" + str(x)]

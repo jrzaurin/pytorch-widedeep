@@ -234,7 +234,7 @@ class TabResnet(nn.Module):
             dense_resnet_input_dim = emb_inp_dim
             self.output_dim = cont_inp_dim + blocks_dims[-1]
         self.tab_resnet = DenseResnet(
-            dense_resnet_input_dim, blocks_dims, blocks_dropout
+            dense_resnet_input_dim, blocks_dims, blocks_dropout  # type: ignore[arg-type]
         )
 
         # MLP

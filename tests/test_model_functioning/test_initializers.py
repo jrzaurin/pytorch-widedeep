@@ -146,3 +146,37 @@ def test_initializers_with_pattern():
             init_word_embed.append(p)
 
     assert torch.all(org_word_embed[0] == init_word_embed[0].cpu())
+
+
+###############################################################################
+# Test single initializer
+###############################################################################
+
+wide = Wide(100, 1)
+deeptabular = TabMlp(
+    mlp_hidden_dims=[32, 16],
+    mlp_dropout=[0.5, 0.5],
+    column_idx=column_idx,
+    embed_input=embed_input,
+    continuous_cols=colnames[-5:],
+)
+model1 = WideDeep(wide=wide)
+model2 = WideDeep(wide=wide, deeptabular=deeptabular)
+
+
+@pytest.mark.parametrize(
+    "model, initializer",
+    [
+        (model1, Uniform),
+        (model2, KaimingNormal()),
+    ],
+)
+def test_single_initializer(model, initializer):
+
+    inp_weights = model.wide.wide_linear.weight.data.detach()
+
+    n_model = c(model)
+    trainer = Trainer(n_model, objective="binary", initializers=initializer)
+    init_weights = trainer.model.wide.wide_linear.weight.data
+
+    assert not torch.all(inp_weights == init_weights)

@@ -141,3 +141,19 @@ def test_tabtransformer_keep_attn():
         and list(model4.attention_weights[0].shape)
         == [10, model4.num_heads, n_cols, n_cols]
     )
+
+
+###############################################################################
+# Test full embed dropout
+###############################################################################
+
+
+def test_full_embed_dropout():
+    bsz = 1
+    cat = 10
+    esz = 4
+    full_embedding_dropout = FullEmbeddingDropout(dropout=0.5)
+    inp = torch.rand(bsz, cat, esz)
+    out = full_embedding_dropout(inp)
+    # simply check that at least 1 full row is all 0s
+    assert torch.any(torch.sum(out[0] == 0, axis=1) == esz)

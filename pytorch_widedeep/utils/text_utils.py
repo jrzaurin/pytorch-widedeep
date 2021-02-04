@@ -163,7 +163,7 @@ def build_embeddings_matrix(
         print("Loaded {} word vectors".format(len(embeddings_index)))
         print("Preparing embeddings matrix...")
 
-    mean_word_vector = np.mean(list(embeddings_index.values()), axis=0)
+    mean_word_vector = np.mean(list(embeddings_index.values()), axis=0)  # type: ignore[arg-type]
     embedding_dim = len(list(embeddings_index.values())[0])
     num_words = len(vocab.itos)
     embedding_matrix = np.zeros((num_words, embedding_dim))
