@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn.functional as F
 from tqdm import trange
@@ -9,7 +10,7 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 use_cuda = torch.cuda.is_available()
 
 
-class WarmUp:
+class FineTune:
     def __init__(
         self,
         loss_fn: Any,
@@ -18,20 +19,25 @@ class WarmUp:
         verbose: int,
     ):
         r"""
-        'Warm up' methods to be applied to the individual models before the joined
-        training. There are 3 warm up routines available:
+        Fine-tune methods to be applied to the individual model components.
 
-        1) Warm up all trainable layers at once
+        Note that they can also be used to "fine-tune" those components before
+        the joined training.
 
-        2) Gradual warm up inspired by the work of Felbo et al., 2017
+        There are 3 fine-tune/warm-up routines available:
 
-        3) Gradual warm up inspired by the work of Howard & Ruder 2018
+        1) Fine-tune all trainable layers at once
+
+        2) Gradual fine-tuning inspired by the work of Felbo et al., 2017
+
+        3) Gradual fine-tuning inspired by the work of Howard & Ruder 2018
 
         The structure of the code in this class is designed to be instantiated
-        within the class WideDeep. This is not ideal, but represents a compromise
-        towards implementing a 'warm up' functionality for the current overall
-        structure of the package without having to re-structure most of the
-        existing code. This will change in future releases.
+        within the class WideDeep. This is not ideal, but represents a
+        compromise towards implementing a fine-tuning functionality for the
+        current overall structure of the package without having to
+        re-structure most of the existing code. This will change in future
+        releases.
 
         Parameters
         ----------
@@ -48,7 +54,7 @@ class WarmUp:
         self.method = method
         self.verbose = verbose
 
-    def warm_all(
+    def finetune_all(
         self,
         model: nn.Module,
         model_name: str,
@@ -56,9 +62,9 @@ class WarmUp:
         n_epochs: int,
         max_lr: float,
     ):
-        r"""Warm up all trainable layers in a model using a one cyclic learning rate
-        with a triangular pattern. This is refereed as Slanted Triangular
-        learing rate in Jeremy Howard & Sebastian Ruder 2018
+        r"""Fine-tune/warm-up all trainable layers in a model using a one cyclic
+        learning rate with a triangular pattern. This is refereed as Slanted
+        Triangular learing rate in Jeremy Howard & Sebastian Ruder 2018
         (https://arxiv.org/abs/1801.06146). The cycle is described as follows:
 
         1) The learning rate will gradually increase for 10% of the training steps
@@ -78,14 +84,14 @@ class WarmUp:
             string indicating the model name to access the corresponding parameters.
             One of 'wide', 'deeptabular', 'deeptext' or 'deepimage'
         loader: ``DataLoader``
-            Pytorch DataLoader containing the data used to warm up
+            Pytorch DataLoader containing the data used to fine-tune
         n_epochs: int
-            number of epochs used to warm up the model
+            number of epochs used to fine-tune the model
         max_lr: float
             maximum learning rate value during the triangular cycle.
         """
         if self.verbose:
-            print("Warming up {} for {} epochs".format(model_name, n_epochs))
+            print("Training {} for {} epochs".format(model_name, n_epochs))
         model.train()
 
         optimizer = torch.optim.AdamW(model.parameters(), lr=max_lr / 10.0)  # type: ignore
@@ -99,9 +105,11 @@ class WarmUp:
             cycle_momentum=False,
         )
 
-        self._warm(model, model_name, loader, optimizer, scheduler, n_epochs=n_epochs)
+        self._finetune(
+            model, model_name, loader, optimizer, scheduler, n_epochs=n_epochs
+        )
 
-    def warm_gradual(  # noqa: C901
+    def finetune_gradual(  # noqa: C901
         self,
         model: nn.Module,
         model_name: str,
@@ -110,11 +118,11 @@ class WarmUp:
         layers: List[nn.Module],
         routine: str,
     ):
-        r"""Warm up certain layers within the model following a gradual warm up
-        routine. The approaches implemented in this method are inspired by the
-        finetunning routines described in the the work of Felbo et al., 2017
-        in their DeepEmoji paper (https://arxiv.org/abs/1708.00524) and Howard
-        & Sebastian Ruder 2018 ULMFit paper
+        r"""Fine-tune/warm-up certain layers within the model following a
+        gradual fine-tune routine. The approaches implemented in this method are
+        based on fine-tuning routines described in the the work of Felbo et
+        al., 2017 in their DeepEmoji paper (https://arxiv.org/abs/1708.00524)
+        and Howard & Sebastian Ruder 2018 ULMFit paper
         (https://arxiv.org/abs/1801.06146).
 
         A one cycle triangular learning rate is used. In both Felbo's and
@@ -123,16 +131,15 @@ class WarmUp:
         neuron(s) will use a maximum learning rate of 'last_layer_max_lr'. The
         learning rate will then decrease by a factor of 2.5 per layer
 
-        1) The 'Felbo' routine:
-           warm up the first layer in 'layers' for one epoch. Then warm up the next
-           layer in 'layers' for one epoch freezing the already warmed up layer(s).
-           Repeat untill all individual layers are warmed. Then warm one last epoch
-           with all warmed layers trainable
+        1) The 'Felbo' routine: train the first layer in 'layers' for one
+           epoch. Then train the next layer in 'layers' for one epoch freezing
+           the already trained up layer(s). Repeat untill all individual layers
+           are trained. Then, train one last epoch with all trained/fine-tuned
+           layers trainable
 
-        2) The 'Howard' routine:
-           warm up the first layer in 'layers' for one epoch. Then warm the next layer
-           in the model for one epoch while keeping the already warmed up layer(s)
-           trainable. Repeat.
+        2) The 'Howard' routine: fine-tune the first layer in 'layers' for one
+           epoch. Then traine the next layer in the model for one epoch while
+           keeping the already trained up layer(s) trainable. Repeat.
 
         Parameters:
         ----------
@@ -143,15 +150,15 @@ class WarmUp:
            string indicating the model name to access the corresponding parameters.
            One of 'wide', 'deeptabular', 'deeptext' or 'deepimage'
         loader: ``DataLoader``
-           Pytorch DataLoader containing the data to warm up with.
+           Pytorch DataLoader containing the data to fine-tune with.
         last_layer_max_lr: float
            maximum learning rate value during the triangular cycle for the layer
            closest to the output neuron(s). Deeper layers in 'model' will be trained
            with a gradually descending learning rate. The descending factor is fixed
            and is 2.5
         layers: list
-           List of ``Module`` objects containing the layers that will be warmed up.
-           This must be in *'WARM-UP ORDER'*.
+           List of ``Module`` objects containing the layers that will be fine-tuned.
+           This must be in *'FINE-TUNE ORDER'*.
         routine: str
            one of 'howard' or 'felbo'
         """
@@ -178,9 +185,7 @@ class WarmUp:
         for i, (lr, layer) in enumerate(zip(layers_max_lr, layers)):
             if self.verbose:
                 print(
-                    "Warming up {}, layer {} of {}".format(
-                        model_name, i + 1, len(layers)
-                    )
+                    "Training {}, layer {} of {}".format(model_name, i + 1, len(layers))
                 )
             for p in layer.parameters():
                 p.requires_grad = True
@@ -190,23 +195,23 @@ class WarmUp:
                 params += [{"params": layer.parameters(), "lr": lr / 10.0}]
                 max_lr += [lr]
                 base_lr += [lr / 10.0]
-            optimizer = torch.optim.AdamW(params)  # type: ignore
+            optimizer = torch.optim.AdamW(params)
             scheduler = torch.optim.lr_scheduler.CyclicLR(
                 optimizer,
-                base_lr=base_lr,  # type: ignore
+                base_lr=base_lr,  # type: ignore[arg-type]
                 max_lr=max_lr,  # type: ignore
                 step_size_up=step_size_up,
-                step_size_down=step_size_down,  # type: ignore
+                step_size_down=step_size_down,
                 cycle_momentum=False,
             )
-            self._warm(model, model_name, loader, optimizer, scheduler)
+            self._finetune(model, model_name, loader, optimizer, scheduler)
             if routine == "felbo":
                 for p in layer.parameters():
                     p.requires_grad = False
 
         if routine == "felbo":
             if self.verbose:
-                print("Warming up one last epoch with all warmed up layers trainable")
+                print("Training one last epoch...")
             for layer in layers:
                 for p in layer.parameters():
                     p.requires_grad = True
@@ -215,21 +220,21 @@ class WarmUp:
                 params += [{"params": layer.parameters(), "lr": lr / 10.0}]
                 max_lr += [lr]
                 base_lr += [lr / 10.0]
-            optimizer = torch.optim.AdamW(params)  # type: ignore
+            optimizer = torch.optim.AdamW(params)
             scheduler = torch.optim.lr_scheduler.CyclicLR(
                 optimizer,
                 base_lr=base_lr,  # type: ignore
                 max_lr=max_lr,  # type: ignore
                 step_size_up=step_size_up,
-                step_size_down=step_size_down,  # type: ignore
+                step_size_down=step_size_down,
                 cycle_momentum=False,
             )
-            self._warm(model, model_name, loader, optimizer, scheduler)
+            self._finetune(model, model_name, loader, optimizer, scheduler)
 
         for n, p in model.named_parameters():
             p.requires_grad = original_setup[n]
 
-    def _warm(
+    def _finetune(
         self,
         model: nn.Module,
         model_name: str,
@@ -260,23 +265,28 @@ class WarmUp:
                     loss = self.loss_fn(y_pred, y)
                     loss.backward()
                     optimizer.step()
-                    scheduler.step()  # type: ignore
+                    scheduler.step()
 
                     running_loss += loss.item()
                     avg_loss = running_loss / (batch_idx + 1)
 
                     if self.metric is not None:
+                        if self.method == "regression":
+                            score = self.metric(y_pred, y)
                         if self.method == "binary":
                             score = self.metric(torch.sigmoid(y_pred), y)
                         if self.method == "multiclass":
                             score = self.metric(F.softmax(y_pred, dim=1), y)
-                        t.set_postfix(metrics=score, loss=avg_loss)
+                        t.set_postfix(
+                            metrics={k: np.round(v, 4) for k, v in score.items()},
+                            loss=avg_loss,
+                        )
                     else:
                         t.set_postfix(loss=avg_loss)
 
     def _steps_up_down(self, steps: int, n_epochs: int = 1) -> Tuple[int, int]:
         r"""
-        Calculate the number of steps up and down during the one cycle warm up for a
+        Calculate the number of steps up and down during the one cycle fine-tune for a
         given number of epochs
 
         Parameters:
@@ -284,7 +294,7 @@ class WarmUp:
         steps: int
             steps per epoch
         n_epochs: int, default=1
-            number of warm up epochs
+            number of fine-tune epochs
 
         Returns:
         -------

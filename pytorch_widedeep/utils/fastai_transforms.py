@@ -3,7 +3,7 @@ NLP data processing; tokenizes text and creates vocab indexes
 
 I have directly copied and paste part of OF THE TRANSFORMS.PY FASTAI LIBRARY.
 I only need the Tokenizer and the Vocab classes which are both in this module.
-This way I avoid the numerous fastai dependencies.
+This way I avoid extra dependencies.
 
 Credit for the code here to Jeremy Howard and the fastai team
 """
@@ -268,10 +268,6 @@ class Tokenizer:
             text to be processed and tokenized
         tok: ``BaseTokenizer``
             Instance of :obj:`BaseTokenizer`
-
-        Returns
-        -------
-            tokenized text
         """
         for rule in self.pre_rules:
             t = rule(t)

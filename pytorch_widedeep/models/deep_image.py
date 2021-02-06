@@ -33,7 +33,7 @@ class DeepImage(nn.Module):
         freeze_n: int = 6,
         head_hidden_dims: Optional[List[int]] = None,
         head_activation: Optional[str] = "relu",
-        head_dropout: float = None,
+        head_dropout: Optional[float] = None,
         head_batchnorm: Optional[bool] = False,
         head_batchnorm_last: Optional[bool] = False,
         head_linear_first: Optional[bool] = False,
@@ -69,19 +69,19 @@ class DeepImage(nn.Module):
         freeze_n: int, default = 6
             number of layers to freeze. Must be less than or equal to 8. If 8
             the entire 'backbone' of the nwtwork will be frozen
-        head_hidden_dims: List
+        head_hidden_dims: List, Optional
             List with the number of neurons per dense layer in the head. e.g: [64,32]
-        head_activation: str, default = "relu"
+        head_activation: str, Optional, default = "relu"
             Activation function for the dense layers in the head.
         head_dropout: float, Optional, default = 0.
-            float indicating teh dropout between the dense layers.
-        head_batchnorm: bool, default = False
+            float indicating the dropout between the dense layers.
+        head_batchnorm: bool, Optional, default = False
             Boolean indicating whether or not batch normalization will be applied
             to the dense layers
-        head_batchnorm_last: bool, default = False
+        head_batchnorm_last: bool, Optional, default = False
             Boolean indicating whether or not batch normalization will be applied
             to the last of the dense layers
-        head_linear_first: bool, default = False
+        head_linear_first: bool, Optional, default = False
             Boolean indicating the order of the operations in the dense
             layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
             LIN -> ACT]``

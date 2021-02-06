@@ -182,7 +182,7 @@ class TabPreprocessor(BasePreprocessor):
         embed_cols: Union[List[str], List[Tuple[str, int]]] = None,
         continuous_cols: List[str] = None,
         scale: bool = True,
-        default_embed_dim: int = 8,
+        default_embed_dim: int = 16,
         already_standard: Optional[List[str]] = None,
         for_tabtransformer: bool = False,
         verbose: int = 1,
@@ -194,26 +194,30 @@ class TabPreprocessor(BasePreprocessor):
         embed_cols: List, default = None
             List containing the name of the columns that will be represented by
             embeddings or a Tuple with the name and the embedding dimension. e.g.:
-            [('education',32), ('relationship',16)
+            [('education',32), ('relationship',16), ...]
         continuous_cols: List, default = None
             List with the name of the so called continuous cols
         scale: bool, default = True
-            Bool indicating whether or not to scale/Standarise continuous
-            cols. The user should bear in mind that the ``deeptabular``
-            components available within ``pytorch-widedeep`` they all have the
-            possibility of normalising the input continuous features via a
-            ``BatchNorm`` or a ``LayerNorm`` layer.
-            see :class:`pytorch_widedeep.models`
-        default_embed_dim: int, default=8
+            Bool indicating whether or not to scale/standarise continuous
+            cols. The user should bear in mind that all the ``deeptabular``
+            components available within ``pytorch-widedeep`` they also include
+            the possibility of normalising the input continuous features via a
+            ``BatchNorm`` or a ``LayerNorm`` layer. see
+            :class:`pytorch_widedeep.models`
+        default_embed_dim: int, default=16
             Dimension for the embeddings used for the ``deeptabular``
             component
         already_standard: List, Optional, default = None
             List with the name of the continuous cols that do not need to be
             Standarised.
         for_tabtransformer: bool, default = False
-            Boolean indicating whether the preprocessed data will be passed to a
-            ``TabTransformer`` model.
-            see :class:`pytorch_widedeep.models.tab_transformer.TabTransformer`
+            Boolean indicating whether the preprocessed data will be passed to
+            a ``TabTransformer`` model. If ``True``, the param ``embed_cols``
+            must just be a list containing the categorical columns: e.g.:
+            ['education', 'relationship', ...] This is because following the
+            results in the `paper <https://arxiv.org/pdf/2012.06678.pdf>`_,
+            they will all be encoded using embeddings of dim 32. See
+            :class:`pytorch_widedeep.models.tab_transformer.TabTransformer`
         verbose: int, default = 1
 
         Attributes
@@ -226,12 +230,12 @@ class TabPreprocessor(BasePreprocessor):
             Dictionary where keys are the embed cols and values are the embedding
             dimensions. If ``for_tabtransformer`` is set to ``True`` the embedding
             dimensions are the same for all columns and this attributes is not
-            generated during the fit process
+            generated during the ``fit`` process
         standardize_cols: List
             List of the columns that will be standarized
         column_idx: Dict
             Dictionary where keys are column names and values are column indexes.
-            This will be neccesary to slice tensors
+            This is be neccesary to slice tensors
         scaler: StandardScaler
             an instance of :class:`sklearn.preprocessing.StandardScaler`
 
@@ -268,9 +272,8 @@ class TabPreprocessor(BasePreprocessor):
             )
 
         tabtransformer_error_message = (
-            "If for_tabtransformer is 'True' embed_cols must be not 'None', "
-            " and must be a list of strings with the columns to be encoded "
-            " as embeddings."
+            "If for_tabtransformer is 'True' embed_cols must be a list "
+            " of strings with the columns to be encoded as embeddings."
         )
         if self.for_tabtransformer and self.embed_cols is None:
             raise ValueError(tabtransformer_error_message)
@@ -388,7 +391,7 @@ class TextPreprocessor(BasePreprocessor):
         word_vectors_path: Optional[str] = None,
         verbose: int = 1,
     ):
-        r"""Preprocessor to prepare the deeptext input dataset
+        r"""Preprocessor to prepare the ``deeptext`` input dataset
 
         Parameters
         ----------
@@ -487,8 +490,10 @@ class ImagePreprocessor(BasePreprocessor):
         height: int = 224,
         verbose: int = 1,
     ):
-        r"""Preprocessor to prepare the deepimage input dataset. The Preprocessing
-        consists simply on resizing according to their aspect ratio
+        r"""Preprocessor to prepare the ``deepimage`` input dataset.
+
+        The Preprocessing consists simply on resizing according to their
+        aspect ratio
 
         Parameters
         ----------

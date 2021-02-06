@@ -112,7 +112,7 @@ class Precision(Metric):
         Parameters
         ----------
         average: bool, default = True
-            This applies only to multiclass problems. if `True` calculate
+            This applies only to multiclass problems. if ``True`` calculate
             precision for each label, and finds their unweighted mean.
 
         Examples
@@ -177,7 +177,7 @@ class Recall(Metric):
         Parameters
         ----------
         average: bool, default = True
-            This applies only to multiclass problems. if `True` calculate recall
+            This applies only to multiclass problems. if ``True`` calculate recall
             for each label, and finds their unweighted mean.
 
         Examples
@@ -246,7 +246,7 @@ class FBetaScore(Metric):
         beta: int
             Coefficient to control the balance between precision and recall
         average: bool, default = True
-            This applies only to multiclass problems. if `True` calculate fbeta
+            This applies only to multiclass problems. if ``True`` calculate fbeta
             for each label, and find their unweighted mean.
 
         Examples
@@ -304,7 +304,7 @@ class F1Score(Metric):
         Parameters
         ----------
         average: bool, default = True
-            This applies only to multiclass problems. if `True` calculate f1 for
+            This applies only to multiclass problems. if ``True`` calculate f1 for
             each label, and find their unweighted mean.
 
         Examples

@@ -73,14 +73,14 @@ class TabMlp(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
-        mlp_hidden_dims: List[int],
+        mlp_hidden_dims: List[int] = [200, 100],
         mlp_activation: str = "relu",
-        mlp_dropout: Optional[Union[float, List[float]]] = 0.0,
+        mlp_dropout: Optional[Union[float, List[float]]] = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = False,
         embed_input: Optional[List[Tuple[str, int, int]]] = None,
-        embed_dropout: float = 0.0,
+        embed_dropout: float = 0.1,
         continuous_cols: Optional[List[str]] = None,
         batchnorm_cont: Optional[bool] = False,
     ):
@@ -97,11 +97,12 @@ class TabMlp(nn.Module):
             Dict containing the index of the columns that will be passed through
             the TabMlp model. Required to slice the tensors. e.g. {'education':
             0, 'relationship': 1, 'workclass': 2, ...}
-        mlp_hidden_dims: List
-            List with the number of neurons per dense layer in the mlp. e.g: [64,32]
+        mlp_hidden_dims: List, default = [200, 100]
+            List with the number of neurons per dense layer in the mlp.
         mlp_activation: str, default = "relu"
-            Activation function for the dense layers of the MLP
-        mlp_dropout: float or List, Optional, default = 0.
+            Activation function for the dense layers of the MLP. Currently
+            only "relu", "leaky_relu" and "gelu" are supported
+        mlp_dropout: float or List, Optional, default = 0.1
             float or List of floats with the dropout between the dense layers.
             e.g: [0.5,0.5]
         mlp_batchnorm: bool, default = False
@@ -117,16 +118,13 @@ class TabMlp(nn.Module):
         embed_input: List, Optional
             List of Tuples with the column name, number of unique values and
             embedding dimension. e.g. [(education, 11, 32), ...]
-        embed_dropout: float
+        embed_dropout: float, default = 0.1
             embeddings dropout
         continuous_cols: List, Optional
             List with the name of the numeric (aka continuous) columns
         batchnorm_cont: bool, default = False
             Boolean indicating whether or not to apply batch normalization to the
             continuous input
-
-            .. note:: Either ``embed_input`` or ``continuous_cols`` (or both) should be passed to the
-                model
 
         Attributes
         ----------

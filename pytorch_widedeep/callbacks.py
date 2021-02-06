@@ -120,26 +120,12 @@ class Callback(object):
 
 
 class History(Callback):
-    r"""Callback that records events into a :obj:`History` object.
+    r"""Callback that records metrics into a ``History`` object.
 
     This callback runs by default within :obj:`Trainer`. Callbacks are passed
     as input parameters to the ``Trainer`` class See
     :class:`pytorch_widedeep.trainer.Trainer`. Documentation is included here
     for completion.
-
-
-    Examples
-    --------
-    >>> from pytorch_widedeep.callbacks import History
-    >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
-    >>> from pytorch_widedeep.training import Trainer
-    >>>
-    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-    >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
-    >>> wide = Wide(10, 1)
-    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
-    >>> model = WideDeep(wide, deep)
-    >>> trainer = Trainer(model, objective="regression", callbacks=[History()])
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):

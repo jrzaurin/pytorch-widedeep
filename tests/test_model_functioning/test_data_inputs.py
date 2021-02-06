@@ -379,7 +379,7 @@ def test_head_layers_individual_components(
         deeptabular=deeptabular,
         deeptext=deeptext,
         deepimage=deepimage,
-        head_layers_dim=[8, 4],
+        head_hidden_dims=[8, 4],
     )  # noqa: F841
     trainer = Trainer(model, objective="binary", verbose=0)
     trainer.fit(

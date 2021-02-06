@@ -9,14 +9,14 @@ from sklearn.utils import Bunch
 from torch.utils.data import Dataset, DataLoader
 
 from pytorch_widedeep.models import Wide, TabMlp
-from pytorch_widedeep.metrics import Accuracy
-from pytorch_widedeep.training._warmup import WarmUp
+from pytorch_widedeep.metrics import Accuracy, MultipleMetrics
 from pytorch_widedeep.models.deep_image import conv_layer
+from pytorch_widedeep.training._finetune import FineTune
 
 use_cuda = torch.cuda.is_available()
 
 
-# Define a series of simple models to quickly test the WarmUp class
+# Define a series of simple models to quickly test the FineTune class
 class TestDeepText(nn.Module):
     def __init__(self):
         super(TestDeepText, self).__init__()
@@ -69,9 +69,9 @@ class WDset(Dataset):
         return len(self.X_tab)
 
 
-# Remember that the WarmUp class will be instantiated inside the WideDeep and
-# will take, among others, the activation_fn and the loss_fn of that class as
-# parameters. Therefore, we define equivalent classes to replicate the
+# Remember that the FineTune class will be instantiated inside the WideDeep
+# and will take, among others, the activation_fn and the loss_fn of that class
+# as parameters. Therefore, we define equivalent classes to replicate the
 # scenario
 # def activ_fn(inp):
 #     return torch.sigmoid(inp)
@@ -113,8 +113,8 @@ if use_cuda:
 
 # deep
 deeptabular = TabMlp(
-    mlp_hidden_dims=[16, 8],
-    mlp_dropout=[0.5, 0.2],
+    mlp_hidden_dims=[32, 16, 8],
+    mlp_dropout=0.2,
     column_idx=column_idx,
     embed_input=embed_input,
     continuous_cols=continuous_cols,
@@ -137,16 +137,25 @@ if use_cuda:
 wdset = WDset(X_wide, X_tab, X_text, X_image, target)
 wdloader = DataLoader(wdset, batch_size=10, shuffle=True)
 
-# Instantiate the WarmUp class
-warmer = WarmUp(loss_fn, Accuracy(), "binary", False)
+# Instantiate the FineTune class
+finetuner = FineTune(loss_fn, MultipleMetrics([Accuracy()]), "binary", False)
 
-# List the layers for the warm_gradual method
+# List the layers for the finetune_gradual method
+# deeptabular childrens -> TabMmlp and the final Linear layer
+# TabMlp children -> Embeddings and MLP
+# MLP children -> dense layers
+# so here we go...
+last_linear = list(deeptabular.children())[1]
+inverted_mlp_layers = list(
+    list(list(deeptabular.named_modules())[9][1].children())[0].children()
+)[::-1]
+tab_layers = [last_linear] + inverted_mlp_layers
 text_layers = [c for c in list(deeptext.children())[1:]][::-1]
 image_layers = [c for c in list(deepimage.children())][::-1]
 
 
 ###############################################################################
-#  Simply test that warm_all runs
+#  Simply test that finetune_all runs
 ###############################################################################
 @pytest.mark.parametrize(
     "model, modelname, loader, n_epochs, max_lr",
@@ -157,31 +166,33 @@ image_layers = [c for c in list(deepimage.children())][::-1]
         (deepimage, "deepimage", wdloader, 1, 0.01),
     ],
 )
-def test_warm_all(model, modelname, loader, n_epochs, max_lr):
+def test_finetune_all(model, modelname, loader, n_epochs, max_lr):
     has_run = True
     try:
-        warmer.warm_all(model, modelname, loader, n_epochs, max_lr)
+        finetuner.finetune_all(model, modelname, loader, n_epochs, max_lr)
     except Exception:
         has_run = False
     assert has_run
 
 
 ###############################################################################
-#  Simply test that warm_gradual runs
+#  Simply test that finetune_gradual runs
 ###############################################################################
 @pytest.mark.parametrize(
     "model, modelname, loader, max_lr, layers, routine",
     [
+        (deeptabular, "deeptabular", wdloader, 0.01, tab_layers, "felbo"),
+        (deeptabular, "deeptabular", wdloader, 0.01, tab_layers, "howard"),
         (deeptext, "deeptext", wdloader, 0.01, text_layers, "felbo"),
         (deeptext, "deeptext", wdloader, 0.01, text_layers, "howard"),
         (deepimage, "deepimage", wdloader, 0.01, image_layers, "felbo"),
         (deepimage, "deepimage", wdloader, 0.01, image_layers, "howard"),
     ],
 )
-def test_warm_gradual(model, modelname, loader, max_lr, layers, routine):
+def test_finetune_gradual(model, modelname, loader, max_lr, layers, routine):
     has_run = True
     try:
-        warmer.warm_gradual(model, modelname, loader, max_lr, layers, routine)
+        finetuner.finetune_gradual(model, modelname, loader, max_lr, layers, routine)
     except Exception:
         has_run = False
     assert has_run

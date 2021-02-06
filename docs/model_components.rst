@@ -1,13 +1,12 @@
 The ``models`` module
 ======================
 
-This module contains the four main models that will comprise Wide and Deep
+This module contains the four main components that will comprise Wide and Deep
 model, and the ``WideDeep`` "constructor" class. These four components are:
-``Wide``, ``DeepDense``, ``DeepDenseResnet``, ``TabTransformer``, ``DeepText``
-and ``DeepImage``.
+``wide``, ``deeptabular``, ``deeptext``, ``deepimage``.
 
-.. note:: ``DeepDense``, ``DeepDenseResnet`` and ``TabTransformer`` correspond to
-    what we refer as the ``deeptabular`` component of the model and simply represent
+.. note:: ``TabMlp``, ``TabResnet`` and ``TabTransformer`` can all be used
+    as the ``deeptabular``  component of the model and simply represent
     different alternatives
 
 .. autoclass:: pytorch_widedeep.models.wide.Wide

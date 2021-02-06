@@ -14,7 +14,7 @@ from pytorch_widedeep.metrics import Metric, MetricCallback, MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.callbacks import History, Callback, CallbackContainer
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
-from pytorch_widedeep.training._warmup import WarmUp
+from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
@@ -33,14 +33,15 @@ use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
 
-class Trainer(object):
+class Trainer:
     @Alias(  # noqa: C901
         "objective",
         ["loss_function", "loss_fn", "loss", "cost_function", "cost_fn", "cost"],
     )
+    @Alias("model", ["model_path"])
     def __init__(
         self,
-        model: WideDeep,
+        model: Union[str, WideDeep],
         objective: str,
         custom_loss_function: Optional[Module] = None,
         optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
@@ -60,8 +61,13 @@ class Trainer(object):
 
         Parameters
         ----------
-        model: ``WideDeep``
-            An object of class ``WideDeep``.
+        model: str or ``WideDeep``
+            param alias: ``model_path``
+
+            An object of class ``WideDeep`` or a string with the full path to
+            the model, in which case you might want to use the alias
+            ``model_path``.
+
         objective: str
             Defines the objective, loss or cost function.
 
@@ -92,7 +98,9 @@ class Trainer(object):
             available suits the user, it is possible to pass a custom loss
             function. See for example
             :class:`pytorch_widedeep.losses.FocalLoss` for the required
-            structure of the object or the Examples folder.
+            structure of the object or the `Examples
+            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+            folder in the repo.
         optimizers: ``Optimzer`` or Dict, Optional, default= ``AdamW``
             - An instance of Pytorch's ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
             - a dictionary where there keys are the model components (i.e.
@@ -120,14 +128,18 @@ class Trainer(object):
             ``pytorch-widedeep`` are: ``ModelCheckpoint``, ``EarlyStopping``,
             and ``LRHistory``. The ``History`` callback is used by default.
             This can also be a custom callback as long as the object of type
-            ``Callback``. See ``pytorch_widedeep.callbacks.Callback``
-            or the Examples folder
+            ``Callback``. See ``pytorch_widedeep.callbacks.Callback`` or the
+            `Examples
+            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+            folder in the repo
         metrics: List, Optional, default=None
             List of objects of type ``Metric``. Metrics available are:
             ``Accuracy``, ``Precision``, ``Recall``, ``FBetaScore``,
             ``F1Score`` and ``R2Score``. This can also be a custom metric as
             long as it is an object of type ``Metric``. See
-            ``pytorch_widedeep.metrics.Metric`` or the Examples folder
+            ``pytorch_widedeep.metrics.Metric`` or the `Examples
+            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+            folder in the repo
         class_weight: float, List or Tuple. Optional. default=None
             - float indicating the weight of the minority class in binary classification
               problems (e.g. 9.)
@@ -156,6 +168,7 @@ class Trainer(object):
         >>> import torch
         >>> from torchvision.transforms import ToTensor
         >>>
+        >>> # wide deep imports
         >>> from pytorch_widedeep.callbacks import EarlyStopping, LRHistory
         >>> from pytorch_widedeep.initializers import KaimingNormal, KaimingUniform, Normal, Uniform
         >>> from pytorch_widedeep.models import TabResnet, DeepImage, DeepText, Wide, WideDeep
@@ -165,11 +178,14 @@ class Trainer(object):
         >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
         >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
         >>> wide = Wide(10, 1)
+        >>>
+        >>> # build the model
         >>> deeptabular = TabResnet(blocks_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
         >>> deeptext = DeepText(vocab_size=10, embed_dim=4, padding_idx=0)
         >>> deepimage = DeepImage(pretrained=False)
         >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
         >>>
+        >>> # set optimizers and schedulers
         >>> wide_opt = torch.optim.Adam(model.wide.parameters())
         >>> deep_opt = torch.optim.Adam(model.deeptabular.parameters())
         >>> text_opt = RAdam(model.deeptext.parameters())
@@ -179,11 +195,16 @@ class Trainer(object):
         >>> deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)
         >>> text_sch = torch.optim.lr_scheduler.StepLR(text_opt, step_size=5)
         >>> img_sch = torch.optim.lr_scheduler.StepLR(img_opt, step_size=3)
+        >>>
         >>> optimizers = {"wide": wide_opt, "deeptabular": deep_opt, "deeptext": text_opt, "deepimage": img_opt}
         >>> schedulers = {"wide": wide_sch, "deeptabular": deep_sch, "deeptext": text_sch, "deepimage": img_sch}
+        >>>
+        >>> # set initializers and callbacks
         >>> initializers = {"wide": Uniform, "deeptabular": Normal, "deeptext": KaimingNormal, "deepimage": KaimingUniform}
         >>> transforms = [ToTensor]
         >>> callbacks = [LRHistory(n_epochs=4), EarlyStopping]
+        >>>
+        >>> # set the trainer
         >>> trainer = Trainer(model, objective="regression", initializers=initializers, optimizers=optimizers,
         ... lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
         """
@@ -205,7 +226,10 @@ class Trainer(object):
                 "'multiclass' or 'regression', consistent with the loss function"
             )
 
-        self.model = model
+        if isinstance(model, str):
+            self.model = torch.load(model)
+        else:
+            self.model = model
         self.verbose = verbose
         self.seed = seed
         self.early_stop = False
@@ -223,6 +247,19 @@ class Trainer(object):
 
         self.model.to(device)
 
+    @Alias("finetune", ["warmup"])  # noqa: C901
+    @Alias("finetune_epochs", ["warmup_epochs"])
+    @Alias("finetune_max_lr", ["warmup_max_lr"])
+    @Alias("finetune_deeptabular_gradual", ["warmup_deeptabular_gradual"])
+    @Alias("finetune_deeptabular_max_lr", ["warmup_deeptabular_max_lr"])
+    @Alias("finetune_deeptabular_layers", ["warmup_deeptabular_layers"])
+    @Alias("finetune_deeptext_gradual", ["warmup_deeptext_gradual"])
+    @Alias("finetune_deeptext_max_lr", ["warmup_deeptext_max_lr"])
+    @Alias("finetune_deeptext_layers", ["warmup_deeptext_layers"])
+    @Alias("finetune_deepimage_gradual", ["warmup_deepimage_gradual"])
+    @Alias("finetune_deepimage_max_lr", ["warmup_deepimage_max_lr"])
+    @Alias("finetune_deepimage_layers", ["warmup_deepimage_layers"])
+    @Alias("finetune_routine", ["warmup_routine"])
     def fit(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
@@ -237,18 +274,22 @@ class Trainer(object):
         validation_freq: int = 1,
         batch_size: int = 32,
         patience: int = 10,
-        warm_up: bool = False,
-        warm_epochs: int = 5,
-        warm_max_lr: float = 0.01,
-        warm_deeptext_gradual: bool = False,
-        warm_deeptext_max_lr: float = 0.01,
-        warm_deeptext_layers: Optional[List[nn.Module]] = None,
-        warm_deepimage_gradual: bool = False,
-        warm_deepimage_max_lr: float = 0.01,
-        warm_deepimage_layers: Optional[List[nn.Module]] = None,
-        warm_routine: str = "howard",
+        finetune: bool = False,
+        finetune_epochs: int = 5,
+        finetune_max_lr: float = 0.01,
+        finetune_deeptabular_gradual: bool = False,
+        finetune_deeptabular_max_lr: float = 0.01,
+        finetune_deeptabular_layers: Optional[List[nn.Module]] = None,
+        finetune_deeptext_gradual: bool = False,
+        finetune_deeptext_max_lr: float = 0.01,
+        finetune_deeptext_layers: Optional[List[nn.Module]] = None,
+        finetune_deepimage_gradual: bool = False,
+        finetune_deepimage_max_lr: float = 0.01,
+        finetune_deepimage_layers: Optional[List[nn.Module]] = None,
+        finetune_routine: str = "howard",
+        stop_after_finetuning: bool = False,
     ):
-        r"""Fit method. Must run after calling ``compile``
+        r"""Fit method.
 
         Parameters
         ----------
@@ -284,13 +325,18 @@ class Trainer(object):
         patience: int, default=10
             Number of epochs without improving the target metric or loss
             before the fit process stops
-        warm_up: bool, default=False
-            warm up model components individually before the joined training
-            starts.
+        finetune: bool, default=False
+            param alias: ``warmup``
 
-            ``pytorch_widedeep`` implements 3 warm up routines.
+            fine-tune individual model components.
 
-            - Warm up all trainable layers at once. This routine is is
+            .. note:: This functionality can also be used to 'warm-up'
+               individual components before the joined training starts, and hence
+               its alias. See the Examples folder in the repo for more details
+
+            ``pytorch_widedeep`` implements 3 fine-tune routines.
+
+            - fine-tune all trainable layers at once. This routine is is
               inspired by the work of Howard & Sebastian Ruder 2018 in their
               `ULMfit paper <https://arxiv.org/abs/1801.06146>`_. Using a
               Slanted Triangular learing (see `Leslie N. Smith paper
@@ -300,58 +346,95 @@ class Trainer(object):
               will then gradually decrease to max_lr/10 for the remaining 90%
               of the steps. The optimizer used in the process is ``AdamW``.
 
-            and two gradual warm up routines, where only certain layers are
-            warmed up at each warm up step. Gradual warmm up is only
-            implemented for the ``deeptext`` and the ``deepimage`` components
+            and two gradual fine-tune routines, where only certain layers are
+            trained at a time.
 
-            - The so called `Felbo` gradual warm up rourine, inpired by the Felbo et al., 2017
-              `DeepEmoji paper <https://arxiv.org/abs/1708.00524>`_.
+            - The so called `Felbo` gradual fine-tune rourine, based on the the
+              Felbo et al., 2017 `DeepEmoji paper <https://arxiv.org/abs/1708.00524>`_.
             - The `Howard` routine based on the work of Howard & Sebastian Ruder 2018 in their
               `ULMfit paper <https://arxiv.org/abs/1801.06146>`_.
 
-            For details on how these routines work, please see the examples
-            section in this documentation and the corresponding repo.
-        warm_epochs: int, default=4
-            Number of warm up epochs for those model components that will NOT
-            be gradually warmed up. Those components with gradual warm up
-            follow their corresponding specific routine.
-        warm_max_lr: float, default=0.01
+            For details on how these routines work, please see the Examples
+            section in this documentation and the `Examples
+            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+            folder in the repo.
+        finetune_epochs: int, default=4
+            param alias: ``warmup_epochs``
+
+            Number of fine-tune epochs for those model components that will
+            *NOT* be gradually fine-tuned. Those components with gradual
+            fine-tune follow their corresponding specific routine.
+        finetune_max_lr: float, default=0.01
+            param alias: ``warmup_max_lr``
+
             Maximum learning rate during the Triangular Learning rate cycle
-            for those model componenst that will NOT be gradually warmed up
-        warm_deeptext_gradual: bool, default=False
-            Boolean indicating if the ``deeptext`` component will be warmed
-            up gradually
-        warm_deeptext_max_lr: float, default=0.01
+            for those model componenst that will *NOT* be gradually fine-tuned
+        finetune_deeptabular_gradual: bool, default=False
+            param alias: ``warmup_deeptabular_gradual``
+
+            Boolean indicating if the ``deeptabular`` component will be
+            fine-tuned gradually
+        finetune_deeptabular_max_lr: float, default=0.01
+            param alias: ``warmup_deeptabular_max_lr``
+
+            Maximum learning rate during the Triangular Learning rate cycle
+            for the deeptabular component
+        finetune_deeptabular_layers: List, Optional, default=None
+            param alias: ``warmup_deeptabular_layers``
+
+            List of :obj:`nn.Modules` that will be fine-tuned gradually.
+
+            .. note:: These have to be in `fine-tune-order`: the layers or blocks
+                close to the output neuron(s) first
+
+        finetune_deeptext_gradual: bool, default=False
+            param alias: ``warmup_deeptext_gradual``
+
+            Boolean indicating if the ``deeptext`` component will be
+            fine-tuned gradually
+        finetune_deeptext_max_lr: float, default=0.01
+            param alias: ``warmup_deeptext_max_lr``
+
             Maximum learning rate during the Triangular Learning rate cycle
             for the deeptext component
-        warm_deeptext_layers: List, Optional, default=None
-            List of :obj:`nn.Modules` that will be warmed up gradually.
+        finetune_deeptext_layers: List, Optional, default=None
+            param alias: ``warmup_deeptext_layers``
 
-            .. note:: These have to be in `warm-up-order`: the layers or blocks
+            List of :obj:`nn.Modules` that will be fine-tuned gradually.
+
+            .. note:: These have to be in `fine-tune-order`: the layers or blocks
                 close to the output neuron(s) first
 
-        warm_deepimage_gradual: bool, default=False
-            Boolean indicating if the ``deepimage`` component will be warmed
-            up gradually
-        warm_deepimage_max_lr: float, default=0.01
+        finetune_deepimage_gradual: bool, default=False
+            param alias: ``warmup_deepimage_gradual``
+
+            Boolean indicating if the ``deepimage`` component will be
+            fine-tuned gradually
+        finetune_deepimage_max_lr: float, default=0.01
+            param alias: ``warmup_deepimage_max_lr``
+
             Maximum learning rate during the Triangular Learning rate cycle
             for the ``deepimage`` component
-        warm_deepimage_layers: List, Optional, default=None
-            List of :obj:`nn.Modules` that will be warmed up gradually.
+        finetune_deepimage_layers: List, Optional, default=None
+            param alias: ``warmup_deepimage_layers``
 
-            .. note:: These have to be in `warm-up-order`: the layers or blocks
+            List of :obj:`nn.Modules` that will be fine-tuned gradually.
+
+            .. note:: These have to be in `fine-tune-order`: the layers or blocks
                 close to the output neuron(s) first
 
-        warm_routine: str, default=`felbo`
+        finetune_routine: str, default=`felbo`
+            param alias: ``warmup_deepimage_layers``
+
             Warm up routine. On of `felbo` or `howard`. See the examples
             section in this documentation and the corresponding repo for
-            details on how to use warm up routines
+            details on how to use fine-tune routines
 
         Examples
         --------
 
-        For a series of comprehensive examples please, see the `example
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_.
+        For a series of comprehensive examples please, see the `Examples
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
         folder in the repo
 
         For completion, here we include some `"fabricated"` examples, i.e.
@@ -402,19 +485,32 @@ class Trainer(object):
             )
             eval_steps = len(eval_loader)
 
-        if warm_up:
-            self._warm_up(
+        if finetune:
+            self._finetune(
                 train_loader,
-                warm_epochs,
-                warm_max_lr,
-                warm_deeptext_gradual,
-                warm_deeptext_layers,
-                warm_deeptext_max_lr,
-                warm_deepimage_gradual,
-                warm_deepimage_layers,
-                warm_deepimage_max_lr,
-                warm_routine,
+                finetune_epochs,
+                finetune_max_lr,
+                finetune_deeptabular_gradual,
+                finetune_deeptabular_layers,
+                finetune_deeptabular_max_lr,
+                finetune_deeptext_gradual,
+                finetune_deeptext_layers,
+                finetune_deeptext_max_lr,
+                finetune_deepimage_gradual,
+                finetune_deepimage_layers,
+                finetune_deepimage_max_lr,
+                finetune_routine,
             )
+            if stop_after_finetuning:
+                print("Fine-tuning finished")
+                return
+            else:
+                if self.verbose:
+                    print(
+                        "Fine-tuning of individual components completed. "
+                        "Training the whole model for {} epochs".format(n_epochs)
+                    )
+
         self.callback_container.on_train_begin(
             {"batch_size": batch_size, "train_steps": train_steps, "n_epochs": n_epochs}
         )
@@ -578,8 +674,8 @@ class Trainer(object):
         Examples
         --------
 
-        For a series of comprehensive examples please, see the `example
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_.
+        For a series of comprehensive examples please, see the `Examples
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
         folder in the repo
 
         For completion, here we include a `"fabricated"` example, i.e.
@@ -734,11 +830,14 @@ class Trainer(object):
             X_train["X_img"] = X_img
         return X_train
 
-    def _warm_up(
+    def _finetune(
         self,
         loader: DataLoader,
         n_epochs: int,
         max_lr: float,
+        deeptabular_gradual: bool,
+        deeptabular_layers: List[nn.Module],
+        deeptabular_max_lr: float,
         deeptext_gradual: bool,
         deeptext_layers: List[nn.Module],
         deeptext_max_lr: float,
@@ -748,7 +847,7 @@ class Trainer(object):
         routine: str = "felbo",
     ):  # pragma: no cover
         r"""
-        Simple wrappup to individually warm up model components
+        Simple wrap-up to individually fine-tune model components
         """
         if self.model.deephead is not None:
             raise ValueError(
@@ -756,12 +855,26 @@ class Trainer(object):
             )
         # This is not the most elegant solution, but is a soluton "in-between"
         # a non elegant one and re-factoring the whole code
-        warmer = WarmUp(self.loss_fn, self.metric, self.method, self.verbose)
-        warmer.warm_all(self.model.wide, "wide", loader, n_epochs, max_lr)
-        warmer.warm_all(self.model.deeptabular, "deeptabular", loader, n_epochs, max_lr)
+        finetuner = FineTune(self.loss_fn, self.metric, self.method, self.verbose)
+        if self.model.wide:
+            finetuner.finetune_all(self.model.wide, "wide", loader, n_epochs, max_lr)
+        if self.model.deeptabular:
+            if deeptabular_gradual:
+                finetuner.finetune_gradual(
+                    self.model.deeptabular,
+                    "deeptabular",
+                    loader,
+                    deeptabular_max_lr,
+                    deeptabular_layers,
+                    routine,
+                )
+            else:
+                finetuner.finetune_all(
+                    self.model.deeptabular, "deeptabular", loader, n_epochs, max_lr
+                )
         if self.model.deeptext:
             if deeptext_gradual:
-                warmer.warm_gradual(
+                finetuner.finetune_gradual(
                     self.model.deeptext,
                     "deeptext",
                     loader,
@@ -770,12 +883,12 @@ class Trainer(object):
                     routine,
                 )
             else:
-                warmer.warm_all(
+                finetuner.finetune_all(
                     self.model.deeptext, "deeptext", loader, n_epochs, max_lr
                 )
         if self.model.deepimage:
             if deepimage_gradual:
-                warmer.warm_gradual(
+                finetuner.finetune_gradual(
                     self.model.deepimage,
                     "deepimage",
                     loader,
@@ -784,7 +897,7 @@ class Trainer(object):
                     routine,
                 )
             else:
-                warmer.warm_all(
+                finetuner.finetune_all(
                     self.model.deepimage, "deepimage", loader, n_epochs, max_lr
                 )
 

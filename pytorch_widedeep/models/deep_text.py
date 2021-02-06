@@ -14,7 +14,7 @@ class DeepText(nn.Module):
         vocab_size: int,
         hidden_dim: int = 64,
         n_layers: int = 3,
-        rnn_dropout: float = 0.0,
+        rnn_dropout: float = 0.1,
         bidirectional: bool = False,
         padding_idx: int = 1,
         embed_dim: Optional[int] = None,
@@ -22,12 +22,13 @@ class DeepText(nn.Module):
         embed_trainable: Optional[bool] = True,
         head_hidden_dims: Optional[List[int]] = None,
         head_activation: Optional[str] = "relu",
-        head_dropout: float = None,
+        head_dropout: Optional[float] = None,
         head_batchnorm: Optional[bool] = False,
         head_batchnorm_last: Optional[bool] = False,
         head_linear_first: Optional[bool] = False,
     ):
-        r"""Standard text classifier/regressor comprised by a stack of RNNs (LSTMs).
+        r"""Standard text classifier/regressor comprised by a stack of RNNs
+        (in particular LSTMs).
 
         In addition, there is the option to add a Fully Connected (FC) set of dense
         layers (referred as `texthead`) on top of the stack of RNNs
@@ -37,10 +38,10 @@ class DeepText(nn.Module):
         vocab_size: int
             number of words in the vocabulary
         hidden_dim: int, default = 64
-            number of features in the hidden state h of the LSTM
+            Hidden dim of the LSTM
         n_layers: int, default = 3
             number of recurrent layers
-        rnn_dropout: int, default = 0.
+        rnn_dropout: float, default = 0.1
             dropout for the dropout layer on the outputs of each LSTM layer except
             the last layer
         bidirectional: bool, default = True
@@ -49,26 +50,27 @@ class DeepText(nn.Module):
             index of the padding token in the padded-tokenised sequences. default:
             1. I use the ``fastai`` tokenizer where the token index 0 is reserved
             for the `'unknown'` word token
-        embed_dim: int, Optional
-            Dimension of the word embedding matrix
-        embed_matrix: np.ndarray, Optional
+        embed_dim: int, Optional, default = None
+            Dimension of the word embedding matrix if non-pretained word
+            vectors are used
+        embed_matrix: np.ndarray, Optional, default = None
              Pretrained word embeddings
-        embed_trainable: bool, Optional. default = False
+        embed_trainable: bool, Optional, default = None
             Boolean indicating if the pretrained embeddings are trainable
-        head_hidden_dims: List, Optional
+        head_hidden_dims: List, Optional, default = None
             List with the sizes of the stacked dense layers in the head
             e.g: [128, 64]
-        head_activation: str, default = "relu"
+        head_activation: str, Optional, default = "relu"
             Activation function for the dense layers in the head
-        head_dropout: float, Optional
+        head_dropout: float, Optional, default = None
             dropout between the dense layers in the head
-        head_batchnorm: bool, Optional
-            Whether or not to include batch normalizatin in the dense layers that
+        head_batchnorm: bool, Optional, default = False
+            Whether or not to include batch normalization in the dense layers that
             form the `'texthead'`
-        head_batchnorm_last: bool, default = False
+        head_batchnorm_last: bool, Optional, default = False
             Boolean indicating whether or not to apply batch normalization to the
             last of the dense layers in the head
-        head_linear_first: bool, default = False
+        head_linear_first: bool, Optional, default = False
             Boolean indicating whether the order of the operations in the dense
             layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
             LIN -> ACT]``

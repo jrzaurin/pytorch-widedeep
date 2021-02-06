@@ -17,7 +17,7 @@ def simple_preprocess(
     max_len: int = 15,
 ) -> List[str]:
     r"""
-    ``Gensim``'s :obj:`simple_preprocess` adding a 'lower' param to indicate
+    ``Gensim``'s :obj:`simple_preprocess` adding a ``lower`` param to indicate
     wether or not to lower case all the token in the doc
 
     For more information see: ``Gensim`` `utils module

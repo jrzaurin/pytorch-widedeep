@@ -82,9 +82,9 @@ into:
 It is important to emphasize that **each individual component, `wide`,
 `deeptabular`, `deeptext` and `deepimage`, can be used independently** and in
 isolation. For example, one could use only `wide`, which is in simply a linear
-model. In fact, one of the most interesting aspects in ``pytorch-widedeep`` is
-the ``deeptabular`` component. Currently, ``pytorch-widedeep`` offers 3 models
-for that component:
+model. In fact, one of the most interesting functionalities
+in``pytorch-widedeep`` is the ``deeptabular`` component. Currently,
+``pytorch-widedeep`` offers 3 models for that component:
 
 1. ``TabMlp``: this is almost identical to the [tabular
 model](https://docs.fast.ai/tutorial.tabular.html) in the fantastic

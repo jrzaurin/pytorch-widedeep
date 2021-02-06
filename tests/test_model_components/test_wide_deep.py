@@ -51,7 +51,10 @@ def test_deephead_and_head_layers_dim():
     deephead = nn.Sequential(nn.Linear(32, 16), nn.Linear(16, 8))
     with pytest.raises(ValueError):
         model = WideDeep(  # noqa: F841
-            wide=wide, deeptabular=deepdense, head_layers_dim=[16, 8], deephead=deephead
+            wide=wide,
+            deeptabular=deepdense,
+            head_hidden_dims=[16, 8],
+            deephead=deephead,
         )
 
 
@@ -63,7 +66,7 @@ def test_deephead_and_head_layers_dim():
 def test_no_deephead_and_head_layers_dim():
     out = []
     model = WideDeep(
-        wide=wide, deeptabular=deepdense, head_layers_dim=[8, 4]
+        wide=wide, deeptabular=deepdense, head_hidden_dims=[8, 4]
     )  # noqa: F841
     for n, p in model.named_parameters():
         if n == "deephead.head_layer_0.0.weight":

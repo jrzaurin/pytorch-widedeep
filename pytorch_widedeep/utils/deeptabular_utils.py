@@ -13,7 +13,7 @@ __all__ = ["LabelEncoder"]
 
 class LabelEncoder:
     def __init__(self, columns_to_encode: Optional[List[str]] = None):
-        """Class to Label Encode categorical values for multiple columns at once
+        """Label Encode categorical values for multiple columns at once
 
         .. note:: LabelEncoder reserves 0 for `unseen` new categories. This is convenient
             when defining the embedding layers, since we can just set padding idx to 0.
@@ -27,7 +27,7 @@ class LabelEncoder:
 
         Attributes
         -----------
-        encoding_dict: Dictionary
+        encoding_dict: Dict
             Dictionary containing the encoding mappings in the format, e.g.
 
             `{'colname1': {'cat1': 1, 'cat2': 2, ...}, 'colname2': {'cat1': 1, 'cat2': 2, ...}, ...}`

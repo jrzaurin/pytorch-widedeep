@@ -20,9 +20,9 @@ class WideDeep(nn.Module):
         deeptext: Optional[nn.Module] = None,
         deepimage: Optional[nn.Module] = None,
         deephead: Optional[nn.Module] = None,
-        head_layers_dim: Optional[List[int]] = None,
+        head_hidden_dims: Optional[List[int]] = None,
         head_activation: Optional[str] = "relu",
-        head_dropout: float = None,
+        head_dropout: Optional[float] = 0.1,
         head_batchnorm: Optional[bool] = False,
         head_batchnorm_last: Optional[bool] = False,
         head_linear_first: Optional[bool] = False,
@@ -31,8 +31,9 @@ class WideDeep(nn.Module):
         r"""Main collector class that combines all ``wide``, ``deeptabular``
         (which can be a number of architectures), ``deeptext`` and ``deepimage`` models.
 
-        There are two options to combine these models that correspond to the two
-        architectures that ``pytorch-widedeep`` can build.
+        There are two options to combine these models that correspond to the
+        two main architectures (there is a higher number of
+        "sub-architectures") that ``pytorch-widedeep`` can build.
 
             - Directly connecting the output of the model components to an ouput neuron(s).
 
@@ -42,12 +43,12 @@ class WideDeep(nn.Module):
 
         Parameters
         ----------
-        wide: ``nn.Module``, Optional
+        wide: ``nn.Module``, Optional, default = None
             ``Wide`` model. I recommend using the ``Wide`` class in this
             package. However, it is possible to use a custom model as long as
             is consistent with the required architecture, see
             :class:`pytorch_widedeep.models.wide.Wide`
-        deeptabular: ``nn.Module``, Optional
+        deeptabular: ``nn.Module``, Optional, default = None
 
             currently ``pytorch-widedeep`` implements three possible
             architectures for the `deeptabular` component. These are:
@@ -73,38 +74,38 @@ class WideDeep(nn.Module):
             architecture. See
             :class:`pytorch_widedeep.models.deep_dense.TabTransformer`.
 
-        deeptext: ``nn.Module``, Optional
+        deeptext: ``nn.Module``, Optional, default = None
             Model for the text input. Must be an object of class ``DeepText``
             or a custom model as long as is consistent with the required
             architecture. See
             :class:`pytorch_widedeep.models.deep_dense.DeepText`
-        deepimage: ``nn.Module``, Optional
+        deepimage: ``nn.Module``, Optional, default = None
             Model for the images input. Must be an object of class
             ``DeepImage`` or a custom model as long as is consistent with the
             required architecture. See
             :class:`pytorch_widedeep.models.deep_dense.DeepImage`
-        deephead: ``nn.Module``, Optional
+        deephead: ``nn.Module``, Optional, default = None
             Custom model by the user that will receive the outtput of the deep
             component. Typically a FC-Head (MLP)
-        head_layers_dim: List, Optional
-            Alternatively, the ``head_layers_dim`` param can be used to
+        head_hidden_dims: List, Optional, default = None
+            Alternatively, the ``head_hidden_dims`` param can be used to
             specify the sizes of the stacked dense layers in the fc-head e.g:
             ``[128, 64]``
-        head_dropout: float, Optional
-            Dropout between the layers in ``head_layers_dim``
+        head_dropout: float, Optional, default = 0.1
+            Dropout between the layers in ``head_hidden_dims``
         head_activation: str, default = "relu"
             activation function of the head layers. One of "relu", gelu" or
             "leaky_relu"
-        head_batchnorm: bool, Optional
+        head_batchnorm: bool, Optional, default = False
             Specifies if batch normalizatin should be included in the head layers
-        head_batchnorm_last: bool, default = False
+        head_batchnorm_last: bool, Optional, default = False
             Boolean indicating whether or not to apply batch normalization to the
             last of the dense layers
-        head_linear_first: bool, default = False
-            Boolean indicating whether the order of the operations in the dense
-            layer. If 'True': [LIN -> ACT -> BN -> DP]. If 'False': [BN -> DP ->
-            LIN -> ACT]
-        pred_dim: int
+        head_linear_first: bool, Optional, default = False
+            Boolean indicating whether the order of the operations in the
+            dense layer. If ``True``: ``[LIN -> ACT -> BN -> DP]``. If
+            ``False``: ``[BN -> DP -> LIN -> ACT]``
+        pred_dim: int, default = 1
             Size of the final wide and deep output layer containing the
             predictions. `1` for regression and binary classification or number
             of classes for multiclass classification.
@@ -148,7 +149,7 @@ class WideDeep(nn.Module):
             deeptext,
             deepimage,
             deephead,
-            head_layers_dim,
+            head_hidden_dims,
             pred_dim,
         )
 
@@ -163,7 +164,7 @@ class WideDeep(nn.Module):
         self.deephead = deephead
 
         if self.deephead is None:
-            if head_layers_dim is not None:
+            if head_hidden_dims is not None:
                 deep_dim = 0
                 if self.deeptabular is not None:
                     deep_dim += self.deeptabular.output_dim  # type:ignore
@@ -171,9 +172,9 @@ class WideDeep(nn.Module):
                     deep_dim += self.deeptext.output_dim  # type:ignore
                 if self.deepimage is not None:
                     deep_dim += self.deepimage.output_dim  # type:ignore
-                head_layers_dim = [deep_dim] + head_layers_dim
+                head_hidden_dims = [deep_dim] + head_hidden_dims
                 self.deephead = MLP(
-                    head_layers_dim,
+                    head_hidden_dims,
                     head_activation,
                     head_dropout,
                     head_batchnorm,
@@ -181,7 +182,7 @@ class WideDeep(nn.Module):
                     head_linear_first,
                 )
                 self.deephead.add_module(
-                    "head_out", nn.Linear(head_layers_dim[-1], pred_dim)
+                    "head_out", nn.Linear(head_hidden_dims[-1], pred_dim)
                 )
             else:
                 if self.deeptabular is not None:
@@ -236,7 +237,7 @@ class WideDeep(nn.Module):
         deeptext,
         deepimage,
         deephead,
-        head_layers_dim,
+        head_hidden_dims,
         pred_dim,
     ):
 
@@ -262,18 +263,18 @@ class WideDeep(nn.Module):
                 "deepimage model must have an 'output_dim' attribute. "
                 "See pytorch-widedeep.models.deep_dense.DeepText"
             )
-        if deephead is not None and head_layers_dim is not None:
+        if deephead is not None and head_hidden_dims is not None:
             raise ValueError(
-                "both 'deephead' and 'head_layers_dim' are not None. Use one of the other, but not both"
+                "both 'deephead' and 'head_hidden_dims' are not None. Use one of the other, but not both"
             )
         if (
-            head_layers_dim is not None
+            head_hidden_dims is not None
             and not deeptabular
             and not deeptext
             and not deepimage
         ):
             raise ValueError(
-                "if 'head_layers_dim' is not None, at least one deep component must be used"
+                "if 'head_hidden_dims' is not None, at least one deep component must be used"
             )
         if deephead is not None:
             deephead_inp_feat = next(deephead.parameters()).size(1)
