@@ -16,7 +16,6 @@ import os
 import re
 import sys
 
-# import pytorch_sphinx_theme
 from sphinx.ext.napoleon.docstring import GoogleDocstring
 
 # this adds the equivalent of "../../" to the python path
@@ -27,7 +26,7 @@ sys.path.insert(0, PACKAGEDIR)
 # -- Project information -----------------------------------------------------
 
 project = "pytorch-widedeep"
-copyright = "2021, Javier Rodriguez Zaurin"
+copyright = "2020, Javier Rodriguez Zaurin"
 author = "Javier Rodriguez Zaurin"
 
 # # The full version, including alpha/beta/rc tags
@@ -78,9 +77,6 @@ extensions = [
     "sphinx.ext.githubpages",
 ]
 
-# If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = True
-
 autosummary_generate = True
 
 napoleon_use_ivar = True
@@ -125,12 +121,27 @@ autodoc_member_order = "bysource"
 # a list of builtin themes.
 #
 html_theme = "sphinx_rtd_theme"
-# html_theme = "pytorch_sphinx_theme"
-# html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
+#
+# html_theme_options = {"analytics_id": "UA-83738774-2"}
+
+# html_theme_options = {
+#     "canonical_url": "",
+#     # 'analytics_id': 'UA-XXXXXXX-1',  #  Provided by Google in your dashboard
+#     "logo_only": False,
+#     "display_version": True,
+#     "prev_next_buttons_location": "bottom",
+#     "style_external_links": False,
+#     # Toc options
+#     "collapse_navigation": True,
+#     "sticky_navigation": True,
+#     "navigation_depth": 4,
+#     "includehidden": True,
+#     "titles_only": False,
+# }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -152,13 +163,16 @@ html_static_path = ["_static"]
 # the icon for tabs, windows and bookmarks. It should be a Windows-style
 # icon file (.ico).
 html_favicon = "_static/img/widedeep_logo_docs.ico"
-html_logo = "_static/img/widedeep_logo_docs.png"
+html_logo = "figures/widedeep_logo.png"
 html_theme_options = {
     "canonical_url": "https://pytorch-widedeep.readthedocs.io/en/latest/",
     "collapse_navigation": False,
-    "logo_only": True,
+    "logo_only": False,
     "display_version": True,
 }
+# html_favicon = "_static/img/widedeep_logo_docs.ico"
+
+
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
@@ -240,9 +254,12 @@ epub_title = project
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ["search.html"]
 
+# If true, `todo` and `todoList` produce output, else they produce nothing.
+todo_include_todos = True
+
 
 def setup(app):
-    app.add_css_file("style.css")
+    app.add_css_file("custom.css")
 
 
 # -- Extensions to the  Napoleon GoogleDocstring class ---------------------

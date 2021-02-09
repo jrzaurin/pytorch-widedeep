@@ -39,3 +39,7 @@ div.ethical-rtd {
 .wy-nav-content {
     max-width: none; !important;
 }
+
+div.container a.header-logo {
+  background-image: url("../figures/widedeep_logo.png");
+}
