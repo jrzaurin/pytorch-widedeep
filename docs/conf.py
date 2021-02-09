@@ -242,7 +242,6 @@ epub_exclude_files = ["search.html"]
 
 
 def setup(app):
-    # app.add_css_file("ignite_style.css")
     app.add_css_file("style.css")
 
 
