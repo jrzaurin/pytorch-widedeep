@@ -93,7 +93,7 @@ class Trainer:
             - ``root_mean_squared_error``, aliases:  ``rmse``
 
             - ``root_mean_squared_log_error``, aliases: ``rmsle``
-        custom_loss: ``nn.Module``, Optional, default = None
+        custom_loss_function: ``nn.Module``, Optional, default = None
             object of class ``nn.Module``. If none of the loss functions
             available suits the user, it is possible to pass a custom loss
             function. See for example
@@ -101,6 +101,11 @@ class Trainer:
             structure of the object or the `Examples
             <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
             folder in the repo.
+
+            .. note:: If ``custom_loss_function`` is not None, ``objective`` must be
+                'binary', 'multiclass' or 'regression', consistent with the loss
+                function
+
         optimizers: ``Optimzer`` or Dict, Optional, default= ``AdamW``
             - An instance of Pytorch's ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
             - a dictionary where there keys are the model components (i.e.
@@ -222,7 +227,7 @@ class Trainer:
             "regression",
         ]:
             raise ValueError(
-                "If 'custom_loss_function' is not None, 'objective' might be 'binary' "
+                "If 'custom_loss_function' is not None, 'objective' must be 'binary' "
                 "'multiclass' or 'regression', consistent with the loss function"
             )
 

@@ -26,7 +26,7 @@ sys.path.insert(0, PACKAGEDIR)
 # -- Project information -----------------------------------------------------
 
 project = "pytorch-widedeep"
-copyright = "2020, Javier Rodriguez Zaurin"
+copyright = "2021, Javier Rodriguez Zaurin"
 author = "Javier Rodriguez Zaurin"
 
 # # The full version, including alpha/beta/rc tags

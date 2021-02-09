@@ -40,3 +40,4 @@ Dependencies
 * torch
 * torchvision
 * einops
+* wrapt

@@ -121,10 +121,8 @@ class Callback(object):
 class History(Callback):
     r"""Callback that records metrics to a ``history`` attribute.
 
-    This callback runs by default within :obj:`Trainer`. Callbacks are passed
-    as input parameters to the ``Trainer`` class See
-    :class:`pytorch_widedeep.trainer.Trainer`. Documentation is included here
-    for completion.
+    This callback runs by default within :obj:`Trainer`, therefore, should not
+    be passed to the ``Trainer``. Is included here just for completion.
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):
