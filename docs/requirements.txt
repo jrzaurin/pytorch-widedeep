@@ -1,5 +1,5 @@
 sphinx==3.4.3
--e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
+sphinx_rtd_theme==0.5.0
 recommonmark==0.7.1
 sphinx-markdown-tables==0.0.15
 sphinx-copybutton==0.3.1

@@ -16,7 +16,7 @@ import os
 import re
 import sys
 
-import pytorch_sphinx_theme
+# import pytorch_sphinx_theme
 from sphinx.ext.napoleon.docstring import GoogleDocstring
 
 # this adds the equivalent of "../../" to the python path
@@ -86,7 +86,7 @@ autosummary_generate = True
 napoleon_use_ivar = True
 
 # Add any paths that contain templates here, relative to this directory.
-# templates_path = ["_templates"]
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
