@@ -16,10 +16,6 @@ class classproperty:
     def __get__(self, decorated_self, decorated_cls):
         return self.func(decorated_cls)
 
-    def __set__(self):
-        """read only class"""
-        raise ValueError("This class is intended to get, not set")
-
 
 class _LossAliases:
     loss_aliases = {

@@ -21,20 +21,7 @@ import einops
 from torch import nn, einsum
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.tab_mlp import MLP
-
-
-def _get_activation_fn(activation):
-    if activation == "relu":
-        return nn.ReLU()
-    elif activation == "gelu":
-        return nn.GELU()
-
-
-def _dense_layer(inp: int, out: int, activation: str, p: float = 0.0):
-    act_fn = _get_activation_fn(activation)
-    layers = [nn.Linear(inp, out), act_fn, nn.Dropout(p)]
-    return nn.Sequential(*layers)
+from pytorch_widedeep.models.tab_mlp import MLP, _get_activation_fn
 
 
 class PositionwiseFF(nn.Module):
@@ -92,10 +79,10 @@ class MultiHeadedAttention(nn.Module):
         self.fixed_attention = fixed_attention
         if fixed_attention:
             self.inp_proj = nn.Linear(input_dim, input_dim)
-            self.fixed_key = nn.init.xavier_normal(
+            self.fixed_key = nn.init.xavier_normal_(
                 nn.Parameter(torch.empty(num_cat_columns, input_dim))
             )
-            self.fixed_query = nn.init.xavier_normal(
+            self.fixed_query = nn.init.xavier_normal_(
                 nn.Parameter(torch.empty(num_cat_columns, input_dim))
             )
         else:
@@ -109,9 +96,11 @@ class MultiHeadedAttention(nn.Module):
         # dimensions, h: number of attention heads, d: d_k
         if self.fixed_attention:
             v = self.inp_proj(X)
-            k = einops.repeat(self.fixed_key, "b s e -> (b copy) s e", copy=X.shape[0])
+            k = einops.repeat(
+                self.fixed_key.unsqueeze(0), "b s e -> (b copy) s e", copy=X.shape[0]
+            )
             q = einops.repeat(
-                self.fixed_query, "b s e -> (b copy) s e", copy=X.shape[0]
+                self.fixed_query.unsqueeze(0), "b s e -> (b copy) s e", copy=X.shape[0]
             )
         else:
             q, k, v = self.inp_proj(X).chunk(3, dim=2)

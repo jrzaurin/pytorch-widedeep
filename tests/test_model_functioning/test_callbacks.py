@@ -77,6 +77,12 @@ deep_sch_4 = CyclicLR(
 optimizers_4 = {"wide": wide_opt_4, "deeptabular": deep_opt_4}
 lr_schedulers_4 = {"wide": wide_sch_4, "deeptabular": deep_sch_4}
 
+# 5. Single optimizers_5, single scheduler, cyclic and both passed directly
+optimizers_5 = RAdam(model.parameters())
+lr_schedulers_5 = CyclicLR(
+    optimizers_5, base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False
+)
+
 
 @pytest.mark.parametrize(
     "optimizers, schedulers, len_loss_output, len_lr_output, init_lr, schedulers_type",
@@ -85,6 +91,7 @@ lr_schedulers_4 = {"wide": wide_sch_4, "deeptabular": deep_sch_4}
         (optimizers_2, lr_schedulers_2, 5, 11, 0.001, "cyclic"),
         (optimizers_3, lr_schedulers_3, 5, 5, None, None),
         (optimizers_4, lr_schedulers_4, 5, 11, None, None),
+        (optimizers_5, lr_schedulers_5, 5, 11, 0.001, "cyclic"),
     ],
 )
 def test_history_callback(
@@ -108,12 +115,15 @@ def test_history_callback(
     )
     out = []
     out.append(len(trainer.history["train_loss"]) == len_loss_output)
+
     try:
         lr_list = list(chain.from_iterable(trainer.lr_history["lr_deeptabular_0"]))
-    except TypeError:
-        lr_list = trainer.lr_history["lr_deeptabular_0"]
     except Exception:
-        lr_list = trainer.lr_history["lr_0"]
+        try:
+            lr_list = trainer.lr_history["lr_deeptabular_0"]
+        except Exception:
+            lr_list = trainer.lr_history["lr_0"]
+
     out.append(len(lr_list) == len_lr_output)
     if init_lr is not None and schedulers_type == "step":
         out.append(lr_list[-1] == init_lr / 10)

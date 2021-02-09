@@ -156,3 +156,29 @@ def test_fit_with_regression_and_metric():
     trainer = Trainer(model, objective="regression", metrics=[R2Score], verbose=0)
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target_regres, batch_size=16)
     assert "train_r2" in trainer.history.keys()
+
+
+##############################################################################
+# Test aliases
+##############################################################################
+
+
+def test_aliases():
+    wide = Wide(np.unique(X_wide).shape[0], 1)
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+        column_idx=column_idx,
+        embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+    )
+    model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=1)
+    trainer = Trainer(model, loss="regression", verbose=0)
+    trainer.fit(
+        X_wide=X_wide, X_tab=X_tab, target=target_regres, batch_size=16, warmup=True
+    )
+    assert (
+        "train_loss" in trainer.history.keys()
+        and trainer.__wd_aliases_used["objective"] == "loss"
+        and trainer.__wd_aliases_used["finetune"] == "warmup"
+    )

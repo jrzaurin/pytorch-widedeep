@@ -6,7 +6,6 @@ CREDIT TO THE TORCHSAMPLE AND KERAS TEAMS
 import os
 import datetime
 import warnings
-from copy import deepcopy
 
 import numpy as np
 import torch
@@ -120,7 +119,7 @@ class Callback(object):
 
 
 class History(Callback):
-    r"""Callback that records metrics into a ``History`` object.
+    r"""Callback that records metrics to a ``history`` attribute.
 
     This callback runs by default within :obj:`Trainer`. Callbacks are passed
     as input parameters to the ``Trainer`` class See
@@ -131,12 +130,6 @@ class History(Callback):
     def on_train_begin(self, logs: Optional[Dict] = None):
         self.trainer.history = {}
 
-    def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
-        # avoid mutation during epoch run
-        logs = deepcopy(logs) or {}
-        for k, v in logs.items():
-            self.trainer.history.setdefault(k, []).append(v)
-
     def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
         logs = logs or {}
         for k, v in logs.items():
@@ -145,7 +138,7 @@ class History(Callback):
 
 class LRHistory(Callback):
     def __init__(self, n_epochs: int):
-        r"""Saves the learning rates during training.
+        r"""Saves the learning rates during training to a ``lr_history`` attribute.
 
         Callbacks are passed as input parameters to the ``Trainer`` class. See
         :class:`pytorch_widedeep.trainer.Trainer`
@@ -176,7 +169,7 @@ class LRHistory(Callback):
             self.trainer.lr_history = {}
             if self._multiple_scheduler():
                 self._save_group_lr_mulitple_scheduler(step_location="on_epoch_begin")
-            elif not self.trainer.cyclic_lr:
+            else:
                 self._save_group_lr(self.trainer.optimizer)
 
     def on_batch_end(self, batch: int, logs: Optional[Dict] = None):

@@ -157,3 +157,32 @@ def test_full_embed_dropout():
     out = full_embedding_dropout(inp)
     # simply check that at least 1 full row is all 0s
     assert torch.any(torch.sum(out[0] == 0, axis=1) == esz)
+
+
+###############################################################################
+# Test fixed_attention
+###############################################################################
+
+
+def test_fixed_attention():
+    bsz = 1
+    cat = 10
+    esz = 32
+    multi_head_dattention = MultiHeadedAttention(
+        input_dim=esz,
+        num_heads=4,
+        keep_attn_weights=False,
+        dropout=0.1,
+        fixed_attention=True,
+        num_cat_columns=cat,
+    )
+    inp = torch.rand(bsz, cat, esz)
+    try:
+        out = multi_head_dattention(inp)  # noqa: F841
+        if out.size() == inp.size():
+            res = True
+        else:
+            res = False
+    except Exception:
+        res = False
+    assert res

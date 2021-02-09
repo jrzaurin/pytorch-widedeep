@@ -46,6 +46,42 @@ class BasePreprocessor:
         raise NotImplementedError("Preprocessor must implement this method")
 
 
+def check_is_fitted(
+    estimator: BasePreprocessor,
+    attributes: List[str] = None,
+    all_or_any: str = "all",
+    condition: bool = True,
+):
+    r"""Checks if an estimator is fitted
+
+    Parameters
+    ----------
+    estimator: ``BasePreprocessor``,
+        An object of type ``BasePreprocessor``
+    attributes: List, default = None
+        List of strings with the attributes to check for
+    all_or_any: str, default = "all"
+        whether all or any of the attributes in the list must be present
+    condition: bool, default = True,
+        If not attribute list is passed, this condition that must be True for
+        the estimator to be considered as fitted
+    """
+
+    estimator_name: str = estimator.__class__.__name__
+    error_msg = (
+        "This {} instance is not fitted yet. Call 'fit' with appropriate "
+        "arguments before using this estimator.".format(estimator_name)
+    )
+    if attributes is not None and all_or_any == "all":
+        if not all([hasattr(estimator, attr) for attr in attributes]):
+            raise NotFittedError(error_msg)
+    elif attributes is not None and all_or_any == "any":
+        if not any([hasattr(estimator, attr) for attr in attributes]):
+            raise NotFittedError(error_msg)
+    elif not condition:
+        raise NotFittedError(error_msg)
+
+
 class WidePreprocessor(BasePreprocessor):
     def __init__(
         self, wide_cols: List[str], crossed_cols: List[Tuple[str, str]] = None
@@ -116,13 +152,7 @@ class WidePreprocessor(BasePreprocessor):
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
         r"""Returns the processed dataframe"""
-        try:
-            self.encoding_dict
-        except AttributeError:
-            raise NotFittedError(
-                "This WidePreprocessor instance is not fitted yet. "
-                "Call 'fit' with appropriate arguments before using this estimator."
-            )
+        check_is_fitted(self, attributes=["encoding_dict"])
         df_wide = self._prepare_wide(df)
         encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)])
         for col_i, col in enumerate(self.wide_crossed_cols):
@@ -266,6 +296,8 @@ class TabPreprocessor(BasePreprocessor):
         self.for_tabtransformer = for_tabtransformer
         self.verbose = verbose
 
+        self.is_fitted = False
+
         if (self.embed_cols is None) and (self.continuous_cols is None):
             raise ValueError(
                 "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
@@ -298,23 +330,18 @@ class TabPreprocessor(BasePreprocessor):
                 self.scaler = StandardScaler().fit(df_std.values)
             elif self.verbose:
                 warnings.warn("Continuous columns will not be normalised")
+        self.is_fitted = True
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
         """Returns the processed ``dataframe`` as a np.ndarray"""
+        check_is_fitted(self, condition=self.is_fitted)
         if self.embed_cols is not None:
             df_emb = self._prepare_embed(df)
             df_emb = self.label_encoder.transform(df_emb)
         if self.continuous_cols is not None:
             df_cont = self._prepare_continuous(df)
             if self.scale:
-                try:
-                    self.scaler.mean_
-                except AttributeError:
-                    raise NotFittedError(
-                        "This TabPreprocessor instance is not fitted yet. "
-                        "Call 'fit' with appropriate arguments before using this estimator."
-                    )
                 df_std = df_cont[self.standardize_cols]
                 df_cont[self.standardize_cols] = self.scaler.transform(df_std.values)
         try:
@@ -454,13 +481,7 @@ class TextPreprocessor(BasePreprocessor):
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
         """Returns the padded, `numericalised` sequences"""
-        try:
-            self.vocab
-        except AttributeError:
-            raise NotFittedError(
-                "This TextPreprocessor instance is not fitted yet. "
-                "Call 'fit' with appropriate arguments before using this estimator."
-            )
+        check_is_fitted(self, attributes=["vocab"])
         texts = df[self.text_col].tolist()
         self.tokens = get_texts(texts)
         sequences = [self.vocab.numericalize(t) for t in self.tokens]
@@ -565,13 +586,7 @@ class ImagePreprocessor(BasePreprocessor):
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
         """Resizes the images to the input height and width."""
-        try:
-            self.aap
-        except AttributeError:
-            raise NotFittedError(
-                "This ImagePreprocessor instance is not fitted yet. "
-                "Call 'fit' with appropriate arguments before using this estimator."
-            )
+        check_is_fitted(self, attributes=["aap"])
         image_list = df[self.img_col].tolist()
         if self.verbose:
             print("Reading Images from {}".format(self.img_path))

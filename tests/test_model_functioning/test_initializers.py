@@ -42,6 +42,13 @@ X_img = np.random.choice(256, (100, 224, 224, 3))
 # Simply Testing that "something happens (i.e. in!=out)" since the stochastic
 # Nature of the most initializers does not allow for more
 ###############################################################################
+initializers_0 = {
+    "wide": XavierNormal,
+    "deeptabular": XavierUniform,
+    "deeptext": KaimingNormal,
+    "deepimage": KaimingUniform,
+}
+
 initializers_1 = {
     "wide": XavierNormal,
     "deeptabular": XavierUniform,
@@ -50,9 +57,9 @@ initializers_1 = {
 }
 
 initializers_2 = {
-    "wide": Normal,
-    "deeptabular": Uniform,
-    "deeptext": ConstantInitializer(value=1.0),
+    "wide": Normal(bias=True),  # simply to test that initialises the biases
+    "deeptabular": Uniform(bias=True),
+    "deeptext": ConstantInitializer(value=1.0, bias=True),
     "deepimage": Orthogonal,
 }
 
@@ -180,3 +187,31 @@ def test_single_initializer(model, initializer):
     init_weights = trainer.model.wide.wide_linear.weight.data
 
     assert not torch.all(inp_weights == init_weights)
+
+
+###############################################################################
+# Test warning when not initializer is passed for a given componen
+###############################################################################
+
+initializers_3 = {
+    "wide": XavierNormal,
+    "deeptabular": XavierUniform,
+}
+
+
+def test_warning_when_missing_initializer():
+
+    wide = Wide(100, 1)
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+        column_idx=column_idx,
+        embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+    )
+    deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+    model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, pred_dim=1)
+    with pytest.warns(UserWarning):
+        trainer = Trainer(  # noqa: F841
+            model, objective="binary", verbose=True, initializers=initializers_3
+        )

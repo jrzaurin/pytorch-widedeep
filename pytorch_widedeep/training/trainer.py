@@ -161,7 +161,7 @@ class Trainer:
         verbose: int, default=1
             Setting it to 0 will print nothing during training.
         seed: int, default=1
-            Random seed to be used throughout all the methods
+            Random seed to be used internally for train_test_split
 
         Example
         --------
@@ -271,23 +271,23 @@ class Trainer:
         val_split: Optional[float] = None,
         target: Optional[np.ndarray] = None,
         n_epochs: int = 1,
-        validation_freq: int = 1,
+        validation_freq: Optional[int] = 1,
         batch_size: int = 32,
         patience: int = 10,
-        finetune: bool = False,
-        finetune_epochs: int = 5,
-        finetune_max_lr: float = 0.01,
-        finetune_deeptabular_gradual: bool = False,
-        finetune_deeptabular_max_lr: float = 0.01,
+        finetune: Optional[bool] = False,
+        finetune_epochs: Optional[int] = 5,
+        finetune_max_lr: Optional[float] = 0.01,
+        finetune_deeptabular_gradual: Optional[bool] = False,
+        finetune_deeptabular_max_lr: Optional[float] = 0.01,
         finetune_deeptabular_layers: Optional[List[nn.Module]] = None,
-        finetune_deeptext_gradual: bool = False,
-        finetune_deeptext_max_lr: float = 0.01,
+        finetune_deeptext_gradual: Optional[bool] = False,
+        finetune_deeptext_max_lr: Optional[float] = 0.01,
         finetune_deeptext_layers: Optional[List[nn.Module]] = None,
-        finetune_deepimage_gradual: bool = False,
-        finetune_deepimage_max_lr: float = 0.01,
+        finetune_deepimage_gradual: Optional[bool] = False,
+        finetune_deepimage_max_lr: Optional[float] = 0.01,
         finetune_deepimage_layers: Optional[List[nn.Module]] = None,
-        finetune_routine: str = "howard",
-        stop_after_finetuning: bool = False,
+        finetune_routine: Optional[str] = "howard",
+        stop_after_finetuning: Optional[bool] = False,
     ):
         r"""Fit method.
 
@@ -325,7 +325,7 @@ class Trainer:
         patience: int, default=10
             Number of epochs without improving the target metric or loss
             before the fit process stops
-        finetune: bool, default=False
+        finetune: bool, Optional, default=False
             param alias: ``warmup``
 
             fine-tune individual model components.
@@ -358,13 +358,13 @@ class Trainer:
             section in this documentation and the `Examples
             <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
             folder in the repo.
-        finetune_epochs: int, default=4
+        finetune_epochs: int, Optional, default=4
             param alias: ``warmup_epochs``
 
             Number of fine-tune epochs for those model components that will
             *NOT* be gradually fine-tuned. Those components with gradual
             fine-tune follow their corresponding specific routine.
-        finetune_max_lr: float, default=0.01
+        finetune_max_lr: float, Optional, default=0.01
             param alias: ``warmup_max_lr``
 
             Maximum learning rate during the Triangular Learning rate cycle
@@ -374,7 +374,7 @@ class Trainer:
 
             Boolean indicating if the ``deeptabular`` component will be
             fine-tuned gradually
-        finetune_deeptabular_max_lr: float, default=0.01
+        finetune_deeptabular_max_lr: float, Optional, default=0.01
             param alias: ``warmup_deeptabular_max_lr``
 
             Maximum learning rate during the Triangular Learning rate cycle
@@ -387,12 +387,12 @@ class Trainer:
             .. note:: These have to be in `fine-tune-order`: the layers or blocks
                 close to the output neuron(s) first
 
-        finetune_deeptext_gradual: bool, default=False
+        finetune_deeptext_gradual: bool, Optional, default=False
             param alias: ``warmup_deeptext_gradual``
 
             Boolean indicating if the ``deeptext`` component will be
             fine-tuned gradually
-        finetune_deeptext_max_lr: float, default=0.01
+        finetune_deeptext_max_lr: float, Optional, default=0.01
             param alias: ``warmup_deeptext_max_lr``
 
             Maximum learning rate during the Triangular Learning rate cycle
@@ -405,12 +405,12 @@ class Trainer:
             .. note:: These have to be in `fine-tune-order`: the layers or blocks
                 close to the output neuron(s) first
 
-        finetune_deepimage_gradual: bool, default=False
+        finetune_deepimage_gradual: bool, Optional, default=False
             param alias: ``warmup_deepimage_gradual``
 
             Boolean indicating if the ``deepimage`` component will be
             fine-tuned gradually
-        finetune_deepimage_max_lr: float, default=0.01
+        finetune_deepimage_max_lr: float, Optional, default=0.01
             param alias: ``warmup_deepimage_max_lr``
 
             Maximum learning rate during the Triangular Learning rate cycle
@@ -423,7 +423,7 @@ class Trainer:
             .. note:: These have to be in `fine-tune-order`: the layers or blocks
                 close to the output neuron(s) first
 
-        finetune_routine: str, default=`felbo`
+        finetune_routine: str, Optional, default=`felbo`
             param alias: ``warmup_deepimage_layers``
 
             Warm up routine. On of `felbo` or `howard`. See the examples
@@ -784,6 +784,7 @@ class Trainer:
                 X_train["target"],
                 np.arange(len(X_train["target"])),
                 test_size=val_split,
+                random_state=self.seed,
                 stratify=X_train["target"] if self.method != "regression" else None,
             )
             X_tr, X_val = {"target": y_tr}, {"target": y_val}
@@ -907,7 +908,7 @@ class Trainer:
         If the lr_scheduler is Cyclic (i.e. CyclicLR or OneCycleLR), the step
         must happen after training each bach durig training. On the other
         hand, if the  scheduler is not Cyclic, is expected to be called after
-        validation.
+        validation. (Consider coding this function as callback)
 
         Parameters
         ----------

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.exceptions import NotFittedError
 
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
@@ -211,3 +212,16 @@ def test_tab_preprocessor_trasformer_raise_error(embed_cols, continuous_cols, sc
             scale=scale,
             for_tabtransformer=True,
         )
+
+
+###############################################################################
+# Test NotFittedError
+###############################################################################
+
+
+def test_notfittederror():
+    processor = TabPreprocessor(
+        embed_cols=["col1", "col2"], continuous_cols=["col3", "col4"]
+    )
+    with pytest.raises(NotFittedError):
+        processor.transform(df)

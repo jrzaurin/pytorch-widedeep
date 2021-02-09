@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.datasets import fetch_20newsgroups
+from sklearn.exceptions import NotFittedError
 
 from pytorch_widedeep.utils import text_utils
 from pytorch_widedeep.preprocessing import TextPreprocessor
@@ -67,3 +69,14 @@ def test_inverse_transform():
     assert ("life is like box of chocolates" in texts[0]) and (
         "you never know what you re going to get" in texts[1]
     )
+
+
+###############################################################################
+# Test NotFittedError
+###############################################################################
+
+
+def test_notfittederror():
+    processor = TextPreprocessor(min_freq=0, text_col="texts")
+    with pytest.raises(NotFittedError):
+        processor.transform(df)

@@ -8,6 +8,10 @@ from sklearn.metrics import mean_squared_error, mean_squared_log_error
 from pytorch_widedeep.losses import MSLELoss, RMSELoss
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep
 from pytorch_widedeep.training import Trainer
+from pytorch_widedeep.training._loss_and_obj_aliases import (
+    _LossAliases,
+    _ObjectiveToMethod,
+)
 
 # Wide array
 X_wide = np.random.choice(50, (100, 10))
@@ -177,4 +181,28 @@ def test_all_possible_objectives(
     else:
         preds = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab)
         out.append(preds.shape[1] == probs_dim)
+    assert all(out)
+
+
+##############################################################################
+# Test inverse mappings
+##############################################################################
+
+
+def test_inverse_maps():
+    out = []
+    out.append(_LossAliases.alias_to_loss["binary_logloss"] == "binary")
+    out.append(_LossAliases.alias_to_loss["multi_logloss"] == "multiclass")
+    out.append(_LossAliases.alias_to_loss["l2"] == "regression")
+    out.append(_LossAliases.alias_to_loss["mae"] == "mean_absolute_error")
+    out.append(_LossAliases.alias_to_loss["msle"] == "mean_squared_log_error")
+    out.append(_LossAliases.alias_to_loss["rmse"] == "root_mean_squared_error")
+    out.append(_LossAliases.alias_to_loss["rmsle"] == "root_mean_squared_log_error")
+
+    out.append("binary_logloss" in _ObjectiveToMethod.method_to_objecive["binary"])
+    out.append("multi_logloss" in _ObjectiveToMethod.method_to_objecive["multiclass"])
+    out.append(
+        "root_mean_squared_error" in _ObjectiveToMethod.method_to_objecive["regression"]
+    )
+
     assert all(out)

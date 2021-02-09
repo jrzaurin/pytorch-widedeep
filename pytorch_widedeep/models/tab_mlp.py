@@ -13,7 +13,7 @@ def _get_activation_fn(activation):
     if activation == "leaky_relu":
         return nn.LeakyReLU(inplace=True)
     elif activation == "gelu":
-        return nn.GELU(inplace=True)
+        return nn.GELU()
 
 
 def dense_layer(
