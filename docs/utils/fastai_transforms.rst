@@ -1,4 +1,4 @@
-Fastai Transforms
+Fastai transforms
 =================
 
 I have directly copied and pasted part of the ``transforms.py`` module from

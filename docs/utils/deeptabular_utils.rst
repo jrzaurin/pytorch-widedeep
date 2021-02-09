@@ -1,4 +1,4 @@
-DeepTabular Utils
+deeptabular utils
 =================
 
 .. autoclass:: pytorch_widedeep.utils.deeptabular_utils.LabelEncoder

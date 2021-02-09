@@ -5,7 +5,7 @@ pytorch-widedeep
 
 Below there is an introduction to the architectures one can build using
 ``pytorch-widedeep``. If you prefer to learn about the utilities and
-components go straight to the Documentation.
+components go straight to corresponding sections in the Documentation.
 
 Documentation
 -------------

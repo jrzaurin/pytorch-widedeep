@@ -1,4 +1,4 @@
-Image Utils
+Image utils
 ===========
 :class:`SimplePreprocessor
 <pytorch_widedeep.utils.image_utils.SimplePreprocessor>` and
