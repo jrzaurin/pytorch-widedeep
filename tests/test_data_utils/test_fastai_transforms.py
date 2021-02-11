@@ -6,7 +6,7 @@ from that library to ensure adequate coverage
 Credit for the code here to Jeremy Howard and the fastai team
 """
 
-from pytorch_widedeep.utils.fastai_transforms import *
+from pytorch_widedeep.utils.fastai_transforms import *  # noqa: F403
 
 
 ###############################################################################

@@ -1,4 +1,4 @@
-Text Utils
+Text utils
 =================
 Collection of helper function that facilitate processing text.
 

@@ -15,26 +15,28 @@ __all__ = ["AspectAwarePreprocessor", "SimplePreprocessor"]
 
 
 class AspectAwarePreprocessor:
-    """Class to resize an image to a certain width and height taking into account
-    the image aspect ratio
-
-    Parameters
-    ----------
-    width: int
-        output width
-    height: int
-        output height
-    inter: interpolation method
-        ``opencv`` interpolation method. See ``opencv`` :obj:`InterpolationFlags`
-    """
-
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
+        r"""Class to resize an image to a certain width and height taking into account
+        the image aspect ratio
+
+        Parameters
+        ----------
+        width: int
+            output width
+        height: int
+            output height
+        inter: interpolation method,  default = ``cv2.INTER_AREA``
+            ``opencv`` interpolation method. See ``opencv``
+            :obj:`InterpolationFlags`. `The 3 value that appears in the class
+            parameters above is a formatting error`
+
+        """
         self.width = width
         self.height = height
         self.inter = inter
 
     def preprocess(self, image: np.ndarray) -> np.ndarray:
-        """Resizes an input image taking into account the image aspect ratio
+        r"""Returns the resized input image taking into account the image aspect ratio
 
         Parameters
         ----------
@@ -52,11 +54,6 @@ class AspectAwarePreprocessor:
         >>> resized_img = app.preprocess(img)
         >>> resized_img.shape
         (224, 224, 3)
-
-        Returns
-        -------
-        resized_image: np.ndarray
-            resized image
         """
         (h, w) = image.shape[:2]
         dW = 0
@@ -80,35 +77,31 @@ class AspectAwarePreprocessor:
 
 
 class SimplePreprocessor:
-    """Class to resize an image to a certain width and height
-
-    Parameters
-    ----------
-    width: int
-        output width
-    height: int
-        output height
-    inter: interpolation method
-        ``opencv`` interpolation method. See ``opencv`` :obj:`InterpolationFlags`
-    """
-
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
+        r"""Class to resize an image to a certain width and height
+
+        Parameters
+        ----------
+        width: int
+            output width
+        height: int
+            output height
+        inter: interpolation method, default = ``cv2.INTER_AREA``
+            ``opencv`` interpolation method. See ``opencv``
+            :obj:`InterpolationFlags`. `The 3 value that appears in the class
+            parameters above is a formatting error`
+        """
         self.width = width
         self.height = height
         self.inter = inter
 
     def preprocess(self, image: np.ndarray) -> np.ndarray:
-        """Resizes an input image
+        r"""Returns the resized input image
 
         Parameters
         ----------
         image: np.ndarray
             Input image to be resized
-
-        Returns
-        -------
-        resized_image: np.ndarray
-            resized image
         """
         resized_image = cv2.resize(
             image, (self.width, self.height), interpolation=self.inter

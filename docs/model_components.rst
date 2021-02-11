@@ -1,34 +1,38 @@
 The ``models`` module
 ======================
 
-This module contains the four main Wide and Deep model component. These are:
-``Wide``, ``DeepDense`` or ``DeepDenseResnet``, ``DeepText`` and ``DeepImage``.
+This module contains the four main components that will comprise a Wide and
+Deep model, and the ``WideDeep`` "constructor" class. These four components
+are: ``wide``, ``deeptabular``, ``deeptext``, ``deepimage``.
 
-.. note:: ``DeepDense`` and ``DeepDenseResnet`` both correspond to what we
-    refer as the `"deep dense"` component of the model and simply represent
-    two different alternatives
+.. note:: ``TabMlp``, ``TabResnet`` and ``TabTransformer`` can all be used
+    as the ``deeptabular``  component of the model and simply represent
+    different alternatives
 
 .. autoclass:: pytorch_widedeep.models.wide.Wide
-    :members:
-    :undoc-members:
-    :show-inheritance:
+	:exclude-members: forward
+	:members:
 
-.. autoclass:: pytorch_widedeep.models.deep_dense.DeepDense
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autoclass:: pytorch_widedeep.models.tab_mlp.TabMlp
+	:exclude-members: forward
+	:members:
 
-.. autoclass:: pytorch_widedeep.models.deep_dense_resnet.DeepDenseResnet
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. autoclass:: pytorch_widedeep.models.tab_resnet.TabResnet
+	:exclude-members: forward
+	:members:
+
+.. autoclass:: pytorch_widedeep.models.tab_transformer.TabTransformer
+	:exclude-members: forward
+	:members:
 
 .. autoclass:: pytorch_widedeep.models.deep_text.DeepText
-    :members:
-    :undoc-members:
-    :show-inheritance:
+	:exclude-members: forward
+	:members:
 
 .. autoclass:: pytorch_widedeep.models.deep_image.DeepImage
-    :members:
-    :undoc-members:
-    :show-inheritance:
+	:exclude-members: forward
+	:members:
+
+.. autoclass:: pytorch_widedeep.models.wide_deep.WideDeep
+	:exclude-members: forward
+	:members:

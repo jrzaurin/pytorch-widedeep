@@ -62,6 +62,8 @@ setup_kwargs = {
         "tqdm",
         "torch",
         "torchvision",
+        "einops",
+        "wrapt",
     ],
     "extras_require": extras,
     "python_requires": ">=3.6.0",

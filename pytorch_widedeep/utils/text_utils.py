@@ -3,7 +3,7 @@ import os
 import numpy as np
 from gensim.utils import tokenize
 
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 from .fastai_transforms import Vocab, Tokenizer
 
 __all__ = ["simple_preprocess", "get_texts", "pad_sequences", "build_embeddings_matrix"]
@@ -17,7 +17,7 @@ def simple_preprocess(
     max_len: int = 15,
 ) -> List[str]:
     r"""
-    ``Gensim``'s :obj:`simple_preprocess` adding a 'lower' param to indicate
+    ``Gensim``'s :obj:`simple_preprocess` adding a ``lower`` param to indicate
     wether or not to lower case all the token in the doc
 
     For more information see: ``Gensim`` `utils module
@@ -28,13 +28,13 @@ def simple_preprocess(
     ----------
     doc: str
         Input document.
-    lower: bool, Default = False
+    lower: bool, default = False
         Lower case tokens in the input doc
-    deacc: bool, Default = False
+    deacc: bool, default = False
         Remove accent marks from tokens using ``Gensim``'s :obj:`deaccent`
-    min_len: int, Default = 2
+    min_len: int, default = 2
         Minimum length of token (inclusive). Shorter tokens are discarded.
-    max_len: int, Default = 15
+    max_len: int, default = 15
         Maximum length of token in result (inclusive). Longer tokens are discarded.
 
     Examples
@@ -61,7 +61,7 @@ def get_texts(texts: List[str]) -> List[List[str]]:
 
     Parameters
     ----------
-    texts: List[str]
+    texts: List
         List of str with the texts (or documents). One str per document
 
     Examples
@@ -92,14 +92,14 @@ def pad_sequences(
 
     Parameters
     ----------
-    seq: List[int]
+    seq: List
         List of int with the `numericalised` tokens
     maxlen: int
         Maximum length of the padded sequences
-    pad_first: bool,  Default = True
+    pad_first: bool,  default = True
         Indicates whether the padding index will be added at the beginning or the
         end of the sequences
-    pad_idx: int. Default = 1
+    pad_idx: int, default = 1
         padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
 
     Examples
@@ -124,8 +124,7 @@ def pad_sequences(
 def build_embeddings_matrix(
     vocab: Vocab, word_vectors_path: str, min_freq: int, verbose: int = 1
 ) -> np.ndarray:  # pragma: no cover
-    r"""
-    Build the embedding matrix using pretrained word vectors
+    r"""Build the embedding matrix using pretrained word vectors
 
     Returns pretrained word embeddings. If a word in our vocabulary is not
     among the pretrained embeddings it will be assigned the mean pretrained
@@ -139,9 +138,12 @@ def build_embeddings_matrix(
         path to the pretrained word embeddings
     min_freq: int
         minimum frequency required for a word to be in the vocabulary
-    verbose: int. Default=1
+    verbose: int,  default=1
         level of verbosity. Set to 0 for no verbosity
 
+    Returns
+    -------
+        pretrained word embeddings
     """
     if not os.path.isfile(word_vectors_path):
         raise FileNotFoundError("{} not found".format(word_vectors_path))
@@ -161,7 +163,7 @@ def build_embeddings_matrix(
         print("Loaded {} word vectors".format(len(embeddings_index)))
         print("Preparing embeddings matrix...")
 
-    mean_word_vector = np.mean(list(embeddings_index.values()), axis=0)
+    mean_word_vector = np.mean(list(embeddings_index.values()), axis=0)  # type: ignore[arg-type]
     embedding_dim = len(list(embeddings_index.values())[0])
     num_words = len(vocab.itos)
     embedding_matrix = np.zeros((num_words, embedding_dim))

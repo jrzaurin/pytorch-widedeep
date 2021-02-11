@@ -2,8 +2,14 @@ import numpy as np
 import torch
 import pandas as pd
 
+from pytorch_widedeep import Trainer
 from pytorch_widedeep.optim import RAdam
-from pytorch_widedeep.models import Wide, WideDeep, DeepDense, DeepDenseResnet
+from pytorch_widedeep.models import (  # noqa: F401
+    Wide,
+    TabMlp,
+    WideDeep,
+    TabResnet,
+)
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.callbacks import (
     LRHistory,
@@ -11,7 +17,7 @@ from pytorch_widedeep.callbacks import (
     ModelCheckpoint,
 )
 from pytorch_widedeep.initializers import XavierNormal, KaimingNormal
-from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
+from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 
 use_cuda = torch.cuda.is_available()
 
@@ -48,39 +54,39 @@ if __name__ == "__main__":
     target = df[target].values
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
-    prepare_deep = DensePreprocessor(
+    prepare_deep = TabPreprocessor(
         embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
     )
-    X_deep = prepare_deep.fit_transform(df)
+    X_tab = prepare_deep.fit_transform(df)
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
-    deepdense = DeepDense(
-        hidden_layers=[64, 32],
-        dropout=[0.2, 0.2],
-        deep_column_idx=prepare_deep.deep_column_idx,
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[200, 100],
+        mlp_dropout=[0.2, 0.2],
+        column_idx=prepare_deep.column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
     )
 
-    # # To use DeepDenseResnet as the deepdense component simply:
-    # deepdense = DeepDenseResnet(
-    #     blocks=[64, 32],
-    #     deep_column_idx=prepare_deep.deep_column_idx,
+    # # To use TabResnet as the deeptabular component simply:
+    # deeptabular = TabResnet(
+    #     blocks_dims=[200, 100],
+    #     column_idx=prepare_deep.column_idx,
     #     embed_input=prepare_deep.embeddings_input,
     #     continuous_cols=continuous_cols,
     # )
 
-    model = WideDeep(wide=wide, deepdense=deepdense)
+    model = WideDeep(wide=wide, deeptabular=deeptabular)
 
     wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
-    deep_opt = RAdam(model.deepdense.parameters())
+    deep_opt = RAdam(model.deeptabular.parameters())
     wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=3)
     deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=5)
 
-    optimizers = {"wide": wide_opt, "deepdense": deep_opt}
-    schedulers = {"wide": wide_sch, "deepdense": deep_sch}
-    initializers = {"wide": KaimingNormal, "deepdense": XavierNormal}
+    optimizers = {"wide": wide_opt, "deeptabular": deep_opt}
+    schedulers = {"wide": wide_sch, "deeptabular": deep_sch}
+    initializers = {"wide": KaimingNormal, "deeptabular": XavierNormal}
     callbacks = [
         LRHistory(n_epochs=10),
         EarlyStopping(patience=5),
@@ -88,8 +94,9 @@ if __name__ == "__main__":
     ]
     metrics = [Accuracy, Precision]
 
-    model.compile(
-        method="binary",
+    trainer = Trainer(
+        model,
+        objective="binary",
         optimizers=optimizers,
         lr_schedulers=schedulers,
         initializers=initializers,
@@ -97,20 +104,20 @@ if __name__ == "__main__":
         metrics=metrics,
     )
 
-    model.fit(
+    trainer.fit(
         X_wide=X_wide,
-        X_deep=X_deep,
+        X_tab=X_tab,
         target=target,
         n_epochs=4,
         batch_size=64,
         val_split=0.2,
     )
-    # # to save/load the model
-    # torch.save(model, "model_weights/model.t")
-    # model = torch.load("model_weights/model.t")
 
+    # # to save/load the model
+    # trainer.save_model("model_weights/model.t")
+    # # ... days after
+    # model = Trainer.load_model("model_weights/model.t")
     # # or via state dictionaries
-    # torch.save(model.state_dict(), "model_weights/model_dict.t")
-    # model = WideDeep(wide=wide, deepdense=deepdense)
-    # model.load_state_dict(torch.load("model_weights/model_dict.t"))
-    # # <All keys matched successfully>
+    # trainer.save_model_state_dict("model_weights/model_dict.t")
+    # # ... days after, with an instantiated class of Trainer
+    # trainer.load_model_state_dict("model_weights/model_dict.t")

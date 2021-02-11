@@ -39,3 +39,5 @@ Dependencies
 * tqdm
 * torch
 * torchvision
+* einops
+* wrapt

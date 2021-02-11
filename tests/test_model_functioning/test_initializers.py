@@ -5,13 +5,8 @@ import numpy as np
 import torch
 import pytest
 
-from pytorch_widedeep.models import (
-    Wide,
-    DeepText,
-    WideDeep,
-    DeepDense,
-    DeepImage,
-)
+from pytorch_widedeep.models import Wide, TabMlp, DeepText, WideDeep, DeepImage
+from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.initializers import (
     Normal,
     Uniform,
@@ -31,7 +26,7 @@ colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 100) for _ in range(5)]
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 cont_cols = [np.random.rand(100) for _ in range(5)]
-deep_column_idx = {k: v for v, k in enumerate(colnames)}
+column_idx = {k: v for v, k in enumerate(colnames)}
 X_deep = np.vstack(embed_cols + cont_cols).transpose()
 
 #  Text Array
@@ -47,23 +42,30 @@ X_img = np.random.choice(256, (100, 224, 224, 3))
 # Simply Testing that "something happens (i.e. in!=out)" since the stochastic
 # Nature of the most initializers does not allow for more
 ###############################################################################
+initializers_0 = {
+    "wide": XavierNormal,
+    "deeptabular": XavierUniform,
+    "deeptext": KaimingNormal,
+    "deepimage": KaimingUniform,
+}
+
 initializers_1 = {
     "wide": XavierNormal,
-    "deepdense": XavierUniform,
+    "deeptabular": XavierUniform,
     "deeptext": KaimingNormal,
     "deepimage": KaimingUniform,
 }
 
 initializers_2 = {
-    "wide": Normal,
-    "deepdense": Uniform,
-    "deeptext": ConstantInitializer(value=1.0),
+    "wide": Normal(bias=True),  # simply to test that initialises the biases
+    "deeptabular": Uniform(bias=True),
+    "deeptext": ConstantInitializer(value=1.0, bias=True),
     "deepimage": Orthogonal,
 }
 
 test_layers = [
     "wide.wlinear.weight",
-    "deepdense.dense.dense_layer_1.0.weight",
+    "deeptabular.dense.dense_layer_1.0.weight",
     "deeptext.rnn.weight_hh_l1",
     "deepimage.dilinear.0.weight",
 ]
@@ -79,10 +81,10 @@ test_layers = [
 def test_initializers_1(initializers, test_layers):
 
     wide = Wide(np.unique(X_wide).shape[0], 1)
-    deepdense = DeepDense(
-        hidden_layers=[32, 16],
-        dropout=[0.5, 0.5],
-        deep_column_idx=deep_column_idx,
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+        column_idx=column_idx,
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
@@ -90,7 +92,7 @@ def test_initializers_1(initializers, test_layers):
     deepimage = DeepImage(pretrained=True)
     model = WideDeep(
         wide=wide,
-        deepdense=deepdense,
+        deeptabular=deeptabular,
         deeptext=deeptext,
         deepimage=deepimage,
         pred_dim=1,
@@ -102,9 +104,9 @@ def test_initializers_1(initializers, test_layers):
         if n in test_layers:
             org_weights.append(p)
 
-    model.compile(method="binary", verbose=0, initializers=initializers)
+    trainer = Trainer(model, objective="binary", verbose=0, initializers=initializers)
     init_weights = []
-    for n, p in model.named_parameters():
+    for n, p in trainer.model.named_parameters():
         if n in test_layers:
             init_weights.append(p)
 
@@ -122,7 +124,7 @@ def test_initializers_1(initializers, test_layers):
 ###############################################################################
 initializers_2 = {
     "wide": XavierNormal,
-    "deepdense": XavierUniform,
+    "deeptabular": XavierUniform,
     "deeptext": KaimingNormal(pattern=r"^(?!.*word_embed).*$"),  # type: ignore[dict-item]
 }
 
@@ -130,24 +132,86 @@ initializers_2 = {
 def test_initializers_with_pattern():
 
     wide = Wide(100, 1)
-    deepdense = DeepDense(
-        hidden_layers=[32, 16],
-        dropout=[0.5, 0.5],
-        deep_column_idx=deep_column_idx,
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+        column_idx=column_idx,
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
     deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
-    model = WideDeep(wide=wide, deepdense=deepdense, deeptext=deeptext, pred_dim=1)
+    model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, pred_dim=1)
     cmodel = c(model)
     org_word_embed = []
     for n, p in cmodel.named_parameters():
         if "word_embed" in n:
             org_word_embed.append(p)
-    model.compile(method="binary", verbose=0, initializers=initializers_2)
+    trainer = Trainer(model, objective="binary", verbose=0, initializers=initializers_2)
     init_word_embed = []
-    for n, p in model.named_parameters():
+    for n, p in trainer.model.named_parameters():
         if "word_embed" in n:
             init_word_embed.append(p)
 
     assert torch.all(org_word_embed[0] == init_word_embed[0].cpu())
+
+
+###############################################################################
+# Test single initializer
+###############################################################################
+
+wide = Wide(100, 1)
+deeptabular = TabMlp(
+    mlp_hidden_dims=[32, 16],
+    mlp_dropout=[0.5, 0.5],
+    column_idx=column_idx,
+    embed_input=embed_input,
+    continuous_cols=colnames[-5:],
+)
+model1 = WideDeep(wide=wide)
+model2 = WideDeep(wide=wide, deeptabular=deeptabular)
+
+
+@pytest.mark.parametrize(
+    "model, initializer",
+    [
+        (model1, Uniform),
+        (model2, KaimingNormal()),
+    ],
+)
+def test_single_initializer(model, initializer):
+
+    inp_weights = model.wide.wide_linear.weight.data.detach().cpu()
+
+    n_model = c(model)
+    trainer = Trainer(n_model, objective="binary", initializers=initializer)
+    init_weights = trainer.model.wide.wide_linear.weight.data.detach().cpu()
+
+    assert not torch.all(inp_weights == init_weights)
+
+
+###############################################################################
+# Test warning when not initializer is passed for a given componen
+###############################################################################
+
+initializers_3 = {
+    "wide": XavierNormal,
+    "deeptabular": XavierUniform,
+}
+
+
+def test_warning_when_missing_initializer():
+
+    wide = Wide(100, 1)
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+        column_idx=column_idx,
+        embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+    )
+    deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+    model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, pred_dim=1)
+    with pytest.warns(UserWarning):
+        trainer = Trainer(  # noqa: F841
+            model, objective="binary", verbose=True, initializers=initializers_3
+        )

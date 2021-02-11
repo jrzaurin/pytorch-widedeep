@@ -3,7 +3,7 @@ NLP data processing; tokenizes text and creates vocab indexes
 
 I have directly copied and paste part of OF THE TRANSFORMS.PY FASTAI LIBRARY.
 I only need the Tokenizer and the Vocab classes which are both in this module.
-This way I avoid the numerous fastai dependencies.
+This way I avoid extra dependencies.
 
 Credit for the code here to Jeremy Howard and the fastai team
 """
@@ -17,7 +17,7 @@ from concurrent.futures.process import ProcessPoolExecutor
 import spacy
 from spacy.symbols import ORTH
 
-from ..wdtypes import *
+from ..wdtypes import *  # noqa: F403
 
 
 def partition(a: Collection, sz: int) -> List[Collection]:
@@ -91,16 +91,15 @@ class BaseTokenizer:
 
 
 class SpacyTokenizer(BaseTokenizer):
-    """Wrapper around a spacy tokenizer to make it a :obj:`BaseTokenizer`.
-
-    Parameters
-    ----------
-    lang: str
-        Language of the text to be tokenized
-    """
-
     def __init__(self, lang: str):
-        self.tok = spacy.blank(lang, disable=["parser", "tagger", "ner"])
+        """Wrapper around a spacy tokenizer to make it a :obj:`BaseTokenizer`.
+
+        Parameters
+        ----------
+        lang: str
+            Language of the text to be tokenized
+        """
+        self.tok = spacy.blank(lang)
 
     def tokenizer(self, t: str):
         """Runs ``Spacy``'s ``tokenizer``
@@ -117,9 +116,9 @@ class SpacyTokenizer(BaseTokenizer):
 
         Parameters
         ----------
-        toks: Collection[str]
-            `List`, `Tuple`, `Set` or `Dictionary` with special cases
-            to add to the tokenizer
+        toks: Collection
+            `List`, `Tuple`, `Set` or `Dictionary` where the values are
+            strings that are the special cases to add to the tokenizer
         """
         for w in toks:
             self.tok.tokenizer.add_special_case(w, [{ORTH: w}])
@@ -214,35 +213,36 @@ defaults.text_post_rules = [replace_all_caps, deal_caps]
 
 
 class Tokenizer:
-    """Class to combine a series of rules and a tokenizer function to tokenize
-    text with multiprocessing.
-
-    Parameters
-    ----------
-    tok_func: Callable, Default = SpacyTokenizer
-        Tokenizer Object. See :class:`pytorch_widedeep.utils.fastai_transforms.SpacyTokenizer`
-    lang: str, Default = "en",
-        Text's Language
-    pre_rules: ListRules, Default = None,
-        Custom type, see :obj:`pytorch_widedeep.wdtypes`. Preprocessing Rules
-    post_rules: ListRules, Default = None,
-        Custom type, see :obj:`pytorch_widedeep.wdtypes`. Postprocessing Rules
-    special_cases: Collection[str], Default= None,
-        special cases to be added to the tokenizer via ``Spacy``'s
-        ``add_special_case`` method
-    n_cpus: int, Default = None
-        number of CPUs to used during the tokenization process
-    """
-
     def __init__(
         self,
         tok_func: Callable = SpacyTokenizer,
         lang: str = "en",
-        pre_rules: ListRules = None,
-        post_rules: ListRules = None,
-        special_cases: Collection[str] = None,
-        n_cpus: int = None,
+        pre_rules: Optional[ListRules] = None,
+        post_rules: Optional[ListRules] = None,
+        special_cases: Optional[Collection[str]] = None,
+        n_cpus: Optional[int] = None,
     ):
+        """Class to combine a series of rules and a tokenizer function to tokenize
+        text with multiprocessing.
+
+        Parameters
+        ----------
+        tok_func: Callable, default = ``SpacyTokenizer``
+            Tokenizer Object. See :class:`pytorch_widedeep.utils.fastai_transforms.SpacyTokenizer`
+        lang: str, default = "en",
+            Text's Language
+        pre_rules: ListRules, Optional, default = None,
+            Custom type: ``Collection[Callable[[str], str]]``.
+            see :obj:`pytorch_widedeep.wdtypes`. Preprocessing Rules
+        post_rules: ListRules, Optional, default = None,
+            Custom type: ``Collection[Callable[[str], str]]``.
+            see :obj:`pytorch_widedeep.wdtypes`. Postprocessing Rules
+        special_cases: Collection, Optional, default= None,
+            special cases to be added to the tokenizer via ``Spacy``'s
+            ``add_special_case`` method
+        n_cpus: int, Optional, default = None
+            number of CPUs to used during the tokenization process
+        """
         self.tok_func, self.lang, self.special_cases = tok_func, lang, special_cases
         self.pre_rules = ifnone(pre_rules, defaults.text_pre_rules)
         self.post_rules = ifnone(post_rules, defaults.text_post_rules)
@@ -266,8 +266,9 @@ class Tokenizer:
         ----------
         t: str
             text to be processed and tokenized
-        tok: BaseTokenizer
-            Instance of :obj:`BaseTokenizer`
+        tok: ``BaseTokenizer``
+            Instance of :obj:`BaseTokenizer`. See
+            ``pytorch_widedeep.utils.fastai_transforms.BaseTokenizer``
         """
         for rule in self.pre_rules:
             t = rule(t)
@@ -310,21 +311,20 @@ class Tokenizer:
 
 
 class Vocab:
-    """Contains the correspondence between numbers and tokens.
-
-    Parameters
-    ----------
-    itos: Collection[str]
-        `index to str`. Collection of srt that are the tokens of the vocabulary
-
-    Attributes
-    ----------
-    stoi: defaultdict
-        `str to index`. Dictionary containing the tokens of the vocabulary and
-        their corresponding index
-    """
-
     def __init__(self, itos: Collection[str]):
+        """Contains the correspondence between numbers and tokens.
+
+        Parameters
+        ----------
+        itos: Collection
+            `index to str`. Collection of srt that are the tokens of the vocabulary
+
+        Attributes
+        ----------
+        stoi: defaultdict
+            `str to index`. Dictionary containing the tokens of the vocabulary and
+            their corresponding index
+        """
         self.itos = itos
         self.stoi = defaultdict(int, {v: k for k, v in enumerate(self.itos)})
 
@@ -354,8 +354,9 @@ class Vocab:
         Parameters
         ----------
         tokens: Tokens
-            Custom type, see :obj:`pytorch_widedeep.wdtypes`. Collection of
-            collection of str (e.g. list of tokenized sentences)
+            Custom type: ``Collection[Collection[str]]``  see
+            :obj:`pytorch_widedeep.wdtypes`. Collection of collection of str
+            (e.g. list of tokenized sentences)
         max_vocab: int
             maximum vocabulary size
         min_freq: int

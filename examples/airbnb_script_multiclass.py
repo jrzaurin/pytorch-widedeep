@@ -2,9 +2,10 @@ import numpy as np
 import torch
 import pandas as pd
 
-from pytorch_widedeep.models import Wide, WideDeep, DeepDense
+import pytorch_widedeep as wd
+from pytorch_widedeep.models import Wide, TabMlp, WideDeep
 from pytorch_widedeep.metrics import F1Score, Accuracy
-from pytorch_widedeep.preprocessing import WidePreprocessor, DensePreprocessor
+from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 
 use_cuda = torch.cuda.is_available()
 
@@ -12,7 +13,7 @@ if __name__ == "__main__":
 
     df = pd.read_csv("data/airbnb/airbnb_sample.csv")
 
-    crossed_cols = (["property_type", "room_type"],)
+    crossed_cols = [("property_type", "room_type")]
     already_dummies = [c for c in df.columns if "amenity" in c] + ["has_house_rules"]
     wide_cols = [
         "is_location_exact",
@@ -32,31 +33,32 @@ if __name__ == "__main__":
     target = "yield_cat"
 
     target = np.array(df[target].values)
-    prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
-    X_wide = prepare_wide.fit_transform(df)
+    wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+    X_wide = wide_preprocessor.fit_transform(df)
 
-    prepare_deep = DensePreprocessor(
-        embed_cols=cat_embed_cols, continuous_cols=continuous_cols
+    tab_preprocessor = TabPreprocessor(
+        embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
     )
-    X_deep = prepare_deep.fit_transform(df)
+    X_deep = tab_preprocessor.fit_transform(df)
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=3)
-    deepdense = DeepDense(
-        hidden_layers=[64, 32],
-        dropout=[0.2, 0.2],
-        deep_column_idx=prepare_deep.deep_column_idx,
-        embed_input=prepare_deep.embeddings_input,
+    deepdense = TabMlp(
+        mlp_hidden_dims=[64, 32],
+        mlp_dropout=[0.2, 0.2],
+        column_idx=tab_preprocessor.column_idx,
+        embed_input=tab_preprocessor.embeddings_input,
         continuous_cols=continuous_cols,
     )
-    model = WideDeep(wide=wide, deepdense=deepdense, pred_dim=3)
+    model = WideDeep(wide=wide, deeptabular=deepdense, pred_dim=3)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.03)
-    model.compile(
-        method="multiclass", metrics=[Accuracy, F1Score], optimizers=optimizer
+
+    trainer = wd.Trainer(
+        model, objective="multiclass", metrics=[Accuracy, F1Score], optimizers=optimizer
     )
 
-    model.fit(
+    trainer.fit(
         X_wide=X_wide,
-        X_deep=X_deep,
+        X_tab=X_deep,
         target=target,
         n_epochs=1,
         batch_size=32,

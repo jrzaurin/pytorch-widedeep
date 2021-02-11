@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.exceptions import NotFittedError
 
 from pytorch_widedeep.preprocessing import WidePreprocessor
 
@@ -83,3 +84,14 @@ def test_inverse_transform(input_df):
     for c in org_df.columns:
         org_df[c] = org_df[c].astype(input_df[c].dtype)
     assert input_df.equals(org_df)
+
+
+###############################################################################
+# Test NotFittedError
+###############################################################################
+
+
+def test_notfittederror():
+    processor = WidePreprocessor(wide_cols, cross_cols)
+    with pytest.raises(NotFittedError):
+        processor.transform(df_letters)

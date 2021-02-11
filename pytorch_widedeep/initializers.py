@@ -3,7 +3,9 @@ import warnings
 
 from torch import nn
 
-from .wdtypes import *
+from pytorch_widedeep.wdtypes import *  # noqa: F403
+
+warnings.filterwarnings("default")
 
 
 class Initializer(object):
@@ -27,9 +29,11 @@ class MultipleInitializer(object):
         for name, child in model.named_children():
             try:
                 self._initializers[name](child)
-            except:
+            except KeyError:
                 if self.verbose:
-                    warnings.warn("No initializer found for {}".format(name))
+                    warnings.warn(
+                        "No initializer found for {}".format(name), UserWarning
+                    )
 
 
 class Normal(Initializer):
@@ -103,7 +107,7 @@ class XavierUniform(Initializer):
                 elif p.requires_grad:
                     try:
                         nn.init.xavier_uniform_(p, gain=self.gain)
-                    except:
+                    except Exception:
                         pass
 
 
@@ -121,7 +125,7 @@ class XavierNormal(Initializer):
                 elif p.requires_grad:
                     try:
                         nn.init.xavier_normal_(p, gain=self.gain)
-                    except:
+                    except Exception:
                         pass
 
 
@@ -143,7 +147,7 @@ class KaimingUniform(Initializer):
                         nn.init.kaiming_normal_(
                             p, a=self.a, mode=self.mode, nonlinearity=self.nonlinearity
                         )
-                    except:
+                    except Exception:
                         pass
 
 
@@ -165,7 +169,7 @@ class KaimingNormal(Initializer):
                         nn.init.kaiming_normal_(
                             p, a=self.a, mode=self.mode, nonlinearity=self.nonlinearity
                         )
-                    except:
+                    except Exception:
                         pass
 
 
@@ -183,5 +187,5 @@ class Orthogonal(Initializer):
                 elif p.requires_grad:
                     try:
                         nn.init.orthogonal_(p, gain=self.gain)
-                    except:
+                    except Exception:
                         pass
