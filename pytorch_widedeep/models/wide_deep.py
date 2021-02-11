@@ -21,11 +21,11 @@ class WideDeep(nn.Module):
         deepimage: Optional[nn.Module] = None,
         deephead: Optional[nn.Module] = None,
         head_hidden_dims: Optional[List[int]] = None,
-        head_activation: Optional[str] = "relu",
-        head_dropout: Optional[float] = 0.1,
-        head_batchnorm: Optional[bool] = False,
-        head_batchnorm_last: Optional[bool] = False,
-        head_linear_first: Optional[bool] = False,
+        head_activation: str = "relu",
+        head_dropout: float = 0.1,
+        head_batchnorm: bool = False,
+        head_batchnorm_last: bool = False,
+        head_linear_first: bool = False,
         pred_dim: int = 1,
     ):
         r"""Main collector class that combines all ``wide``, ``deeptabular``
@@ -52,7 +52,7 @@ class WideDeep(nn.Module):
 
             currently ``pytorch-widedeep`` implements three possible
             architectures for the `deeptabular` component. These are:
-            ``TabMlp``, ``TabResnet`` and ` ``TabTransformer``.
+            ``TabMlp``, ``TabResnet`` and ``TabTransformer``.
 
             1. ``TabMlp`` is simply an embedding layer encoding the categorical
             features that are then concatenated and passed through a series of
@@ -90,31 +90,29 @@ class WideDeep(nn.Module):
         head_hidden_dims: List, Optional, default = None
             Alternatively, the ``head_hidden_dims`` param can be used to
             specify the sizes of the stacked dense layers in the fc-head e.g:
-            ``[128, 64]``
-        head_dropout: float, Optional, default = 0.1
-            Dropout between the layers in ``head_hidden_dims``
+            ``[128, 64]``. Use ``deephead`` or ``head_hidden_dims``, but not
+            both.
+        head_dropout: float, default = 0.1
+            If ``head_hidden_dims`` is not None, dropout between the layers in
+            ``head_hidden_dims``
         head_activation: str, default = "relu"
-            activation function of the head layers. One of "relu", gelu" or
-            "leaky_relu"
-        head_batchnorm: bool, Optional, default = False
-            Specifies if batch normalizatin should be included in the head layers
-        head_batchnorm_last: bool, Optional, default = False
-            Boolean indicating whether or not to apply batch normalization to the
-            last of the dense layers
-        head_linear_first: bool, Optional, default = False
-            Boolean indicating whether the order of the operations in the
-            dense layer. If ``True``: ``[LIN -> ACT -> BN -> DP]``. If
-            ``False``: ``[BN -> DP -> LIN -> ACT]``
+            If ``head_hidden_dims`` is not None, activation function of the
+            head layers. One of "relu", gelu" or "leaky_relu"
+        head_batchnorm: bool, default = False
+            If ``head_hidden_dims`` is not None, specifies if batch
+            normalizatin should be included in the head layers
+        head_batchnorm_last: bool, default = False
+            If ``head_hidden_dims`` is not None, boolean indicating whether or
+            not to apply batch normalization to the last of the dense layers
+        head_linear_first: bool, default = False
+            If ``head_hidden_dims`` is not None, boolean indicating whether
+            the order of the operations in the dense layer. If ``True``:
+            ``[LIN -> ACT -> BN -> DP]``. If ``False``: ``[BN -> DP -> LIN ->
+            ACT]``
         pred_dim: int, default = 1
             Size of the final wide and deep output layer containing the
             predictions. `1` for regression and binary classification or number
             of classes for multiclass classification.
-
-        Attributes
-        ----------
-        cyclic_lr: bool
-            Attribute that indicates if any of the lr_schedulers is cyclic_lr (i.e. ``CyclicLR`` or
-            ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
 
         Examples
         --------

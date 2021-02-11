@@ -217,10 +217,10 @@ class Tokenizer:
         self,
         tok_func: Callable = SpacyTokenizer,
         lang: str = "en",
-        pre_rules: ListRules = None,
-        post_rules: ListRules = None,
-        special_cases: Collection[str] = None,
-        n_cpus: int = None,
+        pre_rules: Optional[ListRules] = None,
+        post_rules: Optional[ListRules] = None,
+        special_cases: Optional[Collection[str]] = None,
+        n_cpus: Optional[int] = None,
     ):
         """Class to combine a series of rules and a tokenizer function to tokenize
         text with multiprocessing.
@@ -231,16 +231,16 @@ class Tokenizer:
             Tokenizer Object. See :class:`pytorch_widedeep.utils.fastai_transforms.SpacyTokenizer`
         lang: str, default = "en",
             Text's Language
-        pre_rules: ListRules, default = None,
+        pre_rules: ListRules, Optional, default = None,
             Custom type: ``Collection[Callable[[str], str]]``.
             see :obj:`pytorch_widedeep.wdtypes`. Preprocessing Rules
-        post_rules: ListRules, default = None,
+        post_rules: ListRules, Optional, default = None,
             Custom type: ``Collection[Callable[[str], str]]``.
             see :obj:`pytorch_widedeep.wdtypes`. Postprocessing Rules
-        special_cases: Collection, default= None,
+        special_cases: Collection, Optional, default= None,
             special cases to be added to the tokenizer via ``Spacy``'s
             ``add_special_case`` method
-        n_cpus: int, default = None
+        n_cpus: int, Optional, default = None
             number of CPUs to used during the tokenization process
         """
         self.tok_func, self.lang, self.special_cases = tok_func, lang, special_cases
@@ -267,7 +267,8 @@ class Tokenizer:
         t: str
             text to be processed and tokenized
         tok: ``BaseTokenizer``
-            Instance of :obj:`BaseTokenizer`
+            Instance of :obj:`BaseTokenizer`. See
+            ``pytorch_widedeep.utils.fastai_transforms.BaseTokenizer``
         """
         for rule in self.pre_rules:
             t = rule(t)

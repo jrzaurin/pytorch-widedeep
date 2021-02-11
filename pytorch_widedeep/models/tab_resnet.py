@@ -90,15 +90,15 @@ class TabResnet(nn.Module):
         blocks_dims: List[int] = [200, 100, 100],
         blocks_dropout: float = 0.1,
         mlp_hidden_dims: Optional[List[int]] = None,
-        mlp_activation: Optional[str] = "relu",
-        mlp_dropout: Optional[float] = 0.1,
-        mlp_batchnorm: Optional[bool] = False,
-        mlp_batchnorm_last: Optional[bool] = False,
-        mlp_linear_first: Optional[bool] = False,
-        embed_dropout: Optional[float] = 0.1,
+        mlp_activation: str = "relu",
+        mlp_dropout: float = 0.1,
+        mlp_batchnorm: bool = False,
+        mlp_batchnorm_last: bool = False,
+        mlp_linear_first: bool = False,
+        embed_dropout: float = 0.1,
         continuous_cols: Optional[List[str]] = None,
-        batchnorm_cont: Optional[bool] = False,
-        concat_cont_first: Optional[bool] = True,
+        batchnorm_cont: bool = False,
+        concat_cont_first: bool = True,
     ):
         r"""Defines a so-called ``TabResnet`` model that can be used as the
         ``deeptabular`` component of a Wide & Deep model.
@@ -136,28 +136,28 @@ class TabResnet(nn.Module):
             [64, 32]. If ``None`` the  output of the Resnet Blocks will be
             connected directly to the output neuron(s), i.e. using a MLP is
             optional.
-        mlp_activation: str, Optional, default = "relu"
+        mlp_activation: str, default = "relu"
             Activation function for the dense layers of the MLP
-        mlp_dropout: float, Optional, default = 0.1
+        mlp_dropout: float, default = 0.1
             float with the dropout between the dense layers of the MLP.
-        mlp_batchnorm: bool, Optional, default = False
+        mlp_batchnorm: bool, default = False
             Boolean indicating whether or not batch normalization will be applied
             to the dense layers
-        mlp_batchnorm_last: bool, Optional, default = False
+        mlp_batchnorm_last: bool, default = False
             Boolean indicating whether or not batch normalization will be applied
             to the last of the dense layers
-        mlp_linear_first: bool, Optional, default = False
+        mlp_linear_first: bool, default = False
             Boolean indicating the order of the operations in the dense
             layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
             LIN -> ACT]``
-        embed_dropout: float, Optional, default = 0.1
+        embed_dropout: float, default = 0.1
             embeddings dropout
         continuous_cols: List, Optional, default = None
             List with the name of the numeric (aka continuous) columns
         batchnorm_cont: bool, default = False
             Boolean indicating whether or not to apply batch normalization to the
             continuous input
-        concat_cont_first: bool, Optional, default = True
+        concat_cont_first: bool, default = True
             Boolean indicating whether the continuum columns will be
             concatenated with the Embeddings and then passed through the
             Resnet blocks (``True``) or, alternatively, will be concatenated
@@ -175,13 +175,13 @@ class TabResnet(nn.Module):
             if ``mlp_hidden_dims`` is ``True``, this attribute will be an mlp
             model that will receive:
 
-            i) the results of the concatenation of the embeddings and the
-            continuous columns -- if present -- and then passed it through
-            the ``dense_resnet`` (``concat_cont_first = True``), or
+            - the results of the concatenation of the embeddings and the
+              continuous columns -- if present -- and then passed it through
+              the ``dense_resnet`` (``concat_cont_first = True``), or
 
-            ii) the result of passing the embeddings through the ``dense_resnet``
-            and then concatenating the results with the continuous columns --
-            if present -- (``concat_cont_first = False``)
+            - the result of passing the embeddings through the ``dense_resnet``
+              and then concatenating the results with the continuous columns --
+              if present -- (``concat_cont_first = False``)
 
         output_dim: `int`
             The output dimension of the model. This is a required attribute

@@ -75,14 +75,14 @@ class TabMlp(nn.Module):
         column_idx: Dict[str, int],
         mlp_hidden_dims: List[int] = [200, 100],
         mlp_activation: str = "relu",
-        mlp_dropout: Optional[Union[float, List[float]]] = 0.1,
+        mlp_dropout: Union[float, List[float]] = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = False,
         embed_input: Optional[List[Tuple[str, int, int]]] = None,
         embed_dropout: float = 0.1,
         continuous_cols: Optional[List[str]] = None,
-        batchnorm_cont: Optional[bool] = False,
+        batchnorm_cont: bool = False,
     ):
         r"""Defines a ``TabMlp`` model that can be used as the ``deeptabular``
         component of a Wide & Deep model.
@@ -102,7 +102,7 @@ class TabMlp(nn.Module):
         mlp_activation: str, default = "relu"
             Activation function for the dense layers of the MLP. Currently
             only "relu", "leaky_relu" and "gelu" are supported
-        mlp_dropout: float or List, Optional, default = 0.1
+        mlp_dropout: float or List, default = 0.1
             float or List of floats with the dropout between the dense layers.
             e.g: [0.5,0.5]
         mlp_batchnorm: bool, default = False
@@ -115,12 +115,12 @@ class TabMlp(nn.Module):
             Boolean indicating the order of the operations in the dense
             layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
             LIN -> ACT]``
-        embed_input: List, Optional
+        embed_input: List, Optional, default = None
             List of Tuples with the column name, number of unique values and
             embedding dimension. e.g. [(education, 11, 32), ...]
         embed_dropout: float, default = 0.1
             embeddings dropout
-        continuous_cols: List, Optional
+        continuous_cols: List, Optional, default = None
             List with the name of the numeric (aka continuous) columns
         batchnorm_cont: bool, default = False
             Boolean indicating whether or not to apply batch normalization to the

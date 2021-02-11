@@ -32,11 +32,11 @@ class DeepImage(nn.Module):
         resnet_architecture: int = 18,
         freeze_n: int = 6,
         head_hidden_dims: Optional[List[int]] = None,
-        head_activation: Optional[str] = "relu",
-        head_dropout: Optional[float] = None,
-        head_batchnorm: Optional[bool] = False,
-        head_batchnorm_last: Optional[bool] = False,
-        head_linear_first: Optional[bool] = False,
+        head_activation: str = "relu",
+        head_dropout: float = 0.1,
+        head_batchnorm: bool = False,
+        head_batchnorm_last: bool = False,
+        head_linear_first: bool = False,
     ):
         r"""
         Standard image classifier/regressor using a pretrained network (in
@@ -69,19 +69,19 @@ class DeepImage(nn.Module):
         freeze_n: int, default = 6
             number of layers to freeze. Must be less than or equal to 8. If 8
             the entire 'backbone' of the nwtwork will be frozen
-        head_hidden_dims: List, Optional
+        head_hidden_dims: List, Optional, default = None
             List with the number of neurons per dense layer in the head. e.g: [64,32]
-        head_activation: str, Optional, default = "relu"
+        head_activation: str, default = "relu"
             Activation function for the dense layers in the head.
-        head_dropout: float, Optional, default = 0.
+        head_dropout: float, default = 0.1
             float indicating the dropout between the dense layers.
-        head_batchnorm: bool, Optional, default = False
+        head_batchnorm: bool, default = False
             Boolean indicating whether or not batch normalization will be applied
             to the dense layers
-        head_batchnorm_last: bool, Optional, default = False
+        head_batchnorm_last: bool, default = False
             Boolean indicating whether or not batch normalization will be applied
             to the last of the dense layers
-        head_linear_first: bool, Optional, default = False
+        head_linear_first: bool, default = False
             Boolean indicating the order of the operations in the dense
             layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
             LIN -> ACT]``

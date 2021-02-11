@@ -1,9 +1,9 @@
 The ``models`` module
 ======================
 
-This module contains the four main components that will comprise Wide and Deep
-model, and the ``WideDeep`` "constructor" class. These four components are:
-``wide``, ``deeptabular``, ``deeptext``, ``deepimage``.
+This module contains the four main components that will comprise a Wide and
+Deep model, and the ``WideDeep`` "constructor" class. These four components
+are: ``wide``, ``deeptabular``, ``deeptext``, ``deepimage``.
 
 .. note:: ``TabMlp``, ``TabResnet`` and ``TabTransformer`` can all be used
     as the ``deeptabular``  component of the model and simply represent

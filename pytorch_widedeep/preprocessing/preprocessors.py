@@ -213,7 +213,7 @@ class TabPreprocessor(BasePreprocessor):
         continuous_cols: List[str] = None,
         scale: bool = True,
         default_embed_dim: int = 16,
-        already_standard: Optional[List[str]] = None,
+        already_standard: List[str] = None,
         for_tabtransformer: bool = False,
         verbose: int = 1,
     ):
@@ -236,17 +236,23 @@ class TabPreprocessor(BasePreprocessor):
             :class:`pytorch_widedeep.models`
         default_embed_dim: int, default=16
             Dimension for the embeddings used for the ``deeptabular``
-            component
-        already_standard: List, Optional, default = None
+            component if the embed_dim is not provided in the ``embed_cols``
+            parameter
+        already_standard: List, default = None
             List with the name of the continuous cols that do not need to be
-            Standarised.
+            Standarised. For example, you might have Long and Lat in your
+            dataset and might want to encode them somehow (e.g. see the
+            ``LatLongScalarEnc`` available in the `autogluon
+            <https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular>`_
+            tabular library) and NOT standarize them any further
         for_tabtransformer: bool, default = False
             Boolean indicating whether the preprocessed data will be passed to
             a ``TabTransformer`` model. If ``True``, the param ``embed_cols``
             must just be a list containing the categorical columns: e.g.:
             ['education', 'relationship', ...] This is because following the
             results in the `paper <https://arxiv.org/pdf/2012.06678.pdf>`_,
-            they will all be encoded using embeddings of dim 32. See
+            they will all be encoded using embeddings of the same dim (32 by
+            default). See
             :class:`pytorch_widedeep.models.tab_transformer.TabTransformer`
         verbose: int, default = 1
 

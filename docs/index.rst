@@ -53,7 +53,9 @@ within the faded-pink rectangle are concatenated.
 Note that it is not possible to illustrate the number of possible
 architectures and components available in ``pytorch-widedeep`` in one Figure.
 Therefore, for more details on possible architectures (and more) please, read
-this documentation, or see the Examples folders in the repo.
+this documentation, or see the `Examples
+<https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_ folders
+in the repo.
 
 In math terms, and following the notation in the `paper
 <https://arxiv.org/abs/1606.07792>`_, the expression for the architecture

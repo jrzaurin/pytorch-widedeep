@@ -19,13 +19,13 @@ class DeepText(nn.Module):
         padding_idx: int = 1,
         embed_dim: Optional[int] = None,
         embed_matrix: Optional[np.ndarray] = None,
-        embed_trainable: Optional[bool] = True,
+        embed_trainable: bool = True,
         head_hidden_dims: Optional[List[int]] = None,
-        head_activation: Optional[str] = "relu",
+        head_activation: str = "relu",
         head_dropout: Optional[float] = None,
-        head_batchnorm: Optional[bool] = False,
-        head_batchnorm_last: Optional[bool] = False,
-        head_linear_first: Optional[bool] = False,
+        head_batchnorm: bool = False,
+        head_batchnorm_last: bool = False,
+        head_linear_first: bool = False,
     ):
         r"""Standard text classifier/regressor comprised by a stack of RNNs
         (in particular LSTMs).
@@ -47,30 +47,30 @@ class DeepText(nn.Module):
         bidirectional: bool, default = True
             indicates whether the staked RNNs are bidirectional
         padding_idx: int, default = 1
-            index of the padding token in the padded-tokenised sequences. default:
-            1. I use the ``fastai`` tokenizer where the token index 0 is reserved
+            index of the padding token in the padded-tokenised sequences. I
+            use the ``fastai`` tokenizer where the token index 0 is reserved
             for the `'unknown'` word token
         embed_dim: int, Optional, default = None
             Dimension of the word embedding matrix if non-pretained word
             vectors are used
         embed_matrix: np.ndarray, Optional, default = None
              Pretrained word embeddings
-        embed_trainable: bool, Optional, default = None
+        embed_trainable: bool, default = True
             Boolean indicating if the pretrained embeddings are trainable
         head_hidden_dims: List, Optional, default = None
             List with the sizes of the stacked dense layers in the head
             e.g: [128, 64]
-        head_activation: str, Optional, default = "relu"
+        head_activation: str, default = "relu"
             Activation function for the dense layers in the head
         head_dropout: float, Optional, default = None
             dropout between the dense layers in the head
-        head_batchnorm: bool, Optional, default = False
+        head_batchnorm: bool, default = False
             Whether or not to include batch normalization in the dense layers that
             form the `'texthead'`
-        head_batchnorm_last: bool, Optional, default = False
+        head_batchnorm_last: bool, default = False
             Boolean indicating whether or not to apply batch normalization to the
             last of the dense layers in the head
-        head_linear_first: bool, Optional, default = False
+        head_linear_first: bool, default = False
             Boolean indicating whether the order of the operations in the dense
             layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
             LIN -> ACT]``

@@ -222,10 +222,10 @@ class TabTransformer(nn.Module):
         ff_hidden_dim: int = 32 * 4,
         transformer_activation: str = "gelu",
         mlp_hidden_dims: Optional[List[int]] = None,
-        mlp_activation: Optional[str] = "relu",
-        mlp_batchnorm: Optional[bool] = False,
-        mlp_batchnorm_last: Optional[bool] = False,
-        mlp_linear_first: Optional[bool] = True,
+        mlp_activation: str = "relu",
+        mlp_batchnorm: bool = False,
+        mlp_batchnorm_last: bool = False,
+        mlp_linear_first: bool = True,
     ):
 
         r"""TabTransformer model (https://arxiv.org/pdf/2012.06678.pdf) model that
@@ -248,7 +248,8 @@ class TabTransformer(nn.Module):
         full_embed_dropout: bool, default = False
             Boolean indicating if an entire embedding (i.e. the representation
             for one categorical column) will be dropped in the batch. See:
-            ``pytorch_widedeep.model.tab_transformer.FullEmbeddingDropout``
+            ``pytorch_widedeep.model.tab_transformer.FullEmbeddingDropout``.
+            If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
         shared_embed: bool, default = False
             The idea behind ``shared_embed`` is described in the Appendix A in the paper:
             `'The goal of having column embedding is to enable the model to distinguish the
@@ -274,7 +275,7 @@ class TabTransformer(nn.Module):
             ``pytorch_widedeep.model.tab_transformer.TransformerEncoder``) and the
             output MLP
         keep_attn_weights: bool, default = False
-            If set to ``True`` the model will store the attention weights in the ``blk.self_attn.attn_weights``
+            If set to ``True`` the model will store the attention weights in the ``attention_weights``
             attribute.
         fixed_attention: bool, default = False
             If set to ``True`` all the observations in a batch will have the
@@ -290,17 +291,17 @@ class TabTransformer(nn.Module):
         transformer_activation: str, default = "gelu"
             Transformer Encoder activation function
         mlp_hidden_dims: List, Optional, default = None
-            MLP hidden dimensions. If not provided it will default to ``[4*l, 2*l]`` where l is the
-            mlp input dimension
-        mlp_activation: str, Optional, default = "gelu"
+            MLP hidden dimensions. If not provided it will default to ``[4*l,
+            2*l]`` where ``l`` is the mlp input dimension
+        mlp_activation: str, default = "gelu"
             MLP activation function
-        mlp_batchnorm: bool, Optional, default = False
+        mlp_batchnorm: bool, default = False
             Boolean indicating whether or not to apply batch normalization to the
             dense layers
-        mlp_batchnorm_last: bool, Optional, default = False
+        mlp_batchnorm_last: bool, default = False
             Boolean indicating whether or not to apply batch normalization to the
             last of the dense layers
-        mlp_linear_first: bool, Optional, default = False
+        mlp_linear_first: bool, default = False
             Boolean indicating whether the order of the operations in the dense
             layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
             LIN -> ACT]``

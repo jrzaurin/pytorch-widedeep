@@ -17,10 +17,8 @@ using wide and deep models.
 
 ### Introduction
 
-`pytorch-widedeep` is based on Google's Wide and Deep Algorithm. Details of
-the original algorithm can be found
-[here](https://www.tensorflow.org/tutorials/wide_and_deep), and the  research
-paper can be found [here](https://arxiv.org/abs/1606.07792).
+`pytorch-widedeep` is based on Google's Wide and Deep Algorithm, [Wide & Deep
+Learning for Recommender Systems](https://arxiv.org/abs/1606.07792).
 
 In general terms, `pytorch-widedeep` is a package to use deep learning with
 tabular data. In particular, is intended to facilitate the combination of text
@@ -84,12 +82,6 @@ Binary classification with the [adult
 dataset]([adult](https://www.kaggle.com/wenruliu/adult-income-dataset))
 using `Wide` and `DeepDense` and defaults settings.
 
-### Quick start
-
-Binary classification with the [adult
-dataset]([adult](https://www.kaggle.com/wenruliu/adult-income-dataset))
-using `Wide` and `DeepDense` and defaults settings.
-
 
 ```python
 ```
@@ -110,7 +102,6 @@ from pytorch_widedeep.metrics import Accuracy
 # the following 4 lines are not directly related to ``pytorch-widedeep``. I
 # assume you have downloaded the dataset and place it in a dir called
 # data/adult/
-
 df = pd.read_csv("data/adult/adult.csv.zip")
 df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
 df.drop("income", axis=1, inplace=True)

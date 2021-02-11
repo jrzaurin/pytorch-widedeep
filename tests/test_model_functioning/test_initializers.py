@@ -180,11 +180,11 @@ model2 = WideDeep(wide=wide, deeptabular=deeptabular)
 )
 def test_single_initializer(model, initializer):
 
-    inp_weights = model.wide.wide_linear.weight.data.detach()
+    inp_weights = model.wide.wide_linear.weight.data.detach().cpu()
 
     n_model = c(model)
     trainer = Trainer(n_model, objective="binary", initializers=initializer)
-    init_weights = trainer.model.wide.wide_linear.weight.data
+    init_weights = trainer.model.wide.wide_linear.weight.data.detach().cpu()
 
     assert not torch.all(inp_weights == init_weights)
 

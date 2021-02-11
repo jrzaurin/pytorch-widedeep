@@ -22,10 +22,8 @@ using wide and deep models.
 
 ### Introduction
 
-`pytorch-widedeep` is based on Google's Wide and Deep Algorithm. Details of
-the original algorithm can be found
-[here](https://www.tensorflow.org/tutorials/wide_and_deep), and the  research
-paper can be found [here](https://arxiv.org/abs/1606.07792).
+`pytorch-widedeep` is based on Google's Wide and Deep Algorithm, [Wide & Deep
+Learning for Recommender Systems](https://arxiv.org/abs/1606.07792).
 
 In general terms, `pytorch-widedeep` is a package to use deep learning with
 tabular data. In particular, is intended to facilitate the combination of text
@@ -40,18 +38,20 @@ in the Figure below:
 </p>
 
 The dashed boxes in the figure represent optional, overall components, and the
-dashed lines indicate the corresponding connections, depending on whether or
-not certain components are present. For example, the dashed, blue-lines
-indicate that the ``deeptabular``, ``deeptext`` and ``deepimage`` components
-are connected directly to the output neuron or neurons (depending on whether
-we are performing a binary classification or regression, or a multi-class
-classification) if the optional ``deephead`` is not present. The components
-within the faded-pink rectangle are concatenated.
+dashed lines/arrows indicate the corresponding connections, depending on
+whether or not certain components are present. For example, the dashed,
+blue-lines indicate that the ``deeptabular``, ``deeptext`` and ``deepimage``
+components are connected directly to the output neuron or neurons (depending
+on whether we are performing a binary classification or regression, or a
+multi-class classification) if the optional ``deephead`` is not present.
+Finally, the components within the faded-pink rectangle are concatenated.
 
 Note that it is not possible to illustrate the number of possible
 architectures and components available in ``pytorch-widedeep`` in one Figure.
 Therefore, for more details on possible architectures (and more) please, see
-the documentation, or the Examples folders and the notebooks there.
+the
+[documentation]((https://pytorch-widedeep.readthedocs.io/en/latest/index.html)),
+or the Examples folders and the notebooks there.
 
 In math terms, and following the notation in the
 [paper](https://arxiv.org/abs/1606.07792), the expression for the architecture
@@ -187,7 +187,6 @@ from pytorch_widedeep.metrics import Accuracy
 # the following 4 lines are not directly related to ``pytorch-widedeep``. I
 # assume you have downloaded the dataset and place it in a dir called
 # data/adult/
-
 df = pd.read_csv("data/adult/adult.csv.zip")
 df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
 df.drop("income", axis=1, inplace=True)

@@ -96,7 +96,7 @@ class LabelEncoder:
         return df_inp
 
     def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Applies the full process
+        """Combines ``fit`` and ``transform``
 
         Examples
         --------

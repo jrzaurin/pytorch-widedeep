@@ -106,12 +106,15 @@ class Trainer:
                 'binary', 'multiclass' or 'regression', consistent with the loss
                 function
 
-        optimizers: ``Optimzer`` or Dict, Optional, default= ``AdamW``
+        optimizers: ``Optimzer`` or Dict, Optional, default= None
             - An instance of Pytorch's ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
             - a dictionary where there keys are the model components (i.e.
               `'wide'`, `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)  and
               the values are the corresponding optimizers. If multiple optimizers are used
               the  dictionary **MUST** contain an optimizer per model component.
+
+            if no optimizers are passed it will default to ``AdamW`` for all
+            Wide and Deep components
         lr_schedulers: ``LRScheduler`` or Dict, Optional, default=None
             - An instance of Pytorch's ``LRScheduler`` object (e.g
               :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
@@ -130,11 +133,11 @@ class Trainer:
             <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
         callbacks: List, Optional, default=None
             List with ``Callback`` objects. The four callbacks available in
-            ``pytorch-widedeep`` are: ``ModelCheckpoint``, ``EarlyStopping``,
-            and ``LRHistory``. The ``History`` callback is used by default.
-            This can also be a custom callback as long as the object of type
-            ``Callback``. See ``pytorch_widedeep.callbacks.Callback`` or the
-            `Examples
+            ``pytorch-widedeep`` are: ``History``, ``ModelCheckpoint``,
+            ``EarlyStopping``, and ``LRHistory``. The ``History`` callback is
+            used by default. This can also be a custom callback as long as the
+            object of type ``Callback``. See
+            ``pytorch_widedeep.callbacks.Callback`` or the `Examples
             <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
             folder in the repo
         metrics: List, Optional, default=None
@@ -167,6 +170,13 @@ class Trainer:
             Setting it to 0 will print nothing during training.
         seed: int, default=1
             Random seed to be used internally for train_test_split
+
+        Attributes
+        ----------
+        cyclic_lr: bool
+            Attribute that indicates if any of the lr_schedulers is cyclic_lr (i.e. ``CyclicLR`` or
+            ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
+
 
         Example
         --------
@@ -276,25 +286,29 @@ class Trainer:
         val_split: Optional[float] = None,
         target: Optional[np.ndarray] = None,
         n_epochs: int = 1,
-        validation_freq: Optional[int] = 1,
+        validation_freq: int = 1,
         batch_size: int = 32,
         patience: int = 10,
-        finetune: Optional[bool] = False,
-        finetune_epochs: Optional[int] = 5,
-        finetune_max_lr: Optional[float] = 0.01,
-        finetune_deeptabular_gradual: Optional[bool] = False,
-        finetune_deeptabular_max_lr: Optional[float] = 0.01,
+        finetune: bool = False,
+        finetune_epochs: int = 5,
+        finetune_max_lr: float = 0.01,
+        finetune_deeptabular_gradual: bool = False,
+        finetune_deeptabular_max_lr: float = 0.01,
         finetune_deeptabular_layers: Optional[List[nn.Module]] = None,
-        finetune_deeptext_gradual: Optional[bool] = False,
-        finetune_deeptext_max_lr: Optional[float] = 0.01,
+        finetune_deeptext_gradual: bool = False,
+        finetune_deeptext_max_lr: float = 0.01,
         finetune_deeptext_layers: Optional[List[nn.Module]] = None,
-        finetune_deepimage_gradual: Optional[bool] = False,
-        finetune_deepimage_max_lr: Optional[float] = 0.01,
+        finetune_deepimage_gradual: bool = False,
+        finetune_deepimage_max_lr: float = 0.01,
         finetune_deepimage_layers: Optional[List[nn.Module]] = None,
-        finetune_routine: Optional[str] = "howard",
-        stop_after_finetuning: Optional[bool] = False,
+        finetune_routine: str = "howard",
+        stop_after_finetuning: bool = False,
     ):
         r"""Fit method.
+
+        The input datasets can be passed either directly via numpy arrays
+        (``X_wide``, ``X_tab``, ``X_text`` or ``X_img``) or alternatively, in
+        dictionaries (``X_train`` or ``X_val``).
 
         Parameters
         ----------
@@ -311,13 +325,13 @@ class Trainer:
             Input for the ``deepimage`` model component.
             See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_train: Dict, Optional. default=None
-            Training dataset for the different model components. Keys are
-            `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values are
-            the corresponding matrices.
+            The training dataset can also be passed in a dictionary. Keys are
+            `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
+            are the corresponding matrices.
         X_val: Dict, Optional. default=None
-            Validation dataset for the different model component. Keys are
-            `'X_wide'`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values are
-            the corresponding matrices.
+            The validation dataset can also be passed in a dictionary. Keys
+            are `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`.
+            Values are the corresponding matrices.
         val_split: float, Optional. default=None
             train/val split fraction
         target: np.ndarray, Optional. default=None
@@ -330,7 +344,7 @@ class Trainer:
         patience: int, default=10
             Number of epochs without improving the target metric or loss
             before the fit process stops
-        finetune: bool, Optional, default=False
+        finetune: bool, default=False
             param alias: ``warmup``
 
             fine-tune individual model components.
@@ -363,13 +377,13 @@ class Trainer:
             section in this documentation and the `Examples
             <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
             folder in the repo.
-        finetune_epochs: int, Optional, default=4
+        finetune_epochs: int, default=4
             param alias: ``warmup_epochs``
 
             Number of fine-tune epochs for those model components that will
             *NOT* be gradually fine-tuned. Those components with gradual
             fine-tune follow their corresponding specific routine.
-        finetune_max_lr: float, Optional, default=0.01
+        finetune_max_lr: float, default=0.01
             param alias: ``warmup_max_lr``
 
             Maximum learning rate during the Triangular Learning rate cycle
@@ -379,7 +393,7 @@ class Trainer:
 
             Boolean indicating if the ``deeptabular`` component will be
             fine-tuned gradually
-        finetune_deeptabular_max_lr: float, Optional, default=0.01
+        finetune_deeptabular_max_lr: float, default=0.01
             param alias: ``warmup_deeptabular_max_lr``
 
             Maximum learning rate during the Triangular Learning rate cycle
@@ -392,12 +406,12 @@ class Trainer:
             .. note:: These have to be in `fine-tune-order`: the layers or blocks
                 close to the output neuron(s) first
 
-        finetune_deeptext_gradual: bool, Optional, default=False
+        finetune_deeptext_gradual: bool, default=False
             param alias: ``warmup_deeptext_gradual``
 
             Boolean indicating if the ``deeptext`` component will be
             fine-tuned gradually
-        finetune_deeptext_max_lr: float, Optional, default=0.01
+        finetune_deeptext_max_lr: float, default=0.01
             param alias: ``warmup_deeptext_max_lr``
 
             Maximum learning rate during the Triangular Learning rate cycle
@@ -410,12 +424,12 @@ class Trainer:
             .. note:: These have to be in `fine-tune-order`: the layers or blocks
                 close to the output neuron(s) first
 
-        finetune_deepimage_gradual: bool, Optional, default=False
+        finetune_deepimage_gradual: bool, default=False
             param alias: ``warmup_deepimage_gradual``
 
             Boolean indicating if the ``deepimage`` component will be
             fine-tuned gradually
-        finetune_deepimage_max_lr: float, Optional, default=0.01
+        finetune_deepimage_max_lr: float, default=0.01
             param alias: ``warmup_deepimage_max_lr``
 
             Maximum learning rate during the Triangular Learning rate cycle
@@ -428,10 +442,10 @@ class Trainer:
             .. note:: These have to be in `fine-tune-order`: the layers or blocks
                 close to the output neuron(s) first
 
-        finetune_routine: str, Optional, default=`felbo`
-            param alias: ``warmup_deepimage_layers``
+        finetune_routine: str, default = "howard"
+            param alias: ``warmup_routine``
 
-            Warm up routine. On of `felbo` or `howard`. See the examples
+            Warm up routine. On of "felbo" or "howard". See the examples
             section in this documentation and the corresponding repo for
             details on how to use fine-tune routines
 
@@ -581,6 +595,11 @@ class Trainer:
     ) -> np.ndarray:
         r"""Returns the predictions
 
+        The input datasets can be passed either directly via numpy arrays
+        (``X_wide``, ``X_tab``, ``X_text`` or ``X_img``) or alternatively, in
+        a dictionary (``X_test``)
+
+
         Parameters
         ----------
         X_wide: np.ndarray, Optional. default=None
@@ -596,9 +615,9 @@ class Trainer:
             Input for the ``deepimage`` model component.
             See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_test: Dict, Optional. default=None
-            Dictionary with the resting dataset for the different model
-            components. Keys are `'X_wide'`, `'X_tab'`, `'X_text'` and
-            `'X_img'` and the values are the corresponding matrices.
+            The test dataset can also be passed in a dictionary. Keys are
+            `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
+            are the corresponding matrices.
         """
 
         preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test)
@@ -622,6 +641,10 @@ class Trainer:
         r"""Returns the predicted probabilities for the test dataset for  binary
         and multiclass methods
 
+        The input datasets can be passed either directly via numpy arrays
+        (``X_wide``, ``X_tab``, ``X_text`` or ``X_img``) or alternatively, in
+        a dictionary (``X_test``)
+
         Parameters
         ----------
         X_wide: np.ndarray, Optional. default=None
@@ -637,9 +660,9 @@ class Trainer:
             Input for the ``deepimage`` model component.
             See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_test: Dict, Optional. default=None
-            Dictionary with the resting dataset for the different model
-            components. Keys are `'X_wide'`, `'X_tab'`, `'X_text'` and
-            `'X_img'` and the values are the corresponding matrices.
+            The test dataset can also be passed in a dictionary. Keys are
+            `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
+            are the corresponding matrices.
         """
 
         preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test)

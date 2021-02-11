@@ -3,7 +3,7 @@ Training wide and deep models for tabular data
 
 `...` or just deep learning models for tabular data.
 
-Here is the documentation for the ``Trainer`` class, that will do all the heavy lifting
+Here is the documentation for the ``Trainer`` class, that will do all the heavy lifting.
 
 Trainer is also available from ``pytorch-widedeep`` directly, for example, one could do:
 
