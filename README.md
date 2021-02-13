@@ -16,7 +16,7 @@
 A flexible package to use Deep Learning with tabular data, text and images
 using wide and deep models.
 
-**Documentation:** [https://pytorch-widedeep.readthedocs.io](https://pytorch-widedeep.readthedocs.io/en/latest/index.html)
+**Documentation:** [https://pytorch-widedeep.readthedocs.io](https://pytorch-widedeep.readthedocs.io/en/master/)
 
 **Companion posts:** [infinitoml](https://jrzaurin.github.io/infinitoml/)
 
