@@ -310,7 +310,7 @@ class TabTransformer(nn.Module):
         ----------
         embed_layers: ``nn.ModuleDict``
             Dict with the embeddings per column
-        blks: ``nn.Sequential``
+        tab_transformer_blks: ``nn.Sequential``
             Sequence of Transformer blocks
         attention_weights: List
             List with the attention weights per block
@@ -390,9 +390,9 @@ class TabTransformer(nn.Module):
         else:
             cont_inp_dim = 0
 
-        self.blks = nn.Sequential()
+        self.tab_transformer_blks = nn.Sequential()
         for i in range(num_blocks):
-            self.blks.add_module(
+            self.tab_transformer_blks.add_module(
                 "block" + str(i),
                 TransformerEncoder(
                     input_dim,
@@ -437,7 +437,7 @@ class TabTransformer(nn.Module):
         if not self.shared_embed and self.embedding_dropout is not None:
             x = self.embedding_dropout(x)
 
-        for i, blk in enumerate(self.blks):
+        for i, blk in enumerate(self.tab_transformer_blks):
             x = blk(x)
             if self.keep_attn_weights:
                 self.attention_weights[i] = blk.self_attn.attn_weights
