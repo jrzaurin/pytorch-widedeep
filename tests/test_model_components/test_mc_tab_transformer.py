@@ -55,7 +55,7 @@ def test_tabtransformer_shared_embeddings():
     res = []
 
     shared_embeddings = SharedEmbeddings(
-        num_embed=5,
+        n_embed=5,
         embed_dim=16,
         embed_dropout=0.0,
         add_shared_embed=False,
@@ -68,7 +68,7 @@ def test_tabtransformer_shared_embeddings():
     res.append((se[:, :2][0] == se[:, :2]).all())
 
     shared_embeddings = SharedEmbeddings(
-        num_embed=5,
+        n_embed=5,
         embed_dim=16,
         embed_dropout=0.0,
         add_shared_embed=True,
@@ -137,9 +137,9 @@ def test_tabtransformer_keep_attn():
     assert (
         out.size(0) == 10
         and out.size(1) == (n_cols * 32) * 2
-        and len(model4.attention_weights) == model4.num_blocks
+        and len(model4.attention_weights) == model4.n_blocks
         and list(model4.attention_weights[0].shape)
-        == [10, model4.num_heads, n_cols, n_cols]
+        == [10, model4.n_heads, n_cols, n_cols]
     )
 
 
@@ -170,11 +170,11 @@ def test_fixed_attention():
     esz = 32
     multi_head_dattention = MultiHeadedAttention(
         input_dim=esz,
-        num_heads=4,
+        n_heads=4,
         keep_attn_weights=False,
         dropout=0.1,
         fixed_attention=True,
-        num_cat_columns=cat,
+        n_cat_columns=cat,
     )
     inp = torch.rand(bsz, cat, esz)
     try:

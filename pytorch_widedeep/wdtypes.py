@@ -80,3 +80,5 @@ Transforms = Union[
 ]
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
+
+from pytorch_widedeep.models.tabnet.sparsemax import Sparsemax, Entmax15

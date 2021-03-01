@@ -56,34 +56,34 @@ class MultiHeadedAttention(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        num_heads: int,
+        n_heads: int,
         keep_attn_weights: bool,
         dropout: float,
         fixed_attention: bool,
-        num_cat_columns: int,
+        n_cat_columns: int,
     ):
         super(MultiHeadedAttention, self).__init__()
 
         assert (
-            input_dim % num_heads == 0
-        ), "'input_dim' must be divisible by 'num_heads'"
-        if fixed_attention and not num_cat_columns:
+            input_dim % n_heads == 0
+        ), "'input_dim' must be divisible by 'n_heads'"
+        if fixed_attention and not n_cat_columns:
             raise ValueError(
                 "if 'fixed_attention' is 'True' the number of categorical "
-                "columns 'num_cat_columns' must be specified"
+                "columns 'n_cat_columns' must be specified"
             )
         # Consistent with other implementations I assume d_v = d_k
-        self.d_k = input_dim // num_heads
-        self.num_heads = num_heads
+        self.d_k = input_dim // n_heads
+        self.n_heads = n_heads
         self.dropout = nn.Dropout(dropout)
         self.fixed_attention = fixed_attention
         if fixed_attention:
             self.inp_proj = nn.Linear(input_dim, input_dim)
             self.fixed_key = nn.init.xavier_normal_(
-                nn.Parameter(torch.empty(num_cat_columns, input_dim))
+                nn.Parameter(torch.empty(n_cat_columns, input_dim))
             )
             self.fixed_query = nn.init.xavier_normal_(
-                nn.Parameter(torch.empty(num_cat_columns, input_dim))
+                nn.Parameter(torch.empty(n_cat_columns, input_dim))
             )
         else:
             self.inp_proj = nn.Linear(input_dim, input_dim * 3)
@@ -105,7 +105,7 @@ class MultiHeadedAttention(nn.Module):
         else:
             q, k, v = self.inp_proj(X).chunk(3, dim=2)
         q, k, v = map(
-            lambda t: einops.rearrange(t, "b s (h d) -> b h s d", h=self.num_heads),
+            lambda t: einops.rearrange(t, "b s (h d) -> b h s d", h=self.n_heads),
             (q, k, v),
         )
         scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.d_k)
@@ -113,7 +113,7 @@ class MultiHeadedAttention(nn.Module):
         if self.keep_attn_weights:
             self.attn_weights = attn_weights
         attn_output = einsum("b h s l, b h l d -> b h s d", attn_weights, v)
-        output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.num_heads)
+        output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
 
         return self.out_proj(output)
 
@@ -122,22 +122,22 @@ class TransformerEncoder(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        num_heads: int,
+        n_heads: int,
         keep_attn_weights: bool,
         ff_hidden_dim: int,
         dropout: float,
         activation: str,
         fixed_attention,
-        num_cat_columns,
+        n_cat_columns,
     ):
         super(TransformerEncoder, self).__init__()
         self.self_attn = MultiHeadedAttention(
             input_dim,
-            num_heads,
+            n_heads,
             keep_attn_weights,
             dropout,
             fixed_attention,
-            num_cat_columns,
+            n_cat_columns,
         )
         self.feed_forward = PositionwiseFF(
             input_dim, ff_hidden_dim, dropout, activation
@@ -165,7 +165,7 @@ class FullEmbeddingDropout(nn.Module):
 class SharedEmbeddings(nn.Module):
     def __init__(
         self,
-        num_embed: int,
+        n_embed: int,
         embed_dim: int,
         embed_dropout: float,
         full_embed_dropout: bool = False,
@@ -178,7 +178,7 @@ class SharedEmbeddings(nn.Module):
         ), "'embed_dim' must be divisible by 'frac_shared_embed'"
 
         self.add_shared_embed = add_shared_embed
-        self.embed = nn.Embedding(num_embed, embed_dim, padding_idx=0)
+        self.embed = nn.Embedding(n_embed, embed_dim, padding_idx=0)
         self.embed.weight.data.clamp_(-2, 2)
         if add_shared_embed:
             col_embed_dim = embed_dim
@@ -213,12 +213,12 @@ class TabTransformer(nn.Module):
         add_shared_embed: bool = False,
         frac_shared_embed: int = 8,
         input_dim: int = 32,
-        num_heads: int = 8,
-        num_blocks: int = 6,
+        n_heads: int = 8,
+        n_blocks: int = 6,
         dropout: float = 0.1,
         keep_attn_weights: bool = False,
         fixed_attention: bool = False,
-        num_cat_columns: Optional[int] = None,
+        n_cat_columns: Optional[int] = None,
         ff_hidden_dim: int = 32 * 4,
         transformer_activation: str = "gelu",
         mlp_hidden_dims: Optional[List[int]] = None,
@@ -265,9 +265,9 @@ class TabTransformer(nn.Module):
         input_dim: int, default = 32
             The so-called *dimension of the model*. Is the number of embeddings used to encode
             the categorical columns
-        num_heads: int, default = 8
+        n_heads: int, default = 8
             Number of attention heads per Transformer block
-        num_blocks: int, default = 6
+        n_blocks: int, default = 6
             Number of Transformer blocks
         dropout: float, default = 0.1
             Dropout that will be applied internally to the
@@ -282,7 +282,7 @@ class TabTransformer(nn.Module):
             same Key and Query. This implementation is inspired by the one
             available at the `Autogluon tabular library
             <https://github.com/awslabs/autogluon/blob/master/tabular/src/autogluon/tabular/models/tab_transformer/modified_transformer.py>`_.
-        num_cat_columns: int, Optional, default = None
+        n_cat_columns: int, Optional, default = None
             If `fixed_attention` is set to ``True`` the number of categorical
             columns that will be encoded as embeddings must be specified
         ff_hidden_dim: int, default = 128
@@ -343,12 +343,12 @@ class TabTransformer(nn.Module):
         self.add_shared_embed = add_shared_embed
         self.frac_shared_embed = frac_shared_embed
         self.input_dim = input_dim
-        self.num_heads = num_heads
-        self.num_blocks = num_blocks
+        self.n_heads = n_heads
+        self.n_blocks = n_blocks
         self.dropout = dropout
         self.keep_attn_weights = keep_attn_weights
         self.fixed_attention = fixed_attention
-        self.num_cat_columns = num_cat_columns
+        self.n_cat_columns = n_cat_columns
         self.ff_hidden_dim = ff_hidden_dim
         self.transformer_activation = transformer_activation
         self.mlp_hidden_dims = mlp_hidden_dims
@@ -391,23 +391,23 @@ class TabTransformer(nn.Module):
             cont_inp_dim = 0
 
         self.tab_transformer_blks = nn.Sequential()
-        for i in range(num_blocks):
+        for i in range(n_blocks):
             self.tab_transformer_blks.add_module(
                 "block" + str(i),
                 TransformerEncoder(
                     input_dim,
-                    num_heads,
+                    n_heads,
                     keep_attn_weights,
                     ff_hidden_dim,
                     dropout,
                     transformer_activation,
                     fixed_attention,
-                    num_cat_columns,
+                    n_cat_columns,
                 ),
             )
 
         if keep_attn_weights:
-            self.attention_weights = [None] * num_blocks
+            self.attention_weights = [None] * n_blocks
 
         if not mlp_hidden_dims:
             mlp_inp_l = len(embed_input) * input_dim + cont_inp_dim
