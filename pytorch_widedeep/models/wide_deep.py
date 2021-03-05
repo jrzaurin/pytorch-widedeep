@@ -164,10 +164,19 @@ class WideDeep(nn.Module):
 
         if self.deeptabular is not None:
             self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
+        else:
+            self.is_tabnet = False
 
         if self.deephead is None:
             if head_hidden_dims is not None:
-                self._build_deephead()
+                self._build_deephead(
+                    head_hidden_dims,
+                    head_activation,
+                    head_dropout,
+                    head_batchnorm,
+                    head_batchnorm_last,
+                    head_linear_first,
+                )
             else:
                 self._add_pred_layer()
 
@@ -178,7 +187,15 @@ class WideDeep(nn.Module):
         else:
             return self._forward_deep(X, wide_out)
 
-    def _build_deephead(self):
+    def _build_deephead(
+        self,
+        head_hidden_dims,
+        head_activation,
+        head_dropout,
+        head_batchnorm,
+        head_batchnorm_last,
+        head_linear_first,
+    ):
         deep_dim = 0
         if self.deeptabular is not None:
             deep_dim += self.deeptabular.output_dim

@@ -81,8 +81,8 @@ if __name__ == "__main__":
 
     wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
     deep_opt = RAdam(model.deeptabular.parameters())
-    wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=3)
-    deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=5)
+    wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=2)
+    deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)
 
     optimizers = {"wide": wide_opt, "deeptabular": deep_opt}
     schedulers = {"wide": wide_sch, "deeptabular": deep_sch}
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         X_wide=X_wide,
         X_tab=X_tab,
         target=target,
-        n_epochs=4,
+        n_epochs=10,
         batch_size=64,
         val_split=0.2,
     )

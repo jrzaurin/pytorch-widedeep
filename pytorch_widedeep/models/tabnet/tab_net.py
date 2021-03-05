@@ -367,17 +367,17 @@ class EmbeddingsAndContinuous(nn.Module):
             }
         )
         self.embedding_dropout = nn.Dropout(embed_dropout)
-        emb_inp_dim = np.sum([embed[2] for embed in self.embed_input])
+        emb_out_dim = np.sum([embed[2] for embed in self.embed_input])
 
         # Continuous
         if self.continuous_cols is not None:
-            cont_inp_dim = len(self.continuous_cols)
+            cont_out_dim = len(self.continuous_cols)
             if self.batchnorm_cont:
-                self.norm = nn.BatchNorm1d(cont_inp_dim)
+                self.norm = nn.BatchNorm1d(cont_out_dim)
         else:
-            cont_inp_dim = 0
+            cont_out_dim = 0
 
-        self.output_dim = emb_inp_dim + cont_inp_dim
+        self.output_dim = emb_out_dim + cont_out_dim
 
     def forward(self, X):
         embed = [

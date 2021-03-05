@@ -110,7 +110,7 @@ def test_non_instantiated_callbacks():
     model = WideDeep(wide=wide, deeptabular=tabmlp)
     callbacks = [EarlyStopping]
     trainer = Trainer(model, objective="binary", callbacks=callbacks)
-    assert trainer.callbacks[1].__class__.__name__ == "EarlyStopping"
+    assert trainer.callbacks[2].__class__.__name__ == "EarlyStopping"
 
 
 ###############################################################################

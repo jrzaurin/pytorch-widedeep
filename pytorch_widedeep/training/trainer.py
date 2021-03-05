@@ -12,7 +12,7 @@ from pytorch_widedeep.losses import MSLELoss, RMSELoss, FocalLoss, RMSLELoss
 from pytorch_widedeep.models import WideDeep
 from pytorch_widedeep.metrics import Metric, MetricCallback, MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.callbacks import History, Callback, CallbackContainer
+from pytorch_widedeep.callbacks import History, LRShedulerCallback, Callback, CallbackContainer
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.utils.general_utils import Alias
@@ -554,8 +554,6 @@ class Trainer:
                         )
                     else:
                         t.set_postfix(loss=train_loss)
-                    if self.lr_scheduler:
-                        self._lr_scheduler_step(step_location="on_batch_end")
                     self.callback_container.on_batch_end(batch=batch_idx)
             epoch_logs["train_loss"] = train_loss
             if score is not None:
@@ -582,8 +580,6 @@ class Trainer:
                     for k, v in score.items():
                         log_k = "_".join(["val", k])
                         epoch_logs[log_k] = v
-            if self.lr_scheduler:
-                self._lr_scheduler_step(step_location="on_epoch_end")
             self.callback_container.on_epoch_end(epoch, epoch_logs)
             if self.early_stop:
                 self.callback_container.on_train_end(epoch_logs)
@@ -936,46 +932,6 @@ class Trainer:
                     self.model.deepimage, "deepimage", loader, n_epochs, max_lr
                 )
 
-    def _lr_scheduler_step(self, step_location: str):  # noqa: C901
-        r"""
-        Function to execute the learning rate schedulers steps.
-        If the lr_scheduler is Cyclic (i.e. CyclicLR or OneCycleLR), the step
-        must happen after training each bach durig training. On the other
-        hand, if the  scheduler is not Cyclic, is expected to be called after
-        validation. (Consider coding this function as callback)
-
-        Parameters
-        ----------
-        step_location: Str
-            Indicates where to run the lr_scheduler step
-        """
-        if (
-            self.lr_scheduler.__class__.__name__ == "MultipleLRScheduler"
-            and self.cyclic_lr
-        ):
-            if step_location == "on_batch_end":
-                for model_name, scheduler in self.lr_scheduler._schedulers.items():  # type: ignore
-                    if "cycl" in scheduler.__class__.__name__.lower():
-                        scheduler.step()  # type: ignore
-            elif step_location == "on_epoch_end":
-                for scheduler_name, scheduler in self.lr_scheduler._schedulers.items():  # type: ignore
-                    if "cycl" not in scheduler.__class__.__name__.lower():
-                        scheduler.step()  # type: ignore
-        elif self.cyclic_lr:
-            if step_location == "on_batch_end":
-                self.lr_scheduler.step()  # type: ignore
-            else:
-                pass
-        elif self.lr_scheduler.__class__.__name__ == "MultipleLRScheduler":
-            if step_location == "on_epoch_end":
-                self.lr_scheduler.step()  # type: ignore
-            else:
-                pass
-        elif step_location == "on_epoch_end":
-            self.lr_scheduler.step()  # type: ignore
-        else:
-            pass
-
     def _training_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
         self.model.train()
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
@@ -1192,7 +1148,7 @@ class Trainer:
             return None
 
     def _set_callbacks_and_metrics(self, callbacks, metrics):
-        self.callbacks: List = [History()]
+        self.callbacks: List = [History(), LRShedulerCallback()]
         if callbacks is not None:
             for callback in callbacks:
                 if isinstance(callback, type):

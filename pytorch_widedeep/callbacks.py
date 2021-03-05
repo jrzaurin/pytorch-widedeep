@@ -134,6 +134,53 @@ class History(Callback):
             self.trainer.history.setdefault(k, []).append(v)
 
 
+class LRShedulerCallback(Callback):
+    r"""Callback for the learning rate schedulers to take a step
+
+    This callback runs by default within :obj:`Trainer`, therefore, should not
+    be passed to the ``Trainer``. Is included here just for completion.
+    """
+
+    def on_batch_end(self, batch: int, logs: Optional[Dict] = None):
+        if self.trainer.lr_scheduler is not None:
+            if self._multiple_scheduler():
+                for (
+                    model_name,
+                    scheduler,
+                ) in self.trainer.lr_scheduler._schedulers.items():
+                    if self._is_cyclic(model_name):
+                        scheduler.step()
+            elif self.trainer.cyclic_lr:
+                self.trainer.lr_scheduler.step()
+
+    def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
+        if self.trainer.lr_scheduler is not None:
+            if self._multiple_scheduler():
+                for (
+                    model_name,
+                    scheduler,
+                ) in self.trainer.lr_scheduler._schedulers.items():
+                    if not self._is_cyclic(model_name):
+                        scheduler.step()
+            elif not self.trainer.cyclic_lr:
+                self.trainer.lr_scheduler.step()
+
+    def _multiple_scheduler(self):
+        return self.trainer.lr_scheduler.__class__.__name__ == "MultipleLRScheduler"
+
+    def _is_cyclic(self, model_name: str):
+        return (
+            self._has_scheduler(model_name)
+            and "cycl"
+            in self.trainer.lr_scheduler._schedulers[
+                model_name
+            ].__class__.__name__.lower()
+        )
+
+    def _has_scheduler(self, model_name: str):
+        return model_name in self.trainer.lr_scheduler._schedulers
+
+
 class LRHistory(Callback):
     def __init__(self, n_epochs: int):
         r"""Saves the learning rates during training to a ``lr_history`` attribute.
