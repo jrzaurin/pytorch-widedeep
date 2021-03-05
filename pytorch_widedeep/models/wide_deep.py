@@ -5,8 +5,9 @@ import torch.nn as nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import MLP
+from pytorch_widedeep.models.tabnet.tab_net import TabNetPredLayer
 
-warnings.filterwarnings("default", category=DeprecationWarning)
+warnings.filterwarnings("default", category=UserWarning)
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
@@ -161,72 +162,117 @@ class WideDeep(nn.Module):
         self.deepimage = deepimage
         self.deephead = deephead
 
+        if self.deeptabular is not None:
+            self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
+
         if self.deephead is None:
             if head_hidden_dims is not None:
-                deep_dim = 0
-                if self.deeptabular is not None:
-                    deep_dim += self.deeptabular.output_dim  # type:ignore
-                if self.deeptext is not None:
-                    deep_dim += self.deeptext.output_dim  # type:ignore
-                if self.deepimage is not None:
-                    deep_dim += self.deepimage.output_dim  # type:ignore
-                head_hidden_dims = [deep_dim] + head_hidden_dims
-                self.deephead = MLP(
-                    head_hidden_dims,
-                    head_activation,
-                    head_dropout,
-                    head_batchnorm,
-                    head_batchnorm_last,
-                    head_linear_first,
-                )
-                self.deephead.add_module(
-                    "head_out", nn.Linear(head_hidden_dims[-1], pred_dim)
+                self._build_deephead()
+            else:
+                self._add_pred_layer()
+
+    def forward(self, X: Dict[str, Tensor]):
+        wide_out = self._forward_wide(X)
+        if self.deephead:
+            return self._forward_deephead(X, wide_out)
+        else:
+            return self._forward_deep(X, wide_out)
+
+    def _build_deephead(self):
+        deep_dim = 0
+        if self.deeptabular is not None:
+            deep_dim += self.deeptabular.output_dim
+        if self.deeptext is not None:
+            deep_dim += self.deeptext.output_dim
+        if self.deepimage is not None:
+            deep_dim += self.deepimage.output_dim
+
+        head_hidden_dims = [deep_dim] + head_hidden_dims
+        self.deephead = MLP(
+            head_hidden_dims,
+            head_activation,
+            head_dropout,
+            head_batchnorm,
+            head_batchnorm_last,
+            head_linear_first,
+        )
+
+        self.deephead.add_module(
+            "head_out", nn.Linear(head_hidden_dims[-1], self.pred_dim)
+        )
+
+    def _add_pred_layer(self):
+        if self.deeptabular is not None:
+            if self.is_tabnet:
+                self.deeptabular = nn.Sequential(
+                    self.deeptabular,
+                    TabNetPredLayer(self.deeptabular.output_dim, self.pred_dim),
                 )
             else:
-                if self.deeptabular is not None:
-                    self.deeptabular = nn.Sequential(
-                        self.deeptabular, nn.Linear(self.deeptabular.output_dim, pred_dim)  # type: ignore
-                    )
-                if self.deeptext is not None:
-                    self.deeptext = nn.Sequential(
-                        self.deeptext, nn.Linear(self.deeptext.output_dim, pred_dim)  # type: ignore
-                    )
-                if self.deepimage is not None:
-                    self.deepimage = nn.Sequential(
-                        self.deepimage, nn.Linear(self.deepimage.output_dim, pred_dim)  # type: ignore
-                    )
+                self.deeptabular = nn.Sequential(
+                    self.deeptabular,
+                    nn.Linear(self.deeptabular.output_dim, self.pred_dim),
+                )
+        if self.deeptext is not None:
+            self.deeptext = nn.Sequential(
+                self.deeptext, nn.Linear(self.deeptext.output_dim, self.pred_dim)
+            )
+        if self.deepimage is not None:
+            self.deepimage = nn.Sequential(
+                self.deepimage, nn.Linear(self.deepimage.output_dim, self.pred_dim)
+            )
 
-    def forward(self, X: Dict[str, Tensor]) -> Tensor:  # type: ignore  # noqa: C901
-
-        # Wide output: direct connection to the output neuron(s)
+    def _forward_wide(self, X):
         if self.wide is not None:
             out = self.wide(X["wide"])
         else:
             batch_size = X[list(X.keys())[0]].size(0)
             out = torch.zeros(batch_size, self.pred_dim).to(device)
 
-        # Deep output: either connected directly to the output neuron(s) or
-        # passed through a head first
-        if self.deephead:
-            if self.deeptabular is not None:
-                deepside = self.deeptabular(X["deeptabular"])
+        return out
+
+    def _forward_deephead(self, X, wide_out):
+        if self.deeptabular is not None:
+            if self.is_tabnet:
+                tab_out = self.deeptabular(X["deeptabular"])
+                deepside, M_loss = tab_out[0], tab_out[1]
             else:
-                deepside = torch.FloatTensor().to(device)
-            if self.deeptext is not None:
-                deepside = torch.cat([deepside, self.deeptext(X["deeptext"])], axis=1)  # type: ignore
-            if self.deepimage is not None:
-                deepside = torch.cat([deepside, self.deepimage(X["deepimage"])], axis=1)  # type: ignore
-            deephead_out = self.deephead(deepside)
-            deepside_linear = nn.Linear(deephead_out.size(1), self.pred_dim).to(device)
-            return out.add_(deepside_linear(deephead_out))
+                deepside = self.deeptabular(X["deeptabular"])
         else:
-            if self.deeptabular is not None:
-                out.add_(self.deeptabular(X["deeptabular"]))
-            if self.deeptext is not None:
-                out.add_(self.deeptext(X["deeptext"]))
-            if self.deepimage is not None:
-                out.add_(self.deepimage(X["deepimage"]))
-            return out
+            deepside = torch.FloatTensor().to(device)
+        if self.deeptext is not None:
+            deepside = torch.cat([deepside, self.deeptext(X["deeptext"])], axis=1)
+        if self.deepimage is not None:
+            deepside = torch.cat([deepside, self.deepimage(X["deepimage"])], axis=1)
+
+        deephead_out = self.deephead(deepside)
+        deepside_out = nn.Linear(deephead_out.size(1), self.pred_dim).to(device)
+
+        if self.is_tabnet:
+            res = (wide_out.add_(deepside_out(deephead_out)), M_loss)
+        else:
+            res = wide_out.add_(deepside_out(deephead_out))
+
+        return res
+
+    def _forward_deep(self, X, wide_out):
+        if self.deeptabular is not None:
+            if self.is_tabnet:
+                tab_out, M_loss = self.deeptabular(X["deeptabular"])
+                wide_out.add_(tab_out)
+            else:
+                wide_out.add_(self.deeptabular(X["deeptabular"]))
+        if self.deeptext is not None:
+            wide_out.add_(self.deeptext(X["deeptext"]))
+        if self.deepimage is not None:
+            wide_out.add_(self.deepimage(X["deepimage"]))
+
+        if self.is_tabnet:
+            res = (wide_out, M_loss)
+        else:
+            res = wide_out
+
+        return res
 
     @staticmethod  # noqa: C901
     def _check_model_components(
@@ -251,6 +297,21 @@ class WideDeep(nn.Module):
                 "deeptabular model must have an 'output_dim' attribute. "
                 "See pytorch-widedeep.models.deep_dense.DeepText"
             )
+        if deeptabular is not None:
+            is_tabnet = deeptabular.__class__.__name__ == "TabNet"
+            has_wide_text_or_image = (
+                wide is not None or deeptext is not None or deepimage is not None
+            )
+            if is_tabnet and has_wide_text_or_image:
+                warnings.warn(
+                    "'WideDeep' is a model comprised by multiple components and the 'deeptabular'"
+                    " component is 'TabNet'. We recommend using 'TabNet' in isolation."
+                    " This is because 'TabNet' uses sparse regularization which partially losses"
+                    " its purpose when used in combination with other components."
+                    " If you still want to use a multiple component model with 'TabNet',"
+                    " consider setting 'lambda_sparse' to 0 during training",
+                    UserWarning,
+                )
         if deeptext is not None and not hasattr(deeptext, "output_dim"):
             raise AttributeError(
                 "deeptext model must have an 'output_dim' attribute. "

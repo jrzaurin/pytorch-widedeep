@@ -64,9 +64,7 @@ class MultiHeadedAttention(nn.Module):
     ):
         super(MultiHeadedAttention, self).__init__()
 
-        assert (
-            input_dim % n_heads == 0
-        ), "'input_dim' must be divisible by 'n_heads'"
+        assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
         if fixed_attention and not n_cat_columns:
             raise ValueError(
                 "if 'fixed_attention' is 'True' the number of categorical "

@@ -9,13 +9,14 @@ Here I simply adapted what I needed the TabNet to work within pytorch-widedeep
 """
 
 import warnings
+
 import numpy as np
 import torch
 import torch.nn.functional as F
 from torch import nn
-import sparsemax
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.models.tabnet import sparsemax
 
 
 def initialize_non_glu(module, input_dim: int, output_dim: int):
@@ -40,13 +41,11 @@ class GBN(torch.nn.Module):
         self, input_dim: int, virtual_batch_size: int = 128, momentum: float = 0.01
     ):
         super(GBN, self).__init__()
-
-        self.input_dim = input_dim
         self.virtual_batch_size = virtual_batch_size
-        self.bn = nn.BatchNorm1d(self.input_dim, momentum=momentum)
+        self.bn = nn.BatchNorm1d(input_dim, momentum=momentum)
 
-    def forward(self, x):
-        chunks = x.chunk(int(np.ceil(x.shape[0] / self.virtual_batch_size)), 0)
+    def forward(self, X):
+        chunks = X.chunk(int(np.ceil(X.shape[0] / self.virtual_batch_size)), 0)
         res = [self.bn(x_) for x_ in chunks]
         return torch.cat(res, dim=0)
 
@@ -63,7 +62,6 @@ class GLU_Layer(nn.Module):
     ):
         super(GLU_Layer, self).__init__()
 
-        self.output_dim = output_dim
         if fc:
             self.fc = fc
         else:
@@ -77,8 +75,8 @@ class GLU_Layer(nn.Module):
         else:
             self.bn = nn.BatchNorm1d(2 * output_dim, momentum=momentum)
 
-    def forward(self, x):
-        return F.glu(self.bn(self.fc(x)))
+    def forward(self, X):
+        return F.glu(self.bn(self.fc(X)))
 
 
 class GLU_Block(nn.Module):
@@ -95,21 +93,21 @@ class GLU_Block(nn.Module):
     ):
         super(GLU_Block, self).__init__()
         self.first = first
-        self.shared_layers = shared_layers
+
         if (shared_layers is not None) and (n_glu != len(shared_layers)):
             self.n_glu = len(shared_layers)
             warnings.warn(
                 "If 'shared_layers' is nor None, 'n_glu' must be equal to the number of shared_layers."
-                "Got n_glu = {} and n shared_layers = {}. 'n_glu' has be set to {}".format(
+                "Got n_glu = {} and n shared_layers = {}. 'n_glu' has been set to {}".format(
                     n_glu, len(shared_layers), len(shared_layers)
                 ),
                 UserWarning,
             )
         else:
             self.n_glu = n_glu
-        self.glu_layers = nn.ModuleList()
 
         glu_dim = [input_dim] + [output_dim] * self.n_glu
+        self.glu_layers = nn.ModuleList()
         for i in range(self.n_glu):
             fc = shared_layers[i] if shared_layers else None
             self.glu_layers.append(
@@ -123,13 +121,14 @@ class GLU_Block(nn.Module):
                 )
             )
 
-    def forward(self, x):
-        scale = torch.sqrt(torch.FloatTensor([0.5]).to(x.device))
+    def forward(self, X):
+        scale = torch.sqrt(torch.FloatTensor([0.5]).to(X.device))
 
         if self.first:  # the first layer of the block has no scale multiplication
-            x = self.glu_layers[0](x)
+            x = self.glu_layers[0](X)
             layers_left = range(1, self.n_glu)
         else:
+            x = nn.Identity()(X)
             layers_left = range(self.n_glu)
 
         for glu_id in layers_left:
@@ -157,33 +156,21 @@ class FeatTransformer(nn.Module):
             "momentum": momentum,
         }
 
-        if shared_layers is None:
-            self.shared: Union[nn.Identity, GLU_Block] = nn.Identity()
-            is_first = True
-        else:
-            self.shared = GLU_Block(
-                input_dim,
-                output_dim,
-                n_glu=len(shared_layers),
-                first=True,
-                shared_layers=shared_layers,
-                **params
-            )
-            is_first = False
+        self.shared = GLU_Block(
+            input_dim,
+            output_dim,
+            n_glu=len(shared_layers),
+            first=True,
+            shared_layers=shared_layers,
+            **params
+        )
 
-        if n_glu_step_dependent == 0:
-            self.step_dependent: Union[nn.Identity, GLU_Block] = nn.Identity()
-        else:
-            self.step_dependent = GLU_Block(
-                input_dim if is_first else output_dim,
-                output_dim,
-                n_glu=n_glu_step_dependent,
-                first=is_first,
-                **params
-            )
+        self.step_dependent = GLU_Block(
+            output_dim, output_dim, n_glu=n_glu_step_dependent, first=False, **params
+        )
 
-    def forward(self, x):
-        return self.step_dependent(self.shared(x))
+    def forward(self, X):
+        return self.step_dependent(self.shared(X))
 
 
 class AttentiveTransformer(nn.Module):
@@ -239,19 +226,15 @@ class TabNetEncoder(nn.Module):
         mask_type="sparsemax",
     ):
         super(TabNetEncoder, self).__init__()
+
         self.input_dim = input_dim
         self.step_dim = step_dim
         self.attn_dim = attn_dim
         self.n_steps = n_steps
-        self.n_glu_step_dependent = n_glu_step_dependent
-        self.n_glu_shared = n_glu_shared
-        self.ghost_bn = ghost_bn
-        self.virtual_batch_size = virtual_batch_size
-        self.momentum = momentum
         self.gamma = gamma
         self.epsilon = epsilon
-        self.mask_type = mask_type
-        self.initial_bn = BatchNorm1d(self.input_dim, momentum=0.01)
+
+        self.initial_bn = nn.BatchNorm1d(input_dim, momentum=0.01)
 
         params = {
             "ghost_bn": ghost_bn,
@@ -259,51 +242,48 @@ class TabNetEncoder(nn.Module):
             "momentum": momentum,
         }
 
-        if self.n_glu_shared > 0:
-            shared_layers_dims = [self.input_dim] + [
-                2 * (step_dim + attn_dim)
-            ] * self.n_glu_shared
-            shared_layers = nn.ModuleList()
-            for i in range(self.n_glu_shared):
+        shared_layers = torch.nn.ModuleList()
+        for i in range(n_glu_shared):
+            if i == 0:
+                shared_layers.append(
+                    nn.Linear(input_dim, 2 * (step_dim + attn_dim), bias=False)
+                )
+            else:
                 shared_layers.append(
                     nn.Linear(
-                        shared_layers_dims[i], shared_layers_dims[i + 1], bias=False
+                        step_dim + attn_dim, 2 * (step_dim + attn_dim), bias=False
                     )
                 )
-        else:
-            shared_layers = None
 
         self.initial_splitter = FeatTransformer(
-            self.input_dim,
+            input_dim,
             step_dim + attn_dim,
             shared_layers,
-            n_glu_step_dependent=self.n_glu_step_dependent,
+            n_glu_step_dependent,
             **params
         )
 
         self.feat_transformers = nn.ModuleList()
         self.attn_transformers = nn.ModuleList()
-
         for step in range(n_steps):
             feat_transformer = FeatTransformer(
-                self.input_dim,
+                input_dim,
                 step_dim + attn_dim,
                 shared_layers,
-                n_glu_step_dependent=self.n_glu_step_dependent,
+                n_glu_step_dependent,
                 **params
             )
             attn_transformer = AttentiveTransformer(
-                attn_dim, self.input_dim, mask_type=self.mask_type, **params
+                attn_dim, input_dim, mask_type, **params
             )
             self.feat_transformers.append(feat_transformer)
             self.attn_transformers.append(attn_transformer)
 
-    def forward(self, x, prior=None):
-        x = self.initial_bn(x)
+    def forward(self, X):
+        x = self.initial_bn(X)
 
-        if prior is None:
-            # P[0] is initialized as all ones, 1^(B×D)
-            prior = torch.ones(x.shape).to(x.device)
+        # P[n_step = 0] is initialized as all ones, 1^(B×D)
+        prior = torch.ones(x.shape).to(x.device)
 
         # sparsity regularization
         M_loss = 0
@@ -317,13 +297,13 @@ class TabNetEncoder(nn.Module):
             # where hi = FC + BN
             M = self.attn_transformers[step](prior, attn)
 
+            # update prior: P[i] = \prod_{i}^{j=1} (γ − M[j])
+            prior = torch.mul(self.gamma - M, prior)
+
             # sparsity regularization
             M_loss += torch.mean(
                 torch.sum(torch.mul(M, torch.log(M + self.epsilon)), dim=1)
             )
-
-            # update prior: P[i] = \prod_{i}^{j=1} (γ − M[j])
-            prior = torch.mul(self.gamma - M, prior)
 
             # update attention and d_out
             masked_x = torch.mul(M, x)
@@ -336,8 +316,8 @@ class TabNetEncoder(nn.Module):
 
         return steps_output, M_loss
 
-    def forward_masks(self, x):
-        x = self.initial_bn(x)
+    def forward_masks(self, X):
+        x = self.initial_bn(X)
 
         prior = torch.ones(x.shape).to(x.device)
         M_explain = torch.zeros(x.shape).to(x.device)
@@ -353,7 +333,7 @@ class TabNetEncoder(nn.Module):
             masked_x = torch.mul(M, x)
             out = self.feat_transformers[step](masked_x)
             attn = out[:, self.step_dim :]
-            # decision contribution
+            # 'decision contribution' in the paper
             d_out = ReLU()(out[:, : self.step_dim])
 
             # aggregate decision contribution
@@ -363,7 +343,7 @@ class TabNetEncoder(nn.Module):
         return M_explain, masks
 
 
-class EmbeddingsAndContinuous(object):
+class EmbeddingsAndContinuous(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
@@ -399,7 +379,7 @@ class EmbeddingsAndContinuous(object):
 
         self.output_dim = emb_inp_dim + cont_inp_dim
 
-    def forward(self, x):
+    def forward(self, X):
         embed = [
             self.embed_layers["emb_layer_" + col](X[:, self.column_idx[col]].long())
             for col, _, _ in self.embed_input
@@ -437,10 +417,22 @@ class TabNet(nn.Module):
     ):
         super(TabNet, self).__init__()
 
-        if self.n_glu_step_dependent == 0 and self.n_glu_shared == 0:
-            raise ValueError(
-                "'n_glu_shared' and 'n_glu_step_dependent' can't be both zero."
-            )
+        self.column_idx = column_idx
+        self.embed_input = embed_input
+        self.embed_dropout = embed_dropout
+        self.continuous_cols = continuous_cols
+        self.batchnorm_cont = batchnorm_cont
+        self.step_dim = step_dim
+        self.attn_dim = attn_dim
+        self.n_steps = n_steps
+        self.n_glu_step_dependent = n_glu_step_dependent
+        self.n_glu_shared = n_glu_shared
+        self.ghost_bn = ghost_bn
+        self.virtual_batch_size = virtual_batch_size
+        self.momentum = momentum
+        self.gamma = gamma
+        self.epsilon = epsilon
+        self.mask_type = mask_type
 
         self.embed_and_cont = EmbeddingsAndContinuous(
             column_idx, embed_input, embed_dropout, continuous_cols, batchnorm_cont
@@ -461,12 +453,23 @@ class TabNet(nn.Module):
         )
         self.output_dim = step_dim
 
-    def forward(self, x):
-        self.embed_and_cont(x)
+    def forward(self, X):
+        x = self.embed_and_cont(X)
         steps_output, M_loss = self.tabnet_encoder(x)
         res = torch.sum(torch.stack(steps_output, dim=0), dim=0)
         return (res, M_loss)
 
-    def forward_masks(self, x):
-        self.embed_and_cont(x)
+    def forward_masks(self, X):
+        x = self.embed_and_cont(X)
         return self.tabnet_encoder.forward_masks(x)
+
+
+class TabNetPredLayer(nn.Module):
+    def __init__(self, inp, out):
+        super(TabNetPredLayer, self).__init__()
+        self.pred_layer = nn.Linear(inp, out, bias=False)
+        initialize_non_glu(self.pred_layer, inp, out)
+
+    def forward(self, tabnet_tuple):
+        res, M_loss = tabnet_tuple[0], tabnet_tuple[1]
+        return self.pred_layer(res), M_loss

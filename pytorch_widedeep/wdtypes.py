@@ -49,6 +49,8 @@ from torchvision.transforms import (
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.utils.data.dataloader import DataLoader
 
+from pytorch_widedeep.models.tabnet.sparsemax import Entmax15, Sparsemax
+
 ListRules = Collection[Callable[[str], str]]
 Tokens = Collection[Collection[str]]
 Transforms = Union[
@@ -80,5 +82,3 @@ Transforms = Union[
 ]
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
-
-from pytorch_widedeep.models.tabnet.sparsemax import Sparsemax, Entmax15

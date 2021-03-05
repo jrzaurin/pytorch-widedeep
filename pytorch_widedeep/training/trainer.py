@@ -53,6 +53,7 @@ class Trainer:
         class_weight: Optional[Union[float, List[float], Tuple[float]]] = None,
         alpha: float = 0.25,
         gamma: float = 2,
+        lambda_sparse: float = 1e-3,
         verbose: int = 1,
         seed: int = 1,
     ):
@@ -224,12 +225,13 @@ class Trainer:
         ... lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
         """
 
-        if isinstance(optimizers, Dict) and not isinstance(lr_schedulers, Dict):
-            raise ValueError(
-                "''optimizers' and 'lr_schedulers' must have consistent type: "
-                "(Optimizer and LRScheduler) or (Dict[str, Optimizer] and Dict[str, LRScheduler]) "
-                "Please, read the documentation or see the examples for more details"
-            )
+        if isinstance(optimizers, Dict):
+            if lr_schedulers is not None and not isinstance(lr_schedulers, Dict):
+                raise ValueError(
+                    "''optimizers' and 'lr_schedulers' must have consistent type: "
+                    "(Optimizer and LRScheduler) or (Dict[str, Optimizer] and Dict[str, LRScheduler]) "
+                    "Please, read the documentation or see the examples for more details"
+                )
 
         if custom_loss_function is not None and objective not in [
             "binary",
@@ -245,6 +247,10 @@ class Trainer:
             self.model = torch.load(model)
         else:
             self.model = model
+
+        if self.model.is_tabnet:
+            self.lambda_sparse = lambda_sparse
+
         self.verbose = verbose
         self.seed = seed
         self.early_stop = False
@@ -978,14 +984,19 @@ class Trainer:
 
         self.optimizer.zero_grad()
         y_pred = self.model(X)
-        loss = self.loss_fn(y_pred, y)
+        if self.model.is_tabnet:
+            loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
+            score = self._get_score(y_pred[0], y)
+        else:
+            loss = self.loss_fn(y_pred, y)
+            score = self._get_score(y_pred, y)
         loss.backward()
         self.optimizer.step()
 
         self.train_running_loss += loss.item()
         avg_loss = self.train_running_loss / (batch_idx + 1)
 
-        return self._get_score(y_pred, y), avg_loss
+        return score, avg_loss
 
     def _validation_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
 
@@ -996,11 +1007,17 @@ class Trainer:
             y = y.to(device)
 
             y_pred = self.model(X)
-            loss = self.loss_fn(y_pred, y)
+            if self.model.is_tabnet:
+                loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
+                score = self._get_score(y_pred[0], y)
+            else:
+                score = self._get_score(y_pred, y)
+                loss = self.loss_fn(y_pred, y)
+
             self.valid_running_loss += loss.item()
             avg_loss = self.valid_running_loss / (batch_idx + 1)
 
-        return self._get_score(y_pred, y), avg_loss
+        return score, avg_loss
 
     def _get_score(self, y_pred, y):
         if self.metric is not None:
@@ -1055,7 +1072,9 @@ class Trainer:
                 for i, data in zip(t, test_loader):
                     t.set_description("predict")
                     X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
-                    preds = self.model(X)
+                    preds = (
+                        self.model(X) if not self.model.is_tabnet else self.model(X)[0]
+                    )
                     if self.method == "binary":
                         preds = torch.sigmoid(preds)
                     if self.method == "multiclass":
