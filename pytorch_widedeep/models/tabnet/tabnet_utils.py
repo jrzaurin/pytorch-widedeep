@@ -1,11 +1,39 @@
 import numpy as np
-import scipy
+from scipy.sparse import csc_matrix
 
 from pytorch_widedeep.wdtypes import WideDeep
 
 
-def create_explain_matrix(model: WideDeep):
+def create_explain_matrix(model: WideDeep) -> csc_matrix:
+    """
+    Returns a sparse matrix used to compute the feature importances after
+    training
 
+    Parameters
+    ----------
+    model: WideDeep
+        object of type ``WideDeep``
+
+    Examples
+    --------
+    >>> from pytorch_widedeep.models import TabNet, WideDeep
+    >>> from pytorch_widedeep.models.tabnet.tabnet_utils import create_explain_matrix
+    >>> embed_input = [("a", 4, 2), ("b", 4, 2), ("c", 4, 2)]
+    >>> cont_cols = ["d", "e"]
+    >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c", "d", "e"])}
+    >>> deeptabular = TabNet(column_idx=column_idx, embed_input=embed_input, continuous_cols=cont_cols)
+    >>> model = WideDeep(deeptabular=deeptabular)
+    >>> reduce_mtx = create_explain_matrix(model)
+    >>> reduce_mtx.todense()
+    matrix([[1., 0., 0., 0., 0.],
+            [1., 0., 0., 0., 0.],
+            [0., 1., 0., 0., 0.],
+            [0., 1., 0., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 1., 0., 0.],
+            [0., 0., 0., 1., 0.],
+            [0., 0., 0., 0., 1.]])
+    """
     (
         embed_input,
         column_idx,
@@ -35,7 +63,7 @@ def create_explain_matrix(model: WideDeep):
     for i, cols in enumerate(indices_trick):
         reducing_matrix[cols, i] = 1
 
-    return scipy.sparse.csc_matrix(reducing_matrix)
+    return csc_matrix(reducing_matrix)
 
 
 def _extract_tabnet_params(model: WideDeep):

@@ -97,7 +97,7 @@ def set_default_attr(obj: Any, name: str, value: Any):
 
 def print_loss_and_metric(pb: tqdm, loss: float, score: Dict):
     """
-    Little function to improve readability and avoid code repetition in the
+    Function to improve readability and avoid code repetition in the
     training/validation loop within the Trainer's fit method
 
     Parameters
@@ -121,7 +121,7 @@ def print_loss_and_metric(pb: tqdm, loss: float, score: Dict):
 
 def save_epoch_logs(epoch_logs: Dict, loss: float, score: Dict, stage: str):
     """
-    Little function to improve readability and avoid code repetition in the
+    Function to improve readability and avoid code repetition in the
     training/validation loop within the Trainer's fit method
 
     Parameters

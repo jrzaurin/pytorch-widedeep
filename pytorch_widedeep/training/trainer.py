@@ -61,10 +61,9 @@ class Trainer:
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[List[Metric]] = None,
         class_weight: Optional[Union[float, List[float], Tuple[float]]] = None,
+        lambda_sparse: float = 1e-3,
         alpha: float = 0.25,
         gamma: float = 2,
-        lambda_sparse: float = 1e-3,
-        compute_feature_importance: bool = True,
         verbose: int = 1,
         seed: int = 1,
     ):
@@ -171,6 +170,8 @@ class Trainer:
               using reduction='none', you would have to take care of the
               normalization yourself. See `this discussion
               <https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10>`_.
+        lambda_sparse: float. default=1e-3
+            Tabnet sparse regularization factor
         alpha: float. default=0.25
             if ``objective`` is ``binary_focal_loss`` or
             ``multiclass_focal_loss``, the Focal Loss alpha and gamma
@@ -190,7 +191,7 @@ class Trainer:
             ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
 
 
-        Example
+        Examples
         --------
         >>> import torch
         >>> from torchvision.transforms import ToTensor
@@ -260,10 +261,8 @@ class Trainer:
             self.model = model
 
         #  Tabnet related set ups
-        self.compute_feature_importance = compute_feature_importance
         if self.model.is_tabnet:
             self.lambda_sparse = lambda_sparse
-        if self.model.is_tabnet and self.compute_feature_importance:
             self.reducing_matrix = create_explain_matrix(model)
 
         self.verbose = verbose
@@ -584,7 +583,7 @@ class Trainer:
                 break
 
         self.callback_container.on_train_end(epoch_logs)
-        if self.compute_feature_importance and self.model.is_tabnet:
+        if self.model.is_tabnet:
             self._compute_feature_importance(train_loader)
         self.model.train()
 

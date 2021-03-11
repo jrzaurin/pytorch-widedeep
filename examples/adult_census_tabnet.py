@@ -84,7 +84,6 @@ if __name__ == "__main__":
         optimizers=optimizers,
         callbacks=callbacks,
         metrics=metrics,
-        compute_feature_importance=False,
     )
 
     trainer.fit(
