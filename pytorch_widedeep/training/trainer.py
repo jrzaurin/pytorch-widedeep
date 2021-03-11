@@ -5,18 +5,28 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import trange
+from scipy.sparse import csc_matrix
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.losses import MSLELoss, RMSELoss, FocalLoss, RMSLELoss
-from pytorch_widedeep.models import WideDeep
 from pytorch_widedeep.metrics import Metric, MetricCallback, MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.callbacks import History, LRShedulerCallback, Callback, CallbackContainer
+from pytorch_widedeep.callbacks import (
+    History,
+    Callback,
+    CallbackContainer,
+    LRShedulerCallback,
+)
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
 from pytorch_widedeep.training._finetune import FineTune
-from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
+from pytorch_widedeep.training.trainer_utils import (
+    Alias,
+    save_epoch_logs,
+    print_loss_and_metric,
+)
+from pytorch_widedeep.models.tabnet.tabnet_utils import create_explain_matrix
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
 from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
 from pytorch_widedeep.training._loss_and_obj_aliases import (
@@ -54,6 +64,7 @@ class Trainer:
         alpha: float = 0.25,
         gamma: float = 2,
         lambda_sparse: float = 1e-3,
+        compute_feature_importance: bool = True,
         verbose: int = 1,
         seed: int = 1,
     ):
@@ -248,8 +259,12 @@ class Trainer:
         else:
             self.model = model
 
+        #  Tabnet related set ups
+        self.compute_feature_importance = compute_feature_importance
         if self.model.is_tabnet:
             self.lambda_sparse = lambda_sparse
+        if self.model.is_tabnet and self.compute_feature_importance:
+            self.reducing_matrix = create_explain_matrix(model)
 
         self.verbose = verbose
         self.seed = seed
@@ -268,19 +283,19 @@ class Trainer:
 
         self.model.to(device)
 
-    @Alias("finetune", ["warmup"])  # noqa: C901
-    @Alias("finetune_epochs", ["warmup_epochs"])
-    @Alias("finetune_max_lr", ["warmup_max_lr"])
-    @Alias("finetune_deeptabular_gradual", ["warmup_deeptabular_gradual"])
-    @Alias("finetune_deeptabular_max_lr", ["warmup_deeptabular_max_lr"])
-    @Alias("finetune_deeptabular_layers", ["warmup_deeptabular_layers"])
-    @Alias("finetune_deeptext_gradual", ["warmup_deeptext_gradual"])
-    @Alias("finetune_deeptext_max_lr", ["warmup_deeptext_max_lr"])
-    @Alias("finetune_deeptext_layers", ["warmup_deeptext_layers"])
-    @Alias("finetune_deepimage_gradual", ["warmup_deepimage_gradual"])
-    @Alias("finetune_deepimage_max_lr", ["warmup_deepimage_max_lr"])
-    @Alias("finetune_deepimage_layers", ["warmup_deepimage_layers"])
-    @Alias("finetune_routine", ["warmup_routine"])
+    @Alias("finetune", "warmup")  # noqa: C901
+    @Alias("finetune_epochs", "warmup_epochs")
+    @Alias("finetune_max_lr", "warmup_max_lr")
+    @Alias("finetune_deeptabular_gradual", "warmup_deeptabular_gradual")
+    @Alias("finetune_deeptabular_max_lr", "warmup_deeptabular_max_lr")
+    @Alias("finetune_deeptabular_layers", "warmup_deeptabular_layers")
+    @Alias("finetune_deeptext_gradual", "warmup_deeptext_gradual")
+    @Alias("finetune_deeptext_max_lr", "warmup_deeptext_max_lr")
+    @Alias("finetune_deeptext_layers", "warmup_deeptext_layers")
+    @Alias("finetune_deepimage_gradual", "warmup_deepimage_gradual")
+    @Alias("finetune_deepimage_max_lr", "warmup_deepimage_max_lr")
+    @Alias("finetune_deepimage_layers", "warmup_deepimage_layers")
+    @Alias("finetune_routine", "warmup_routine")
     def fit(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
@@ -542,24 +557,16 @@ class Trainer:
         for epoch in range(n_epochs):
             epoch_logs: Dict[str, float] = {}
             self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
+
             self.train_running_loss = 0.0
             with trange(train_steps, disable=self.verbose != 1) as t:
                 for batch_idx, (data, targett) in zip(t, train_loader):
                     t.set_description("epoch %i" % (epoch + 1))
-                    score, train_loss = self._training_step(data, targett, batch_idx)
-                    if score is not None:
-                        t.set_postfix(
-                            metrics={k: np.round(v, 4) for k, v in score.items()},
-                            loss=train_loss,
-                        )
-                    else:
-                        t.set_postfix(loss=train_loss)
+                    score, train_loss = self._train_step(data, targett, batch_idx)
+                    print_loss_and_metric(t, train_loss, score)
                     self.callback_container.on_batch_end(batch=batch_idx)
-            epoch_logs["train_loss"] = train_loss
-            if score is not None:
-                for k, v in score.items():
-                    log_k = "_".join(["train", k])
-                    epoch_logs[log_k] = v
+            epoch_logs = save_epoch_logs(epoch_logs, train_loss, score, "train")
+
             if eval_set is not None and epoch % validation_freq == (
                 validation_freq - 1
             ):
@@ -568,23 +575,17 @@ class Trainer:
                     for i, (data, targett) in zip(v, eval_loader):
                         v.set_description("valid")
                         score, val_loss = self._validation_step(data, targett, i)
-                        if score is not None:
-                            v.set_postfix(
-                                metrics={k: np.round(v, 4) for k, v in score.items()},
-                                loss=val_loss,
-                            )
-                        else:
-                            v.set_postfix(loss=val_loss)
-                epoch_logs["val_loss"] = val_loss
-                if score is not None:
-                    for k, v in score.items():
-                        log_k = "_".join(["val", k])
-                        epoch_logs[log_k] = v
+                        print_loss_and_metric(v, val_loss, score)
+                epoch_logs = save_epoch_logs(epoch_logs, val_loss, score, "val")
+
             self.callback_container.on_epoch_end(epoch, epoch_logs)
             if self.early_stop:
                 self.callback_container.on_train_end(epoch_logs)
                 break
+
         self.callback_container.on_train_end(epoch_logs)
+        if self.compute_feature_importance and self.model.is_tabnet:
+            self._compute_feature_importance(train_loader)
         self.model.train()
 
     def predict(  # type: ignore[return]
@@ -726,6 +727,65 @@ class Trainer:
         for idx, value in inv_encoding_dict.items():
             cat_embed_dict[value] = embed_mtx[idx]
         return cat_embed_dict
+
+    def explain(self, X_tab: np.ndarray, save_step_masks: bool = False):
+        """
+        Returns the aggregated feature importance for each instance (or
+        observation) in the ``X_tab`` array. If ``save_step_masks`` is set to
+        ``True``, the masks per step will also be returned.
+
+        Parameters
+        ----------
+        X_tab: np.ndarray
+            Input array corresponding **only** to the deeptabular component
+        save_step_masks: bool
+            Boolean indicating if the masks per step will be returned
+
+        Returns
+        -------
+        res: np.ndarray, Tuple
+            Array or Tuple of two arrays with the corresponding aggregated
+            feature importance and the masks per step if ``save_step_masks``
+            is set to ``True``
+        """
+        loader = DataLoader(
+            dataset=WideDeepDataset(**{"X_tab": X_tab}),
+            batch_size=self.batch_size,
+            num_workers=n_cpus,
+            shuffle=False,
+        )
+
+        self.model.eval()
+        tabnet_backbone = list(self.model.deeptabular.children())[0]
+
+        m_explain_l = []
+        for batch_nb, data in enumerate(loader):
+            X = data["deeptabular"].to(device)
+            M_explain, masks = tabnet_backbone.forward_masks(X)
+            m_explain_l.append(
+                csc_matrix.dot(M_explain.cpu().detach().numpy(), self.reducing_matrix)
+            )
+            if save_step_masks:
+                for key, value in masks.items():
+                    masks[key] = csc_matrix.dot(
+                        value.cpu().detach().numpy(), self.reducing_matrix
+                    )
+                if batch_nb == 0:
+                    m_explain_step = masks
+                else:
+                    for key, value in masks.items():
+                        m_explain_step[key] = np.vstack([m_explain_step[key], value])
+
+        m_explain_agg = np.vstack(m_explain_l)
+        m_explain_agg_norm = m_explain_agg / m_explain_agg.sum(axis=1)[:, np.newaxis]
+
+        res = (
+            (m_explain_agg_norm, m_explain_step)
+            if save_step_masks
+            else np.vstack(m_explain_agg_norm)
+        )
+
+        return res
 
     def save_model(self, path: str):
         """Saves the model to disk
@@ -932,7 +992,7 @@ class Trainer:
                     self.model.deepimage, "deepimage", loader, n_epochs, max_lr
                 )
 
-    def _training_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
+    def _train_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
         self.model.train()
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
         y = target.view(-1, 1).float() if self.method != "multiclass" else target
@@ -986,6 +1046,24 @@ class Trainer:
             return score
         else:
             return None
+
+    def _compute_feature_importance(self, loader: DataLoader):
+        self.model.eval()
+        tabnet_backbone = list(self.model.deeptabular.children())[0]
+        feat_imp = np.zeros((tabnet_backbone.embed_and_cont_dim))
+        for data, target in loader:
+            X = data["deeptabular"].to(device)
+            y = target.view(-1, 1).float() if self.method != "multiclass" else target
+            y = y.to(device)
+            M_explain, masks = tabnet_backbone.forward_masks(X)
+            feat_imp += M_explain.sum(dim=0).cpu().detach().numpy()
+
+        feat_imp = csc_matrix.dot(feat_imp, self.reducing_matrix)
+        feat_imp = feat_imp / np.sum(feat_imp)
+
+        self.feature_importance = {
+            k: v for k, v in zip(tabnet_backbone.column_idx.keys(), feat_imp)
+        }
 
     def _predict(
         self,

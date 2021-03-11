@@ -1,13 +1,18 @@
 """
-Code here taken from the one and only Hunter McGushion and his fantastic
-library: https://github.com/HunterMcGushion/hyperparameter_hunter
+Code for 'Alias' and 'set_default_attr' taken from the one and only Hunter
+McGushion and his library:
+https://github.com/HunterMcGushion/hyperparameter_hunter
 """
 
+import numpy as np
 import wrapt
+from tqdm import tqdm
+
+from pytorch_widedeep.wdtypes import Any, Dict, List, Union
 
 
 class Alias:
-    def __init__(self, primary_name, aliases):
+    def __init__(self, primary_name: str, aliases: Union[str, List[str]]):
         """Convert uses of `aliases` to `primary_name` upon calling the decorated function/method
 
         Parameters
@@ -56,7 +61,7 @@ class Alias:
         return wrapped(*args, **kwargs)
 
 
-def set_default_attr(obj, name, value):
+def set_default_attr(obj: Any, name: str, value: Any):
     """Set the `name` attribute of `obj` to `value` if the attribute does not already exist
 
     Parameters
@@ -88,3 +93,52 @@ def set_default_attr(obj, name, value):
     except AttributeError:
         setattr(obj, name, value)
     return value
+
+
+def print_loss_and_metric(pb: tqdm, loss: float, score: Dict):
+    """
+    Little function to improve readability and avoid code repetition in the
+    training/validation loop within the Trainer's fit method
+
+    Parameters
+    ----------
+    pb: tqdm
+        tqdm Object defined as trange(...)
+    loss: float
+        loss value
+    score: Dict
+        Dictionary where the keys are the metric names and the values are the
+        corresponding values
+    """
+    if score is not None:
+        pb.set_postfix(
+            metrics={k: np.round(v, 4) for k, v in score.items()},
+            loss=loss,
+        )
+    else:
+        pb.set_postfix(loss=loss)
+
+
+def save_epoch_logs(epoch_logs: Dict, loss: float, score: Dict, stage: str):
+    """
+    Little function to improve readability and avoid code repetition in the
+    training/validation loop within the Trainer's fit method
+
+    Parameters
+    ----------
+    epoch_logs: Dict
+        Dict containing the epoch logs
+    loss: float
+        loss value
+    score: Dict
+        Dictionary where the keys are the metric names and the values are the
+        corresponding values
+    stage: str
+        one of 'train' or 'val'
+    """
+    epoch_logs["_".join([stage, "loss"])] = loss
+    if score is not None:
+        for k, v in score.items():
+            log_k = "_".join([stage, k])
+            epoch_logs[log_k] = v
+    return epoch_logs

@@ -334,7 +334,7 @@ class TabNetEncoder(nn.Module):
             out = self.feat_transformers[step](masked_x)
             attn = out[:, self.step_dim :]
             # 'decision contribution' in the paper
-            d_out = ReLU()(out[:, : self.step_dim])
+            d_out = nn.ReLU()(out[:, : self.step_dim])
 
             # aggregate decision contribution
             agg_decision_contrib = torch.sum(d_out, dim=1)
@@ -437,6 +437,7 @@ class TabNet(nn.Module):
         self.embed_and_cont = EmbeddingsAndContinuous(
             column_idx, embed_input, embed_dropout, continuous_cols, batchnorm_cont
         )
+        self.embed_and_cont_dim = self.embed_and_cont.output_dim
         self.tabnet_encoder = TabNetEncoder(
             self.embed_and_cont.output_dim,
             step_dim,
