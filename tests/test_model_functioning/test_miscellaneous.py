@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from pytorch_widedeep.models import (
     Wide,
     TabMlp,
+    TabNet,
     DeepText,
     WideDeep,
     DeepImage,
@@ -77,6 +78,12 @@ tabtransformer = TabTransformer(
     column_idx={k: v for v, k in enumerate(colnames)},
     embed_input=embed_input_tt,
     continuous_cols=colnames[5:],
+)
+tabnet = TabNet(
+    column_idx={k: v for v, k in enumerate(colnames)},
+    embed_input=embed_input,
+    continuous_cols=colnames[5:],
+    ghost_bn=False,
 )
 deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
 deepimage = DeepImage(pretrained=True)
@@ -268,3 +275,31 @@ def test_save_and_load_dict():
     shutil.rmtree("tests/test_model_functioning/model_dir/")
 
     assert torch.allclose(wide_weights, n_wide_weights)
+
+
+###############################################################################
+#  test explain matrices and feature importance for TabNet
+###############################################################################
+
+
+def test_explain_mtx_and_feat_imp():
+    model = WideDeep(deeptabular=tabnet)
+    trainer = Trainer(model, objective="binary", verbose=0)
+    trainer.fit(
+        X_tab=X_tab,
+        target=target,
+        batch_size=16,
+    )
+
+    checks = []
+    checks.append(len(trainer.feature_importance) == len(tabnet.column_idx))
+
+    expl_mtx, step_masks = trainer.explain(X_tab[:6], save_step_masks=True)
+    checks.append(expl_mtx.shape[0] == 6)
+    checks.append(expl_mtx.shape[1] == 10)
+
+    for i in range(tabnet.n_steps):
+        checks.append(step_masks[i].shape[0] == 6)
+        checks.append(step_masks[i].shape[1] == 10)
+
+    assert all(checks)

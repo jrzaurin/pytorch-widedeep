@@ -5,6 +5,7 @@ from sklearn.exceptions import NotFittedError
 
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
+from pytorch_widedeep.preprocessing.tab_preprocessor import embed_sz_rule
 
 
 def create_test_dataset(input_type, input_type_2=None):
@@ -225,3 +226,27 @@ def test_notfittederror():
     )
     with pytest.raises(NotFittedError):
         processor.transform(df)
+
+
+###############################################################################
+# Test embeddings fastai's rule of thumb
+###############################################################################
+
+
+def test_embed_sz_rule_of_thumb():
+
+    embed_cols = ["col1", "col2"]
+    df = pd.DataFrame(
+        {
+            "col1": np.random.randint(10, size=100),
+            "col2": np.random.randint(20, size=100),
+        }
+    )
+    n_cats = {c: df[c].nunique() for c in ["col1", "col2"]}
+    embed_szs = {c: embed_sz_rule(nc) for c, nc in n_cats.items()}
+    tab_preprocessor = TabPreprocessor(embed_cols=embed_cols)
+    tdf = tab_preprocessor.fit_transform(df)  # noqa: F841
+    out = [
+        tab_preprocessor.embed_dim[col] == embed_szs[col] for col in embed_szs.keys()
+    ]
+    assert all(out)

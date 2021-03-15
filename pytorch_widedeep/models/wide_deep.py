@@ -30,7 +30,8 @@ class WideDeep(nn.Module):
         pred_dim: int = 1,
     ):
         r"""Main collector class that combines all ``wide``, ``deeptabular``
-        (which can be a number of architectures), ``deeptext`` and ``deepimage`` models.
+        (which can be a number of architectures), ``deeptext`` and
+        ``deepimage`` models.
 
         There are two options to combine these models that correspond to the
         two main architectures (there is a higher number of
@@ -51,9 +52,9 @@ class WideDeep(nn.Module):
             :class:`pytorch_widedeep.models.wide.Wide`
         deeptabular: ``nn.Module``, Optional, default = None
 
-            currently ``pytorch-widedeep`` implements three possible
+            currently ``pytorch-widedeep`` implements four possible
             architectures for the `deeptabular` component. These are:
-            ``TabMlp``, ``TabResnet`` and ``TabTransformer``.
+            ``TabMlp``, ``TabResnet``, ``TabNet`` and ``TabTransformer``.
 
             1. ``TabMlp`` is simply an embedding layer encoding the categorical
             features that are then concatenated and passed through a series of
@@ -65,14 +66,18 @@ class WideDeep(nn.Module):
             ResNet blocks formed by dense layers.
             See ``pytorch_widedeep.models.deep_dense_resnet.TabResnet``
 
+            3. ``TabNet`` is detailed in `TabNet: Attentive Interpretable Tabular
+            Learning <https://arxiv.org/abs/1908.07442>`_. See
+            ``pytorch_widedeep.models.tabnet.tab_net.TabNet``
+
             3. ``TabTransformer`` is detailed in `TabTransformer: Tabular Data
             Modeling Using Contextual Embeddings
-            <https://arxiv.org/pdf/2012.06678.pdf>`_. See
+            <https://arxiv.org/abs/2012.06678>`_. See
             ``pytorch_widedeep.models.tab_transformer.TabTransformer``
 
-            I recommend using on of these as ``deeptabular``. However, a
-            custom model as long as is  consistent with the required
-            architecture. See
+            I recommend using on of these as ``deeptabular``. However, it is
+            possible to use a custom model as long as is  consistent with the
+            required architecture. See
             :class:`pytorch_widedeep.models.deep_dense.TabTransformer`.
 
         deeptext: ``nn.Module``, Optional, default = None
@@ -323,10 +328,12 @@ class WideDeep(nn.Module):
                 warnings.warn(
                     "'WideDeep' is a model comprised by multiple components and the 'deeptabular'"
                     " component is 'TabNet'. We recommend using 'TabNet' in isolation."
-                    " This is because 'TabNet' uses sparse regularization which partially losses"
+                    " The reasons are: i)'TabNet' uses sparse regularization which partially losses"
                     " its purpose when used in combination with other components."
                     " If you still want to use a multiple component model with 'TabNet',"
-                    " consider setting 'lambda_sparse' to 0 during training",
+                    " consider setting 'lambda_sparse' to 0 during training. ii) The feature"
+                    " importances will be computed only for TabNet but the model will comprise multiple"
+                    " components. Therefore, such importances will partially lose their 'meaning'.",
                     UserWarning,
                 )
         if deeptext is not None and not hasattr(deeptext, "output_dim"):
