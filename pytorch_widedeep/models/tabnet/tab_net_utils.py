@@ -17,7 +17,7 @@ def create_explain_matrix(model: WideDeep) -> csc_matrix:
     Examples
     --------
     >>> from pytorch_widedeep.models import TabNet, WideDeep
-    >>> from pytorch_widedeep.models.tabnet.tabnet_utils import create_explain_matrix
+    >>> from pytorch_widedeep.models.tabnet.tab_net_utils import create_explain_matrix
     >>> embed_input = [("a", 4, 2), ("b", 4, 2), ("c", 4, 2)]
     >>> cont_cols = ["d", "e"]
     >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c", "d", "e"])}

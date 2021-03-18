@@ -44,7 +44,7 @@ class GBN(torch.nn.Module):
         self.virtual_batch_size = virtual_batch_size
         self.bn = nn.BatchNorm1d(input_dim, momentum=momentum)
 
-    def forward(self, X):
+    def forward(self, X: Tensor) -> Tensor:
         chunks = X.chunk(int(np.ceil(X.shape[0] / self.virtual_batch_size)), 0)
         res = [self.bn(x_) for x_ in chunks]
         return torch.cat(res, dim=0)
@@ -75,7 +75,7 @@ class GLU_Layer(nn.Module):
         else:
             self.bn = nn.BatchNorm1d(2 * output_dim, momentum=momentum)
 
-    def forward(self, X):
+    def forward(self, X: Tensor) -> Tensor:
         return F.glu(self.bn(self.fc(X)))
 
 
@@ -121,7 +121,7 @@ class GLU_Block(nn.Module):
                 )
             )
 
-    def forward(self, X):
+    def forward(self, X: Tensor) -> Tensor:
         scale = torch.sqrt(torch.FloatTensor([0.5]).to(X.device))
 
         if self.first:  # the first layer of the block has no scale multiplication
@@ -169,7 +169,7 @@ class FeatTransformer(nn.Module):
             output_dim, output_dim, n_glu=n_glu_step_dependent, first=False, **params
         )
 
-    def forward(self, X):
+    def forward(self, X: Tensor) -> Tensor:
         return self.step_dependent(self.shared(X))
 
 
@@ -203,7 +203,7 @@ class AttentiveTransformer(nn.Module):
                 "Please choose either 'sparsemax' or 'entmax' as masktype"
             )
 
-    def forward(self, priors, processed_feat):
+    def forward(self, priors: Tensor, processed_feat: Tensor) -> Tensor:
         x = self.bn(self.fc(processed_feat))
         x = torch.mul(x, priors)
         return self.mask(x)
@@ -279,14 +279,14 @@ class TabNetEncoder(nn.Module):
             self.feat_transformers.append(feat_transformer)
             self.attn_transformers.append(attn_transformer)
 
-    def forward(self, X):
+    def forward(self, X: Tensor) -> Tuple[List[Tensor], Tensor]:
         x = self.initial_bn(X)
 
         # P[n_step = 0] is initialized as all ones, 1^(B×D)
         prior = torch.ones(x.shape).to(x.device)
 
         # sparsity regularization
-        M_loss = 0
+        M_loss = torch.FloatTensor([0.0]).to(x.device)
 
         # split block
         attn = self.initial_splitter(x)[:, self.step_dim :]
@@ -312,11 +312,11 @@ class TabNetEncoder(nn.Module):
             d_out = nn.ReLU()(out[:, : self.step_dim])
             steps_output.append(d_out)
 
-        M_loss /= self.n_steps
+        M_loss /= self.n_steps  # type: ignore[has-type]
 
         return steps_output, M_loss
 
-    def forward_masks(self, X):
+    def forward_masks(self, X: Tensor) -> Tuple[Tensor, Dict[int, Tensor]]:
         x = self.initial_bn(X)
 
         prior = torch.ones(x.shape).to(x.device)
@@ -379,7 +379,7 @@ class EmbeddingsAndContinuous(nn.Module):
 
         self.output_dim: int = emb_out_dim + cont_out_dim  # type: ignore[assignment]
 
-    def forward(self, X):
+    def forward(self, X: Tensor) -> Tensor:
         embed = [
             self.embed_layers["emb_layer_" + col](X[:, self.column_idx[col]].long())
             for col, _, _ in self.embed_input
@@ -531,13 +531,13 @@ class TabNet(nn.Module):
         )
         self.output_dim = step_dim
 
-    def forward(self, X):
+    def forward(self, X: Tensor) -> Tuple[Tensor, Tensor]:
         x = self.embed_and_cont(X)
         steps_output, M_loss = self.tabnet_encoder(x)
         res = torch.sum(torch.stack(steps_output, dim=0), dim=0)
         return (res, M_loss)
 
-    def forward_masks(self, X):
+    def forward_masks(self, X: Tensor) -> Tuple[Tensor, Dict[int, Tensor]]:
         x = self.embed_and_cont(X)
         return self.tabnet_encoder.forward_masks(x)
 
@@ -558,6 +558,6 @@ class TabNetPredLayer(nn.Module):
         self.pred_layer = nn.Linear(inp, out, bias=False)
         initialize_non_glu(self.pred_layer, inp, out)
 
-    def forward(self, tabnet_tuple):
+    def forward(self, tabnet_tuple: Tuple[Tensor, Tensor]) -> Tuple[Tensor, Tensor]:
         res, M_loss = tabnet_tuple[0], tabnet_tuple[1]
         return self.pred_layer(res), M_loss

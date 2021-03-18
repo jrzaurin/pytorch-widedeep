@@ -232,7 +232,7 @@ def test_predict_with_individual_component(
 
 
 ###############################################################################
-#  test save and load
+#  test save
 ###############################################################################
 
 
@@ -241,8 +241,8 @@ def test_save_and_load():
     trainer = Trainer(model, objective="binary", verbose=0)
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, batch_size=16)
     wide_weights = model.wide.wide_linear.weight.data
-    trainer.save_model("tests/test_model_functioning/model_dir/model.t")
-    n_model = Trainer.load_model("tests/test_model_functioning/model_dir/model.t")
+    trainer.save("tests/test_model_functioning/model_dir/")
+    n_model = torch.load("tests/test_model_functioning/model_dir/wd_model.pt")
     n_wide_weights = n_model.wide.wide_linear.weight.data
     assert torch.allclose(wide_weights, n_wide_weights)
 
@@ -266,14 +266,14 @@ def test_save_and_load_dict():
         batch_size=16,
     )
     wide_weights = model1.wide.wide_linear.weight.data
-    trainer1.save_model_state_dict("tests/test_model_functioning/model_dir/model_d.t")
+    trainer1.save(path="tests/test_model_functioning/model_dir/", save_state_dict=True)
     model2 = WideDeep(wide=wide, deeptabular=tabmlp)
     trainer2 = Trainer(model2, objective="binary", verbose=0)
-    trainer2.load_model_state_dict("tests/test_model_functioning/model_dir/model_d.t")
+    trainer2.model.load_state_dict(
+        torch.load("tests/test_model_functioning/model_dir/wd_model.pt")
+    )
     n_wide_weights = trainer2.model.wide.wide_linear.weight.data
-
     shutil.rmtree("tests/test_model_functioning/model_dir/")
-
     assert torch.allclose(wide_weights, n_wide_weights)
 
 

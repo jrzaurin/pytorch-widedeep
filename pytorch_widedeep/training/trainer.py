@@ -1,4 +1,5 @@
 import os
+import json
 
 import numpy as np
 import torch
@@ -7,9 +8,7 @@ import torch.nn.functional as F
 from tqdm import trange
 from scipy.sparse import csc_matrix
 from torch.utils.data import DataLoader
-from sklearn.model_selection import train_test_split
 
-from pytorch_widedeep.losses import MSLELoss, RMSELoss, FocalLoss, RMSLELoss
 from pytorch_widedeep.metrics import Metric, MetricCallback, MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.callbacks import (
@@ -23,16 +22,15 @@ from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training.trainer_utils import (
     Alias,
+    alias_to_loss,
     save_epoch_logs,
+    wd_train_val_split,
     print_loss_and_metric,
 )
-from pytorch_widedeep.models.tabnet.tabnet_utils import create_explain_matrix
+from pytorch_widedeep.models.tabnet.tab_net_utils import create_explain_matrix
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
 from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
-from pytorch_widedeep.training._loss_and_obj_aliases import (
-    _LossAliases,
-    _ObjectiveToMethod,
-)
+from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
 from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
@@ -189,7 +187,10 @@ class Trainer:
         cyclic_lr: bool
             Attribute that indicates if any of the lr_schedulers is cyclic_lr (i.e. ``CyclicLR`` or
             ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
-
+        feature_importance: Dict
+            Dict where the keys are the column names and the values are the
+            corresponding feature importances. This attribute will only exist
+            if the ``deeptabular`` component is a Tabnet model
 
         Examples
         --------
@@ -271,13 +272,13 @@ class Trainer:
         self.objective = objective
         self.method = _ObjectiveToMethod.get(objective)
 
-        self.loss_fn = self._get_loss_fn(
+        self.loss_fn = self._set_loss_fn(
             objective, class_weight, custom_loss_function, alpha, gamma
         )
         self._initialize(initializers)
-        self.optimizer = self._get_optimizer(optimizers)
-        self.lr_scheduler, self.cyclic_lr = self._get_lr_scheduler(lr_schedulers)
-        self.transforms = self._get_transforms(transforms)
+        self.optimizer = self._set_optimizer(optimizers)
+        self.lr_scheduler = self._set_lr_scheduler(lr_schedulers)
+        self.transforms = self._set_transforms(transforms)
         self._set_callbacks_and_metrics(callbacks, metrics)
 
         self.model.to(device)
@@ -508,8 +509,17 @@ class Trainer:
         """
 
         self.batch_size = batch_size
-        train_set, eval_set = self._train_val_split(
-            X_wide, X_tab, X_text, X_img, X_train, X_val, val_split, target
+        train_set, eval_set = wd_train_val_split(
+            self.seed,
+            self.method,
+            X_wide,
+            X_tab,
+            X_text,
+            X_img,
+            X_train,
+            X_val,
+            val_split,
+            target,
         )
         train_loader = DataLoader(
             dataset=train_set, batch_size=batch_size, num_workers=n_cpus
@@ -573,7 +583,7 @@ class Trainer:
                 with trange(eval_steps, disable=self.verbose != 1) as v:
                     for i, (data, targett) in zip(v, eval_loader):
                         v.set_description("valid")
-                        score, val_loss = self._validation_step(data, targett, i)
+                        score, val_loss = self._eval_step(data, targett, i)
                         print_loss_and_metric(v, val_loss, score)
                 epoch_logs = save_epoch_logs(epoch_logs, val_loss, score, "val")
 
@@ -786,139 +796,58 @@ class Trainer:
 
         return res
 
-    def save_model(self, path: str):
-        """Saves the model to disk
-
-        Parameters
-        ----------
-        path: str
-            full path to the directory where the model will be saved
-        """
-        self._makedir_if_not_exist(path)
-        torch.save(self.model, path)
-
-    @staticmethod
-    def load_model(path: str) -> nn.Module:
-        """Loads the model from disk
-
-        Parameters
-        ----------
-        path: str
-            full path to the directory from where the model will be read
-        """
-        return torch.load(path)
-
-    def save_model_state_dict(self, path: str):
-        """Saves the state dictionary to disk
-
-        Parameters
-        ----------
-        path: str
-            full path to the directory where the model's state dictionary will
-            be saved
-        """
-        self._makedir_if_not_exist(path)
-        torch.save(self.model.state_dict(), path)
-
-    def load_model_state_dict(self, path: str):
-        """Saves the state dictionary to disk
-
-        Parameters
-        ----------
-        path: str
-            full path to the directory from where the model's state dictionary
-            will be loaded
-        """
-        self.model.load_state_dict(torch.load(path))
-
-    def _train_val_split(  # noqa: C901
+    def save(
         self,
-        X_wide: Optional[np.ndarray] = None,
-        X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_train: Optional[Dict[str, np.ndarray]] = None,
-        X_val: Optional[Dict[str, np.ndarray]] = None,
-        val_split: Optional[float] = None,
-        target: Optional[np.ndarray] = None,
+        path: str,
+        save_state_dict: bool = False,
+        model_filename: str = "wd_model.pt",
+        feat_imp_filename: str = "feature_importance.json",
     ):
-        r"""
-        If a validation set (X_val) is passed to the fit method, or val_split
-        is specified, the train/val split will happen internally. A number of
-        options are allowed in terms of data inputs. For parameter
-        information, please, see the .fit() method documentation
+        """Saves the model and the feature_importance attribute (if the
+        ``deeptabular`` component is a Tabnet model) to disk
 
-        Returns
-        -------
-        train_set: WideDeepDataset
-            :obj:`WideDeepDataset` object that will be loaded through
-            :obj:`torch.utils.data.DataLoader`. See
-            :class:`pytorch_widedeep.models._wd_dataset`
-        eval_set : WideDeepDataset
-            :obj:`WideDeepDataset` object that will be loaded through
-            :obj:`torch.utils.data.DataLoader`. See
-            :class:`pytorch_widedeep.models._wd_dataset`
+        The ``Trainer`` class is built so that it 'just' trains a model. With
+        that in mind, all the torch related parameters (such as optimizers,
+        learning rate schedulers, initializers, etc) have to be defined
+        externally and then passed to the ``Trainer``. As a result, the
+        ``Trainer`` does not generate any attribute or additional data
+        products that need to be saved other than the ``model`` object itself,
+        which can be saved as any other torch model (e.g. ``torch.save(model,
+        path)``).
+
+        The exception is Tabnet. If the ``deeptabular`` component is a Tabnet
+        model, an attribute (a Dict) called ``feature_importance`` will be
+        created at the end of the training process. Therefore, a ``save``
+        method was created that will save both the feature importance
+        dictionary to a json file and, since we are here, the model weights.
+
+        Parameters
+        ----------
+        path: str
+            path to the directory where the model and the feature importance
+            attribute will be saved.
+        save_state_dict: bool, default = False
+            Boolean indicating whether to save directly the model or the
+            model's state dictionary
+        model_filename: str, Optional, default = "wd_model.pt"
+            filename where the model weights will be store
+        feat_imp_filename: str, Optional, default = "feature_importance.json"
+            filename where the feature importances will be stored
         """
 
-        if X_val is not None:
-            assert (
-                X_train is not None
-            ), "if the validation set is passed as a dictionary, the training set must also be a dictionary"
-            train_set = WideDeepDataset(**X_train, transforms=self.transforms)  # type: ignore
-            eval_set = WideDeepDataset(**X_val, transforms=self.transforms)  # type: ignore
-        elif val_split is not None:
-            if not X_train:
-                X_train = self._build_train_dict(X_wide, X_tab, X_text, X_img, target)
-            y_tr, y_val, idx_tr, idx_val = train_test_split(
-                X_train["target"],
-                np.arange(len(X_train["target"])),
-                test_size=val_split,
-                random_state=self.seed,
-                stratify=X_train["target"] if self.method != "regression" else None,
-            )
-            X_tr, X_val = {"target": y_tr}, {"target": y_val}
-            if "X_wide" in X_train.keys():
-                X_tr["X_wide"], X_val["X_wide"] = (
-                    X_train["X_wide"][idx_tr],
-                    X_train["X_wide"][idx_val],
-                )
-            if "X_tab" in X_train.keys():
-                X_tr["X_tab"], X_val["X_tab"] = (
-                    X_train["X_tab"][idx_tr],
-                    X_train["X_tab"][idx_val],
-                )
-            if "X_text" in X_train.keys():
-                X_tr["X_text"], X_val["X_text"] = (
-                    X_train["X_text"][idx_tr],
-                    X_train["X_text"][idx_val],
-                )
-            if "X_img" in X_train.keys():
-                X_tr["X_img"], X_val["X_img"] = (
-                    X_train["X_img"][idx_tr],
-                    X_train["X_img"][idx_val],
-                )
-            train_set = WideDeepDataset(**X_tr, transforms=self.transforms)  # type: ignore
-            eval_set = WideDeepDataset(**X_val, transforms=self.transforms)  # type: ignore
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        model_path = "/".join([path, model_filename])
+        if save_state_dict:
+            torch.save(self.model.state_dict(), model_path)
         else:
-            if not X_train:
-                X_train = self._build_train_dict(X_wide, X_tab, X_text, X_img, target)
-            train_set = WideDeepDataset(**X_train, transforms=self.transforms)  # type: ignore
-            eval_set = None
+            torch.save(self.model, model_path)
 
-        return train_set, eval_set
-
-    @staticmethod
-    def _build_train_dict(X_wide, X_tab, X_text, X_img, target):
-        X_train = {"target": target}
-        if X_wide is not None:
-            X_train["X_wide"] = X_wide
-        if X_tab is not None:
-            X_train["X_tab"] = X_tab
-        if X_text is not None:
-            X_train["X_text"] = X_text
-        if X_img is not None:
-            X_train["X_img"] = X_img
-        return X_train
+        if self.model.is_tabnet:
+            feature_importance_fname = "/".join([path, feat_imp_filename])
+            with open(feature_importance_fname, "w") as fi:
+                json.dump(self.feature_importance, fi)
 
     def _finetune(
         self,
@@ -1013,7 +942,7 @@ class Trainer:
 
         return score, avg_loss
 
-    def _validation_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
+    def _eval_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
 
         self.model.eval()
         with torch.no_grad():
@@ -1117,43 +1046,7 @@ class Trainer:
         self.model.train()
         return preds_l
 
-    @staticmethod
-    def _makedir_if_not_exist(path):
-        if len(path.split("/")[:-1]) == 0:
-            raise ValueError(
-                "'path' must be the full path to save the model, including"
-                " the root of the filenames. e.g. 'model/model.t'"
-            )
-        root_dir = ("/").join(path.split("/")[:-1])
-        if not os.path.exists(root_dir):
-            os.makedirs(root_dir)
-
-    @staticmethod
-    def _alias_to_loss(loss_fn: str, **kwargs):
-        if loss_fn not in _ObjectiveToMethod.keys():
-            raise ValueError(
-                "objective or loss function is not supported. Please consider passing a callable "
-                "directly to the compile method (see docs) or use one of the supported objectives "
-                "or loss functions: {}".format(", ".join(_ObjectiveToMethod.keys()))
-            )
-        if loss_fn in _LossAliases.get("binary"):
-            return nn.BCEWithLogitsLoss(weight=kwargs["weight"])
-        if loss_fn in _LossAliases.get("multiclass"):
-            return nn.CrossEntropyLoss(weight=kwargs["weight"])
-        if loss_fn in _LossAliases.get("regression"):
-            return nn.MSELoss()
-        if loss_fn in _LossAliases.get("mean_absolute_error"):
-            return nn.L1Loss()
-        if loss_fn in _LossAliases.get("mean_squared_log_error"):
-            return MSLELoss()
-        if loss_fn in _LossAliases.get("root_mean_squared_error"):
-            return RMSELoss()
-        if loss_fn in _LossAliases.get("root_mean_squared_log_error"):
-            return RMSLELoss()
-        if "focal_loss" in loss_fn:
-            return FocalLoss(**kwargs)
-
-    def _get_loss_fn(self, objective, class_weight, custom_loss_function, alpha, gamma):
+    def _set_loss_fn(self, objective, class_weight, custom_loss_function, alpha, gamma):
         if isinstance(class_weight, float):
             class_weight = torch.tensor([1.0 - class_weight, class_weight])
         elif isinstance(class_weight, (tuple, list)):
@@ -1163,11 +1056,11 @@ class Trainer:
         if custom_loss_function is not None:
             return custom_loss_function
         elif self.method != "regression" and "focal_loss" not in objective:
-            return self._alias_to_loss(objective, weight=class_weight)
+            return alias_to_loss(objective, weight=class_weight)
         elif "focal_loss" in objective:
-            return self._alias_to_loss(objective, alpha=alpha, gamma=gamma)
+            return alias_to_loss(objective, alpha=alpha, gamma=gamma)
         else:
-            return self._alias_to_loss(objective)
+            return alias_to_loss(objective)
 
     def _initialize(self, initializers):
         if initializers is not None:
@@ -1183,7 +1076,7 @@ class Trainer:
                 self.initializer = initializers
                 self.initializer(self.model)
 
-    def _get_optimizer(self, optimizers):
+    def _set_optimizer(self, optimizers):
         if optimizers is not None:
             if isinstance(optimizers, Optimizer):
                 optimizer: Union[Optimizer, MultipleOptimizer] = optimizers
@@ -1197,8 +1090,7 @@ class Trainer:
             optimizer = torch.optim.AdamW(self.model.parameters())  # type: ignore
         return optimizer
 
-    @staticmethod
-    def _get_lr_scheduler(lr_schedulers):
+    def _set_lr_scheduler(self, lr_schedulers):
         if lr_schedulers is not None:
             if isinstance(lr_schedulers, LRScheduler):
                 lr_scheduler: Union[
@@ -1215,10 +1107,11 @@ class Trainer:
                 cyclic_lr = any(["cycl" in sn for sn in scheduler_names])
         else:
             lr_scheduler, cyclic_lr = None, False
-        return lr_scheduler, cyclic_lr
+        self.cyclic_lr = cyclic_lr
+        return lr_scheduler
 
     @staticmethod
-    def _get_transforms(transforms):
+    def _set_transforms(transforms):
         if transforms is not None:
             return MultipleTransforms(transforms)()
         else:

@@ -245,7 +245,7 @@ class TabResnet(nn.Module):
         else:
             dense_resnet_input_dim = emb_inp_dim
             self.output_dim = cont_inp_dim + blocks_dims[-1]
-        self.tab_resnet = DenseResnet(
+        self.tab_resnet_blks = DenseResnet(
             dense_resnet_input_dim, blocks_dims, blocks_dropout  # type: ignore[arg-type]
         )
 
@@ -284,11 +284,11 @@ class TabResnet(nn.Module):
                 x_cont = self.norm(x_cont)
             if self.concat_cont_first:
                 x = torch.cat([x, x_cont], 1)
-                out = self.tab_resnet(x)
+                out = self.tab_resnet_blks(x)
             else:
-                out = torch.cat([self.tab_resnet(x), x_cont], 1)
+                out = torch.cat([self.tab_resnet_blks(x), x_cont], 1)
         else:
-            out = self.tab_resnet(x)
+            out = self.tab_resnet_blks(x)
 
         if self.mlp_hidden_dims is not None:
             out = self.tab_resnet_mlp(out)
