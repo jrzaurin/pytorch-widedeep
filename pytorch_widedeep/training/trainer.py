@@ -264,7 +264,7 @@ class Trainer:
         #  Tabnet related set ups
         if self.model.is_tabnet:
             self.lambda_sparse = lambda_sparse
-            self.reducing_matrix = create_explain_matrix(model)
+            self.reducing_matrix = create_explain_matrix(self.model)
 
         self.verbose = verbose
         self.seed = seed
