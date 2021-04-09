@@ -238,7 +238,7 @@ class TabTransformer(nn.Module):
             0, 'relationship': 1, 'workclass': 2, ...}
         embed_input: List
             List of Tuples with the column name and number of unique values
-            e.g. [(education, 11, 32), ...]
+            e.g. [(education, 11), ...]
         continuous_cols: List, Optional, default = None
             List with the name of the numeric (aka continuous) columns
         embed_dropout: float, default = 0.1
