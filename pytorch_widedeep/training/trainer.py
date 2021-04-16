@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from tqdm import trange
 from scipy.sparse import csc_matrix
 from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.metrics import Metric, MetricCallback, MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
@@ -54,6 +55,7 @@ class Trainer:
         custom_loss_function: Optional[Module] = None,
         optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
         lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]] = None,
+        reduce_on: Optional[str] = "loss",
         initializers: Optional[Union[Initializer, Dict[str, Initializer]]] = None,
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
@@ -256,6 +258,15 @@ class Trainer:
                 "'multiclass' or 'regression', consistent with the loss function"
             )
 
+        self.reducelronplateau = False
+        self.reduce_on = reduce_on
+        if isinstance(lr_schedulers, Dict):
+            for _, scheduler in lr_schedulers.items():
+                if isinstance(scheduler, ReduceLROnPlateau):
+                    self.reducelronplateau = True
+        elif isinstance(lr_schedulers, ReduceLROnPlateau):
+            self.reducelronplateau = True
+
         if isinstance(model, str):
             self.model = torch.load(model)
         else:
@@ -309,7 +320,6 @@ class Trainer:
         n_epochs: int = 1,
         validation_freq: int = 1,
         batch_size: int = 32,
-        patience: int = 10,
         finetune: bool = False,
         finetune_epochs: int = 5,
         finetune_max_lr: float = 0.01,
@@ -362,9 +372,7 @@ class Trainer:
         validation_freq: int, default=1
             epochs validation frequency
         batch_size: int, default=32
-        patience: int, default=10
-            Number of epochs without improving the target metric or loss
-            before the fit process stops
+            batch size
         finetune: bool, default=False
             param alias: ``warmup``
 
@@ -571,23 +579,32 @@ class Trainer:
             with trange(train_steps, disable=self.verbose != 1) as t:
                 for batch_idx, (data, targett) in zip(t, train_loader):
                     t.set_description("epoch %i" % (epoch + 1))
-                    score, train_loss = self._train_step(data, targett, batch_idx)
-                    print_loss_and_metric(t, train_loss, score)
+                    train_score, train_loss = self._train_step(data, targett, batch_idx)
+                    print_loss_and_metric(t, train_loss, train_score)
                     self.callback_container.on_batch_end(batch=batch_idx)
-            epoch_logs = save_epoch_logs(epoch_logs, train_loss, score, "train")
+            epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
 
+            on_epoch_end_metric = None
             if eval_set is not None and epoch % validation_freq == (
                 validation_freq - 1
             ):
+                self.callback_container.on_eval_begin()
                 self.valid_running_loss = 0.0
                 with trange(eval_steps, disable=self.verbose != 1) as v:
                     for i, (data, targett) in zip(v, eval_loader):
                         v.set_description("valid")
-                        score, val_loss = self._eval_step(data, targett, i)
-                        print_loss_and_metric(v, val_loss, score)
-                epoch_logs = save_epoch_logs(epoch_logs, val_loss, score, "val")
+                        val_score, val_loss = self._eval_step(data, targett, i)
+                        print_loss_and_metric(v, val_loss, val_score)
+                epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
 
-            self.callback_container.on_epoch_end(epoch, epoch_logs)
+                if self.reducelronplateau:
+                    if self.reduce_on == "loss":
+                        on_epoch_end_metric = val_loss
+                    else:
+                        on_epoch_end_metric = val_score[self.reduce_on]
+
+            self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
+
             if self.early_stop:
                 self.callback_container.on_train_end(epoch_logs)
                 break
@@ -1047,12 +1064,8 @@ class Trainer:
         return preds_l
 
     def _set_loss_fn(self, objective, class_weight, custom_loss_function, alpha, gamma):
-        if isinstance(class_weight, float):
-            class_weight = torch.tensor([1.0 - class_weight, class_weight])
-        elif isinstance(class_weight, (tuple, list)):
+        if class_weight is not None:
             class_weight = torch.tensor(class_weight)
-        else:
-            class_weight = None
         if custom_loss_function is not None:
             return custom_loss_function
         elif self.method != "regression" and "focal_loss" not in objective:
@@ -1092,11 +1105,12 @@ class Trainer:
 
     def _set_lr_scheduler(self, lr_schedulers):
         if lr_schedulers is not None:
-            if isinstance(lr_schedulers, LRScheduler):
-                lr_scheduler: Union[
-                    LRScheduler,
-                    MultipleLRScheduler,
-                ] = lr_schedulers
+            # ReduceLROnPlateau is special, only scheduler that is 'just' an
+            # object rather than a LRScheduler
+            if isinstance(lr_schedulers, LRScheduler) or isinstance(
+                lr_schedulers, ReduceLROnPlateau
+            ):
+                lr_scheduler = lr_schedulers
                 cyclic_lr = "cycl" in lr_scheduler.__class__.__name__.lower()
             else:
                 lr_scheduler = MultipleLRScheduler(lr_schedulers)

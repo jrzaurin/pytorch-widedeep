@@ -214,7 +214,7 @@ def alias_to_loss(loss_fn: str, **kwargs):
             "or loss functions: {}".format(", ".join(_ObjectiveToMethod.keys()))
         )
     if loss_fn in _LossAliases.get("binary"):
-        return nn.BCEWithLogitsLoss(weight=kwargs["weight"])
+        return nn.BCEWithLogitsLoss(pos_weight=kwargs["weight"])
     if loss_fn in _LossAliases.get("multiclass"):
         return nn.CrossEntropyLoss(weight=kwargs["weight"])
     if loss_fn in _LossAliases.get("regression"):

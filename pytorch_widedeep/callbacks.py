@@ -9,12 +9,21 @@ import warnings
 
 import numpy as np
 import torch
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 def _get_current_time():
     return datetime.datetime.now().strftime("%B %d, %Y - %I:%M%p")
+
+
+def _is_metric(monitor: str):
+    # We assume no one will use f3 or more
+    if any([s in monitor for s in ["acc", "prec", "rec", "fscore", "f1", "f2"]]):
+        return True
+    else:
+        return False
 
 
 class CallbackContainer(object):
@@ -52,10 +61,12 @@ class CallbackContainer(object):
         for callback in self.callbacks:
             callback.on_epoch_begin(epoch, logs)
 
-    def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
+    def on_epoch_end(
+        self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
+    ):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_epoch_end(epoch, logs)
+            callback.on_epoch_end(epoch, logs, metric)
 
     def on_batch_begin(self, batch: int, logs: Optional[Dict] = None):
         logs = logs or {}
@@ -72,6 +83,12 @@ class CallbackContainer(object):
         logs["start_time"] = _get_current_time()
         for callback in self.callbacks:
             callback.on_train_begin(logs)
+
+    def on_eval_begin(self, logs: Optional[Dict] = None):
+        # at the moment only used to reset metrics before eval
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_eval_begin(logs)
 
     def on_train_end(self, logs: Optional[Dict] = None):
         logs = logs or {}
@@ -102,7 +119,9 @@ class Callback(object):
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
         pass
 
-    def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
+    def on_epoch_end(
+        self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
+    ):
         pass
 
     def on_batch_begin(self, batch: int, logs: Optional[Dict] = None):
@@ -112,6 +131,10 @@ class Callback(object):
         pass
 
     def on_train_begin(self, logs: Optional[Dict] = None):
+        pass
+
+    def on_eval_begin(self, logs: Optional[Dict] = None):
+        # at the moment only used to reset metrics before eval
         pass
 
     def on_train_end(self, logs: Optional[Dict] = None):
@@ -128,7 +151,9 @@ class History(Callback):
     def on_train_begin(self, logs: Optional[Dict] = None):
         self.trainer.history = {}
 
-    def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
+    def on_epoch_end(
+        self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
+    ):
         logs = logs or {}
         for k, v in logs.items():
             self.trainer.history.setdefault(k, []).append(v)
@@ -153,7 +178,9 @@ class LRShedulerCallback(Callback):
             elif self.trainer.cyclic_lr:
                 self.trainer.lr_scheduler.step()
 
-    def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
+    def on_epoch_end(
+        self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
+    ):
         if self.trainer.lr_scheduler is not None:
             if self._multiple_scheduler():
                 for (
@@ -161,9 +188,15 @@ class LRShedulerCallback(Callback):
                     scheduler,
                 ) in self.trainer.lr_scheduler._schedulers.items():
                     if not self._is_cyclic(model_name):
-                        scheduler.step()
+                        if isinstance(scheduler, ReduceLROnPlateau):
+                            scheduler.step(metric)
+                        else:
+                            scheduler.step()
             elif not self.trainer.cyclic_lr:
-                self.trainer.lr_scheduler.step()
+                if isinstance(self.trainer.lr_scheduler, ReduceLROnPlateau):
+                    self.trainer.lr_scheduler.step(metric)
+                else:
+                    self.trainer.lr_scheduler.step()
 
     def _multiple_scheduler(self):
         return self.trainer.lr_scheduler.__class__.__name__ == "MultipleLRScheduler"
@@ -224,7 +257,9 @@ class LRHistory(Callback):
             elif self.trainer.cyclic_lr:
                 self._save_group_lr(self.trainer.optimizer)
 
-    def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
+    def on_epoch_end(
+        self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
+    ):
         if epoch != (self.n_epochs - 1) and self.trainer.lr_scheduler is not None:
             if self._multiple_scheduler():
                 self._save_group_lr_mulitple_scheduler(step_location="on_epoch_end")
@@ -293,10 +328,8 @@ class ModelCheckpoint(Callback):
             be added. e.g. ``filepath="path/to/output_weights/weights_out"`` And
             the saved files in that directory will be named: ``weights_out_1.pt,
             weights_out_2.pt, ...``
-        monitor: str, default="val_loss"
-            quantity to monitor. :obj:`ModelCheckpoint` will infer if this is a
-            loss (i.e. contains the str `'loss'`) or a metric (i.e. contains the
-            str `'acc'` or starts with `'fmeasure'`).
+        monitor: str, default="loss"
+            quantity to monitor. Typically 'val_loss' or metric name (e.g. 'val_acc')
         verbose:int, default=0,
             verbosity mode
         save_best_only: bool, default=False,
@@ -305,8 +338,8 @@ class ModelCheckpoint(Callback):
         mode: str, default="auto",
             If ``save_best_only=True``, the decision to overwrite the current save
             file is made based on either the maximization or the minimization of
-            the monitored quantity. For `'val_acc'`, this should be `'max'`, for
-            `'val_loss'` this should be `'min'`, etc. In `'auto'` mode, the
+            the monitored quantity. For `'acc'`, this should be `'max'`, for
+            `'loss'` this should be `'min'`, etc. In `'auto'` mode, the
             direction is automatically inferred from the name of the monitored
             quantity.
         period: int, default=1,
@@ -366,14 +399,16 @@ class ModelCheckpoint(Callback):
             self.monitor_op = np.greater
             self.best = -np.Inf
         else:
-            if "acc" in self.monitor or self.monitor.startswith("fmeasure"):
+            if _is_metric(self.monitor):
                 self.monitor_op = np.greater
                 self.best = -np.Inf
             else:
                 self.monitor_op = np.less
                 self.best = np.Inf
 
-    def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):  # noqa: C901
+    def on_epoch_end(  # noqa: C901
+        self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
+    ):
         logs = logs or {}
         self.epochs_since_last_save += 1
         if self.epochs_since_last_save >= self.period:
@@ -453,7 +488,7 @@ class EarlyStopping(Callback):
         Parameters
         -----------
         monitor: str, default='val_loss'.
-            Quantity to be monitored.
+            Quantity to monitor. Typically 'val_loss' or metric name (e.g. 'val_acc')
         min_delta: float, default=0.
             minimum change in the monitored quantity to qualify as an
             improvement, i.e. an absolute change of less than min_delta, will
@@ -517,7 +552,7 @@ class EarlyStopping(Callback):
         elif self.mode == "max":
             self.monitor_op = np.greater
         else:
-            if "acc" in self.monitor:
+            if _is_metric(self.monitor):
                 self.monitor_op = np.greater
             else:
                 self.monitor_op = np.less
@@ -536,7 +571,9 @@ class EarlyStopping(Callback):
         else:
             self.best = np.Inf if self.monitor_op == np.less else -np.Inf
 
-    def on_epoch_end(self, epoch: int, logs: Optional[Dict] = None):
+    def on_epoch_end(
+        self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
+    ):
         current = self.get_monitor_value(logs)
         if current is None:
             return

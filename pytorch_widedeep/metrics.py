@@ -46,6 +46,9 @@ class MetricCallback(Callback):
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
         self.container.reset()
 
+    def on_eval_begin(self, logs: Optional[Dict] = None):
+        self.container.reset()
+
 
 class Accuracy(Metric):
     def __init__(self, top_k: int = 1):
