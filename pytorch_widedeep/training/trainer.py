@@ -559,6 +559,7 @@ class Trainer:
             if eval_set is not None and epoch % validation_freq == (
                 validation_freq - 1
             ):
+                self.callback_container.on_eval_begin()
                 self.valid_running_loss = 0.0
                 with trange(eval_steps, disable=self.verbose != 1) as v:
                     for i, (data, targett) in zip(v, eval_loader):

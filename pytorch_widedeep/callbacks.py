@@ -81,6 +81,11 @@ class CallbackContainer(object):
         for callback in self.callbacks:
             callback.on_train_end(logs)
 
+    def on_eval_begin(self, logs: Optional[Dict] = None):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_eval_begin(logs)
+
 
 class Callback(object):
     """
@@ -115,6 +120,9 @@ class Callback(object):
         pass
 
     def on_train_end(self, logs: Optional[Dict] = None):
+        pass
+
+    def on_eval_begin(self, logs: Optional[Dict] = None):
         pass
 
 
