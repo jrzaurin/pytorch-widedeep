@@ -55,6 +55,7 @@ class GLU_Layer(nn.Module):
         self,
         input_dim: int,
         output_dim: int,
+        dropout: float,
         fc: nn.Module = None,
         ghost_bn: bool = True,
         virtual_batch_size: int = 128,
@@ -75,8 +76,10 @@ class GLU_Layer(nn.Module):
         else:
             self.bn = nn.BatchNorm1d(2 * output_dim, momentum=momentum)
 
+        self.dp = nn.Dropout(dropout)
+
     def forward(self, X: Tensor) -> Tensor:
-        return F.glu(self.bn(self.fc(X)))
+        return self.dp(F.glu(self.bn(self.fc(X))))
 
 
 class GLU_Block(nn.Module):
@@ -84,6 +87,7 @@ class GLU_Block(nn.Module):
         self,
         input_dim: int,
         output_dim: int,
+        dropout: float,
         n_glu: int = 2,
         first: bool = False,
         shared_layers: nn.ModuleList = None,
@@ -114,6 +118,7 @@ class GLU_Block(nn.Module):
                 GLU_Layer(
                     glu_dim[i],
                     glu_dim[i + 1],
+                    dropout,
                     fc=fc,
                     ghost_bn=ghost_bn,
                     virtual_batch_size=virtual_batch_size,
@@ -142,6 +147,7 @@ class FeatTransformer(nn.Module):
         self,
         input_dim: int,
         output_dim: int,
+        dropout: float,
         shared_layers: nn.ModuleList,
         n_glu_step_dependent: int,
         ghost_bn=True,
@@ -159,6 +165,7 @@ class FeatTransformer(nn.Module):
         self.shared = GLU_Block(
             input_dim,
             output_dim,
+            dropout,
             n_glu=len(shared_layers),
             first=True,
             shared_layers=shared_layers,
@@ -166,7 +173,12 @@ class FeatTransformer(nn.Module):
         )
 
         self.step_dependent = GLU_Block(
-            output_dim, output_dim, n_glu=n_glu_step_dependent, first=False, **params
+            output_dim,
+            output_dim,
+            dropout,
+            n_glu=n_glu_step_dependent,
+            first=False,
+            **params
         )
 
     def forward(self, X: Tensor) -> Tensor:
@@ -216,6 +228,7 @@ class TabNetEncoder(nn.Module):
         n_steps: int = 3,
         step_dim: int = 8,
         attn_dim: int = 8,
+        dropout: float = 0.0,
         n_glu_step_dependent: int = 2,
         n_glu_shared: int = 2,
         ghost_bn: bool = True,
@@ -258,6 +271,7 @@ class TabNetEncoder(nn.Module):
         self.initial_splitter = FeatTransformer(
             input_dim,
             step_dim + attn_dim,
+            dropout,
             shared_layers,
             n_glu_step_dependent,
             **params
@@ -269,6 +283,7 @@ class TabNetEncoder(nn.Module):
             feat_transformer = FeatTransformer(
                 input_dim,
                 step_dim + attn_dim,
+                dropout,
                 shared_layers,
                 n_glu_step_dependent,
                 **params
@@ -406,6 +421,7 @@ class TabNet(nn.Module):
         n_steps: int = 3,
         step_dim: int = 8,
         attn_dim: int = 8,
+        dropout: float = 0.0,
         n_glu_step_dependent: int = 2,
         n_glu_shared: int = 2,
         ghost_bn: bool = True,
@@ -517,9 +533,10 @@ class TabNet(nn.Module):
         self.embed_and_cont_dim = self.embed_and_cont.output_dim
         self.tabnet_encoder = TabNetEncoder(
             self.embed_and_cont.output_dim,
+            n_steps,
             step_dim,
             attn_dim,
-            n_steps,
+            dropout,
             n_glu_step_dependent,
             n_glu_shared,
             ghost_bn,

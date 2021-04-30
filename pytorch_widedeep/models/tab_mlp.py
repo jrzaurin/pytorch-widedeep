@@ -24,7 +24,7 @@ def dense_layer(
     bn: bool,
     linear_first: bool,
 ):
-    # This is bascially the LinBnDrop class at the fastai library
+    # This is basically the LinBnDrop class at the fastai library
     act_fn = _get_activation_fn(activation)
     layers = [nn.BatchNorm1d(out if linear_first else inp)] if bn else []
     if p != 0:

@@ -55,7 +55,7 @@ class Trainer:
         custom_loss_function: Optional[Module] = None,
         optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
         lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]] = None,
-        reduce_on: Optional[str] = "loss",
+        reducelronplateau_criterion: Optional[str] = "loss",
         initializers: Optional[Union[Initializer, Dict[str, Initializer]]] = None,
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
@@ -163,12 +163,8 @@ class Trainer:
             - float indicating the weight of the minority class in binary classification
               problems (e.g. 9.)
             - a list or tuple with weights for the different classes in multiclass
-              classification problems  (e.g. [1., 2., 3.]). The weights do
-              not neccesarily need to be normalised. If your loss function
-              uses reduction='mean', the loss will be normalized by the sum
-              of the corresponding weights for each element. If you are
-              using reduction='none', you would have to take care of the
-              normalization yourself. See `this discussion
+              classification problems  (e.g. [1., 2., 3.]). The weights do not
+              need to be normalised. See `this discussion
               <https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10>`_.
         lambda_sparse: float. default=1e-3
             Tabnet sparse regularization factor
@@ -259,7 +255,7 @@ class Trainer:
             )
 
         self.reducelronplateau = False
-        self.reduce_on = reduce_on
+        self.reducelronplateau_criterion = reducelronplateau_criterion
         if isinstance(lr_schedulers, Dict):
             for _, scheduler in lr_schedulers.items():
                 if isinstance(scheduler, ReduceLROnPlateau):
@@ -598,10 +594,12 @@ class Trainer:
                 epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
 
                 if self.reducelronplateau:
-                    if self.reduce_on == "loss":
+                    if self.reducelronplateau_criterion == "loss":
                         on_epoch_end_metric = val_loss
                     else:
-                        on_epoch_end_metric = val_score[self.reduce_on]
+                        on_epoch_end_metric = val_score[
+                            self.reducelronplateau_criterion
+                        ]
 
             self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
 
@@ -612,6 +610,7 @@ class Trainer:
         self.callback_container.on_train_end(epoch_logs)
         if self.model.is_tabnet:
             self._compute_feature_importance(train_loader)
+        self._restore_best_weights()
         self.model.train()
 
     def predict(  # type: ignore[return]
@@ -852,6 +851,7 @@ class Trainer:
             filename where the feature importances will be stored
         """
 
+        # TO DO: ask advide on saving strategy
         if not os.path.exists(path):
             os.makedirs(path)
 
@@ -865,6 +865,37 @@ class Trainer:
             feature_importance_fname = "/".join([path, feat_imp_filename])
             with open(feature_importance_fname, "w") as fi:
                 json.dump(self.feature_importance, fi)
+
+    def _restore_best_weights(self):
+        already_restored = any(
+            [
+                (
+                    callback.__class__.__name__ == "EarlyStopping"
+                    and callback.restore_best_weights
+                )
+                for callback in self.callback_container.callbacks
+            ]
+        )
+        if already_restored:
+            pass
+        else:
+            for callback in self.callback_container.callbacks:
+                if callback.__class__.__name__ == "ModelCheckpoint":
+                    if callback.save_best_only:
+                        filepath = "{}_{}.p".format(
+                            callback.filepath, callback.best_epoch + 1
+                        )
+                        if self.verbose:
+                            print(
+                                f"Model weights restored to best epoch: {callback.best_epoch + 1}"
+                            )
+                        self.model.load_state_dict(torch.load(filepath))
+                    else:
+                        if self.verbose:
+                            print(
+                                "Model weights after training corresponds to the those of the "
+                                "final epoch which might not be the best performing weights"
+                            )
 
     def _finetune(
         self,
@@ -1065,7 +1096,7 @@ class Trainer:
 
     def _set_loss_fn(self, objective, class_weight, custom_loss_function, alpha, gamma):
         if class_weight is not None:
-            class_weight = torch.tensor(class_weight)
+            class_weight = torch.tensor(class_weight).to(device)
         if custom_loss_function is not None:
             return custom_loss_function
         elif self.method != "regression" and "focal_loss" not in objective:

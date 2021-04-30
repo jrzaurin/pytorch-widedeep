@@ -437,6 +437,7 @@ class ModelCheckpoint(Callback):
                                 )
                             )
                         self.best = current
+                        self.best_epoch = epoch
                         torch.save(self.model.state_dict(), filepath)
                         if self.max_save > 0:
                             if len(self.old_files) == self.max_save:
@@ -590,9 +591,7 @@ class EarlyStopping(Callback):
                 self.trainer.early_stop = True
                 if self.restore_best_weights:
                     if self.verbose > 0:
-                        print(
-                            "Restoring model weights from the end of " "the best epoch"
-                        )
+                        print("Restoring model weights from the end of the best epoch")
                     self.model.load_state_dict(self.state_dict)
 
     def on_train_end(self, logs: Optional[Dict] = None):
