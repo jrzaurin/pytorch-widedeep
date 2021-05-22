@@ -135,6 +135,13 @@ class TabPreprocessor(BasePreprocessor):
             raise ValueError(tabtransformer_error_message)
         if self.for_tabtransformer and isinstance(self.embed_cols[0], tuple):  # type: ignore[index]
             raise ValueError(tabtransformer_error_message)
+        if self.for_tabtransformer and self.scale:
+            warnings.warn(
+                "Both 'for_tabtransformer' and 'scale' are set to True. "
+                "This implies that the continuous columns will be "
+                "standarized and then passed through a LayerNorm layer",
+                UserWarning,
+            )
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Fits the Preprocessor and creates required attributes"""

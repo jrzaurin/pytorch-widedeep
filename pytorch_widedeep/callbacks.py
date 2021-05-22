@@ -466,6 +466,14 @@ class ModelCheckpoint(Callback):
                         self.old_files = self.old_files[1:]
                     self.old_files.append(filepath)
 
+    def __getstate__(self):
+        d = self.__dict__
+        self_dict = {k: d[k] for k in d if k not in ["trainer", "model"]}
+        return self_dict
+
+    def __setstate__(self, state):
+        self.__dict__ = state
+
 
 class EarlyStopping(Callback):
     def __init__(
@@ -608,3 +616,11 @@ class EarlyStopping(Callback):
                 RuntimeWarning,
             )
         return monitor_value
+
+    def __getstate__(self):
+        d = self.__dict__
+        self_dict = {k: d[k] for k in d if k not in ["trainer", "model"]}
+        return self_dict
+
+    def __setstate__(self, state):
+        self.__dict__ = state

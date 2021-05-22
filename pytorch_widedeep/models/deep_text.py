@@ -12,10 +12,12 @@ class DeepText(nn.Module):
     def __init__(
         self,
         vocab_size: int,
+        rnn_type: str = "lstm",
         hidden_dim: int = 64,
         n_layers: int = 3,
         rnn_dropout: float = 0.1,
         bidirectional: bool = False,
+        use_hidden_state: bool = True,
         padding_idx: int = 1,
         embed_dim: Optional[int] = None,
         embed_matrix: Optional[np.ndarray] = None,
@@ -37,6 +39,8 @@ class DeepText(nn.Module):
         ----------
         vocab_size: int
             number of words in the vocabulary
+        rnn_type: str
+            String indicating the type of RNN to use. One of "lstm" or "rnn"
         hidden_dim: int, default = 64
             Hidden dim of the LSTM
         n_layers: int, default = 3
@@ -46,6 +50,9 @@ class DeepText(nn.Module):
             the last layer
         bidirectional: bool, default = True
             indicates whether the staked RNNs are bidirectional
+        use_hidden_state: str, default = True,
+            Boolean indicating whether to use the final hidden state of the
+            rnn output as predicting features
         padding_idx: int, default = 1
             index of the padding token in the padded-tokenised sequences. I
             use the ``fastai`` tokenizer where the token index 0 is reserved
@@ -112,11 +119,18 @@ class DeepText(nn.Module):
                 UserWarning,
             )
 
+        if rnn_type.lower() not in ["lstm", "gru"]:
+            raise ValueError(
+                f"'rnn_type' must be 'lstm' or 'gru', got {rnn_type} instead"
+            )
+
         self.vocab_size = vocab_size
+        self.rnn_type = rnn_type
         self.hidden_dim = hidden_dim
         self.n_layers = n_layers
         self.rnn_dropout = rnn_dropout
         self.bidirectional = bidirectional
+        self.use_hidden_state = use_hidden_state
         self.padding_idx = padding_idx
         self.embed_dim = embed_dim
         self.embed_trainable = embed_trainable
@@ -152,14 +166,18 @@ class DeepText(nn.Module):
             )
 
         # stack of RNNs (LSTMs)
-        self.rnn = nn.LSTM(
-            embed_dim,
-            hidden_dim,
-            num_layers=n_layers,
-            bidirectional=bidirectional,
-            dropout=rnn_dropout,
-            batch_first=True,
-        )
+        rnn_params = {
+            "input_size": embed_dim,
+            "hidden_size": hidden_dim,
+            "num_layers": n_layers,
+            "bidirectional": bidirectional,
+            "dropout": rnn_dropout,
+            "batch_first": True,
+        }
+        if self.rnn_type.lower() == "lstm":
+            self.rnn: Union[nn.LSTM, nn.GRU] = nn.LSTM(**rnn_params)
+        elif self.rnn_type.lower() == "gru":
+            self.rnn = nn.GRU(**rnn_params)
 
         # the output_dim attribute will be used as input_dim when "merging" the models
         self.output_dim = hidden_dim * 2 if bidirectional else hidden_dim
@@ -186,13 +204,23 @@ class DeepText(nn.Module):
         classifier/regressor with an optional `'Fully Connected head'`
         """
         embed = self.word_embed(X.long())
-        o, (h, c) = self.rnn(embed)
+
+        if self.rnn_type.lower() == "lstm":
+            o, (h, c) = self.rnn(embed)
+        elif self.rnn_type.lower() == "gru":
+            o, h = self.rnn(embed)
+
+        o = o.permute(1, 0, 2)
+
         if self.bidirectional:
-            last_h = torch.cat((h[-2], h[-1]), dim=1)
+            rnn_out = (
+                torch.cat((h[-2], h[-1]), dim=1) if self.use_hidden_state else o[-1]
+            )
         else:
-            last_h = h[-1]
+            rnn_out = h[-1] if self.use_hidden_state else o[-1]
+
         if self.head_hidden_dims is not None:
-            out = self.texthead(last_h)
-            return out
+            head_out = self.texthead(rnn_out)
+            return head_out
         else:
-            return last_h
+            return rnn_out

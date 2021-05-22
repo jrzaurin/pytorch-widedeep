@@ -1,5 +1,6 @@
 import os
 import json
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -275,9 +276,12 @@ class Trainer:
 
         self.verbose = verbose
         self.seed = seed
-        self.early_stop = False
         self.objective = objective
         self.method = _ObjectiveToMethod.get(objective)
+
+        # initialize early_stop. If EarlyStopping Callback is used it will
+        # take care of it
+        self.early_stop = False
 
         self.loss_fn = self._set_loss_fn(
             objective, class_weight, custom_loss_function, alpha, gamma
@@ -817,10 +821,10 @@ class Trainer:
         path: str,
         save_state_dict: bool = False,
         model_filename: str = "wd_model.pt",
-        feat_imp_filename: str = "feature_importance.json",
     ):
-        """Saves the model and the feature_importance attribute (if the
-        ``deeptabular`` component is a Tabnet model) to disk
+        """Saves the model, training and evaluation history, and the
+        feature_importance attribute (if the ``deeptabular`` component is a
+        Tabnet model) to disk
 
         The ``Trainer`` class is built so that it 'just' trains a model. With
         that in mind, all the torch related parameters (such as optimizers,
@@ -847,23 +851,31 @@ class Trainer:
             model's state dictionary
         model_filename: str, Optional, default = "wd_model.pt"
             filename where the model weights will be store
-        feat_imp_filename: str, Optional, default = "feature_importance.json"
-            filename where the feature importances will be stored
         """
 
-        # TO DO: ask advide on saving strategy
-        if not os.path.exists(path):
-            os.makedirs(path)
+        save_dir = Path(path)
+        history_dir = save_dir / "history"
+        history_dir.mkdir(exist_ok=True, parents=True)
 
-        model_path = "/".join([path, model_filename])
+        # the trainer is run with the History Callback by default
+        with open(history_dir / "train_eval_history.json", "w") as teh:
+            json.dump(self.history, teh)  # type: ignore[attr-defined]
+
+        has_lr_history = any(
+            [clbk.__class__.__name__ == "LRHistory" for clbk in self.callbacks]
+        )
+        if has_lr_history:
+            with open(history_dir / "lr_history.json", "w") as lrh:
+                json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
+
+        model_path = save_dir / model_filename
         if save_state_dict:
             torch.save(self.model.state_dict(), model_path)
         else:
             torch.save(self.model, model_path)
 
         if self.model.is_tabnet:
-            feature_importance_fname = "/".join([path, feat_imp_filename])
-            with open(feature_importance_fname, "w") as fi:
+            with open(save_dir / "feature_importance.json", "w") as fi:
                 json.dump(self.feature_importance, fi)
 
     def _restore_best_weights(self):
@@ -894,7 +906,8 @@ class Trainer:
                         if self.verbose:
                             print(
                                 "Model weights after training corresponds to the those of the "
-                                "final epoch which might not be the best performing weights"
+                                "final epoch which might not be the best performing weights. Use"
+                                "the 'ModelCheckpoint' Callback to restore the best epoch weights."
                             )
 
     def _finetune(

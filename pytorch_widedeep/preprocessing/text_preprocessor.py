@@ -21,6 +21,8 @@ class TextPreprocessor(BasePreprocessor):
         max_vocab: int = 30000,
         min_freq: int = 5,
         maxlen: int = 80,
+        pad_first: bool = True,
+        pad_idx: int = 1,
         word_vectors_path: Optional[str] = None,
         verbose: int = 1,
     ):
@@ -36,6 +38,11 @@ class TextPreprocessor(BasePreprocessor):
             Minimum frequency for a token to be part of the vocabulary
         maxlen: int, default=80
             Maximum length of the tokenized sequences
+        pad_first: bool,  default = True
+            Indicates whether the padding index will be added at the beginning or the
+            end of the sequences
+        pad_idx: int, default = 1
+            padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
         word_vectors_path: str, Optional
             Path to the pretrained word vectors
         verbose: int, default 1
@@ -71,6 +78,8 @@ class TextPreprocessor(BasePreprocessor):
         self.max_vocab = max_vocab
         self.min_freq = min_freq
         self.maxlen = maxlen
+        self.pad_first = pad_first
+        self.pad_idx = pad_idx
         self.word_vectors_path = word_vectors_path
         self.verbose = verbose
 
@@ -83,6 +92,10 @@ class TextPreprocessor(BasePreprocessor):
         )
         if self.verbose:
             print("The vocabulary contains {} tokens".format(len(self.vocab.stoi)))
+        if self.word_vectors_path is not None:
+            self.embedding_matrix = build_embeddings_matrix(
+                self.vocab, self.word_vectors_path, self.min_freq
+            )
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
@@ -91,11 +104,17 @@ class TextPreprocessor(BasePreprocessor):
         texts = df[self.text_col].tolist()
         self.tokens = get_texts(texts)
         sequences = [self.vocab.numericalize(t) for t in self.tokens]
-        padded_seq = np.array([pad_sequences(s, maxlen=self.maxlen) for s in sequences])
-        if self.word_vectors_path is not None:
-            self.embedding_matrix = build_embeddings_matrix(
-                self.vocab, self.word_vectors_path, self.min_freq
-            )
+        padded_seq = np.array(
+            [
+                pad_sequences(
+                    s,
+                    maxlen=self.maxlen,
+                    pad_first=self.pad_first,
+                    pad_idx=self.pad_idx,
+                )
+                for s in sequences
+            ]
+        )
         return padded_seq
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:

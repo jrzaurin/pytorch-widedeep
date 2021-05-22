@@ -84,14 +84,16 @@ if __name__ == "__main__":
     wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=2)
     deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)
 
+    model_checkpoint = ModelCheckpoint(
+        filepath="model_weights/wd_out",
+        save_best_only=True,
+        max_save=1,
+    )
+    early_stopping = EarlyStopping(patience=5)
     optimizers = {"wide": wide_opt, "deeptabular": deep_opt}
     schedulers = {"wide": wide_sch, "deeptabular": deep_sch}
     initializers = {"wide": KaimingNormal, "deeptabular": XavierNormal}
-    callbacks = [
-        LRHistory(n_epochs=10),
-        EarlyStopping(patience=5),
-        ModelCheckpoint(filepath="model_weights/wd_out"),
-    ]
+    callbacks = [early_stopping, model_checkpoint, LRHistory(n_epochs=10)]
     metrics = [Accuracy, Precision]
 
     trainer = Trainer(
@@ -108,16 +110,9 @@ if __name__ == "__main__":
         X_wide=X_wide,
         X_tab=X_tab,
         target=target,
-        n_epochs=10,
+        n_epochs=2,
         batch_size=64,
         val_split=0.2,
     )
 
-    # # to save/load the model
-    # trainer.save_model("model_weights/model.t")
-    # # ... days after
-    # model = Trainer.load_model("model_weights/model.t")
-    # # or via state dictionaries
-    # trainer.save_model_state_dict("model_weights/model_dict.t")
-    # # ... days after, with an instantiated class of Trainer
-    # trainer.load_model_state_dict("model_weights/model_dict.t")
+    trainer.save("widedeep")
