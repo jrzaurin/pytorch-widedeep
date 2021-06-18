@@ -411,6 +411,83 @@ class EmbeddingsAndContinuous(nn.Module):
 
 
 class TabNet(nn.Module):
+    r"""TabNet model (https://arxiv.org/abs/1908.07442) model that can be used
+    as the deeptabular component of a Wide & Deep model.
+
+    The implementation in this library is fully based on that here:
+    https://github.com/dreamquark-ai/tabnet, simply adapted so that it can
+    work within the ``WideDeep`` frame. Therefore, **all credit to the
+    dreamquark-ai team**
+
+    Parameters
+    ----------
+    column_idx: Dict
+        Dictionary where the keys are the columns and the values their
+        corresponding index
+    embed_input: List
+        List of Tuples with the column name, number of unique values and
+        embedding dimension. e.g. [(education, 11, 32), ...]
+    embed_dropout: float, default = 0.
+        embeddings dropout
+    continuous_cols: List, Optional, default = None
+        List with the name of the numeric (aka continuous) columns
+    batchnorm_cont: bool, default = False
+        Boolean indicating whether or not to apply batch normalization to the
+        continuous input
+    n_steps: int, default = 3
+        number of decision steps
+    step_dim: int, default = 8
+        Step's output dimension. This is the output dimension that
+        ``WideDeep`` will collect and connect to the output neuron(s). For
+        a better understanding of the function of this and the upcoming
+        parameters, please see the `paper
+        <https://arxiv.org/abs/1908.07442>`_.
+    attn_dim: int, default = 8
+        Attention dimension
+    n_glu_step_dependent: int, default = 2
+        number of GLU Blocks [FC -> BN -> GLU] that are step dependent
+    n_glu_shared: int, default = 2
+        number of GLU Blocks [FC -> BN -> GLU] that will be shared
+        across decision steps
+    ghost_bn: bool, default=True
+        Boolean indicating if `Ghost Batch Normalization
+        <https://arxiv.org/abs/1705.08741>_` will be used.
+    virtual_batch_size: int, default = 128
+        Batch size when using Ghost Batch Normalization
+    momentum: float, default = 0.02
+        Ghost Batch Normalization's momentum
+    gamma: float, default = 1.3
+        Relaxation parameter in the paper. When gamma = 1, a feature is
+        enforced to be used only at one decision step and as gamma
+        increases, more flexibility is provided to use a feature at
+        multiple decision steps
+    epsilon: float, default = 1e-15
+        Float to avoid log(0). Always keep low
+    mask_type: str, default = "sparsemax"
+        Mask function to use. Either "sparsemax" or "entmax"
+
+    Attributes
+    ----------
+    embed_and_cont: ``nn.ModuleDict``
+        ``ModuleDict`` with the embedding
+    TabNetEncoder: ``nn.Module``
+        ``Module`` containing the TabNetEncoder. See the `paper
+        <https://arxiv.org/abs/1908.07442>`_.
+    output_dim: int
+        The output dimension of the model. This is a required attribute
+        neccesary to build the WideDeep class
+
+    Example
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import TabNet
+    >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
+    >>> colnames = ['a', 'b', 'c', 'd', 'e']
+    >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
+    >>> column_idx = {k:v for v,k in enumerate(colnames)}
+    >>> model = TabNet(column_idx=column_idx, embed_input=embed_input, continuous_cols = ['e'])
+    """
+
     def __init__(
         self,
         column_idx: Dict[str, int],
@@ -431,83 +508,6 @@ class TabNet(nn.Module):
         epsilon: float = 1e-15,
         mask_type: str = "sparsemax",
     ):
-        r"""TabNet model (https://arxiv.org/abs/1908.07442) model that can be used
-        as the deeptabular component of a Wide & Deep model.
-
-        The implementation in this library is fully based on that here:
-        https://github.com/dreamquark-ai/tabnet, simply adapted so that it can
-        work within the ``WideDeep`` frame. Therefore, **all credit to the
-        dreamquark-ai team**
-
-        Parameters
-        ----------
-        column_idx: Dict
-            Dictionary where the keys are the columns and the values their
-            corresponding index
-        embed_input: List
-            List of Tuples with the column name, number of unique values and
-            embedding dimension. e.g. [(education, 11, 32), ...]
-        embed_dropout: float, default = 0.
-            embeddings dropout
-        continuous_cols: List, Optional, default = None
-            List with the name of the numeric (aka continuous) columns
-        batchnorm_cont: bool, default = False
-            Boolean indicating whether or not to apply batch normalization to the
-            continuous input
-        n_steps: int, default = 3
-            number of decision steps
-        step_dim: int, default = 8
-            Step's output dimension. This is the output dimension that
-            ``WideDeep`` will collect and connect to the output neuron(s). For
-            a better understanding of the function of this and the upcoming
-            parameters, please see the `paper
-            <https://arxiv.org/abs/1908.07442>`_.
-        attn_dim: int, default = 8
-            Attention dimension
-        n_glu_step_dependent: int, default = 2
-            number of GLU Blocks [FC -> BN -> GLU] that are step dependent
-        n_glu_shared: int, default = 2
-            number of GLU Blocks [FC -> BN -> GLU] that will be shared
-            across decision steps
-        ghost_bn: bool, default=True
-            Boolean indicating if `Ghost Batch Normalization
-            <https://arxiv.org/abs/1705.08741>_` will be used.
-        virtual_batch_size: int, default = 128
-            Batch size when using Ghost Batch Normalization
-        momentum: float, default = 0.02
-            Ghost Batch Normalization's momentum
-        gamma: float, default = 1.3
-            Relaxation parameter in the paper. When gamma = 1, a feature is
-            enforced to be used only at one decision step and as gamma
-            increases, more flexibility is provided to use a feature at
-            multiple decision steps
-        epsilon: float, default = 1e-15
-            Float to avoid log(0). Always keep low
-        mask_type: str, default = "sparsemax"
-            Mask function to use. Either "sparsemax" or "entmax"
-
-        Attributes
-        ----------
-        embed_and_cont: ``nn.ModuleDict``
-            ``ModuleDict`` with the embedding
-        TabNetEncoder: ``nn.Module``
-            ``Module`` containing the TabNetEncoder. See the `paper
-            <https://arxiv.org/abs/1908.07442>`_.
-        output_dim: int
-            The output dimension of the model. This is a required attribute
-            neccesary to build the WideDeep class
-
-        Example
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.models import TabNet
-        >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
-        >>> colnames = ['a', 'b', 'c', 'd', 'e']
-        >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
-        >>> column_idx = {k:v for v,k in enumerate(colnames)}
-        >>> model = TabNet(column_idx=column_idx, embed_input=embed_input, continuous_cols = ['e'])
-        """
-
         super(TabNet, self).__init__()
 
         self.column_idx = column_idx

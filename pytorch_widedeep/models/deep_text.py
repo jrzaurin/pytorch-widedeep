@@ -9,6 +9,81 @@ from pytorch_widedeep.models.tab_mlp import MLP
 
 
 class DeepText(nn.Module):
+    r"""Standard text classifier/regressor comprised by a stack of RNNs
+    (in particular LSTMs).
+
+    In addition, there is the option to add a Fully Connected (FC) set of dense
+    layers (referred as `texthead`) on top of the stack of RNNs
+
+    Parameters
+    ----------
+    vocab_size: int
+        number of words in the vocabulary
+    rnn_type: str
+        String indicating the type of RNN to use. One of "lstm" or "rnn"
+    hidden_dim: int, default = 64
+        Hidden dim of the LSTM
+    n_layers: int, default = 3
+        number of recurrent layers
+    rnn_dropout: float, default = 0.1
+        dropout for the dropout layer on the outputs of each LSTM layer except
+        the last layer
+    bidirectional: bool, default = True
+        indicates whether the staked RNNs are bidirectional
+    use_hidden_state: str, default = True,
+        Boolean indicating whether to use the final hidden state of the
+        rnn output as predicting features
+    padding_idx: int, default = 1
+        index of the padding token in the padded-tokenised sequences. I
+        use the ``fastai`` tokenizer where the token index 0 is reserved
+        for the `'unknown'` word token
+    embed_dim: int, Optional, default = None
+        Dimension of the word embedding matrix if non-pretained word
+        vectors are used
+    embed_matrix: np.ndarray, Optional, default = None
+         Pretrained word embeddings
+    embed_trainable: bool, default = True
+        Boolean indicating if the pretrained embeddings are trainable
+    head_hidden_dims: List, Optional, default = None
+        List with the sizes of the stacked dense layers in the head
+        e.g: [128, 64]
+    head_activation: str, default = "relu"
+        Activation function for the dense layers in the head
+    head_dropout: float, Optional, default = None
+        dropout between the dense layers in the head
+    head_batchnorm: bool, default = False
+        Whether or not to include batch normalization in the dense layers that
+        form the `'texthead'`
+    head_batchnorm_last: bool, default = False
+        Boolean indicating whether or not to apply batch normalization to the
+        last of the dense layers in the head
+    head_linear_first: bool, default = False
+        Boolean indicating whether the order of the operations in the dense
+        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+        LIN -> ACT]``
+
+    Attributes
+    ----------
+    word_embed: ``nn.Module``
+        word embedding matrix
+    rnn: ``nn.Module``
+        Stack of LSTMs
+    texthead: ``nn.Sequential``
+        Stack of dense layers on top of the RNN. This will only exists if
+        ``head_layers_dim`` is not ``None``
+    output_dim: int
+        The output dimension of the model. This is a required attribute
+        neccesary to build the WideDeep class
+
+    Example
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import DeepText
+    >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
+    >>> model = DeepText(vocab_size=4, hidden_dim=4, n_layers=1, padding_idx=0, embed_dim=4)
+    >>> out = model(X_text)
+    """
+
     def __init__(
         self,
         vocab_size: int,
@@ -29,80 +104,6 @@ class DeepText(nn.Module):
         head_batchnorm_last: bool = False,
         head_linear_first: bool = False,
     ):
-        r"""Standard text classifier/regressor comprised by a stack of RNNs
-        (in particular LSTMs).
-
-        In addition, there is the option to add a Fully Connected (FC) set of dense
-        layers (referred as `texthead`) on top of the stack of RNNs
-
-        Parameters
-        ----------
-        vocab_size: int
-            number of words in the vocabulary
-        rnn_type: str
-            String indicating the type of RNN to use. One of "lstm" or "rnn"
-        hidden_dim: int, default = 64
-            Hidden dim of the LSTM
-        n_layers: int, default = 3
-            number of recurrent layers
-        rnn_dropout: float, default = 0.1
-            dropout for the dropout layer on the outputs of each LSTM layer except
-            the last layer
-        bidirectional: bool, default = True
-            indicates whether the staked RNNs are bidirectional
-        use_hidden_state: str, default = True,
-            Boolean indicating whether to use the final hidden state of the
-            rnn output as predicting features
-        padding_idx: int, default = 1
-            index of the padding token in the padded-tokenised sequences. I
-            use the ``fastai`` tokenizer where the token index 0 is reserved
-            for the `'unknown'` word token
-        embed_dim: int, Optional, default = None
-            Dimension of the word embedding matrix if non-pretained word
-            vectors are used
-        embed_matrix: np.ndarray, Optional, default = None
-             Pretrained word embeddings
-        embed_trainable: bool, default = True
-            Boolean indicating if the pretrained embeddings are trainable
-        head_hidden_dims: List, Optional, default = None
-            List with the sizes of the stacked dense layers in the head
-            e.g: [128, 64]
-        head_activation: str, default = "relu"
-            Activation function for the dense layers in the head
-        head_dropout: float, Optional, default = None
-            dropout between the dense layers in the head
-        head_batchnorm: bool, default = False
-            Whether or not to include batch normalization in the dense layers that
-            form the `'texthead'`
-        head_batchnorm_last: bool, default = False
-            Boolean indicating whether or not to apply batch normalization to the
-            last of the dense layers in the head
-        head_linear_first: bool, default = False
-            Boolean indicating whether the order of the operations in the dense
-            layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-            LIN -> ACT]``
-
-        Attributes
-        ----------
-        word_embed: ``nn.Module``
-            word embedding matrix
-        rnn: ``nn.Module``
-            Stack of LSTMs
-        texthead: ``nn.Sequential``
-            Stack of dense layers on top of the RNN. This will only exists if
-            ``head_layers_dim`` is not ``None``
-        output_dim: int
-            The output dimension of the model. This is a required attribute
-            neccesary to build the WideDeep class
-
-        Example
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.models import DeepText
-        >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
-        >>> model = DeepText(vocab_size=4, hidden_dim=4, n_layers=1, padding_idx=0, embed_dim=4)
-        >>> out = model(X_text)
-        """
         super(DeepText, self).__init__()
 
         if (

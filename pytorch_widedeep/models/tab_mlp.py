@@ -70,6 +70,72 @@ class MLP(nn.Module):
 
 
 class TabMlp(nn.Module):
+    r"""Defines a ``TabMlp`` model that can be used as the ``deeptabular``
+    component of a Wide & Deep model.
+
+    This class combines embedding representations of the categorical features
+    with numerical (aka continuous) features. These are then passed through a
+    series of dense layers (i.e. a MLP).
+
+    Parameters
+    ----------
+    column_idx: Dict
+        Dict containing the index of the columns that will be passed through
+        the TabMlp model. Required to slice the tensors. e.g. {'education':
+        0, 'relationship': 1, 'workclass': 2, ...}
+    mlp_hidden_dims: List, default = [200, 100]
+        List with the number of neurons per dense layer in the mlp.
+    mlp_activation: str, default = "relu"
+        Activation function for the dense layers of the MLP. Currently
+        only "relu", "leaky_relu" and "gelu" are supported
+    mlp_dropout: float or List, default = 0.1
+        float or List of floats with the dropout between the dense layers.
+        e.g: [0.5,0.5]
+    mlp_batchnorm: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the dense layers
+    mlp_batchnorm_last: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the last of the dense layers
+    mlp_linear_first: bool, default = False
+        Boolean indicating the order of the operations in the dense
+        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+        LIN -> ACT]``
+    embed_input: List, Optional, default = None
+        List of Tuples with the column name, number of unique values and
+        embedding dimension. e.g. [(education, 11, 32), ...]
+    embed_dropout: float, default = 0.1
+        embeddings dropout
+    continuous_cols: List, Optional, default = None
+        List with the name of the numeric (aka continuous) columns
+    batchnorm_cont: bool, default = False
+        Boolean indicating whether or not to apply batch normalization to the
+        continuous input
+
+    Attributes
+    ----------
+    mlp: ``nn.Sequential``
+        mlp model that will receive the concatenation of the embeddings and
+        the continuous columns
+    embed_layers: ``nn.ModuleDict``
+        ``ModuleDict`` with the embedding
+    output_dim: int
+        The output dimension of the model. This is a required attribute
+        neccesary to build the WideDeep class
+
+    Example
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import TabMlp
+    >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
+    >>> colnames = ['a', 'b', 'c', 'd', 'e']
+    >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
+    >>> column_idx = {k:v for v,k in enumerate(colnames)}
+    >>> model = TabMlp(mlp_hidden_dims=[8,4], column_idx=column_idx, embed_input=embed_input,
+    ... continuous_cols = ['e'])
+    >>> out = model(X_tab)
+    """
+
     def __init__(
         self,
         column_idx: Dict[str, int],
@@ -84,71 +150,6 @@ class TabMlp(nn.Module):
         continuous_cols: Optional[List[str]] = None,
         batchnorm_cont: bool = False,
     ):
-        r"""Defines a ``TabMlp`` model that can be used as the ``deeptabular``
-        component of a Wide & Deep model.
-
-        This class combines embedding representations of the categorical features
-        with numerical (aka continuous) features. These are then passed through a
-        series of dense layers (i.e. a MLP).
-
-        Parameters
-        ----------
-        column_idx: Dict
-            Dict containing the index of the columns that will be passed through
-            the TabMlp model. Required to slice the tensors. e.g. {'education':
-            0, 'relationship': 1, 'workclass': 2, ...}
-        mlp_hidden_dims: List, default = [200, 100]
-            List with the number of neurons per dense layer in the mlp.
-        mlp_activation: str, default = "relu"
-            Activation function for the dense layers of the MLP. Currently
-            only "relu", "leaky_relu" and "gelu" are supported
-        mlp_dropout: float or List, default = 0.1
-            float or List of floats with the dropout between the dense layers.
-            e.g: [0.5,0.5]
-        mlp_batchnorm: bool, default = False
-            Boolean indicating whether or not batch normalization will be applied
-            to the dense layers
-        mlp_batchnorm_last: bool, default = False
-            Boolean indicating whether or not batch normalization will be applied
-            to the last of the dense layers
-        mlp_linear_first: bool, default = False
-            Boolean indicating the order of the operations in the dense
-            layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-            LIN -> ACT]``
-        embed_input: List, Optional, default = None
-            List of Tuples with the column name, number of unique values and
-            embedding dimension. e.g. [(education, 11, 32), ...]
-        embed_dropout: float, default = 0.1
-            embeddings dropout
-        continuous_cols: List, Optional, default = None
-            List with the name of the numeric (aka continuous) columns
-        batchnorm_cont: bool, default = False
-            Boolean indicating whether or not to apply batch normalization to the
-            continuous input
-
-        Attributes
-        ----------
-        mlp: ``nn.Sequential``
-            mlp model that will receive the concatenation of the embeddings and
-            the continuous columns
-        embed_layers: ``nn.ModuleDict``
-            ``ModuleDict`` with the embedding
-        output_dim: int
-            The output dimension of the model. This is a required attribute
-            neccesary to build the WideDeep class
-
-        Example
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.models import TabMlp
-        >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
-        >>> colnames = ['a', 'b', 'c', 'd', 'e']
-        >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
-        >>> column_idx = {k:v for v,k in enumerate(colnames)}
-        >>> model = TabMlp(mlp_hidden_dims=[8,4], column_idx=column_idx, embed_input=embed_input,
-        ... continuous_cols = ['e'])
-        >>> out = model(X_tab)
-        """
         super(TabMlp, self).__init__()
 
         self.column_idx = column_idx

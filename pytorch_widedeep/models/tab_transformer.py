@@ -200,6 +200,111 @@ class SharedEmbeddings(nn.Module):
 
 
 class TabTransformer(nn.Module):
+    r"""TabTransformer model (https://arxiv.org/pdf/2012.06678.pdf) model that
+    can be used as the deeptabular component of a Wide & Deep model.
+
+
+    Parameters
+    ----------
+    column_idx: Dict
+        Dict containing the index of the columns that will be passed through
+        the DeepDense model. Required to slice the tensors. e.g. {'education':
+        0, 'relationship': 1, 'workclass': 2, ...}
+    embed_input: List
+        List of Tuples with the column name and number of unique values
+        e.g. [(education, 11), ...]
+    continuous_cols: List, Optional, default = None
+        List with the name of the numeric (aka continuous) columns
+    embed_dropout: float, default = 0.1
+        Dropout to be applied to the embeddings matrix
+    full_embed_dropout: bool, default = False
+        Boolean indicating if an entire embedding (i.e. the representation
+        for one categorical column) will be dropped in the batch. See:
+        ``pytorch_widedeep.model.tab_transformer.FullEmbeddingDropout``.
+        If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
+    shared_embed: bool, default = False
+        The idea behind ``shared_embed`` is described in the Appendix A in the paper:
+        `'The goal of having column embedding is to enable the model to distinguish the
+        classes in one column from those in the other columns'`. In other words, the idea
+        is to let the model learn which column is embedding at the time.
+    add_shared_embed: bool, default = False,
+        The two embedding sharing strategies are: 1) add the shared embeddings to the column
+        embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
+        embeddings. See ``pytorch_widedeep.models.tab_transformer.SharedEmbeddings``
+    frac_shared_embed: int, default = 8
+        The fraction of embeddings that will be shared by all the different categories for
+        one particular column.
+    input_dim: int, default = 32
+        The so-called *dimension of the model*. Is the number of embeddings used to encode
+        the categorical columns
+    n_heads: int, default = 8
+        Number of attention heads per Transformer block
+    n_blocks: int, default = 6
+        Number of Transformer blocks
+    dropout: float, default = 0.1
+        Dropout that will be applied internally to the
+        ``TransformerEncoder`` (see
+        ``pytorch_widedeep.model.tab_transformer.TransformerEncoder``) and the
+        output MLP
+    keep_attn_weights: bool, default = False
+        If set to ``True`` the model will store the attention weights in the ``attention_weights``
+        attribute.
+    fixed_attention: bool, default = False
+        If set to ``True`` all the observations in a batch will have the
+        same Key and Query. This implementation is inspired by the one
+        available at the `Autogluon tabular library
+        <https://github.com/awslabs/autogluon/blob/master/tabular/src/autogluon/tabular/models/tab_transformer/modified_transformer.py>`_.
+    n_cat_columns: int, Optional, default = None
+        If `fixed_attention` is set to ``True`` the number of categorical
+        columns that will be encoded as embeddings must be specified
+    ff_hidden_dim: int, default = 128
+        Hidden dimension of the ``FeedForward`` Layer. See
+        ``pytorch_widedeep.model.tab_transformer.FeedForward``.
+    transformer_activation: str, default = "gelu"
+        Transformer Encoder activation function
+    mlp_hidden_dims: List, Optional, default = None
+        MLP hidden dimensions. If not provided it will default to ``[4*l,
+        2*l]`` where ``l`` is the mlp input dimension
+    mlp_activation: str, default = "gelu"
+        MLP activation function
+    mlp_batchnorm: bool, default = False
+        Boolean indicating whether or not to apply batch normalization to the
+        dense layers
+    mlp_batchnorm_last: bool, default = False
+        Boolean indicating whether or not to apply batch normalization to the
+        last of the dense layers
+    mlp_linear_first: bool, default = False
+        Boolean indicating whether the order of the operations in the dense
+        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+        LIN -> ACT]``
+
+    Attributes
+    ----------
+    embed_layers: ``nn.ModuleDict``
+        Dict with the embeddings per column
+    tab_transformer_blks: ``nn.Sequential``
+        Sequence of Transformer blocks
+    attention_weights: List
+        List with the attention weights per block
+    mlp: ``nn.Module``
+        MLP component in the TabTransformer model
+    output_dim: int
+        The output dimension of the model. This is a required attribute
+        neccesary to build the WideDeep class
+
+    Example
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import TabTransformer
+    >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
+    >>> colnames = ['a', 'b', 'c', 'd', 'e']
+    >>> embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
+    >>> continuous_cols = ['e']
+    >>> column_idx = {k:v for v,k in enumerate(colnames)}
+    >>> model = TabTransformer(column_idx=column_idx, embed_input=embed_input, continuous_cols=continuous_cols)
+    >>> out = model(X_tab)
+    """
+
     def __init__(
         self,
         column_idx: Dict[str, int],
@@ -225,111 +330,6 @@ class TabTransformer(nn.Module):
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = True,
     ):
-
-        r"""TabTransformer model (https://arxiv.org/pdf/2012.06678.pdf) model that
-        can be used as the deeptabular component of a Wide & Deep model.
-
-
-        Parameters
-        ----------
-        column_idx: Dict
-            Dict containing the index of the columns that will be passed through
-            the DeepDense model. Required to slice the tensors. e.g. {'education':
-            0, 'relationship': 1, 'workclass': 2, ...}
-        embed_input: List
-            List of Tuples with the column name and number of unique values
-            e.g. [(education, 11), ...]
-        continuous_cols: List, Optional, default = None
-            List with the name of the numeric (aka continuous) columns
-        embed_dropout: float, default = 0.1
-            Dropout to be applied to the embeddings matrix
-        full_embed_dropout: bool, default = False
-            Boolean indicating if an entire embedding (i.e. the representation
-            for one categorical column) will be dropped in the batch. See:
-            ``pytorch_widedeep.model.tab_transformer.FullEmbeddingDropout``.
-            If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
-        shared_embed: bool, default = False
-            The idea behind ``shared_embed`` is described in the Appendix A in the paper:
-            `'The goal of having column embedding is to enable the model to distinguish the
-            classes in one column from those in the other columns'`. In other words, the idea
-            is to let the model learn which column is embedding at the time.
-        add_shared_embed: bool, default = False,
-            The two embedding sharing strategies are: 1) add the shared embeddings to the column
-            embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
-            embeddings. See ``pytorch_widedeep.models.tab_transformer.SharedEmbeddings``
-        frac_shared_embed: int, default = 8
-            The fraction of embeddings that will be shared by all the different categories for
-            one particular column.
-        input_dim: int, default = 32
-            The so-called *dimension of the model*. Is the number of embeddings used to encode
-            the categorical columns
-        n_heads: int, default = 8
-            Number of attention heads per Transformer block
-        n_blocks: int, default = 6
-            Number of Transformer blocks
-        dropout: float, default = 0.1
-            Dropout that will be applied internally to the
-            ``TransformerEncoder`` (see
-            ``pytorch_widedeep.model.tab_transformer.TransformerEncoder``) and the
-            output MLP
-        keep_attn_weights: bool, default = False
-            If set to ``True`` the model will store the attention weights in the ``attention_weights``
-            attribute.
-        fixed_attention: bool, default = False
-            If set to ``True`` all the observations in a batch will have the
-            same Key and Query. This implementation is inspired by the one
-            available at the `Autogluon tabular library
-            <https://github.com/awslabs/autogluon/blob/master/tabular/src/autogluon/tabular/models/tab_transformer/modified_transformer.py>`_.
-        n_cat_columns: int, Optional, default = None
-            If `fixed_attention` is set to ``True`` the number of categorical
-            columns that will be encoded as embeddings must be specified
-        ff_hidden_dim: int, default = 128
-            Hidden dimension of the ``FeedForward`` Layer. See
-            ``pytorch_widedeep.model.tab_transformer.FeedForward``.
-        transformer_activation: str, default = "gelu"
-            Transformer Encoder activation function
-        mlp_hidden_dims: List, Optional, default = None
-            MLP hidden dimensions. If not provided it will default to ``[4*l,
-            2*l]`` where ``l`` is the mlp input dimension
-        mlp_activation: str, default = "gelu"
-            MLP activation function
-        mlp_batchnorm: bool, default = False
-            Boolean indicating whether or not to apply batch normalization to the
-            dense layers
-        mlp_batchnorm_last: bool, default = False
-            Boolean indicating whether or not to apply batch normalization to the
-            last of the dense layers
-        mlp_linear_first: bool, default = False
-            Boolean indicating whether the order of the operations in the dense
-            layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-            LIN -> ACT]``
-
-        Attributes
-        ----------
-        embed_layers: ``nn.ModuleDict``
-            Dict with the embeddings per column
-        tab_transformer_blks: ``nn.Sequential``
-            Sequence of Transformer blocks
-        attention_weights: List
-            List with the attention weights per block
-        mlp: ``nn.Module``
-            MLP component in the TabTransformer model
-        output_dim: int
-            The output dimension of the model. This is a required attribute
-            neccesary to build the WideDeep class
-
-        Example
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.models import TabTransformer
-        >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
-        >>> colnames = ['a', 'b', 'c', 'd', 'e']
-        >>> embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
-        >>> continuous_cols = ['e']
-        >>> column_idx = {k:v for v,k in enumerate(colnames)}
-        >>> model = TabTransformer(column_idx=column_idx, embed_input=embed_input, continuous_cols=continuous_cols)
-        >>> out = model(X_tab)
-        """
         super(TabTransformer, self).__init__()
 
         self.column_idx = column_idx

@@ -7,35 +7,36 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 class Wide(nn.Module):
+    r"""wide (linear) component
+
+    Linear model implemented via an Embedding layer connected to the output
+    neuron(s).
+
+    Parameters
+    -----------
+    wide_dim: int
+        size of the Embedding layer. `wide_dim` is the summation of all the
+        individual values for all the features that go through the wide
+        component. For example, if the wide component receives 2 features with
+        5 individual values each, `wide_dim = 10`
+    pred_dim: int, default = 1
+        size of the ouput tensor containing the predictions
+
+    Attributes
+    -----------
+    wide_linear: :obj:`nn.Module`
+        the linear layer that comprises the wide branch of the model
+
+    Examples
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import Wide
+    >>> X = torch.empty(4, 4).random_(6)
+    >>> wide = Wide(wide_dim=X.unique().size(0), pred_dim=1)
+    >>> out = wide(X)
+    """
+
     def __init__(self, wide_dim: int, pred_dim: int = 1):
-        r"""wide (linear) component
-
-        Linear model implemented via an Embedding layer connected to the output
-        neuron(s).
-
-        Parameters
-        -----------
-        wide_dim: int
-            size of the Embedding layer. `wide_dim` is the summation of all the
-            individual values for all the features that go through the wide
-            component. For example, if the wide component receives 2 features with
-            5 individual values each, `wide_dim = 10`
-        pred_dim: int, default = 1
-            size of the ouput tensor containing the predictions
-
-        Attributes
-        -----------
-        wide_linear: :obj:`nn.Module`
-            the linear layer that comprises the wide branch of the model
-
-        Examples
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.models import Wide
-        >>> X = torch.empty(4, 4).random_(6)
-        >>> wide = Wide(wide_dim=X.unique().size(0), pred_dim=1)
-        >>> out = wide(X)
-        """
         super(Wide, self).__init__()
         # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
         self.wide_linear = nn.Embedding(wide_dim + 1, pred_dim, padding_idx=0)

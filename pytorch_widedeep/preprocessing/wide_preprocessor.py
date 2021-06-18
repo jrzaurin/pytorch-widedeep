@@ -9,55 +9,56 @@ from pytorch_widedeep.preprocessing.base_preprocessor import (
 
 
 class WidePreprocessor(BasePreprocessor):
+    r"""Preprocessor to prepare the wide input dataset
+
+    This Preprocessor prepares the data for the wide, linear component.
+    This linear model is implemented via an Embedding layer that is
+    connected to the output neuron. ``WidePreprocessor`` numerically
+    encodes all the unique values of all categorical columns ``wide_cols +
+    crossed_cols``. See the Example below.
+
+    Parameters
+    ----------
+    wide_cols: List
+        List of strings with the name of the columns that will label
+        encoded and passed through the ``wide`` component
+    crossed_cols: List, default = None
+        List of Tuples with the name of the columns that will be `'crossed'`
+        and then label encoded. e.g. [('education', 'occupation'), ...]
+
+    Attributes
+    ----------
+    wide_crossed_cols: List
+        List with the names of all columns that will be label encoded
+    encoding_dict: Dict
+        Dictionary where the keys are the result of pasting `colname + '_' +
+        column value` and the values are the corresponding mapped integer.
+
+    Example
+    -------
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import WidePreprocessor
+    >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l']})
+    >>> wide_cols = ['color']
+    >>> crossed_cols = [('color', 'size')]
+    >>> wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+    >>> X_wide = wide_preprocessor.fit_transform(df)
+    >>> X_wide
+    array([[1, 4],
+           [2, 5],
+           [3, 6]])
+    >>> wide_preprocessor.encoding_dict
+    {'color_r': 1, 'color_b': 2, 'color_g': 3, 'color_size_r-s': 4, 'color_size_b-n': 5, 'color_size_g-l': 6}
+    >>> wide_preprocessor.inverse_transform(X_wide)
+      color color_size
+    0     r        r-s
+    1     b        b-n
+    2     g        g-l
+    """
+
     def __init__(
         self, wide_cols: List[str], crossed_cols: List[Tuple[str, str]] = None
     ):
-        r"""Preprocessor to prepare the wide input dataset
-
-        This Preprocessor prepares the data for the wide, linear component.
-        This linear model is implemented via an Embedding layer that is
-        connected to the output neuron. ``WidePreprocessor`` numerically
-        encodes all the unique values of all categorical columns ``wide_cols +
-        crossed_cols``. See the Example below.
-
-        Parameters
-        ----------
-        wide_cols: List
-            List of strings with the name of the columns that will label
-            encoded and passed through the ``wide`` component
-        crossed_cols: List, default = None
-            List of Tuples with the name of the columns that will be `'crossed'`
-            and then label encoded. e.g. [('education', 'occupation'), ...]
-
-        Attributes
-        ----------
-        wide_crossed_cols: List
-            List with the names of all columns that will be label encoded
-        encoding_dict: Dict
-            Dictionary where the keys are the result of pasting `colname + '_' +
-            column value` and the values are the corresponding mapped integer.
-
-        Example
-        -------
-        >>> import pandas as pd
-        >>> from pytorch_widedeep.preprocessing import WidePreprocessor
-        >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l']})
-        >>> wide_cols = ['color']
-        >>> crossed_cols = [('color', 'size')]
-        >>> wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
-        >>> X_wide = wide_preprocessor.fit_transform(df)
-        >>> X_wide
-        array([[1, 4],
-               [2, 5],
-               [3, 6]])
-        >>> wide_preprocessor.encoding_dict
-        {'color_r': 1, 'color_b': 2, 'color_g': 3, 'color_size_r-s': 4, 'color_size_b-n': 5, 'color_size_g-l': 6}
-        >>> wide_preprocessor.inverse_transform(X_wide)
-          color color_size
-        0     r        r-s
-        1     b        b-n
-        2     g        g-l
-        """
         super(WidePreprocessor, self).__init__()
 
         self.wide_cols = wide_cols

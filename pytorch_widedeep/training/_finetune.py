@@ -11,6 +11,38 @@ use_cuda = torch.cuda.is_available()
 
 
 class FineTune:
+    r"""
+    Fine-tune methods to be applied to the individual model components.
+
+    Note that they can also be used to "fine-tune" those components before
+    the joined training.
+
+    There are 3 fine-tune/warm-up routines available:
+
+    1) Fine-tune all trainable layers at once
+
+    2) Gradual fine-tuning inspired by the work of Felbo et al., 2017
+
+    3) Gradual fine-tuning inspired by the work of Howard & Ruder 2018
+
+    The structure of the code in this class is designed to be instantiated
+    within the class WideDeep. This is not ideal, but represents a
+    compromise towards implementing a fine-tuning functionality for the
+    current overall structure of the package without having to
+    re-structure most of the existing code. This will change in future
+    releases.
+
+    Parameters
+    ----------
+    loss_fn: Any
+       any function with the same strucure as 'loss_fn' in the class ``Trainer``
+    metric: ``Metric`` or ``MultipleMetrics``
+       object of class Metric (see Metric in pytorch_widedeep.metrics)
+    method: str
+       one of 'binary', 'regression' or 'multiclass'
+    verbose: Boolean
+    """
+
     def __init__(
         self,
         loss_fn: Any,
@@ -18,37 +50,6 @@ class FineTune:
         method: str,
         verbose: int,
     ):
-        r"""
-        Fine-tune methods to be applied to the individual model components.
-
-        Note that they can also be used to "fine-tune" those components before
-        the joined training.
-
-        There are 3 fine-tune/warm-up routines available:
-
-        1) Fine-tune all trainable layers at once
-
-        2) Gradual fine-tuning inspired by the work of Felbo et al., 2017
-
-        3) Gradual fine-tuning inspired by the work of Howard & Ruder 2018
-
-        The structure of the code in this class is designed to be instantiated
-        within the class WideDeep. This is not ideal, but represents a
-        compromise towards implementing a fine-tuning functionality for the
-        current overall structure of the package without having to
-        re-structure most of the existing code. This will change in future
-        releases.
-
-        Parameters
-        ----------
-        loss_fn: Any
-           any function with the same strucure as 'loss_fn' in the class ``Trainer``
-        metric: ``Metric`` or ``MultipleMetrics``
-           object of class Metric (see Metric in pytorch_widedeep.metrics)
-        method: str
-           one of 'binary', 'regression' or 'multiclass'
-        verbose: Boolean
-        """
         self.loss_fn = loss_fn
         self.metric = metric
         self.method = method

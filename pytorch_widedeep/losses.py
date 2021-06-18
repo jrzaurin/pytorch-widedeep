@@ -8,24 +8,25 @@ use_cuda = torch.cuda.is_available()
 
 
 class FocalLoss(nn.Module):
+    r"""Implementation of the `focal loss
+    <https://arxiv.org/pdf/1708.02002.pdf>`_ for both binary and
+    multiclass classification
+
+    :math:`FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)`
+
+    where, for a case of a binary classification problem
+
+    :math:`\begin{equation} p_t= \begin{cases}p, & \text{if $y=1$}.\\1-p, & \text{otherwise}. \end{cases} \end{equation}`
+
+    Parameters
+    ----------
+    alpha: float
+        Focal Loss ``alpha`` parameter
+    gamma: float
+        Focal Loss ``gamma`` parameter
+    """
+
     def __init__(self, alpha: float = 0.25, gamma: float = 1.0):
-        r"""Implementation of the `focal loss
-        <https://arxiv.org/pdf/1708.02002.pdf>`_ for both binary and
-        multiclass classification
-
-        :math:`FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)`
-
-        where, for a case of a binary classification problem
-
-        :math:`\begin{equation} p_t= \begin{cases}p, & \text{if $y=1$}.\\1-p, & \text{otherwise}. \end{cases} \end{equation}`
-
-        Parameters
-        ----------
-        alpha: float
-            Focal Loss ``alpha`` parameter
-        gamma: float
-            Focal Loss ``gamma`` parameter
-        """
         super().__init__()
         self.alpha = alpha
         self.gamma = gamma
@@ -79,8 +80,9 @@ class FocalLoss(nn.Module):
 
 
 class MSLELoss(nn.Module):
+    r"""mean squared log error"""
+
     def __init__(self):
-        r"""mean squared log error"""
         super().__init__()
         self.mse = nn.MSELoss()
 
@@ -107,8 +109,9 @@ class MSLELoss(nn.Module):
 
 
 class RMSELoss(nn.Module):
+    r"""root mean squared error"""
+
     def __init__(self):
-        """root mean squared error"""
         super().__init__()
         self.mse = nn.MSELoss()
 
@@ -135,8 +138,9 @@ class RMSELoss(nn.Module):
 
 
 class RMSLELoss(nn.Module):
+    r"""root mean squared log error"""
+
     def __init__(self):
-        """root mean squared log error"""
         super().__init__()
         self.mse = nn.MSELoss()
 

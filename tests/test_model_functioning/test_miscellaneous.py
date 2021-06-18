@@ -1,3 +1,4 @@
+import os
 import shutil
 import string
 from copy import deepcopy
@@ -273,8 +274,15 @@ def test_save_and_load_dict():
         torch.load("tests/test_model_functioning/model_dir/wd_model.pt")
     )
     n_wide_weights = trainer2.model.wide.wide_linear.weight.data
+    same_weights = torch.allclose(wide_weights, n_wide_weights)
+    if os.path.isfile(
+        "tests/test_model_functioning/model_dir/history/train_eval_history.json"
+    ):
+        history_saved = True
+    else:
+        history_saved = False
     shutil.rmtree("tests/test_model_functioning/model_dir/")
-    assert torch.allclose(wide_weights, n_wide_weights)
+    assert same_weights and history_saved
 
 
 ###############################################################################

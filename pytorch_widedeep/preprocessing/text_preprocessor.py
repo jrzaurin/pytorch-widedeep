@@ -15,6 +15,53 @@ from pytorch_widedeep.preprocessing.base_preprocessor import (
 
 
 class TextPreprocessor(BasePreprocessor):
+    r"""Preprocessor to prepare the ``deeptext`` input dataset
+
+    Parameters
+    ----------
+    text_col: str
+        column in the input dataframe containing the texts
+    max_vocab: int, default=30000
+        Maximum number of token in the vocabulary
+    min_freq: int, default=5
+        Minimum frequency for a token to be part of the vocabulary
+    maxlen: int, default=80
+        Maximum length of the tokenized sequences
+    pad_first: bool,  default = True
+        Indicates whether the padding index will be added at the beginning or the
+        end of the sequences
+    pad_idx: int, default = 1
+        padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
+    word_vectors_path: str, Optional
+        Path to the pretrained word vectors
+    verbose: int, default 1
+        Enable verbose output.
+
+    Attributes
+    ----------
+    vocab: Vocab
+        an instance of :class:`pytorch_widedeep.utils.fastai_transforms.Vocab`
+    tokens: List
+        List with Lists of str containing the tokenized texts
+    embedding_matrix: np.ndarray
+        Array with the pretrained embeddings
+
+    Examples
+    ---------
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import TextPreprocessor
+    >>> df_train = pd.DataFrame({'text_column': ["life is like a box of chocolates",
+    ... "You never know what you're gonna get"]})
+    >>> text_preprocessor = TextPreprocessor(text_col='text_column', max_vocab=25, min_freq=1, maxlen=10)
+    >>> text_preprocessor.fit_transform(df_train)
+    The vocabulary contains 24 tokens
+    array([[ 1,  1,  1,  1, 10, 11, 12, 13, 14, 15],
+           [ 5,  9, 16, 17, 18,  9, 19, 20, 21, 22]], dtype=int32)
+    >>> df_te = pd.DataFrame({'text_column': ['you never know what is in the box']})
+    >>> text_preprocessor.transform(df_te)
+    array([[ 1,  1,  9, 16, 17, 18, 11,  0,  0, 13]], dtype=int32)
+    """
+
     def __init__(
         self,
         text_col: str,
@@ -26,52 +73,6 @@ class TextPreprocessor(BasePreprocessor):
         word_vectors_path: Optional[str] = None,
         verbose: int = 1,
     ):
-        r"""Preprocessor to prepare the ``deeptext`` input dataset
-
-        Parameters
-        ----------
-        text_col: str
-            column in the input dataframe containing the texts
-        max_vocab: int, default=30000
-            Maximum number of token in the vocabulary
-        min_freq: int, default=5
-            Minimum frequency for a token to be part of the vocabulary
-        maxlen: int, default=80
-            Maximum length of the tokenized sequences
-        pad_first: bool,  default = True
-            Indicates whether the padding index will be added at the beginning or the
-            end of the sequences
-        pad_idx: int, default = 1
-            padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
-        word_vectors_path: str, Optional
-            Path to the pretrained word vectors
-        verbose: int, default 1
-            Enable verbose output.
-
-        Attributes
-        ----------
-        vocab: Vocab
-            an instance of :class:`pytorch_widedeep.utils.fastai_transforms.Vocab`
-        tokens: List
-            List with Lists of str containing the tokenized texts
-        embedding_matrix: np.ndarray
-            Array with the pretrained embeddings
-
-        Examples
-        ---------
-        >>> import pandas as pd
-        >>> from pytorch_widedeep.preprocessing import TextPreprocessor
-        >>> df_train = pd.DataFrame({'text_column': ["life is like a box of chocolates",
-        ... "You never know what you're gonna get"]})
-        >>> text_preprocessor = TextPreprocessor(text_col='text_column', max_vocab=25, min_freq=1, maxlen=10)
-        >>> text_preprocessor.fit_transform(df_train)
-        The vocabulary contains 24 tokens
-        array([[ 1,  1,  1,  1, 10, 11, 12, 13, 14, 15],
-               [ 5,  9, 16, 17, 18,  9, 19, 20, 21, 22]], dtype=int32)
-        >>> df_te = pd.DataFrame({'text_column': ['you never know what is in the box']})
-        >>> text_preprocessor.transform(df_te)
-        array([[ 1,  1,  9, 16, 17, 18, 11,  0,  0, 13]], dtype=int32)
-        """
         super(TextPreprocessor, self).__init__()
 
         self.text_col = text_col

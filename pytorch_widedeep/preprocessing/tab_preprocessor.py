@@ -19,6 +19,86 @@ def embed_sz_rule(n_cat):
 
 
 class TabPreprocessor(BasePreprocessor):
+    r"""Preprocessor to prepare the ``deeptabular`` component input dataset
+
+    Parameters
+    ----------
+    embed_cols: List, default = None
+        List containing the name of the columns that will be represented by
+        embeddings or a Tuple with the name and the embedding dimension. e.g.:
+        [('education',32), ('relationship',16), ...]
+    continuous_cols: List, default = None
+        List with the name of the so called continuous cols
+    scale: bool, default = True
+        Bool indicating whether or not to scale/standarise continuous
+        cols. The user should bear in mind that all the ``deeptabular``
+        components available within ``pytorch-widedeep`` they also include
+        the possibility of normalising the input continuous features via a
+        ``BatchNorm`` or a ``LayerNorm`` layer. see
+        :class:`pytorch_widedeep.models`
+    auto_embed_dim: bool
+        Boolean indicating whether the embedding dimensions will be
+        automatically defined via fastai's rule of thumb':
+        :math:`min(600, int(1.6 \times n_{cat}^{0.56}))`
+    default_embed_dim: int, default=16
+        Dimension for the embeddings used for the ``deeptabular``
+        component if the embed_dim is not provided in the ``embed_cols``
+        parameter
+    already_standard: List, default = None
+        List with the name of the continuous cols that do not need to be
+        Standarised. For example, you might have Long and Lat in your
+        dataset and might want to encode them somehow (e.g. see the
+        ``LatLongScalarEnc`` available in the `autogluon
+        <https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular>`_
+        tabular library) and not standarize them any further
+    for_tabtransformer: bool, default = False
+        Boolean indicating whether the preprocessed data will be passed to
+        a ``TabTransformer`` model. If ``True``, the param ``embed_cols``
+        must just be a list containing the categorical columns: e.g.:
+        ['education', 'relationship', ...] This is because following the
+        results in the `paper <https://arxiv.org/pdf/2012.06678.pdf>`_,
+        they will all be encoded using embeddings of the same dim (32 by
+        default). See
+        :class:`pytorch_widedeep.models.tab_transformer.TabTransformer`
+    verbose: int, default = 1
+
+    Attributes
+    ----------
+    label_encoder: LabelEncoder
+        see :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
+    embed_cols: List
+        List with the columns that will be represented by embeddings
+    embed_dim: Dict
+        Dictionary where keys are the embed cols and values are the embedding
+        dimensions. If ``for_tabtransformer`` is set to ``True`` the embedding
+        dimensions are the same for all columns and this attributes is not
+        generated during the ``fit`` process
+    standardize_cols: List
+        List of the columns that will be standarized
+    column_idx: Dict
+        Dictionary where keys are column names and values are column indexes.
+        This is be neccesary to slice tensors
+    scaler: StandardScaler
+        an instance of :class:`sklearn.preprocessing.StandardScaler`
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import TabPreprocessor
+    >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l'], 'age': [25, 40, 55]})
+    >>> embed_cols = [('color',5), ('size',5)]
+    >>> cont_cols = ['age']
+    >>> deep_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+    >>> deep_preprocessor.fit_transform(df)
+    array([[ 1.        ,  1.        , -1.22474487],
+           [ 2.        ,  2.        ,  0.        ],
+           [ 3.        ,  3.        ,  1.22474487]])
+    >>> deep_preprocessor.embed_dim
+    {'color': 5, 'size': 5}
+    >>> deep_preprocessor.column_idx
+    {'color': 0, 'size': 1, 'age': 2}
+    """
+
     def __init__(
         self,
         embed_cols: Union[List[str], List[Tuple[str, int]]] = None,
@@ -30,85 +110,6 @@ class TabPreprocessor(BasePreprocessor):
         for_tabtransformer: bool = False,
         verbose: int = 1,
     ):
-        r"""Preprocessor to prepare the ``deeptabular`` component input dataset
-
-        Parameters
-        ----------
-        embed_cols: List, default = None
-            List containing the name of the columns that will be represented by
-            embeddings or a Tuple with the name and the embedding dimension. e.g.:
-            [('education',32), ('relationship',16), ...]
-        continuous_cols: List, default = None
-            List with the name of the so called continuous cols
-        scale: bool, default = True
-            Bool indicating whether or not to scale/standarise continuous
-            cols. The user should bear in mind that all the ``deeptabular``
-            components available within ``pytorch-widedeep`` they also include
-            the possibility of normalising the input continuous features via a
-            ``BatchNorm`` or a ``LayerNorm`` layer. see
-            :class:`pytorch_widedeep.models`
-        auto_embed_dim: bool
-            Boolean indicating whether the embedding dimensions will be
-            automatically defined via fastai's rule of thumb':
-            :math:`min(600, \nint{1.6 \times n_{cat}^{0.56}})`
-        default_embed_dim: int, default=16
-            Dimension for the embeddings used for the ``deeptabular``
-            component if the embed_dim is not provided in the ``embed_cols``
-            parameter
-        already_standard: List, default = None
-            List with the name of the continuous cols that do not need to be
-            Standarised. For example, you might have Long and Lat in your
-            dataset and might want to encode them somehow (e.g. see the
-            ``LatLongScalarEnc`` available in the `autogluon
-            <https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular>`_
-            tabular library) and NOT standarize them any further
-        for_tabtransformer: bool, default = False
-            Boolean indicating whether the preprocessed data will be passed to
-            a ``TabTransformer`` model. If ``True``, the param ``embed_cols``
-            must just be a list containing the categorical columns: e.g.:
-            ['education', 'relationship', ...] This is because following the
-            results in the `paper <https://arxiv.org/pdf/2012.06678.pdf>`_,
-            they will all be encoded using embeddings of the same dim (32 by
-            default). See
-            :class:`pytorch_widedeep.models.tab_transformer.TabTransformer`
-        verbose: int, default = 1
-
-        Attributes
-        ----------
-        label_encoder: LabelEncoder
-            see :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
-        embed_cols: List
-            List with the columns that will be represented by embeddings
-        embed_dim: Dict
-            Dictionary where keys are the embed cols and values are the embedding
-            dimensions. If ``for_tabtransformer`` is set to ``True`` the embedding
-            dimensions are the same for all columns and this attributes is not
-            generated during the ``fit`` process
-        standardize_cols: List
-            List of the columns that will be standarized
-        column_idx: Dict
-            Dictionary where keys are column names and values are column indexes.
-            This is be neccesary to slice tensors
-        scaler: StandardScaler
-            an instance of :class:`sklearn.preprocessing.StandardScaler`
-
-        Examples
-        --------
-        >>> import pandas as pd
-        >>> from pytorch_widedeep.preprocessing import TabPreprocessor
-        >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l'], 'age': [25, 40, 55]})
-        >>> embed_cols = [('color',5), ('size',5)]
-        >>> cont_cols = ['age']
-        >>> deep_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
-        >>> deep_preprocessor.fit_transform(df)
-        array([[ 1.        ,  1.        , -1.22474487],
-               [ 2.        ,  2.        ,  0.        ],
-               [ 3.        ,  3.        ,  1.22474487]])
-        >>> deep_preprocessor.embed_dim
-        {'color': 5, 'size': 5}
-        >>> deep_preprocessor.column_idx
-        {'color': 0, 'size': 1, 'age': 2}
-        """
         super(TabPreprocessor, self).__init__()
 
         self.embed_cols = embed_cols

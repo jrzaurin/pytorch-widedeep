@@ -1,6 +1,8 @@
 import os
+import pickle
 import shutil
 import string
+from pathlib import Path
 from itertools import chain
 
 import numpy as np
@@ -314,3 +316,154 @@ def test_history_callback_w_tabtransformer(
     elif init_lr is not None and schedulers_type == "cyclic":
         out.append(lr_list[-1] == init_lr)
     assert all(out)
+
+
+def test_modelcheckpoint_mode_warning():
+
+    fpath = "tests/test_model_functioning/modelcheckpoint/weights_out"
+
+    with pytest.warns(RuntimeWarning):
+        model_checkpoint = ModelCheckpoint(  # noqa: F841
+            filepath=fpath, monitor="val_loss", mode="unknown"
+        )
+
+    shutil.rmtree("tests/test_model_functioning/modelcheckpoint/")
+
+
+def test_modelcheckpoint_mode_options():
+
+    fpath = "tests/test_model_functioning/modelcheckpoint/weights_out"
+
+    model_checkpoint_1 = ModelCheckpoint(filepath=fpath, monitor="val_loss", mode="min")
+    model_checkpoint_2 = ModelCheckpoint(filepath=fpath, monitor="val_loss")
+    model_checkpoint_3 = ModelCheckpoint(filepath=fpath, monitor="acc", mode="max")
+    model_checkpoint_4 = ModelCheckpoint(filepath=fpath, monitor="acc")
+
+    is_min = model_checkpoint_1.monitor_op is np.less
+    best_inf = model_checkpoint_1.best is np.Inf
+    auto_is_min = model_checkpoint_2.monitor_op is np.less
+    auto_best_inf = model_checkpoint_2.best is np.Inf
+    is_max = model_checkpoint_3.monitor_op is np.greater
+    best_minus_inf = -model_checkpoint_3.best == np.Inf
+    auto_is_max = model_checkpoint_4.monitor_op is np.greater
+    auto_best_minus_inf = -model_checkpoint_4.best == np.Inf
+
+    shutil.rmtree("tests/test_model_functioning/modelcheckpoint/")
+
+    assert all(
+        [
+            is_min,
+            best_inf,
+            is_max,
+            best_minus_inf,
+            auto_is_min,
+            auto_best_inf,
+            auto_is_max,
+            auto_best_minus_inf,
+        ]
+    )
+
+
+def test_modelcheckpoint_get_state():
+
+    fpath = "tests/test_model_functioning/modelcheckpoint/"
+
+    model_checkpoint = ModelCheckpoint(
+        filepath="/".join([fpath, "weights_out"]), monitor="val_loss"
+    )
+
+    trainer = Trainer(
+        model,
+        objective="binary",
+        callbacks=[model_checkpoint],
+        verbose=0,
+    )
+    trainer.fit(
+        X_wide=X_wide,
+        X_tab=X_tab,
+        target=target,
+        n_epochs=1,
+        batch_size=16,
+    )
+
+    with open("/".join([fpath, "checkpoint.p"]), "wb") as f:
+        pickle.dump(model_checkpoint, f)
+
+    with open("/".join([fpath, "checkpoint.p"]), "rb") as f:
+        model_checkpoint = pickle.load(f)
+
+    self_dict_keys = model_checkpoint.__dict__.keys()
+
+    no_trainer = "trainer" not in self_dict_keys
+    no_model = "model" not in self_dict_keys
+
+    shutil.rmtree("tests/test_model_functioning/modelcheckpoint/")
+
+    assert no_trainer and no_model
+
+
+def test_early_stop_mode_warning():
+
+    with pytest.warns(RuntimeWarning):
+        model_checkpoint = EarlyStopping(  # noqa: F841
+            monitor="val_loss", mode="unknown"
+        )
+
+
+def test_early_stop_mode_options():
+
+    early_stopping_1 = EarlyStopping(monitor="val_loss", mode="min")
+    early_stopping_2 = EarlyStopping(monitor="val_loss")
+    early_stopping_3 = EarlyStopping(monitor="acc", mode="max")
+    early_stopping_4 = EarlyStopping(monitor="acc")
+
+    is_min = early_stopping_1.monitor_op is np.less
+    auto_is_min = early_stopping_2.monitor_op is np.less
+    is_max = early_stopping_3.monitor_op is np.greater
+    auto_is_max = early_stopping_4.monitor_op is np.greater
+
+    assert all(
+        [
+            is_min,
+            is_max,
+            auto_is_min,
+            auto_is_max,
+        ]
+    )
+
+
+def test_early_stopping_get_state():
+
+    early_stopping_path = Path("tests/test_model_functioning/early_stopping")
+    early_stopping_path.mkdir()
+
+    early_stopping = EarlyStopping()
+
+    trainer_tt = Trainer(
+        model,
+        objective="binary",
+        callbacks=[early_stopping],
+        verbose=0,
+    )
+    trainer_tt.fit(
+        X_wide=X_wide,
+        X_tab=X_tab,
+        target=target,
+        n_epochs=1,
+        batch_size=16,
+    )
+
+    with open(early_stopping_path / "early_stopping.p", "wb") as f:
+        pickle.dump(early_stopping, f)
+
+    with open(early_stopping_path / "early_stopping.p", "rb") as f:
+        early_stopping = pickle.load(f)
+
+    self_dict_keys = early_stopping.__dict__.keys()
+
+    no_trainer = "trainer" not in self_dict_keys
+    no_model = "model" not in self_dict_keys
+
+    shutil.rmtree("tests/test_model_functioning/early_stopping/")
+
+    assert no_trainer and no_model
