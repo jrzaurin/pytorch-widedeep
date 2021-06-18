@@ -95,7 +95,7 @@ features, and passed then through a MLP.
 2. ``TabRenset``: This is similar to the previous model but the embeddings are
 passed through a series of ResNet blocks built with dense layers.
 
-3. ``Tabnet``: Details on the TabTransformer can be found in:
+3. ``Tabnet``: Details on TabNet can be found in:
 [TabNet: Attentive Interpretable Tabular Learning]
 (https://arxiv.org/abs/1908.07442)
 
