@@ -2,9 +2,10 @@ Losses
 ======
 
 ``pytorch-widedeep`` accepts a number of losses and objectives that can be
-passed to the ``Trainer`` class via the ``str`` parameter ``objective`` (see
-``pytorch-widedeep.training.Trainer``). For most cases the loss function that
-``pytorch-widedeep`` will use internally is already implemented in Pytorch.
+passed to the ``Trainer`` class via the parameter ``objective``
+(see ``pytorch-widedeep.training.Trainer``). For most cases the loss function
+that ``pytorch-widedeep`` will use internally is already implemented in
+Pytorch.
 
 In addition, ``pytorch-widedeep`` implements four "custom" loss functions.
 These are described below for completion since, as I mentioned before, they

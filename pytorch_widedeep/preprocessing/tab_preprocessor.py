@@ -64,22 +64,24 @@ class TabPreprocessor(BasePreprocessor):
 
     Attributes
     ----------
-    label_encoder: LabelEncoder
-        see :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
-    embed_cols: List
-        List with the columns that will be represented by embeddings
     embed_dim: Dict
         Dictionary where keys are the embed cols and values are the embedding
         dimensions. If ``for_tabtransformer`` is set to ``True`` the embedding
         dimensions are the same for all columns and this attributes is not
         generated during the ``fit`` process
+    label_encoder: LabelEncoder
+        see :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
+    embeddings_input: List
+        List of Tuples with the column name, number of individual values for
+        that column and the corresponding embeddings dim, e.g. [
+        ('education', 16, 10), ('relationship', 6, 8), ...]
     standardize_cols: List
         List of the columns that will be standarized
+    scaler: StandardScaler
+        an instance of :class:`sklearn.preprocessing.StandardScaler`
     column_idx: Dict
         Dictionary where keys are column names and values are column indexes.
         This is be neccesary to slice tensors
-    scaler: StandardScaler
-        an instance of :class:`sklearn.preprocessing.StandardScaler`
 
     Examples
     --------

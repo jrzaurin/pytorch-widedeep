@@ -26,8 +26,7 @@ def conv_layer(
 
 
 class DeepImage(nn.Module):
-    r"""
-    Standard image classifier/regressor using a pretrained network (in
+    r"""Standard image classifier/regressor using a pretrained network (in
     particular ResNets) or a sequence of 4 convolution layers.
 
     If ``pretrained=False`` the `'backbone'` of :obj:`DeepImage` will be a

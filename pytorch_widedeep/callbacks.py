@@ -145,7 +145,7 @@ class History(Callback):
     r"""Callback that records metrics to a ``history`` attribute.
 
     This callback runs by default within :obj:`Trainer`, therefore, should not
-    be passed to the ``Trainer``. Is included here just for completion.
+    be passed to the :obj:`Trainer`. Is included here just for completion.
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):
@@ -163,7 +163,7 @@ class LRShedulerCallback(Callback):
     r"""Callback for the learning rate schedulers to take a step
 
     This callback runs by default within :obj:`Trainer`, therefore, should not
-    be passed to the ``Trainer``. Is included here just for completion.
+    be passed to the :obj:`Trainer`. Is included here just for completion.
     """
 
     def on_batch_end(self, batch: int, logs: Optional[Dict] = None):
@@ -217,7 +217,7 @@ class LRShedulerCallback(Callback):
 class LRHistory(Callback):
     r"""Saves the learning rates during training to a ``lr_history`` attribute.
 
-    Callbacks are passed as input parameters to the ``Trainer`` class. See
+    Callbacks are passed as input parameters to the :obj:`Trainer` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
 
     Parameters
@@ -308,7 +308,7 @@ class ModelCheckpoint(Callback):
     This class is almost identical to the corresponding keras class.
     Therefore, **credit** to the Keras Team.
 
-    Callbacks are passed as input parameters to the ``Trainer`` class. See
+    Callbacks are passed as input parameters to the :obj:`Trainer` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
 
     Parameters
@@ -337,6 +337,13 @@ class ModelCheckpoint(Callback):
         Interval (number of epochs) between checkpoints.
     max_save: int, default=-1
         Maximum number of outputs to save. If -1 will save all outputs
+
+    Attributes
+    ----------
+    best: float
+        best metric
+    best_epoch: int
+        best epoch
 
     Examples
     --------
@@ -483,7 +490,7 @@ class EarlyStopping(Callback):
     This class is almost identical to the corresponding keras class.
     Therefore, **credit** to the Keras Team.
 
-    Callbacks are passed as input parameters to the ``Trainer`` class. See
+    Callbacks are passed as input parameters to the :obj:`Trainer` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
 
     Parameters
@@ -512,6 +519,13 @@ class EarlyStopping(Callback):
         Whether to restore model weights from the epoch with the best
         value of the monitored quantity. If ``False``, the model weights
         obtained at the last step of training are used.
+
+    Attributes
+    ----------
+    best: float
+        best metric
+    stopped_epoch: int
+        epoch when the training stopped
 
     Examples
     --------

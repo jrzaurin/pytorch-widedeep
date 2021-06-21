@@ -444,6 +444,8 @@ class TabNet(nn.Module):
         <https://arxiv.org/abs/1908.07442>`_.
     attn_dim: int, default = 8
         Attention dimension
+    dropout: float, default = 0.0
+        GLU block 'internal' dropout
     n_glu_step_dependent: int, default = 2
         number of GLU Blocks [FC -> BN -> GLU] that are step dependent
     n_glu_shared: int, default = 2
@@ -451,11 +453,13 @@ class TabNet(nn.Module):
         across decision steps
     ghost_bn: bool, default=True
         Boolean indicating if `Ghost Batch Normalization
-        <https://arxiv.org/abs/1705.08741>_` will be used.
+        <https://arxiv.org/abs/1705.08741>`_ will be used.
     virtual_batch_size: int, default = 128
         Batch size when using Ghost Batch Normalization
     momentum: float, default = 0.02
-        Ghost Batch Normalization's momentum
+        Ghost Batch Normalization's momentum. The dreamquark-ai advises for
+        very low values. The results in the paper use significantly higher
+        values. Higher values lead to better results in my experimentations
     gamma: float, default = 1.3
         Relaxation parameter in the paper. When gamma = 1, a feature is
         enforced to be used only at one decision step and as gamma
@@ -469,13 +473,15 @@ class TabNet(nn.Module):
     Attributes
     ----------
     embed_and_cont: ``nn.ModuleDict``
-        ``ModuleDict`` with the embedding
-    TabNetEncoder: ``nn.Module``
-        ``Module`` containing the TabNetEncoder. See the `paper
-        <https://arxiv.org/abs/1908.07442>`_.
+        ``ModuleDict`` with the embeddings and continuous setup
+    embed_and_cont_dim: int
+        embeddings plus continuous dimension
     output_dim: int
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
+    tabnet_encoder: ``nn.Module``
+        ``Module`` containing the TabNet encoder. See the `paper
+        <https://arxiv.org/abs/1908.07442>`_.
 
     Example
     --------
@@ -518,6 +524,7 @@ class TabNet(nn.Module):
         self.n_steps = n_steps
         self.step_dim = step_dim
         self.attn_dim = attn_dim
+        self.dropout = dropout
         self.n_glu_step_dependent = n_glu_step_dependent
         self.n_glu_shared = n_glu_shared
         self.ghost_bn = ghost_bn

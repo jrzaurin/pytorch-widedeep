@@ -106,14 +106,14 @@ class TabResnet(nn.Module):
         0, 'relationship': 1, 'workclass': 2, ...}
     blocks_dims: List, default = [200, 100, 100]
         List of integers that define the input and output units of each block.
-        For example: [200, 100, 100] will generate 2 blocks_dims. The first will
+        For example: [200, 100, 100] will generate 2 blocks. The first will
         receive a tensor of size 200 and output a tensor of size 100, and the
         second will receive a tensor of size 100 and output a tensor of size
-        100. See ``pytorch_widedeep.models.deep_dense_resnet.BasicBlock`` for
+        100. See :obj:`pytorch_widedeep.models.deep_dense_resnet.BasicBlock` for
         details on the structure of each block.
     blocks_dropout: float, default =  0.1
        Block's `"internal"` dropout. This dropout is applied to the first
-       of the two dense layers that comprise each ``BasicBlock``.e
+       of the two dense layers that comprise each ``BasicBlock``.
     mlp_hidden_dims: List, Optional, default = None
         List with the number of neurons per dense layer in the mlp. e.g:
         [64, 32]. If ``None`` the  output of the Resnet Blocks will be
@@ -149,11 +149,11 @@ class TabResnet(nn.Module):
 
     Attributes
     ----------
+    embed_layers: ``nn.ModuleDict``
+        ``ModuleDict`` with the embeddings setup
     dense_resnet: ``nn.Sequential``
         deep dense Resnet model that will receive the concatenation of the
         embeddings and the continuous columns
-    embed_layers: ``nn.ModuleDict``
-        ``ModuleDict`` with the embedding layers
     tab_resnet_mlp: ``nn.Sequential``
         if ``mlp_hidden_dims`` is ``True``, this attribute will be an mlp
         model that will receive:

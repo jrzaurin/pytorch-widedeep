@@ -10,7 +10,7 @@ from pytorch_widedeep.models.tab_mlp import MLP
 
 class DeepText(nn.Module):
     r"""Standard text classifier/regressor comprised by a stack of RNNs
-    (in particular LSTMs).
+    (LSTMs or GRUs).
 
     In addition, there is the option to add a Fully Connected (FC) set of dense
     layers (referred as `texthead`) on top of the stack of RNNs
@@ -19,19 +19,19 @@ class DeepText(nn.Module):
     ----------
     vocab_size: int
         number of words in the vocabulary
-    rnn_type: str
-        String indicating the type of RNN to use. One of "lstm" or "rnn"
+    rnn_type: str, default = 'lstm'
+        String indicating the type of RNN to use. One of "lstm" or "gru"
     hidden_dim: int, default = 64
-        Hidden dim of the LSTM
+        Hidden dim of the RNN
     n_layers: int, default = 3
         number of recurrent layers
     rnn_dropout: float, default = 0.1
-        dropout for the dropout layer on the outputs of each LSTM layer except
+        dropout for the dropout layer on the outputs of each RNN layer except
         the last layer
     bidirectional: bool, default = True
         indicates whether the staked RNNs are bidirectional
     use_hidden_state: str, default = True,
-        Boolean indicating whether to use the final hidden state of the
+        Boolean indicating whether to use the final hidden state or the
         rnn output as predicting features
     padding_idx: int, default = 1
         index of the padding token in the padded-tokenised sequences. I
@@ -67,7 +67,7 @@ class DeepText(nn.Module):
     word_embed: ``nn.Module``
         word embedding matrix
     rnn: ``nn.Module``
-        Stack of LSTMs
+        Stack of RNNs
     texthead: ``nn.Sequential``
         Stack of dense layers on top of the RNN. This will only exists if
         ``head_layers_dim`` is not ``None``

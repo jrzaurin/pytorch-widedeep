@@ -114,11 +114,11 @@ class TabMlp(nn.Module):
 
     Attributes
     ----------
-    mlp: ``nn.Sequential``
+    tab_mlp: ``nn.Sequential``
         mlp model that will receive the concatenation of the embeddings and
         the continuous columns
     embed_layers: ``nn.ModuleDict``
-        ``ModuleDict`` with the embedding
+        ``ModuleDict`` with the embeddings set up
     output_dim: int
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class

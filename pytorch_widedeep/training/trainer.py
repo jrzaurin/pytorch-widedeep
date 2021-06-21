@@ -54,7 +54,7 @@ class Trainer:
     objective: str
         Defines the objective, loss or cost function.
 
-        param aliases: ``loss_function``, ``loss_fn``, ``loss``,
+        Param aliases: ``loss_function``, ``loss_fn``, ``loss``,
         ``cost_function``, ``cost_fn``, ``cost``
 
         Possible values are:
@@ -76,7 +76,7 @@ class Trainer:
         - ``root_mean_squared_error``, aliases:  ``rmse``
 
         - ``root_mean_squared_log_error``, aliases: ``rmsle``
-    custom_loss_function: ``nn.Module``, Optional, default = None
+    custom_loss_function: ``nn.Module``, optional, default = None
         object of class ``nn.Module``. If none of the loss functions
         available suits the user, it is possible to pass a custom loss
         function. See for example
@@ -89,53 +89,53 @@ class Trainer:
             'binary', 'multiclass' or 'regression', consistent with the loss
             function
 
-    optimizers: ``Optimzer`` or Dict, Optional, default= None
+    optimizers: ``Optimzer`` or dict, optional, default= None
         - An instance of Pytorch's ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
         - a dictionary where there keys are the model components (i.e.
           `'wide'`, `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)  and
           the values are the corresponding optimizers. If multiple optimizers are used
           the  dictionary **MUST** contain an optimizer per model component.
 
-        if no optimizers are passed it will default to ``AdamW`` for all
+        if no optimizers are passed it will default to ``Adam`` for all
         Wide and Deep components
-    lr_schedulers: ``LRScheduler`` or Dict, Optional, default=None
+    lr_schedulers: ``LRScheduler`` or dict, optional, default=None
         - An instance of Pytorch's ``LRScheduler`` object (e.g
           :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
         - a dictionary where there keys are the model componenst (i.e. `'wide'`,
           `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
           values are the corresponding learning rate schedulers.
-    reducelronplateau_criterion: str, Optional. default="loss"
+    reducelronplateau_criterion: str, optional. default="loss"
         Quantity to be monitored during training if using the
-        ``ReduceLROnPlateau`` learning rate scheduler. Possible value
+        :obj:`ReduceLROnPlateau` learning rate scheduler. Possible value
         are: 'loss' or 'metric'.
-    initializers: ``Initializer`` or Dict, Optional. default=None
-        - An instance of an `Initializer`` object see ``pytorch-widedeep.initializers`` or
+    initializers: ``Initializer`` or dict, optional, default=None
+        - An instance of an `Initializer`` object see :obj:`pytorch-widedeep.initializers` or
         - a dictionary where there keys are the model components (i.e. `'wide'`,
           `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)
           and the values are the corresponding initializers.
-    transforms: List, Optional, default=None
+    transforms: List, optional, default=None
         List with :obj:`torchvision.transforms` to be applied to the image
         component of the model (i.e. ``deepimage``) See `torchvision
         transforms
         <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
-    callbacks: List, Optional, default=None
-        List with ``Callback`` objects. The four callbacks available in
-        ``pytorch-widedeep`` are: ``History``, ``ModelCheckpoint``,
-        ``EarlyStopping``, and ``LRHistory``. The ``History`` callback is
-        used by default. This can also be a custom callback as long as the
-        object of type ``Callback``. See
-        ``pytorch_widedeep.callbacks.Callback`` or the `Examples
+    callbacks: List, optional, default=None
+        List with :obj:`Callback` objects. The three callbacks available in
+        ``pytorch-widedeep`` are: ``LRHistory``, ``ModelCheckpoint`` and
+        ``EarlyStopping``. The ``History`` and the ``LRShedulerCallback``
+        callbacks are used by default. This can also be a custom callback as
+        long as the object of type ``Callback``. See
+        :obj:`pytorch_widedeep.callbacks.Callback` or the `Examples
         <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
         folder in the repo
-    metrics: List, Optional, default=None
-        List of objects of type ``Metric``. Metrics available are:
+    metrics: List, optional, default=None
+        List of objects of type :obj:`Metric`. Metrics available are:
         ``Accuracy``, ``Precision``, ``Recall``, ``FBetaScore``,
         ``F1Score`` and ``R2Score``. This can also be a custom metric as
-        long as it is an object of type ``Metric``. See
-        ``pytorch_widedeep.metrics.Metric`` or the `Examples
+        long as it is an object of type :obj:`Metric`. See
+        :obj:`pytorch_widedeep.metrics.Metric` or the `Examples
         <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
         folder in the repo
-    class_weight: float, List or Tuple. Optional. default=None
+    class_weight: float, List or Tuple. optional. default=None
         - float indicating the weight of the minority class in binary classification
           problems (e.g. 9.)
         - a list or tuple with weights for the different classes in multiclass
@@ -161,8 +161,8 @@ class Trainer:
     cyclic_lr: bool
         Attribute that indicates if any of the lr_schedulers is cyclic_lr (i.e. ``CyclicLR`` or
         ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
-    feature_importance: Dict
-        Dict where the keys are the column names and the values are the
+    feature_importance: dict
+        dict where the keys are the column names and the values are the
         corresponding feature importances. This attribute will only exist
         if the ``deeptabular`` component is a Tabnet model
 
@@ -387,7 +387,7 @@ class Trainer:
               following: `i`) the learning rate will gradually increase for
               10% of the training steps from max_lr/10 to max_lr. `ii`) It
               will then gradually decrease to max_lr/10 for the remaining 90%
-              of the steps. The optimizer used in the process is ``AdamW``.
+              of the steps. The optimizer used in the process is ``Adam``.
 
             and two gradual fine-tune routines, where only certain layers are
             trained at a time.
@@ -619,6 +619,7 @@ class Trainer:
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
+        batch_size: int = 256,
     ) -> np.ndarray:
         r"""Returns the predictions
 
@@ -645,9 +646,13 @@ class Trainer:
             The test dataset can also be passed in a dictionary. Keys are
             `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
             are the corresponding matrices.
+        batch_size: int, default = 256
+            If a trainer is used to predict after having trained a model, the
+            ``batch_size`` needs to be defined as it will not be defined as
+            the :obj:`Trainer` is instantiated
         """
 
-        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test)
+        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size)
         if self.method == "regression":
             return np.vstack(preds_l).squeeze(1)
         if self.method == "binary":
@@ -664,6 +669,7 @@ class Trainer:
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
+        batch_size: int = 256,
     ) -> np.ndarray:
         r"""Returns the predicted probabilities for the test dataset for  binary
         and multiclass methods
@@ -690,9 +696,13 @@ class Trainer:
             The test dataset can also be passed in a dictionary. Keys are
             `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
             are the corresponding matrices.
+        batch_size: int, default = 256
+            If a trainer is used to predict after having trained a model, the
+            ``batch_size`` needs to be defined as it will not be defined as
+            the :obj:`Trainer` is instantiated
         """
 
-        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test)
+        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size)
         if self.method == "binary":
             preds = np.vstack(preds_l).squeeze(1)
             probs = np.zeros([preds.shape[0], 2])
@@ -818,7 +828,7 @@ class Trainer:
         model_filename: str = "wd_model.pt",
     ):
         """Saves the model, training and evaluation history, and the
-        feature_importance attribute (if the ``deeptabular`` component is a
+        ``feature_importance`` attribute (if the ``deeptabular`` component is a
         Tabnet model) to disk
 
         The ``Trainer`` class is built so that it 'just' trains a model. With
@@ -831,10 +841,11 @@ class Trainer:
         path)``).
 
         The exception is Tabnet. If the ``deeptabular`` component is a Tabnet
-        model, an attribute (a Dict) called ``feature_importance`` will be
+        model, an attribute (a dict) called ``feature_importance`` will be
         created at the end of the training process. Therefore, a ``save``
         method was created that will save both the feature importance
-        dictionary to a json file and, since we are here, the model weights.
+        dictionary to a json file and, since we are here, the model weights,
+        training history and learning rate history.
 
         Parameters
         ----------
@@ -859,7 +870,7 @@ class Trainer:
         has_lr_history = any(
             [clbk.__class__.__name__ == "LRHistory" for clbk in self.callbacks]
         )
-        if has_lr_history:
+        if self.lr_scheduler is not None and has_lr_history:
             with open(history_dir / "lr_history.json", "w") as lrh:
                 json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
 
@@ -1056,6 +1067,7 @@ class Trainer:
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
+        batch_size: int = 256,
     ) -> List:
         r"""Private method to avoid code repetition in predict and
         predict_proba. For parameter information, please, see the .predict()
@@ -1074,6 +1086,9 @@ class Trainer:
             if X_img is not None:
                 load_dict.update({"X_img": X_img})
             test_set = WideDeepDataset(**load_dict)
+
+        if not hasattr(self, "batch_size"):
+            self.batch_size = batch_size
 
         test_loader = DataLoader(
             dataset=test_set,
@@ -1139,7 +1154,7 @@ class Trainer:
                     assert mn in opt_names, "No optimizer found for {}".format(mn)
                 optimizer = MultipleOptimizer(optimizers)
         else:
-            optimizer = torch.optim.AdamW(self.model.parameters())  # type: ignore
+            optimizer = torch.optim.Adam(self.model.parameters())  # type: ignore
         return optimizer
 
     def _set_lr_scheduler(self, lr_schedulers):

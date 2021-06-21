@@ -220,7 +220,7 @@ class TabTransformer(nn.Module):
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation
         for one categorical column) will be dropped in the batch. See:
-        ``pytorch_widedeep.model.tab_transformer.FullEmbeddingDropout``.
+        :obj:`pytorch_widedeep.model.tab_transformer.FullEmbeddingDropout`.
         If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
     shared_embed: bool, default = False
         The idea behind ``shared_embed`` is described in the Appendix A in the paper:
@@ -230,7 +230,7 @@ class TabTransformer(nn.Module):
     add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings to the column
         embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
-        embeddings. See ``pytorch_widedeep.models.tab_transformer.SharedEmbeddings``
+        embeddings. See :obj:`pytorch_widedeep.models.tab_transformer.SharedEmbeddings`
     frac_shared_embed: int, default = 8
         The fraction of embeddings that will be shared by all the different categories for
         one particular column.
@@ -244,7 +244,7 @@ class TabTransformer(nn.Module):
     dropout: float, default = 0.1
         Dropout that will be applied internally to the
         ``TransformerEncoder`` (see
-        ``pytorch_widedeep.model.tab_transformer.TransformerEncoder``) and the
+        :obj:`pytorch_widedeep.model.tab_transformer.TransformerEncoder`) and the
         output MLP
     keep_attn_weights: bool, default = False
         If set to ``True`` the model will store the attention weights in the ``attention_weights``
@@ -259,7 +259,7 @@ class TabTransformer(nn.Module):
         columns that will be encoded as embeddings must be specified
     ff_hidden_dim: int, default = 128
         Hidden dimension of the ``FeedForward`` Layer. See
-        ``pytorch_widedeep.model.tab_transformer.FeedForward``.
+        :obj:`pytorch_widedeep.model.tab_transformer.FeedForward`.
     transformer_activation: str, default = "gelu"
         Transformer Encoder activation function
     mlp_hidden_dims: List, Optional, default = None
@@ -286,7 +286,7 @@ class TabTransformer(nn.Module):
         Sequence of Transformer blocks
     attention_weights: List
         List with the attention weights per block
-    mlp: ``nn.Module``
+    tab_transformer_mlp: ``nn.Module``
         MLP component in the TabTransformer model
     output_dim: int
         The output dimension of the model. This is a required attribute

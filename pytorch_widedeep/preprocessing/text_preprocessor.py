@@ -22,7 +22,7 @@ class TextPreprocessor(BasePreprocessor):
     text_col: str
         column in the input dataframe containing the texts
     max_vocab: int, default=30000
-        Maximum number of token in the vocabulary
+        Maximum number of tokens in the vocabulary
     min_freq: int, default=5
         Minimum frequency for a token to be part of the vocabulary
     maxlen: int, default=80
@@ -41,10 +41,10 @@ class TextPreprocessor(BasePreprocessor):
     ----------
     vocab: Vocab
         an instance of :class:`pytorch_widedeep.utils.fastai_transforms.Vocab`
-    tokens: List
-        List with Lists of str containing the tokenized texts
     embedding_matrix: np.ndarray
         Array with the pretrained embeddings
+    tokens: List
+        List with Lists of str containing the tokenized texts
 
     Examples
     ---------

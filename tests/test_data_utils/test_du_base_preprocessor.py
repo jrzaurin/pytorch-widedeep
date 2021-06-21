@@ -39,7 +39,7 @@ class IncompletePreprocessor(BasePreprocessor):
 
 
 ###############################################################################
-#  test check_is_fitted with "any"
+# test check_is_fitted with "any"
 ###############################################################################
 
 
@@ -50,7 +50,7 @@ def test_check_is_fitted():
 
 
 ###############################################################################
-#  test base_preprocessor raising NotImplemented error
+# test base_preprocessor raising NotImplemented error
 ###############################################################################
 
 

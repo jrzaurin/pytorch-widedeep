@@ -33,12 +33,12 @@ embed_input_tt = [(u, i) for u, i in zip(colnames[:5], [5] * 5)]
 cont_cols = [np.random.rand(32) for _ in range(5)]
 X_tab = np.vstack(embed_cols + cont_cols).transpose()
 
-#  Text Array
+# Text Array
 padded_sequences = np.random.choice(np.arange(1, 100), (32, 48))
 X_text = np.hstack((np.repeat(np.array([[0, 0]]), 32, axis=0), padded_sequences))
 vocab_size = 100
 
-#  Image Array
+# Image Array
 X_img = np.random.choice(256, (32, 224, 224, 3))
 X_img_norm = X_img / 255.0
 
@@ -90,7 +90,7 @@ deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
 deepimage = DeepImage(pretrained=True)
 
 ###############################################################################
-#  test consistecy between optimizers and lr_schedulers format
+# test consistecy between optimizers and lr_schedulers format
 ###############################################################################
 
 
@@ -110,7 +110,7 @@ def test_optimizer_scheduler_format():
 
 
 ###############################################################################
-#  test that callbacks are properly initialised internally
+# test that callbacks are properly initialised internally
 ###############################################################################
 
 
@@ -122,7 +122,7 @@ def test_non_instantiated_callbacks():
 
 
 ###############################################################################
-#  test that multiple metrics are properly constructed internally
+# test that multiple metrics are properly constructed internally
 ###############################################################################
 
 
@@ -137,7 +137,7 @@ def test_multiple_metrics():
 
 
 ###############################################################################
-#  test the train step with metrics runs well for a binary prediction
+# test the train step with metrics runs well for a binary prediction
 ###############################################################################
 
 
@@ -166,7 +166,7 @@ def test_basic_run_with_metrics_binary(wide, deeptabular):
 
 
 ###############################################################################
-#  test the train step with metrics runs well for a muticlass prediction
+# test the train step with metrics runs well for a muticlass prediction
 ###############################################################################
 
 
@@ -195,7 +195,7 @@ def test_basic_run_with_metrics_multiclass():
 
 
 ###############################################################################
-#  test predict method for individual components
+# test predict method for individual components
 ###############################################################################
 
 
@@ -233,7 +233,7 @@ def test_predict_with_individual_component(
 
 
 ###############################################################################
-#  test save
+# test save
 ###############################################################################
 
 
@@ -286,7 +286,7 @@ def test_save_and_load_dict():
 
 
 ###############################################################################
-#  test explain matrices and feature importance for TabNet
+# test explain matrices and feature importance for TabNet
 ###############################################################################
 
 
@@ -311,3 +311,34 @@ def test_explain_mtx_and_feat_imp():
         checks.append(step_masks[i].shape[1] == 10)
 
     assert all(checks)
+
+
+###############################################################################
+# test save load and predict
+###############################################################################
+
+
+def test_save_load_and_predict():
+
+    fpath = "tests/test_model_functioning/test_wd_model"
+    if not os.path.exists(fpath):
+        os.makedirs(fpath)
+
+    model = WideDeep(deeptabular=tabmlp)
+    trainer = Trainer(model, objective="binary", verbose=0)
+    trainer.fit(
+        X_tab=X_tab,
+        target=target,
+        batch_size=16,
+    )
+
+    trainer.save(path=fpath, save_state_dict=True)
+
+    model_new = WideDeep(deeptabular=tabmlp)
+    model_new.load_state_dict(torch.load("/".join([fpath, "wd_model.pt"])))
+    trainer_new = Trainer(model, objective="binary", verbose=0)
+    preds = trainer_new.predict(X_tab=X_tab, batch_size=16)
+
+    shutil.rmtree(fpath)
+
+    assert preds.shape[0] == X_tab.shape[0]

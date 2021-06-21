@@ -8,8 +8,8 @@ from pytorch_widedeep.models.tab_transformer import *  # noqa: F403
 # I am going over test this model due to the number of components
 
 n_embed = 5
-#  this is the number of embed_cols and cont_cols. So total num of cols =
-#  n_cols * 2
+# this is the number of embed_cols and cont_cols. So total num of cols =
+# n_cols * 2
 n_cols = 2
 batch_size = 10
 colnames = list(string.ascii_lowercase)[: (n_cols * 2)]

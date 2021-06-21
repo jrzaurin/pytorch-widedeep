@@ -17,8 +17,8 @@ def simple_preprocess(
     max_len: int = 15,
 ) -> List[str]:
     r"""
-    ``Gensim``'s :obj:`simple_preprocess` adding a ``lower`` param to indicate
-    wether or not to lower case all the token in the doc
+    This is ``Gensim``'s :obj:`simple_preprocess` with a ``lower`` param to
+    indicate wether or not to lower case all the token in the doc
 
     For more information see: ``Gensim`` `utils module
     <https://radimrehurek.com/gensim/utils.html>`_. Returns the list of tokens
@@ -124,7 +124,8 @@ def pad_sequences(
 def build_embeddings_matrix(
     vocab: Vocab, word_vectors_path: str, min_freq: int, verbose: int = 1
 ) -> np.ndarray:  # pragma: no cover
-    r"""Build the embedding matrix using pretrained word vectors
+    r"""Build the embedding matrix using pretrained word vectors. Returns the
+    pretrained word embeddings
 
     Returns pretrained word embeddings. If a word in our vocabulary is not
     among the pretrained embeddings it will be assigned the mean pretrained
@@ -140,10 +141,6 @@ def build_embeddings_matrix(
         minimum frequency required for a word to be in the vocabulary
     verbose: int,  default=1
         level of verbosity. Set to 0 for no verbosity
-
-    Returns
-    -------
-        pretrained word embeddings
     """
     if not os.path.isfile(word_vectors_path):
         raise FileNotFoundError("{} not found".format(word_vectors_path))

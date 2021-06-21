@@ -18,7 +18,9 @@ using wide and deep models.
 
 **Documentation:** [https://pytorch-widedeep.readthedocs.io](https://pytorch-widedeep.readthedocs.io/en/latest/index.html)
 
-**Companion posts:** [infinitoml](https://jrzaurin.github.io/infinitoml/)
+**Companion posts and tutorials:** [infinitoml](https://jrzaurin.github.io/infinitoml/)
+
+**Experiments and comparisson with `LightGBM`**: [TabularDL vs LightGBM](https://github.com/jrzaurin/tabulardl-benchmark)
 
 ### Introduction
 
@@ -96,15 +98,14 @@ features, and passed then through a MLP.
 passed through a series of ResNet blocks built with dense layers.
 
 3. ``Tabnet``: Details on TabNet can be found in:
-[TabNet: Attentive Interpretable Tabular Learning]
-(https://arxiv.org/abs/1908.07442)
+[TabNet: Attentive Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442)
 
 4. ``TabTransformer``: Details on the TabTransformer can be found in:
 [TabTransformer: Tabular Data Modeling Using Contextual
 Embeddings](https://arxiv.org/pdf/2012.06678.pdf)
 
 
-For details on these 3 models and their options please see the examples in the
+For details on these 4 models and their options please see the examples in the
 Examples folder and the documentation.
 
 Finally, while I recommend using the ``wide`` and ``deeptabular`` models in
@@ -143,7 +144,7 @@ cd pytorch-widedeep
 pip install -e .
 ```
 
-**Important note for Mac users**: at the time of writing (Feb-2020) the latest
+**Important note for Mac users**: at the time of writing (Feb-2021) the latest
 `torch` release is `1.7.1`. This release has some
 [issues](https://stackoverflow.com/questions/64772335/pytorch-w-parallelnative-cpp206)
 when running on Mac and the data-loaders will not run in parallel. In
@@ -171,16 +172,13 @@ Binary classification with the [adult
 dataset]([adult](https://www.kaggle.com/wenruliu/adult-income-dataset))
 using `Wide` and `DeepDense` and defaults settings.
 
-
-```python
-```
-
 Building a wide (linear) and deep model with ``pytorch-widedeep``:
 
 ```python
 
 import pandas as pd
 import numpy as np
+import torch
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep import Trainer
@@ -252,8 +250,29 @@ X_wide_te = wide_preprocessor.transform(df_test)
 X_tab_te = tab_preprocessor.transform(df_test)
 preds = trainer.predict(X_wide=X_wide_te, X_tab=X_tab_te)
 
-# save and load
-trainer.save_model("model_weights/model.t")
+# Save and load
+
+# Option 1: this will also save training history and lr history if the
+# LRHistory callback is used
+trainer.save(path="model_weights", save_state_dict=True)
+
+# Option 2: save as any other torch model
+torch.save(model.state_dict(), "model_weights/wd_model.pt")
+
+# From here in advance, Option 1 or 2 are the same. I assume the user has
+# prepared the data and defined the new model components:
+# 1. Build the model
+model_new = WideDeep(wide=wide, deeptabular=deeptabular)
+model_new.load_state_dict(torch.load("model_weights/wd_model.pt"))
+
+# 2. Instantiate the trainer
+trainer_new = Trainer(
+    model_new,
+    objective="binary",
+)
+
+# 3. Either start the fit or directly predict
+preds = trainer_new.predict(X_wide=X_wide, X_tab=X_tab)
 ```
 
 Of course, one can do **much more**. See the Examples folder, the

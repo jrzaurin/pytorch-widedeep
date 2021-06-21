@@ -26,11 +26,9 @@ class ImagePreprocessor(BasePreprocessor):
     img_path: str
         path to the dicrectory where the images are stored
     width: int, default=224
-        width of the resulting processed image. 224 because the default
-        architecture used by WideDeep is ResNet
+        width of the resulting processed image.
     height: int, default=224
-        width of the resulting processed image. 224 because the default
-        architecture used by WideDeep is ResNet
+        width of the resulting processed image.
     verbose: int, default 1
         Enable verbose output.
 

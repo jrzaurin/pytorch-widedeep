@@ -26,9 +26,10 @@ class AspectAwarePreprocessor:
         output height
     inter: interpolation method,  default = ``cv2.INTER_AREA``
         ``opencv`` interpolation method. See ``opencv``
-        :obj:`InterpolationFlags`. `The 3 value that appears in the class
-        parameters above is a formatting error`
+        :obj:`InterpolationFlags`.
 
+        .. note:: The value 3 that appears in the class parameters above is a Sphinx
+            formatting error.
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
@@ -88,8 +89,10 @@ class SimplePreprocessor:
         output height
     inter: interpolation method, default = ``cv2.INTER_AREA``
         ``opencv`` interpolation method. See ``opencv``
-        :obj:`InterpolationFlags`. `The 3 value that appears in the class
-        parameters above is a formatting error`
+        :obj:`InterpolationFlags`.
+
+        .. note:: The value 3 that appears in the class parameters above is a Sphinx
+            formatting error.
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):

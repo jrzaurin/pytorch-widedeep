@@ -29,12 +29,12 @@ cont_cols = [np.random.rand(100) for _ in range(5)]
 column_idx = {k: v for v, k in enumerate(colnames)}
 X_deep = np.vstack(embed_cols + cont_cols).transpose()
 
-#  Text Array
+# Text Array
 padded_sequences = np.random.choice(np.arange(1, 100), (100, 48))
 vocab_size = 1000
 X_text = np.hstack((np.repeat(np.array([[0, 0]]), 100, axis=0), padded_sequences))
 
-#  Image Array
+# Image Array
 X_img = np.random.choice(256, (100, 224, 224, 3))
 
 

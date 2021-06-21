@@ -100,8 +100,41 @@ Fit and predict
     X_tab_te = tab_preprocessor.transform(df_test)
     preds = trainer.predict(X_wide=X_wide_te, X_tab=X_tab_te)
 
-    # save and load
-    trainer.save_model("model_weights/model.t")
+
+Save and load
+-------------------------------
+
+.. code-block:: python
+
+    # Option 1: this will also save training history and lr history if the
+    # LRHistory callback is used
+
+    # Day 0, you have trained your model, save it using the trainer.save
+    # method
+    trainer.save(path="model_weights", save_state_dict=True)
+
+    # Option 2: save as any other torch model
+
+    # Day 0, you have trained your model, save as any other torch model
+    torch.save(model.state_dict(), "model_weights/wd_model.pt")
+
+    # From here in advance, Option 1 or 2 are the same
+
+    # Few days have passed...I assume the user has prepared the data and
+    # defined the model components:
+    # 1. Build the model
+    model_new = WideDeep(wide=wide, deeptabular=deeptabular)
+    model_new.load_state_dict(torch.load("model_weights/wd_model.pt"))
+
+    # 2. Instantiate the trainer
+    trainer_new = Trainer(
+        model_new,
+        objective="binary",
+    )
+
+    # 3. Either fit or directly predict
+    preds = trainer_new.predict(X_wide=X_wide, X_tab=X_tab)
+
 
 Of course, one can do **much more**. See the Examples folder in the repo, this
 documentation or the companion posts for a better understanding of the content

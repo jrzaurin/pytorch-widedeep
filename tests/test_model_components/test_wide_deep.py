@@ -21,7 +21,7 @@ deeptext = DeepText(vocab_size=100, embed_dim=8)
 deepimage = DeepImage(pretrained=False)
 
 ###############################################################################
-#  test raising 'output dim errors'
+# test raising 'output dim errors'
 ###############################################################################
 
 
@@ -49,7 +49,7 @@ def test_history_callback(deepcomponent, component_name):
 
 
 ###############################################################################
-#  test warning on head_layers_dim and deephead
+# test warning on head_layers_dim and deephead
 ###############################################################################
 
 
@@ -65,7 +65,7 @@ def test_deephead_and_head_layers_dim():
 
 
 ###############################################################################
-#  test deephead is None and head_layers_dim is not None
+# test deephead is None and head_layers_dim is not None
 ###############################################################################
 
 
@@ -83,7 +83,7 @@ def test_no_deephead_and_head_layers_dim():
 
 
 ###############################################################################
-#  test tabnet warning
+# test tabnet warning
 ###############################################################################
 
 

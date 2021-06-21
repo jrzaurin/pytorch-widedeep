@@ -19,8 +19,7 @@ class WideDeep(nn.Module):
     ``deepimage`` models.
 
     There are two options to combine these models that correspond to the
-    two main architectures (there is a higher number of
-    "sub-architectures") that ``pytorch-widedeep`` can build.
+    two main architectures that ``pytorch-widedeep`` can build.
 
         - Directly connecting the output of the model components to an ouput neuron(s).
 
@@ -31,7 +30,7 @@ class WideDeep(nn.Module):
     Parameters
     ----------
     wide: ``nn.Module``, Optional, default = None
-        ``Wide`` model. I recommend using the ``Wide`` class in this
+        ``Wide`` model. I recommend using the :obj:`Wide` class in this
         package. However, it is possible to use a custom model as long as
         is consistent with the required architecture, see
         :class:`pytorch_widedeep.models.wide.Wide`
@@ -39,26 +38,26 @@ class WideDeep(nn.Module):
 
         currently ``pytorch-widedeep`` implements four possible
         architectures for the `deeptabular` component. These are:
-        ``TabMlp``, ``TabResnet``, ``TabNet`` and ``TabTransformer``.
+        TabMlp, TabResnet, TabNet and TabTransformer.
 
-        1. ``TabMlp`` is simply an embedding layer encoding the categorical
+        1. TabMlp is simply an embedding layer encoding the categorical
         features that are then concatenated and passed through a series of
         dense (hidden) layers (i.e. and MLP).
-        See: ``pytorch_widedeep.models.deep_dense.TabMlp``
+        See: :obj:`pytorch_widedeep.models.deep_dense.TabMlp`
 
-        2. ``TabResnet`` is an embedding layer encoding the categorical
+        2. TabResnet is an embedding layer encoding the categorical
         features that are then concatenated and passed through a series of
         ResNet blocks formed by dense layers.
-        See ``pytorch_widedeep.models.deep_dense_resnet.TabResnet``
+        See :obj:`pytorch_widedeep.models.deep_dense_resnet.TabResnet`
 
-        3. ``TabNet`` is detailed in `TabNet: Attentive Interpretable Tabular
+        3. TabNet is detailed in `TabNet: Attentive Interpretable Tabular
         Learning <https://arxiv.org/abs/1908.07442>`_. See
-        ``pytorch_widedeep.models.tabnet.tab_net.TabNet``
+        :obj:`pytorch_widedeep.models.tabnet.tab_net.TabNet`
 
-        3. ``TabTransformer`` is detailed in `TabTransformer: Tabular Data
+        3. TabTransformer is detailed in `TabTransformer: Tabular Data
         Modeling Using Contextual Embeddings
         <https://arxiv.org/abs/2012.06678>`_. See
-        ``pytorch_widedeep.models.tab_transformer.TabTransformer``
+        :obj:`pytorch_widedeep.models.tab_transformer.TabTransformer`
 
         I recommend using on of these as ``deeptabular``. However, it is
         possible to use a custom model as long as is  consistent with the

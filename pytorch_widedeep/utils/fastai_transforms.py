@@ -269,7 +269,7 @@ class Tokenizer:
             text to be processed and tokenized
         tok: ``BaseTokenizer``
             Instance of :obj:`BaseTokenizer`. See
-            ``pytorch_widedeep.utils.fastai_transforms.BaseTokenizer``
+            :obj:`pytorch_widedeep.utils.fastai_transforms.BaseTokenizer`
         """
         for rule in self.pre_rules:
             t = rule(t)
@@ -317,7 +317,8 @@ class Vocab:
     Parameters
     ----------
     itos: Collection
-        `index to str`. Collection of srt that are the tokens of the vocabulary
+        `index to str`. Collection of strings that are the tokens of the
+        vocabulary
 
     Attributes
     ----------
@@ -331,7 +332,7 @@ class Vocab:
         self.stoi = defaultdict(int, {v: k for k, v in enumerate(self.itos)})
 
     def numericalize(self, t: Collection[str]) -> List[int]:
-        """Convert a list of str (or tokens) ``t`` to their ids."""
+        """Convert a list of tokens ``t`` to their ids."""
         return [self.stoi[w] for w in t]
 
     def textify(self, nums: Collection[int], sep=" ") -> List[str]:
@@ -357,8 +358,8 @@ class Vocab:
         ----------
         tokens: Tokens
             Custom type: ``Collection[Collection[str]]``  see
-            :obj:`pytorch_widedeep.wdtypes`. Collection of collection of str
-            (e.g. list of tokenized sentences)
+            :obj:`pytorch_widedeep.wdtypes`. Collection of collection of
+            strings(e.g. list of tokenized sentences)
         max_vocab: int
             maximum vocabulary size
         min_freq: int

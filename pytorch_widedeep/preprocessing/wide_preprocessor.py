@@ -33,6 +33,8 @@ class WidePreprocessor(BasePreprocessor):
     encoding_dict: Dict
         Dictionary where the keys are the result of pasting `colname + '_' +
         column value` and the values are the corresponding mapped integer.
+    wide_dim: int
+        Dimension of the wide model (i.e. dim of the linear layer)
 
     Example
     -------
@@ -73,6 +75,7 @@ class WidePreprocessor(BasePreprocessor):
         )
         # leave 0 for padding/"unseen" categories
         self.encoding_dict = {v: i + 1 for i, v in enumerate(glob_feature_list)}
+        self.wide_dim = len(self.encoding_dict)
         self.inverse_encoding_dict = {k: v for v, k in self.encoding_dict.items()}
         self.inverse_encoding_dict[0] = "unseen"
         return self
