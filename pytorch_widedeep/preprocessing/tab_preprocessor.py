@@ -36,7 +36,7 @@ class TabPreprocessor(BasePreprocessor):
         the possibility of normalising the input continuous features via a
         ``BatchNorm`` or a ``LayerNorm`` layer. see
         :class:`pytorch_widedeep.models`
-    auto_embed_dim: bool
+    auto_embed_dim: bool, default = True
         Boolean indicating whether the embedding dimensions will be
         automatically defined via fastai's rule of thumb':
         :math:`min(600, int(1.6 \times n_{cat}^{0.56}))`
