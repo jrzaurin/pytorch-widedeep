@@ -1,7 +1,7 @@
 dist: xenial
 language: python
 python:
-  - "3.7.10"
+  - "3.7.9"
   - "3.8"
   - "3.9"
 matrix:
