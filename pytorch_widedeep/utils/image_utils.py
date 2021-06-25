@@ -15,22 +15,24 @@ __all__ = ["AspectAwarePreprocessor", "SimplePreprocessor"]
 
 
 class AspectAwarePreprocessor:
+    r"""Class to resize an image to a certain width and height taking into account
+    the image aspect ratio
+
+    Parameters
+    ----------
+    width: int
+        output width
+    height: int
+        output height
+    inter: interpolation method,  default = ``cv2.INTER_AREA``
+        ``opencv`` interpolation method. See ``opencv``
+        :obj:`InterpolationFlags`.
+
+        .. note:: The value 3 that appears in the class parameters above is a Sphinx
+            formatting error.
+    """
+
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
-        r"""Class to resize an image to a certain width and height taking into account
-        the image aspect ratio
-
-        Parameters
-        ----------
-        width: int
-            output width
-        height: int
-            output height
-        inter: interpolation method,  default = ``cv2.INTER_AREA``
-            ``opencv`` interpolation method. See ``opencv``
-            :obj:`InterpolationFlags`. `The 3 value that appears in the class
-            parameters above is a formatting error`
-
-        """
         self.width = width
         self.height = height
         self.inter = inter
@@ -77,20 +79,23 @@ class AspectAwarePreprocessor:
 
 
 class SimplePreprocessor:
-    def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
-        r"""Class to resize an image to a certain width and height
+    r"""Class to resize an image to a certain width and height
 
-        Parameters
-        ----------
-        width: int
-            output width
-        height: int
-            output height
-        inter: interpolation method, default = ``cv2.INTER_AREA``
-            ``opencv`` interpolation method. See ``opencv``
-            :obj:`InterpolationFlags`. `The 3 value that appears in the class
-            parameters above is a formatting error`
-        """
+    Parameters
+    ----------
+    width: int
+        output width
+    height: int
+        output height
+    inter: interpolation method, default = ``cv2.INTER_AREA``
+        ``opencv`` interpolation method. See ``opencv``
+        :obj:`InterpolationFlags`.
+
+        .. note:: The value 3 that appears in the class parameters above is a Sphinx
+            formatting error.
+    """
+
+    def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
         self.width = width
         self.height = height
         self.inter = inter

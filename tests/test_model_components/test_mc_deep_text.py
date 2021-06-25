@@ -95,3 +95,31 @@ model6 = DeepText(
 def test_embed_non_trainable():
     out = model6(torch.from_numpy(padded_sequences))  # noqa: F841
     assert np.allclose(model6.word_embed.weight.numpy(), pretrained_embeddings)
+
+
+###############################################################################
+# GRU and using output
+###############################################################################
+
+model7 = DeepText(
+    vocab_size=vocab_size,
+    rnn_type="gru",
+    embed_dim=32,
+    padding_idx=0,
+    use_hidden_state=False,
+)
+
+model8 = DeepText(
+    vocab_size=vocab_size,
+    rnn_type="gru",
+    embed_dim=32,
+    padding_idx=0,
+    bidirectional=True,
+    use_hidden_state=False,
+)
+
+
+def test_gru_and_using_ouput():
+    out = model7(torch.from_numpy(padded_sequences))  # noqa: F841
+    out_bi = model7(torch.from_numpy(padded_sequences))  # noqa: F841
+    assert out.size(0) == 100 and out.size(1) == 64 and out_bi.size(1) == 64

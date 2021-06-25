@@ -21,12 +21,12 @@ embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 cont_cols = [np.random.rand(32) for _ in range(5)]
 X_tab = np.vstack(embed_cols + cont_cols).transpose()
 
-#  Text Array
+# Text Array
 padded_sequences = np.random.choice(np.arange(1, 100), (32, 48))
 X_text = np.hstack((np.repeat(np.array([[0, 0]]), 32, axis=0), padded_sequences))
 vocab_size = 110
 
-#  Image Array
+# Image Array
 X_img = np.random.choice(256, (32, 224, 224, 3))
 X_img_norm = X_img / 255.0
 
@@ -325,7 +325,7 @@ def test_individual_inputs(
 
 
 ###############################################################################
-#  test deephead is not None and individual components
+# test deephead is not None and individual components
 ###############################################################################
 
 
@@ -360,7 +360,7 @@ def test_deephead_individual_components(
 
 
 ###############################################################################
-#  test deephead is None and head_layers is not None and individual components
+# test deephead is None and head_layers is not None and individual components
 ###############################################################################
 
 

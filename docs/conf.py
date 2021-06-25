@@ -111,7 +111,7 @@ pygments_style = "sphinx"
 # Remove the prompt when copying examples
 copybutton_prompt_text = ">>> "
 
-autoclass_content = "init"  # 'both'
+# autoclass_content = "init"  # 'both'
 autodoc_member_order = "bysource"
 # autodoc_default_flags = ["show-inheritance"]
 

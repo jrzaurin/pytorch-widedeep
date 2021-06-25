@@ -1,28 +1,38 @@
 import os
+import json
+from pathlib import Path
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import trange
+from scipy.sparse import csc_matrix
 from torch.utils.data import DataLoader
-from sklearn.model_selection import train_test_split
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from pytorch_widedeep.losses import MSLELoss, RMSELoss, FocalLoss, RMSLELoss
-from pytorch_widedeep.models import WideDeep
 from pytorch_widedeep.metrics import Metric, MetricCallback, MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.callbacks import History, Callback, CallbackContainer
+from pytorch_widedeep.callbacks import (
+    History,
+    Callback,
+    CallbackContainer,
+    LRShedulerCallback,
+)
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
 from pytorch_widedeep.training._finetune import FineTune
-from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
+from pytorch_widedeep.training.trainer_utils import (
+    Alias,
+    alias_to_loss,
+    save_epoch_logs,
+    wd_train_val_split,
+    print_loss_and_metric,
+)
+from pytorch_widedeep.models.tabnet.tab_net_utils import create_explain_matrix
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
 from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
-from pytorch_widedeep.training._loss_and_obj_aliases import (
-    _LossAliases,
-    _ObjectiveToMethod,
-)
+from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
 from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
@@ -34,202 +44,204 @@ device = torch.device("cuda" if use_cuda else "cpu")
 
 
 class Trainer:
+    r"""Method to set the of attributes that will be used during the
+    training process.
+
+    Parameters
+    ----------
+    model: ``WideDeep``
+        An object of class ``WideDeep``
+    objective: str
+        Defines the objective, loss or cost function.
+
+        Param aliases: ``loss_function``, ``loss_fn``, ``loss``,
+        ``cost_function``, ``cost_fn``, ``cost``
+
+        Possible values are:
+
+        - ``binary``, aliases: ``logistic``, ``binary_logloss``, ``binary_cross_entropy``
+
+        - ``binary_focal_loss``
+
+        - ``multiclass``, aliases: ``multi_logloss``, ``cross_entropy``, ``categorical_cross_entropy``,
+
+        - ``multiclass_focal_loss``
+
+        - ``regression``, aliases: ``mse``, ``l2``, ``mean_squared_error``
+
+        - ``mean_absolute_error``, aliases: ``mae``, ``l1``
+
+        - ``mean_squared_log_error``, aliases: ``msle``
+
+        - ``root_mean_squared_error``, aliases:  ``rmse``
+
+        - ``root_mean_squared_log_error``, aliases: ``rmsle``
+    custom_loss_function: ``nn.Module``, optional, default = None
+        object of class ``nn.Module``. If none of the loss functions
+        available suits the user, it is possible to pass a custom loss
+        function. See for example
+        :class:`pytorch_widedeep.losses.FocalLoss` for the required
+        structure of the object or the `Examples
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+        folder in the repo.
+
+        .. note:: If ``custom_loss_function`` is not None, ``objective`` must be
+            'binary', 'multiclass' or 'regression', consistent with the loss
+            function
+
+    optimizers: ``Optimzer`` or dict, optional, default= None
+        - An instance of Pytorch's ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
+        - a dictionary where there keys are the model components (i.e.
+          `'wide'`, `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)  and
+          the values are the corresponding optimizers. If multiple optimizers are used
+          the  dictionary **MUST** contain an optimizer per model component.
+
+        if no optimizers are passed it will default to ``Adam`` for all
+        Wide and Deep components
+    lr_schedulers: ``LRScheduler`` or dict, optional, default=None
+        - An instance of Pytorch's ``LRScheduler`` object (e.g
+          :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
+        - a dictionary where there keys are the model componenst (i.e. `'wide'`,
+          `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
+          values are the corresponding learning rate schedulers.
+    reducelronplateau_criterion: str, optional. default="loss"
+        Quantity to be monitored during training if using the
+        :obj:`ReduceLROnPlateau` learning rate scheduler. Possible value
+        are: 'loss' or 'metric'.
+    initializers: ``Initializer`` or dict, optional, default=None
+        - An instance of an `Initializer`` object see :obj:`pytorch-widedeep.initializers` or
+        - a dictionary where there keys are the model components (i.e. `'wide'`,
+          `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)
+          and the values are the corresponding initializers.
+    transforms: List, optional, default=None
+        List with :obj:`torchvision.transforms` to be applied to the image
+        component of the model (i.e. ``deepimage``) See `torchvision
+        transforms
+        <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
+    callbacks: List, optional, default=None
+        List with :obj:`Callback` objects. The three callbacks available in
+        ``pytorch-widedeep`` are: ``LRHistory``, ``ModelCheckpoint`` and
+        ``EarlyStopping``. The ``History`` and the ``LRShedulerCallback``
+        callbacks are used by default. This can also be a custom callback as
+        long as the object of type ``Callback``. See
+        :obj:`pytorch_widedeep.callbacks.Callback` or the `Examples
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+        folder in the repo
+    metrics: List, optional, default=None
+        List of objects of type :obj:`Metric`. Metrics available are:
+        ``Accuracy``, ``Precision``, ``Recall``, ``FBetaScore``,
+        ``F1Score`` and ``R2Score``. This can also be a custom metric as
+        long as it is an object of type :obj:`Metric`. See
+        :obj:`pytorch_widedeep.metrics.Metric` or the `Examples
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+        folder in the repo
+    class_weight: float, List or Tuple. optional. default=None
+        - float indicating the weight of the minority class in binary classification
+          problems (e.g. 9.)
+        - a list or tuple with weights for the different classes in multiclass
+          classification problems  (e.g. [1., 2., 3.]). The weights do not
+          need to be normalised. See `this discussion
+          <https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10>`_.
+    lambda_sparse: float. default=1e-3
+        Tabnet sparse regularization factor
+    alpha: float. default=0.25
+        if ``objective`` is ``binary_focal_loss`` or
+        ``multiclass_focal_loss``, the Focal Loss alpha and gamma
+        parameters can be set directly in the ``Trainer`` via the
+        ``alpha`` and ``gamma`` parameters
+    gamma: float. default=2
+        Focal Loss alpha gamma parameter
+    verbose: int, default=1
+        Setting it to 0 will print nothing during training.
+    seed: int, default=1
+        Random seed to be used internally for train_test_split
+
+    Attributes
+    ----------
+    cyclic_lr: bool
+        Attribute that indicates if any of the lr_schedulers is cyclic_lr (i.e. ``CyclicLR`` or
+        ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
+    feature_importance: dict
+        dict where the keys are the column names and the values are the
+        corresponding feature importances. This attribute will only exist
+        if the ``deeptabular`` component is a Tabnet model
+
+    Examples
+    --------
+    >>> import torch
+    >>> from torchvision.transforms import ToTensor
+    >>>
+    >>> # wide deep imports
+    >>> from pytorch_widedeep.callbacks import EarlyStopping, LRHistory
+    >>> from pytorch_widedeep.initializers import KaimingNormal, KaimingUniform, Normal, Uniform
+    >>> from pytorch_widedeep.models import TabResnet, DeepImage, DeepText, Wide, WideDeep
+    >>> from pytorch_widedeep import Trainer
+    >>> from pytorch_widedeep.optim import RAdam
+    >>>
+    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+    >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+    >>> wide = Wide(10, 1)
+    >>>
+    >>> # build the model
+    >>> deeptabular = TabResnet(blocks_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
+    >>> deeptext = DeepText(vocab_size=10, embed_dim=4, padding_idx=0)
+    >>> deepimage = DeepImage(pretrained=False)
+    >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
+    >>>
+    >>> # set optimizers and schedulers
+    >>> wide_opt = torch.optim.Adam(model.wide.parameters())
+    >>> deep_opt = torch.optim.Adam(model.deeptabular.parameters())
+    >>> text_opt = RAdam(model.deeptext.parameters())
+    >>> img_opt = RAdam(model.deepimage.parameters())
+    >>>
+    >>> wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=5)
+    >>> deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)
+    >>> text_sch = torch.optim.lr_scheduler.StepLR(text_opt, step_size=5)
+    >>> img_sch = torch.optim.lr_scheduler.StepLR(img_opt, step_size=3)
+    >>>
+    >>> optimizers = {"wide": wide_opt, "deeptabular": deep_opt, "deeptext": text_opt, "deepimage": img_opt}
+    >>> schedulers = {"wide": wide_sch, "deeptabular": deep_sch, "deeptext": text_sch, "deepimage": img_sch}
+    >>>
+    >>> # set initializers and callbacks
+    >>> initializers = {"wide": Uniform, "deeptabular": Normal, "deeptext": KaimingNormal, "deepimage": KaimingUniform}
+    >>> transforms = [ToTensor]
+    >>> callbacks = [LRHistory(n_epochs=4), EarlyStopping]
+    >>>
+    >>> # set the trainer
+    >>> trainer = Trainer(model, objective="regression", initializers=initializers, optimizers=optimizers,
+    ... lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
+    """
+
     @Alias(  # noqa: C901
         "objective",
         ["loss_function", "loss_fn", "loss", "cost_function", "cost_fn", "cost"],
     )
-    @Alias("model", ["model_path"])
     def __init__(
         self,
-        model: Union[str, WideDeep],
+        model: WideDeep,
         objective: str,
         custom_loss_function: Optional[Module] = None,
         optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
         lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]] = None,
+        reducelronplateau_criterion: Optional[str] = "loss",
         initializers: Optional[Union[Initializer, Dict[str, Initializer]]] = None,
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[List[Metric]] = None,
         class_weight: Optional[Union[float, List[float], Tuple[float]]] = None,
+        lambda_sparse: float = 1e-3,
         alpha: float = 0.25,
         gamma: float = 2,
         verbose: int = 1,
         seed: int = 1,
     ):
-        r"""Method to set the of attributes that will be used during the
-        training process.
-
-        Parameters
-        ----------
-        model: str or ``WideDeep``
-            param alias: ``model_path``
-
-            An object of class ``WideDeep`` or a string with the full path to
-            the model, in which case you might want to use the alias
-            ``model_path``.
-
-        objective: str
-            Defines the objective, loss or cost function.
-
-            param aliases: ``loss_function``, ``loss_fn``, ``loss``,
-            ``cost_function``, ``cost_fn``, ``cost``
-
-            Possible values are:
-
-            - ``binary``, aliases: ``logistic``, ``binary_logloss``, ``binary_cross_entropy``
-
-            - ``binary_focal_loss``
-
-            - ``multiclass``, aliases: ``multi_logloss``, ``cross_entropy``, ``categorical_cross_entropy``,
-
-            - ``multiclass_focal_loss``
-
-            - ``regression``, aliases: ``mse``, ``l2``, ``mean_squared_error``
-
-            - ``mean_absolute_error``, aliases: ``mae``, ``l1``
-
-            - ``mean_squared_log_error``, aliases: ``msle``
-
-            - ``root_mean_squared_error``, aliases:  ``rmse``
-
-            - ``root_mean_squared_log_error``, aliases: ``rmsle``
-        custom_loss_function: ``nn.Module``, Optional, default = None
-            object of class ``nn.Module``. If none of the loss functions
-            available suits the user, it is possible to pass a custom loss
-            function. See for example
-            :class:`pytorch_widedeep.losses.FocalLoss` for the required
-            structure of the object or the `Examples
-            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
-            folder in the repo.
-
-            .. note:: If ``custom_loss_function`` is not None, ``objective`` must be
-                'binary', 'multiclass' or 'regression', consistent with the loss
-                function
-
-        optimizers: ``Optimzer`` or Dict, Optional, default= None
-            - An instance of Pytorch's ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
-            - a dictionary where there keys are the model components (i.e.
-              `'wide'`, `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)  and
-              the values are the corresponding optimizers. If multiple optimizers are used
-              the  dictionary **MUST** contain an optimizer per model component.
-
-            if no optimizers are passed it will default to ``AdamW`` for all
-            Wide and Deep components
-        lr_schedulers: ``LRScheduler`` or Dict, Optional, default=None
-            - An instance of Pytorch's ``LRScheduler`` object (e.g
-              :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
-            - a dictionary where there keys are the model componenst (i.e. `'wide'`,
-              `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
-              values are the corresponding learning rate schedulers.
-        initializers: ``Initializer`` or Dict, Optional. default=None
-            - An instance of an `Initializer`` object see ``pytorch-widedeep.initializers`` or
-            - a dictionary where there keys are the model components (i.e. `'wide'`,
-              `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)
-              and the values are the corresponding initializers.
-        transforms: List, Optional, default=None
-            List with :obj:`torchvision.transforms` to be applied to the image
-            component of the model (i.e. ``deepimage``) See `torchvision
-            transforms
-            <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
-        callbacks: List, Optional, default=None
-            List with ``Callback`` objects. The four callbacks available in
-            ``pytorch-widedeep`` are: ``History``, ``ModelCheckpoint``,
-            ``EarlyStopping``, and ``LRHistory``. The ``History`` callback is
-            used by default. This can also be a custom callback as long as the
-            object of type ``Callback``. See
-            ``pytorch_widedeep.callbacks.Callback`` or the `Examples
-            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
-            folder in the repo
-        metrics: List, Optional, default=None
-            List of objects of type ``Metric``. Metrics available are:
-            ``Accuracy``, ``Precision``, ``Recall``, ``FBetaScore``,
-            ``F1Score`` and ``R2Score``. This can also be a custom metric as
-            long as it is an object of type ``Metric``. See
-            ``pytorch_widedeep.metrics.Metric`` or the `Examples
-            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
-            folder in the repo
-        class_weight: float, List or Tuple. Optional. default=None
-            - float indicating the weight of the minority class in binary classification
-              problems (e.g. 9.)
-            - a list or tuple with weights for the different classes in multiclass
-              classification problems  (e.g. [1., 2., 3.]). The weights do
-              not neccesarily need to be normalised. If your loss function
-              uses reduction='mean', the loss will be normalized by the sum
-              of the corresponding weights for each element. If you are
-              using reduction='none', you would have to take care of the
-              normalization yourself. See `this discussion
-              <https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10>`_.
-        alpha: float. default=0.25
-            if ``objective`` is ``binary_focal_loss`` or
-            ``multiclass_focal_loss``, the Focal Loss alpha and gamma
-            parameters can be set directly in the ``Trainer`` via the
-            ``alpha`` and ``gamma`` parameters
-        gamma: float. default=2
-            Focal Loss alpha gamma parameter
-        verbose: int, default=1
-            Setting it to 0 will print nothing during training.
-        seed: int, default=1
-            Random seed to be used internally for train_test_split
-
-        Attributes
-        ----------
-        cyclic_lr: bool
-            Attribute that indicates if any of the lr_schedulers is cyclic_lr (i.e. ``CyclicLR`` or
-            ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
-
-
-        Example
-        --------
-        >>> import torch
-        >>> from torchvision.transforms import ToTensor
-        >>>
-        >>> # wide deep imports
-        >>> from pytorch_widedeep.callbacks import EarlyStopping, LRHistory
-        >>> from pytorch_widedeep.initializers import KaimingNormal, KaimingUniform, Normal, Uniform
-        >>> from pytorch_widedeep.models import TabResnet, DeepImage, DeepText, Wide, WideDeep
-        >>> from pytorch_widedeep import Trainer
-        >>> from pytorch_widedeep.optim import RAdam
-        >>>
-        >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-        >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
-        >>> wide = Wide(10, 1)
-        >>>
-        >>> # build the model
-        >>> deeptabular = TabResnet(blocks_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
-        >>> deeptext = DeepText(vocab_size=10, embed_dim=4, padding_idx=0)
-        >>> deepimage = DeepImage(pretrained=False)
-        >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
-        >>>
-        >>> # set optimizers and schedulers
-        >>> wide_opt = torch.optim.Adam(model.wide.parameters())
-        >>> deep_opt = torch.optim.Adam(model.deeptabular.parameters())
-        >>> text_opt = RAdam(model.deeptext.parameters())
-        >>> img_opt = RAdam(model.deepimage.parameters())
-        >>>
-        >>> wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=5)
-        >>> deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)
-        >>> text_sch = torch.optim.lr_scheduler.StepLR(text_opt, step_size=5)
-        >>> img_sch = torch.optim.lr_scheduler.StepLR(img_opt, step_size=3)
-        >>>
-        >>> optimizers = {"wide": wide_opt, "deeptabular": deep_opt, "deeptext": text_opt, "deepimage": img_opt}
-        >>> schedulers = {"wide": wide_sch, "deeptabular": deep_sch, "deeptext": text_sch, "deepimage": img_sch}
-        >>>
-        >>> # set initializers and callbacks
-        >>> initializers = {"wide": Uniform, "deeptabular": Normal, "deeptext": KaimingNormal, "deepimage": KaimingUniform}
-        >>> transforms = [ToTensor]
-        >>> callbacks = [LRHistory(n_epochs=4), EarlyStopping]
-        >>>
-        >>> # set the trainer
-        >>> trainer = Trainer(model, objective="regression", initializers=initializers, optimizers=optimizers,
-        ... lr_schedulers=schedulers, callbacks=callbacks, transforms=transforms)
-        """
-
-        if isinstance(optimizers, Dict) and not isinstance(lr_schedulers, Dict):
-            raise ValueError(
-                "''optimizers' and 'lr_schedulers' must have consistent type: "
-                "(Optimizer and LRScheduler) or (Dict[str, Optimizer] and Dict[str, LRScheduler]) "
-                "Please, read the documentation or see the examples for more details"
-            )
+        if isinstance(optimizers, Dict):
+            if lr_schedulers is not None and not isinstance(lr_schedulers, Dict):
+                raise ValueError(
+                    "''optimizers' and 'lr_schedulers' must have consistent type: "
+                    "(Optimizer and LRScheduler) or (Dict[str, Optimizer] and Dict[str, LRScheduler]) "
+                    "Please, read the documentation or see the examples for more details"
+                )
 
         if custom_loss_function is not None and objective not in [
             "binary",
@@ -241,40 +253,55 @@ class Trainer:
                 "'multiclass' or 'regression', consistent with the loss function"
             )
 
-        if isinstance(model, str):
-            self.model = torch.load(model)
-        else:
-            self.model = model
+        self.reducelronplateau = False
+        self.reducelronplateau_criterion = reducelronplateau_criterion
+        if isinstance(lr_schedulers, Dict):
+            for _, scheduler in lr_schedulers.items():
+                if isinstance(scheduler, ReduceLROnPlateau):
+                    self.reducelronplateau = True
+        elif isinstance(lr_schedulers, ReduceLROnPlateau):
+            self.reducelronplateau = True
+
+        self.model = model
+
+        # Tabnet related set ups
+        if self.model.is_tabnet:
+            self.lambda_sparse = lambda_sparse
+            self.reducing_matrix = create_explain_matrix(self.model)
+
         self.verbose = verbose
         self.seed = seed
-        self.early_stop = False
         self.objective = objective
         self.method = _ObjectiveToMethod.get(objective)
 
-        self.loss_fn = self._get_loss_fn(
+        # initialize early_stop. If EarlyStopping Callback is used it will
+        # take care of it
+        self.early_stop = False
+
+        self.loss_fn = self._set_loss_fn(
             objective, class_weight, custom_loss_function, alpha, gamma
         )
         self._initialize(initializers)
-        self.optimizer = self._get_optimizer(optimizers)
-        self.lr_scheduler, self.cyclic_lr = self._get_lr_scheduler(lr_schedulers)
-        self.transforms = self._get_transforms(transforms)
+        self.optimizer = self._set_optimizer(optimizers)
+        self.lr_scheduler = self._set_lr_scheduler(lr_schedulers)
+        self.transforms = self._set_transforms(transforms)
         self._set_callbacks_and_metrics(callbacks, metrics)
 
         self.model.to(device)
 
-    @Alias("finetune", ["warmup"])  # noqa: C901
-    @Alias("finetune_epochs", ["warmup_epochs"])
-    @Alias("finetune_max_lr", ["warmup_max_lr"])
-    @Alias("finetune_deeptabular_gradual", ["warmup_deeptabular_gradual"])
-    @Alias("finetune_deeptabular_max_lr", ["warmup_deeptabular_max_lr"])
-    @Alias("finetune_deeptabular_layers", ["warmup_deeptabular_layers"])
-    @Alias("finetune_deeptext_gradual", ["warmup_deeptext_gradual"])
-    @Alias("finetune_deeptext_max_lr", ["warmup_deeptext_max_lr"])
-    @Alias("finetune_deeptext_layers", ["warmup_deeptext_layers"])
-    @Alias("finetune_deepimage_gradual", ["warmup_deepimage_gradual"])
-    @Alias("finetune_deepimage_max_lr", ["warmup_deepimage_max_lr"])
-    @Alias("finetune_deepimage_layers", ["warmup_deepimage_layers"])
-    @Alias("finetune_routine", ["warmup_routine"])
+    @Alias("finetune", "warmup")  # noqa: C901
+    @Alias("finetune_epochs", "warmup_epochs")
+    @Alias("finetune_max_lr", "warmup_max_lr")
+    @Alias("finetune_deeptabular_gradual", "warmup_deeptabular_gradual")
+    @Alias("finetune_deeptabular_max_lr", "warmup_deeptabular_max_lr")
+    @Alias("finetune_deeptabular_layers", "warmup_deeptabular_layers")
+    @Alias("finetune_deeptext_gradual", "warmup_deeptext_gradual")
+    @Alias("finetune_deeptext_max_lr", "warmup_deeptext_max_lr")
+    @Alias("finetune_deeptext_layers", "warmup_deeptext_layers")
+    @Alias("finetune_deepimage_gradual", "warmup_deepimage_gradual")
+    @Alias("finetune_deepimage_max_lr", "warmup_deepimage_max_lr")
+    @Alias("finetune_deepimage_layers", "warmup_deepimage_layers")
+    @Alias("finetune_routine", "warmup_routine")
     def fit(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
@@ -288,7 +315,6 @@ class Trainer:
         n_epochs: int = 1,
         validation_freq: int = 1,
         batch_size: int = 32,
-        patience: int = 10,
         finetune: bool = False,
         finetune_epochs: int = 5,
         finetune_max_lr: float = 0.01,
@@ -341,9 +367,7 @@ class Trainer:
         validation_freq: int, default=1
             epochs validation frequency
         batch_size: int, default=32
-        patience: int, default=10
-            Number of epochs without improving the target metric or loss
-            before the fit process stops
+            batch size
         finetune: bool, default=False
             param alias: ``warmup``
 
@@ -363,7 +387,7 @@ class Trainer:
               following: `i`) the learning rate will gradually increase for
               10% of the training steps from max_lr/10 to max_lr. `ii`) It
               will then gradually decrease to max_lr/10 for the remaining 90%
-              of the steps. The optimizer used in the process is ``AdamW``.
+              of the steps. The optimizer used in the process is ``Adam``.
 
             and two gradual fine-tune routines, where only certain layers are
             trained at a time.
@@ -488,8 +512,17 @@ class Trainer:
         """
 
         self.batch_size = batch_size
-        train_set, eval_set = self._train_val_split(
-            X_wide, X_tab, X_text, X_img, X_train, X_val, val_split, target
+        train_set, eval_set = wd_train_val_split(
+            self.seed,
+            self.method,
+            X_wide,
+            X_tab,
+            X_text,
+            X_img,
+            X_train,
+            X_val,
+            val_split,
+            target,
         )
         train_loader = DataLoader(
             dataset=train_set, batch_size=batch_size, num_workers=n_cpus
@@ -536,26 +569,17 @@ class Trainer:
         for epoch in range(n_epochs):
             epoch_logs: Dict[str, float] = {}
             self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
+
             self.train_running_loss = 0.0
             with trange(train_steps, disable=self.verbose != 1) as t:
                 for batch_idx, (data, targett) in zip(t, train_loader):
                     t.set_description("epoch %i" % (epoch + 1))
-                    score, train_loss = self._training_step(data, targett, batch_idx)
-                    if score is not None:
-                        t.set_postfix(
-                            metrics={k: np.round(v, 4) for k, v in score.items()},
-                            loss=train_loss,
-                        )
-                    else:
-                        t.set_postfix(loss=train_loss)
-                    if self.lr_scheduler:
-                        self._lr_scheduler_step(step_location="on_batch_end")
+                    train_score, train_loss = self._train_step(data, targett, batch_idx)
+                    print_loss_and_metric(t, train_loss, train_score)
                     self.callback_container.on_batch_end(batch=batch_idx)
-            epoch_logs["train_loss"] = train_loss
-            if score is not None:
-                for k, v in score.items():
-                    log_k = "_".join(["train", k])
-                    epoch_logs[log_k] = v
+            epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
+
+            on_epoch_end_metric = None
             if eval_set is not None and epoch % validation_freq == (
                 validation_freq - 1
             ):
@@ -564,26 +588,28 @@ class Trainer:
                 with trange(eval_steps, disable=self.verbose != 1) as v:
                     for i, (data, targett) in zip(v, eval_loader):
                         v.set_description("valid")
-                        score, val_loss = self._validation_step(data, targett, i)
-                        if score is not None:
-                            v.set_postfix(
-                                metrics={k: np.round(v, 4) for k, v in score.items()},
-                                loss=val_loss,
-                            )
-                        else:
-                            v.set_postfix(loss=val_loss)
-                epoch_logs["val_loss"] = val_loss
-                if score is not None:
-                    for k, v in score.items():
-                        log_k = "_".join(["val", k])
-                        epoch_logs[log_k] = v
-            if self.lr_scheduler:
-                self._lr_scheduler_step(step_location="on_epoch_end")
-            self.callback_container.on_epoch_end(epoch, epoch_logs)
+                        val_score, val_loss = self._eval_step(data, targett, i)
+                        print_loss_and_metric(v, val_loss, val_score)
+                epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
+
+                if self.reducelronplateau:
+                    if self.reducelronplateau_criterion == "loss":
+                        on_epoch_end_metric = val_loss
+                    else:
+                        on_epoch_end_metric = val_score[
+                            self.reducelronplateau_criterion
+                        ]
+
+            self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
+
             if self.early_stop:
                 self.callback_container.on_train_end(epoch_logs)
                 break
+
         self.callback_container.on_train_end(epoch_logs)
+        if self.model.is_tabnet:
+            self._compute_feature_importance(train_loader)
+        self._restore_best_weights()
         self.model.train()
 
     def predict(  # type: ignore[return]
@@ -593,6 +619,7 @@ class Trainer:
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
+        batch_size: int = 256,
     ) -> np.ndarray:
         r"""Returns the predictions
 
@@ -619,9 +646,13 @@ class Trainer:
             The test dataset can also be passed in a dictionary. Keys are
             `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
             are the corresponding matrices.
+        batch_size: int, default = 256
+            If a trainer is used to predict after having trained a model, the
+            ``batch_size`` needs to be defined as it will not be defined as
+            the :obj:`Trainer` is instantiated
         """
 
-        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test)
+        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size)
         if self.method == "regression":
             return np.vstack(preds_l).squeeze(1)
         if self.method == "binary":
@@ -638,6 +669,7 @@ class Trainer:
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
+        batch_size: int = 256,
     ) -> np.ndarray:
         r"""Returns the predicted probabilities for the test dataset for  binary
         and multiclass methods
@@ -664,9 +696,13 @@ class Trainer:
             The test dataset can also be passed in a dictionary. Keys are
             `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
             are the corresponding matrices.
+        batch_size: int, default = 256
+            If a trainer is used to predict after having trained a model, the
+            ``batch_size`` needs to be defined as it will not be defined as
+            the :obj:`Trainer` is instantiated
         """
 
-        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test)
+        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size)
         if self.method == "binary":
             preds = np.vstack(preds_l).squeeze(1)
             probs = np.zeros([preds.shape[0], 2])
@@ -726,139 +762,159 @@ class Trainer:
             cat_embed_dict[value] = embed_mtx[idx]
         return cat_embed_dict
 
-    def save_model(self, path: str):
-        """Saves the model to disk
+    def explain(self, X_tab: np.ndarray, save_step_masks: bool = False):
+        """
+        Returns the aggregated feature importance for each instance (or
+        observation) in the ``X_tab`` array. If ``save_step_masks`` is set to
+        ``True``, the masks per step will also be returned.
 
         Parameters
         ----------
-        path: str
-            full path to the directory where the model will be saved
-        """
-        self._makedir_if_not_exist(path)
-        torch.save(self.model, path)
-
-    @staticmethod
-    def load_model(path: str) -> nn.Module:
-        """Loads the model from disk
-
-        Parameters
-        ----------
-        path: str
-            full path to the directory from where the model will be read
-        """
-        return torch.load(path)
-
-    def save_model_state_dict(self, path: str):
-        """Saves the state dictionary to disk
-
-        Parameters
-        ----------
-        path: str
-            full path to the directory where the model's state dictionary will
-            be saved
-        """
-        self._makedir_if_not_exist(path)
-        torch.save(self.model.state_dict(), path)
-
-    def load_model_state_dict(self, path: str):
-        """Saves the state dictionary to disk
-
-        Parameters
-        ----------
-        path: str
-            full path to the directory from where the model's state dictionary
-            will be loaded
-        """
-        self.model.load_state_dict(torch.load(path))
-
-    def _train_val_split(  # noqa: C901
-        self,
-        X_wide: Optional[np.ndarray] = None,
-        X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_train: Optional[Dict[str, np.ndarray]] = None,
-        X_val: Optional[Dict[str, np.ndarray]] = None,
-        val_split: Optional[float] = None,
-        target: Optional[np.ndarray] = None,
-    ):
-        r"""
-        If a validation set (X_val) is passed to the fit method, or val_split
-        is specified, the train/val split will happen internally. A number of
-        options are allowed in terms of data inputs. For parameter
-        information, please, see the .fit() method documentation
+        X_tab: np.ndarray
+            Input array corresponding **only** to the deeptabular component
+        save_step_masks: bool
+            Boolean indicating if the masks per step will be returned
 
         Returns
         -------
-        train_set: WideDeepDataset
-            :obj:`WideDeepDataset` object that will be loaded through
-            :obj:`torch.utils.data.DataLoader`. See
-            :class:`pytorch_widedeep.models._wd_dataset`
-        eval_set : WideDeepDataset
-            :obj:`WideDeepDataset` object that will be loaded through
-            :obj:`torch.utils.data.DataLoader`. See
-            :class:`pytorch_widedeep.models._wd_dataset`
+        res: np.ndarray, Tuple
+            Array or Tuple of two arrays with the corresponding aggregated
+            feature importance and the masks per step if ``save_step_masks``
+            is set to ``True``
+        """
+        loader = DataLoader(
+            dataset=WideDeepDataset(**{"X_tab": X_tab}),
+            batch_size=self.batch_size,
+            num_workers=n_cpus,
+            shuffle=False,
+        )
+
+        self.model.eval()
+        tabnet_backbone = list(self.model.deeptabular.children())[0]
+
+        m_explain_l = []
+        for batch_nb, data in enumerate(loader):
+            X = data["deeptabular"].to(device)
+            M_explain, masks = tabnet_backbone.forward_masks(X)  # type: ignore[operator]
+            m_explain_l.append(
+                csc_matrix.dot(M_explain.cpu().detach().numpy(), self.reducing_matrix)
+            )
+            if save_step_masks:
+                for key, value in masks.items():
+                    masks[key] = csc_matrix.dot(
+                        value.cpu().detach().numpy(), self.reducing_matrix
+                    )
+                if batch_nb == 0:
+                    m_explain_step = masks
+                else:
+                    for key, value in masks.items():
+                        m_explain_step[key] = np.vstack([m_explain_step[key], value])
+
+        m_explain_agg = np.vstack(m_explain_l)
+        m_explain_agg_norm = m_explain_agg / m_explain_agg.sum(axis=1)[:, np.newaxis]
+
+        res = (
+            (m_explain_agg_norm, m_explain_step)
+            if save_step_masks
+            else np.vstack(m_explain_agg_norm)
+        )
+
+        return res
+
+    def save(
+        self,
+        path: str,
+        save_state_dict: bool = False,
+        model_filename: str = "wd_model.pt",
+    ):
+        """Saves the model, training and evaluation history, and the
+        ``feature_importance`` attribute (if the ``deeptabular`` component is a
+        Tabnet model) to disk
+
+        The ``Trainer`` class is built so that it 'just' trains a model. With
+        that in mind, all the torch related parameters (such as optimizers,
+        learning rate schedulers, initializers, etc) have to be defined
+        externally and then passed to the ``Trainer``. As a result, the
+        ``Trainer`` does not generate any attribute or additional data
+        products that need to be saved other than the ``model`` object itself,
+        which can be saved as any other torch model (e.g. ``torch.save(model,
+        path)``).
+
+        The exception is Tabnet. If the ``deeptabular`` component is a Tabnet
+        model, an attribute (a dict) called ``feature_importance`` will be
+        created at the end of the training process. Therefore, a ``save``
+        method was created that will save both the feature importance
+        dictionary to a json file and, since we are here, the model weights,
+        training history and learning rate history.
+
+        Parameters
+        ----------
+        path: str
+            path to the directory where the model and the feature importance
+            attribute will be saved.
+        save_state_dict: bool, default = False
+            Boolean indicating whether to save directly the model or the
+            model's state dictionary
+        model_filename: str, Optional, default = "wd_model.pt"
+            filename where the model weights will be store
         """
 
-        if X_val is not None:
-            assert (
-                X_train is not None
-            ), "if the validation set is passed as a dictionary, the training set must also be a dictionary"
-            train_set = WideDeepDataset(**X_train, transforms=self.transforms)  # type: ignore
-            eval_set = WideDeepDataset(**X_val, transforms=self.transforms)  # type: ignore
-        elif val_split is not None:
-            if not X_train:
-                X_train = self._build_train_dict(X_wide, X_tab, X_text, X_img, target)
-            y_tr, y_val, idx_tr, idx_val = train_test_split(
-                X_train["target"],
-                np.arange(len(X_train["target"])),
-                test_size=val_split,
-                random_state=self.seed,
-                stratify=X_train["target"] if self.method != "regression" else None,
-            )
-            X_tr, X_val = {"target": y_tr}, {"target": y_val}
-            if "X_wide" in X_train.keys():
-                X_tr["X_wide"], X_val["X_wide"] = (
-                    X_train["X_wide"][idx_tr],
-                    X_train["X_wide"][idx_val],
-                )
-            if "X_tab" in X_train.keys():
-                X_tr["X_tab"], X_val["X_tab"] = (
-                    X_train["X_tab"][idx_tr],
-                    X_train["X_tab"][idx_val],
-                )
-            if "X_text" in X_train.keys():
-                X_tr["X_text"], X_val["X_text"] = (
-                    X_train["X_text"][idx_tr],
-                    X_train["X_text"][idx_val],
-                )
-            if "X_img" in X_train.keys():
-                X_tr["X_img"], X_val["X_img"] = (
-                    X_train["X_img"][idx_tr],
-                    X_train["X_img"][idx_val],
-                )
-            train_set = WideDeepDataset(**X_tr, transforms=self.transforms)  # type: ignore
-            eval_set = WideDeepDataset(**X_val, transforms=self.transforms)  # type: ignore
+        save_dir = Path(path)
+        history_dir = save_dir / "history"
+        history_dir.mkdir(exist_ok=True, parents=True)
+
+        # the trainer is run with the History Callback by default
+        with open(history_dir / "train_eval_history.json", "w") as teh:
+            json.dump(self.history, teh)  # type: ignore[attr-defined]
+
+        has_lr_history = any(
+            [clbk.__class__.__name__ == "LRHistory" for clbk in self.callbacks]
+        )
+        if self.lr_scheduler is not None and has_lr_history:
+            with open(history_dir / "lr_history.json", "w") as lrh:
+                json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
+
+        model_path = save_dir / model_filename
+        if save_state_dict:
+            torch.save(self.model.state_dict(), model_path)
         else:
-            if not X_train:
-                X_train = self._build_train_dict(X_wide, X_tab, X_text, X_img, target)
-            train_set = WideDeepDataset(**X_train, transforms=self.transforms)  # type: ignore
-            eval_set = None
+            torch.save(self.model, model_path)
 
-        return train_set, eval_set
+        if self.model.is_tabnet:
+            with open(save_dir / "feature_importance.json", "w") as fi:
+                json.dump(self.feature_importance, fi)
 
-    @staticmethod
-    def _build_train_dict(X_wide, X_tab, X_text, X_img, target):
-        X_train = {"target": target}
-        if X_wide is not None:
-            X_train["X_wide"] = X_wide
-        if X_tab is not None:
-            X_train["X_tab"] = X_tab
-        if X_text is not None:
-            X_train["X_text"] = X_text
-        if X_img is not None:
-            X_train["X_img"] = X_img
-        return X_train
+    def _restore_best_weights(self):
+        already_restored = any(
+            [
+                (
+                    callback.__class__.__name__ == "EarlyStopping"
+                    and callback.restore_best_weights
+                )
+                for callback in self.callback_container.callbacks
+            ]
+        )
+        if already_restored:
+            pass
+        else:
+            for callback in self.callback_container.callbacks:
+                if callback.__class__.__name__ == "ModelCheckpoint":
+                    if callback.save_best_only:
+                        filepath = "{}_{}.p".format(
+                            callback.filepath, callback.best_epoch + 1
+                        )
+                        if self.verbose:
+                            print(
+                                f"Model weights restored to best epoch: {callback.best_epoch + 1}"
+                            )
+                        self.model.load_state_dict(torch.load(filepath))
+                    else:
+                        if self.verbose:
+                            print(
+                                "Model weights after training corresponds to the those of the "
+                                "final epoch which might not be the best performing weights. Use"
+                                "the 'ModelCheckpoint' Callback to restore the best epoch weights."
+                            )
 
     def _finetune(
         self,
@@ -931,47 +987,7 @@ class Trainer:
                     self.model.deepimage, "deepimage", loader, n_epochs, max_lr
                 )
 
-    def _lr_scheduler_step(self, step_location: str):  # noqa: C901
-        r"""
-        Function to execute the learning rate schedulers steps.
-        If the lr_scheduler is Cyclic (i.e. CyclicLR or OneCycleLR), the step
-        must happen after training each bach durig training. On the other
-        hand, if the  scheduler is not Cyclic, is expected to be called after
-        validation. (Consider coding this function as callback)
-
-        Parameters
-        ----------
-        step_location: Str
-            Indicates where to run the lr_scheduler step
-        """
-        if (
-            self.lr_scheduler.__class__.__name__ == "MultipleLRScheduler"
-            and self.cyclic_lr
-        ):
-            if step_location == "on_batch_end":
-                for model_name, scheduler in self.lr_scheduler._schedulers.items():  # type: ignore
-                    if "cycl" in scheduler.__class__.__name__.lower():
-                        scheduler.step()  # type: ignore
-            elif step_location == "on_epoch_end":
-                for scheduler_name, scheduler in self.lr_scheduler._schedulers.items():  # type: ignore
-                    if "cycl" not in scheduler.__class__.__name__.lower():
-                        scheduler.step()  # type: ignore
-        elif self.cyclic_lr:
-            if step_location == "on_batch_end":
-                self.lr_scheduler.step()  # type: ignore
-            else:
-                pass
-        elif self.lr_scheduler.__class__.__name__ == "MultipleLRScheduler":
-            if step_location == "on_epoch_end":
-                self.lr_scheduler.step()  # type: ignore
-            else:
-                pass
-        elif step_location == "on_epoch_end":
-            self.lr_scheduler.step()  # type: ignore
-        else:
-            pass
-
-    def _training_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
+    def _train_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
         self.model.train()
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
         y = target.view(-1, 1).float() if self.method != "multiclass" else target
@@ -979,16 +995,21 @@ class Trainer:
 
         self.optimizer.zero_grad()
         y_pred = self.model(X)
-        loss = self.loss_fn(y_pred, y)
+        if self.model.is_tabnet:
+            loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
+            score = self._get_score(y_pred[0], y)
+        else:
+            loss = self.loss_fn(y_pred, y)
+            score = self._get_score(y_pred, y)
         loss.backward()
         self.optimizer.step()
 
         self.train_running_loss += loss.item()
         avg_loss = self.train_running_loss / (batch_idx + 1)
 
-        return self._get_score(y_pred, y), avg_loss
+        return score, avg_loss
 
-    def _validation_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
+    def _eval_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
 
         self.model.eval()
         with torch.no_grad():
@@ -997,11 +1018,17 @@ class Trainer:
             y = y.to(device)
 
             y_pred = self.model(X)
-            loss = self.loss_fn(y_pred, y)
+            if self.model.is_tabnet:
+                loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
+                score = self._get_score(y_pred[0], y)
+            else:
+                score = self._get_score(y_pred, y)
+                loss = self.loss_fn(y_pred, y)
+
             self.valid_running_loss += loss.item()
             avg_loss = self.valid_running_loss / (batch_idx + 1)
 
-        return self._get_score(y_pred, y), avg_loss
+        return score, avg_loss
 
     def _get_score(self, y_pred, y):
         if self.metric is not None:
@@ -1015,6 +1042,24 @@ class Trainer:
         else:
             return None
 
+    def _compute_feature_importance(self, loader: DataLoader):
+        self.model.eval()
+        tabnet_backbone = list(self.model.deeptabular.children())[0]
+        feat_imp = np.zeros((tabnet_backbone.embed_and_cont_dim))  # type: ignore[arg-type]
+        for data, target in loader:
+            X = data["deeptabular"].to(device)
+            y = target.view(-1, 1).float() if self.method != "multiclass" else target
+            y = y.to(device)
+            M_explain, masks = tabnet_backbone.forward_masks(X)  # type: ignore[operator]
+            feat_imp += M_explain.sum(dim=0).cpu().detach().numpy()
+
+        feat_imp = csc_matrix.dot(feat_imp, self.reducing_matrix)
+        feat_imp = feat_imp / np.sum(feat_imp)
+
+        self.feature_importance = {
+            k: v for k, v in zip(tabnet_backbone.column_idx.keys(), feat_imp)  # type: ignore[operator, union-attr]
+        }
+
     def _predict(
         self,
         X_wide: Optional[np.ndarray] = None,
@@ -1022,6 +1067,7 @@ class Trainer:
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
+        batch_size: int = 256,
     ) -> List:
         r"""Private method to avoid code repetition in predict and
         predict_proba. For parameter information, please, see the .predict()
@@ -1041,6 +1087,9 @@ class Trainer:
                 load_dict.update({"X_img": X_img})
             test_set = WideDeepDataset(**load_dict)
 
+        if not hasattr(self, "batch_size"):
+            self.batch_size = batch_size
+
         test_loader = DataLoader(
             dataset=test_set,
             batch_size=self.batch_size,
@@ -1056,7 +1105,9 @@ class Trainer:
                 for i, data in zip(t, test_loader):
                     t.set_description("predict")
                     X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
-                    preds = self.model(X)
+                    preds = (
+                        self.model(X) if not self.model.is_tabnet else self.model(X)[0]
+                    )
                     if self.method == "binary":
                         preds = torch.sigmoid(preds)
                     if self.method == "multiclass":
@@ -1066,57 +1117,17 @@ class Trainer:
         self.model.train()
         return preds_l
 
-    @staticmethod
-    def _makedir_if_not_exist(path):
-        if len(path.split("/")[:-1]) == 0:
-            raise ValueError(
-                "'path' must be the full path to save the model, including"
-                " the root of the filenames. e.g. 'model/model.t'"
-            )
-        root_dir = ("/").join(path.split("/")[:-1])
-        if not os.path.exists(root_dir):
-            os.makedirs(root_dir)
-
-    @staticmethod
-    def _alias_to_loss(loss_fn: str, **kwargs):
-        if loss_fn not in _ObjectiveToMethod.keys():
-            raise ValueError(
-                "objective or loss function is not supported. Please consider passing a callable "
-                "directly to the compile method (see docs) or use one of the supported objectives "
-                "or loss functions: {}".format(", ".join(_ObjectiveToMethod.keys()))
-            )
-        if loss_fn in _LossAliases.get("binary"):
-            return nn.BCEWithLogitsLoss(weight=kwargs["weight"])
-        if loss_fn in _LossAliases.get("multiclass"):
-            return nn.CrossEntropyLoss(weight=kwargs["weight"])
-        if loss_fn in _LossAliases.get("regression"):
-            return nn.MSELoss()
-        if loss_fn in _LossAliases.get("mean_absolute_error"):
-            return nn.L1Loss()
-        if loss_fn in _LossAliases.get("mean_squared_log_error"):
-            return MSLELoss()
-        if loss_fn in _LossAliases.get("root_mean_squared_error"):
-            return RMSELoss()
-        if loss_fn in _LossAliases.get("root_mean_squared_log_error"):
-            return RMSLELoss()
-        if "focal_loss" in loss_fn:
-            return FocalLoss(**kwargs)
-
-    def _get_loss_fn(self, objective, class_weight, custom_loss_function, alpha, gamma):
-        if isinstance(class_weight, float):
-            class_weight = torch.tensor([1.0 - class_weight, class_weight])
-        elif isinstance(class_weight, (tuple, list)):
-            class_weight = torch.tensor(class_weight)
-        else:
-            class_weight = None
+    def _set_loss_fn(self, objective, class_weight, custom_loss_function, alpha, gamma):
+        if class_weight is not None:
+            class_weight = torch.tensor(class_weight).to(device)
         if custom_loss_function is not None:
             return custom_loss_function
         elif self.method != "regression" and "focal_loss" not in objective:
-            return self._alias_to_loss(objective, weight=class_weight)
+            return alias_to_loss(objective, weight=class_weight)
         elif "focal_loss" in objective:
-            return self._alias_to_loss(objective, alpha=alpha, gamma=gamma)
+            return alias_to_loss(objective, alpha=alpha, gamma=gamma)
         else:
-            return self._alias_to_loss(objective)
+            return alias_to_loss(objective)
 
     def _initialize(self, initializers):
         if initializers is not None:
@@ -1132,7 +1143,7 @@ class Trainer:
                 self.initializer = initializers
                 self.initializer(self.model)
 
-    def _get_optimizer(self, optimizers):
+    def _set_optimizer(self, optimizers):
         if optimizers is not None:
             if isinstance(optimizers, Optimizer):
                 optimizer: Union[Optimizer, MultipleOptimizer] = optimizers
@@ -1143,17 +1154,17 @@ class Trainer:
                     assert mn in opt_names, "No optimizer found for {}".format(mn)
                 optimizer = MultipleOptimizer(optimizers)
         else:
-            optimizer = torch.optim.AdamW(self.model.parameters())  # type: ignore
+            optimizer = torch.optim.Adam(self.model.parameters())  # type: ignore
         return optimizer
 
-    @staticmethod
-    def _get_lr_scheduler(lr_schedulers):
+    def _set_lr_scheduler(self, lr_schedulers):
         if lr_schedulers is not None:
-            if isinstance(lr_schedulers, LRScheduler):
-                lr_scheduler: Union[
-                    LRScheduler,
-                    MultipleLRScheduler,
-                ] = lr_schedulers
+            # ReduceLROnPlateau is special, only scheduler that is 'just' an
+            # object rather than a LRScheduler
+            if isinstance(lr_schedulers, LRScheduler) or isinstance(
+                lr_schedulers, ReduceLROnPlateau
+            ):
+                lr_scheduler = lr_schedulers
                 cyclic_lr = "cycl" in lr_scheduler.__class__.__name__.lower()
             else:
                 lr_scheduler = MultipleLRScheduler(lr_schedulers)
@@ -1164,17 +1175,18 @@ class Trainer:
                 cyclic_lr = any(["cycl" in sn for sn in scheduler_names])
         else:
             lr_scheduler, cyclic_lr = None, False
-        return lr_scheduler, cyclic_lr
+        self.cyclic_lr = cyclic_lr
+        return lr_scheduler
 
     @staticmethod
-    def _get_transforms(transforms):
+    def _set_transforms(transforms):
         if transforms is not None:
             return MultipleTransforms(transforms)()
         else:
             return None
 
     def _set_callbacks_and_metrics(self, callbacks, metrics):
-        self.callbacks: List = [History()]
+        self.callbacks: List = [History(), LRShedulerCallback()]
         if callbacks is not None:
             for callback in callbacks:
                 if isinstance(callback, type):

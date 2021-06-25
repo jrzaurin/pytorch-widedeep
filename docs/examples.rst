@@ -13,3 +13,4 @@ them to address different problems
 * `Regression with Images and Text <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/05_Regression_with_Images_and_Text.ipynb>`__
 * `FineTune routines <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/06_FineTune_and_WarmUp_Model_Components.ipynb>`__
 * `Custom Components <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/07_Custom_Components.ipynb>`__
+* `Save and Load Model and Artifacts <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/08_save_and_load_model_and_artifacts.ipynb>`__

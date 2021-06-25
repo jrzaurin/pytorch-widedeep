@@ -51,33 +51,34 @@ class MetricCallback(Callback):
 
 
 class Accuracy(Metric):
+    r"""Class to calculate the accuracy for both binary and categorical problems
+
+    Parameters
+    ----------
+    top_k: int, default = 1
+        Accuracy will be computed using the top k most likely classes in
+        multiclass problems
+
+    Examples
+    --------
+    >>> import torch
+    >>>
+    >>> from pytorch_widedeep.metrics import Accuracy
+    >>>
+    >>> acc = Accuracy()
+    >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
+    >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
+    >>> acc(y_pred, y_true)
+    0.5
+    >>>
+    >>> acc = Accuracy(top_k=2)
+    >>> y_true = torch.tensor([0, 1, 2])
+    >>> y_pred = torch.tensor([[0.3, 0.5, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
+    >>> acc(y_pred, y_true)
+    0.6666666666666666
+    """
+
     def __init__(self, top_k: int = 1):
-        r"""Class to calculate the accuracy for both binary and categorical problems
-
-        Parameters
-        ----------
-        top_k: int, default = 1
-            Accuracy will be computed using the top k most likely classes in
-            multiclass problems
-
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.metrics import Accuracy
-        >>>
-        >>> acc = Accuracy()
-        >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
-        >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
-        >>> acc(y_pred, y_true)
-        0.5
-        >>>
-        >>> acc = Accuracy(top_k=2)
-        >>> y_true = torch.tensor([0, 1, 2])
-        >>> y_pred = torch.tensor([[0.3, 0.5, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
-        >>> acc(y_pred, y_true)
-        0.6666666666666666
-        """
         super(Accuracy, self).__init__()
 
         self.top_k = top_k
@@ -109,33 +110,34 @@ class Accuracy(Metric):
 
 
 class Precision(Metric):
+    r"""Class to calculate the precision for both binary and categorical problems
+
+    Parameters
+    ----------
+    average: bool, default = True
+        This applies only to multiclass problems. if ``True`` calculate
+        precision for each label, and finds their unweighted mean.
+
+    Examples
+    --------
+    >>> import torch
+    >>>
+    >>> from pytorch_widedeep.metrics import Precision
+    >>>
+    >>> prec = Precision()
+    >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
+    >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
+    >>> prec(y_pred, y_true)
+    0.5
+    >>>
+    >>> prec = Precision(average=True)
+    >>> y_true = torch.tensor([0, 1, 2])
+    >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
+    >>> prec(y_pred, y_true)
+    0.3333333432674408
+    """
+
     def __init__(self, average: bool = True):
-        r"""Class to calculate the precision for both binary and categorical problems
-
-        Parameters
-        ----------
-        average: bool, default = True
-            This applies only to multiclass problems. if ``True`` calculate
-            precision for each label, and finds their unweighted mean.
-
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.metrics import Precision
-        >>>
-        >>> prec = Precision()
-        >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
-        >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
-        >>> prec(y_pred, y_true)
-        0.5
-        >>>
-        >>> prec = Precision(average=True)
-        >>> y_true = torch.tensor([0, 1, 2])
-        >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
-        >>> prec(y_pred, y_true)
-        0.3333333432674408
-        """
         super(Precision, self).__init__()
 
         self.average = average
@@ -174,33 +176,34 @@ class Precision(Metric):
 
 
 class Recall(Metric):
+    r"""Class to calculate the recall for both binary and categorical problems
+
+    Parameters
+    ----------
+    average: bool, default = True
+        This applies only to multiclass problems. if ``True`` calculate recall
+        for each label, and finds their unweighted mean.
+
+    Examples
+    --------
+    >>> import torch
+    >>>
+    >>> from pytorch_widedeep.metrics import Recall
+    >>>
+    >>> rec = Recall()
+    >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
+    >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
+    >>> rec(y_pred, y_true)
+    0.5
+    >>>
+    >>> rec = Recall(average=True)
+    >>> y_true = torch.tensor([0, 1, 2])
+    >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
+    >>> rec(y_pred, y_true)
+    0.3333333432674408
+    """
+
     def __init__(self, average: bool = True):
-        r"""Class to calculate the recall for both binary and categorical problems
-
-        Parameters
-        ----------
-        average: bool, default = True
-            This applies only to multiclass problems. if ``True`` calculate recall
-            for each label, and finds their unweighted mean.
-
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.metrics import Recall
-        >>>
-        >>> rec = Recall()
-        >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
-        >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
-        >>> rec(y_pred, y_true)
-        0.5
-        >>>
-        >>> rec = Recall(average=True)
-        >>> y_true = torch.tensor([0, 1, 2])
-        >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
-        >>> rec(y_pred, y_true)
-        0.3333333432674408
-        """
         super(Recall, self).__init__()
 
         self.average = average
@@ -239,37 +242,38 @@ class Recall(Metric):
 
 
 class FBetaScore(Metric):
+    r"""Class to calculate the fbeta score for both binary and categorical problems
+
+    :math:`F_{\beta} = ((1 + {\beta}^2) * \frac{(precision * recall)}{({\beta}^2 * precision + recall)}`
+
+    Parameters
+    ----------
+    beta: int
+        Coefficient to control the balance between precision and recall
+    average: bool, default = True
+        This applies only to multiclass problems. if ``True`` calculate fbeta
+        for each label, and find their unweighted mean.
+
+    Examples
+    --------
+    >>> import torch
+    >>>
+    >>> from pytorch_widedeep.metrics import FBetaScore
+    >>>
+    >>> fbeta = FBetaScore(beta=2)
+    >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
+    >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
+    >>> fbeta(y_pred, y_true)
+    0.5
+    >>>
+    >>> fbeta = FBetaScore(beta=2)
+    >>> y_true = torch.tensor([0, 1, 2])
+    >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
+    >>> fbeta(y_pred, y_true)
+    0.3333333432674408
+    """
+
     def __init__(self, beta: int, average: bool = True):
-        r"""Class to calculate the fbeta score for both binary and categorical problems
-
-        :math:`F_{\beta} = ((1 + {\beta}^2) * \frac{(precision * recall)}{({\beta}^2 * precision + recall)}`
-
-        Parameters
-        ----------
-        beta: int
-            Coefficient to control the balance between precision and recall
-        average: bool, default = True
-            This applies only to multiclass problems. if ``True`` calculate fbeta
-            for each label, and find their unweighted mean.
-
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.metrics import FBetaScore
-        >>>
-        >>> fbeta = FBetaScore(beta=2)
-        >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
-        >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
-        >>> fbeta(y_pred, y_true)
-        0.5
-        >>>
-        >>> fbeta = FBetaScore(beta=2)
-        >>> y_true = torch.tensor([0, 1, 2])
-        >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
-        >>> fbeta(y_pred, y_true)
-        0.3333333432674408
-        """
         super(FBetaScore, self).__init__()
 
         self.beta = beta
@@ -301,33 +305,34 @@ class FBetaScore(Metric):
 
 
 class F1Score(Metric):
+    r"""Class to calculate the f1 score for both binary and categorical problems
+
+    Parameters
+    ----------
+    average: bool, default = True
+        This applies only to multiclass problems. if ``True`` calculate f1 for
+        each label, and find their unweighted mean.
+
+    Examples
+    --------
+    >>> import torch
+    >>>
+    >>> from pytorch_widedeep.metrics import F1Score
+    >>>
+    >>> f1 = F1Score()
+    >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
+    >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
+    >>> f1(y_pred, y_true)
+    0.5
+    >>>
+    >>> f1 = F1Score()
+    >>> y_true = torch.tensor([0, 1, 2])
+    >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
+    >>> f1(y_pred, y_true)
+    0.3333333432674408
+    """
+
     def __init__(self, average: bool = True):
-        r"""Class to calculate the f1 score for both binary and categorical problems
-
-        Parameters
-        ----------
-        average: bool, default = True
-            This applies only to multiclass problems. if ``True`` calculate f1 for
-            each label, and find their unweighted mean.
-
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.metrics import F1Score
-        >>>
-        >>> f1 = F1Score()
-        >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
-        >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
-        >>> f1(y_pred, y_true)
-        0.5
-        >>>
-        >>> f1 = F1Score()
-        >>> y_true = torch.tensor([0, 1, 2])
-        >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
-        >>> f1(y_pred, y_true)
-        0.3333333432674408
-        """
         super(F1Score, self).__init__()
 
         self.average = average
@@ -345,28 +350,29 @@ class F1Score(Metric):
 
 
 class R2Score(Metric):
+    r"""
+    Calculates the R-Squared, the
+    `coefficient of determination <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_:
+
+    :math:`R^2 = 1 - \frac{\sum_{j=1}^n(y_j - \hat{y_j})^2}{\sum_{j=1}^n(y_j - \bar{y})^2}`,
+
+    where :math:`\hat{y_j}` is the ground truth, :math:`y_j` is the predicted value and
+    :math:`\bar{y}` is the mean of the ground truth.
+
+    Examples
+    --------
+    >>> import torch
+    >>>
+    >>> from pytorch_widedeep.metrics import R2Score
+    >>>
+    >>> r2 = R2Score()
+    >>> y_true = torch.tensor([3, -0.5, 2, 7]).view(-1, 1)
+    >>> y_pred = torch.tensor([2.5, 0.0, 2, 8]).view(-1, 1)
+    >>> r2(y_pred, y_true)
+    0.9486081370449679
+    """
+
     def __init__(self):
-        r"""
-        Calculates the R-Squared, the
-        `coefficient of determination <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_:
-
-        :math:`R^2 = 1 - \frac{\sum_{j=1}^n(y_j - \hat{y_j})^2}{\sum_{j=1}^n(y_j - \bar{y})^2}`,
-
-        where :math:`\hat{y_j}` is the ground truth, :math:`y_j` is the predicted value and
-        :math:`\bar{y}` is the mean of the ground truth.
-
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.metrics import R2Score
-        >>>
-        >>> r2 = R2Score()
-        >>> y_true = torch.tensor([3, -0.5, 2, 7]).view(-1, 1)
-        >>> y_pred = torch.tensor([2.5, 0.0, 2, 8]).view(-1, 1)
-        >>> r2(y_pred, y_true)
-        0.9486081370449679
-        """
         self.numerator = 0
         self.denominator = 0
         self.num_examples = 0

@@ -12,31 +12,32 @@ __all__ = ["LabelEncoder"]
 
 
 class LabelEncoder:
+    r"""Label Encode categorical values for multiple columns at once
+
+    .. note:: LabelEncoder reserves 0 for `unseen` new categories. This is convenient
+        when defining the embedding layers, since we can just set padding idx to 0.
+
+    Parameters
+    ----------
+    columns_to_encode: List, Optional
+        List of strings containing the names of the columns to encode. If
+        ``None`` all columns of type ``object`` in the dataframe will be label
+        encoded.
+
+    Attributes
+    -----------
+    encoding_dict: Dict
+        Dictionary containing the encoding mappings in the format, e.g.
+
+        `{'colname1': {'cat1': 1, 'cat2': 2, ...}, 'colname2': {'cat1': 1, 'cat2': 2, ...}, ...}`
+
+    inverse_encoding_dict: Dict
+        Dictionary containing the insverse encoding mappings in the format, e.g.
+
+        `{'colname1': {1: 'cat1', 2: 'cat2', ...}, 'colname2': {1: 'cat1', 2: 'cat2', ...}, ...}`
+    """
+
     def __init__(self, columns_to_encode: Optional[List[str]] = None):
-        """Label Encode categorical values for multiple columns at once
-
-        .. note:: LabelEncoder reserves 0 for `unseen` new categories. This is convenient
-            when defining the embedding layers, since we can just set padding idx to 0.
-
-        Parameters
-        ----------
-        columns_to_encode: List, Optional
-            List of strings containing the names of the columns to encode. If
-            ``None`` all columns of type ``object`` in the dataframe will be label
-            encoded.
-
-        Attributes
-        -----------
-        encoding_dict: Dict
-            Dictionary containing the encoding mappings in the format, e.g.
-
-            `{'colname1': {'cat1': 1, 'cat2': 2, ...}, 'colname2': {'cat1': 1, 'cat2': 2, ...}, ...}`
-
-        inverse_encoding_dict: Dict
-            Dictionary containing the insverse encoding mappings in the format, e.g.
-
-            `{'colname1': {1: 'cat1', 2: 'cat2', ...}, 'colname2': {1: 'cat1', 2: 'cat2', ...}, ...}`
-        """
         self.columns_to_encode = columns_to_encode
 
     def fit(self, df: pd.DataFrame) -> "LabelEncoder":

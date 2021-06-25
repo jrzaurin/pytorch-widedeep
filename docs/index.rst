@@ -90,7 +90,7 @@ deeptabular, deeptext and deepimage, can be used independently** and in
 isolation. For example, one could use only ``wide``, which is in simply a
 linear model. In fact, one of the most interesting offerings of
 ``pytorch-widedeep`` is the ``deeptabular`` component. Currently,
-``pytorch-widedeep`` offers 3 models for that component:
+``pytorch-widedeep`` offers 4 models for that component:
 
 1. ``TabMlp``: this is almost identical to the `tabular
 model <https://docs.fast.ai/tutorial.tabular.html>`_ in the fantastic
@@ -101,12 +101,14 @@ features, and passed then through a MLP.
 2. ``TabRenset``: This is similar to the previous model but the embeddings are
 passed through a series of ResNet blocks built with dense layers.
 
-3. ``TabTransformer``: Details on the TabTransformer can be found in:
-`TabTransformer: Tabular Data Modeling Using Contextual
-Embeddings <https://arxiv.org/pdf/2012.06678.pdf>`_.
+3. ``Tabnet``: Details on TabNet can be found in: `TabNet: Attentive
+Interpretable Tabular Learning <https://arxiv.org/abs/1908.07442>`_.
 
+4. ``TabTransformer``: Details on the TabTransformer can be found in:
+`TabTransformer: Tabular Data Modeling Using Contextual Embeddings
+<https://arxiv.org/pdf/2012.06678.pdf>`_.
 
-For details on these 3 models and their options please see the examples in the
+For details on these 4 models and their options please see the examples in the
 Examples folder and the documentation.
 
 Finally, while I recommend using the ``wide`` and ``deeptabular`` models in

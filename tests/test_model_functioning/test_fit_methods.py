@@ -1,10 +1,17 @@
 import string
+import warnings
 
 import numpy as np
 import pytest
 from torch import nn
 
-from pytorch_widedeep.models import Wide, TabMlp, WideDeep, TabTransformer
+from pytorch_widedeep.models import (
+    Wide,
+    TabMlp,
+    TabNet,
+    WideDeep,
+    TabTransformer,
+)
 from pytorch_widedeep.metrics import R2Score
 from pytorch_widedeep.training import Trainer
 
@@ -125,6 +132,51 @@ def test_fit_objectives_tab_transformer(
     tab_transformer = TabTransformer(
         column_idx={k: v for v, k in enumerate(colnames)},
         embed_input=embed_input_tt,
+        continuous_cols=colnames[5:],
+    )
+    model = WideDeep(wide=wide, deeptabular=tab_transformer, pred_dim=pred_dim)
+    trainer = Trainer(model, objective=objective, verbose=0)
+    trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, batch_size=16)
+    preds = trainer.predict(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
+    if objective == "binary":
+        pass
+    else:
+        probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
+    assert preds.shape[0] == 32, probs.shape[1] == probs_dim
+
+
+##############################################################################
+# Repeat 1st set of tests with TabNet
+##############################################################################
+
+
+@pytest.mark.parametrize(
+    "X_wide, X_tab, target, objective, X_wide_test, X_tab_test, X_test, pred_dim, probs_dim",
+    [
+        (X_wide, X_tab, target_regres, "regression", X_wide, X_tab, None, 1, None),
+        (X_wide, X_tab, target_binary, "binary", X_wide, X_tab, None, 1, 2),
+        (X_wide, X_tab, target_multic, "multiclass", X_wide, X_tab, None, 3, 3),
+        (X_wide, X_tab, target_regres, "regression", None, None, X_test, 1, None),
+        (X_wide, X_tab, target_binary, "binary", None, None, X_test, 1, 2),
+        (X_wide, X_tab, target_multic, "multiclass", None, None, X_test, 3, 3),
+    ],
+)
+def test_fit_objectives_tabnet(
+    X_wide,
+    X_tab,
+    target,
+    objective,
+    X_wide_test,
+    X_tab_test,
+    X_test,
+    pred_dim,
+    probs_dim,
+):
+    warnings.filterwarnings("ignore")
+    wide = Wide(np.unique(X_wide).shape[0], pred_dim)
+    tab_transformer = TabNet(
+        column_idx={k: v for v, k in enumerate(colnames)},
+        embed_input=embed_input,
         continuous_cols=colnames[5:],
     )
     model = WideDeep(wide=wide, deeptabular=tab_transformer, pred_dim=pred_dim)

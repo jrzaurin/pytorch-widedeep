@@ -4,7 +4,7 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/jrzaurin/pytorch-widedeep/issues)
 [![codecov](https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/master/graph/badge.svg)](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
-[![Python 3.6 3.7 3.8](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8-blue.svg)](https://www.python.org/)
+[![Python 3.6 3.7 3.8 3.9](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue.svg)](https://www.python.org/)
 
 # pytorch-widedeep
 
@@ -13,12 +13,13 @@ using wide and deep models.
 
 **Documentation:** [https://pytorch-widedeep.readthedocs.io](https://pytorch-widedeep.readthedocs.io/en/latest/index.html)
 
-**Companion posts:** [infinitoml](https://jrzaurin.github.io/infinitoml/)
+**Companion posts and tutorials:** [infinitoml](https://jrzaurin.github.io/infinitoml/)
+
+**Experiments and comparisson with `LightGBM`**: [TabularDL vs LightGBM](https://github.com/jrzaurin/tabulardl-benchmark)
 
 ### Introduction
 
-`pytorch-widedeep` is based on Google's Wide and Deep Algorithm, [Wide & Deep
-Learning for Recommender Systems](https://arxiv.org/abs/1606.07792).
+``pytorch-widedeep`` is based on Google's [Wide and Deep Algorithm](https://arxiv.org/abs/1606.07792)
 
 In general terms, `pytorch-widedeep` is a package to use deep learning with
 tabular data. In particular, is intended to facilitate the combination of text
@@ -54,20 +55,20 @@ cd pytorch-widedeep
 pip install -e .
 ```
 
-**Important note for Mac users**: at the time of writing (Dec-2020) the latest
-`torch` release is `1.7`. This release has some
+**Important note for Mac users**: at the time of writing (June-2021) the
+latest `torch` release is `1.9`. Some past
 [issues](https://stackoverflow.com/questions/64772335/pytorch-w-parallelnative-cpp206)
-when running on Mac and the data-loaders will not run in parallel. In
-addition, since `python 3.8`, [the `multiprocessing` library start method
-changed from `'fork'` to
+when running on Mac, present in previous versions, persist on this release and
+the data-loaders will not run in parallel. In addition, since `python 3.8`,
+[the `multiprocessing` library start method changed from `'fork'` to
 `'spawn'`](https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods).
-This also affects the data-loaders (for any `torch` version) and they will not
-run in parallel. Therefore, for Mac users I recommend using `python 3.6` or
-`3.7` and `torch <= 1.6` (with the corresponding, consistent version of
+This also affects the data-loaders (for any `torch` version) and they will
+not run in parallel. Therefore, for Mac users I recommend using `python 3.6`
+or `3.7` and `torch <= 1.6` (with the corresponding, consistent version of
 `torchvision`, e.g. `0.7.0` for `torch 1.6`). I do not want to force this
 versioning in the `setup.py` file since I expect that all these issues are
-fixed in the future. Therefore, after installing `pytorch-widedeep` via pip or
-directly from github, downgrade `torch` and `torchvision` manually:
+fixed in the future. Therefore, after installing `pytorch-widedeep` via pip
+or directly from github, downgrade `torch` and `torchvision` manually:
 
 ```bash
 pip install pytorch-widedeep
@@ -82,16 +83,13 @@ Binary classification with the [adult
 dataset]([adult](https://www.kaggle.com/wenruliu/adult-income-dataset))
 using `Wide` and `DeepDense` and defaults settings.
 
-
-```python
-```
-
 Building a wide (linear) and deep model with ``pytorch-widedeep``:
 
 ```python
 
 import pandas as pd
 import numpy as np
+import torch
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep import Trainer
@@ -163,8 +161,29 @@ X_wide_te = wide_preprocessor.transform(df_test)
 X_tab_te = tab_preprocessor.transform(df_test)
 preds = trainer.predict(X_wide=X_wide_te, X_tab=X_tab_te)
 
-# save and load
-trainer.save_model("model_weights/model.t")
+# Save and load
+
+# Option 1: this will also save training history and lr history if the
+# LRHistory callback is used
+trainer.save(path="model_weights", save_state_dict=True)
+
+# Option 2: save as any other torch model
+torch.save(model.state_dict(), "model_weights/wd_model.pt")
+
+# From here in advance, Option 1 or 2 are the same. I assume the user has
+# prepared the data and defined the new model components:
+# 1. Build the model
+model_new = WideDeep(wide=wide, deeptabular=deeptabular)
+model_new.load_state_dict(torch.load("model_weights/wd_model.pt"))
+
+# 2. Instantiate the trainer
+trainer_new = Trainer(
+    model_new,
+    objective="binary",
+)
+
+# 3. Either start the fit or directly predict
+preds = trainer_new.predict(X_wide=X_wide, X_tab=X_tab)
 ```
 
 Of course, one can do **much more**. See the Examples folder, the

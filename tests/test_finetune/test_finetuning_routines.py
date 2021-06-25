@@ -46,7 +46,7 @@ class TestDeepImage(nn.Module):
         return self.linear(x)
 
 
-#  Define a simple WideDeep Dataset
+# Define a simple WideDeep Dataset
 class WDset(Dataset):
     def __init__(self, X_wide, X_tab, X_text, X_img, target):
 
@@ -81,7 +81,7 @@ def loss_fn(y_pred, y_true):
     return F.binary_cross_entropy_with_logits(y_pred, y_true.view(-1, 1))
 
 
-#  Define the data components:
+# Define the data components:
 
 # target
 target = torch.empty(100, 1).random_(0, 2)
@@ -155,7 +155,7 @@ image_layers = [c for c in list(deepimage.children())][::-1]
 
 
 ###############################################################################
-#  Simply test that finetune_all runs
+# Simply test that finetune_all runs
 ###############################################################################
 @pytest.mark.parametrize(
     "model, modelname, loader, n_epochs, max_lr",
@@ -176,7 +176,7 @@ def test_finetune_all(model, modelname, loader, n_epochs, max_lr):
 
 
 ###############################################################################
-#  Simply test that finetune_gradual runs
+# Simply test that finetune_gradual runs
 ###############################################################################
 @pytest.mark.parametrize(
     "model, modelname, loader, max_lr, layers, routine",
