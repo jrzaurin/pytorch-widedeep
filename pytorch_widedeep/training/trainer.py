@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import trange
 from scipy.sparse import csc_matrix
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.metrics import Metric, MetricCallback, MultipleMetrics
@@ -315,6 +315,7 @@ class Trainer:
         n_epochs: int = 1,
         validation_freq: int = 1,
         batch_size: int = 32,
+        CustDataLoader: Union[str, DataLoader, None] = None,
         finetune: bool = False,
         finetune_epochs: int = 5,
         finetune_max_lr: float = 0.01,
@@ -524,9 +525,23 @@ class Trainer:
             val_split,
             target,
         )
-        train_loader = DataLoader(
-            dataset=train_set, batch_size=batch_size, num_workers=n_cpus
-        )
+        if isinstance(CustDataLoader, DataLoader):
+            train_loader = CustDataLoader(
+                dataset=train_set, batch_size=batch_size, num_workers=n_cpus
+            )
+        if isinstance(CustDataLoader, str):
+            if 'imb_dataloader':
+                train_loader = self._DataLoader_imbalanced(self, 
+                    dataset=train_set, batch_size=batch_size, num_workers=n_cpus
+                    )
+            else:
+                train_loader = self._DataLoader_default(
+                    dataset=train_set, batch_size=batch_size, num_workers=n_cpus
+                    )
+        else:
+            train_loader = self._DataLoader_default(
+                dataset=train_set, batch_size=batch_size, num_workers=n_cpus
+            )
         train_steps = len(train_loader)
         if eval_set is not None:
             eval_loader = DataLoader(
@@ -1200,3 +1215,50 @@ class Trainer:
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self.model)
         self.callback_container.set_trainer(self)
+
+    @staticmethod
+    def _get_class_weights(dataset):
+        """Helper function to get weights of classes in the imbalanced dataset.
+        Args:
+            dataset (WideDeepDataset): dataset containing target classes in dataset.Y 
+        Returns:
+            weights (np.array): numpy array with weights
+            minor_class_count (int): count of samples in the smallest class for undersampling
+            num_classes (int): number of classes
+        """
+        weights = 1/np.unique(dataset.Y, return_counts=True)[1]
+        minor_class_count = min(np.unique(dataset.Y, return_counts=True)[1])
+        num_classes = len(np.unique(dataset.Y))
+        return weights, minor_class_count, num_classes
+    
+    @staticmethod
+    def _DataLoader_default(dataset, batch_size, num_workers):
+        return DataLoader(dataset=dataset, batch_size=batch_size, num_workers=num_workers)
+
+    def _DataLoader_imbalanced(self, dataset, batch_size, num_workers):
+        """Helper function to load and shuffle tensors into models in
+        batches with adjusted weights to "fight" against imbalance of the classes.
+        If the classes do not begin from 0 remapping is necessary, see:
+        https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab
+        Args:
+            data (pandas): data 
+            batch_size (int): size of batch
+            target_col (str): classification column, must include classes from 
+            0, 1, 2,..., N
+            device(str): cuda or cpu to be used for computation
+            classifier (str): type of classifier ['Binary', 'Multi']
+        Returns:
+            (tuple):
+                - DataLoader: PyTorch DataLoader object
+        """
+        weights, minor_cls_cnt, num_clss = self._get_class_weights(dataset)
+        num_samples = int(minor_cls_cnt * num_clss)
+        # weight for each sample
+        samples_weight = np.array([weights[i] for i in dataset.Y])
+        # draw len(dataset) samples with given weights
+        sampler = WeightedRandomSampler(
+            samples_weight, num_samples, replacement=True)
+        # sampler option is mutually exclusive with shuffle, can't set shuffle to
+        # false/true
+        return weights, DataLoader(dataset, batch_size=batch_size,
+        sampler=sampler, num_workers=num_workers)
