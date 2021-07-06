@@ -11,7 +11,9 @@ from scipy.sparse import csc_matrix
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from pytorch_widedeep.metrics import Metric, MetricCallback, MultipleMetrics
+from pytorch_widedeep.metrics import MetricCallback, MultipleMetrics
+from torchmetrics import Metric
+
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.callbacks import (
     History,
@@ -128,13 +130,12 @@ class Trainer:
         <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
         folder in the repo
     metrics: List, optional, default=None
-        List of objects of type :obj:`Metric`. Metrics available are:
-        ``Accuracy``, ``Precision``, ``Recall``, ``FBetaScore``,
-        ``F1Score`` and ``R2Score``. This can also be a custom metric as
-        long as it is an object of type :obj:`Metric`. See
-        :obj:`pytorch_widedeep.metrics.Metric` or the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
-        folder in the repo
+        List of objects of type :obj:`torchmetrics.Metric`. This can be any
+        metric from torchmetrics library `Examples
+        <https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
+        classification-metrics>`_. It can also be a custom metric as long as
+        it follows torchmetrics guidelines, see `the instructions
+        <https://torchmetrics.readthedocs.io/en/latest/>`_.
     class_weight: float, List or Tuple. optional. default=None
         - float indicating the weight of the minority class in binary classification
           problems (e.g. 9.)
@@ -315,7 +316,8 @@ class Trainer:
         n_epochs: int = 1,
         validation_freq: int = 1,
         batch_size: int = 32,
-        CustDataLoader: Union[str, DataLoader, None] = None,
+        custom_dataloader: Union[str, DataLoader, None] = None,
+        imbalanced_dataloader_oversample: float = 1,
         finetune: bool = False,
         finetune_epochs: int = 5,
         finetune_max_lr: float = 0.01,
@@ -369,6 +371,14 @@ class Trainer:
             epochs validation frequency
         batch_size: int, default=32
             batch size
+        custom_dataloader: ``torch.utils.data.DataLoader``, optional, default=None
+            object of class ``torch.utils.data.DataLoader``. Available values are
+            `'imb_dataloader'`. If None is set a default DataLoader 
+            ``pytorch_widedeep.training.trainer._DataLoader_default`` is used.
+            It is possible to pass a custom DataLoader, but it must follow 
+            ``torch.utils.data.DataLoader``, see https://pytorch.org/docs/stable/data.html
+        imbalanced_dataloader_oversample: float, optional, default=1
+            minor class multiplicator for custom_dalataloader `'imb_dataloader'`
         finetune: bool, default=False
             param alias: ``warmup``
 
@@ -525,14 +535,14 @@ class Trainer:
             val_split,
             target,
         )
-        if isinstance(CustDataLoader, DataLoader):
-            train_loader = CustDataLoader(
+        if isinstance(custom_dataloader, DataLoader):
+            train_loader = custom_dataloader(
                 dataset=train_set, batch_size=batch_size, num_workers=n_cpus
             )
-        if isinstance(CustDataLoader, str):
+        if isinstance(custom_dataloader, str):
             if 'imb_dataloader':
-                train_loader = self._DataLoader_imbalanced(self, 
-                    dataset=train_set, batch_size=batch_size, num_workers=n_cpus
+                train_loader = self._DataLoader_imbalanced(
+                    dataset=train_set, batch_size=batch_size, num_workers=n_cpus, oversample_mul=imbalanced_dataloader_oversample
                     )
             else:
                 train_loader = self._DataLoader_default(
@@ -1050,9 +1060,11 @@ class Trainer:
             if self.method == "regression":
                 score = self.metric(y_pred, y)
             if self.method == "binary":
-                score = self.metric(torch.sigmoid(y_pred), y)
+                y_pred = torch.round(torch.sigmoid(y_pred))
+                score = self.metric(y_pred.int(), y.int())
             if self.method == "multiclass":
-                score = self.metric(F.softmax(y_pred, dim=1), y)
+                _, y_pred = torch.max(torch.softmax(y_pred, dim=1), dim=1)
+                score = self.metric(y_pred.int(), y.int())
             return score
         else:
             return None
@@ -1230,29 +1242,26 @@ class Trainer:
         minor_class_count = min(np.unique(dataset.Y, return_counts=True)[1])
         num_classes = len(np.unique(dataset.Y))
         return weights, minor_class_count, num_classes
-    
+
     @staticmethod
     def _DataLoader_default(dataset, batch_size, num_workers):
         return DataLoader(dataset=dataset, batch_size=batch_size, num_workers=num_workers)
 
-    def _DataLoader_imbalanced(self, dataset, batch_size, num_workers):
+    def _DataLoader_imbalanced(self, dataset, batch_size, num_workers, oversample_mul):
         """Helper function to load and shuffle tensors into models in
         batches with adjusted weights to "fight" against imbalance of the classes.
         If the classes do not begin from 0 remapping is necessary, see:
         https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab
         Args:
-            data (pandas): data 
+            dataset (WideDeepDataset): dataset containing target classes in dataset.Y 
             batch_size (int): size of batch
-            target_col (str): classification column, must include classes from 
-            0, 1, 2,..., N
-            device(str): cuda or cpu to be used for computation
-            classifier (str): type of classifier ['Binary', 'Multi']
+            num_workers (int): number of workers
+            oversample_mul (float): multiplicator for random oversampling of minority class
         Returns:
-            (tuple):
-                - DataLoader: PyTorch DataLoader object
+            DataLoader: PyTorch DataLoader object
         """
         weights, minor_cls_cnt, num_clss = self._get_class_weights(dataset)
-        num_samples = int(minor_cls_cnt * num_clss)
+        num_samples = int(minor_cls_cnt * num_clss * oversample_mul)
         # weight for each sample
         samples_weight = np.array([weights[i] for i in dataset.Y])
         # draw len(dataset) samples with given weights
@@ -1260,5 +1269,6 @@ class Trainer:
             samples_weight, num_samples, replacement=True)
         # sampler option is mutually exclusive with shuffle, can't set shuffle to
         # false/true
-        return weights, DataLoader(dataset, batch_size=batch_size,
-        sampler=sampler, num_workers=num_workers)
+        # setting num_worker>0 with sampler causes error "DataLoader worker (pid 1362) is killed by signal: Segmentation fault"
+        # I could not find a workaround, seems its related to sampling/multiprocessing
+        return DataLoader(dataset, batch_size=batch_size, sampler=sampler, num_workers=0)

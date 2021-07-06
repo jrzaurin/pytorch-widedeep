@@ -156,7 +156,7 @@ def print_loss_and_metric(pb: tqdm, loss: float, score: Dict):
     """
     if score is not None:
         pb.set_postfix(
-            metrics={k: np.round(v, 4) for k, v in score.items()},
+            metrics={k: np.round(v.astype(float), 4).tolist() for k, v in score.items()},
             loss=loss,
         )
     else:
