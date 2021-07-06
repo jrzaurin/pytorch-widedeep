@@ -1,6 +1,8 @@
 import torch
 
 from pytorch_widedeep.callbacks import Callback
+from torchmetrics import Metric as TorchMetric
+import numpy as np
 
 from .wdtypes import *  # noqa: F403
 
@@ -35,7 +37,14 @@ class MultipleMetrics(object):
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> Dict:
         logs = {}
         for metric in self._metrics:
-            logs[self.prefix + metric._name] = metric(y_pred, y_true)
+            if isinstance(metric, Metric):
+                logs[self.prefix + metric._name] = metric(y_pred, y_true)
+            if isinstance(metric, TorchMetric):
+                if metric.num_classes == 2:
+                    metric.update(torch.round(y_pred).int(), y_true.int())
+                if metric.num_classes > 2:
+                    metric.update(torch.max(y_pred, dim=1).int(), y_true.int())
+                logs[self.prefix + type(metric).__name__] = metric.compute().detach().cpu().numpy()
         return logs
 
 
@@ -106,7 +115,7 @@ class Accuracy(Metric):
         self.correct_count += y_pred.eq(y_true).sum().item()  # type: ignore[assignment]
         self.total_count += len(y_pred)
         accuracy = float(self.correct_count) / float(self.total_count)
-        return accuracy
+        return np.array(accuracy)
 
 
 class Precision(Metric):
@@ -170,9 +179,9 @@ class Precision(Metric):
         precision = self.true_positives / (self.all_positives + self.eps)
 
         if self.average:
-            return precision.mean().item()  # type:ignore
+            return np.array(precision.mean().item())  # type:ignore
         else:
-            return precision
+            return precision.detach().cpu().numpy()
 
 
 class Recall(Metric):
@@ -236,9 +245,9 @@ class Recall(Metric):
         recall = self.true_positives / (self.actual_positives + self.eps)
 
         if self.average:
-            return recall.mean().item()  # type:ignore
+            return np.array(recall.mean().item())  # type:ignore
         else:
-            return recall
+            return recall.detach().cpu().numpy()
 
 
 class FBetaScore(Metric):
@@ -299,7 +308,7 @@ class FBetaScore(Metric):
         fbeta = ((1 + beta2) * prec * rec) / (beta2 * prec + rec + self.eps)
 
         if self.average:
-            return fbeta.mean().item()  # type: ignore[attr-defined]
+            return np.array(fbeta.mean().item())  # type: ignore[attr-defined]
         else:
             return fbeta
 
@@ -397,4 +406,4 @@ class R2Score(Metric):
         self.y_true_sum += y_true.sum().item()
         y_true_avg = self.y_true_sum / self.num_examples
         self.denominator += ((y_true - y_true_avg) ** 2).sum().item()
-        return 1 - (self.numerator / self.denominator)
+        return np.array((1 - (self.numerator / self.denominator)))
