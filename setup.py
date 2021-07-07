@@ -64,7 +64,10 @@ setup_kwargs = {
         "torchvision",
         "einops",
         "wrapt",
-        "torchmetrics",
+        "torchmetrics"
+        "smart_open",
+        "thinc",
+        "typer",
     ],
     "extras_require": extras,
     "python_requires": ">=3.6.0",
