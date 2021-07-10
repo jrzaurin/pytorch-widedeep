@@ -11,6 +11,7 @@ import numpy as np
 import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
+from pytorch_widedeep.metrics import MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
@@ -84,12 +85,6 @@ class CallbackContainer(object):
         for callback in self.callbacks:
             callback.on_train_begin(logs)
 
-    def on_eval_begin(self, logs: Optional[Dict] = None):
-        # at the moment only used to reset metrics before eval
-        logs = logs or {}
-        for callback in self.callbacks:
-            callback.on_eval_begin(logs)
-
     def on_train_end(self, logs: Optional[Dict] = None):
         logs = logs or {}
         # logs['final_loss'] = self.model.history.epoch_losses[-1],
@@ -99,6 +94,7 @@ class CallbackContainer(object):
             callback.on_train_end(logs)
 
     def on_eval_begin(self, logs: Optional[Dict] = None):
+        # at the moment only used to reset metrics before eval
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_eval_begin(logs)
@@ -138,14 +134,11 @@ class Callback(object):
     def on_train_begin(self, logs: Optional[Dict] = None):
         pass
 
-    def on_eval_begin(self, logs: Optional[Dict] = None):
-        # at the moment only used to reset metrics before eval
-        pass
-
     def on_train_end(self, logs: Optional[Dict] = None):
         pass
 
     def on_eval_begin(self, logs: Optional[Dict] = None):
+        # at the moment only used to reset metrics before eval
         pass
 
 
@@ -220,6 +213,17 @@ class LRShedulerCallback(Callback):
 
     def _has_scheduler(self, model_name: str):
         return model_name in self.trainer.lr_scheduler._schedulers
+
+
+class MetricCallback(Callback):
+    def __init__(self, container: MultipleMetrics):
+        self.container = container
+
+    def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
+        self.container.reset()
+
+    def on_eval_begin(self, logs: Optional[Dict] = None):
+        self.container.reset()
 
 
 class LRHistory(Callback):

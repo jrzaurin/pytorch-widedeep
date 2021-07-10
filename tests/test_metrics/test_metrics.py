@@ -118,6 +118,26 @@ def test_muticlass_metrics(sklearn_metric, widedeep_metric):
 ###############################################################################
 # Test the reset method
 ###############################################################################
+@pytest.mark.parametrize(
+    "sklearn_metric, widedeep_metric",
+    [
+        (precision_score, Precision(average=False)),
+        (recall_score, Recall(average=False)),
+        (f1_score, F1Score(average=False)),
+        (f2_score_multi, FBetaScore(beta=2, average=False)),
+    ],
+)
+def test_muticlass_metrics_without_average(sklearn_metric, widedeep_metric):
+    skm = (
+        sklearn_metric(y_true_multi_np, y_pred_muli_np.argmax(axis=1), average="macro"),
+    )
+    wdm = widedeep_metric(y_pred_multi_pt, y_true_multi_pt)
+    assert np.isclose(skm, np.mean(wdm)) and wdm.shape[0] == 3
+
+
+###############################################################################
+# Test the reset method
+###############################################################################
 y_true_reg_np = np.array([3, -0.5, 2, 7]).reshape(-1, 1)
 y_pred_reg_np = np.array([2.5, 0.0, 2, 8]).reshape(-1, 1)
 

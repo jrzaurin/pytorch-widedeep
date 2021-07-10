@@ -8,19 +8,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import trange
 from scipy.sparse import csc_matrix
+from torchmetrics import Metric as TorchMetric
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from pytorch_widedeep.dataloaders import DataLoader_default
-from pytorch_widedeep.metrics import Metric, MetricCallback, MultipleMetrics
-from torchmetrics import Metric as TorchMetric
+from pytorch_widedeep.metrics import Metric, MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.callbacks import (
     History,
     Callback,
+    MetricCallback,
     CallbackContainer,
     LRShedulerCallback,
 )
+from pytorch_widedeep.dataloaders import DataLoaderDefault
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
@@ -140,7 +141,7 @@ class Trainer:
         - List of objects of type :obj:`torchmetrics.Metric`. This can be any
           metric from torchmetrics library `Examples
           <https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
-          classification-metrics>`_. This can also be a custom metric as 
+          classification-metrics>`_. This can also be a custom metric as
           long as it is an object of type :obj:`Metric`. See `the instructions
           <https://torchmetrics.readthedocs.io/en/latest/>`_.
     class_weight: float, List or Tuple. optional. default=None
@@ -378,10 +379,11 @@ class Trainer:
             epochs validation frequency
         batch_size: int, default=32
             batch size
-        custom_dataloader: ``torch.utils.data.DataLoader``, optional, default=None
-            object of class ``torch.utils.data.DataLoader``. Available predefined dataloaders
-            are ``DataLoader_default``, ```` in ``pytorch_widedeep.metrics``. If None, a 
-            ``DataLoader_default`` is set.
+        custom_dataloader: ``torch.utils.data.DataLoader``, Optional, default=None
+            object of class ``torch.utils.data.DataLoader``. Available
+            predefined dataloaders are ``DataLoaderDefault``, ```` in
+            ``pytorch_widedeep.metrics``. If None, a ``DataLoaderDefault``
+            is set.
         finetune: bool, default=False
             param alias: ``warmup``
 
@@ -541,15 +543,20 @@ class Trainer:
         if isinstance(custom_dataloader, type):
             if issubclass(custom_dataloader, DataLoader):
                 train_loader = custom_dataloader(
-                    dataset=train_set, batch_size=batch_size, num_workers=n_cpus, **kwargs
+                    dataset=train_set,
+                    batch_size=batch_size,
+                    num_workers=n_cpus,
+                    **kwargs,
                 )
             else:
-                NotImplementedError("Custom DataLoader must be a subclass of "
-                                    "torch.utils.data.DataLoader, please see the "
-                                    "pytorch documentation or examples in "
-                                    "pytorch_widedeep.dataloaders")
+                NotImplementedError(
+                    "Custom DataLoader must be a subclass of "
+                    "torch.utils.data.DataLoader, please see the "
+                    "pytorch documentation or examples in "
+                    "pytorch_widedeep.dataloaders"
+                )
         else:
-            train_loader = DataLoader_default(
+            train_loader = DataLoaderDefault(
                 dataset=train_set, batch_size=batch_size, num_workers=n_cpus
             )
         train_steps = len(train_loader)

@@ -1,8 +1,6 @@
-import torch
-
-from pytorch_widedeep.callbacks import Callback
-from torchmetrics import Metric as TorchMetric
 import numpy as np
+import torch
+from torchmetrics import Metric as TorchMetric
 
 from .wdtypes import *  # noqa: F403
 
@@ -42,21 +40,12 @@ class MultipleMetrics(object):
             if isinstance(metric, TorchMetric):
                 if metric.num_classes == 2:
                     metric.update(torch.round(y_pred).int(), y_true.int())
-                if metric.num_classes > 2:
-                    metric.update(torch.max(y_pred, dim=1).int(), y_true.int())
-                logs[self.prefix + type(metric).__name__] = metric.compute().detach().cpu().numpy()
+                if metric.num_classes > 2:  # type: ignore[operator]
+                    metric.update(torch.max(y_pred, dim=1).indices, y_true.int())  # type: ignore[attr-defined]
+                logs[self.prefix + type(metric).__name__] = (
+                    metric.compute().detach().cpu().numpy()
+                )
         return logs
-
-
-class MetricCallback(Callback):
-    def __init__(self, container: MultipleMetrics):
-        self.container = container
-
-    def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
-        self.container.reset()
-
-    def on_eval_begin(self, logs: Optional[Dict] = None):
-        self.container.reset()
 
 
 class Accuracy(Metric):
@@ -102,7 +91,7 @@ class Accuracy(Metric):
         self.correct_count = 0
         self.total_count = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
         num_classes = y_pred.size(1)
 
         if num_classes == 1:
@@ -162,7 +151,7 @@ class Precision(Metric):
         self.true_positives = 0
         self.all_positives = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
         num_class = y_pred.size(1)
 
         if num_class == 1:
@@ -181,7 +170,7 @@ class Precision(Metric):
         if self.average:
             return np.array(precision.mean().item())  # type:ignore
         else:
-            return precision.detach().cpu().numpy()
+            return precision.detach().cpu().numpy()  # type: ignore[attr-defined]
 
 
 class Recall(Metric):
@@ -228,7 +217,7 @@ class Recall(Metric):
         self.true_positives = 0
         self.actual_positives = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
         num_class = y_pred.size(1)
 
         if num_class == 1:
@@ -247,7 +236,7 @@ class Recall(Metric):
         if self.average:
             return np.array(recall.mean().item())  # type:ignore
         else:
-            return recall.detach().cpu().numpy()
+            return recall.detach().cpu().numpy()  # type: ignore[attr-defined]
 
 
 class FBetaScore(Metric):
@@ -299,7 +288,7 @@ class FBetaScore(Metric):
         self.precision.reset()
         self.recall.reset()
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
 
         prec = self.precision(y_pred, y_true)
         rec = self.recall(y_pred, y_true)
@@ -354,7 +343,7 @@ class F1Score(Metric):
         """
         self.f1.reset()
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
         return self.f1(y_pred, y_true)
 
 
@@ -398,7 +387,7 @@ class R2Score(Metric):
         self.num_examples = 0
         self.y_true_sum = 0
 
-    def __call__(self, y_pred: Tensor, y_true: Tensor) -> float:
+    def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
 
         self.numerator += ((y_pred - y_true) ** 2).sum().item()
 

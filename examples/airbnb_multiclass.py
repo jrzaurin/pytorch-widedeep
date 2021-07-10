@@ -4,7 +4,7 @@ import pandas as pd
 
 import pytorch_widedeep as wd
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep
-from pytorch_widedeep.metrics import F1Score, Accuracy
+from pytorch_widedeep.metrics import F1Score, Precision
 from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 
 use_cuda = torch.cuda.is_available()
@@ -53,7 +53,10 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=0.03)
 
     trainer = wd.Trainer(
-        model, objective="multiclass", metrics=[Accuracy, F1Score], optimizers=optimizer
+        model,
+        objective="multiclass",
+        metrics=[Precision(average=False), F1Score],
+        optimizers=optimizer,
     )
 
     trainer.fit(

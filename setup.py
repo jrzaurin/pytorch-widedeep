@@ -64,8 +64,7 @@ setup_kwargs = {
         "torchvision",
         "einops",
         "wrapt",
-        "torchmetrics"
-        "smart_open",
+        "torchmetrics" "smart_open",
         "thinc",
         "typer",
     ],
