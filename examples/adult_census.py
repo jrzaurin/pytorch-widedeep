@@ -11,6 +11,8 @@ from pytorch_widedeep.models import (  # noqa: F401
     TabResnet,
 )
 from pytorch_widedeep.metrics import Accuracy, Precision
+
+# from torchmetrics import Accuracy as accuracy_score
 from pytorch_widedeep.callbacks import (
     LRHistory,
     EarlyStopping,
@@ -94,6 +96,7 @@ if __name__ == "__main__":
     schedulers = {"wide": wide_sch, "deeptabular": deep_sch}
     initializers = {"wide": KaimingNormal, "deeptabular": XavierNormal}
     callbacks = [early_stopping, model_checkpoint, LRHistory(n_epochs=10)]
+    # metrics = [Accuracy, accuracy_score(num_classes=2), Precision]
     metrics = [Accuracy, Precision]
 
     trainer = Trainer(

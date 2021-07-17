@@ -34,23 +34,18 @@ class DataLoaderDefault(DataLoader):
 
 
 class DataLoaderImbalanced(DataLoader):
-    r"""Helper function to load and shuffle tensors into models in batches with
-    adjusted weights to "fight" against imbalance of the classes. If the
-    classes do not begin from 0 remapping is necessary, see:
-    https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab
+    r"""Class to load and shuffle batches with adjusted weights for imbalanced
+    datasets. If the classes do not begin from 0 remapping is necessary. See
+    `here <https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab>`_
 
     Parameters
     ----------
-    dataset ``WideDeepDataset``:
-        dataset containing target classes in dataset.Y
+    dataset: ``WideDeepDataset``
+        see ``pytorch_widedeep.training._wd_dataset``
     batch_size: int
         size of batch
     num_workers: int
         number of workers
-
-    Returns:
-    --------
-    PyTorch ``DataLoader`` object
     """
 
     def __init__(

@@ -157,6 +157,8 @@ class History(Callback):
     ):
         logs = logs or {}
         for k, v in logs.items():
+            if isinstance(v, np.ndarray):
+                v = v.tolist()
             self.trainer.history.setdefault(k, []).append(v)
 
 
@@ -216,6 +218,12 @@ class LRShedulerCallback(Callback):
 
 
 class MetricCallback(Callback):
+    r"""Callback that resets the metrics (if any metric is used)
+
+    This callback runs by default within :obj:`Trainer`, therefore, should not
+    be passed to the :obj:`Trainer`. Is included here just for completion.
+    """
+
     def __init__(self, container: MultipleMetrics):
         self.container = container
 

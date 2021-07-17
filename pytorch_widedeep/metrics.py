@@ -67,13 +67,13 @@ class Accuracy(Metric):
     >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
     >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
     >>> acc(y_pred, y_true)
-    0.5
+    array(0.5)
     >>>
     >>> acc = Accuracy(top_k=2)
     >>> y_true = torch.tensor([0, 1, 2])
     >>> y_pred = torch.tensor([[0.3, 0.5, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
     >>> acc(y_pred, y_true)
-    0.6666666666666666
+    array(0.66666667)
     """
 
     def __init__(self, top_k: int = 1):
@@ -126,13 +126,13 @@ class Precision(Metric):
     >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
     >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
     >>> prec(y_pred, y_true)
-    0.5
+    array(0.5)
     >>>
     >>> prec = Precision(average=True)
     >>> y_true = torch.tensor([0, 1, 2])
     >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
     >>> prec(y_pred, y_true)
-    0.3333333432674408
+    array(0.33333334)
     """
 
     def __init__(self, average: bool = True):
@@ -192,13 +192,13 @@ class Recall(Metric):
     >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
     >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
     >>> rec(y_pred, y_true)
-    0.5
+    array(0.5)
     >>>
     >>> rec = Recall(average=True)
     >>> y_true = torch.tensor([0, 1, 2])
     >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
     >>> rec(y_pred, y_true)
-    0.3333333432674408
+    array(0.33333334)
     """
 
     def __init__(self, average: bool = True):
@@ -262,13 +262,13 @@ class FBetaScore(Metric):
     >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
     >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
     >>> fbeta(y_pred, y_true)
-    0.5
+    array(0.5)
     >>>
     >>> fbeta = FBetaScore(beta=2)
     >>> y_true = torch.tensor([0, 1, 2])
     >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
     >>> fbeta(y_pred, y_true)
-    0.3333333432674408
+    array(0.33333334)
     """
 
     def __init__(self, beta: int, average: bool = True):
@@ -321,13 +321,13 @@ class F1Score(Metric):
     >>> y_true = torch.tensor([0, 1, 0, 1]).view(-1, 1)
     >>> y_pred = torch.tensor([[0.3, 0.2, 0.6, 0.7]]).view(-1, 1)
     >>> f1(y_pred, y_true)
-    0.5
+    array(0.5)
     >>>
     >>> f1 = F1Score()
     >>> y_true = torch.tensor([0, 1, 2])
     >>> y_pred = torch.tensor([[0.7, 0.1, 0.2], [0.1, 0.1, 0.8], [0.1, 0.5, 0.4]])
     >>> f1(y_pred, y_true)
-    0.3333333432674408
+    array(0.33333334)
     """
 
     def __init__(self, average: bool = True):
@@ -367,7 +367,7 @@ class R2Score(Metric):
     >>> y_true = torch.tensor([3, -0.5, 2, 7]).view(-1, 1)
     >>> y_pred = torch.tensor([2.5, 0.0, 2, 8]).view(-1, 1)
     >>> r2(y_pred, y_true)
-    0.9486081370449679
+    array(0.94860814)
     """
 
     def __init__(self):

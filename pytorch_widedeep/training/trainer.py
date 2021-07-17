@@ -85,7 +85,7 @@ class Trainer:
         function. See for example
         :class:`pytorch_widedeep.losses.FocalLoss` for the required
         structure of the object or the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
         folder in the repo.
 
         .. note:: If ``custom_loss_function`` is not None, ``objective`` must be
@@ -128,7 +128,7 @@ class Trainer:
         callbacks are used by default. This can also be a custom callback as
         long as the object of type ``Callback``. See
         :obj:`pytorch_widedeep.callbacks.Callback` or the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
         folder in the repo
     metrics: List, optional, default=None
         - List of objects of type :obj:`Metric`. Metrics available are:
@@ -136,7 +136,7 @@ class Trainer:
           ``F1Score`` and ``R2Score``. This can also be a custom metric as
           long as it is an object of type :obj:`Metric`. See
           :obj:`pytorch_widedeep.metrics.Metric` or the `Examples
-          <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+          <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
           folder in the repo
         - List of objects of type :obj:`torchmetrics.Metric`. This can be any
           metric from torchmetrics library `Examples
@@ -379,11 +379,10 @@ class Trainer:
             epochs validation frequency
         batch_size: int, default=32
             batch size
-        custom_dataloader: ``torch.utils.data.DataLoader``, Optional, default=None
+        custom_dataloader: ``DataLoader``, Optional, default=None
             object of class ``torch.utils.data.DataLoader``. Available
-            predefined dataloaders are ``DataLoaderDefault``, ```` in
-            ``pytorch_widedeep.metrics``. If None, a ``DataLoaderDefault``
-            is set.
+            predefined dataloaders are in ``pytorch-widedeep.dataloaders``.If
+            ``None``, a standard torch ``DataLoader`` is used.
         finetune: bool, default=False
             param alias: ``warmup``
 
@@ -415,7 +414,7 @@ class Trainer:
 
             For details on how these routines work, please see the Examples
             section in this documentation and the `Examples
-            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
             folder in the repo.
         finetune_epochs: int, default=4
             param alias: ``warmup_epochs``
@@ -493,7 +492,7 @@ class Trainer:
         --------
 
         For a series of comprehensive examples please, see the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
         folder in the repo
 
         For completion, here we include some `"fabricated"` examples, i.e.
@@ -772,7 +771,7 @@ class Trainer:
         --------
 
         For a series of comprehensive examples please, see the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
         folder in the repo
 
         For completion, here we include a `"fabricated"` example, i.e.
@@ -859,7 +858,7 @@ class Trainer:
         save_state_dict: bool = False,
         model_filename: str = "wd_model.pt",
     ):
-        """Saves the model, training and evaluation history, and the
+        r"""Saves the model, training and evaluation history, and the
         ``feature_importance`` attribute (if the ``deeptabular`` component is a
         Tabnet model) to disk
 
