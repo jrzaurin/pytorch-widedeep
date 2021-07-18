@@ -8,17 +8,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import trange
 from scipy.sparse import csc_matrix
+from torchmetrics import Metric as TorchMetric
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from pytorch_widedeep.metrics import Metric, MetricCallback, MultipleMetrics
+from pytorch_widedeep.metrics import Metric, MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.callbacks import (
     History,
     Callback,
+    MetricCallback,
     CallbackContainer,
     LRShedulerCallback,
 )
+from pytorch_widedeep.dataloaders import DataLoaderDefault
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
@@ -82,7 +85,7 @@ class Trainer:
         function. See for example
         :class:`pytorch_widedeep.losses.FocalLoss` for the required
         structure of the object or the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
         folder in the repo.
 
         .. note:: If ``custom_loss_function`` is not None, ``objective`` must be
@@ -125,16 +128,22 @@ class Trainer:
         callbacks are used by default. This can also be a custom callback as
         long as the object of type ``Callback``. See
         :obj:`pytorch_widedeep.callbacks.Callback` or the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
         folder in the repo
     metrics: List, optional, default=None
-        List of objects of type :obj:`Metric`. Metrics available are:
-        ``Accuracy``, ``Precision``, ``Recall``, ``FBetaScore``,
-        ``F1Score`` and ``R2Score``. This can also be a custom metric as
-        long as it is an object of type :obj:`Metric`. See
-        :obj:`pytorch_widedeep.metrics.Metric` or the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
-        folder in the repo
+        - List of objects of type :obj:`Metric`. Metrics available are:
+          ``Accuracy``, ``Precision``, ``Recall``, ``FBetaScore``,
+          ``F1Score`` and ``R2Score``. This can also be a custom metric as
+          long as it is an object of type :obj:`Metric`. See
+          :obj:`pytorch_widedeep.metrics.Metric` or the `Examples
+          <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
+          folder in the repo
+        - List of objects of type :obj:`torchmetrics.Metric`. This can be any
+          metric from torchmetrics library `Examples
+          <https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
+          classification-metrics>`_. This can also be a custom metric as
+          long as it is an object of type :obj:`Metric`. See `the instructions
+          <https://torchmetrics.readthedocs.io/en/latest/>`_.
     class_weight: float, List or Tuple. optional. default=None
         - float indicating the weight of the minority class in binary classification
           problems (e.g. 9.)
@@ -227,7 +236,7 @@ class Trainer:
         initializers: Optional[Union[Initializer, Dict[str, Initializer]]] = None,
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
-        metrics: Optional[List[Metric]] = None,
+        metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
         class_weight: Optional[Union[float, List[float], Tuple[float]]] = None,
         lambda_sparse: float = 1e-3,
         alpha: float = 0.25,
@@ -315,6 +324,7 @@ class Trainer:
         n_epochs: int = 1,
         validation_freq: int = 1,
         batch_size: int = 32,
+        custom_dataloader: Union[DataLoader, None] = None,
         finetune: bool = False,
         finetune_epochs: int = 5,
         finetune_max_lr: float = 0.01,
@@ -329,6 +339,7 @@ class Trainer:
         finetune_deepimage_layers: Optional[List[nn.Module]] = None,
         finetune_routine: str = "howard",
         stop_after_finetuning: bool = False,
+        **kwargs,
     ):
         r"""Fit method.
 
@@ -368,6 +379,10 @@ class Trainer:
             epochs validation frequency
         batch_size: int, default=32
             batch size
+        custom_dataloader: ``DataLoader``, Optional, default=None
+            object of class ``torch.utils.data.DataLoader``. Available
+            predefined dataloaders are in ``pytorch-widedeep.dataloaders``.If
+            ``None``, a standard torch ``DataLoader`` is used.
         finetune: bool, default=False
             param alias: ``warmup``
 
@@ -399,7 +414,7 @@ class Trainer:
 
             For details on how these routines work, please see the Examples
             section in this documentation and the `Examples
-            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
             folder in the repo.
         finetune_epochs: int, default=4
             param alias: ``warmup_epochs``
@@ -477,7 +492,7 @@ class Trainer:
         --------
 
         For a series of comprehensive examples please, see the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
         folder in the repo
 
         For completion, here we include some `"fabricated"` examples, i.e.
@@ -524,9 +539,25 @@ class Trainer:
             val_split,
             target,
         )
-        train_loader = DataLoader(
-            dataset=train_set, batch_size=batch_size, num_workers=n_cpus
-        )
+        if isinstance(custom_dataloader, type):
+            if issubclass(custom_dataloader, DataLoader):
+                train_loader = custom_dataloader(
+                    dataset=train_set,
+                    batch_size=batch_size,
+                    num_workers=n_cpus,
+                    **kwargs,
+                )
+            else:
+                NotImplementedError(
+                    "Custom DataLoader must be a subclass of "
+                    "torch.utils.data.DataLoader, please see the "
+                    "pytorch documentation or examples in "
+                    "pytorch_widedeep.dataloaders"
+                )
+        else:
+            train_loader = DataLoaderDefault(
+                dataset=train_set, batch_size=batch_size, num_workers=n_cpus
+            )
         train_steps = len(train_loader)
         if eval_set is not None:
             eval_loader = DataLoader(
@@ -740,7 +771,7 @@ class Trainer:
         --------
 
         For a series of comprehensive examples please, see the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`_
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
         folder in the repo
 
         For completion, here we include a `"fabricated"` example, i.e.
@@ -827,7 +858,7 @@ class Trainer:
         save_state_dict: bool = False,
         model_filename: str = "wd_model.pt",
     ):
-        """Saves the model, training and evaluation history, and the
+        r"""Saves the model, training and evaluation history, and the
         ``feature_importance`` attribute (if the ``deeptabular`` component is a
         Tabnet model) to disk
 

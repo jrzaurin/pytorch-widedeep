@@ -41,3 +41,4 @@ Dependencies
 * torchvision
 * einops
 * wrapt
+* torchmetrics

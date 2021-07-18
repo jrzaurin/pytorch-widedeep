@@ -14,6 +14,7 @@ from pytorch_widedeep.models import (
 )
 from pytorch_widedeep.metrics import R2Score
 from pytorch_widedeep.training import Trainer
+from pytorch_widedeep.dataloaders import DataLoaderImbalanced
 
 # Wide array
 X_wide = np.random.choice(50, (32, 10))
@@ -30,6 +31,7 @@ X_tab = np.vstack(embed_cols + cont_cols).transpose()
 # Target
 target_regres = np.random.random(32)
 target_binary = np.random.choice(2, 32)
+target_binary_imbalanced = np.random.choice(2, 32, p=[0.75, 0.25])
 target_multic = np.random.choice(3, 32)
 
 # Test dictionary
@@ -234,3 +236,30 @@ def test_aliases():
         and trainer.__wd_aliases_used["objective"] == "loss"
         and trainer.__wd_aliases_used["finetune"] == "warmup"
     )
+
+
+##############################################################################
+# Test custom dataloader
+##############################################################################
+
+
+def test_custom_dataloader():
+    wide = Wide(np.unique(X_wide).shape[0], 1)
+    deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+        column_idx=column_idx,
+        embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+    )
+    model = WideDeep(wide=wide, deeptabular=deeptabular)
+    trainer = Trainer(model, loss="binary", verbose=0)
+    trainer.fit(
+        X_wide=X_wide,
+        X_tab=X_tab,
+        target=target_binary_imbalanced,
+        batch_size=16,
+        custom_dataloader=DataLoaderImbalanced,
+    )
+    # simply checking that runs with DataLoaderImbalanced
+    assert "train_loss" in trainer.history.keys()

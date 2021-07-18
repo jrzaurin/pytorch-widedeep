@@ -1,5 +1,5 @@
 Training wide and deep models for tabular data
-==============================================
+===============================================
 
 `...` or just deep learning models for tabular data.
 
