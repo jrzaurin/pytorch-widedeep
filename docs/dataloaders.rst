@@ -8,4 +8,3 @@ Dataloaders
 
 .. autoclass:: pytorch_widedeep.dataloaders.DataLoaderImbalanced
 	:members:
-	:undoc-members:
