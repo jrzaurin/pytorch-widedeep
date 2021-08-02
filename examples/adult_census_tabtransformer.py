@@ -4,7 +4,7 @@ import pandas as pd
 
 from pytorch_widedeep import Trainer
 from pytorch_widedeep.optim import RAdam
-from pytorch_widedeep.models import Wide, WideDeep, TabTransformer
+from pytorch_widedeep.models import SAINT, Wide, WideDeep, TabTransformer
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.callbacks import (
     LRHistory,
@@ -50,18 +50,29 @@ if __name__ == "__main__":
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
     prepare_deep = TabPreprocessor(
-        embed_cols=cat_embed_cols, continuous_cols=continuous_cols, for_tabtransformer=True  # type: ignore[arg-type]
+        embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        transformer_model="tabtransformer",
+        with_special_token=True,
     )
     X_tab = prepare_deep.fit_transform(df)
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
-    deeptabular = TabTransformer(
+    # deeptabular = TabTransformer(
+    #     column_idx=prepare_deep.column_idx,
+    #     embed_input=prepare_deep.embeddings_input,
+    #     continuous_cols=continuous_cols,
+    #     # with_special_token=True,
+    #     embed_continuous=True,
+    # )
+    deeptabular = SAINT(
         column_idx=prepare_deep.column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
+        with_special_token=True,
+        # embed_continuous=True,
     )
-
     model = WideDeep(wide=wide, deeptabular=deeptabular)
 
     wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
@@ -93,7 +104,7 @@ if __name__ == "__main__":
         X_wide=X_wide,
         X_tab=X_tab,
         target=target,
-        n_epochs=2,
+        n_epochs=1,
         batch_size=128,
         val_split=0.2,
     )

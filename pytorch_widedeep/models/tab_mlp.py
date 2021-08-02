@@ -1,10 +1,17 @@
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 allowed_activations = ["relu", "leaky_relu", "gelu"]
+
+
+class GEGLU(nn.Module):
+    def forward(self, x):
+        x, gates = x.chunk(2, dim=-1)
+        return x * F.gelu(gates)
 
 
 def _get_activation_fn(activation):
@@ -14,6 +21,8 @@ def _get_activation_fn(activation):
         return nn.LeakyReLU(inplace=True)
     elif activation == "gelu":
         return nn.GELU()
+    elif activation == "geglu":
+        return GEGLU()
 
 
 def dense_layer(

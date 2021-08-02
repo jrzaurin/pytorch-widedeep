@@ -51,7 +51,7 @@ class TabPreprocessor(BasePreprocessor):
         ``LatLongScalarEnc`` available in the `autogluon
         <https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular>`_
         tabular library) and not standarize them any further
-    for_tabtransformer: bool, default = False
+    transformer_model: bool, default = False
         Boolean indicating whether the preprocessed data will be passed to
         a ``TabTransformer`` model. If ``True``, the param ``embed_cols``
         must just be a list containing the categorical columns: e.g.:
@@ -66,7 +66,7 @@ class TabPreprocessor(BasePreprocessor):
     ----------
     embed_dim: Dict
         Dictionary where keys are the embed cols and values are the embedding
-        dimensions. If ``for_tabtransformer`` is set to ``True`` the embedding
+        dimensions. If ``transformer_model`` is set to ``True`` the embedding
         dimensions are the same for all columns and this attributes is not
         generated during the ``fit`` process
     label_encoder: LabelEncoder
@@ -109,7 +109,8 @@ class TabPreprocessor(BasePreprocessor):
         auto_embed_dim: bool = True,
         default_embed_dim: int = 16,
         already_standard: List[str] = None,
-        for_tabtransformer: bool = False,
+        transformer_model: str = None,
+        with_special_token: bool = False,
         verbose: int = 1,
     ):
         super(TabPreprocessor, self).__init__()
@@ -120,7 +121,8 @@ class TabPreprocessor(BasePreprocessor):
         self.auto_embed_dim = auto_embed_dim
         self.default_embed_dim = default_embed_dim
         self.already_standard = already_standard
-        self.for_tabtransformer = for_tabtransformer
+        self.transformer_model = transformer_model
+        self.with_special_token = with_special_token
         self.verbose = verbose
 
         self.is_fitted = False
@@ -130,21 +132,14 @@ class TabPreprocessor(BasePreprocessor):
                 "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
             )
 
-        tabtransformer_error_message = (
-            "If for_tabtransformer is 'True' embed_cols must be a list "
+        transformer_error_message = (
+            "If transformer_model is 'True' embed_cols must be a list "
             " of strings with the columns to be encoded as embeddings."
         )
-        if self.for_tabtransformer and self.embed_cols is None:
-            raise ValueError(tabtransformer_error_message)
-        if self.for_tabtransformer and isinstance(self.embed_cols[0], tuple):  # type: ignore[index]
-            raise ValueError(tabtransformer_error_message)
-        if self.for_tabtransformer and self.scale:
-            warnings.warn(
-                "Both 'for_tabtransformer' and 'scale' are set to True. "
-                "This implies that the continuous columns will be "
-                "standarized and then passed through a LayerNorm layer",
-                UserWarning,
-            )
+        if self.transformer_model is not None and self.embed_cols is None:
+            raise ValueError(transformer_error_message)
+        if self.transformer_model is not None and isinstance(self.embed_cols[0], tuple):  # type: ignore[index]
+            raise ValueError(transformer_error_message)
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Fits the Preprocessor and creates required attributes"""
@@ -153,7 +148,7 @@ class TabPreprocessor(BasePreprocessor):
             self.label_encoder = LabelEncoder(df_emb.columns.tolist()).fit(df_emb)
             self.embeddings_input: List = []
             for k, v in self.label_encoder.encoding_dict.items():
-                if self.for_tabtransformer:
+                if self.transformer_model is not None:
                     self.embeddings_input.append((k, len(v)))
                 else:
                     self.embeddings_input.append((k, len(v), self.embed_dim[k]))
@@ -213,6 +208,10 @@ class TabPreprocessor(BasePreprocessor):
             )
         except AttributeError:
             pass
+
+        if "special_token" in decoded.columns:
+            decoded.drop("special_token", axis=1, inplace=True)
+
         return decoded
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
@@ -220,8 +219,13 @@ class TabPreprocessor(BasePreprocessor):
         return self.fit(df).transform(df)
 
     def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.for_tabtransformer:
-            return df.copy()[self.embed_cols]
+        if self.transformer_model in ["tabtransformer", "saint"]:
+            if self.with_special_token:
+                df_cls = df.copy()[self.embed_cols]
+                df_cls.insert(loc=0, column="special_token", value="[CLS]")
+                return df_cls
+            else:
+                return df.copy()[self.embed_cols]
         else:
             if isinstance(self.embed_cols[0], tuple):
                 self.embed_dim = dict(self.embed_cols)  # type: ignore
