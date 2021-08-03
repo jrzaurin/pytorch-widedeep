@@ -52,27 +52,28 @@ if __name__ == "__main__":
     prepare_deep = TabPreprocessor(
         embed_cols=cat_embed_cols,
         continuous_cols=continuous_cols,
-        transformer_model="tabtransformer",
+        for_transformer=True,
         with_special_token=True,
     )
     X_tab = prepare_deep.fit_transform(df)
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
-    # deeptabular = TabTransformer(
-    #     column_idx=prepare_deep.column_idx,
-    #     embed_input=prepare_deep.embeddings_input,
-    #     continuous_cols=continuous_cols,
-    #     # with_special_token=True,
-    #     embed_continuous=True,
-    # )
-    deeptabular = SAINT(
+    deeptabular = TabTransformer(
         column_idx=prepare_deep.column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
         with_special_token=True,
-        # embed_continuous=True,
+        embed_continuous=True,
     )
+    # deeptabular = SAINT(
+    #     column_idx=prepare_deep.column_idx,
+    #     embed_input=prepare_deep.embeddings_input,
+    #     continuous_cols=continuous_cols,
+    #     with_special_token=True,
+    #     embed_continuous=True,
+    #     cont_norm_layer="batchnorm"
+    # )
     model = WideDeep(wide=wide, deeptabular=deeptabular)
 
     wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)

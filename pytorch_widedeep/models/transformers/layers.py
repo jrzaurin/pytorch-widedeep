@@ -8,8 +8,7 @@ MultiHeadedAttention is inspired by the TabTransformer implementation here:
 https://github.com/lucidrains/tab-transformer-pytorch. General comment: just go and have a look to
 https://github.com/lucidrains
 
-The fixed attention implementation and SharedEmbeddings are inspired by the
-TabTransformer available in AutoGluon:
+SharedEmbeddings is inspired by the TabTransformer available in AutoGluon:
 https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular/models/tab_transformer
 If you have not checked that library, you should.
 """
@@ -33,7 +32,9 @@ class PositionwiseFF(nn.Module):
         activation: str,
     ):
         super(PositionwiseFF, self).__init__()
-        self.w_1 = nn.Linear(input_dim, ff_hidden_dim)
+        self.w_1 = nn.Linear(
+            input_dim, ff_hidden_dim * 2 if activation == "geglu" else ff_hidden_dim
+        )
         self.w_2 = nn.Linear(ff_hidden_dim, input_dim)
         self.dropout = nn.Dropout(dropout)
         self.activation = _get_activation_fn(activation)
@@ -144,24 +145,24 @@ class SaintEncoder(nn.Module):
         self.self_attn_addnorm = AddNorm(input_dim, dropout)
         self.self_attn_ff_addnorm = AddNorm(input_dim, dropout)
 
-        self.inter_sample_attn = MultiHeadedAttention(
+        self.row_attn = MultiHeadedAttention(
             n_feat * input_dim,
             n_heads,
             keep_attn_weights,
             dropout,
         )
-        self.inter_sample_attn_ff = PositionwiseFF(
+        self.row_attn_ff = PositionwiseFF(
             n_feat * input_dim, n_feat * ff_hidden_dim, dropout, activation
         )
-        self.inter_sample_attn_addnorm = AddNorm(n_feat * input_dim, dropout)
-        self.inter_sample_attn_ff_addnorm = AddNorm(n_feat * input_dim, dropout)
+        self.row_attn_addnorm = AddNorm(n_feat * input_dim, dropout)
+        self.row_attn_ff_addnorm = AddNorm(n_feat * input_dim, dropout)
 
     def forward(self, X: Tensor) -> Tensor:
         x = self.self_attn_addnorm(X, self.self_attn(X))
         x = self.self_attn_ff_addnorm(x, self.self_attn_ff(x))
         x = einops.rearrange(x, "b n d -> 1 b (n d)")
-        x = self.inter_sample_attn_addnorm(x, self.inter_sample_attn(x))
-        x = self.inter_sample_attn_ff_addnorm(x, self.inter_sample_attn_ff(x))
+        x = self.row_attn_addnorm(x, self.row_attn(x))
+        x = self.row_attn_ff_addnorm(x, self.row_attn_ff(x))
         x = einops.rearrange(x, "1 b (n d) -> b n d", n=self.n_feat)
         return x
 

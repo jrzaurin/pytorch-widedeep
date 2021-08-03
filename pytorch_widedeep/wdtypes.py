@@ -16,6 +16,7 @@ from typing import (
 )
 from pathlib import PosixPath
 
+import torch
 from torch import Tensor
 from torch.nn import Module
 from torch.optim.optimizer import Optimizer
@@ -83,3 +84,4 @@ Transforms = Union[
 ]
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
+NormLayers = Union[torch.nn.LayerNorm, torch.nn.BatchNorm1d]

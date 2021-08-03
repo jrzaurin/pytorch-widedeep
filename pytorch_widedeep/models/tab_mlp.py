@@ -5,7 +5,7 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
-allowed_activations = ["relu", "leaky_relu", "gelu"]
+allowed_activations = ["relu", "leaky_relu", "gelu", "geglu"]
 
 
 class GEGLU(nn.Module):

@@ -166,19 +166,25 @@ def test_tab_preprocessor_inverse_transform(embed_cols, continuous_cols, scale):
 
 
 @pytest.mark.parametrize(
-    "embed_cols, continuous_cols, scale",
+    "embed_cols, continuous_cols, scale, with_special_token",
     [
-        (["col1", "col2"], None, False),
-        (["col1", "col2"], ["col3", "col4"], False),
-        (["col1", "col2"], ["col3", "col4"], True),
+        (["col1", "col2"], None, False, True),
+        (["col1", "col2"], ["col3", "col4"], False, True),
+        (["col1", "col2"], ["col3", "col4"], True, True),
+        (["col1", "col2"], None, False, False),
+        (["col1", "col2"], ["col3", "col4"], False, False),
+        (["col1", "col2"], ["col3", "col4"], True, False),
     ],
 )
-def test_tab_preprocessor_trasformer(embed_cols, continuous_cols, scale):
+def test_tab_preprocessor_trasformer(
+    embed_cols, continuous_cols, scale, with_special_token
+):
     tab_preprocessor = TabPreprocessor(
         embed_cols=embed_cols,
         continuous_cols=continuous_cols,
         scale=scale,
-        for_tabtransformer=True,
+        for_transformer=True,
+        with_special_token=with_special_token,
         verbose=False,
     )
     encoded = tab_preprocessor.fit_transform(df)
@@ -211,7 +217,7 @@ def test_tab_preprocessor_trasformer_raise_error(embed_cols, continuous_cols, sc
             embed_cols=embed_cols,
             continuous_cols=continuous_cols,
             scale=scale,
-            for_tabtransformer=True,
+            for_transformer=True,
         )
 
 
