@@ -166,7 +166,7 @@ def test_tab_preprocessor_inverse_transform(embed_cols, continuous_cols, scale):
 
 
 @pytest.mark.parametrize(
-    "embed_cols, continuous_cols, scale, with_special_token",
+    "embed_cols, continuous_cols, scale, with_cls_token",
     [
         (["col1", "col2"], None, False, True),
         (["col1", "col2"], ["col3", "col4"], False, True),
@@ -177,14 +177,14 @@ def test_tab_preprocessor_inverse_transform(embed_cols, continuous_cols, scale):
     ],
 )
 def test_tab_preprocessor_trasformer(
-    embed_cols, continuous_cols, scale, with_special_token
+    embed_cols, continuous_cols, scale, with_cls_token
 ):
     tab_preprocessor = TabPreprocessor(
         embed_cols=embed_cols,
         continuous_cols=continuous_cols,
         scale=scale,
         for_transformer=True,
-        with_special_token=with_special_token,
+        with_cls_token=with_cls_token,
         verbose=False,
     )
     encoded = tab_preprocessor.fit_transform(df)

@@ -422,8 +422,9 @@ class TabNet(nn.Module):
     Parameters
     ----------
     column_idx: Dict
-        Dictionary where the keys are the columns and the values their
-        corresponding index
+        Dict containing the index of the columns that will be passed through
+        the model. Required to slice the tensors. e.g. {'education':
+        0, 'relationship': 1, 'workclass': 2, ...}
     embed_input: List
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]

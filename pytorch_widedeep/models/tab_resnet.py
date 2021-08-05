@@ -89,7 +89,7 @@ class TabResnet(nn.Module):
     This class combines embedding representations of the categorical
     features with numerical (aka continuous) features. These are then
     passed through a series of Resnet blocks. See
-    ``pytorch_widedeep.models.deep_dense_resnet.BasicBlock`` for details
+    ``pytorch_widedeep.models.tab_resnet.BasicBlock`` for details
     on the structure of each block.
 
     .. note:: Unlike ``TabMlp``, ``TabResnet`` assumes that there are always
@@ -97,42 +97,13 @@ class TabResnet(nn.Module):
 
     Parameters
     ----------
-    embed_input: List
-        List of Tuples with the column name, number of unique values and
-        embedding dimension. e.g. [(education, 11, 32), ...].
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
         the TabMlp model. Required to slice the tensors. e.g. {'education':
         0, 'relationship': 1, 'workclass': 2, ...}
-    blocks_dims: List, default = [200, 100, 100]
-        List of integers that define the input and output units of each block.
-        For example: [200, 100, 100] will generate 2 blocks. The first will
-        receive a tensor of size 200 and output a tensor of size 100, and the
-        second will receive a tensor of size 100 and output a tensor of size
-        100. See :obj:`pytorch_widedeep.models.deep_dense_resnet.BasicBlock` for
-        details on the structure of each block.
-    blocks_dropout: float, default =  0.1
-       Block's `"internal"` dropout. This dropout is applied to the first
-       of the two dense layers that comprise each ``BasicBlock``.
-    mlp_hidden_dims: List, Optional, default = None
-        List with the number of neurons per dense layer in the mlp. e.g:
-        [64, 32]. If ``None`` the  output of the Resnet Blocks will be
-        connected directly to the output neuron(s), i.e. using a MLP is
-        optional.
-    mlp_activation: str, default = "relu"
-        Activation function for the dense layers of the MLP
-    mlp_dropout: float, default = 0.1
-        float with the dropout between the dense layers of the MLP.
-    mlp_batchnorm: bool, default = False
-        Boolean indicating whether or not batch normalization will be applied
-        to the dense layers
-    mlp_batchnorm_last: bool, default = False
-        Boolean indicating whether or not batch normalization will be applied
-        to the last of the dense layers
-    mlp_linear_first: bool, default = False
-        Boolean indicating the order of the operations in the dense
-        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-        LIN -> ACT]``
+    embed_input: List
+        List of Tuples with the column name, number of unique values and
+        embedding dimension. e.g. [(education, 11, 32), ...].
     embed_dropout: float, default = 0.1
         embeddings dropout
     continuous_cols: List, Optional, default = None
@@ -146,6 +117,35 @@ class TabResnet(nn.Module):
         Resnet blocks (``True``) or, alternatively, will be concatenated
         with the result of passing the embeddings through the Resnet
         Blocks (``False``)
+    blocks_dims: List, default = [200, 100, 100]
+        List of integers that define the input and output units of each block.
+        For example: [200, 100, 100] will generate 2 blocks. The first will
+        receive a tensor of size 200 and output a tensor of size 100, and the
+        second will receive a tensor of size 100 and output a tensor of size
+        100. See :obj:`pytorch_widedeep.models.tab_resnet.BasicBlock` for
+        details on the structure of each block.
+    blocks_dropout: float, default =  0.1
+       Block's `"internal"` dropout. This dropout is applied to the first
+       of the two dense layers that comprise each ``BasicBlock``.
+    mlp_hidden_dims: List, Optional, default = None
+        List with the number of neurons per dense layer in the mlp. e.g:
+        [64, 32]. If ``None`` the  output of the Resnet Blocks will be
+        connected directly to the output neuron(s), i.e. using a MLP is
+        optional.
+    mlp_activation: str, default = "relu"
+        MLP activation function. 'relu', 'leaky_relu' and 'gelu' are supported
+    mlp_dropout: float, default = 0.1
+        float with the dropout between the dense layers of the MLP.
+    mlp_batchnorm: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the dense layers
+    mlp_batchnorm_last: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the last of the dense layers
+    mlp_linear_first: bool, default = False
+        Boolean indicating the order of the operations in the dense
+        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+        LIN -> ACT]``
 
     Attributes
     ----------
@@ -185,8 +185,12 @@ class TabResnet(nn.Module):
 
     def __init__(
         self,
-        embed_input: List[Tuple[str, int, int]],
         column_idx: Dict[str, int],
+        embed_input: List[Tuple[str, int, int]],
+        embed_dropout: float = 0.1,
+        continuous_cols: Optional[List[str]] = None,
+        batchnorm_cont: bool = False,
+        concat_cont_first: bool = True,
         blocks_dims: List[int] = [200, 100, 100],
         blocks_dropout: float = 0.1,
         mlp_hidden_dims: Optional[List[int]] = None,
@@ -195,15 +199,15 @@ class TabResnet(nn.Module):
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = False,
-        embed_dropout: float = 0.1,
-        continuous_cols: Optional[List[str]] = None,
-        batchnorm_cont: bool = False,
-        concat_cont_first: bool = True,
     ):
         super(TabResnet, self).__init__()
 
-        self.embed_input = embed_input
         self.column_idx = column_idx
+        self.embed_input = embed_input
+        self.embed_dropout = embed_dropout
+        self.continuous_cols = continuous_cols
+        self.batchnorm_cont = batchnorm_cont
+        self.concat_cont_first = concat_cont_first
         self.blocks_dims = blocks_dims
         self.blocks_dropout = blocks_dropout
         self.mlp_activation = mlp_activation
@@ -211,10 +215,6 @@ class TabResnet(nn.Module):
         self.mlp_batchnorm = mlp_batchnorm
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
-        self.embed_dropout = embed_dropout
-        self.continuous_cols = continuous_cols
-        self.batchnorm_cont = batchnorm_cont
-        self.concat_cont_first = concat_cont_first
 
         if len(self.blocks_dims) < 2:
             raise ValueError(

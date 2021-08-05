@@ -109,7 +109,9 @@ def pad_sequences(
     >>> pad_sequences(seq, maxlen=5, pad_idx=0)
     array([0, 0, 1, 2, 3], dtype=int32)
     """
-    if len(seq) >= maxlen:
+    if len(seq) == 0:
+        return np.zeros(maxlen, dtype="int32") + pad_idx
+    elif len(seq) >= maxlen:
         res = np.array(seq[-maxlen:]).astype("int32")
         return res
     else:

@@ -22,6 +22,8 @@ using wide and deep models.
 
 **Experiments and comparisson with `LightGBM`**: [TabularDL vs LightGBM](https://github.com/jrzaurin/tabulardl-benchmark)
 
+**slack**: if you want to contribute or just want to chat with us, join [slack](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
+
 ### Introduction
 
 ``pytorch-widedeep`` is based on Google's [Wide and Deep Algorithm](https://arxiv.org/abs/1606.07792)
@@ -85,7 +87,7 @@ It is important to emphasize that **each individual component, `wide`,
 isolation. For example, one could use only `wide`, which is in simply a linear
 model. In fact, one of the most interesting functionalities
 in``pytorch-widedeep`` is the ``deeptabular`` component. Currently,
-``pytorch-widedeep`` offers 4 models for that component:
+``pytorch-widedeep`` offers 5 models for that component:
 
 1. ``TabMlp``: this is almost identical to the [tabular
 model](https://docs.fast.ai/tutorial.tabular.html) in the fantastic
@@ -99,10 +101,15 @@ passed through a series of ResNet blocks built with dense layers.
 3. ``Tabnet``: Details on TabNet can be found in:
 [TabNet: Attentive Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442)
 
-4. ``TabTransformer``: Details on the TabTransformer can be found in:
-[TabTransformer: Tabular Data Modeling Using Contextual
-Embeddings](https://arxiv.org/pdf/2012.06678.pdf)
+4. ``TabTransformer`` (and ``FT-Transformer``): Details on the TabTransformer can be found in:
+[TabTransformer: Tabular Data Modeling Using Contextual Embeddings](https://arxiv.org/pdf/2012.06678.pdf). Note that the TabTransformer
+implementation available at ``pytorch-widedeep`` is an adaptation of the
+original implementation. For example, ``pytorch-widedeep``'s implementation
+allows for the continuous features to be embedded and passed through the
+attention blocks. Note that this is very similar to the so called ``FT-Transformer`` described in [Revisiting Deep Learning Models for Tabular Data](https://arxiv.org/abs/2106.11959).
 
+4. ``SAINT``: Details on SAINT can be found in:
+[SAINT: Improved Neural Networks for Tabular Data via Row Attention and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342).
 
 For details on these 4 models and their options please see the examples in the
 Examples folder and the documentation.

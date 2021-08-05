@@ -52,14 +52,18 @@ class TabPreprocessor(BasePreprocessor):
         <https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular>`_
         tabular library) and not standarize them any further
     for_transformer: bool, default = False
-        Boolean indicating whether the preprocessed data will be passed to
-        a ``TabTransformer`` model. If ``True``, the param ``embed_cols``
-        must just be a list containing the categorical columns: e.g.:
-        ['education', 'relationship', ...] This is because following the
-        results in the `paper <https://arxiv.org/pdf/2012.06678.pdf>`_,
-        they will all be encoded using embeddings of the same dim (32 by
-        default). See
-        :class:`pytorch_widedeep.models.tab_transformer.TabTransformer`
+        Boolean indicating whether the preprocessed data will be passed to a
+        transformer-based model (i.e. ``TabTransformer`` or ``SAINT``). If
+        ``True``, the param ``embed_cols`` must just be a list containing the
+        categorical columns: e.g.:['education', 'relationship', ...] This is
+        because they will all be encoded using embeddings of the same dim
+        (32 by default).
+    with_cls_token: bool, default = False
+        Boolean indicating if a `'[CLS]'` token will be added to the dataset
+        when using transformer-based models (i.e. ``TabTransformer`` or
+        ``SAINT``). The final hidden state corresponding to this token is
+        used as the aggregate row representation for classification and
+        regression tasks.
     verbose: int, default = 1
 
     Attributes
@@ -110,7 +114,7 @@ class TabPreprocessor(BasePreprocessor):
         default_embed_dim: int = 16,
         already_standard: List[str] = None,
         for_transformer: bool = False,
-        with_special_token: bool = False,
+        with_cls_token: bool = False,
         verbose: int = 1,
     ):
         super(TabPreprocessor, self).__init__()
@@ -122,7 +126,7 @@ class TabPreprocessor(BasePreprocessor):
         self.default_embed_dim = default_embed_dim
         self.already_standard = already_standard
         self.for_transformer = for_transformer
-        self.with_special_token = with_special_token
+        self.with_cls_token = with_cls_token
         self.verbose = verbose
 
         self.is_fitted = False
@@ -209,8 +213,8 @@ class TabPreprocessor(BasePreprocessor):
         except AttributeError:
             pass
 
-        if "special_token" in decoded.columns:
-            decoded.drop("special_token", axis=1, inplace=True)
+        if "cls_token" in decoded.columns:
+            decoded.drop("cls_token", axis=1, inplace=True)
 
         return decoded
 
@@ -220,9 +224,9 @@ class TabPreprocessor(BasePreprocessor):
 
     def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.for_transformer:
-            if self.with_special_token:
+            if self.with_cls_token:
                 df_cls = df.copy()[self.embed_cols]
-                df_cls.insert(loc=0, column="special_token", value="[CLS]")
+                df_cls.insert(loc=0, column="cls_token", value="[CLS]")
                 return df_cls
             else:
                 return df.copy()[self.embed_cols]

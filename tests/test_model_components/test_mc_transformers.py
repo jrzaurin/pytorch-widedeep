@@ -15,12 +15,12 @@ n_cols = 2
 batch_size = 10
 colnames = list(string.ascii_lowercase)[: (n_cols * 2)]
 embed_cols = [np.random.choice(np.arange(n_embed), batch_size) for _ in range(n_cols)]
-embed_cols_with_special_token = [[n_embed] * batch_size] + embed_cols
+embed_cols_with_cls_token = [[n_embed] * batch_size] + embed_cols
 cont_cols = [np.random.rand(batch_size) for _ in range(n_cols)]
 
 X_tab = torch.from_numpy(np.vstack(embed_cols + cont_cols).transpose())
-X_tab_with_special_token = torch.from_numpy(
-    np.vstack(embed_cols_with_special_token + cont_cols).transpose()
+X_tab_with_cls_token = torch.from_numpy(
+    np.vstack(embed_cols_with_cls_token + cont_cols).transpose()
 )
 
 
@@ -63,7 +63,7 @@ def test_tabtransformer_shared_embeddings():
         embed_dim=16,
         embed_dropout=0.0,
         add_shared_embed=False,
-        frac_shared_embed=8,
+        frac_shared_embed=0.25,
     )
 
     X_inp = X_tab[:, 0]
@@ -76,7 +76,7 @@ def test_tabtransformer_shared_embeddings():
         embed_dim=16,
         embed_dropout=0.0,
         add_shared_embed=True,
-        frac_shared_embed=8,
+        frac_shared_embed=0.25,
     )
 
     X_inp = X_tab[:, 0]
@@ -146,7 +146,7 @@ def test_full_embed_dropout():
 
 
 @pytest.mark.parametrize(
-    "embed_continuous, with_special_token, model_name",
+    "embed_continuous, with_cls_token, model_name",
     [
         (True, True, "tabtransformer"),
         (True, False, "tabtransformer"),
@@ -158,12 +158,12 @@ def test_full_embed_dropout():
         (False, False, "saint"),
     ],
 )
-def test_embed_continuous_and_with_special_token(
-    embed_continuous, with_special_token, model_name
+def test_embed_continuous_and_with_cls_token(
+    embed_continuous, with_cls_token, model_name
 ):
-    if with_special_token:
-        X = X_tab_with_special_token
-        n_colnames = ["cls"] + copy(colnames)
+    if with_cls_token:
+        X = X_tab_with_cls_token
+        n_colnames = ["cls_token"] + copy(colnames)
         cont_idx = n_cols + 1
     else:
         X = X_tab
@@ -176,7 +176,6 @@ def test_embed_continuous_and_with_special_token(
             embed_input=embed_input,
             continuous_cols=n_colnames[cont_idx:],
             embed_continuous=embed_continuous,
-            with_special_token=with_special_token,
         )
     elif model_name == "saint":
         model = SAINT(
@@ -184,11 +183,10 @@ def test_embed_continuous_and_with_special_token(
             embed_input=embed_input,
             continuous_cols=n_colnames[cont_idx:],
             embed_continuous=embed_continuous,
-            with_special_token=with_special_token,
         )
     out = model(X)
     res = [out.size(0) == 10]
-    if with_special_token:
+    if with_cls_token:
         if embed_continuous:
             res.append(model._set_mlp_hidden_dims()[0] == model.input_dim)
         else:

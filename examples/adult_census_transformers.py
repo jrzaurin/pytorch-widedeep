@@ -53,7 +53,7 @@ if __name__ == "__main__":
         embed_cols=cat_embed_cols,
         continuous_cols=continuous_cols,
         for_transformer=True,
-        with_special_token=True,
+        with_cls_token=True,
     )
     X_tab = prepare_deep.fit_transform(df)
 
@@ -63,14 +63,13 @@ if __name__ == "__main__":
         column_idx=prepare_deep.column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
-        with_special_token=True,
         embed_continuous=True,
     )
     # deeptabular = SAINT(
     #     column_idx=prepare_deep.column_idx,
     #     embed_input=prepare_deep.embeddings_input,
     #     continuous_cols=continuous_cols,
-    #     with_special_token=True,
+    #     with_cls_token=True,
     #     embed_continuous=True,
     #     cont_norm_layer="batchnorm"
     # )

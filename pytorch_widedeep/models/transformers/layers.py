@@ -11,6 +11,9 @@ https://github.com/lucidrains
 SharedEmbeddings is inspired by the TabTransformer available in AutoGluon:
 https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular/models/tab_transformer
 If you have not checked that library, you should.
+
+The forward pass of the SaintEncoder is based on the original code release:
+https://github.com/somepago/saint
 """
 
 import math
@@ -187,20 +190,18 @@ class SharedEmbeddings(nn.Module):
         embed_dropout: float,
         full_embed_dropout: bool = False,
         add_shared_embed: bool = False,
-        frac_shared_embed=8,
+        frac_shared_embed=0.25,
     ):
         super(SharedEmbeddings, self).__init__()
-        assert (
-            embed_dim % frac_shared_embed == 0
-        ), "'embed_dim' must be divisible by 'frac_shared_embed'"
 
+        assert frac_shared_embed < 1, "'frac_shared_embed' must be less than 1"
         self.add_shared_embed = add_shared_embed
         self.embed = nn.Embedding(n_embed, embed_dim, padding_idx=0)
         self.embed.weight.data.clamp_(-2, 2)
         if add_shared_embed:
             col_embed_dim = embed_dim
         else:
-            col_embed_dim = embed_dim // frac_shared_embed
+            col_embed_dim = int(embed_dim * frac_shared_embed)
         self.shared_embed = nn.Parameter(torch.empty(1, col_embed_dim).uniform_(-1, 1))
 
         if full_embed_dropout:
