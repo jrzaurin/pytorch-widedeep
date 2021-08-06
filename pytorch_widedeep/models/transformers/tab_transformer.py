@@ -1,3 +1,23 @@
+"""
+The implementation of the categorical embeddings in pytorch_widedeep is
+thought so that each categorical column can have a different embedding
+dimension. However, for Transformer-based models, all categorical columns
+have the same embedding dimension. This could actually lead to an easier
+implementation of the categorical embeddings that does not require looping
+through the categorical columns in the forward pass. However, there are
+reasons why I prefer to leave the categorical embeddings implementation as it
+is for now (one being because is needed for the SharedEmbeddings). This also
+affects to the implementation of the CLS token. At the moment, this special
+token is added at pre-processing stage. A more elegant solution would simply
+be to define an embedding layer for all categories, save a token for 'CLS' as
+is the layer is defined, and add the token in the forward pass. Again, for
+the time being, our implementation is perhaps not the most elegant but is the
+most convenient in the overall structure of the package. This will be
+revisited in future versions. In summary, if there is a large number of
+categorical columns, our column-based embedding implementation will be slower
+than an implementation that considers all categorical columns at once. This
+will be addressed in the near future.
+"""
 import torch
 from torch import nn
 
@@ -6,6 +26,7 @@ from pytorch_widedeep.models.tab_mlp import MLP
 from pytorch_widedeep.models.transformers.layers import (
     SharedEmbeddings,
     TransformerEncoder,
+    ContinuousEmbeddings,
     FullEmbeddingDropout,
 )
 
@@ -46,14 +67,20 @@ class TabTransformer(nn.Module):
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     embed_continuous: bool, default = False,
-        Boolean indicating if the continuous features will be "embedded"
-        (i.e. each passed through a 1 layer MLP with Relu). Note that setting
-        this to true is equivalent to the so called `FT-Transformer
-        <https://arxiv.org/abs/2106.11959>`_ (Feature Tokenizer +
-        Transformer).
-    cont_norm_layer: str, default =  "layernorm",
+        Boolean indicating if the continuous features will be "embedded". See
+        ``pytorch_widedeep.models.transformers.layers.ContinuousEmbeddings``
+        Note that setting this to true is equivalent to the so called
+        `FT-Transformer <https://arxiv.org/abs/2106.11959>`_
+        (Feature Tokenizer + Transformer). The only difference is that this
+        implementation does not consider using bias for the categorical
+        embeddings.
+    embed_continuous_activation: str, default = None
+        String indicating the activation function to be applied to the
+        continuous embeddings, if any.
+        'relu', 'leaky_relu' and 'gelu' are supported.
+    cont_norm_layer: str, default =  None,
         Type of normalization layer applied to the continuous features if they
-        are not embedded. Options are: 'layernorm' or 'batchnorm'.
+        are not embedded. Options are: 'layernorm', 'batchnorm' or None.
     input_dim: int, default = 32
         The so-called *dimension of the model*. Is the number of embeddings used to encode
         the categorical columns
@@ -94,8 +121,9 @@ class TabTransformer(nn.Module):
     ----------
     cat_embed_layers: ``nn.ModuleDict``
         Dict with the embeddings per column
-    cont_embed_layers: ``nn.ModuleDict``
-        Dict with the embeddings per column if ``embed_continuous=True``
+    cont_embed: ``nn.Module``
+        Continuous embeddings layer if ``embed_continuous=True``. See
+        ``pytorch_widedeep.models.transformers.layers.ContinuousEmbeddings``
     cont_norm_layer: NormLayers
         Continuous normalization layer if ``continuous_cols`` is not None
     transformer_blks: ``nn.Sequential``
@@ -132,7 +160,8 @@ class TabTransformer(nn.Module):
         frac_shared_embed: float = 0.25,
         continuous_cols: Optional[List[str]] = None,
         embed_continuous: bool = False,
-        cont_norm_layer: str = "layernorm",
+        embed_continuous_activation: str = None,
+        cont_norm_layer: str = None,
         input_dim: int = 32,
         n_heads: int = 8,
         n_blocks: int = 6,
@@ -157,6 +186,7 @@ class TabTransformer(nn.Module):
         self.frac_shared_embed = frac_shared_embed
         self.continuous_cols = continuous_cols
         self.embed_continuous = embed_continuous
+        self.embed_continuous_activation = embed_continuous_activation
         self.cont_norm_layer = cont_norm_layer
         self.input_dim = input_dim
         self.n_heads = n_heads
@@ -209,25 +239,20 @@ class TabTransformer(nn.Module):
 
     def forward(self, X: Tensor) -> Tensor:
 
-        cat_embed = [
+        x_cat_embed = [
             self.cat_embed_layers["emb_layer_" + col](
                 X[:, self.column_idx[col]].long()
             ).unsqueeze(1)
             for col, _ in self.embed_input
         ]
-        x = torch.cat(cat_embed, 1)
+        x = torch.cat(x_cat_embed, 1)
         if not self.shared_embed and self.embedding_dropout is not None:
             x = self.embedding_dropout(x)
 
         if self.continuous_cols is not None and self.embed_continuous:
-            cont_embed = [
-                self.cont_embed_layers["emb_layer_" + col](
-                    X[:, self.column_idx[col]].float().unsqueeze(1)
-                ).unsqueeze(1)
-                for col in self.continuous_cols
-            ]
-            x_cont = torch.cat(cont_embed, 1)
-            x = torch.cat([x, x_cont], 1)
+            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
+            x_cont_embed = self.cont_embed(x_cont)
+            x = torch.cat([x, x_cont_embed], 1)
 
         for i, blk in enumerate(self.transformer_blks):
             x = blk(x)
@@ -246,8 +271,7 @@ class TabTransformer(nn.Module):
             x = x.flatten(1)
 
         if self.continuous_cols is not None and not self.embed_continuous:
-            cont_idx = [self.column_idx[col] for col in self.continuous_cols]
-            x_cont = self.cont_norm((X[:, cont_idx].float()))
+            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
             x = torch.cat([x, x_cont], 1)
 
         return self.transformer_mlp(x)
@@ -259,7 +283,7 @@ class TabTransformer(nn.Module):
                 {
                     "emb_layer_"
                     + col: SharedEmbeddings(
-                        val + 1,
+                        val if col == "cls_token" else val + 1,
                         self.input_dim,
                         self.embed_dropout,
                         self.full_embed_dropout,
@@ -273,30 +297,35 @@ class TabTransformer(nn.Module):
             self.cat_embed_layers = nn.ModuleDict(
                 {
                     "emb_layer_"
-                    + col: nn.Embedding(val + 1, self.input_dim, padding_idx=0)
+                    + col: nn.Embedding(
+                        val if col == "cls_token" else val + 1,
+                        self.input_dim,
+                        padding_idx=0,
+                    )
                     for col, val in self.embed_input
                 }
             )
             if self.full_embed_dropout:
-                self.embedding_dropout: Union[
-                    FullEmbeddingDropout, nn.Dropout
-                ] = FullEmbeddingDropout(self.embed_dropout)
+                self.embedding_dropout: DropoutLayers = FullEmbeddingDropout(
+                    self.embed_dropout
+                )
             else:
                 self.embedding_dropout = nn.Dropout(self.embed_dropout)
 
     def _set_cont_cols(self):
         if self.continuous_cols is not None:
+            self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
             if self.cont_norm_layer == "layernorm":
                 self.cont_norm: NormLayers = nn.LayerNorm(len(self.continuous_cols))
             elif self.cont_norm_layer == "batchnorm":
                 self.cont_norm = nn.BatchNorm1d(len(self.continuous_cols))
+            else:
+                self.cont_norm = nn.Identity()
             if self.embed_continuous:
-                self.cont_embed_layers = nn.ModuleDict(
-                    {
-                        "emb_layer_"
-                        + col: nn.Sequential(nn.Linear(1, self.input_dim), nn.ReLU())
-                        for col in self.continuous_cols
-                    }
+                self.cont_embed = ContinuousEmbeddings(
+                    len(self.continuous_cols),
+                    self.input_dim,
+                    self.embed_continuous_activation,
                 )
 
     def _set_mlp_hidden_dims(self) -> List[int]:

@@ -205,9 +205,9 @@ class SharedEmbeddings(nn.Module):
         self.shared_embed = nn.Parameter(torch.empty(1, col_embed_dim).uniform_(-1, 1))
 
         if full_embed_dropout:
-            self.dropout = FullEmbeddingDropout(embed_dropout)
+            self.dropout: DropoutLayers = FullEmbeddingDropout(embed_dropout)
         else:
-            self.dropout = nn.Dropout(embed_dropout)  # type: ignore[assignment]
+            self.dropout = nn.Dropout(embed_dropout)
 
     def forward(self, X: Tensor) -> Tensor:
         out = self.dropout(self.embed(X))
@@ -217,3 +217,41 @@ class SharedEmbeddings(nn.Module):
         else:
             out[:, : shared_embed.shape[1]] = shared_embed
         return out
+
+
+class ContinuousEmbeddings(nn.Module):
+    def __init__(
+        self,
+        n_cont_cols: int,
+        embed_dim: int,
+        activation: str = None,
+        bias: bool = True,
+    ):
+        super(ContinuousEmbeddings, self).__init__()
+        self.n_cont_cols = n_cont_cols
+        self.embed_dim = embed_dim
+        self.activation = activation
+
+        self.weight = nn.Parameter(torch.Tensor(n_cont_cols, embed_dim))
+        self.bias = nn.Parameter(torch.Tensor(n_cont_cols, embed_dim)) if bias else None
+        self._reset_parameters()
+
+        self.act_fn = _get_activation_fn(activation) if activation else None
+
+    def _reset_parameters(self) -> None:
+        nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
+        if self.bias is not None:
+            fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weight)
+            bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
+            nn.init.uniform_(self.bias, -bound, bound)
+
+    def forward(self, X: Tensor) -> Tensor:
+        x = self.weight.unsqueeze(0) * X.unsqueeze(2)
+
+        if self.bias is not None:
+            x = x + self.bias.unsqueeze(0)
+
+        if self.act_fn is not None:
+            x = self.act_fn(x)
+
+        return x

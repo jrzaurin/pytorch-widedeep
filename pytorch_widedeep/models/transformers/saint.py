@@ -43,8 +43,12 @@ class SAINT(TabTransformer):
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     embed_continuous: bool, default = False,
-        Boolean indicating if the continuous features will be "embedded"
-        (i.e. each passed through a 1 layer MLP with Relu)
+        Boolean indicating if the continuous features will be "embedded". See
+        ``pytorch_widedeep.models.transformers.layers.ContinuousEmbeddings``
+    embed_continuous_activation: str, default = "relu"
+        String indicating the activation function to be applied to the
+        continuous embeddings, if any.
+        'relu', 'leaky_relu' and 'gelu' are supported.
     cont_norm_layer: str, default =  "layernorm",
         Type of normalization layer applied to the continuous features if they
         are not embedded. Options are: 'layernorm' or 'batchnorm'.
@@ -88,7 +92,7 @@ class SAINT(TabTransformer):
     ----------
     cat_embed_layers: ``nn.ModuleDict``
         Dict with the embeddings per column
-    cont_embed_layers: ``nn.ModuleDict``
+    cont_embed: ``nn.ModuleDict``
         Dict with the embeddings per column if ``embed_continuous=True``
     cont_norm_layer: NormLayers
         Continuous normalization layer if ``continuous_cols`` is not None
@@ -130,6 +134,7 @@ class SAINT(TabTransformer):
         frac_shared_embed: float = 0.25,
         continuous_cols: Optional[List[str]] = None,
         embed_continuous: bool = False,
+        embed_continuous_activation: str = None,
         cont_norm_layer: str = "layernorm",
         input_dim: int = 32,
         n_heads: int = 8,
@@ -154,6 +159,7 @@ class SAINT(TabTransformer):
             frac_shared_embed,
             continuous_cols,
             embed_continuous,
+            embed_continuous_activation,
             cont_norm_layer,
             input_dim,
             n_heads,

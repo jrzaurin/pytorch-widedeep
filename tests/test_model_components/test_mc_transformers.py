@@ -109,6 +109,31 @@ def test_tabtransformer_w_shared_emb_output():
 
 
 ###############################################################################
+# Test ContinuousEmbeddings
+###############################################################################
+
+
+def test_continuous_embeddings():
+    bsz = 2
+    n_cont_cols = 2
+    embed_dim = 6
+
+    X = torch.rand(bsz, n_cont_cols)
+
+    cont_embed = ContinuousEmbeddings(
+        n_cont_cols=n_cont_cols, embed_dim=embed_dim, activation=None, bias=None
+    )
+    out = cont_embed(X)
+    res = (
+        out.shape[0] == bsz
+        and out.shape[1] == n_cont_cols
+        and out.shape[2] == embed_dim
+    )
+
+    assert res and torch.allclose(out[0, 0, :], X[0][0] * cont_embed.weight[0])
+
+
+###############################################################################
 # Sanity Check: Test w/o continuous features
 ###############################################################################
 

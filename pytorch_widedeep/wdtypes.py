@@ -52,6 +52,7 @@ from torch.utils.data.dataloader import DataLoader
 
 from pytorch_widedeep.models import WideDeep
 from pytorch_widedeep.models.tabnet.sparsemax import Entmax15, Sparsemax
+from pytorch_widedeep.models.transformers.layers import FullEmbeddingDropout
 
 ListRules = Collection[Callable[[str], str]]
 Tokens = Collection[Collection[str]]
@@ -85,3 +86,4 @@ Transforms = Union[
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
 NormLayers = Union[torch.nn.LayerNorm, torch.nn.BatchNorm1d]
+DropoutLayers = Union[torch.nn.Dropout, FullEmbeddingDropout]
