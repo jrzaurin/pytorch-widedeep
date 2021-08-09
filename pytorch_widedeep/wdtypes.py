@@ -85,5 +85,5 @@ Transforms = Union[
 ]
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
-NormLayers = Union[torch.nn.LayerNorm, torch.nn.BatchNorm1d]
+NormLayers = Union[torch.nn.Identity, torch.nn.LayerNorm, torch.nn.BatchNorm1d]
 DropoutLayers = Union[torch.nn.Dropout, FullEmbeddingDropout]

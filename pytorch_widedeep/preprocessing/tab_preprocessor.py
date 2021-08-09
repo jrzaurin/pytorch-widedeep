@@ -95,10 +95,7 @@ class TabPreprocessor(BasePreprocessor):
     >>> embed_cols = [('color',5), ('size',5)]
     >>> cont_cols = ['age']
     >>> deep_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
-    >>> deep_preprocessor.fit_transform(df)
-    array([[ 1.        ,  1.        , -1.22474487],
-           [ 2.        ,  2.        ,  0.        ],
-           [ 3.        ,  3.        ,  1.22474487]])
+    >>> X_tab = deep_preprocessor.fit_transform(df)
     >>> deep_preprocessor.embed_dim
     {'color': 5, 'size': 5}
     >>> deep_preprocessor.column_idx
@@ -115,6 +112,7 @@ class TabPreprocessor(BasePreprocessor):
         already_standard: List[str] = None,
         for_transformer: bool = False,
         with_cls_token: bool = False,
+        shared_embed: bool = False,
         verbose: int = 1,
     ):
         super(TabPreprocessor, self).__init__()
@@ -127,6 +125,7 @@ class TabPreprocessor(BasePreprocessor):
         self.already_standard = already_standard
         self.for_transformer = for_transformer
         self.with_cls_token = with_cls_token
+        self.shared_embed = shared_embed
         self.verbose = verbose
 
         self.is_fitted = False
@@ -149,7 +148,11 @@ class TabPreprocessor(BasePreprocessor):
         """Fits the Preprocessor and creates required attributes"""
         if self.embed_cols is not None:
             df_emb = self._prepare_embed(df)
-            self.label_encoder = LabelEncoder(df_emb.columns.tolist()).fit(df_emb)
+            self.label_encoder = LabelEncoder(
+                columns_to_encode=df_emb.columns.tolist(),
+                shared_embed=self.shared_embed,
+            )
+            self.label_encoder.fit(df_emb)
             self.embeddings_input: List = []
             for k, v in self.label_encoder.encoding_dict.items():
                 if self.for_transformer:

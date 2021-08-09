@@ -147,7 +147,7 @@ finetuner = FineTune(loss_fn, MultipleMetrics([Accuracy()]), "binary", False)
 # so here we go...
 last_linear = list(deeptabular.children())[1]
 inverted_mlp_layers = list(
-    list(list(deeptabular.named_modules())[9][1].children())[0].children()
+    list(list(deeptabular.named_modules())[10][1].children())[0].children()
 )[::-1]
 tab_layers = [last_linear] + inverted_mlp_layers
 text_layers = [c for c in list(deeptext.children())[1:]][::-1]

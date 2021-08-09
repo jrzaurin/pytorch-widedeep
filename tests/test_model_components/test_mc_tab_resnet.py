@@ -87,13 +87,17 @@ def test_cont_contat(concat_cont_first):
 
 
 @pytest.mark.parametrize(
-    "concat_cont_first",
+    "concat_cont_first, cont_norm_layer",
     [
-        True,
-        False,
+        [True, None],
+        [False, None],
+        [True, "batchnorm"],
+        [False, "batchnorm"],
+        [True, "layernorm"],
+        [False, "layernorm"],
     ],
 )
-def test_full_setup(concat_cont_first):
+def test_full_setup(concat_cont_first, cont_norm_layer):
     model4 = TabResnet(
         embed_input=embed_input,
         column_idx={k: v for v, k in enumerate(colnames)},
@@ -105,7 +109,7 @@ def test_full_setup(concat_cont_first):
         mlp_batchnorm_last=False,
         embed_dropout=0.1,
         continuous_cols=continuous_cols,
-        batchnorm_cont=True,
+        cont_norm_layer=cont_norm_layer,
         concat_cont_first=concat_cont_first,
     )
     out = model4(X_tab)

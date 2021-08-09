@@ -79,8 +79,8 @@ class TabTransformer(nn.Module):
         continuous embeddings, if any.
         'relu', 'leaky_relu' and 'gelu' are supported.
     cont_norm_layer: str, default =  None,
-        Type of normalization layer applied to the continuous features if they
-        are not embedded. Options are: 'layernorm', 'batchnorm' or None.
+        Type of normalization layer applied to the continuous features. Options
+        are: 'layernorm', 'batchnorm' or None.
     input_dim: int, default = 32
         The so-called *dimension of the model*. Is the number of embeddings used to encode
         the categorical columns
@@ -202,6 +202,8 @@ class TabTransformer(nn.Module):
         self.mlp_linear_first = mlp_linear_first
 
         self.with_cls_token = "cls_token" in self.column_idx
+        self.categorical_cols = [ei[0] for ei in self.embed_input]
+        self.n_tokens = sum([ei[1] for ei in self.embed_input])
 
         self._set_categ_embeddings()
 
@@ -239,13 +241,17 @@ class TabTransformer(nn.Module):
 
     def forward(self, X: Tensor) -> Tensor:
 
-        x_cat_embed = [
-            self.cat_embed_layers["emb_layer_" + col](
-                X[:, self.column_idx[col]].long()
-            ).unsqueeze(1)
-            for col, _ in self.embed_input
-        ]
-        x = torch.cat(x_cat_embed, 1)
+        if self.shared_embed:
+            x_cat_embed = [
+                self.cat_embed["emb_layer_" + col](
+                    X[:, self.column_idx[col]].long()
+                ).unsqueeze(1)
+                for col, _ in self.embed_input
+            ]
+            x = torch.cat(x_cat_embed, 1)
+        else:
+            x = self.cat_embed(X[:, self.cat_idx].long())
+
         if not self.shared_embed and self.embedding_dropout is not None:
             x = self.embedding_dropout(x)
 
@@ -277,9 +283,10 @@ class TabTransformer(nn.Module):
         return self.transformer_mlp(x)
 
     def _set_categ_embeddings(self):
+        self.cat_idx = [self.column_idx[col] for col in self.categorical_cols]
         # Categorical: val + 1 because 0 is reserved for padding/unseen cateogories.
         if self.shared_embed:
-            self.cat_embed_layers = nn.ModuleDict(
+            self.cat_embed = nn.ModuleDict(
                 {
                     "emb_layer_"
                     + col: SharedEmbeddings(
@@ -294,16 +301,8 @@ class TabTransformer(nn.Module):
                 }
             )
         else:
-            self.cat_embed_layers = nn.ModuleDict(
-                {
-                    "emb_layer_"
-                    + col: nn.Embedding(
-                        val if col == "cls_token" else val + 1,
-                        self.input_dim,
-                        padding_idx=0,
-                    )
-                    for col, val in self.embed_input
-                }
+            self.cat_embed = nn.Embedding(
+                self.n_tokens + 1, self.input_dim, padding_idx=0
             )
             if self.full_embed_dropout:
                 self.embedding_dropout: DropoutLayers = FullEmbeddingDropout(

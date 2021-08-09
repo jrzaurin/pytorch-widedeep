@@ -221,6 +221,36 @@ def test_tab_preprocessor_trasformer_raise_error(embed_cols, continuous_cols, sc
         )
 
 
+@pytest.mark.parametrize(
+    "shared_embed",
+    [True, False],
+)
+def test_with_and_without_shared_embeddings(shared_embed):
+
+    tab_preprocessor = TabPreprocessor(
+        embed_cols=["col1", "col2"],
+        continuous_cols=None,
+        for_transformer=True,
+        shared_embed=shared_embed,
+        verbose=False,
+    )
+
+    encoded = tab_preprocessor.fit_transform(df)  # noqa: F841
+
+    first_index = []
+    for k, v in tab_preprocessor.label_encoder.encoding_dict.items():
+        first_index.append(min(v.values()))
+        added_idx = len(v) if not shared_embed else 0
+
+    if shared_embed:
+        res = len(set(first_index)) == 1
+    else:
+        res = (
+            len(set(first_index)) == 2 and first_index[1] == first_index[0] + added_idx
+        )
+    assert res
+
+
 ###############################################################################
 # Test NotFittedError
 ###############################################################################

@@ -37,8 +37,11 @@ class LabelEncoder:
         `{'colname1': {1: 'cat1', 2: 'cat2', ...}, 'colname2': {1: 'cat1', 2: 'cat2', ...}, ...}`
     """
 
-    def __init__(self, columns_to_encode: Optional[List[str]] = None):
+    def __init__(
+        self, columns_to_encode: Optional[List[str]] = None, shared_embed: bool = False
+    ):
         self.columns_to_encode = columns_to_encode
+        self.shared_embed = shared_embed
 
     def fit(self, df: pd.DataFrame) -> "LabelEncoder":
         """Creates encoding attributes"""
@@ -60,11 +63,16 @@ class LabelEncoder:
             unique_column_vals[c] = df_inp[c].unique()
 
         self.encoding_dict = dict()
+        if "cls_token" in unique_column_vals and self.shared_embed:
+            self.encoding_dict["cls_token"] = {"[CLS]": 0}
+            del unique_column_vals["cls_token"]
         # leave 0 for padding/"unseen" categories
+        idx = 1
         for k, v in unique_column_vals.items():
             self.encoding_dict[k] = {
-                o: i + 1 for i, o in enumerate(unique_column_vals[k])
+                o: i + idx for i, o in enumerate(unique_column_vals[k])
             }
+            idx = idx + len(unique_column_vals[k]) if not self.shared_embed else 1
 
         self.inverse_encoding_dict = dict()
         for c in self.encoding_dict:
