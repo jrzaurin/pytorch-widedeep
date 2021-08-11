@@ -17,6 +17,8 @@ using wide and deep models.
 
 **Experiments and comparisson with `LightGBM`**: [TabularDL vs LightGBM](https://github.com/jrzaurin/tabulardl-benchmark)
 
+**Slack**: if you want to contribute or just want to chat with us, join [slack](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
+
 ### Introduction
 
 ``pytorch-widedeep`` is based on Google's [Wide and Deep Algorithm](https://arxiv.org/abs/1606.07792)
@@ -55,20 +57,20 @@ cd pytorch-widedeep
 pip install -e .
 ```
 
-**Important note for Mac users**: at the time of writing (June-2021) the
-latest `torch` release is `1.9`. Some past
-[issues](https://stackoverflow.com/questions/64772335/pytorch-w-parallelnative-cpp206)
-when running on Mac, present in previous versions, persist on this release and
-the data-loaders will not run in parallel. In addition, since `python 3.8`,
-[the `multiprocessing` library start method changed from `'fork'` to
-`'spawn'`](https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods).
+**Important note for Mac users**: at the time of writing the latest `torch`
+release is `1.9`. Some past [issues](https://stackoverflow.com/questions/64772335/pytorch-w-parallelnative-cpp206)
+when running on Mac, present in previous versions, persist on this release
+and the data-loaders will not run in parallel. In addition, since `python
+3.8`, [the `multiprocessing` library start method changed from `'fork'` to`'spawn'`](https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods).
 This also affects the data-loaders (for any `torch` version) and they will
-not run in parallel. Therefore, for Mac users I recommend using `python 3.6`
-or `3.7` and `torch <= 1.6` (with the corresponding, consistent version of
-`torchvision`, e.g. `0.7.0` for `torch 1.6`). I do not want to force this
-versioning in the `setup.py` file since I expect that all these issues are
-fixed in the future. Therefore, after installing `pytorch-widedeep` via pip
-or directly from github, downgrade `torch` and `torchvision` manually:
+not run in parallel. Therefore, for Mac users I recommend using `python
+3.6` or `3.7` and `torch <= 1.6` (with the corresponding, consistent
+version of `torchvision`, e.g. `0.7.0` for `torch 1.6`). I do not want to
+force this versioning in the `setup.py` file since I expect that all these
+issues are fixed in the future. Therefore, after installing
+`pytorch-widedeep` via pip or directly from github, downgrade `torch` and
+`torchvision` manually:
+
 
 ```bash
 pip install pytorch-widedeep

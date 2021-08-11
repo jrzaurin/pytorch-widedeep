@@ -38,26 +38,38 @@ class WideDeep(nn.Module):
 
         currently ``pytorch-widedeep`` implements four possible
         architectures for the `deeptabular` component. These are:
-        TabMlp, TabResnet, TabNet and TabTransformer.
+        TabMlp, TabResnet, TabNet, TabTransformer and SAINT.
 
         1. TabMlp is simply an embedding layer encoding the categorical
         features that are then concatenated and passed through a series of
         dense (hidden) layers (i.e. and MLP).
-        See: :obj:`pytorch_widedeep.models.deep_dense.TabMlp`
+        See: :obj:`pytorch_widedeep.models.tab_mlp.TabMlp`
 
         2. TabResnet is an embedding layer encoding the categorical
         features that are then concatenated and passed through a series of
         ResNet blocks formed by dense layers.
-        See :obj:`pytorch_widedeep.models.deep_dense_resnet.TabResnet`
+        See :obj:`pytorch_widedeep.models.tab_resnet.TabResnet`
 
         3. TabNet is detailed in `TabNet: Attentive Interpretable Tabular
-        Learning <https://arxiv.org/abs/1908.07442>`_. See
+        Learning <https://arxiv.org/abs/1908.07442>`_. The TabNet
+        implementation in ``pytorch_widedeep`` is an adaptation of the
+        `dreamquark-ai <https://github.com/dreamquark-ai/tabnet>`_
+        implementation. See
         :obj:`pytorch_widedeep.models.tabnet.tab_net.TabNet`
 
         3. TabTransformer is detailed in `TabTransformer: Tabular Data
         Modeling Using Contextual Embeddings
-        <https://arxiv.org/abs/2012.06678>`_. See
-        :obj:`pytorch_widedeep.models.tab_transformer.TabTransformer`
+        <https://arxiv.org/abs/2012.06678>`_. The TabTransformer
+        implementation in ``pytorch-widedeep`` is an adaptation of the
+        original implementation. See
+        :obj:`pytorch_widedeep.models.transformers.tab_transformer.TabTransformer`.
+
+        3. SAINT is detailed in `SAINT: Improved Neural Networks for Tabular
+        Data via Row Attention and Contrastive Pre-Training
+        <https://arxiv.org/abs/2106.01342>`_. The SAINT implementation in
+        ``pytorch-widedeep`` is an adaptation of the original implementation.
+        See
+        :obj:`pytorch_widedeep.models.transformers.saint.SAINT`.
 
         I recommend using on of these as ``deeptabular``. However, it is
         possible to use a custom model as long as is  consistent with the
@@ -67,12 +79,12 @@ class WideDeep(nn.Module):
         Model for the text input. Must be an object of class ``DeepText``
         or a custom model as long as is consistent with the required
         architecture. See
-        :class:`pytorch_widedeep.models.deep_dense.DeepText`
+        :class:`pytorch_widedeep.models.deep_text.DeepText`
     deepimage: ``nn.Module``, Optional, default = None
         Model for the images input. Must be an object of class
         ``DeepImage`` or a custom model as long as is consistent with the
         required architecture. See
-        :class:`pytorch_widedeep.models.deep_dense.DeepImage`
+        :class:`pytorch_widedeep.models.deep_image.DeepImage`
     deephead: ``nn.Module``, Optional, default = None
         Custom model by the user that will receive the outtput of the deep
         component. Typically a FC-Head (MLP)
@@ -316,7 +328,7 @@ class WideDeep(nn.Module):
         if deeptabular is not None and not hasattr(deeptabular, "output_dim"):
             raise AttributeError(
                 "deeptabular model must have an 'output_dim' attribute. "
-                "See pytorch-widedeep.models.deep_dense.DeepText"
+                "See pytorch-widedeep.models.deep_text.DeepText"
             )
         if deeptabular is not None:
             is_tabnet = deeptabular.__class__.__name__ == "TabNet"
@@ -338,12 +350,12 @@ class WideDeep(nn.Module):
         if deeptext is not None and not hasattr(deeptext, "output_dim"):
             raise AttributeError(
                 "deeptext model must have an 'output_dim' attribute. "
-                "See pytorch-widedeep.models.deep_dense.DeepText"
+                "See pytorch-widedeep.models.deep_text.DeepText"
             )
         if deepimage is not None and not hasattr(deepimage, "output_dim"):
             raise AttributeError(
                 "deepimage model must have an 'output_dim' attribute. "
-                "See pytorch-widedeep.models.deep_dense.DeepText"
+                "See pytorch-widedeep.models.deep_text.DeepText"
             )
         if deephead is not None and head_hidden_dims is not None:
             raise ValueError(

@@ -1,10 +1,17 @@
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
-allowed_activations = ["relu", "leaky_relu", "gelu"]
+allowed_activations = ["relu", "leaky_relu", "gelu", "geglu"]
+
+
+class GEGLU(nn.Module):
+    def forward(self, x):
+        x, gates = x.chunk(2, dim=-1)
+        return x * F.gelu(gates)
 
 
 def _get_activation_fn(activation):
@@ -14,6 +21,8 @@ def _get_activation_fn(activation):
         return nn.LeakyReLU(inplace=True)
     elif activation == "gelu":
         return nn.GELU()
+    elif activation == "geglu":
+        return GEGLU()
 
 
 def dense_layer(
@@ -25,6 +34,11 @@ def dense_layer(
     linear_first: bool,
 ):
     # This is basically the LinBnDrop class at the fastai library
+    if activation == "geglu":
+        raise ValueError(
+            "'geglu' activation is only used as 'transformer_activation' "
+            "in transformer-based models (TabTransformer and SAINT)"
+        )
     act_fn = _get_activation_fn(activation)
     layers = [nn.BatchNorm1d(out if linear_first else inp)] if bn else []
     if p != 0:
@@ -83,11 +97,21 @@ class TabMlp(nn.Module):
         Dict containing the index of the columns that will be passed through
         the TabMlp model. Required to slice the tensors. e.g. {'education':
         0, 'relationship': 1, 'workclass': 2, ...}
+    embed_input: List, Optional, default = None
+        List of Tuples with the column name, number of unique values and
+        embedding dimension. e.g. [(education, 11, 32), ...]
+    embed_dropout: float, default = 0.1
+        embeddings dropout
+    continuous_cols: List, Optional, default = None
+        List with the name of the numeric (aka continuous) columns
+    cont_norm_layer: str, default =  "batchnorm"
+        Type of normalization layer applied to the continuous features. Options
+        are: 'layernorm', 'batchnorm' or None.
     mlp_hidden_dims: List, default = [200, 100]
         List with the number of neurons per dense layer in the mlp.
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        only "relu", "leaky_relu" and "gelu" are supported
+        'relu', 'leaky_relu' and 'gelu' are supported
     mlp_dropout: float or List, default = 0.1
         float or List of floats with the dropout between the dense layers.
         e.g: [0.5,0.5]
@@ -101,19 +125,11 @@ class TabMlp(nn.Module):
         Boolean indicating the order of the operations in the dense
         layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
         LIN -> ACT]``
-    embed_input: List, Optional, default = None
-        List of Tuples with the column name, number of unique values and
-        embedding dimension. e.g. [(education, 11, 32), ...]
-    embed_dropout: float, default = 0.1
-        embeddings dropout
-    continuous_cols: List, Optional, default = None
-        List with the name of the numeric (aka continuous) columns
-    batchnorm_cont: bool, default = False
-        Boolean indicating whether or not to apply batch normalization to the
-        continuous input
 
     Attributes
     ----------
+    cont_norm: ``nn.Module``
+        continuous normalization layer
     tab_mlp: ``nn.Sequential``
         mlp model that will receive the concatenation of the embeddings and
         the continuous columns
@@ -139,16 +155,16 @@ class TabMlp(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
+        embed_input: Optional[List[Tuple[str, int, int]]] = None,
+        embed_dropout: float = 0.1,
+        continuous_cols: Optional[List[str]] = None,
+        cont_norm_layer: str = "batchnorm",
         mlp_hidden_dims: List[int] = [200, 100],
         mlp_activation: str = "relu",
         mlp_dropout: Union[float, List[float]] = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = False,
-        embed_input: Optional[List[Tuple[str, int, int]]] = None,
-        embed_dropout: float = 0.1,
-        continuous_cols: Optional[List[str]] = None,
-        batchnorm_cont: bool = False,
     ):
         super(TabMlp, self).__init__()
 
@@ -161,7 +177,7 @@ class TabMlp(nn.Module):
         self.embed_input = embed_input
         self.embed_dropout = embed_dropout
         self.continuous_cols = continuous_cols
-        self.batchnorm_cont = batchnorm_cont
+        self.cont_norm_layer = cont_norm_layer
 
         if self.mlp_activation not in allowed_activations:
             raise ValueError(
@@ -186,9 +202,14 @@ class TabMlp(nn.Module):
 
         # Continuous
         if self.continuous_cols is not None:
+            self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
             cont_inp_dim = len(self.continuous_cols)
-            if self.batchnorm_cont:
-                self.norm = nn.BatchNorm1d(cont_inp_dim)
+            if self.cont_norm_layer == "batchnorm":
+                self.cont_norm: NormLayers = nn.BatchNorm1d(cont_inp_dim)
+            elif self.cont_norm_layer == "layernorm":
+                self.cont_norm = nn.LayerNorm(cont_inp_dim)
+            else:
+                self.cont_norm = nn.Identity()
         else:
             cont_inp_dim = 0
 
@@ -219,9 +240,6 @@ class TabMlp(nn.Module):
             x = torch.cat(embed, 1)
             x = self.embedding_dropout(x)
         if self.continuous_cols is not None:
-            cont_idx = [self.column_idx[col] for col in self.continuous_cols]
-            x_cont = X[:, cont_idx].float()
-            if self.batchnorm_cont:
-                x_cont = self.norm(x_cont)
+            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
             x = torch.cat([x, x_cont], 1) if self.embed_input is not None else x_cont
         return self.tab_mlp(x)

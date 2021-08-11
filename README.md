@@ -22,6 +22,8 @@ using wide and deep models.
 
 **Experiments and comparisson with `LightGBM`**: [TabularDL vs LightGBM](https://github.com/jrzaurin/tabulardl-benchmark)
 
+**Slack**: if you want to contribute or just want to chat with us, join [slack](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
+
 ### Introduction
 
 ``pytorch-widedeep`` is based on Google's [Wide and Deep Algorithm](https://arxiv.org/abs/1606.07792)
@@ -82,10 +84,11 @@ into:
 
 It is important to emphasize that **each individual component, `wide`,
 `deeptabular`, `deeptext` and `deepimage`, can be used independently** and in
-isolation. For example, one could use only `wide`, which is in simply a linear
-model. In fact, one of the most interesting functionalities
+isolation. For example, one could use only `wide`, which is in simply a
+linear model. In fact, one of the most interesting functionalities
 in``pytorch-widedeep`` is the ``deeptabular`` component. Currently,
-``pytorch-widedeep`` offers 4 models for that component:
+``pytorch-widedeep`` offers the following different models for that
+component:
 
 1. ``TabMlp``: this is almost identical to the [tabular
 model](https://docs.fast.ai/tutorial.tabular.html) in the fantastic
@@ -100,11 +103,26 @@ passed through a series of ResNet blocks built with dense layers.
 [TabNet: Attentive Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442)
 
 4. ``TabTransformer``: Details on the TabTransformer can be found in:
-[TabTransformer: Tabular Data Modeling Using Contextual
-Embeddings](https://arxiv.org/pdf/2012.06678.pdf)
+[TabTransformer: Tabular Data Modeling Using Contextual Embeddings](https://arxiv.org/pdf/2012.06678.pdf).
+Note that the TabTransformer implementation available at ``pytorch-widedeep``
+is an adaptation of the original implementation.
+
+5. ``FT-Transformer``: or Feature Tokenizer transformer. This is a relatively small
+variation of the ``TabTransformer``. The variation itself was first
+introduced in the ``SAINT`` paper, but the name "``FT-Transformer``" was first
+used in
+[Revisiting Deep Learning Models for Tabular Data](https://arxiv.org/abs/2106.11959).
+When using the ``FT-Transformer`` each continuous feature is "embedded"
+(i.e. going through a 1-layer MLP with or without activation function) and
+then passed through the attention blocks along with the categorical features.
+This is available in ``pytorch-widedeep``'s ``TabTransformer`` by setting the
+parameter ``embed_continuous = True``.
 
 
-For details on these 4 models and their options please see the examples in the
+6. ``SAINT``: Details on SAINT can be found in:
+[SAINT: Improved Neural Networks for Tabular Data via Row Attention and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342).
+
+For details on these models and their options please see the examples in the
 Examples folder and the documentation.
 
 Finally, while I recommend using the ``wide`` and ``deeptabular`` models in
@@ -143,20 +161,19 @@ cd pytorch-widedeep
 pip install -e .
 ```
 
-**Important note for Mac users**: at the time of writing (June-2021) the
-latest `torch` release is `1.9`. Some past
-[issues](https://stackoverflow.com/questions/64772335/pytorch-w-parallelnative-cpp206)
-when running on Mac, present in previous versions, persist on this release and
-the data-loaders will not run in parallel. In addition, since `python 3.8`,
-[the `multiprocessing` library start method changed from `'fork'` to
-`'spawn'`](https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods).
+**Important note for Mac users**: at the time of writing the latest `torch`
+release is `1.9`. Some past [issues](https://stackoverflow.com/questions/64772335/pytorch-w-parallelnative-cpp206)
+when running on Mac, present in previous versions, persist on this release
+and the data-loaders will not run in parallel. In addition, since `python
+3.8`, [the `multiprocessing` library start method changed from `'fork'` to`'spawn'`](https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods).
 This also affects the data-loaders (for any `torch` version) and they will
-not run in parallel. Therefore, for Mac users I recommend using `python 3.6`
-or `3.7` and `torch <= 1.6` (with the corresponding, consistent version of
-`torchvision`, e.g. `0.7.0` for `torch 1.6`). I do not want to force this
-versioning in the `setup.py` file since I expect that all these issues are
-fixed in the future. Therefore, after installing `pytorch-widedeep` via pip
-or directly from github, downgrade `torch` and `torchvision` manually:
+not run in parallel. Therefore, for Mac users I recommend using `python
+3.6` or `3.7` and `torch <= 1.6` (with the corresponding, consistent
+version of `torchvision`, e.g. `0.7.0` for `torch 1.6`). I do not want to
+force this versioning in the `setup.py` file since I expect that all these
+issues are fixed in the future. Therefore, after installing
+`pytorch-widedeep` via pip or directly from github, downgrade `torch` and
+`torchvision` manually:
 
 ```bash
 pip install pytorch-widedeep

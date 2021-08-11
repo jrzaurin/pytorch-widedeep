@@ -50,23 +50,27 @@ def test_deep_dense_cont():
 
 
 ###############################################################################
-# All parameters
+# All parameters and cont norm
 ###############################################################################
-model3 = TabMlp(
-    column_idx={k: v for v, k in enumerate(colnames)},
-    mlp_hidden_dims=[32, 16, 8],
-    mlp_dropout=0.1,
-    mlp_batchnorm=True,
-    mlp_batchnorm_last=False,
-    mlp_linear_first=False,
-    embed_input=embed_input,
-    embed_dropout=0.1,
-    continuous_cols=continuous_cols,
-    batchnorm_cont=True,
+
+
+@pytest.mark.parametrize(
+    "cont_norm_layer",
+    [None, "batchnorm", "layernorm"],
 )
-
-
-def test_deep_dense():
+def test_deep_dense(cont_norm_layer):
+    model3 = TabMlp(
+        column_idx={k: v for v, k in enumerate(colnames)},
+        mlp_hidden_dims=[32, 16, 8],
+        mlp_dropout=0.1,
+        mlp_batchnorm=True,
+        mlp_batchnorm_last=False,
+        mlp_linear_first=False,
+        embed_input=embed_input,
+        embed_dropout=0.1,
+        continuous_cols=continuous_cols,
+        cont_norm_layer=cont_norm_layer,
+    )
     out = model3(X_deep)
     assert out.size(0) == 10 and out.size(1) == 8
 

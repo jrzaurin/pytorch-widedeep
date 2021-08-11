@@ -365,14 +365,14 @@ class EmbeddingsAndContinuous(nn.Module):
         embed_input: List[Tuple[str, int, int]],
         embed_dropout: float,
         continuous_cols: Optional[List[str]],
-        batchnorm_cont: bool,
+        cont_norm_layer: str,
     ):
         super(EmbeddingsAndContinuous, self).__init__()
 
         self.column_idx = column_idx
         self.embed_input = embed_input
         self.continuous_cols = continuous_cols
-        self.batchnorm_cont = batchnorm_cont
+        self.cont_norm_layer = cont_norm_layer
 
         # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
         self.embed_layers = nn.ModuleDict(
@@ -386,9 +386,14 @@ class EmbeddingsAndContinuous(nn.Module):
 
         # Continuous
         if self.continuous_cols is not None:
+            self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
             cont_out_dim = len(self.continuous_cols)
-            if self.batchnorm_cont:
-                self.norm = nn.BatchNorm1d(cont_out_dim)
+            if self.cont_norm_layer == "batchnorm":
+                self.cont_norm: NormLayers = nn.BatchNorm1d(cont_out_dim)
+            if self.cont_norm_layer == "layernorm":
+                self.cont_norm = nn.LayerNorm(cont_out_dim)
+            else:
+                self.cont_norm = nn.Identity()
         else:
             cont_out_dim = 0
 
@@ -402,10 +407,7 @@ class EmbeddingsAndContinuous(nn.Module):
         x = torch.cat(embed, 1)
         x = self.embedding_dropout(x)
         if self.continuous_cols is not None:
-            cont_idx = [self.column_idx[col] for col in self.continuous_cols]
-            x_cont = X[:, cont_idx].float()
-            if self.batchnorm_cont:
-                x_cont = self.norm(x_cont)
+            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
             x = torch.cat([x, x_cont], 1) if self.embed_input is not None else x_cont
         return x
 
@@ -422,8 +424,9 @@ class TabNet(nn.Module):
     Parameters
     ----------
     column_idx: Dict
-        Dictionary where the keys are the columns and the values their
-        corresponding index
+        Dict containing the index of the columns that will be passed through
+        the model. Required to slice the tensors. e.g. {'education':
+        0, 'relationship': 1, 'workclass': 2, ...}
     embed_input: List
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
@@ -431,9 +434,9 @@ class TabNet(nn.Module):
         embeddings dropout
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    batchnorm_cont: bool, default = False
-        Boolean indicating whether or not to apply batch normalization to the
-        continuous input
+    cont_norm_layer: str, default =  "batchnorm"
+        Type of normalization layer applied to the continuous features. Options
+        are: 'layernorm', 'batchnorm' or None.
     n_steps: int, default = 3
         number of decision steps
     step_dim: int, default = 8
@@ -500,7 +503,7 @@ class TabNet(nn.Module):
         embed_input: List[Tuple[str, int, int]],
         embed_dropout: float = 0.0,
         continuous_cols: Optional[List[str]] = None,
-        batchnorm_cont: bool = False,
+        cont_norm_layer: str = None,
         n_steps: int = 3,
         step_dim: int = 8,
         attn_dim: int = 8,
@@ -520,7 +523,7 @@ class TabNet(nn.Module):
         self.embed_input = embed_input
         self.embed_dropout = embed_dropout
         self.continuous_cols = continuous_cols
-        self.batchnorm_cont = batchnorm_cont
+        self.cont_norm_layer = cont_norm_layer
         self.n_steps = n_steps
         self.step_dim = step_dim
         self.attn_dim = attn_dim
@@ -535,7 +538,7 @@ class TabNet(nn.Module):
         self.mask_type = mask_type
 
         self.embed_and_cont = EmbeddingsAndContinuous(
-            column_idx, embed_input, embed_dropout, continuous_cols, batchnorm_cont
+            column_idx, embed_input, embed_dropout, continuous_cols, cont_norm_layer
         )
         self.embed_and_cont_dim = self.embed_and_cont.output_dim
         self.tabnet_encoder = TabNetEncoder(

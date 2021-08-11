@@ -24,7 +24,7 @@ class Wide(nn.Module):
 
     Attributes
     -----------
-    wide_linear: :obj:`nn.Module`
+    wide_linear: ``nn.Module``
         the linear layer that comprises the wide branch of the model
 
     Examples

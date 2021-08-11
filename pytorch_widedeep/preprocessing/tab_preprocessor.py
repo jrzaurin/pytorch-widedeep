@@ -34,7 +34,7 @@ class TabPreprocessor(BasePreprocessor):
         cols. The user should bear in mind that all the ``deeptabular``
         components available within ``pytorch-widedeep`` they also include
         the possibility of normalising the input continuous features via a
-        ``BatchNorm`` or a ``LayerNorm`` layer. see
+        ``BatchNorm`` or a ``LayerNorm`` layer. See
         :class:`pytorch_widedeep.models`
     auto_embed_dim: bool, default = True
         Boolean indicating whether the embedding dimensions will be
@@ -51,22 +51,35 @@ class TabPreprocessor(BasePreprocessor):
         ``LatLongScalarEnc`` available in the `autogluon
         <https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular>`_
         tabular library) and not standarize them any further
-    for_tabtransformer: bool, default = False
-        Boolean indicating whether the preprocessed data will be passed to
-        a ``TabTransformer`` model. If ``True``, the param ``embed_cols``
-        must just be a list containing the categorical columns: e.g.:
-        ['education', 'relationship', ...] This is because following the
-        results in the `paper <https://arxiv.org/pdf/2012.06678.pdf>`_,
-        they will all be encoded using embeddings of the same dim (32 by
-        default). See
-        :class:`pytorch_widedeep.models.tab_transformer.TabTransformer`
+    for_transformer: bool, default = False
+        Boolean indicating whether the preprocessed data will be passed to a
+        transformer-based model (i.e. ``TabTransformer`` or ``SAINT``). If
+        ``True``, the param ``embed_cols`` must just be a list containing the
+        categorical columns: e.g.:['education', 'relationship', ...] This is
+        because they will all be encoded using embeddings of the same dim
+        (32 by default).
+    with_cls_token: bool, default = False
+        Boolean indicating if a `'[CLS]'` token will be added to the dataset
+        when using transformer-based models (i.e. ``TabTransformer`` or
+        ``SAINT``). The final hidden state corresponding to this token is
+        used as the aggregate row representation for classification and
+        regression tasks. If not, the categorical (and continuous embeddings
+        if present) will be concatenated before being passed to the final
+        MLP.
+    shared_embed: bool, default = False
+        This parameter will only be used by the ``TabPreprocessor`` when the
+        data is being prepapred for a transformer-based model. If that is the
+        case and the embeddings are 'shared'
+        (see:
+        ``pytorch_widedeep.models.transformers.layers.SharedEmbeddings``)
+        then each column will be embed indepedently.
     verbose: int, default = 1
 
     Attributes
     ----------
     embed_dim: Dict
         Dictionary where keys are the embed cols and values are the embedding
-        dimensions. If ``for_tabtransformer`` is set to ``True`` the embedding
+        dimensions. If ``for_transformer`` is set to ``True`` the embedding
         dimensions are the same for all columns and this attributes is not
         generated during the ``fit`` process
     label_encoder: LabelEncoder
@@ -91,10 +104,7 @@ class TabPreprocessor(BasePreprocessor):
     >>> embed_cols = [('color',5), ('size',5)]
     >>> cont_cols = ['age']
     >>> deep_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
-    >>> deep_preprocessor.fit_transform(df)
-    array([[ 1.        ,  1.        , -1.22474487],
-           [ 2.        ,  2.        ,  0.        ],
-           [ 3.        ,  3.        ,  1.22474487]])
+    >>> X_tab = deep_preprocessor.fit_transform(df)
     >>> deep_preprocessor.embed_dim
     {'color': 5, 'size': 5}
     >>> deep_preprocessor.column_idx
@@ -109,7 +119,9 @@ class TabPreprocessor(BasePreprocessor):
         auto_embed_dim: bool = True,
         default_embed_dim: int = 16,
         already_standard: List[str] = None,
-        for_tabtransformer: bool = False,
+        for_transformer: bool = False,
+        with_cls_token: bool = False,
+        shared_embed: bool = False,
         verbose: int = 1,
     ):
         super(TabPreprocessor, self).__init__()
@@ -120,7 +132,9 @@ class TabPreprocessor(BasePreprocessor):
         self.auto_embed_dim = auto_embed_dim
         self.default_embed_dim = default_embed_dim
         self.already_standard = already_standard
-        self.for_tabtransformer = for_tabtransformer
+        self.for_transformer = for_transformer
+        self.with_cls_token = with_cls_token
+        self.shared_embed = shared_embed
         self.verbose = verbose
 
         self.is_fitted = False
@@ -130,30 +144,28 @@ class TabPreprocessor(BasePreprocessor):
                 "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
             )
 
-        tabtransformer_error_message = (
-            "If for_tabtransformer is 'True' embed_cols must be a list "
+        transformer_error_message = (
+            "If for_transformer is 'True' embed_cols must be a list "
             " of strings with the columns to be encoded as embeddings."
         )
-        if self.for_tabtransformer and self.embed_cols is None:
-            raise ValueError(tabtransformer_error_message)
-        if self.for_tabtransformer and isinstance(self.embed_cols[0], tuple):  # type: ignore[index]
-            raise ValueError(tabtransformer_error_message)
-        if self.for_tabtransformer and self.scale:
-            warnings.warn(
-                "Both 'for_tabtransformer' and 'scale' are set to True. "
-                "This implies that the continuous columns will be "
-                "standarized and then passed through a LayerNorm layer",
-                UserWarning,
-            )
+        if self.for_transformer and self.embed_cols is None:
+            raise ValueError(transformer_error_message)
+        if self.for_transformer and isinstance(self.embed_cols[0], tuple):  # type: ignore[index]
+            raise ValueError(transformer_error_message)
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Fits the Preprocessor and creates required attributes"""
         if self.embed_cols is not None:
             df_emb = self._prepare_embed(df)
-            self.label_encoder = LabelEncoder(df_emb.columns.tolist()).fit(df_emb)
+            self.label_encoder = LabelEncoder(
+                columns_to_encode=df_emb.columns.tolist(),
+                shared_embed=self.shared_embed,
+                for_transformer=self.for_transformer,
+            )
+            self.label_encoder.fit(df_emb)
             self.embeddings_input: List = []
             for k, v in self.label_encoder.encoding_dict.items():
-                if self.for_tabtransformer:
+                if self.for_transformer:
                     self.embeddings_input.append((k, len(v)))
                 else:
                     self.embeddings_input.append((k, len(v), self.embed_dim[k]))
@@ -213,6 +225,10 @@ class TabPreprocessor(BasePreprocessor):
             )
         except AttributeError:
             pass
+
+        if "cls_token" in decoded.columns:
+            decoded.drop("cls_token", axis=1, inplace=True)
+
         return decoded
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
@@ -220,8 +236,13 @@ class TabPreprocessor(BasePreprocessor):
         return self.fit(df).transform(df)
 
     def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.for_tabtransformer:
-            return df.copy()[self.embed_cols]
+        if self.for_transformer:
+            if self.with_cls_token:
+                df_cls = df.copy()[self.embed_cols]
+                df_cls.insert(loc=0, column="cls_token", value="[CLS]")
+                return df_cls
+            else:
+                return df.copy()[self.embed_cols]
         else:
             if isinstance(self.embed_cols[0], tuple):
                 self.embed_dim = dict(self.embed_cols)  # type: ignore

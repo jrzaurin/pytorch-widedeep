@@ -44,8 +44,22 @@ def test_embeddings_have_padding():
     assert all(res)
 
 
-def test_tabnet_output():
-    out1, out2 = model1(X_tab)
+@pytest.mark.parametrize(
+    "cont_norm_layer",
+    [
+        None,
+        "batchnorm",
+        "layernorm",
+    ],
+)
+def test_tabnet_output(cont_norm_layer):
+    model = TabNet(
+        column_idx={k: v for v, k in enumerate(colnames)},
+        embed_input=embed_input,
+        continuous_cols=colnames[n_cols:],
+        cont_norm_layer=cont_norm_layer,
+    )
+    out1, out2 = model(X_tab)
     assert out1.size(0) == 10 and out1.size(1) == model1.step_dim
 
 
