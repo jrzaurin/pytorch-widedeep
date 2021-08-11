@@ -108,7 +108,7 @@ class TabResnet(nn.Module):
         embeddings dropout
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    cont_norm_layer: str, default =  "batchnorm",
+    cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
         are: 'layernorm', 'batchnorm' or None.
     concat_cont_first: bool, default = True
@@ -154,6 +154,8 @@ class TabResnet(nn.Module):
     dense_resnet: ``nn.Sequential``
         deep dense Resnet model that will receive the concatenation of the
         embeddings and the continuous columns
+    cont_norm: ``nn.Module``
+        continuous normalization layer
     tab_resnet_mlp: ``nn.Sequential``
         if ``mlp_hidden_dims`` is ``True``, this attribute will be an mlp
         model that will receive:

@@ -53,13 +53,10 @@ def test_deep_dense_cont():
 # All parameters and cont norm
 ###############################################################################
 
+
 @pytest.mark.parametrize(
     "cont_norm_layer",
-    [
-        None,
-        "batchnorm",
-        "layernorm"
-    ],
+    [None, "batchnorm", "layernorm"],
 )
 def test_deep_dense(cont_norm_layer):
     model3 = TabMlp(

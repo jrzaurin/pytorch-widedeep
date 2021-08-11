@@ -434,7 +434,7 @@ class TabNet(nn.Module):
         embeddings dropout
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    cont_norm_layer: str, default =  "batchnorm",
+    cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
         are: 'layernorm', 'batchnorm' or None.
     n_steps: int, default = 3

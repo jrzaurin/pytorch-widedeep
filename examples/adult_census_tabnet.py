@@ -91,6 +91,6 @@ if __name__ == "__main__":
         X_tab=X_tab,
         target=target,
         n_epochs=2,
-        batch_size=128,
+        batch_size=512,
         val_split=0.2,
     )

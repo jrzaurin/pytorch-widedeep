@@ -5,7 +5,7 @@ import pandas as pd
 from pytorch_widedeep import Trainer
 from pytorch_widedeep.optim import RAdam
 from pytorch_widedeep.models import SAINT, Wide, WideDeep, TabTransformer
-from pytorch_widedeep.metrics import Accuracy, Precision
+from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.callbacks import (
     LRHistory,
     EarlyStopping,
@@ -59,51 +59,55 @@ if __name__ == "__main__":
 
     wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
-    deeptabular = TabTransformer(
+    tab_transformer = TabTransformer(
         column_idx=prepare_deep.column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
         embed_continuous=True,
     )
-    # deeptabular = SAINT(
-    #     column_idx=prepare_deep.column_idx,
-    #     embed_input=prepare_deep.embeddings_input,
-    #     continuous_cols=continuous_cols,
-    #     embed_continuous=True,
-    #     cont_norm_layer="batchnorm"
-    # )
-    model = WideDeep(wide=wide, deeptabular=deeptabular)
 
-    wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
-    deep_opt = RAdam(model.deeptabular.parameters())
-    wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=3)
-    deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=5)
-
-    optimizers = {"wide": wide_opt, "deeptabular": deep_opt}
-    schedulers = {"wide": wide_sch, "deeptabular": deep_sch}
-    initializers = {"wide": KaimingNormal, "deeptabular": XavierNormal}
-    callbacks = [
-        LRHistory(n_epochs=10),
-        EarlyStopping(patience=5),
-        ModelCheckpoint(filepath="model_weights/wd_out"),
-    ]
-    metrics = [Accuracy, Precision]
-
-    trainer = Trainer(
-        model,
-        objective="binary",
-        optimizers=optimizers,
-        lr_schedulers=schedulers,
-        initializers=initializers,
-        callbacks=callbacks,
-        metrics=metrics,
+    saint = SAINT(
+        column_idx=prepare_deep.column_idx,
+        embed_input=prepare_deep.embeddings_input,
+        continuous_cols=continuous_cols,
+        embed_continuous=True,
+        cont_norm_layer="batchnorm",
     )
 
-    trainer.fit(
-        X_wide=X_wide,
-        X_tab=X_tab,
-        target=target,
-        n_epochs=1,
-        batch_size=128,
-        val_split=0.2,
-    )
+    for tab_model in [tab_transformer, saint]:
+
+        model = WideDeep(wide=wide, deeptabular=tab_model)
+
+        wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
+        deep_opt = RAdam(model.deeptabular.parameters())
+        wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=3)
+        deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=5)
+
+        optimizers = {"wide": wide_opt, "deeptabular": deep_opt}
+        schedulers = {"wide": wide_sch, "deeptabular": deep_sch}
+        initializers = {"wide": KaimingNormal, "deeptabular": XavierNormal}
+        callbacks = [
+            LRHistory(n_epochs=10),
+            EarlyStopping(patience=5),
+            ModelCheckpoint(filepath="model_weights/wd_out"),
+        ]
+        metrics = [Accuracy]
+
+        trainer = Trainer(
+            model,
+            objective="binary",
+            optimizers=optimizers,
+            lr_schedulers=schedulers,
+            initializers=initializers,
+            callbacks=callbacks,
+            metrics=metrics,
+        )
+
+        trainer.fit(
+            X_wide=X_wide,
+            X_tab=X_tab,
+            target=target,
+            n_epochs=1,
+            batch_size=128,
+            val_split=0.2,
+        )

@@ -1,23 +1,3 @@
-"""
-The implementation of the categorical embeddings in pytorch_widedeep is
-thought so that each categorical column can have a different embedding
-dimension. However, for Transformer-based models, all categorical columns
-have the same embedding dimension. This could actually lead to an easier
-implementation of the categorical embeddings that does not require looping
-through the categorical columns in the forward pass. However, there are
-reasons why I prefer to leave the categorical embeddings implementation as it
-is for now (one being because is needed for the SharedEmbeddings). This also
-affects to the implementation of the CLS token. At the moment, this special
-token is added at pre-processing stage. A more elegant solution would simply
-be to define an embedding layer for all categories, save a token for 'CLS' as
-is the layer is defined, and add the token in the forward pass. Again, for
-the time being, our implementation is perhaps not the most elegant but is the
-most convenient in the overall structure of the package. This will be
-revisited in future versions. In summary, if there is a large number of
-categorical columns, our column-based embedding implementation will be slower
-than an implementation that considers all categorical columns at once. This
-will be addressed in the near future.
-"""
 import torch
 from torch import nn
 
@@ -124,8 +104,8 @@ class TabTransformer(nn.Module):
     cont_embed: ``nn.Module``
         Continuous embeddings layer if ``embed_continuous=True``. See
         ``pytorch_widedeep.models.transformers.layers.ContinuousEmbeddings``
-    cont_norm_layer: NormLayers
-        Continuous normalization layer if ``continuous_cols`` is not None
+    cont_norm: ``nn.Module``
+        continuous normalization layer
     transformer_blks: ``nn.Sequential``
         Sequence of Transformer blocks
     attention_weights: List

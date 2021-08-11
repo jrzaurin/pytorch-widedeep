@@ -19,10 +19,19 @@ class LabelEncoder:
 
     Parameters
     ----------
-    columns_to_encode: List, Optional
+    columns_to_encode: list, Optional, default = None
         List of strings containing the names of the columns to encode. If
         ``None`` all columns of type ``object`` in the dataframe will be label
         encoded.
+    for_transformer: bool, default = False
+        Boolean indicating whether the preprocessed data will be passed to a
+        transformer-based model (i.e. ``TabTransformer`` or ``SAINT``).
+    shared_embed: bool, default = False
+        Boolean indicating if the embeddings will be "shared" when using
+        transformer-based models
+        (see:
+        ``pytorch_widedeep.models.transformers.layers.SharedEmbeddings``)
+        then each column will be embed indepedently.
 
     Attributes
     -----------
@@ -38,10 +47,17 @@ class LabelEncoder:
     """
 
     def __init__(
-        self, columns_to_encode: Optional[List[str]] = None, shared_embed: bool = False
+        self,
+        columns_to_encode: Optional[List[str]] = None,
+        for_transformer: bool = False,
+        shared_embed: bool = False,
     ):
         self.columns_to_encode = columns_to_encode
+
         self.shared_embed = shared_embed
+        self.for_transformer = for_transformer
+
+        self.reset_embed_idx = not self.for_transformer or self.shared_embed
 
     def fit(self, df: pd.DataFrame) -> "LabelEncoder":
         """Creates encoding attributes"""
@@ -72,7 +88,7 @@ class LabelEncoder:
             self.encoding_dict[k] = {
                 o: i + idx for i, o in enumerate(unique_column_vals[k])
             }
-            idx = idx + len(unique_column_vals[k]) if not self.shared_embed else 1
+            idx = 1 if self.reset_embed_idx else idx + len(unique_column_vals[k])
 
         self.inverse_encoding_dict = dict()
         for c in self.encoding_dict:

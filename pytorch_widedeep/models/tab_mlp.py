@@ -104,7 +104,7 @@ class TabMlp(nn.Module):
         embeddings dropout
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    cont_norm_layer: str, default =  "batchnorm",
+    cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
         are: 'layernorm', 'batchnorm' or None.
     mlp_hidden_dims: List, default = [200, 100]
@@ -128,6 +128,8 @@ class TabMlp(nn.Module):
 
     Attributes
     ----------
+    cont_norm: ``nn.Module``
+        continuous normalization layer
     tab_mlp: ``nn.Sequential``
         mlp model that will receive the concatenation of the embeddings and
         the continuous columns

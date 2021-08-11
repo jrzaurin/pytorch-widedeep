@@ -34,7 +34,7 @@ class TabPreprocessor(BasePreprocessor):
         cols. The user should bear in mind that all the ``deeptabular``
         components available within ``pytorch-widedeep`` they also include
         the possibility of normalising the input continuous features via a
-        ``BatchNorm`` or a ``LayerNorm`` layer. see
+        ``BatchNorm`` or a ``LayerNorm`` layer. See
         :class:`pytorch_widedeep.models`
     auto_embed_dim: bool, default = True
         Boolean indicating whether the embedding dimensions will be
@@ -63,7 +63,16 @@ class TabPreprocessor(BasePreprocessor):
         when using transformer-based models (i.e. ``TabTransformer`` or
         ``SAINT``). The final hidden state corresponding to this token is
         used as the aggregate row representation for classification and
-        regression tasks.
+        regression tasks. If not, the categorical (and continuous embeddings
+        if present) will be concatenated before being passed to the final
+        MLP.
+    shared_embed: bool, default = False
+        This parameter will only be used by the ``TabPreprocessor`` when the
+        data is being prepapred for a transformer-based model. If that is the
+        case and the embeddings are 'shared'
+        (see:
+        ``pytorch_widedeep.models.transformers.layers.SharedEmbeddings``)
+        then each column will be embed indepedently.
     verbose: int, default = 1
 
     Attributes
@@ -151,6 +160,7 @@ class TabPreprocessor(BasePreprocessor):
             self.label_encoder = LabelEncoder(
                 columns_to_encode=df_emb.columns.tolist(),
                 shared_embed=self.shared_embed,
+                for_transformer=self.for_transformer,
             )
             self.label_encoder.fit(df_emb)
             self.embeddings_input: List = []
