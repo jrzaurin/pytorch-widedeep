@@ -40,7 +40,7 @@ jobs:
     - name: Convert coverage
       run: |
         python -m coverage combine
-	python -m coverage xml
+        python -m coverage xml
     - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
