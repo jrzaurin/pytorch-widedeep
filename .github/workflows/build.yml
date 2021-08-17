@@ -39,8 +39,8 @@ jobs:
         pytest --doctest-modules pytorch_widedeep --cov-report html --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep tests/
     - name: Convert coverage
       run: |
-        python -m coverage combine	  
-	    python -m coverage xml
+        python -m coverage combine
+	python -m coverage xml
     - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
