@@ -37,6 +37,11 @@ jobs:
     - name: Test with pytest
       run: |
         pytest --doctest-modules pytorch_widedeep --cov-report html --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep tests/
+    - name: Upload coverage
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage${{ matrix.python-version }}
+        path: .coverage
 
   finish:
     
@@ -44,14 +49,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install coverage
-    - name: Combine coverage
-      run: |
-        python -m coverage combine
+    - name: Download all artifacts
+      # Downloads coverage1, coverage2, etc.
+      uses: actions/download-artifact@v2
     - name: Upload coverage to Codecov
+      run: |
+        coverage combine coverage*/.coverage*
+        coverage report --fail-under=100
+        coverage xml
       uses: codecov/codecov-action@v1
       with:
         fail_ci_if_error: true
