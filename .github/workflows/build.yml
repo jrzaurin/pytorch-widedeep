@@ -61,11 +61,12 @@ jobs:
     - name: Download all artifacts
       # Downloads coverage1, coverage2, etc.
       uses: actions/download-artifact@v2
-    - name: Upload coverage to Codecov
+    - name: Convert coverage
       run: |
         coverage combine coverage*/.coverage*
         coverage report --fail-under=100
         coverage xml
+    - name: upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
         fail_ci_if_error: true
