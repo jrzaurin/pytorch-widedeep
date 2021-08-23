@@ -5,7 +5,7 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
-allowed_activations = ["relu", "leaky_relu", "gelu", "geglu"]
+allowed_activations = ["relu", "leaky_relu", "tanh", "gelu", "geglu"]
 
 
 class GEGLU(nn.Module):
@@ -14,14 +14,16 @@ class GEGLU(nn.Module):
         return x * F.gelu(gates)
 
 
-def _get_activation_fn(activation):
+def get_activation_fn(activation):
     if activation == "relu":
         return nn.ReLU(inplace=True)
     if activation == "leaky_relu":
         return nn.LeakyReLU(inplace=True)
-    elif activation == "gelu":
+    if activation == "tanh":
+        return nn.Tanh()
+    if activation == "gelu":
         return nn.GELU()
-    elif activation == "geglu":
+    if activation == "geglu":
         return GEGLU()
 
 
@@ -39,13 +41,79 @@ def dense_layer(
             "'geglu' activation is only used as 'transformer_activation' "
             "in transformer-based models (TabTransformer and SAINT)"
         )
-    act_fn = _get_activation_fn(activation)
+    act_fn = get_activation_fn(activation)
     layers = [nn.BatchNorm1d(out if linear_first else inp)] if bn else []
     if p != 0:
         layers.append(nn.Dropout(p))  # type: ignore[arg-type]
     lin = [nn.Linear(inp, out, bias=not bn), act_fn]
     layers = lin + layers if linear_first else layers + lin
     return nn.Sequential(*layers)
+
+
+class CatEmbeddingsAndCont(nn.Module):
+    def __init__(
+        self,
+        column_idx: Dict[str, int],
+        embed_input: List[Tuple[str, int, int]],
+        embed_dropout: float,
+        continuous_cols: Optional[List[str]],
+        cont_norm_layer: str,
+    ):
+        super(CatEmbeddingsAndCont, self).__init__()
+
+        self.column_idx = column_idx
+        self.embed_input = embed_input
+        self.continuous_cols = continuous_cols
+        self.cont_norm_layer = cont_norm_layer
+
+        # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
+        if self.embed_input is not None:
+            self.embed_layers = nn.ModuleDict(
+                {
+                    "emb_layer_" + col: nn.Embedding(val + 1, dim, padding_idx=0)
+                    for col, val, dim in self.embed_input
+                }
+            )
+            self.embedding_dropout = nn.Dropout(embed_dropout)
+            # this is an int, but new version of numpy introduced some
+            # (annoying) incompatibilities so I have to use int()
+            self.emb_out_dim: int = int(
+                np.sum([embed[2] for embed in self.embed_input])
+            )
+        else:
+            self.emb_out_dim = 0
+
+        # Continuous
+        if self.continuous_cols is not None:
+            self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
+            self.cont_out_dim: int = len(self.continuous_cols)
+            if self.cont_norm_layer == "batchnorm":
+                self.cont_norm: NormLayers = nn.BatchNorm1d(self.cont_out_dim)
+            elif self.cont_norm_layer == "layernorm":
+                self.cont_norm = nn.LayerNorm(self.cont_out_dim)
+            else:
+                self.cont_norm = nn.Identity()
+        else:
+            self.cont_out_dim = 0
+
+        self.output_dim = self.emb_out_dim + self.cont_out_dim
+
+    def forward(self, X: Tensor) -> Tuple[Tensor, Any]:
+        if self.embed_input is not None:
+            embed = [
+                self.embed_layers["emb_layer_" + col](X[:, self.column_idx[col]].long())
+                for col, _, _ in self.embed_input
+            ]
+            x_emb = torch.cat(embed, 1)
+            x_emb = self.embedding_dropout(x_emb)
+        else:
+            x_emb = None
+        if self.continuous_cols is not None:
+            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
+        else:
+            x_cont = None
+
+        return x_emb, x_cont
 
 
 class MLP(nn.Module):
@@ -169,15 +237,15 @@ class TabMlp(nn.Module):
         super(TabMlp, self).__init__()
 
         self.column_idx = column_idx
+        self.embed_input = embed_input
         self.mlp_hidden_dims = mlp_hidden_dims
+        self.embed_dropout = embed_dropout
+        self.continuous_cols = continuous_cols
+        self.cont_norm_layer = cont_norm_layer
         self.mlp_activation = mlp_activation
         self.mlp_dropout = mlp_dropout
         self.mlp_batchnorm = mlp_batchnorm
         self.mlp_linear_first = mlp_linear_first
-        self.embed_input = embed_input
-        self.embed_dropout = embed_dropout
-        self.continuous_cols = continuous_cols
-        self.cont_norm_layer = cont_norm_layer
 
         if self.mlp_activation not in allowed_activations:
             raise ValueError(
@@ -187,35 +255,17 @@ class TabMlp(nn.Module):
                 )
             )
 
-        # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
-        if self.embed_input is not None:
-            self.embed_layers = nn.ModuleDict(
-                {
-                    "emb_layer_" + col: nn.Embedding(val + 1, dim, padding_idx=0)
-                    for col, val, dim in self.embed_input
-                }
-            )
-            self.embedding_dropout = nn.Dropout(embed_dropout)
-            emb_inp_dim = np.sum([embed[2] for embed in self.embed_input])
-        else:
-            emb_inp_dim = 0  # type: ignore[assignment]
-
-        # Continuous
-        if self.continuous_cols is not None:
-            self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
-            cont_inp_dim = len(self.continuous_cols)
-            if self.cont_norm_layer == "batchnorm":
-                self.cont_norm: NormLayers = nn.BatchNorm1d(cont_inp_dim)
-            elif self.cont_norm_layer == "layernorm":
-                self.cont_norm = nn.LayerNorm(cont_inp_dim)
-            else:
-                self.cont_norm = nn.Identity()
-        else:
-            cont_inp_dim = 0
+        self.cat_embed_and_cont = CatEmbeddingsAndCont(
+            column_idx,
+            embed_input,
+            embed_dropout,
+            continuous_cols,
+            cont_norm_layer,
+        )
 
         # MLP
-        input_dim = emb_inp_dim + cont_inp_dim
-        mlp_hidden_dims = [input_dim] + mlp_hidden_dims  # type: ignore[assignment, operator]
+        mlp_input_dim = self.cat_embed_and_cont.output_dim
+        mlp_hidden_dims = [mlp_input_dim] + mlp_hidden_dims
         self.tab_mlp = MLP(
             mlp_hidden_dims,
             mlp_activation,
@@ -228,18 +278,13 @@ class TabMlp(nn.Module):
         # the output_dim attribute will be used as input_dim when "merging" the models
         self.output_dim = mlp_hidden_dims[-1]
 
-    def forward(self, X: Tensor) -> Tensor:  # type: ignore
+    def forward(self, X: Tensor) -> Tensor:
         r"""Forward pass that concatenates the continuous features with the
         embeddings. The result is then passed through a series of dense layers
         """
-        if self.embed_input is not None:
-            embed = [
-                self.embed_layers["emb_layer_" + col](X[:, self.column_idx[col]].long())
-                for col, _, _ in self.embed_input
-            ]
-            x = torch.cat(embed, 1)
-            x = self.embedding_dropout(x)
-        if self.continuous_cols is not None:
-            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
-            x = torch.cat([x, x_cont], 1) if self.embed_input is not None else x_cont
+        x_emb, x_cont = self.cat_embed_and_cont(X)
+        if x_emb is not None:
+            x = x_emb
+        if x_cont is not None:
+            x = torch.cat([x, x_cont], 1) if x_emb is not None else x_cont
         return self.tab_mlp(x)

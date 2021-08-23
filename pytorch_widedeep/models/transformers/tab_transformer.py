@@ -4,10 +4,8 @@ from torch import nn
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import MLP
 from pytorch_widedeep.models.transformers.layers import (
-    SharedEmbeddings,
     TransformerEncoder,
-    ContinuousEmbeddings,
-    FullEmbeddingDropout,
+    CatAndContEmbeddings,
 )
 
 
@@ -63,21 +61,18 @@ class TabTransformer(nn.Module):
         are: 'layernorm', 'batchnorm' or None.
     input_dim: int, default = 32
         The so-called *dimension of the model*. Is the number of embeddings used to encode
-        the categorical columns
+        the categorical and/or continuous columns
     n_heads: int, default = 8
         Number of attention heads per Transformer block
+    use_bias: bool, default = False
+        Boolean indicating whether or not to use bias in the Q, K, and V
+        projection layers
     n_blocks: int, default = 6
         Number of Transformer blocks
     dropout: float, default = 0.1
         Dropout that will be applied internally to the ``TransformerEncoder``
         (see :obj:`pytorch_widedeep.models.transformers.layers.TransformerEncoder`)
         and the output MLP
-    keep_attn_weights: bool, default = False
-        If set to ``True`` the model will store the attention weights in the ``attention_weights``
-        attribute.
-    ff_hidden_dim: int, default = 128
-        Hidden dimension of the ``FeedForward`` Layer. See
-        :obj:`pytorch_widedeep.models.transformers.layers.FeedForward`.
     transformer_activation: str, default = "gelu"
         Transformer Encoder activation function. 'relu', 'leaky_relu', 'gelu'
         and 'geglu' are supported
@@ -108,8 +103,6 @@ class TabTransformer(nn.Module):
         continuous normalization layer
     transformer_blks: ``nn.Sequential``
         Sequence of Transformer blocks
-    attention_weights: List
-        List with the attention weights per block if ``keep_attn_weights = True``.
     transformer_mlp: ``nn.Module``
         MLP component in the model
     output_dim: int
@@ -132,7 +125,7 @@ class TabTransformer(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
-        embed_input: List[Tuple[str, int]],
+        embed_input: Optional[List[Tuple[str, int]]] = None,
         embed_dropout: float = 0.1,
         full_embed_dropout: bool = False,
         shared_embed: bool = False,
@@ -144,10 +137,9 @@ class TabTransformer(nn.Module):
         cont_norm_layer: str = None,
         input_dim: int = 32,
         n_heads: int = 8,
+        use_bias: bool = False,
         n_blocks: int = 6,
         dropout: float = 0.1,
-        keep_attn_weights: bool = False,
-        ff_hidden_dim: int = 32 * 4,
         transformer_activation: str = "gelu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
@@ -170,10 +162,9 @@ class TabTransformer(nn.Module):
         self.cont_norm_layer = cont_norm_layer
         self.input_dim = input_dim
         self.n_heads = n_heads
+        self.use_bias = use_bias
         self.n_blocks = n_blocks
         self.dropout = dropout
-        self.keep_attn_weights = keep_attn_weights
-        self.ff_hidden_dim = ff_hidden_dim
         self.transformer_activation = transformer_activation
         self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation
@@ -181,13 +172,29 @@ class TabTransformer(nn.Module):
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
-        self.with_cls_token = "cls_token" in self.column_idx
-        self.categorical_cols = [ei[0] for ei in self.embed_input]
-        self.n_tokens = sum([ei[1] for ei in self.embed_input])
+        self.with_cls_token = "cls_token" in column_idx
+        self.n_cat = len(embed_input) if embed_input is not None else 0
+        self.n_cont = len(continuous_cols) if continuous_cols is not None else 0
 
-        self._set_categ_embeddings()
+        if self.n_cont and not self.n_cat and not self.embed_continuous:
+            raise ValueError(
+                "If only continuous features are used 'embed_continuous' must be set to 'True'"
+            )
 
-        self._set_cont_cols()
+        self.cat_embed_and_cont = CatAndContEmbeddings(
+            input_dim,
+            column_idx,
+            embed_input,
+            embed_dropout,
+            full_embed_dropout,
+            shared_embed,
+            add_shared_embed,
+            frac_shared_embed,
+            continuous_cols,
+            embed_continuous,
+            embed_continuous_activation,
+            cont_norm_layer,
+        )
 
         self.transformer_blks = nn.Sequential()
         for i in range(n_blocks):
@@ -196,14 +203,11 @@ class TabTransformer(nn.Module):
                 TransformerEncoder(
                     input_dim,
                     n_heads,
-                    keep_attn_weights,
-                    ff_hidden_dim,
+                    use_bias,
                     dropout,
                     transformer_activation,
                 ),
             )
-        if keep_attn_weights:
-            self.attention_weights: List[Any] = [None] * n_blocks
 
         if not mlp_hidden_dims:
             mlp_hidden_dims = self._set_mlp_hidden_dims()
@@ -221,115 +225,58 @@ class TabTransformer(nn.Module):
 
     def forward(self, X: Tensor) -> Tensor:
 
-        if self.shared_embed:
-            x_cat_embed = [
-                self.cat_embed["emb_layer_" + col](
-                    X[:, self.column_idx[col]].long()
-                ).unsqueeze(1)
-                for col, _ in self.embed_input
-            ]
-            x = torch.cat(x_cat_embed, 1)
-        else:
-            x = self.cat_embed(X[:, self.cat_idx].long())
+        x_cat, x_cont = self.cat_embed_and_cont(X)
 
-        if not self.shared_embed and self.embedding_dropout is not None:
-            x = self.embedding_dropout(x)
+        if x_cat is not None:
+            x = x_cat
+        if x_cont is not None and self.embed_continuous:
+            x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
 
-        if self.continuous_cols is not None and self.embed_continuous:
-            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
-            x_cont_embed = self.cont_embed(x_cont)
-            x = torch.cat([x, x_cont_embed], 1)
-
-        for i, blk in enumerate(self.transformer_blks):
-            x = blk(x)
-            if self.keep_attn_weights:
-                if hasattr(blk, "row_attn"):
-                    self.attention_weights[i] = (
-                        blk.self_attn.attn_weights,
-                        blk.row_attn.attn_weights,
-                    )
-                else:
-                    self.attention_weights[i] = blk.self_attn.attn_weights
+        x = self.transformer_blks(x)
 
         if self.with_cls_token:
             x = x[:, 0, :]
         else:
             x = x.flatten(1)
 
-        if self.continuous_cols is not None and not self.embed_continuous:
-            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
+        if x_cont is not None and not self.embed_continuous:
             x = torch.cat([x, x_cont], 1)
 
         return self.transformer_mlp(x)
 
-    def _set_categ_embeddings(self):
-        self.cat_idx = [self.column_idx[col] for col in self.categorical_cols]
-        # Categorical: val + 1 because 0 is reserved for padding/unseen cateogories.
-        if self.shared_embed:
-            self.cat_embed = nn.ModuleDict(
-                {
-                    "emb_layer_"
-                    + col: SharedEmbeddings(
-                        val if col == "cls_token" else val + 1,
-                        self.input_dim,
-                        self.embed_dropout,
-                        self.full_embed_dropout,
-                        self.add_shared_embed,
-                        self.frac_shared_embed,
-                    )
-                    for col, val in self.embed_input
-                }
-            )
-        else:
-            self.cat_embed = nn.Embedding(
-                self.n_tokens + 1, self.input_dim, padding_idx=0
-            )
-            if self.full_embed_dropout:
-                self.embedding_dropout: DropoutLayers = FullEmbeddingDropout(
-                    self.embed_dropout
-                )
-            else:
-                self.embedding_dropout = nn.Dropout(self.embed_dropout)
+    @property
+    def attention_weights(self):
 
-    def _set_cont_cols(self):
-        if self.continuous_cols is not None:
-            self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
-            if self.cont_norm_layer == "layernorm":
-                self.cont_norm: NormLayers = nn.LayerNorm(len(self.continuous_cols))
-            elif self.cont_norm_layer == "batchnorm":
-                self.cont_norm = nn.BatchNorm1d(len(self.continuous_cols))
-            else:
-                self.cont_norm = nn.Identity()
-            if self.embed_continuous:
-                self.cont_embed = ContinuousEmbeddings(
-                    len(self.continuous_cols),
-                    self.input_dim,
-                    self.embed_continuous_activation,
+        attention_weights = []
+
+        for blk in self.transformer_blks:
+            if hasattr(blk, "row_attn"):
+                attention_weights.append(
+                    (blk.col_attn.attn_weights, blk.row_attn.attn_weights)
                 )
+            else:
+                attention_weights.append(blk.attn.attn_weights)
+
+        return attention_weights
 
     def _set_mlp_hidden_dims(self) -> List[int]:
-        if self.continuous_cols is not None:
+
+        if self.n_cat > 0 and self.n_cont > 0:
             if self.with_cls_token:
                 if self.embed_continuous:
-                    mlp_hidden_dims = [
-                        self.input_dim,
-                        self.input_dim * 4,
-                        self.input_dim * 2,
-                    ]
+                    mlp_inp_l = self.input_dim
                 else:
-                    mlp_inp_l = self.input_dim + len(self.continuous_cols)
-                    mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
+                    mlp_inp_l = self.input_dim + self.n_cont
             elif self.embed_continuous:
-                mlp_inp_l = (
-                    len(self.embed_input) + len(self.continuous_cols)
-                ) * self.input_dim
-                mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
+                mlp_inp_l = (self.n_cat + self.n_cont) * self.input_dim
             else:
-                mlp_inp_l = len(self.embed_input) * self.input_dim + len(
-                    self.continuous_cols
-                )
-                mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
+                mlp_inp_l = self.n_cat * self.input_dim + self.n_cont
         else:
-            mlp_inp_l = len(self.embed_input) * self.input_dim
-            mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
+            n_feat = self.n_cat + self.n_cont
+            if self.with_cls_token:
+                mlp_inp_l = self.input_dim
+            else:
+                mlp_inp_l = n_feat * self.input_dim
+        mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
+
         return mlp_hidden_dims

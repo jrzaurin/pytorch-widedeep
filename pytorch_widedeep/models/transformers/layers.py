@@ -23,24 +23,25 @@ import einops
 from torch import nn, einsum
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.tab_mlp import _get_activation_fn
+from pytorch_widedeep.models.tab_mlp import get_activation_fn
 
 
 class PositionwiseFF(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        ff_hidden_dim: int,
         dropout: float,
         activation: str,
+        mult: int = 4,
     ):
         super(PositionwiseFF, self).__init__()
+        ff_hidden_dim = input_dim * mult
         self.w_1 = nn.Linear(
             input_dim, ff_hidden_dim * 2 if activation == "geglu" else ff_hidden_dim
         )
         self.w_2 = nn.Linear(ff_hidden_dim, input_dim)
         self.dropout = nn.Dropout(dropout)
-        self.activation = _get_activation_fn(activation)
+        self.activation = get_activation_fn(activation)
 
     def forward(self, X: Tensor) -> Tensor:
         return self.w_2(self.dropout(self.activation(self.w_1(X))))
@@ -56,42 +57,86 @@ class AddNorm(nn.Module):
         return self.ln(self.dropout(Y) + X)
 
 
+# class MultiHeadedAttention(nn.Module):
+#     def __init__(
+#         self,
+#         input_dim: int,
+#         n_heads: int,
+#         keep_attn_weights: bool,
+#         dropout: float,
+#     ):
+#         super(MultiHeadedAttention, self).__init__()
+
+#         assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
+#         # Consistent with other implementations I assume d_v = d_k
+#         self.d_k = input_dim // n_heads
+#         self.n_heads = n_heads
+#         self.dropout = nn.Dropout(dropout)
+#         self.inp_proj = nn.Linear(input_dim, input_dim * 3)
+#         self.out_proj = nn.Linear(input_dim, input_dim)
+#         self.keep_attn_weights = keep_attn_weights
+
+#     def forward(self, X: Tensor) -> Tensor:
+#         # b: batch size, s: src seq length (num of categorical features
+#         # encoded as embeddings), l: target sequence (l = s), e: embeddings
+#         # dimensions, h: number of attention heads, d: d_k
+#         q, k, v = self.inp_proj(X).chunk(3, dim=2)
+#         q, k, v = map(
+#             lambda t: einops.rearrange(t, "b s (h d) -> b h s d", h=self.n_heads),
+#             (q, k, v),
+#         )
+#         scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.d_k)
+#         attn_weights = self.dropout(scores.softmax(dim=-1))
+#         if self.keep_attn_weights:
+#             self.attn_weights = attn_weights
+#         attn_output = einsum("b h s l, b h l d -> b h s d", attn_weights, v)
+#         output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
+
+#         return self.out_proj(output)
+
+
 class MultiHeadedAttention(nn.Module):
     def __init__(
         self,
         input_dim: int,
         n_heads: int,
-        keep_attn_weights: bool,
+        use_bias: bool,
         dropout: float,
+        kv_dim: Optional[int] = None,
     ):
         super(MultiHeadedAttention, self).__init__()
 
         assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
-        # Consistent with other implementations I assume d_v = d_k
-        self.d_k = input_dim // n_heads
+        self.head_dim = input_dim // n_heads
         self.n_heads = n_heads
-        self.dropout = nn.Dropout(dropout)
-        self.inp_proj = nn.Linear(input_dim, input_dim * 3)
-        self.out_proj = nn.Linear(input_dim, input_dim)
-        self.keep_attn_weights = keep_attn_weights
 
-    def forward(self, X: Tensor) -> Tensor:
-        # b: batch size, s: src seq length (num of categorical features
-        # encoded as embeddings), l: target sequence (l = s), e: embeddings
-        # dimensions, h: number of attention heads, d: d_k
-        q, k, v = self.inp_proj(X).chunk(3, dim=2)
+        self.dropout = nn.Dropout(dropout)
+
+        kv_dim = kv_dim if kv_dim is not None else input_dim
+        self.q_proj = nn.Linear(input_dim, input_dim, bias=use_bias)
+        self.kv_proj = nn.Linear(kv_dim, input_dim * 2, bias=use_bias)
+        self.out_proj = nn.Linear(input_dim, input_dim, bias=use_bias)
+
+    def forward(self, X: Tensor, Y: Optional[Tensor] = None) -> Tensor:
+        # b: batch size
+        # s: "seq length", i.e. num features encoded as embeddings
+        # l: target sequence (l = s),
+        # h: number of attention heads,
+        # d: head_dim
+        q = self.q_proj(X)
+        Y = Y if Y is not None else X
+        k, v = self.kv_proj(Y).chunk(2, dim=-1)
         q, k, v = map(
             lambda t: einops.rearrange(t, "b s (h d) -> b h s d", h=self.n_heads),
             (q, k, v),
         )
-        scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.d_k)
-        attn_weights = self.dropout(scores.softmax(dim=-1))
-        if self.keep_attn_weights:
-            self.attn_weights = attn_weights
+        scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.head_dim)
+        attn_weights = scores.softmax(dim=-1)
+        self.attn_weights = attn_weights
         attn_output = einsum("b h s l, b h l d -> b h s d", attn_weights, v)
         output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
 
-        return self.out_proj(output)
+        return self.dropout(self.out_proj(output))
 
 
 class TransformerEncoder(nn.Module):
@@ -99,25 +144,26 @@ class TransformerEncoder(nn.Module):
         self,
         input_dim: int,
         n_heads: int,
-        keep_attn_weights: bool,
-        ff_hidden_dim: int,
+        use_bias: bool,
         dropout: float,
         activation: str,
+        kv_dim: Optional[int] = None,
     ):
         super(TransformerEncoder, self).__init__()
 
-        self.self_attn = MultiHeadedAttention(
+        self.attn = MultiHeadedAttention(
             input_dim,
             n_heads,
-            keep_attn_weights,
+            use_bias,
             dropout,
+            kv_dim,
         )
-        self.ff = PositionwiseFF(input_dim, ff_hidden_dim, dropout, activation)
+        self.ff = PositionwiseFF(input_dim, dropout, activation)
         self.attn_addnorm = AddNorm(input_dim, dropout)
         self.ff_addnorm = AddNorm(input_dim, dropout)
 
-    def forward(self, X: Tensor) -> Tensor:
-        x = self.attn_addnorm(X, self.self_attn(X))
+    def forward(self, X: Tensor, Y: Optional[Tensor] = None) -> Tensor:
+        x = self.attn_addnorm(X, self.attn(X, Y))
         return self.ff_addnorm(x, self.ff(x))
 
 
@@ -126,8 +172,7 @@ class SaintEncoder(nn.Module):
         self,
         input_dim: int,
         n_heads: int,
-        keep_attn_weights: bool,
-        ff_hidden_dim: int,
+        use_bias: bool,
         dropout: float,
         activation: str,
         n_feat: int,
@@ -136,33 +181,29 @@ class SaintEncoder(nn.Module):
 
         self.n_feat = n_feat
 
-        self.self_attn = MultiHeadedAttention(
+        self.col_attn = MultiHeadedAttention(
             input_dim,
             n_heads,
-            keep_attn_weights,
+            use_bias,
             dropout,
         )
-        self.self_attn_ff = PositionwiseFF(
-            input_dim, ff_hidden_dim, dropout, activation
-        )
-        self.self_attn_addnorm = AddNorm(input_dim, dropout)
-        self.self_attn_ff_addnorm = AddNorm(input_dim, dropout)
+        self.col_attn_ff = PositionwiseFF(input_dim, dropout, activation)
+        self.col_attn_addnorm = AddNorm(input_dim, dropout)
+        self.col_attn_ff_addnorm = AddNorm(input_dim, dropout)
 
         self.row_attn = MultiHeadedAttention(
             n_feat * input_dim,
             n_heads,
-            keep_attn_weights,
+            use_bias,
             dropout,
         )
-        self.row_attn_ff = PositionwiseFF(
-            n_feat * input_dim, n_feat * ff_hidden_dim, dropout, activation
-        )
+        self.row_attn_ff = PositionwiseFF(n_feat * input_dim, dropout, activation)
         self.row_attn_addnorm = AddNorm(n_feat * input_dim, dropout)
         self.row_attn_ff_addnorm = AddNorm(n_feat * input_dim, dropout)
 
     def forward(self, X: Tensor) -> Tensor:
-        x = self.self_attn_addnorm(X, self.self_attn(X))
-        x = self.self_attn_ff_addnorm(x, self.self_attn_ff(x))
+        x = self.col_attn_addnorm(X, self.col_attn(X))
+        x = self.col_attn_ff_addnorm(x, self.col_attn_ff(x))
         x = einops.rearrange(x, "b n d -> 1 b (n d)")
         x = self.row_attn_addnorm(x, self.row_attn(x))
         x = self.row_attn_ff_addnorm(x, self.row_attn_ff(x))
@@ -236,7 +277,7 @@ class ContinuousEmbeddings(nn.Module):
         self.bias = nn.Parameter(torch.Tensor(n_cont_cols, embed_dim)) if bias else None
         self._reset_parameters()
 
-        self.act_fn = _get_activation_fn(activation) if activation else None
+        self.act_fn = get_activation_fn(activation) if activation else None
 
     def _reset_parameters(self) -> None:
         nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
@@ -255,3 +296,111 @@ class ContinuousEmbeddings(nn.Module):
             x = self.act_fn(x)
 
         return x
+
+
+class CatAndContEmbeddings(nn.Module):
+    def __init__(
+        self,
+        input_dim: int,
+        column_idx: Dict[str, int],
+        embed_input: Optional[List[Tuple[str, int]]],
+        embed_dropout: float,
+        full_embed_dropout: bool,
+        shared_embed: bool,
+        add_shared_embed: bool,
+        frac_shared_embed: float,
+        continuous_cols: Optional[List[str]],
+        embed_continuous: bool,
+        embed_continuous_activation: str,
+        cont_norm_layer: str,
+    ):
+        super(CatAndContEmbeddings, self).__init__()
+
+        self.input_dim = input_dim
+        self.column_idx = column_idx
+        self.embed_input = embed_input
+        self.embed_dropout = embed_dropout
+        self.full_embed_dropout = full_embed_dropout
+        self.shared_embed = shared_embed
+        self.add_shared_embed = add_shared_embed
+        self.frac_shared_embed = frac_shared_embed
+        self.continuous_cols = continuous_cols
+        self.embed_continuous = embed_continuous
+        self.embed_continuous_activation = embed_continuous_activation
+        self.cont_norm_layer = cont_norm_layer
+
+        # Categorical
+        if self.embed_dim is not None:
+            self.categorical_cols = [ei[0] for ei in self.embed_input]
+            self.n_tokens = sum([ei[1] for ei in self.embed_input])
+            self.cat_idx = [self.column_idx[col] for col in self.categorical_cols]
+            # Categorical: val + 1 because 0 is reserved for padding/unseen cateogories.
+            if self.shared_embed:
+                self.cat_embed: Union[nn.ModuleDict, nn.Embedding] = nn.ModuleDict(
+                    {
+                        "emb_layer_"
+                        + col: SharedEmbeddings(
+                            val if col == "cls_token" else val + 1,
+                            self.input_dim,
+                            self.embed_dropout,
+                            self.full_embed_dropout,
+                            self.add_shared_embed,
+                            self.frac_shared_embed,
+                        )
+                        for col, val in self.embed_input
+                    }
+                )
+            else:
+                self.cat_embed = nn.Embedding(
+                    self.n_tokens + 1, self.input_dim, padding_idx=0
+                )
+                if self.full_embed_dropout:
+                    self.embedding_dropout: DropoutLayers = FullEmbeddingDropout(
+                        self.embed_dropout
+                    )
+                else:
+                    self.embedding_dropout = nn.Dropout(self.embed_dropout)
+
+        # Continuous
+        if self.continuous_cols is not None:
+            self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
+            if self.cont_norm_layer == "layernorm":
+                self.cont_norm: NormLayers = nn.LayerNorm(len(self.continuous_cols))
+            elif self.cont_norm_layer == "batchnorm":
+                self.cont_norm = nn.BatchNorm1d(len(self.continuous_cols))
+            else:
+                self.cont_norm = nn.Identity()
+            if self.embed_continuous:
+                self.cont_embed = ContinuousEmbeddings(
+                    len(self.continuous_cols),
+                    self.input_dim,
+                    self.embed_continuous_activation,
+                )
+
+    def forward(self, X: Tensor) -> Tuple[Tensor, Any]:
+
+        if self.embed_input is not None:
+            if self.shared_embed:
+                cat_embed = [
+                    self.cat_embed["emb_layer_" + col](  # type: ignore[index]
+                        X[:, self.column_idx[col]].long()
+                    ).unsqueeze(1)
+                    for col, _ in self.embed_input
+                ]
+                x_cat = torch.cat(cat_embed, 1)
+            else:
+                x_cat = self.cat_embed(X[:, self.cat_idx].long())
+
+            if not self.shared_embed and self.embedding_dropout is not None:
+                x_cat = self.embedding_dropout(x_cat)
+        else:
+            x_cat = None
+
+        if self.continuous_cols is not None:
+            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
+            if self.embed_continuous:
+                x_cont = self.cont_embed(x_cont)
+        else:
+            x_cont = None
+
+        return x_cat, x_cont

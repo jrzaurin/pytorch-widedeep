@@ -54,21 +54,18 @@ class SAINT(TabTransformer):
         are not embedded. Options are: 'layernorm' or 'batchnorm'.
     input_dim: int, default = 32
         The so-called *dimension of the model*. Is the number of embeddings used to encode
-        the categorical columns
+        the categorical and/or continuous columns
     n_heads: int, default = 8
         Number of attention heads per Transformer block
+    use_bias: bool, default = False
+        Boolean indicating whether or not to use bias in the Q, K, and V
+        projection layers
     n_blocks: int, default = 6
         Number of Transformer blocks
     dropout: float, default = 0.1
         Dropout that will be applied internally to the ``TransformerEncoder``
         (see :obj:`pytorch_widedeep.models.transformers.layers.TransformerEncoder`)
         and the output MLP
-    keep_attn_weights: bool, default = False
-        If set to ``True`` the model will store the attention weights in the ``attention_weights``
-        attribute.
-    ff_hidden_dim: int, default = 128
-        Hidden dimension of the ``FeedForward`` Layer. See
-        :obj:`pytorch_widedeep.models.transformers.layers.FeedForward`.
     transformer_activation: str, default = "gelu"
         Transformer Encoder activation function. 'relu', 'leaky_relu', 'gelu'
         and 'geglu' are supported
@@ -98,12 +95,6 @@ class SAINT(TabTransformer):
         Continuous normalization layer if ``continuous_cols`` is not None
     transformer_blks: ``nn.Sequential``
         Sequence of Transformer blocks
-    attention_weights: List
-        List of tuples with the attention weights per block if
-        ``keep_attn_weights = True``. The first element in each tuples is the
-        attention weights corresponding to the self attention mechanism
-        (i.e. column attention) and the second element is the inter-sample
-        attention weights (i.e. row attention)
     transformer_mlp: ``nn.Module``
         MLP component in the model
     output_dim: int
@@ -137,12 +128,11 @@ class SAINT(TabTransformer):
         embed_continuous_activation: str = None,
         cont_norm_layer: str = "layernorm",
         input_dim: int = 32,
+        use_bias: bool = False,
         n_heads: int = 8,
         n_blocks: int = 6,
         dropout: float = 0.1,
-        keep_attn_weights: bool = False,
-        ff_hidden_dim: int = 32 * 4,
-        transformer_activation: str = "gelu",
+        transformer_activation: str = "geglu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
         mlp_batchnorm: bool = False,
@@ -163,10 +153,9 @@ class SAINT(TabTransformer):
             cont_norm_layer,
             input_dim,
             n_heads,
+            use_bias,
             n_blocks,
             dropout,
-            keep_attn_weights,
-            ff_hidden_dim,
             transformer_activation,
             mlp_hidden_dims,
             mlp_activation,
@@ -175,10 +164,6 @@ class SAINT(TabTransformer):
             mlp_linear_first,
         )
 
-        if embed_continuous:
-            n_feats = len(embed_input) + len(continuous_cols)
-        else:
-            n_feats = len(embed_input)
         self.transformer_blks = nn.Sequential()
         for i in range(n_blocks):
             self.transformer_blks.add_module(
@@ -186,10 +171,9 @@ class SAINT(TabTransformer):
                 SaintEncoder(
                     input_dim,
                     n_heads,
-                    keep_attn_weights,
-                    ff_hidden_dim,
+                    use_bias,
                     dropout,
                     transformer_activation,
-                    n_feats,
+                    self.n_cat + self.n_cont,
                 ),
             )
