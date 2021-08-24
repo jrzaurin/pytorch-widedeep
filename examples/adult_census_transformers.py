@@ -3,8 +3,13 @@ import torch
 import pandas as pd
 
 from pytorch_widedeep import Trainer
-from pytorch_widedeep.optim import RAdam
-from pytorch_widedeep.models import SAINT, Wide, WideDeep, TabTransformer
+from pytorch_widedeep.models import (
+    SAINT,
+    Wide,
+    WideDeep,
+    Perceiver,
+    TabTransformer,
+)
 from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.callbacks import (
     LRHistory,
@@ -74,12 +79,22 @@ if __name__ == "__main__":
         cont_norm_layer="batchnorm",
     )
 
-    for tab_model in [tab_transformer, saint]:
+    perceiver = Perceiver(
+        column_idx=prepare_deep.column_idx,
+        embed_input=prepare_deep.embeddings_input,
+        continuous_cols=continuous_cols,
+        n_latents=6,
+        latent_dim=32,
+        n_perceiver_blocks=2,
+        share_weights=False,
+    )
+
+    for tab_model in [tab_transformer, saint, perceiver]:
 
         model = WideDeep(wide=wide, deeptabular=tab_model)
 
         wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
-        deep_opt = RAdam(model.deeptabular.parameters())
+        deep_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
         wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=3)
         deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=5)
 

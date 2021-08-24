@@ -10,7 +10,7 @@ from pytorch_widedeep.models.transformers.layers import (
 )
 
 
-class Perceiver(object):
+class Perceiver(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
@@ -25,12 +25,12 @@ class Perceiver(object):
         cont_norm_layer: str = None,
         input_dim: int = 32,
         n_cross_attns: int = 1,
-        n_cross_attn_heads: int = 8,
+        n_cross_attn_heads: int = 4,
         n_latents: int = 16,
         latent_dim: int = 128,
-        n_latent_heads: int = 8,
-        n_latent_blocks: int = 6,
-        n_perceiver_blocks: int = 6,
+        n_latent_heads: int = 4,
+        n_latent_blocks: int = 4,
+        n_perceiver_blocks: int = 4,
         share_weights: bool = True,
         dropout: float = 0.1,
         transformer_activation: str = "geglu",
@@ -95,14 +95,16 @@ class Perceiver(object):
 
         self.perceiver_blks = nn.ModuleDict()
         first_perceiver_block = self._build_perceiver_block()
-        self.perceiver_blks["block0"] = first_perceiver_block
+        self.perceiver_blks["perceiver_block0"] = first_perceiver_block
 
         if share_weights:
             for n in range(1, n_perceiver_blocks):
-                self.perceiver_blks["block" + str(n)] = first_perceiver_block
+                self.perceiver_blks["perceiver_block" + str(n)] = first_perceiver_block
         else:
             for n in range(1, n_perceiver_blocks):
-                self.perceiver_blks["block" + str(n)] = self._build_perceiver_block()
+                self.perceiver_blks[
+                    "perceiver_block" + str(n)
+                ] = self._build_perceiver_block()
 
         if not mlp_hidden_dims:
             mlp_hidden_dims = [latent_dim, latent_dim * 4, latent_dim * 2]
@@ -120,35 +122,52 @@ class Perceiver(object):
 
     def forward(self, X: Tensor) -> Tensor:
 
+        x_cat, x_cont = self.cat_embed_and_cont(X)
+        x_emb = torch.cat([x_cat, x_cont], 1)
+
         x = einops.repeat(self.latents, "n d -> b n d", b=X.shape[0])
 
         for n in range(self.n_perceiver_blocks):
-            cross_attns, latent_transformer = self.perceiver_blks["block" + str(n)]
+            cross_attns = self.perceiver_blks["perceiver_block" + str(n)]["cross_attns"]
+            latent_transformer = self.perceiver_blks["perceiver_block" + str(n)][
+                "latent_transformer"
+            ]
             for cross_attn in cross_attns:
-                x = cross_attns(X, x)
+                x = cross_attn(x, x_emb)
             x = latent_transformer(x)
+
+        # average along the latent index axis
+        x = x.mean(dim=1)
 
         return self.perceiver_mlp(x)
 
     @property
     def attention_weights(self):
         if self.share_weights:
-            cross_attns, latent_transformer = self.perceiver_blks["block0"]
+            cross_attns = self.perceiver_blks["perceiver_block0"]["cross_attns"]
+            latent_transformer = self.perceiver_blks["perceiver_block0"][
+                "latent_transformer"
+            ]
             attention_weights = self._extract_attn_weights(
                 cross_attns, latent_transformer
             )
         else:
             attention_weights = []
             for n in range(self.n_perceiver_blocks):
-                cross_attns, latent_transformer = self.perceiver_blks["block" + str(n)]
+                cross_attns = self.perceiver_blks["perceiver_block" + str(n)][
+                    "cross_attns"
+                ]
+                latent_transformer = self.perceiver_blks["perceiver_block" + str(n)][
+                    "latent_transformer"
+                ]
                 attention_weights.append(
                     self._extract_attn_weights(cross_attns, latent_transformer)
                 )
         return attention_weights
 
-    def _build_perceiver_block(self) -> nn.ModuleList:
+    def _build_perceiver_block(self) -> nn.ModuleDict:
 
-        perceiver_block = nn.ModuleList()
+        perceiver_block = nn.ModuleDict()
 
         # Cross Attention
         cross_attns = nn.ModuleList()
@@ -160,25 +179,25 @@ class Perceiver(object):
                     False,  # use_bias
                     self.dropout,
                     self.transformer_activation,
-                    self.latent_dim,  # kv_dim,
+                    self.latent_dim,  # q_dim,
                 ),
             )
-        perceiver_block.append(cross_attns)
+        perceiver_block["cross_attns"] = cross_attns
 
         # Latent Transformer
         latent_transformer = nn.Sequential()
         for i in range(self.n_latent_blocks):
             latent_transformer.add_module(
-                "block" + str(i),
+                "latent_block" + str(i),
                 TransformerEncoder(
-                    self.latent_dim,
+                    self.latent_dim,  # input_dim
                     self.n_latent_heads,
                     False,  # use_bias
                     self.dropout,
                     self.transformer_activation,
                 ),
             )
-        perceiver_block.append(latent_transformer)
+        perceiver_block["latent_transformer"] = latent_transformer
 
         return perceiver_block
 

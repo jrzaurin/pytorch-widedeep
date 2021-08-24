@@ -6,4 +6,5 @@ from pytorch_widedeep.models.deep_image import DeepImage
 from pytorch_widedeep.models.tab_resnet import TabResnet
 from pytorch_widedeep.models.tabnet.tab_net import TabNet
 from pytorch_widedeep.models.transformers.saint import SAINT
+from pytorch_widedeep.models.transformers.perceiver import Perceiver
 from pytorch_widedeep.models.transformers.tab_transformer import TabTransformer
