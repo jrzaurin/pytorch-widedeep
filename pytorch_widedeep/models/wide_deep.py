@@ -1,3 +1,15 @@
+"""
+During the development of the package I realised that there is a typing
+inconsistency. The input components of a Wide and Deep model are of type
+nn.Module. These change type internally to nn.Sequential. While nn.Sequential
+is an instance of nn.Module the oppossite is, of course, not true. This does
+not affect any funcionality of the package, but it is something that needs
+fixing. However, while fixing is simple (simply define new attributes that
+are the nn.Sequential objects), its implications are quite wide within the
+package (involves changing a number of tests and tutorials). Therefore, I
+will introduce that fix when I do a major release. For now, we live with it.
+"""
+
 import warnings
 
 import torch

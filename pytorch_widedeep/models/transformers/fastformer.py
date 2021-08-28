@@ -1,17 +1,13 @@
-import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.tab_mlp import MLP
-from pytorch_widedeep.models.transformers.layers import (
-    TransformerEncoder,
-    CatAndContEmbeddings,
-)
+from pytorch_widedeep.models.transformers.layers import FastFormerEncoder
+from pytorch_widedeep.models.transformers.tab_transformer import TabTransformer
 
 
-class TabTransformer(nn.Module):
-    r"""Adaptation of TabTransformer model
-    (https://arxiv.org/abs/2012.06678) model that can be used as the
+class FastFormer(TabTransformer):
+    r"""Adaptation of FastFormer model
+    (https://arxiv.org/abs/2108.09084) model that can be used as the
     deeptabular component of a Wide & Deep model.
 
     Parameters
@@ -73,6 +69,13 @@ class TabTransformer(nn.Module):
         Dropout that will be applied internally to the ``TransformerEncoder``
         (see :obj:`pytorch_widedeep.models.transformers.layers.TransformerEncoder`)
         and the output MLP
+    share_qv_weights: bool, default = True
+        Following the original publication, this is a boolean indicating if
+        the the value and query transformation parameters will be shared
+    share_weights: bool, default = True
+        In addition to sharing the value and query transformation parameters,
+        the parameters across different Fastformer layers are also shared in
+        the paper.
     transformer_activation: str, default = "gelu"
         Transformer Encoder activation
         function. 'tanh', 'relu', 'leaky_relu', 'gelu' and 'geglu' are
@@ -106,6 +109,11 @@ class TabTransformer(nn.Module):
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
 
+    Properties
+    -----------
+    attention_weights: List
+        List with the attention weights
+
     Example
     --------
     >>> import torch
@@ -129,7 +137,7 @@ class TabTransformer(nn.Module):
         add_shared_embed: bool = False,
         frac_shared_embed: float = 0.25,
         continuous_cols: Optional[List[str]] = None,
-        embed_continuous: bool = False,
+        embed_continuous: bool = True,
         embed_continuous_activation: str = None,
         cont_norm_layer: str = None,
         input_dim: int = 32,
@@ -137,6 +145,8 @@ class TabTransformer(nn.Module):
         use_bias: bool = False,
         n_blocks: int = 6,
         dropout: float = 0.1,
+        share_qv_weights: bool = True,
+        share_weights: bool = True,
         transformer_activation: str = "gelu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
@@ -144,42 +154,7 @@ class TabTransformer(nn.Module):
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = True,
     ):
-        super(TabTransformer, self).__init__()
-
-        self.column_idx = column_idx
-        self.embed_input = embed_input
-        self.embed_dropout = embed_dropout
-        self.full_embed_dropout = full_embed_dropout
-        self.shared_embed = shared_embed
-        self.add_shared_embed = add_shared_embed
-        self.frac_shared_embed = frac_shared_embed
-        self.continuous_cols = continuous_cols
-        self.embed_continuous = embed_continuous
-        self.embed_continuous_activation = embed_continuous_activation
-        self.cont_norm_layer = cont_norm_layer
-        self.input_dim = input_dim
-        self.n_heads = n_heads
-        self.use_bias = use_bias
-        self.n_blocks = n_blocks
-        self.dropout = dropout
-        self.transformer_activation = transformer_activation
-        self.mlp_hidden_dims = mlp_hidden_dims
-        self.mlp_activation = mlp_activation
-        self.mlp_batchnorm = mlp_batchnorm
-        self.mlp_batchnorm_last = mlp_batchnorm_last
-        self.mlp_linear_first = mlp_linear_first
-
-        self.with_cls_token = "cls_token" in column_idx
-        self.n_cat = len(embed_input) if embed_input is not None else 0
-        self.n_cont = len(continuous_cols) if continuous_cols is not None else 0
-
-        if self.n_cont and not self.n_cat and not self.embed_continuous:
-            raise ValueError(
-                "If only continuous features are used 'embed_continuous' must be set to 'True'"
-            )
-
-        self.cat_embed_and_cont = CatAndContEmbeddings(
-            input_dim,
+        super().__init__(
             column_idx,
             embed_input,
             embed_dropout,
@@ -191,79 +166,46 @@ class TabTransformer(nn.Module):
             embed_continuous,
             embed_continuous_activation,
             cont_norm_layer,
-        )
-
-        self.transformer_blks = nn.Sequential()
-        for i in range(n_blocks):
-            self.transformer_blks.add_module(
-                "transformer_block" + str(i),
-                TransformerEncoder(
-                    input_dim,
-                    n_heads,
-                    use_bias,
-                    dropout,
-                    transformer_activation,
-                ),
-            )
-
-        if not mlp_hidden_dims:
-            mlp_hidden_dims = self._set_mlp_hidden_dims()
-        self.transformer_mlp = MLP(
+            input_dim,
+            n_heads,
+            use_bias,
+            n_blocks,
+            dropout,
+            transformer_activation,
             mlp_hidden_dims,
             mlp_activation,
-            dropout,
             mlp_batchnorm,
             mlp_batchnorm_last,
             mlp_linear_first,
         )
 
-        # the output_dim attribute will be used as input_dim when "merging" the models
-        self.output_dim = mlp_hidden_dims[-1]
+        self.share_qv_weights = share_qv_weights
+        self.share_weights = share_weights
 
-    def forward(self, X: Tensor) -> Tensor:
-
-        x_cat, x_cont = self.cat_embed_and_cont(X)
-
-        if x_cat is not None:
-            x = x_cat
-        if x_cont is not None and self.embed_continuous:
-            x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
-
-        x = self.transformer_blks(x)
-
-        if self.with_cls_token:
-            x = x[:, 0, :]
-        else:
-            x = x.flatten(1)
-
-        if x_cont is not None and not self.embed_continuous:
-            x = torch.cat([x, x_cont], 1)
-
-        return self.transformer_mlp(x)
-
-    @property
-    def attention_weights(self) -> List:
-        r"""List with the attention weights"""
-        return [blk.attn.attn_weights for blk in self.transformer_blks]
-
-    def _set_mlp_hidden_dims(self) -> List[int]:
-
-        if self.n_cat > 0 and self.n_cont > 0:
-            if self.with_cls_token:
-                if self.embed_continuous:
-                    mlp_inp_l = self.input_dim
-                else:
-                    mlp_inp_l = self.input_dim + self.n_cont
-            elif self.embed_continuous:
-                mlp_inp_l = (self.n_cat + self.n_cont) * self.input_dim
+        self.transformer_blks = nn.Sequential()
+        first_fastformer_block = FastFormerEncoder(
+            input_dim,
+            n_heads,
+            use_bias,
+            dropout,
+            share_qv_weights,
+            transformer_activation,
+        )
+        self.transformer_blks.add_module("fastformer_block0", first_fastformer_block)
+        for i in range(1, n_blocks):
+            if share_weights:
+                self.transformer_blks.add_module(
+                    "fastformer_block" + str(i), first_fastformer_block
+                )
             else:
-                mlp_inp_l = self.n_cat * self.input_dim + self.n_cont
-        else:
-            n_feat = self.n_cat + self.n_cont
-            if self.with_cls_token:
-                mlp_inp_l = self.input_dim
-            else:
-                mlp_inp_l = n_feat * self.input_dim
-        mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
-
-        return mlp_hidden_dims
+                self.transformer_blks.add_module(
+                    "fastformer_block" + str(i),
+                    FastFormerEncoder(
+                        input_dim,
+                        n_heads,
+                        use_bias,
+                        dropout,
+                        share_qv_weights,
+                        transformer_activation,
+                    ),
+                )

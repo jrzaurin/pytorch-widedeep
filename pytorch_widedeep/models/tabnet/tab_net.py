@@ -3,7 +3,10 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import CatEmbeddingsAndCont
-from pytorch_widedeep.models.tabnet.layers import TabNetEncoder
+from pytorch_widedeep.models.tabnet.layers import (
+    TabNetEncoder,
+    initialize_non_glu,
+)
 
 
 class TabNet(nn.Module):
@@ -69,8 +72,8 @@ class TabNet(nn.Module):
 
     Attributes
     ----------
-    embed_and_cont: ``nn.ModuleDict``
-        ``ModuleDict`` with the embeddings and continuous setup
+    cat_embed_and_cont: ``nn.Module``
+        Module that processese the categorical and continuous columns
     embed_and_cont_dim: int
         embeddings plus continuous dimension
     output_dim: int
@@ -139,8 +142,9 @@ class TabNet(nn.Module):
             cont_norm_layer,
         )
 
+        self.embed_and_cont_dim = self.cat_embed_and_cont.output_dim
         self.tabnet_encoder = TabNetEncoder(
-            self.cat_embed_and_cont.output_dim,
+            self.embed_and_cont_dim,
             n_steps,
             step_dim,
             attn_dim,
@@ -170,7 +174,13 @@ class TabNet(nn.Module):
         return (res, M_loss)
 
     def forward_masks(self, X: Tensor) -> Tuple[Tensor, Dict[int, Tensor]]:
-        x = self.cat_embed_and_cont(X)
+
+        x_emb, x_cont = self.cat_embed_and_cont(X)
+        if x_emb is not None:
+            x = x_emb
+        if x_cont is not None:
+            x = torch.cat([x, x_cont], 1) if x_emb is not None else x_cont
+
         return self.tabnet_encoder.forward_masks(x)
 
 

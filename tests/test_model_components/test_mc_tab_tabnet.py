@@ -38,7 +38,7 @@ model1 = TabNet(
 
 def test_embeddings_have_padding():
     res = []
-    for k, v in model1.embed_and_cont.embed_layers.items():
+    for k, v in model1.cat_embed_and_cont.embed_layers.items():
         res.append(v.weight.size(0) == n_embed + 1)
         res.append(not torch.all(v.weight[0].bool()))
     assert all(res)

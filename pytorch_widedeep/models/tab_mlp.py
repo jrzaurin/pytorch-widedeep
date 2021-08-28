@@ -39,7 +39,7 @@ def dense_layer(
     if activation == "geglu":
         raise ValueError(
             "'geglu' activation is only used as 'transformer_activation' "
-            "in transformer-based models (TabTransformer and SAINT)"
+            "in transformer-based models"
         )
     act_fn = get_activation_fn(activation)
     layers = [nn.BatchNorm1d(out if linear_first else inp)] if bn else []
@@ -75,8 +75,6 @@ class CatEmbeddingsAndCont(nn.Module):
                 }
             )
             self.embedding_dropout = nn.Dropout(embed_dropout)
-            # this is an int, but new version of numpy introduced some
-            # (annoying) incompatibilities so I have to use int()
             self.emb_out_dim: int = int(
                 np.sum([embed[2] for embed in self.embed_input])
             )
@@ -179,7 +177,7 @@ class TabMlp(nn.Module):
         List with the number of neurons per dense layer in the mlp.
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        'relu', 'leaky_relu' and 'gelu' are supported
+        'tanh', relu', 'leaky_relu' and 'gelu' are supported
     mlp_dropout: float or List, default = 0.1
         float or List of floats with the dropout between the dense layers.
         e.g: [0.5,0.5]
@@ -196,13 +194,11 @@ class TabMlp(nn.Module):
 
     Attributes
     ----------
-    cont_norm: ``nn.Module``
-        continuous normalization layer
+    cat_embed_and_cont: ``nn.Module``
+        Module that processese the categorical and continuous columns
     tab_mlp: ``nn.Sequential``
         mlp model that will receive the concatenation of the embeddings and
         the continuous columns
-    embed_layers: ``nn.ModuleDict``
-        ``ModuleDict`` with the embeddings set up
     output_dim: int
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class

@@ -11,6 +11,132 @@ from pytorch_widedeep.models.transformers.layers import (
 
 
 class Perceiver(nn.Module):
+    r"""Adaptation of the Perceiver model
+    (https://arxiv.org/abs/2103.03206) model that can be used as the
+    deeptabular component of a Wide & Deep model.
+
+    Parameters
+    ----------
+    column_idx: Dict
+        Dict containing the index of the columns that will be passed through
+        the DeepDense model. Required to slice the tensors. e.g. {'education':
+        0, 'relationship': 1, 'workclass': 2, ...}
+    embed_input: List
+        List of Tuples with the column name and number of unique values
+        e.g. [(education, 11), ...]
+    embed_dropout: float, default = 0.1
+        Dropout to be applied to the embeddings matrix
+    full_embed_dropout: bool, default = False
+        Boolean indicating if an entire embedding (i.e. the representation of
+        one column) will be dropped in the batch. See:
+        :obj:`pytorch_widedeep.models.transformers.layers.FullEmbeddingDropout`.
+        If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
+    shared_embed: bool, default = False
+        The idea behind ``shared_embed`` is described in the Appendix A in the paper:
+        `'The goal of having column embedding is to enable the model to distinguish the
+        classes in one column from those in the other columns'`. In other words, the idea
+        is to let the model learn which column is embedding at the time.
+    add_shared_embed: bool, default = False,
+        The two embedding sharing strategies are: 1) add the shared embeddings to the column
+        embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
+        embeddings. See :obj:`pytorch_widedeep.models.transformers.layers.SharedEmbeddings`
+    frac_shared_embed: float, default = 0.25
+        The fraction of embeddings that will be shared by all the different categories for
+        one particular column.
+    continuous_cols: List, Optional, default = None
+        List with the name of the numeric (aka continuous) columns
+    embed_continuous_activation: str, default = None
+        String indicating the activation function to be applied to the
+        continuous embeddings, if any.
+        'tanh', 'relu', 'leaky_relu' and 'gelu' are supported.
+    cont_norm_layer: str, default =  None,
+        Type of normalization layer applied to the continuous features. Options
+        are: 'layernorm', 'batchnorm' or None.
+    input_dim: int, default = 32
+        The so-called *dimension of the model*. In general, is the number of
+        embeddings used to encode the categorical and/or continuous columns.
+    n_cross_attns: int, default = 1
+        Number of times each perceiver block will cross attend to the input
+        data (i.e. number of cross attention components per perceiver block)
+    n_cross_attn_heads: int, default = 4
+        Number of attention heads for the cross attention component
+    n_latents: int, default = 16
+        Number of latents
+    latent_dim: int, default = 128
+        Latent dimension
+    n_latent_heads: int, default = 4
+        Number of attention heads per Latent Transformer
+    n_latent_blocks: int, default = 4
+        Number of transformer encoder blocks (normalised multi-head attn +
+        normalised feed forward) per Latent Transformer
+    n_perceiver_blocks: int, default = 4
+        Number of Perceiver blocks defined as [Cross Attention -> Latent
+        Transformer]
+    share_weights: Boolean, default = True
+        Boolean indicating if the weights will be shared between Perceiver
+        blocks
+    dropout: float, default = 0.1
+        Dropout that will be applied internally to the ``TransformerEncoder``
+        (see :obj:`pytorch_widedeep.models.transformers.layers.TransformerEncoder`)
+        and the output MLP
+    transformer_activation: str, default = "gelu"
+        Transformer Encoder activation
+        function. 'tanh', 'relu', 'leaky_relu', 'gelu' and 'geglu' are
+        supported
+    mlp_hidden_dims: List, Optional, default = None
+        MLP hidden dimensions. If not provided it will default to ``[4*l,
+        2*l]`` where ``l`` is the mlp input dimension
+    mlp_activation: str, default = "relu"
+        MLP activation function. 'tanh', 'relu', 'leaky_relu' and 'gelu' are
+        supported
+    mlp_batchnorm: bool, default = False
+        Boolean indicating whether or not to apply batch normalization to the
+        dense layers
+    mlp_batchnorm_last: bool, default = False
+        Boolean indicating whether or not to apply batch normalization to the
+        last of the dense layers
+    mlp_linear_first: bool, default = False
+        Boolean indicating whether the order of the operations in the dense
+        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+        LIN -> ACT]``
+
+    Attributes
+    ----------
+    cat_embed_and_cont: ``nn.Module``
+        Module that processese the categorical and continuous columns
+    perceiver_blks: ``nn.ModuleDict``
+        ModuleDict with the Perceiver blocks
+    latents: ``nn.Parameter``
+        Latents that will be used for prediction
+    perceiver_mlp: ``nn.Module``
+        MLP component in the model
+    output_dim: int
+        The output dimension of the model. This is a required attribute
+        neccesary to build the WideDeep class
+
+    Properties
+    -----------
+    attention_weights: List
+        List with the attention weights. If the weights are not shared between
+        perceiver blocks each element of the list will be a list itself
+        containing the cross attention and latent transformer attention
+        weights respectively
+
+    Example
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import Perceiver
+    >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
+    >>> colnames = ['a', 'b', 'c', 'd', 'e']
+    >>> embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
+    >>> continuous_cols = ['e']
+    >>> column_idx = {k:v for v,k in enumerate(colnames)}
+    >>> model = Perceiver(column_idx=column_idx, embed_input=embed_input,
+    ... continuous_cols=continuous_cols, n_latents=2, latent_dim=16,
+    ... n_perceiver_blocks=2)
+    >>> out = model(X_tab)
+    """
+
     def __init__(
         self,
         column_idx: Dict[str, int],
@@ -74,6 +200,10 @@ class Perceiver(nn.Module):
                 mlp_hidden_dims[0] == latent_dim
             ), "The first mlp input dim must be equal to 'latent_dim'"
 
+        # This should be named 'cat_and_cont_embed' since the continuous cols
+        # will always be embedded for the Perceiver. However is very
+        # convenient for other funcionalities to name
+        # it 'cat_embed_and_cont'
         self.cat_embed_and_cont = CatAndContEmbeddings(
             input_dim,
             column_idx,
@@ -107,9 +237,9 @@ class Perceiver(nn.Module):
                 ] = self._build_perceiver_block()
 
         if not mlp_hidden_dims:
-            mlp_hidden_dims = [latent_dim, latent_dim * 4, latent_dim * 2]
+            self.mlp_hidden_dims = [latent_dim, latent_dim * 4, latent_dim * 2]
         self.perceiver_mlp = MLP(
-            mlp_hidden_dims,
+            self.mlp_hidden_dims,
             mlp_activation,
             dropout,
             mlp_batchnorm,
@@ -118,7 +248,7 @@ class Perceiver(nn.Module):
         )
 
         # the output_dim attribute will be used as input_dim when "merging" the models
-        self.output_dim = mlp_hidden_dims[-1]
+        self.output_dim = self.mlp_hidden_dims[-1]
 
     def forward(self, X: Tensor) -> Tensor:
 

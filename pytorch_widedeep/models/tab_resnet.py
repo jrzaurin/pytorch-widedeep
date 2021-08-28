@@ -9,6 +9,7 @@ from pytorch_widedeep.models.tab_mlp import MLP, CatEmbeddingsAndCont
 
 
 class BasicBlock(nn.Module):
+    # inspired by https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py#L37
     def __init__(self, inp: int, out: int, dropout: float = 0.0, resize: Module = None):
         super(BasicBlock, self).__init__()
 
@@ -129,7 +130,8 @@ class TabResnet(nn.Module):
         connected directly to the output neuron(s), i.e. using a MLP is
         optional.
     mlp_activation: str, default = "relu"
-        MLP activation function. 'relu', 'leaky_relu' and 'gelu' are supported
+        Activation function for the dense layers of the MLP. Currently
+        'tanh', relu', 'leaky_relu' and 'gelu' are supported
     mlp_dropout: float, default = 0.1
         float with the dropout between the dense layers of the MLP.
     mlp_batchnorm: bool, default = False
@@ -145,13 +147,11 @@ class TabResnet(nn.Module):
 
     Attributes
     ----------
-    embed_layers: ``nn.ModuleDict``
-        ``ModuleDict`` with the embeddings setup
+    cat_embed_and_cont: ``nn.Module``
+        Module that processese the categorical and continuous columns
     dense_resnet: ``nn.Sequential``
         deep dense Resnet model that will receive the concatenation of the
         embeddings and the continuous columns
-    cont_norm: ``nn.Module``
-        continuous normalization layer
     tab_resnet_mlp: ``nn.Sequential``
         if ``mlp_hidden_dims`` is ``True``, this attribute will be an mlp
         model that will receive:
@@ -232,18 +232,16 @@ class TabResnet(nn.Module):
             cont_norm_layer,
         )
 
-        # these are int, but new version of numpy introduced some
-        # (annoying) incompatibilities so I have to use Union[Any, int]
-        emb_inp_dim: Union[Any, int] = self.cat_embed_and_cont.emb_inp_dim
-        cont_inp_dim: Union[Any, int] = self.cat_embed_and_cont.cont_inp_dim
+        emb_out_dim = self.cat_embed_and_cont.emb_out_dim
+        cont_out_dim = self.cat_embed_and_cont.cont_out_dim
 
         # DenseResnet
         if self.concat_cont_first:
-            dense_resnet_input_dim = emb_inp_dim + cont_inp_dim
+            dense_resnet_input_dim = emb_out_dim + cont_out_dim
             self.output_dim = blocks_dims[-1]
         else:
-            dense_resnet_input_dim = emb_inp_dim
-            self.output_dim = cont_inp_dim + blocks_dims[-1]
+            dense_resnet_input_dim = emb_out_dim
+            self.output_dim = cont_out_dim + blocks_dims[-1]
         self.tab_resnet_blks = DenseResnet(
             dense_resnet_input_dim, blocks_dims, blocks_dropout
         )
@@ -253,7 +251,7 @@ class TabResnet(nn.Module):
             if self.concat_cont_first:
                 mlp_input_dim = blocks_dims[-1]
             else:
-                mlp_input_dim = cont_inp_dim + blocks_dims[-1]
+                mlp_input_dim = cont_out_dim + blocks_dims[-1]
             mlp_hidden_dims = [mlp_input_dim] + mlp_hidden_dims
             self.tab_resnet_mlp = MLP(
                 mlp_hidden_dims,

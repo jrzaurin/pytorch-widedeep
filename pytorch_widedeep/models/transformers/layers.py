@@ -82,8 +82,8 @@ class MultiHeadedAttention(nn.Module):
 
     def forward(self, X: Tensor, Y: Optional[Tensor] = None) -> Tensor:
         # b: batch size
-        # s: seq length, i.e. num features encoded as embeddings
-        # l: target sequence (l = s),
+        # s: seq length
+        # l: target sequence length
         # h: number of attention heads,
         # d: head_dim
         q = self.q_proj(X)
@@ -100,6 +100,82 @@ class MultiHeadedAttention(nn.Module):
         output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
 
         return self.dropout(self.out_proj(output))
+
+
+class AdditiveAttention(nn.Module):
+    r"""To be honest this is a convoluted FF network with a residual
+    connection...I am not sure this can be called Attention, or added to the
+    transformer family. However, the fact that is a weird residual MLP might
+    make it work for tabular data.
+    """
+
+    def __init__(
+        self,
+        input_dim: int,
+        n_heads: int,
+        use_bias: bool,
+        dropout: float,
+        share_qv_weights: bool,
+    ):
+        super(AdditiveAttention, self).__init__()
+
+        assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
+
+        self.head_dim = input_dim // n_heads
+        self.n_heads = n_heads
+        self.share_qv_weights = share_qv_weights
+
+        self.dropout = nn.Dropout(dropout)
+
+        # In the paper: " [...] we share the value and query transformation
+        # parameters to reduce the memory cost [...]"
+        if share_qv_weights:
+            self.qv_proj = nn.Linear(input_dim, input_dim, bias=use_bias)
+        else:
+            self.q_proj = nn.Linear(input_dim, input_dim, bias=use_bias)
+            self.v_proj = nn.Linear(input_dim, input_dim, bias=use_bias)
+        self.k_proj = nn.Linear(input_dim, input_dim, bias=use_bias)
+
+        self.global_query_logits = nn.Linear(self.head_dim, 1, bias=use_bias)
+        self.global_key_logits = nn.Linear(self.head_dim, 1, bias=use_bias)
+
+        self.r_out = nn.Linear(self.head_dim, self.head_dim)
+
+    def forward(self, X: Tensor) -> Tensor:
+
+        q = self.qv_proj(X) if self.share_qv_weights else self.q_proj(X)
+        v = self.qv_proj(X) if self.share_qv_weights else self.v_proj(X)
+        k = self.k_proj(X)
+
+        q, k, v = map(
+            lambda t: einops.rearrange(t, "b s (h d) -> b h s d", h=self.n_heads),
+            (q, k, v),
+        )
+
+        alphas = (
+            einops.rearrange(self.global_query_logits(q), "b h s () -> b h s")
+            / math.sqrt(self.head_dim)
+        ).softmax(dim=-1)
+        global_query = einsum("b h s, b h s d -> b h d", alphas, q)
+        global_query = einops.rearrange(global_query, "b h d -> b h () d")
+
+        p = k * global_query
+
+        betas = (
+            einops.rearrange(self.global_key_logits(p), "b h s () -> b h s")
+            / math.sqrt(self.head_dim)
+        ).softmax(dim=-1)
+        global_key = einsum("b h s, b h s d -> b h d", betas, p)
+        global_key = einops.rearrange(global_key, "b h d -> b h () d")
+
+        u = v * global_key
+
+        self.attn_weights = (alphas, betas)
+
+        # the "magical" residual connection
+        output = q + self.dropout(self.r_out(u))
+
+        return einops.rearrange(output, "b h s d -> b s (h d)", h=self.n_heads)
 
 
 class TransformerEncoder(nn.Module):
@@ -174,6 +250,35 @@ class SaintEncoder(nn.Module):
         x = self.row_attn_ff_addnorm(x, self.row_attn_ff(x))
         x = einops.rearrange(x, "1 b (n d) -> b n d", n=self.n_feat)
         return x
+
+
+class FastFormerEncoder(nn.Module):
+    def __init__(
+        self,
+        input_dim: int,
+        n_heads: int,
+        use_bias: bool,
+        dropout: float,
+        share_qv_weights: bool,
+        activation: str,
+    ):
+        super(FastFormerEncoder, self).__init__()
+
+        self.attn = AdditiveAttention(
+            input_dim,
+            n_heads,
+            use_bias,
+            dropout,
+            share_qv_weights,
+        )
+
+        self.ff = PositionwiseFF(input_dim, dropout, activation)
+        self.attn_addnorm = AddNorm(input_dim, dropout)
+        self.ff_addnorm = AddNorm(input_dim, dropout)
+
+    def forward(self, X: Tensor) -> Tensor:
+        x = self.attn_addnorm(X, self.attn(X))
+        return self.ff_addnorm(x, self.ff(x))
 
 
 class FullEmbeddingDropout(nn.Module):

@@ -42,13 +42,15 @@ class SAINT(TabTransformer):
         one particular column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    embed_continuous: bool, default = False,
+    embed_continuous: bool, default = True,
         Boolean indicating if the continuous features will be "embedded". See
-        ``pytorch_widedeep.models.transformers.layers.ContinuousEmbeddings``
+        ``pytorch_widedeep.models.transformers.layers.ContinuousEmbeddings``.
+        This should be set to 'True' to reproduce the original
+        implementation
     embed_continuous_activation: str, default = "relu"
         String indicating the activation function to be applied to the
         continuous embeddings, if any.
-        'relu', 'leaky_relu' and 'gelu' are supported.
+        'tanh', 'relu', 'leaky_relu' and 'gelu' are supported.
     cont_norm_layer: str, default =  "layernorm",
         Type of normalization layer applied to the continuous features if they
         are not embedded. Options are: 'layernorm' or 'batchnorm'.
@@ -67,13 +69,14 @@ class SAINT(TabTransformer):
         (see :obj:`pytorch_widedeep.models.transformers.layers.TransformerEncoder`)
         and the output MLP
     transformer_activation: str, default = "gelu"
-        Transformer Encoder activation function. 'relu', 'leaky_relu', 'gelu'
+        Transformer Encoder activation function. 'tanh', 'relu', 'leaky_relu', 'gelu'
         and 'geglu' are supported
     mlp_hidden_dims: List, Optional, default = None
         MLP hidden dimensions. If not provided it will default to ``[4*l,
         2*l]`` where ``l`` is the mlp input dimension
     mlp_activation: str, default = "relu"
-        MLP activation function. 'relu', 'leaky_relu' and 'gelu' are supported
+        MLP activation function. 'tanh', 'relu', 'leaky_relu' and 'gelu' are
+        supported
     mlp_batchnorm: bool, default = False
         Boolean indicating whether or not to apply batch normalization to the
         dense layers
@@ -87,12 +90,8 @@ class SAINT(TabTransformer):
 
     Attributes
     ----------
-    cat_embed_layers: ``nn.ModuleDict``
-        Dict with the embeddings per column
-    cont_embed: ``nn.ModuleDict``
-        Dict with the embeddings per column if ``embed_continuous=True``
-    cont_norm_layer: NormLayers
-        Continuous normalization layer if ``continuous_cols`` is not None
+    cat_embed_and_cont: ``nn.Module``
+        Module that processese the categorical and continuous columns
     transformer_blks: ``nn.Sequential``
         Sequence of Transformer blocks
     transformer_mlp: ``nn.Module``
@@ -100,6 +99,12 @@ class SAINT(TabTransformer):
     output_dim: int
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
+
+    Properties
+    -----------
+    attention_weights: List
+        List with the attention weights. Each element of the list will be a
+        tuple with the column and row attention weights respectively
 
     Example
     --------
@@ -124,7 +129,7 @@ class SAINT(TabTransformer):
         add_shared_embed: bool = False,
         frac_shared_embed: float = 0.25,
         continuous_cols: Optional[List[str]] = None,
-        embed_continuous: bool = False,
+        embed_continuous: bool = True,
         embed_continuous_activation: str = None,
         cont_norm_layer: str = "layernorm",
         input_dim: int = 32,
@@ -164,16 +169,30 @@ class SAINT(TabTransformer):
             mlp_linear_first,
         )
 
+        if embed_continuous:
+            n_feats = self.n_cat + self.n_cont
+        else:
+            n_feats = self.n_cat
+
         self.transformer_blks = nn.Sequential()
         for i in range(n_blocks):
             self.transformer_blks.add_module(
-                "block" + str(i),
+                "saint_block" + str(i),
                 SaintEncoder(
                     input_dim,
                     n_heads,
                     use_bias,
                     dropout,
                     transformer_activation,
-                    self.n_cat + self.n_cont,
+                    n_feats,
                 ),
             )
+
+    @property
+    def attention_weights(self):
+        attention_weights = []
+        for blk in self.transformer_blks:
+            attention_weights.append(
+                (blk.col_attn.attn_weights, blk.row_attn.attn_weights)
+            )
+        return attention_weights

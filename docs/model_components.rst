@@ -27,9 +27,13 @@ are: ``wide``, ``deeptabular``, ``deeptext``, ``deepimage``.
 
 .. autoclass:: pytorch_widedeep.models.transformers.tab_transformer.TabTransformer
 	:exclude-members: forward
-	:members:
+	:members: attention_weights
 
 .. autoclass:: pytorch_widedeep.models.transformers.saint.SAINT
+	:exclude-members: forward
+	:members:
+
+.. autoclass:: pytorch_widedeep.models.transformers.perceiver.Perceiver
 	:exclude-members: forward
 	:members:
 
