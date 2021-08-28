@@ -6,9 +6,8 @@ from pytorch_widedeep.models.transformers.tab_transformer import TabTransformer
 
 
 class SAINT(TabTransformer):
-    r"""Adaptation of SAINT model
-    (https://arxiv.org/abs/2106.01342) model that can be used as the
-    deeptabular component of a Wide & Deep model.
+    r"""Adaptation of SAINT (`arXiv:2106.01342 <https://arxiv.org/abs/2106.01342>`_)
+    that can be used as the deeptabular component of a Wide & Deep model.
 
     Parameters for this model are identical to those of the ``TabTransformer``
 
@@ -29,10 +28,12 @@ class SAINT(TabTransformer):
         :obj:`pytorch_widedeep.models.transformers.layers.FullEmbeddingDropout`.
         If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
     shared_embed: bool, default = False
-        The idea behind ``shared_embed`` is described in the Appendix A in the paper:
-        `'The goal of having column embedding is to enable the model to distinguish the
-        classes in one column from those in the other columns'`. In other words, the idea
-        is to let the model learn which column is embedding at the time.
+        The idea behind ``shared_embed`` is described in the Appendix A in the
+        `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
+        goal of having column embedding is to enable the model to distinguish
+        the classes in one column from those in the other columns'`. In other
+        words, the idea is to let the model learn which column is embedding
+        at the time.
     add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings to the column
         embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
@@ -99,12 +100,6 @@ class SAINT(TabTransformer):
     output_dim: int
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
-
-    Properties
-    -----------
-    attention_weights: List
-        List with the attention weights. Each element of the list will be a
-        tuple with the column and row attention weights respectively
 
     Example
     --------
@@ -189,7 +184,11 @@ class SAINT(TabTransformer):
             )
 
     @property
-    def attention_weights(self):
+    def attention_weights(self) -> List:
+        r"""List with the attention weights. Each element of the list is a tuple
+        where the first and the second elements are the column and row
+        attention weights respectively
+        """
         attention_weights = []
         for blk in self.transformer_blks:
             attention_weights.append(

@@ -10,9 +10,8 @@ from pytorch_widedeep.models.transformers.layers import (
 
 
 class TabTransformer(nn.Module):
-    r"""Adaptation of TabTransformer model
-    (https://arxiv.org/abs/2012.06678) model that can be used as the
-    deeptabular component of a Wide & Deep model.
+    r"""Adaptation of the TabTransformer (`arXiv:2012.06678 <https://arxiv.org/abs/2012.06678>`_)
+    that can be used as the deeptabular component of a Wide & Deep model.
 
     Parameters
     ----------

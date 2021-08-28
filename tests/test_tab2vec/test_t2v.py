@@ -11,8 +11,9 @@ from pytorch_widedeep.models import (
     TabMlp,
     TabNet,
     WideDeep,
-    Perceiver,
     TabResnet,
+    TabPerceiver,
+    TabFastFormer,
     TabTransformer,
 )
 from pytorch_widedeep.preprocessing import TabPreprocessor
@@ -89,14 +90,18 @@ def test_non_transformer_models(deeptabular):
         ("saint", False, True, True),
         ("saint", True, False, True),
         (
-            "perceiver",
+            "tabperceiver",
             False,
             False,
             True,
         ),  # embed_continuous is irrelevant for the perceiver
-        ("perceiver", True, False, True),
-        ("perceiver", False, True, True),
-        ("perceiver", True, False, True),
+        ("tabperceiver", True, False, True),
+        ("tabperceiver", False, True, True),
+        ("tabperceiver", True, False, True),
+        ("tabfastformer", False, False, True),
+        ("tabfastformer", True, False, True),
+        ("tabfastformer", False, True, True),
+        ("tabfastformer", True, False, True),
     ],
 )
 def test_transformer_models(
@@ -135,8 +140,8 @@ def test_transformer_models(
             n_heads=2,
             n_blocks=2,
         )
-    elif model_name == "perceiver":
-        deeptabular = Perceiver(
+    elif model_name == "tabperceiver":
+        deeptabular = TabPerceiver(
             column_idx=tab_preprocessor.column_idx,
             embed_input=tab_preprocessor.embeddings_input,
             continuous_cols=tab_preprocessor.continuous_cols,
@@ -146,6 +151,17 @@ def test_transformer_models(
             latent_dim=8,
             n_latent_heads=2,
             n_perceiver_blocks=2,
+            share_weights=False,
+        )
+    elif model_name == "tabfastformer":
+        deeptabular = TabFastFormer(
+            column_idx=tab_preprocessor.column_idx,
+            embed_input=tab_preprocessor.embeddings_input,
+            continuous_cols=tab_preprocessor.continuous_cols,
+            embed_continuous=embed_continuous,
+            n_blocks=2,
+            n_heads=4,
+            share_qv_weights=False,
             share_weights=False,
         )
 

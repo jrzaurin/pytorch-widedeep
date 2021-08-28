@@ -7,8 +7,8 @@ import pytest
 
 from pytorch_widedeep.models import (
     SAINT,
-    Perceiver,
-    FastFormer,
+    TabPerceiver,
+    TabFastFormer,
     TabTransformer,
 )
 from pytorch_widedeep.models.transformers.layers import *  # noqa: F403
@@ -173,7 +173,7 @@ def test_full_embed_dropout():
 
 
 # ###############################################################################
-# # Beginning of a 360 test of SAINT and TabTransformer
+# # Beginning of a 360 test of the Transformer family
 # ###############################################################################
 
 
@@ -188,10 +188,10 @@ def test_full_embed_dropout():
         (True, False, "saint"),
         (False, True, "saint"),
         (False, False, "saint"),
-        (True, True, "fastformer"),
-        (True, False, "fastformer"),
-        (False, True, "fastformer"),
-        (False, False, "fastformer"),
+        (True, True, "tabfastformer"),
+        (True, False, "tabfastformer"),
+        (False, True, "tabfastformer"),
+        (False, False, "tabfastformer"),
     ],
 )
 def test_embed_continuous_and_with_cls_token(
@@ -223,8 +223,8 @@ def test_embed_continuous_and_with_cls_token(
             embed_continuous=embed_continuous,
             n_blocks=4,
         )
-    elif model_name == "fastformer":
-        model = FastFormer(
+    elif model_name == "tabfastformer":
+        model = TabFastFormer(
             column_idx={k: v for v, k in enumerate(n_colnames)},
             embed_input=with_cls_token_embed_input if with_cls_token else embed_input,
             continuous_cols=n_colnames[cont_idx:],
@@ -266,11 +266,11 @@ def test_embed_continuous_and_with_cls_token(
         ("leaky_relu", "saint"),
         ("gelu", "saint"),
         ("geglu", "saint"),
-        ("tanh", "perceiver"),
-        ("relu", "perceiver"),
-        ("leaky_relu", "perceiver"),
-        ("gelu", "perceiver"),
-        ("geglu", "perceiver"),
+        ("tanh", "tabperceiver"),
+        ("relu", "tabperceiver"),
+        ("leaky_relu", "tabperceiver"),
+        ("gelu", "tabperceiver"),
+        ("geglu", "tabperceiver"),
     ],
 )
 def test_transformer_activations(activation, model_name):
@@ -289,8 +289,8 @@ def test_transformer_activations(activation, model_name):
             continuous_cols=colnames[n_cols:],
             transformer_activation=activation,
         )
-    elif model_name == "perceiver":
-        model = Perceiver(
+    elif model_name == "tabperceiver":
+        model = TabPerceiver(
             column_idx={k: v for v, k in enumerate(colnames)},
             embed_input=embed_input,
             continuous_cols=colnames[n_cols:],
@@ -314,8 +314,8 @@ def test_transformer_activations(activation, model_name):
     [
         "tabtransformer",
         "saint",
-        "perceiver",
-        "fastformer",
+        "tabperceiver",
+        "tabfastformer",
     ],
 )
 def test_transformers_keep_attn(model_name):
@@ -334,8 +334,8 @@ def test_transformers_keep_attn(model_name):
             embed_continuous=False,
             n_blocks=2,
         )
-    elif model_name == "perceiver":
-        model = Perceiver(
+    elif model_name == "tabperceiver":
+        model = TabPerceiver(
             column_idx={k: v for v, k in enumerate(colnames)},
             embed_input=embed_input,
             continuous_cols=colnames[n_cols:],
@@ -344,8 +344,8 @@ def test_transformers_keep_attn(model_name):
             n_perceiver_blocks=2,
             share_weights=False,
         )
-    elif model_name == "fastformer":
-        model = FastFormer(
+    elif model_name == "tabfastformer":
+        model = TabFastFormer(
             column_idx={k: v for v, k in enumerate(colnames)},
             embed_input=embed_input,
             continuous_cols=colnames[n_cols:],
@@ -359,7 +359,7 @@ def test_transformers_keep_attn(model_name):
     out = model(X_tab)
 
     res = [out.size(0) == 10]
-    if model_name != "perceiver":
+    if model_name != "tabperceiver":
         res.append(out.size(1) == model._set_mlp_hidden_dims()[-1])
         res.append(len(model.attention_weights) == model.n_blocks)
     else:
@@ -380,7 +380,7 @@ def test_transformers_keep_attn(model_name):
             list(model.attention_weights[0][1].shape)
             == [1, model.n_heads, n_cols * n_embed, n_cols * n_embed]
         )
-    elif model_name == "perceiver":
+    elif model_name == "tabperceiver":
         res.append(
             len(model.attention_weights[0])
             == model.n_cross_attns + model.n_latent_blocks
@@ -393,7 +393,7 @@ def test_transformers_keep_attn(model_name):
             list(model.attention_weights[0][1].shape)
             == [10, model.n_cross_attn_heads, model.n_latents, model.n_latents]
         )
-    elif model_name == "fastformer":
+    elif model_name == "tabfastformer":
         res.append(
             list(model.attention_weights[0][0].shape) == [10, model.n_heads, n_cols]
         )

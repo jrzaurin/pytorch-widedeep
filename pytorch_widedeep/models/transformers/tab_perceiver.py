@@ -10,10 +10,9 @@ from pytorch_widedeep.models.transformers.layers import (
 )
 
 
-class Perceiver(nn.Module):
-    r"""Adaptation of the Perceiver model
-    (https://arxiv.org/abs/2103.03206) model that can be used as the
-    deeptabular component of a Wide & Deep model.
+class TabPerceiver(nn.Module):
+    r"""Adaptation of the Perceiver (`arXiv:2103.03206 <https://arxiv.org/abs/2103.03206>`_)
+    that can be used as the deeptabular component of a Wide & Deep model.
 
     Parameters
     ----------
@@ -32,10 +31,12 @@ class Perceiver(nn.Module):
         :obj:`pytorch_widedeep.models.transformers.layers.FullEmbeddingDropout`.
         If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
     shared_embed: bool, default = False
-        The idea behind ``shared_embed`` is described in the Appendix A in the paper:
-        `'The goal of having column embedding is to enable the model to distinguish the
-        classes in one column from those in the other columns'`. In other words, the idea
-        is to let the model learn which column is embedding at the time.
+        The idea behind ``shared_embed`` is described in the Appendix A in the
+        `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
+        goal of having column embedding is to enable the model to distinguish
+        the classes in one column from those in the other columns'`. In other
+        words, the idea is to let the model learn which column is embedding
+        at the time.
     add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings to the column
         embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
@@ -57,18 +58,27 @@ class Perceiver(nn.Module):
         embeddings used to encode the categorical and/or continuous columns.
     n_cross_attns: int, default = 1
         Number of times each perceiver block will cross attend to the input
-        data (i.e. number of cross attention components per perceiver block)
+        data (i.e. number of cross attention components per perceiver block).
+        This should normally be 1. However, in the paper they describe some
+        architectures (normally computer vision-related problems) where the
+        Perceiver attends multiple times to the input array. Therefore, maybe
+        multiple cross attention to the input array is also useful in some
+        cases for tabular data
     n_cross_attn_heads: int, default = 4
         Number of attention heads for the cross attention component
     n_latents: int, default = 16
-        Number of latents
+        Number of latents. This is the *N* parameter in the paper. As
+        indicated in the paper, this number should be significantly smaller
+        than *M* (the number of columns in the dataset). Setting *N* closer
+        to *M* defies the main purpose of the Perceiver, overcome the
+        standard transformer quadratic bottleneck
     latent_dim: int, default = 128
-        Latent dimension
+        Latent dimension.
     n_latent_heads: int, default = 4
         Number of attention heads per Latent Transformer
     n_latent_blocks: int, default = 4
-        Number of transformer encoder blocks (normalised multi-head attn +
-        normalised feed forward) per Latent Transformer
+        Number of transformer encoder blocks (normalised MHA + normalised FF)
+        per Latent Transformer
     n_perceiver_blocks: int, default = 4
         Number of Perceiver blocks defined as [Cross Attention -> Latent
         Transformer]
@@ -80,7 +90,7 @@ class Perceiver(nn.Module):
         (see :obj:`pytorch_widedeep.models.transformers.layers.TransformerEncoder`)
         and the output MLP
     transformer_activation: str, default = "gelu"
-        Transformer Encoder activation
+        Transformer Encoder internal activation
         function. 'tanh', 'relu', 'leaky_relu', 'gelu' and 'geglu' are
         supported
     mlp_hidden_dims: List, Optional, default = None
@@ -114,24 +124,16 @@ class Perceiver(nn.Module):
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
 
-    Properties
-    -----------
-    attention_weights: List
-        List with the attention weights. If the weights are not shared between
-        perceiver blocks each element of the list will be a list itself
-        containing the cross attention and latent transformer attention
-        weights respectively
-
     Example
     --------
     >>> import torch
-    >>> from pytorch_widedeep.models import Perceiver
+    >>> from pytorch_widedeep.models import TabPerceiver
     >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
     >>> colnames = ['a', 'b', 'c', 'd', 'e']
     >>> embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
     >>> continuous_cols = ['e']
     >>> column_idx = {k:v for v,k in enumerate(colnames)}
-    >>> model = Perceiver(column_idx=column_idx, embed_input=embed_input,
+    >>> model = TabPerceiver(column_idx=column_idx, embed_input=embed_input,
     ... continuous_cols=continuous_cols, n_latents=2, latent_dim=16,
     ... n_perceiver_blocks=2)
     >>> out = model(X_tab)
@@ -166,7 +168,7 @@ class Perceiver(nn.Module):
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = True,
     ):
-        super(Perceiver, self).__init__()
+        super(TabPerceiver, self).__init__()
 
         self.column_idx = column_idx
         self.embed_input = embed_input
@@ -201,7 +203,7 @@ class Perceiver(nn.Module):
             ), "The first mlp input dim must be equal to 'latent_dim'"
 
         # This should be named 'cat_and_cont_embed' since the continuous cols
-        # will always be embedded for the Perceiver. However is very
+        # will always be embedded for the TabPerceiver. However is very
         # convenient for other funcionalities to name
         # it 'cat_embed_and_cont'
         self.cat_embed_and_cont = CatAndContEmbeddings(
@@ -272,7 +274,12 @@ class Perceiver(nn.Module):
         return self.perceiver_mlp(x)
 
     @property
-    def attention_weights(self):
+    def attention_weights(self) -> List:
+        r"""List with the attention weights. If the weights are not shared
+        between perceiver blocks each element of the list will be a list
+        itself containing the Cross Attention and Latent Transformer
+        attention weights respectively
+        """
         if self.share_weights:
             cross_attns = self.perceiver_blks["perceiver_block0"]["cross_attns"]
             latent_transformer = self.perceiver_blks["perceiver_block0"][
@@ -332,7 +339,7 @@ class Perceiver(nn.Module):
         return perceiver_block
 
     @staticmethod
-    def _extract_attn_weights(cross_attns, latent_transformer):
+    def _extract_attn_weights(cross_attns, latent_transformer) -> List:
         attention_weights = []
         for cross_attn in cross_attns:
             attention_weights.append(cross_attn.attn.attn_weights)

@@ -13,8 +13,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class Tab2Vec:
-    r"""Class to transform an input dataframe into vectorized form based on
-    the Embedding Layer in the model
+    r"""Class to transform an input dataframe into vectorized form.
+
+    This class will take an input dataframe in the form of the dataframe used
+    for training, and it will turn it into a vectorised form based on the
+    processing applied to the categorical and continuous columns.
 
     .. note:: Currently this class is only implemented for the deeptabular component.
         Therefore, if the input dataframe has a text column or a column with
@@ -34,7 +37,7 @@ class Tab2Vec:
     ----------
     is_transformer: bool
         Boolean indicating if the input model belongs to the transformer
-        family, i.e. TabTransformer, SAINT or Perceiver
+        family currently available in the library
     vectorizer: ``nn.Module``
         Torch module with the categorical and continuous encoding process
 
@@ -47,26 +50,35 @@ class Tab2Vec:
     >>> from pytorch_widedeep import Tab2Vec
     >>> from pytorch_widedeep.models import TabMlp, WideDeep
     >>> from pytorch_widedeep.preprocessing import TabPreprocessor
+    >>>
     >>> colnames = list(string.ascii_lowercase)[:4]
     >>> cat_col1_vals = ["a", "b", "c"]
     >>> cat_col2_vals = ["d", "e", "f"]
+    >>>
+    >>> # Create the toy input dataframe and a toy dataframe to be vectorised
     >>> cat_inp = [np.array(choices(c, k=5)) for c in [cat_col1_vals, cat_col2_vals]]
     >>> cont_inp = [np.round(np.random.rand(5), 2) for _ in range(2)]
     >>> df_inp = pd.DataFrame(np.vstack(cat_inp + cont_inp).transpose(), columns=colnames)
     >>> cat_t2v = [np.array(choices(c, k=5)) for c in [cat_col1_vals, cat_col2_vals]]
     >>> cont_t2v = [np.round(np.random.rand(5), 2) for _ in range(2)]
     >>> df_t2v = pd.DataFrame(np.vstack(cat_t2v + cont_t2v).transpose(), columns=colnames)
+    >>>
+    >>> # fit the TabPreprocessor
     >>> embed_cols = [("a", 2), ("b", 4)]
     >>> cont_cols = ["c", "d"]
     >>> tab_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
     >>> X_tab = tab_preprocessor.fit_transform(df_inp)
+    >>>
+    >>> # define the model (and let's assume we train it)
     >>> tabmlp = TabMlp(
     ... column_idx=tab_preprocessor.column_idx,
     ... embed_input=tab_preprocessor.embeddings_input,
     ... continuous_cols=tab_preprocessor.continuous_cols,
     ... mlp_hidden_dims=[8, 4])
     >>> model = WideDeep(deeptabular=tabmlp)
-    >>> # Let's assume the model is trained
+    >>> # ...train the model...
+    >>>
+    >>> # vectorise the dataframe
     >>> t2v = Tab2Vec(model, tab_preprocessor)
     >>> X_vec = t2v.transform(df_t2v)
     """
@@ -93,7 +105,12 @@ class Tab2Vec:
 
         self.tab_preprocessor = tab_preprocessor
 
-        transformer_family = ["tabtransformer", "saint", "perceiver"]
+        transformer_family = [
+            "tabtransformer",
+            "saint",
+            "tabperceiver",
+            "tabfastformer",
+        ]
         self.is_transformer = (
             model.deeptabular[0].__class__.__name__.lower() in transformer_family  # type: ignore[index]
         )
@@ -114,8 +131,8 @@ class Tab2Vec:
         ----------
         df: pd.DataFrame
             DataFrame to be vectorised, i.e. the categorical and continuous
-            columns will be encoded based on the Embedding Layer in the
-            model
+            columns will be encoded based on the processing applied within
+            the model
         target_col: str, Optional
             Column name of the target_col variable. If 'None' only the array of
             predictors will be returned

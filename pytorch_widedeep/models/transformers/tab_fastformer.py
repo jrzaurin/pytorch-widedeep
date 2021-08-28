@@ -5,10 +5,9 @@ from pytorch_widedeep.models.transformers.layers import FastFormerEncoder
 from pytorch_widedeep.models.transformers.tab_transformer import TabTransformer
 
 
-class FastFormer(TabTransformer):
-    r"""Adaptation of FastFormer model
-    (https://arxiv.org/abs/2108.09084) model that can be used as the
-    deeptabular component of a Wide & Deep model.
+class TabFastFormer(TabTransformer):
+    r"""Adaptation FastFormer (`arXiv:2108.09084 <https://arxiv.org/abs/2108.09084>`_)
+    that can be used as the deeptabular component of a Wide & Deep model.
 
     Parameters
     ----------
@@ -27,10 +26,12 @@ class FastFormer(TabTransformer):
         :obj:`pytorch_widedeep.models.transformers.layers.FullEmbeddingDropout`.
         If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
     shared_embed: bool, default = False
-        The idea behind ``shared_embed`` is described in the Appendix A in the paper:
-        `'The goal of having column embedding is to enable the model to distinguish the
-        classes in one column from those in the other columns'`. In other words, the idea
-        is to let the model learn which column is embedding at the time.
+        The idea behind ``shared_embed`` is described in the Appendix A in the
+        `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
+        goal of having column embedding is to enable the model to distinguish
+        the classes in one column from those in the other columns'`. In other
+        words, the idea is to let the model learn which column is embedding
+        at the time.
     add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings to the column
         embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
@@ -43,11 +44,7 @@ class FastFormer(TabTransformer):
     embed_continuous: bool, default = False,
         Boolean indicating if the continuous features will be "embedded". See
         ``pytorch_widedeep.models.transformers.layers.ContinuousEmbeddings``
-        Note that setting this to true is equivalent to the so called
-        `FT-Transformer <https://arxiv.org/abs/2106.11959>`_
-        (Feature Tokenizer + Transformer). The only difference is that our
-        implementation does not consider using bias for the categorical
-        embeddings.
+        This should be normally set to True
     embed_continuous_activation: str, default = None
         String indicating the activation function to be applied to the
         continuous embeddings, if any.
@@ -59,15 +56,15 @@ class FastFormer(TabTransformer):
         The so-called *dimension of the model*. Is the number of embeddings used to encode
         the categorical and/or continuous columns
     n_heads: int, default = 8
-        Number of attention heads per Transformer block
+        Number of attention heads per FastFormer block
     use_bias: bool, default = False
         Boolean indicating whether or not to use bias in the Q, K, and V
         projection layers
     n_blocks: int, default = 6
-        Number of Transformer blocks
+        Number of FastFormer blocks
     dropout: float, default = 0.1
-        Dropout that will be applied internally to the ``TransformerEncoder``
-        (see :obj:`pytorch_widedeep.models.transformers.layers.TransformerEncoder`)
+        Dropout that will be applied internally to the ``FastFormerEncoder``
+        (see :obj:`pytorch_widedeep.models.transformers.layers.FastFormerEncoder`)
         and the output MLP
     share_qv_weights: bool, default = True
         Following the original publication, this is a boolean indicating if
@@ -77,7 +74,7 @@ class FastFormer(TabTransformer):
         the parameters across different Fastformer layers are also shared in
         the paper.
     transformer_activation: str, default = "gelu"
-        Transformer Encoder activation
+        FastFormer Encoder activation
         function. 'tanh', 'relu', 'leaky_relu', 'gelu' and 'geglu' are
         supported
     mlp_hidden_dims: List, Optional, default = None
@@ -102,28 +99,23 @@ class FastFormer(TabTransformer):
     cat_embed_and_cont: ``nn.Module``
         Module that processese the categorical and continuous columns
     transformer_blks: ``nn.Sequential``
-        Sequence of Transformer blocks
+        Sequence of FasFormer blocks.
     transformer_mlp: ``nn.Module``
         MLP component in the model
     output_dim: int
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
 
-    Properties
-    -----------
-    attention_weights: List
-        List with the attention weights
-
     Example
     --------
     >>> import torch
-    >>> from pytorch_widedeep.models import TabTransformer
+    >>> from pytorch_widedeep.models import TabFastFormer
     >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
     >>> colnames = ['a', 'b', 'c', 'd', 'e']
     >>> embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
     >>> continuous_cols = ['e']
     >>> column_idx = {k:v for v,k in enumerate(colnames)}
-    >>> model = TabTransformer(column_idx=column_idx, embed_input=embed_input, continuous_cols=continuous_cols)
+    >>> model = TabFastFormer(column_idx=column_idx, embed_input=embed_input, continuous_cols=continuous_cols)
     >>> out = model(X_tab)
     """
 
@@ -147,7 +139,7 @@ class FastFormer(TabTransformer):
         dropout: float = 0.1,
         share_qv_weights: bool = True,
         share_weights: bool = True,
-        transformer_activation: str = "gelu",
+        transformer_activation: str = "relu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
         mlp_batchnorm: bool = False,
@@ -209,3 +201,11 @@ class FastFormer(TabTransformer):
                         transformer_activation,
                     ),
                 )
+
+    @property
+    def attention_weights(self) -> List:
+        r"""List with the attention weights. Each element of the list is a
+        tuple where the first and second elements are :math:`\alpha`
+        and :math:`\beta` attention weights in the paper.
+        """
+        return [blk.attn.attn_weights for blk in self.transformer_blks]

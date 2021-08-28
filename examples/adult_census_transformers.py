@@ -7,8 +7,8 @@ from pytorch_widedeep.models import (
     SAINT,
     Wide,
     WideDeep,
-    Perceiver,
-    FastFormer,
+    TabPerceiver,
+    TabFastFormer,
     TabTransformer,
 )
 from pytorch_widedeep.metrics import Accuracy
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         n_blocks=4,
     )
 
-    perceiver = Perceiver(
+    tab_perceiver = TabPerceiver(
         column_idx=prepare_deep.column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
@@ -93,7 +93,7 @@ if __name__ == "__main__":
         share_weights=False,
     )
 
-    fastformer = FastFormer(
+    tab_fastformer = TabFastFormer(
         column_idx=prepare_deep.column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
@@ -104,7 +104,7 @@ if __name__ == "__main__":
         share_weights=False,
     )
 
-    for tab_model in [tab_transformer, saint, perceiver, fastformer]:
+    for tab_model in [tab_transformer, saint, tab_perceiver, tab_fastformer]:
 
         model = WideDeep(wide=wide, deeptabular=tab_model)
 
