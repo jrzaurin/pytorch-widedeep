@@ -5,10 +5,16 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
-allowed_activations = ["relu", "leaky_relu", "tanh", "gelu", "geglu"]
+allowed_activations = ["relu", "leaky_relu", "tanh", "gelu", "geglu", "reglu"]
 
 
 class GEGLU(nn.Module):
+    def forward(self, x):
+        x, gates = x.chunk(2, dim=-1)
+        return x * F.gelu(gates)
+
+
+class REGLU(nn.Module):
     def forward(self, x):
         x, gates = x.chunk(2, dim=-1)
         return x * F.gelu(gates)
@@ -25,6 +31,8 @@ def get_activation_fn(activation):
         return nn.GELU()
     if activation == "geglu":
         return GEGLU()
+    if activation == "reglu":
+        return REGLU()
 
 
 def dense_layer(
@@ -64,7 +72,6 @@ class CatEmbeddingsAndCont(nn.Module):
         self.column_idx = column_idx
         self.embed_input = embed_input
         self.continuous_cols = continuous_cols
-        self.cont_norm_layer = cont_norm_layer
 
         # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
         if self.embed_input is not None:
@@ -85,9 +92,9 @@ class CatEmbeddingsAndCont(nn.Module):
         if self.continuous_cols is not None:
             self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
             self.cont_out_dim: int = len(self.continuous_cols)
-            if self.cont_norm_layer == "batchnorm":
+            if cont_norm_layer == "batchnorm":
                 self.cont_norm: NormLayers = nn.BatchNorm1d(self.cont_out_dim)
-            elif self.cont_norm_layer == "layernorm":
+            elif cont_norm_layer == "layernorm":
                 self.cont_norm = nn.LayerNorm(self.cont_out_dim)
             else:
                 self.cont_norm = nn.Identity()

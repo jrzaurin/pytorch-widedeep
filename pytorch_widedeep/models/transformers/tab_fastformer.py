@@ -1,11 +1,14 @@
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.transformers.layers import FastFormerEncoder
-from pytorch_widedeep.models.transformers.tab_transformer import TabTransformer
+from pytorch_widedeep.models.tab_mlp import MLP
+from pytorch_widedeep.models.transformers.encoders import FastFormerEncoder
+from pytorch_widedeep.models.transformers.embedding_layers import (
+    CatAndContEmbeddings,
+)
 
 
-class TabFastFormer(TabTransformer):
+class TabFastFormer(nn.Module):
     r"""Adaptation FastFormer (`arXiv:2108.09084 <https://arxiv.org/abs/2108.09084>`_)
     that can be used as the deeptabular component of a Wide & Deep model.
 
@@ -41,10 +44,6 @@ class TabFastFormer(TabTransformer):
         one particular column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    embed_continuous: bool, default = False,
-        Boolean indicating if the continuous features will be "embedded". See
-        ``pytorch_widedeep.models.transformers.layers.ContinuousEmbeddings``
-        This should be normally set to True
     embed_continuous_activation: str, default = None
         String indicating the activation function to be applied to the
         continuous embeddings, if any.
@@ -62,10 +61,10 @@ class TabFastFormer(TabTransformer):
         projection layers
     n_blocks: int, default = 6
         Number of FastFormer blocks
-    dropout: float, default = 0.1
-        Dropout that will be applied internally to the ``FastFormerEncoder``
-        (see :obj:`pytorch_widedeep.models.transformers.layers.FastFormerEncoder`)
-        and the output MLP
+    attn_dropout: float, default = 0.2
+        Dropout that will be applied to the MultiHeadAttention module
+    ff_dropout: float, default = 0.1
+        Dropout that will be applied to the FeedForward network
     share_qv_weights: bool, default = True
         Following the original publication, this is a boolean indicating if
         the the value and query transformation parameters will be shared
@@ -73,7 +72,7 @@ class TabFastFormer(TabTransformer):
         In addition to sharing the value and query transformation parameters,
         the parameters across different Fastformer layers are also shared in
         the paper.
-    transformer_activation: str, default = "gelu"
+    transformer_activation: str, default = "relu"
         FastFormer Encoder activation
         function. 'tanh', 'relu', 'leaky_relu', 'gelu' and 'geglu' are
         supported
@@ -83,6 +82,8 @@ class TabFastFormer(TabTransformer):
     mlp_activation: str, default = "relu"
         MLP activation function. 'tanh', 'relu', 'leaky_relu' and 'gelu' are
         supported
+    mlp_dropout: float, default = 0.1
+        Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
         Boolean indicating whether or not to apply batch normalization to the
         dense layers
@@ -96,7 +97,7 @@ class TabFastFormer(TabTransformer):
 
     Attributes
     ----------
-    cat_embed_and_cont: ``nn.Module``
+    cat_and_cont_embed: ``nn.Module``
         Module that processese the categorical and continuous columns
     transformer_blks: ``nn.Sequential``
         Sequence of FasFormer blocks.
@@ -129,24 +130,63 @@ class TabFastFormer(TabTransformer):
         add_shared_embed: bool = False,
         frac_shared_embed: float = 0.25,
         continuous_cols: Optional[List[str]] = None,
-        embed_continuous: bool = True,
         embed_continuous_activation: str = None,
         cont_norm_layer: str = None,
         input_dim: int = 32,
         n_heads: int = 8,
         use_bias: bool = False,
         n_blocks: int = 6,
-        dropout: float = 0.1,
+        attn_dropout: float = 0.1,
+        ff_dropout: float = 0.2,
         share_qv_weights: bool = True,
         share_weights: bool = True,
         transformer_activation: str = "relu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
+        mlp_dropout: float = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = True,
     ):
-        super().__init__(
+        super(TabFastFormer, self).__init__()
+
+        self.column_idx = column_idx
+        self.embed_input = embed_input
+        self.embed_dropout = embed_dropout
+        self.full_embed_dropout = full_embed_dropout
+        self.shared_embed = shared_embed
+        self.add_shared_embed = add_shared_embed
+        self.frac_shared_embed = frac_shared_embed
+        self.continuous_cols = continuous_cols
+        self.embed_continuous_activation = embed_continuous_activation
+        self.cont_norm_layer = cont_norm_layer
+        self.input_dim = input_dim
+        self.n_heads = n_heads
+        self.use_bias = use_bias
+        self.n_blocks = n_blocks
+        self.attn_dropout = attn_dropout
+        self.ff_dropout = ff_dropout
+        self.share_qv_weights = share_qv_weights
+        self.share_weights = share_weights
+        self.transformer_activation = transformer_activation
+        self.mlp_hidden_dims = mlp_hidden_dims
+        self.mlp_activation = mlp_activation
+        self.mlp_batchnorm = mlp_batchnorm
+        self.mlp_batchnorm_last = mlp_batchnorm_last
+        self.mlp_linear_first = mlp_linear_first
+
+        self.with_cls_token = "cls_token" in column_idx
+        self.n_cat = len(embed_input) if embed_input is not None else 0
+        self.n_cont = len(continuous_cols) if continuous_cols is not None else 0
+        self.n_feats = self.n_cat + self.n_cont
+
+        if self.n_cont and not self.n_cat and not self.embed_continuous:
+            raise ValueError(
+                "If only continuous features are used 'embed_continuous' must be set to 'True'"
+            )
+
+        self.cat_and_cont_embed = CatAndContEmbeddings(
+            input_dim,
             column_idx,
             embed_input,
             embed_dropout,
@@ -154,32 +194,21 @@ class TabFastFormer(TabTransformer):
             shared_embed,
             add_shared_embed,
             frac_shared_embed,
+            False,  # use_embed_bias
             continuous_cols,
-            embed_continuous,
+            True,  # embed_continuous,
             embed_continuous_activation,
+            True,  # use_cont_bias
             cont_norm_layer,
-            input_dim,
-            n_heads,
-            use_bias,
-            n_blocks,
-            dropout,
-            transformer_activation,
-            mlp_hidden_dims,
-            mlp_activation,
-            mlp_batchnorm,
-            mlp_batchnorm_last,
-            mlp_linear_first,
         )
-
-        self.share_qv_weights = share_qv_weights
-        self.share_weights = share_weights
 
         self.transformer_blks = nn.Sequential()
         first_fastformer_block = FastFormerEncoder(
             input_dim,
             n_heads,
             use_bias,
-            dropout,
+            attn_dropout,
+            ff_dropout,
             share_qv_weights,
             transformer_activation,
         )
@@ -196,11 +225,58 @@ class TabFastFormer(TabTransformer):
                         input_dim,
                         n_heads,
                         use_bias,
-                        dropout,
+                        attn_dropout,
+                        ff_dropout,
                         share_qv_weights,
                         transformer_activation,
                     ),
                 )
+
+        attn_output_dim = (
+            self.input_dim
+            if self.with_cls_token
+            else (self.n_cat + self.n_cont) * self.input_dim
+        )
+        if not mlp_hidden_dims:
+            mlp_hidden_dims = [
+                attn_output_dim,
+                attn_output_dim * 4,
+                attn_output_dim * 2,
+            ]
+        else:
+            assert mlp_hidden_dims[0] == attn_output_dim, (
+                f"The input dim of the MLP must be {attn_output_dim}. "
+                "Got {mlp_hidden_dims[0]} instead"
+            )
+        self.transformer_mlp = MLP(
+            mlp_hidden_dims,
+            mlp_activation,
+            mlp_dropout,
+            mlp_batchnorm,
+            mlp_batchnorm_last,
+            mlp_linear_first,
+        )
+
+        # the output_dim attribute will be used as input_dim when "merging" the models
+        self.output_dim = mlp_hidden_dims[-1]
+
+    def forward(self, X: Tensor) -> Tensor:
+
+        x_cat, x_cont = self.cat_and_cont_embed(X)
+
+        if x_cat is not None:
+            x = x_cat
+        if x_cont is not None:
+            x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
+
+        x = self.transformer_blks(x)
+
+        if self.with_cls_token:
+            x = x[:, 0, :]
+        else:
+            x = x.flatten(1)
+
+        return self.transformer_mlp(x)
 
     @property
     def attention_weights(self) -> List:
@@ -208,4 +284,8 @@ class TabFastFormer(TabTransformer):
         tuple where the first and second elements are :math:`\alpha`
         and :math:`\beta` attention weights in the paper.
         """
-        return [blk.attn.attn_weights for blk in self.transformer_blks]
+        if self.share_weights:
+            attention_weights = [self.transformer_blks[0].attn.attn_weight]
+        else:
+            attention_weights = [blk.attn.attn_weights for blk in self.transformer_blks]
+        return attention_weights

@@ -4,8 +4,8 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import MLP
-from pytorch_widedeep.models.transformers.layers import (
-    TransformerEncoder,
+from pytorch_widedeep.models.transformers.encoders import PerceiverEncoder
+from pytorch_widedeep.models.transformers.embedding_layers import (
     CatAndContEmbeddings,
 )
 
@@ -85,10 +85,10 @@ class TabPerceiver(nn.Module):
     share_weights: Boolean, default = True
         Boolean indicating if the weights will be shared between Perceiver
         blocks
-    dropout: float, default = 0.1
-        Dropout that will be applied internally to the ``TransformerEncoder``
-        (see :obj:`pytorch_widedeep.models.transformers.layers.TransformerEncoder`)
-        and the output MLP
+    attn_dropout: float, default = 0.2
+        Dropout that will be applied to the MultiHeadAttention module
+    ff_dropout: float, default = 0.1
+        Dropout that will be applied to the FeedForward network
     transformer_activation: str, default = "gelu"
         Transformer Encoder internal activation
         function. 'tanh', 'relu', 'leaky_relu', 'gelu' and 'geglu' are
@@ -99,6 +99,8 @@ class TabPerceiver(nn.Module):
     mlp_activation: str, default = "relu"
         MLP activation function. 'tanh', 'relu', 'leaky_relu' and 'gelu' are
         supported
+    mlp_dropout: float, default = 0.1
+        Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
         Boolean indicating whether or not to apply batch normalization to the
         dense layers
@@ -112,7 +114,7 @@ class TabPerceiver(nn.Module):
 
     Attributes
     ----------
-    cat_embed_and_cont: ``nn.Module``
+    cat_and_cont_embed: ``nn.Module``
         Module that processese the categorical and continuous columns
     perceiver_blks: ``nn.ModuleDict``
         ModuleDict with the Perceiver blocks
@@ -160,10 +162,12 @@ class TabPerceiver(nn.Module):
         n_latent_blocks: int = 4,
         n_perceiver_blocks: int = 4,
         share_weights: bool = True,
-        dropout: float = 0.1,
+        attn_dropout: float = 0.1,
+        ff_dropout: float = 0.1,
         transformer_activation: str = "geglu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
+        mlp_dropout: float = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = True,
@@ -189,7 +193,8 @@ class TabPerceiver(nn.Module):
         self.n_latent_blocks = n_latent_blocks
         self.n_perceiver_blocks = n_perceiver_blocks
         self.share_weights = share_weights
-        self.dropout = dropout
+        self.attn_dropout = attn_dropout
+        self.ff_dropout = ff_dropout
         self.transformer_activation = transformer_activation
         self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation
@@ -205,8 +210,8 @@ class TabPerceiver(nn.Module):
         # This should be named 'cat_and_cont_embed' since the continuous cols
         # will always be embedded for the TabPerceiver. However is very
         # convenient for other funcionalities to name
-        # it 'cat_embed_and_cont'
-        self.cat_embed_and_cont = CatAndContEmbeddings(
+        # it 'cat_and_cont_embed'
+        self.cat_and_cont_embed = CatAndContEmbeddings(
             input_dim,
             column_idx,
             embed_input,
@@ -215,9 +220,11 @@ class TabPerceiver(nn.Module):
             shared_embed,
             add_shared_embed,
             frac_shared_embed,
+            False,  # use_embed_bias
             continuous_cols,
             True,  # embed_continuous,
             embed_continuous_activation,
+            True,  # use_cont_bias
             cont_norm_layer,
         )
 
@@ -240,10 +247,15 @@ class TabPerceiver(nn.Module):
 
         if not mlp_hidden_dims:
             self.mlp_hidden_dims = [latent_dim, latent_dim * 4, latent_dim * 2]
+        else:
+            assert mlp_hidden_dims[0] == latent_dim, (
+                f"The input dim of the MLP must be {latent_dim}. "
+                "Got {mlp_hidden_dims[0]} instead"
+            )
         self.perceiver_mlp = MLP(
             self.mlp_hidden_dims,
             mlp_activation,
-            dropout,
+            mlp_dropout,
             mlp_batchnorm,
             mlp_batchnorm_last,
             mlp_linear_first,
@@ -254,8 +266,11 @@ class TabPerceiver(nn.Module):
 
     def forward(self, X: Tensor) -> Tensor:
 
-        x_cat, x_cont = self.cat_embed_and_cont(X)
-        x_emb = torch.cat([x_cat, x_cont], 1)
+        x_cat, x_cont = self.cat_and_cont_embed(X)
+        if x_cat is not None:
+            x_emb = x_cat
+        if x_cont is not None:
+            x_emb = torch.cat([x_emb, x_cont], 1) if x_cat is not None else x_cont
 
         x = einops.repeat(self.latents, "n d -> b n d", b=X.shape[0])
 
@@ -310,11 +325,12 @@ class TabPerceiver(nn.Module):
         cross_attns = nn.ModuleList()
         for _ in range(self.n_cross_attns):
             cross_attns.append(
-                TransformerEncoder(
+                PerceiverEncoder(
                     self.input_dim,
                     self.n_cross_attn_heads,
                     False,  # use_bias
-                    self.dropout,
+                    self.attn_dropout,
+                    self.ff_dropout,
                     self.transformer_activation,
                     self.latent_dim,  # q_dim,
                 ),
@@ -326,11 +342,12 @@ class TabPerceiver(nn.Module):
         for i in range(self.n_latent_blocks):
             latent_transformer.add_module(
                 "latent_block" + str(i),
-                TransformerEncoder(
+                PerceiverEncoder(
                     self.latent_dim,  # input_dim
                     self.n_latent_heads,
                     False,  # use_bias
-                    self.dropout,
+                    self.attn_dropout,
+                    self.ff_dropout,
                     self.transformer_activation,
                 ),
             )

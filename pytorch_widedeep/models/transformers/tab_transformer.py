@@ -3,8 +3,8 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import MLP
-from pytorch_widedeep.models.transformers.layers import (
-    TransformerEncoder,
+from pytorch_widedeep.models.transformers.encoders import TransformerEncoder
+from pytorch_widedeep.models.transformers.embedding_layers import (
     CatAndContEmbeddings,
 )
 
@@ -68,10 +68,10 @@ class TabTransformer(nn.Module):
         projection layers
     n_blocks: int, default = 6
         Number of Transformer blocks
-    dropout: float, default = 0.1
-        Dropout that will be applied internally to the ``TransformerEncoder``
-        (see :obj:`pytorch_widedeep.models.transformers.layers.TransformerEncoder`)
-        and the output MLP
+    attn_dropout: float, default = 0.2
+        Dropout that will be applied to the MultiHeadAttention module
+    ff_dropout: float, default = 0.1
+        Dropout that will be applied to the FeedForward network
     transformer_activation: str, default = "gelu"
         Transformer Encoder activation
         function. 'tanh', 'relu', 'leaky_relu', 'gelu' and 'geglu' are
@@ -82,6 +82,8 @@ class TabTransformer(nn.Module):
     mlp_activation: str, default = "relu"
         MLP activation function. 'tanh', 'relu', 'leaky_relu' and 'gelu' are
         supported
+    mlp_dropout: float, default = 0.1
+        Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
         Boolean indicating whether or not to apply batch normalization to the
         dense layers
@@ -95,7 +97,7 @@ class TabTransformer(nn.Module):
 
     Attributes
     ----------
-    cat_embed_and_cont: ``nn.Module``
+    cat_and_cont_embed: ``nn.Module``
         Module that processese the categorical and continuous columns
     transformer_blks: ``nn.Sequential``
         Sequence of Transformer blocks
@@ -135,10 +137,12 @@ class TabTransformer(nn.Module):
         n_heads: int = 8,
         use_bias: bool = False,
         n_blocks: int = 6,
-        dropout: float = 0.1,
+        attn_dropout: float = 0.2,
+        ff_dropout: float = 0.1,
         transformer_activation: str = "gelu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
+        mlp_dropout: float = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = True,
@@ -160,7 +164,8 @@ class TabTransformer(nn.Module):
         self.n_heads = n_heads
         self.use_bias = use_bias
         self.n_blocks = n_blocks
-        self.dropout = dropout
+        self.attn_dropout = attn_dropout
+        self.ff_dropout = ff_dropout
         self.transformer_activation = transformer_activation
         self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation
@@ -177,7 +182,7 @@ class TabTransformer(nn.Module):
                 "If only continuous features are used 'embed_continuous' must be set to 'True'"
             )
 
-        self.cat_embed_and_cont = CatAndContEmbeddings(
+        self.cat_and_cont_embed = CatAndContEmbeddings(
             input_dim,
             column_idx,
             embed_input,
@@ -186,9 +191,11 @@ class TabTransformer(nn.Module):
             shared_embed,
             add_shared_embed,
             frac_shared_embed,
+            False,  # use_embed_bias
             continuous_cols,
             embed_continuous,
             embed_continuous_activation,
+            True,  # use_cont_bias
             cont_norm_layer,
         )
 
@@ -200,17 +207,28 @@ class TabTransformer(nn.Module):
                     input_dim,
                     n_heads,
                     use_bias,
-                    dropout,
+                    attn_dropout,
+                    ff_dropout,
                     transformer_activation,
                 ),
             )
 
+        attn_output_dim = self._compute_attn_output_dim()
         if not mlp_hidden_dims:
-            mlp_hidden_dims = self._set_mlp_hidden_dims()
+            mlp_hidden_dims = [
+                attn_output_dim,
+                attn_output_dim * 4,
+                attn_output_dim * 2,
+            ]
+        else:
+            assert mlp_hidden_dims[0] == attn_output_dim, (
+                f"The input dim of the MLP must be {attn_output_dim}. "
+                "Got {mlp_hidden_dims[0]} instead"
+            )
         self.transformer_mlp = MLP(
             mlp_hidden_dims,
             mlp_activation,
-            dropout,
+            mlp_dropout,
             mlp_batchnorm,
             mlp_batchnorm_last,
             mlp_linear_first,
@@ -221,7 +239,7 @@ class TabTransformer(nn.Module):
 
     def forward(self, X: Tensor) -> Tensor:
 
-        x_cat, x_cont = self.cat_embed_and_cont(X)
+        x_cat, x_cont = self.cat_and_cont_embed(X)
 
         if x_cat is not None:
             x = x_cat
@@ -245,24 +263,13 @@ class TabTransformer(nn.Module):
         r"""List with the attention weights"""
         return [blk.attn.attn_weights for blk in self.transformer_blks]
 
-    def _set_mlp_hidden_dims(self) -> List[int]:
+    def _compute_attn_output_dim(self) -> int:
 
-        if self.n_cat > 0 and self.n_cont > 0:
-            if self.with_cls_token:
-                if self.embed_continuous:
-                    mlp_inp_l = self.input_dim
-                else:
-                    mlp_inp_l = self.input_dim + self.n_cont
-            elif self.embed_continuous:
-                mlp_inp_l = (self.n_cat + self.n_cont) * self.input_dim
-            else:
-                mlp_inp_l = self.n_cat * self.input_dim + self.n_cont
+        if self.with_cls_token:
+            attn_output_dim = self.input_dim
+        elif self.embed_continuous:
+            attn_output_dim = (self.n_cat + self.n_cont) * self.input_dim
         else:
-            n_feat = self.n_cat + self.n_cont
-            if self.with_cls_token:
-                mlp_inp_l = self.input_dim
-            else:
-                mlp_inp_l = n_feat * self.input_dim
-        mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
+            attn_output_dim = self.n_cat * self.input_dim + self.n_cont
 
-        return mlp_hidden_dims
+        return attn_output_dim

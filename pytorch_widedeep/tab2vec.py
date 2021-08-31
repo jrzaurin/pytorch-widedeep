@@ -108,13 +108,18 @@ class Tab2Vec:
         transformer_family = [
             "tabtransformer",
             "saint",
+            "fttransformer",
             "tabperceiver",
             "tabfastformer",
         ]
         self.is_transformer = (
             model.deeptabular[0].__class__.__name__.lower() in transformer_family  # type: ignore[index]
         )
-        self.vectorizer = deepcopy(model.deeptabular[0].cat_embed_and_cont)  # type: ignore[index]
+        self.vectorizer = (
+            deepcopy(model.deeptabular[0].cat_embed_and_cont)  # type: ignore[index]
+            if not self.is_transformer
+            else deepcopy(model.deeptabular[0].cat_and_cont_embed)  # type: ignore[index]
+        )
         self.vectorizer.to(device)
 
     def fit(self, df: pd.DataFrame, target_col: Optional[str] = None) -> "Tab2Vec":

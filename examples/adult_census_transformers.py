@@ -8,6 +8,7 @@ from pytorch_widedeep.models import (
     Wide,
     WideDeep,
     TabPerceiver,
+    FTTransformer,
     TabFastFormer,
     TabTransformer,
 )
@@ -77,7 +78,6 @@ if __name__ == "__main__":
         column_idx=prepare_deep.column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
-        embed_continuous=True,
         cont_norm_layer="batchnorm",
         n_blocks=4,
     )
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
         n_latents=6,
-        latent_dim=32,
+        latent_dim=16,
         n_latent_blocks=4,
         n_perceiver_blocks=2,
         share_weights=False,
@@ -97,14 +97,29 @@ if __name__ == "__main__":
         column_idx=prepare_deep.column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
-        embed_continuous=True,
         n_blocks=4,
         n_heads=4,
         share_qv_weights=False,
         share_weights=False,
     )
 
-    for tab_model in [tab_transformer, saint, tab_perceiver, tab_fastformer]:
+    ft_transformer = FTTransformer(
+        column_idx=prepare_deep.column_idx,
+        embed_input=prepare_deep.embeddings_input,
+        continuous_cols=continuous_cols,
+        input_dim=64,
+        dim_k=32,
+        n_blocks=3,
+        n_heads=4,
+    )
+
+    for tab_model in [
+        tab_transformer,
+        saint,
+        ft_transformer,
+        tab_perceiver,
+        tab_fastformer,
+    ]:
 
         model = WideDeep(wide=wide, deeptabular=tab_model)
 

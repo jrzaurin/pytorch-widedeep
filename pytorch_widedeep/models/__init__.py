@@ -7,5 +7,6 @@ from pytorch_widedeep.models.tab_resnet import TabResnet
 from pytorch_widedeep.models.tabnet.tab_net import TabNet
 from pytorch_widedeep.models.transformers.saint import SAINT
 from pytorch_widedeep.models.transformers.tab_perceiver import TabPerceiver
+from pytorch_widedeep.models.transformers.ft_transformer import FTTransformer
 from pytorch_widedeep.models.transformers.tab_fastformer import TabFastFormer
 from pytorch_widedeep.models.transformers.tab_transformer import TabTransformer

@@ -24,6 +24,13 @@ using wide and deep models.
 
 **Slack**: if you want to contribute or just want to chat with us, join [slack](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
 
+The content of this document is organized as follows:
+
+1. [introduction](#introduction)
+2. [The deeptabular component](#the-deeptabular-component)
+3. [installation](#installation)
+4. [quick start (tl;dr)](#quick-start)
+
 ### Introduction
 
 ``pytorch-widedeep`` is based on Google's [Wide and Deep Algorithm](https://arxiv.org/abs/1606.07792)
@@ -82,6 +89,8 @@ into:
   <img width="300" src="docs/figures/architecture_2_math.png">
 </p>
 
+### The ``deeptabular`` component
+
 It is important to emphasize that **each individual component, `wide`,
 `deeptabular`, `deeptext` and `deepimage`, can be used independently** and in
 isolation. For example, one could use only `wide`, which is in simply a
@@ -136,7 +145,7 @@ components can be found in the Examples folder. Just in case
 (pre-trained ResNets or stack of CNNs) models.
 
 
-### Installation
+###  Installation
 
 Install using pip:
 
