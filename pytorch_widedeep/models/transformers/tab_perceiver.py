@@ -4,8 +4,8 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import MLP
-from pytorch_widedeep.models.transformers.encoders import PerceiverEncoder
-from pytorch_widedeep.models.transformers.embedding_layers import (
+from pytorch_widedeep.models.transformers._encoders import PerceiverEncoder
+from pytorch_widedeep.models.transformers._embeddings_layers import (
     CatAndContEmbeddings,
 )
 
@@ -82,7 +82,7 @@ class TabPerceiver(nn.Module):
     n_perceiver_blocks: int, default = 4
         Number of Perceiver blocks defined as [Cross Attention -> Latent
         Transformer]
-    share_weights: Boolean, default = True
+    share_weights: Boolean, default = False
         Boolean indicating if the weights will be shared between Perceiver
         blocks
     attn_dropout: float, default = 0.2
@@ -161,7 +161,7 @@ class TabPerceiver(nn.Module):
         n_latent_heads: int = 4,
         n_latent_blocks: int = 4,
         n_perceiver_blocks: int = 4,
-        share_weights: bool = True,
+        share_weights: bool = False,
         attn_dropout: float = 0.1,
         ff_dropout: float = 0.1,
         transformer_activation: str = "geglu",

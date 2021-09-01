@@ -192,7 +192,7 @@ def alias_to_loss(loss_fn: str, **kwargs):
 
     Examples
     --------
-    >>> from pytorch_widedeep.training.trainer_utils import alias_to_loss
+    >>> from pytorch_widedeep.training._trainer_utils import alias_to_loss
     >>> loss_fn = alias_to_loss(loss_fn="binary_logloss", weight=None)
     """
     if loss_fn not in _ObjectiveToMethod.keys():

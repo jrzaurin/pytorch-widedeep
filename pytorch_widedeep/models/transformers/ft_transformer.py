@@ -2,8 +2,8 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import MLP
-from pytorch_widedeep.models.transformers.encoders import FTTransformerEncoder
-from pytorch_widedeep.models.transformers.embedding_layers import (
+from pytorch_widedeep.models.transformers._encoders import FTTransformerEncoder
+from pytorch_widedeep.models.transformers._embeddings_layers import (
     CatAndContEmbeddings,
 )
 

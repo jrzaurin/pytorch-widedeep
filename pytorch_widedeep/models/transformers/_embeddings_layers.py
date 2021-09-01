@@ -135,7 +135,7 @@ class CategoricalEmbeddings(nn.Module):
 
         # Categorical: val + 1 because 0 is reserved for padding/unseen cateogories.
         if self.shared_embed:
-            self.cat_embed: Union[nn.ModuleDict, nn.Embedding] = nn.ModuleDict(
+            self.embed: Union[nn.ModuleDict, nn.Embedding] = nn.ModuleDict(
                 {
                     "emb_layer_"
                     + col: SharedEmbeddings(
@@ -150,31 +150,29 @@ class CategoricalEmbeddings(nn.Module):
                 }
             )
         else:
-            self.cat_embed = nn.Embedding(self.n_tokens + 1, embed_dim, padding_idx=0)
+            self.embed = nn.Embedding(self.n_tokens + 1, embed_dim, padding_idx=0)
             if full_embed_dropout:
-                self.embedding_dropout: DropoutLayers = FullEmbeddingDropout(
-                    embed_dropout
-                )
+                self.dropout: DropoutLayers = FullEmbeddingDropout(embed_dropout)
             else:
-                self.embedding_dropout = nn.Dropout(embed_dropout)
+                self.dropout = nn.Dropout(embed_dropout)
 
     def forward(self, X: Tensor) -> Tensor:
         if self.shared_embed:
             cat_embed = [
-                self.cat_embed["emb_layer_" + col](  # type: ignore[index]
+                self.embed["emb_layer_" + col](  # type: ignore[index]
                     X[:, self.column_idx[col]].long()
                 ).unsqueeze(1)
                 for col, _ in self.embed_input
             ]
-            x_cat = torch.cat(cat_embed, 1)
+            x = torch.cat(cat_embed, 1)
         else:
-            x_cat = self.cat_embed(X[:, self.cat_idx].long())
-            x_cat = self.embedding_dropout(x_cat)
+            x = self.embed(X[:, self.cat_idx].long())
+            x = self.dropout(x)
 
         if self.bias is not None:
-            x_cat = x_cat + self.bias.unsqueeze(0)
+            x = x + self.bias.unsqueeze(0)
 
-        return x_cat
+        return x
 
 
 class CatAndContEmbeddings(nn.Module):

@@ -5,8 +5,8 @@ import torch
 import pytest
 
 from pytorch_widedeep.wdtypes import WideDeep
+from pytorch_widedeep.models.tabnet._utils import create_explain_matrix
 from pytorch_widedeep.models.tabnet.tab_net import TabNet  # noqa: F403
-from pytorch_widedeep.models.tabnet.tab_net_utils import create_explain_matrix
 
 # I am going over test this model due to the number of components
 

@@ -2,7 +2,7 @@ import einops
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.transformers.attention_layers import (
+from pytorch_widedeep.models.transformers._attention_layers import (
     AddNorm,
     NormAdd,
     PositionwiseFF,

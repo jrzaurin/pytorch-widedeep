@@ -3,7 +3,7 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import CatEmbeddingsAndCont
-from pytorch_widedeep.models.tabnet.layers import (
+from pytorch_widedeep.models.tabnet._layers import (
     TabNetEncoder,
     initialize_non_glu,
 )

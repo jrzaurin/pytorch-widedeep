@@ -13,6 +13,7 @@ from pytorch_widedeep.models import (
     WideDeep,
     TabResnet,
     TabPerceiver,
+    FTTransformer,
     TabFastFormer,
     TabTransformer,
 )
@@ -78,6 +79,33 @@ def test_non_transformer_models(deeptabular):
     assert X_vec.shape[1] == embed_dim + cont_dim
 
 
+###############################################################################
+# Test Transformer models
+###############################################################################
+
+
+def _build_model(model_name, params):
+    if model_name == "tabtransformer":
+        return TabTransformer(input_dim=8, n_heads=2, n_blocks=2, **params)
+    if model_name == "saint":
+        return SAINT(input_dim=8, n_heads=2, n_blocks=2, **params)
+    if model_name == "fttransformer":
+        return FTTransformer(n_blocks=2, n_heads=2, dim_k=2, **params)
+    if model_name == "tabfastformer":
+        return TabFastFormer(n_blocks=2, n_heads=2, **params)
+    if model_name == "tabperceiver":
+        return TabPerceiver(
+            input_dim=8,
+            n_cross_attn_heads=2,
+            n_latents=2,
+            latent_dim=8,
+            n_latent_heads=2,
+            n_perceiver_blocks=2,
+            share_weights=False,
+            **params
+        )
+
+
 @pytest.mark.parametrize(
     "model_name, with_cls_token, share_embeddings, embed_continuous",
     [
@@ -85,26 +113,9 @@ def test_non_transformer_models(deeptabular):
         ("tabtransformer", True, False, False),
         ("tabtransformer", False, True, False),
         ("tabtransformer", True, False, True),
-        ("saint", False, False, True),
-        ("saint", True, False, True),
-        ("saint", False, True, True),
-        ("saint", True, False, True),
-        (
-            "tabperceiver",
-            False,
-            False,
-            True,
-        ),  # embed_continuous is irrelevant for the perceiver
-        ("tabperceiver", True, False, True),
-        ("tabperceiver", False, True, True),
-        ("tabperceiver", True, False, True),
-        ("tabfastformer", False, False, True),
-        ("tabfastformer", True, False, True),
-        ("tabfastformer", False, True, True),
-        ("tabfastformer", True, False, True),
     ],
 )
-def test_transformer_models(
+def test_tab_transformer_models(
     model_name, with_cls_token, share_embeddings, embed_continuous
 ):
 
@@ -120,50 +131,14 @@ def test_transformer_models(
     )
     X_tab = tab_preprocessor.fit_transform(df_init)  # noqa: F841
 
-    if model_name == "tabtransformer":
-        deeptabular = TabTransformer(
-            column_idx=tab_preprocessor.column_idx,
-            embed_input=tab_preprocessor.embeddings_input,
-            continuous_cols=tab_preprocessor.continuous_cols,
-            embed_continuous=embed_continuous,
-            input_dim=8,
-            n_heads=2,
-            n_blocks=2,
-        )
-    elif model_name == "saint":
-        deeptabular = SAINT(
-            column_idx=tab_preprocessor.column_idx,
-            embed_input=tab_preprocessor.embeddings_input,
-            continuous_cols=tab_preprocessor.continuous_cols,
-            embed_continuous=True,
-            input_dim=8,
-            n_heads=2,
-            n_blocks=2,
-        )
-    elif model_name == "tabperceiver":
-        deeptabular = TabPerceiver(
-            column_idx=tab_preprocessor.column_idx,
-            embed_input=tab_preprocessor.embeddings_input,
-            continuous_cols=tab_preprocessor.continuous_cols,
-            input_dim=8,
-            n_cross_attn_heads=2,
-            n_latents=2,
-            latent_dim=8,
-            n_latent_heads=2,
-            n_perceiver_blocks=2,
-            share_weights=False,
-        )
-    elif model_name == "tabfastformer":
-        deeptabular = TabFastFormer(
-            column_idx=tab_preprocessor.column_idx,
-            embed_input=tab_preprocessor.embeddings_input,
-            continuous_cols=tab_preprocessor.continuous_cols,
-            embed_continuous=embed_continuous,
-            n_blocks=2,
-            n_heads=4,
-            share_qv_weights=False,
-            share_weights=False,
-        )
+    params = {
+        "column_idx": tab_preprocessor.column_idx,
+        "embed_input": tab_preprocessor.embeddings_input,
+        "continuous_cols": tab_preprocessor.continuous_cols,
+        "embed_continuous": embed_continuous,
+    }
+
+    deeptabular = _build_model(model_name, params)
 
     # Let's assume the model is trained
     model = WideDeep(deeptabular=deeptabular)
@@ -174,5 +149,57 @@ def test_transformer_models(
         out_dim = (len(embed_cols) + len(cont_cols)) * deeptabular.input_dim
     else:
         out_dim = len(embed_cols) * deeptabular.input_dim + len(cont_cols)
+
+    assert X_vec.shape[1] == out_dim
+
+
+@pytest.mark.parametrize(
+    "model_name, with_cls_token, share_embeddings",
+    [
+        ("saint", False, True),
+        ("saint", True, True),
+        ("saint", False, False),
+        ("fttransformer", False, True),
+        ("fttransformer", True, True),
+        ("fttransformer", False, False),
+        ("tabfastformer", False, True),
+        ("tabfastformer", True, True),
+        ("tabfastformer", False, False),
+        (
+            "tabperceiver",
+            False,
+            True,
+        ),  # for the perceiver we do not need with_cls_token
+        ("tabperceiver", False, False),
+    ],
+)
+def test_transformer_family_models(model_name, with_cls_token, share_embeddings):
+
+    embed_cols = ["a", "b"]
+    cont_cols = ["c", "d"]
+
+    tab_preprocessor = TabPreprocessor(
+        embed_cols=embed_cols,
+        continuous_cols=cont_cols,
+        for_transformer=True,
+        with_cls_token=with_cls_token,
+        shared_embed=share_embeddings,
+    )
+    X_tab = tab_preprocessor.fit_transform(df_init)  # noqa: F841
+
+    params = {
+        "column_idx": tab_preprocessor.column_idx,
+        "embed_input": tab_preprocessor.embeddings_input,
+        "continuous_cols": tab_preprocessor.continuous_cols,
+    }
+
+    deeptabular = _build_model(model_name, params)
+
+    # Let's assume the model is trained
+    model = WideDeep(deeptabular=deeptabular)
+    t2v = Tab2Vec(model, tab_preprocessor)
+    X_vec = t2v.transform(df_t2v)
+
+    out_dim = (len(embed_cols) + len(cont_cols)) * deeptabular.input_dim
 
     assert X_vec.shape[1] == out_dim

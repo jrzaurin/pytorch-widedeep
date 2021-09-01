@@ -2,8 +2,8 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import MLP
-from pytorch_widedeep.models.transformers.encoders import FastFormerEncoder
-from pytorch_widedeep.models.transformers.embedding_layers import (
+from pytorch_widedeep.models.transformers._encoders import FastFormerEncoder
+from pytorch_widedeep.models.transformers._embeddings_layers import (
     CatAndContEmbeddings,
 )
 
@@ -65,10 +65,10 @@ class TabFastFormer(nn.Module):
         Dropout that will be applied to the MultiHeadAttention module
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
-    share_qv_weights: bool, default = True
+    share_qv_weights: bool, default = False
         Following the original publication, this is a boolean indicating if
         the the value and query transformation parameters will be shared
-    share_weights: bool, default = True
+    share_weights: bool, default = False
         In addition to sharing the value and query transformation parameters,
         the parameters across different Fastformer layers are also shared in
         the paper.
@@ -138,8 +138,8 @@ class TabFastFormer(nn.Module):
         n_blocks: int = 6,
         attn_dropout: float = 0.1,
         ff_dropout: float = 0.2,
-        share_qv_weights: bool = True,
-        share_weights: bool = True,
+        share_qv_weights: bool = False,
+        share_weights: bool = False,
         transformer_activation: str = "relu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",

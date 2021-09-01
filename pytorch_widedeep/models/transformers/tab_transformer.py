@@ -3,8 +3,8 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import MLP
-from pytorch_widedeep.models.transformers.encoders import TransformerEncoder
-from pytorch_widedeep.models.transformers.embedding_layers import (
+from pytorch_widedeep.models.transformers._encoders import TransformerEncoder
+from pytorch_widedeep.models.transformers._embeddings_layers import (
     CatAndContEmbeddings,
 )
 
@@ -266,7 +266,10 @@ class TabTransformer(nn.Module):
     def _compute_attn_output_dim(self) -> int:
 
         if self.with_cls_token:
-            attn_output_dim = self.input_dim
+            if self.embed_continuous:
+                attn_output_dim = self.input_dim
+            else:
+                attn_output_dim = self.input_dim + self.n_cont
         elif self.embed_continuous:
             attn_output_dim = (self.n_cat + self.n_cont) * self.input_dim
         else:

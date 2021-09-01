@@ -108,7 +108,7 @@ if __name__ == "__main__":
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
         input_dim=64,
-        dim_k=32,
+        dim_k=6,
         n_blocks=3,
         n_heads=4,
     )

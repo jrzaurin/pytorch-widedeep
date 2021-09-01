@@ -25,14 +25,14 @@ from pytorch_widedeep.dataloaders import DataLoaderDefault
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.models.tabnet._utils import create_explain_matrix
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
-from pytorch_widedeep.training.trainer_utils import (
+from pytorch_widedeep.training._trainer_utils import (
     alias_to_loss,
     save_epoch_logs,
     wd_train_val_split,
     print_loss_and_metric,
 )
-from pytorch_widedeep.models.tabnet.tab_net_utils import create_explain_matrix
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
 from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
 from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
