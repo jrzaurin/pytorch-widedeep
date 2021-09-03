@@ -119,7 +119,7 @@ class LinearAttention(nn.Module):
         n_heads: int,
         use_bias: bool,
         dropout: float,
-        dim_k: int,
+        kv_compression_factor: float,
         kv_sharing: bool,
     ):
         super(LinearAttention, self).__init__()
@@ -128,8 +128,10 @@ class LinearAttention(nn.Module):
         self.n_feats = n_feats
         self.head_dim = input_dim // n_heads
         self.n_heads = n_heads
-        self.dim_k = dim_k
+        self.kv_compression_factor = kv_compression_factor
         self.share_kv = kv_sharing
+
+        dim_k = int(self.kv_compression_factor * self.n_feats)
 
         self.dropout = nn.Dropout(dropout)
         self.qkv_proj = nn.Linear(input_dim, input_dim * 3, bias=use_bias)

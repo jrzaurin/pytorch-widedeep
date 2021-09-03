@@ -25,13 +25,17 @@ class LabelEncoder:
         encoded.
     for_transformer: bool, default = False
         Boolean indicating whether the preprocessed data will be passed to a
-        transformer-based model (i.e. ``TabTransformer`` or ``SAINT``).
+        transformer-based model.
+        See :obj:`pytorch_widedeep.models.transformers`
     shared_embed: bool, default = False
         Boolean indicating if the embeddings will be "shared" when using
-        transformer-based models
-        (see:
-        ``pytorch_widedeep.models.transformers.layers.SharedEmbeddings``)
-        then each column will be embed indepedently.
+        transformer-based models. The idea behind ``shared_embed`` is
+        described in the Appendix A in the `TabTransformer paper
+        <https://arxiv.org/abs/2012.06678>`_: `'The goal of having column
+        embedding is to enable the model to distinguish the classes in one
+        column from those in the other columns'`. In other words, the idea is
+        to let the model learn which column is embedded at the time. See:
+        :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
 
     Attributes
     -----------

@@ -9,79 +9,81 @@ from pytorch_widedeep.models.transformers._embeddings_layers import (
 
 
 class TabFastFormer(nn.Module):
-    r"""Adaptation FastFormer (`arXiv:2108.09084 <https://arxiv.org/abs/2108.09084>`_)
-    that can be used as the deeptabular component of a Wide & Deep model.
+    r"""Defines an adaptation of a ``FastFormer`` model
+    (`arXiv:2108.09084 <https://arxiv.org/abs/2108.09084>`_) that can be used
+    as the ``deeptabular`` component of a Wide & Deep model.
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the DeepDense model. Required to slice the tensors. e.g. {'education':
-        0, 'relationship': 1, 'workclass': 2, ...}
+        the model. Required to slice the tensors. e.g.
+        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
     embed_input: List
         List of Tuples with the column name and number of unique values
-        e.g. [(education, 11), ...]
+        e.g. [('education', 11), ...]
     embed_dropout: float, default = 0.1
         Dropout to be applied to the embeddings matrix
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
-        :obj:`pytorch_widedeep.models.transformers.layers.FullEmbeddingDropout`.
+        :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
         If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
     shared_embed: bool, default = False
         The idea behind ``shared_embed`` is described in the Appendix A in the
         `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
         goal of having column embedding is to enable the model to distinguish
         the classes in one column from those in the other columns'`. In other
-        words, the idea is to let the model learn which column is embedding
+        words, the idea is to let the model learn which column is embedded
         at the time.
     add_shared_embed: bool, default = False,
-        The two embedding sharing strategies are: 1) add the shared embeddings to the column
-        embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
-        embeddings. See :obj:`pytorch_widedeep.models.transformers.layers.SharedEmbeddings`
+        The two embedding sharing strategies are: 1) add the shared embeddings
+        to the column embeddings or 2) to replace the first
+        ``frac_shared_embed`` with the shared embeddings.
+        See :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
     frac_shared_embed: float, default = 0.25
-        The fraction of embeddings that will be shared by all the different categories for
-        one particular column.
+        The fraction of embeddings that will be shared (if ``add_shared_embed
+        = False``) by all the different categories for one particular
+        column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     embed_continuous_activation: str, default = None
         String indicating the activation function to be applied to the
-        continuous embeddings, if any.
-        'tanh', 'relu', 'leaky_relu' and 'gelu' are supported.
+        continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
+        ``gelu`` are supported.
     cont_norm_layer: str, default =  None,
-        Type of normalization layer applied to the continuous features. Options
-        are: 'layernorm', 'batchnorm' or None.
+        Type of normalization layer applied to the continuous features before
+        they are embedded. Options are: ``layernorm``, ``batchnorm`` or
+        ``None``.
     input_dim: int, default = 32
-        The so-called *dimension of the model*. Is the number of embeddings used to encode
-        the categorical and/or continuous columns
+        The so-called *dimension of the model*. In general is the number of
+        embeddings used to encode the categorical and/or continuous columns
     n_heads: int, default = 8
         Number of attention heads per FastFormer block
     use_bias: bool, default = False
         Boolean indicating whether or not to use bias in the Q, K, and V
         projection layers
-    n_blocks: int, default = 6
+    n_blocks: int, default = 4
         Number of FastFormer blocks
     attn_dropout: float, default = 0.2
-        Dropout that will be applied to the MultiHeadAttention module
+        Dropout that will be applied to the Additive Attention layers
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
     share_qv_weights: bool, default = False
-        Following the original publication, this is a boolean indicating if
-        the the value and query transformation parameters will be shared
+        Following the paper, this is a boolean indicating if the the value and
+        the query transformation parameters will be shared
     share_weights: bool, default = False
         In addition to sharing the value and query transformation parameters,
-        the parameters across different Fastformer layers are also shared in
-        the paper.
-    transformer_activation: str, default = "relu"
-        FastFormer Encoder activation
-        function. 'tanh', 'relu', 'leaky_relu', 'gelu' and 'geglu' are
-        supported
+        the parameters across different Fastformer layers can also be shared
+    transformer_activation: str, default = "gelu"
+        Transformer Encoder activation function. ``tanh``, ``relu``,
+        ``leaky_relu``, ``gelu``, ``geglu`` and ``reglu`` are supported
     mlp_hidden_dims: List, Optional, default = None
-        MLP hidden dimensions. If not provided it will default to ``[4*l,
-        2*l]`` where ``l`` is the mlp input dimension
+        MLP hidden dimensions. If not provided it will default to ``[l, 4*l,
+        2*l]`` where ``l`` is the MLP input dimension
     mlp_activation: str, default = "relu"
-        MLP activation function. 'tanh', 'relu', 'leaky_relu' and 'gelu' are
-        supported
+        MLP activation function. ``tanh``, ``relu``, ``leaky_relu`` and
+        ``gelu`` are supported
     mlp_dropout: float, default = 0.1
         Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
@@ -98,7 +100,7 @@ class TabFastFormer(nn.Module):
     Attributes
     ----------
     cat_and_cont_embed: ``nn.Module``
-        Module that processese the categorical and continuous columns
+        This is the module that processes the categorical and continuous columns
     transformer_blks: ``nn.Sequential``
         Sequence of FasFormer blocks.
     transformer_mlp: ``nn.Module``
@@ -135,7 +137,7 @@ class TabFastFormer(nn.Module):
         input_dim: int = 32,
         n_heads: int = 8,
         use_bias: bool = False,
-        n_blocks: int = 6,
+        n_blocks: int = 4,
         attn_dropout: float = 0.1,
         ff_dropout: float = 0.2,
         share_qv_weights: bool = False,
@@ -246,7 +248,7 @@ class TabFastFormer(nn.Module):
         else:
             assert mlp_hidden_dims[0] == attn_output_dim, (
                 f"The input dim of the MLP must be {attn_output_dim}. "
-                "Got {mlp_hidden_dims[0]} instead"
+                f"Got {mlp_hidden_dims[0]} instead"
             )
         self.transformer_mlp = MLP(
             mlp_hidden_dims,

@@ -9,86 +9,90 @@ from pytorch_widedeep.models.transformers._embeddings_layers import (
 
 
 class FTTransformer(nn.Module):
-    r"""Adaptation of the TabTransformer (`arXiv:2012.06678 <https://arxiv.org/abs/2012.06678>`_)
-    that can be used as the deeptabular component of a Wide & Deep model.
+    r"""Defines a ``FTTransformer`` model
+    (`arXiv:2106.11959  <https://arxiv.org/abs/2106.11959>`_) that can be
+    used as the ``deeptabular`` component of a Wide & Deep model.
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the DeepDense model. Required to slice the tensors. e.g. {'education':
-        0, 'relationship': 1, 'workclass': 2, ...}
+        the model. Required to slice the tensors. e.g.
+        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
     embed_input: List
         List of Tuples with the column name and number of unique values
-        e.g. [(education, 11), ...]
+        e.g. [('education', 11), ...]
     embed_dropout: float, default = 0.1
         Dropout to be applied to the embeddings matrix
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
-        :obj:`pytorch_widedeep.models.transformers.layers.FullEmbeddingDropout`.
+        :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
         If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
     shared_embed: bool, default = False
-        The idea behind ``shared_embed`` is described in the Appendix A in the paper:
-        `'The goal of having column embedding is to enable the model to distinguish the
-        classes in one column from those in the other columns'`. In other words, the idea
-        is to let the model learn which column is embedding at the time.
+        The idea behind ``shared_embed`` is described in the Appendix A in the
+        `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
+        goal of having column embedding is to enable the model to distinguish
+        the classes in one column from those in the other columns'`. In other
+        words, the idea is to let the model learn which column is embedded
+        at the time.
     add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings to the column
         embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
-        embeddings. See :obj:`pytorch_widedeep.models.transformers.layers.SharedEmbeddings`
+        embeddings. See :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
     frac_shared_embed: float, default = 0.25
-        The fraction of embeddings that will be shared by all the different categories for
-        one particular column.
+        The fraction of embeddings that will be shared (if ``add_shared_embed
+        = False``) by all the different categories for one particular
+        column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    embed_continuous: bool, default = False,
-        Boolean indicating if the continuous features will be "embedded". See
-        ``pytorch_widedeep.models.transformers.layers.ContinuousEmbeddings``
-        Note that setting this to true is equivalent to the so called
-        `FT-Transformer <https://arxiv.org/abs/2106.11959>`_
-        (Feature Tokenizer + Transformer). The only difference is that our
-        implementation does not consider using bias for the categorical
-        embeddings.
     embed_continuous_activation: str, default = None
         String indicating the activation function to be applied to the
-        continuous embeddings, if any.
-        'tanh', 'relu', 'leaky_relu' and 'gelu' are supported.
+        continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
+        ``gelu`` are supported.
     cont_norm_layer: str, default =  None,
-        Type of normalization layer applied to the continuous features. Options
-        are: 'layernorm', 'batchnorm' or None.
+        Type of normalization layer applied to the continuous features before
+        they are embedded. Options are: ``layernorm``, ``batchnorm`` or
+        ``None``.
     input_dim: int, default = 192
         The so-called *dimension of the model*. Is the number of embeddings used to encode
-        the categorical and/or continuous columns
-    dim_k: int, default = 128
-        The k dimension value in the Linear Attention module, as explained in
-        `Linformer: Self-Attention with Linear Complexity
-        <https://arxiv.org/abs/2006.04768>`_
+        the categorical and/or continuous columns.
+    kv_compression_factor: int, default = 0.5
+        By default, the FTTransformer uses Linear Attention
+        (See `Linformer: Self-Attention with Linear Complexity
+        <https://arxiv.org/abs/2006.04768>`_ ) The compression factor that
+        will be used to reduce the input sequence length. If we denote the
+        resulting sequence length as :math:`k`
+        :math:`k = int(kv_{compression \space factor} \times s)`
+        where :math:`s` is the input sequence length.
     kv_sharing: bool, default = False
-        Boolean indicating if the E and F projection matrices will be share
-        weights. See `Linformer: Self-Attention with Linear Complexity
-        <https://arxiv.org/abs/2006.04768>`_ for details
-    n_heads: int, default = 8
-        Number of attention heads per Transformer block
+        Boolean indicating if the :math:`E` and :math:`F` projection matrices
+        will share weights.  See `Linformer: Self-Attention with Linear
+        Complexity <https://arxiv.org/abs/2006.04768>`_ for details
+    n_heads: int, default = 6
+        Number of attention heads per FTTransformer block
     use_bias: bool, default = False
         Boolean indicating whether or not to use bias in the Q, K, and V
         projection layers
-    n_blocks: int, default = 6
-        Number of Transformer blocks
+    n_blocks: int, default = 3
+        Number of FTTransformer blocks
     attn_dropout: float, default = 0.2
-        Dropout that will be applied to the MultiHeadAttention module
+        Dropout that will be applied to the Linear-Attention layers
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
-    transformer_activation: str, default = "reglu"
-        Transformer Encoder activation
-        function. 'tanh', 'relu', 'leaky_relu', 'gelu' and 'geglu' are
-        supported
+    transformer_activation: str, default = "gelu"
+        Transformer Encoder activation function. ``tanh``, ``relu``,
+        ``leaky_relu``, ``gelu``, ``geglu`` and ``reglu`` are supported
+    ff_factor: float, default = 4 / 3
+        Multiplicative factor applied to the first layer of the FF network in
+        each Transformer block, This is normally set to 4, but they use 4/3
+        in the paper.
     mlp_hidden_dims: List, Optional, default = None
-        MLP hidden dimensions. If not provided it will default to ``[4*l,
-        2*l]`` where ``l`` is the mlp input dimension
+        MLP hidden dimensions. If not provided no MLP on top of the final
+        FTTransformer block will be used
     mlp_activation: str, default = "relu"
-        MLP activation function. 'tanh', 'relu', 'leaky_relu' and 'gelu' are
-        supported
+        MLP activation function. ``tanh``, ``relu``, ``leaky_relu`` and
+        ``gelu`` are supported
     mlp_dropout: float, default = 0.1
         Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
@@ -105,9 +109,9 @@ class FTTransformer(nn.Module):
     Attributes
     ----------
     cat_and_cont_embed: ``nn.Module``
-        Module that processese the categorical and continuous columns
+        This is the module that processes the categorical and continuous columns
     transformer_blks: ``nn.Sequential``
-        Sequence of Transformer blocks
+        Sequence of FTTransformer blocks
     transformer_mlp: ``nn.Module``
         MLP component in the model
     output_dim: int
@@ -140,15 +144,15 @@ class FTTransformer(nn.Module):
         embed_continuous_activation: str = None,
         cont_norm_layer: str = None,
         input_dim: int = 192,
-        dim_k: int = 128,
+        kv_compression_factor: float = 0.5,
         kv_sharing: bool = False,
         use_bias: bool = False,
-        n_heads: int = 8,
+        n_heads: int = 6,
         n_blocks: int = 3,
         attn_dropout: float = 0.2,
         ff_dropout: float = 0.1,
         transformer_activation: str = "reglu",
-        ff_factor: float = 4 / 3,
+        ff_factor: float = 1.33,
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
         mlp_dropout: float = 0.1,
@@ -169,7 +173,7 @@ class FTTransformer(nn.Module):
         self.embed_continuous_activation = embed_continuous_activation
         self.cont_norm_layer = cont_norm_layer
         self.input_dim = input_dim
-        self.dim_k = dim_k
+        self.kv_compression_factor = kv_compression_factor
         self.kv_sharing = kv_sharing
         self.use_bias = use_bias
         self.n_heads = n_heads
@@ -216,7 +220,7 @@ class FTTransformer(nn.Module):
         self.transformer_blks = nn.Sequential()
         for i in range(n_blocks):
             self.transformer_blks.add_module(
-                "saint_block" + str(i),
+                "fttransformer_block" + str(i),
                 FTTransformerEncoder(
                     input_dim,
                     self.n_feats,
@@ -224,7 +228,7 @@ class FTTransformer(nn.Module):
                     use_bias,
                     attn_dropout,
                     ff_dropout,
-                    dim_k,
+                    kv_compression_factor,
                     kv_sharing,
                     transformer_activation,
                     ff_factor,
@@ -241,7 +245,7 @@ class FTTransformer(nn.Module):
             )
             assert mlp_hidden_dims[0] == attn_output_dim, (
                 f"The input dim of the MLP must be {attn_output_dim}. "
-                "Got {mlp_hidden_dims[0]} instead"
+                f"Got {mlp_hidden_dims[0]} instead"
             )
             self.transformer_mlp = MLP(
                 mlp_hidden_dims,

@@ -11,48 +11,51 @@ from pytorch_widedeep.models.transformers._embeddings_layers import (
 
 
 class TabPerceiver(nn.Module):
-    r"""Adaptation of the Perceiver (`arXiv:2103.03206 <https://arxiv.org/abs/2103.03206>`_)
-    that can be used as the deeptabular component of a Wide & Deep model.
+    r"""Defines an adaptation of a ``Perceiver`` model
+    (`arXiv:2103.03206 <https://arxiv.org/abs/2103.03206>`_) that can be used
+    as the ``deeptabular`` component of a Wide & Deep model.
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the DeepDense model. Required to slice the tensors. e.g. {'education':
-        0, 'relationship': 1, 'workclass': 2, ...}
+        the model. Required to slice the tensors. e.g.
+        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
     embed_input: List
         List of Tuples with the column name and number of unique values
-        e.g. [(education, 11), ...]
+        e.g. [('education', 11), ...]
     embed_dropout: float, default = 0.1
         Dropout to be applied to the embeddings matrix
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
-        :obj:`pytorch_widedeep.models.transformers.layers.FullEmbeddingDropout`.
+        :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
         If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
     shared_embed: bool, default = False
         The idea behind ``shared_embed`` is described in the Appendix A in the
         `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
         goal of having column embedding is to enable the model to distinguish
         the classes in one column from those in the other columns'`. In other
-        words, the idea is to let the model learn which column is embedding
+        words, the idea is to let the model learn which column is embedded
         at the time.
     add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings to the column
         embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
-        embeddings. See :obj:`pytorch_widedeep.models.transformers.layers.SharedEmbeddings`
+        embeddings. See :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
     frac_shared_embed: float, default = 0.25
-        The fraction of embeddings that will be shared by all the different categories for
-        one particular column.
+        The fraction of embeddings that will be shared (if ``add_shared_embed
+        = False``) by all the different categories for one particular
+        column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     embed_continuous_activation: str, default = None
         String indicating the activation function to be applied to the
-        continuous embeddings, if any.
-        'tanh', 'relu', 'leaky_relu' and 'gelu' are supported.
+        continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
+        ``gelu`` are supported.
     cont_norm_layer: str, default =  None,
-        Type of normalization layer applied to the continuous features. Options
-        are: 'layernorm', 'batchnorm' or None.
+        Type of normalization layer applied to the continuous features before
+        they are embedded. Options are: ``layernorm``, ``batchnorm`` or
+        ``None``.
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general, is the number of
         embeddings used to encode the categorical and/or continuous columns.
@@ -68,10 +71,10 @@ class TabPerceiver(nn.Module):
         Number of attention heads for the cross attention component
     n_latents: int, default = 16
         Number of latents. This is the *N* parameter in the paper. As
-        indicated in the paper, this number should be significantly smaller
+        indicated in the paper, this number should be significantly lower
         than *M* (the number of columns in the dataset). Setting *N* closer
-        to *M* defies the main purpose of the Perceiver, overcome the
-        standard transformer quadratic bottleneck
+        to *M* defies the main purpose of the Perceiver, which is to overcome
+        the transformer quadratic bottleneck
     latent_dim: int, default = 128
         Latent dimension.
     n_latent_heads: int, default = 4
@@ -80,25 +83,24 @@ class TabPerceiver(nn.Module):
         Number of transformer encoder blocks (normalised MHA + normalised FF)
         per Latent Transformer
     n_perceiver_blocks: int, default = 4
-        Number of Perceiver blocks defined as [Cross Attention -> Latent
+        Number of Perceiver blocks defined as [Cross Attention + Latent
         Transformer]
     share_weights: Boolean, default = False
         Boolean indicating if the weights will be shared between Perceiver
         blocks
     attn_dropout: float, default = 0.2
-        Dropout that will be applied to the MultiHeadAttention module
+        Dropout that will be applied to the Multi-Head Attention layers
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
     transformer_activation: str, default = "gelu"
-        Transformer Encoder internal activation
-        function. 'tanh', 'relu', 'leaky_relu', 'gelu' and 'geglu' are
-        supported
+        Transformer Encoder activation function. ``tanh``, ``relu``,
+        ``leaky_relu``, ``gelu``, ``geglu`` and ``reglu`` are supported
     mlp_hidden_dims: List, Optional, default = None
-        MLP hidden dimensions. If not provided it will default to ``[4*l,
-        2*l]`` where ``l`` is the mlp input dimension
+        MLP hidden dimensions. If not provided it will default to ``[l, 4*l,
+        2*l]`` where ``l`` is the MLP input dimension
     mlp_activation: str, default = "relu"
-        MLP activation function. 'tanh', 'relu', 'leaky_relu' and 'gelu' are
-        supported
+        MLP activation function. ``tanh``, ``relu``, ``leaky_relu`` and
+        ``gelu`` are supported
     mlp_dropout: float, default = 0.1
         Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
@@ -115,7 +117,7 @@ class TabPerceiver(nn.Module):
     Attributes
     ----------
     cat_and_cont_embed: ``nn.Module``
-        Module that processese the categorical and continuous columns
+        This is the module that processes the categorical and continuous columns
     perceiver_blks: ``nn.ModuleDict``
         ModuleDict with the Perceiver blocks
     latents: ``nn.Parameter``
@@ -250,7 +252,7 @@ class TabPerceiver(nn.Module):
         else:
             assert mlp_hidden_dims[0] == latent_dim, (
                 f"The input dim of the MLP must be {latent_dim}. "
-                "Got {mlp_hidden_dims[0]} instead"
+                f"Got {mlp_hidden_dims[0]} instead"
             )
         self.perceiver_mlp = MLP(
             self.mlp_hidden_dims,

@@ -168,7 +168,7 @@ class TabMlp(nn.Module):
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the TabMlp model. Required to slice the tensors. e.g. {'education':
+        the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
         0, 'relationship': 1, 'workclass': 2, ...}
     embed_input: List, Optional, default = None
         List of Tuples with the column name, number of unique values and
@@ -184,7 +184,7 @@ class TabMlp(nn.Module):
         List with the number of neurons per dense layer in the mlp.
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        'tanh', relu', 'leaky_relu' and 'gelu' are supported
+        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
     mlp_dropout: float or List, default = 0.1
         float or List of floats with the dropout between the dense layers.
         e.g: [0.5,0.5]
@@ -202,7 +202,7 @@ class TabMlp(nn.Module):
     Attributes
     ----------
     cat_embed_and_cont: ``nn.Module``
-        Module that processese the categorical and continuous columns
+        This is the module that processes the categorical and continuous columns
     tab_mlp: ``nn.Sequential``
         mlp model that will receive the concatenation of the embeddings and
         the continuous columns

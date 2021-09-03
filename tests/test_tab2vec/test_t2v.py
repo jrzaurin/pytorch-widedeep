@@ -90,7 +90,7 @@ def _build_model(model_name, params):
     if model_name == "saint":
         return SAINT(input_dim=8, n_heads=2, n_blocks=2, **params)
     if model_name == "fttransformer":
-        return FTTransformer(n_blocks=2, n_heads=2, dim_k=2, **params)
+        return FTTransformer(n_blocks=2, n_heads=2, kv_compression_factor=0.5, **params)
     if model_name == "tabfastformer":
         return TabFastFormer(n_blocks=2, n_heads=2, **params)
     if model_name == "tabperceiver":

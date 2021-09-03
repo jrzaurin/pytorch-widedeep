@@ -94,7 +94,7 @@ class FTTransformerEncoder(nn.Module):
         use_bias: bool,
         attn_dropout: float,
         ff_dropout: float,
-        dim_k: int,
+        kv_compression_factor: float,
         kv_sharing: bool,
         activation: str,
         ff_factor: float,
@@ -110,7 +110,7 @@ class FTTransformerEncoder(nn.Module):
             n_heads,
             use_bias,
             attn_dropout,
-            dim_k,
+            kv_compression_factor,
             kv_sharing,
         )
         self.ff = PositionwiseFF(input_dim, ff_dropout, activation, ff_factor)

@@ -107,8 +107,8 @@ if __name__ == "__main__":
         column_idx=prepare_deep.column_idx,
         embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
-        input_dim=64,
-        dim_k=6,
+        input_dim=32,
+        kv_compression_factor=0.5,
         n_blocks=3,
         n_heads=4,
     )

@@ -16,3 +16,4 @@ them to address different problems
 * `Save and Load Model and Artifacts <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/08_save_and_load_model_and_artifacts.ipynb>`__
 * `Using Custom DataLoaders and Torchmetrics <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/09_Custom_DataLoader_Imbalanced_dataset.ipynb>`__
 * `The Transformer Family <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/10_The_Transformer_Family.ipynb>`__
+* `Extracting Embeddings <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/11_Extracting_Embeddings.ipynb>`__

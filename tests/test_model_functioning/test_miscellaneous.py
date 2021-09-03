@@ -5,6 +5,7 @@ from copy import deepcopy
 
 import numpy as np
 import torch
+import pandas as pd
 import pytest
 from sklearn.model_selection import train_test_split
 
@@ -21,6 +22,7 @@ from pytorch_widedeep.models import (
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.callbacks import EarlyStopping
+from pytorch_widedeep.preprocessing import TabPreprocessor
 
 # Wide array
 X_wide = np.random.choice(50, (32, 10))
@@ -342,3 +344,61 @@ def test_save_load_and_predict():
     shutil.rmtree(fpath)
 
     assert preds.shape[0] == X_tab.shape[0]
+
+
+###############################################################################
+# test get_embeddings DeprecationWarning
+###############################################################################
+
+
+def create_test_dataset(input_type, input_type_2=None):
+    df = pd.DataFrame()
+    col1 = list(np.random.choice(input_type, 32))
+    if input_type_2 is not None:
+        col2 = list(np.random.choice(input_type_2, 32))
+    else:
+        col2 = list(np.random.choice(input_type, 32))
+    df["col1"], df["col2"] = col1, col2
+    return df
+
+
+some_letters = ["a", "b", "c", "d", "e"]
+
+df = create_test_dataset(some_letters)
+df["col3"] = np.round(np.random.rand(32), 3)
+df["col4"] = np.round(np.random.rand(32), 3)
+df["target"] = np.random.choice(2, 32)
+
+
+def test_get_embeddings_deprecation_warning():
+
+    embed_cols = [("col1", 5), ("col2", 5)]
+    continuous_cols = ["col3", "col4"]
+
+    tab_preprocessor = TabPreprocessor(
+        embed_cols=embed_cols, continuous_cols=continuous_cols
+    )
+    X_tab = tab_preprocessor.fit_transform(df)
+    target = df.target.values
+
+    tabmlp = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+        column_idx={k: v for v, k in enumerate(df.columns)},
+        embed_input=tab_preprocessor.embeddings_input,
+        continuous_cols=tab_preprocessor.continuous_cols,
+    )
+
+    model = WideDeep(deeptabular=tabmlp)
+    trainer = Trainer(model, objective="binary", verbose=0)
+    trainer.fit(
+        X_tab=X_tab,
+        target=target,
+        batch_size=16,
+    )
+
+    with pytest.warns(DeprecationWarning):
+        trainer.get_embeddings(
+            col_name="col1",
+            cat_encoding_dict=tab_preprocessor.label_encoder.encoding_dict,
+        )

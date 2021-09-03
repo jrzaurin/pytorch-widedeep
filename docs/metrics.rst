@@ -2,10 +2,9 @@ Metrics
 =======
 
 .. note:: Metrics in this module expect the predictions and ground truth to have the
-	same dimensions for regression and binary classification problems (i.e.
-	:math:`N_{samples}, 1)`. In the case of multiclass classification problems the
-	ground truth is expected to be a 1D tensor with the corresponding classes.
-	See Examples below
+	same dimensions for regression and binary classification problems: :math:`(N_{samples}, 1)`.
+	In the case of multiclass classification problems the ground truth is expected to be
+	a 1D tensor with the corresponding classes. See Examples below
 
 We have added the possibility of using the metrics available at the
 `torchmetrics <https://torchmetrics.readthedocs.io/en/latest/>`_ library.

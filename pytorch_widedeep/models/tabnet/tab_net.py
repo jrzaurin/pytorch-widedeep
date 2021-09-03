@@ -10,8 +10,9 @@ from pytorch_widedeep.models.tabnet._layers import (
 
 
 class TabNet(nn.Module):
-    r"""TabNet model (https://arxiv.org/abs/1908.07442) model that can be used
-    as the deeptabular component of a Wide & Deep model.
+    r"""Defines a ``TabNet`` model (https://arxiv.org/abs/1908.07442) model
+    that can be used as the ``deeptabular`` component of a Wide & Deep
+    model.
 
     The implementation in this library is fully based on that here:
     https://github.com/dreamquark-ai/tabnet, simply adapted so that it can
@@ -45,7 +46,7 @@ class TabNet(nn.Module):
     attn_dim: int, default = 8
         Attention dimension
     dropout: float, default = 0.0
-        GLU block 'internal' dropout
+        GLU block's internal dropout
     n_glu_step_dependent: int, default = 2
         number of GLU Blocks [FC -> BN -> GLU] that are step dependent
     n_glu_shared: int, default = 2
@@ -58,13 +59,13 @@ class TabNet(nn.Module):
         Batch size when using Ghost Batch Normalization
     momentum: float, default = 0.02
         Ghost Batch Normalization's momentum. The dreamquark-ai advises for
-        very low values. The results in the paper use significantly higher
-        values. Higher values lead to better results in my experimentations
+        very low values. However high values are used in the original
+        publication. During our tests higher values lead to better results
     gamma: float, default = 1.3
         Relaxation parameter in the paper. When gamma = 1, a feature is
-        enforced to be used only at one decision step and as gamma
-        increases, more flexibility is provided to use a feature at
-        multiple decision steps
+        enforced to be used only at one decision step. As gamma increases,
+        more flexibility is provided to use a feature at multiple decision
+        steps
     epsilon: float, default = 1e-15
         Float to avoid log(0). Always keep low
     mask_type: str, default = "sparsemax"
@@ -73,15 +74,13 @@ class TabNet(nn.Module):
     Attributes
     ----------
     cat_embed_and_cont: ``nn.Module``
-        Module that processese the categorical and continuous columns
-    embed_and_cont_dim: int
-        embeddings plus continuous dimension
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
+        This is the module that processes the categorical and continuous columns
     tabnet_encoder: ``nn.Module``
         ``Module`` containing the TabNet encoder. See the `paper
         <https://arxiv.org/abs/1908.07442>`_.
+    output_dim: int
+        The output dimension of the model. This is a required attribute
+        neccesary to build the WideDeep class
 
     Example
     --------

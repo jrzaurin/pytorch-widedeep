@@ -55,11 +55,12 @@ class DeepImage(nn.Module):
         The resnet architecture. One of 18, 34 or 50
     freeze_n: int, default = 6
         number of layers to freeze. Must be less than or equal to 8. If 8
-        the entire 'backbone' of the nwtwork will be frozen
+        the entire 'backbone' of the network will be frozen
     head_hidden_dims: List, Optional, default = None
         List with the number of neurons per dense layer in the head. e.g: [64,32]
     head_activation: str, default = "relu"
-        Activation function for the dense layers in the head.
+        Activation function for the dense layers in the head. Currently
+        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
     head_dropout: float, default = 0.1
         float indicating the dropout between the dense layers.
     head_batchnorm: bool, default = False

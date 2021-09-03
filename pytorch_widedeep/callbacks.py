@@ -341,19 +341,19 @@ class ModelCheckpoint(Callback):
         weights_out_2.pt, ...``
     monitor: str, default="loss"
         quantity to monitor. Typically 'val_loss' or metric name (e.g. 'val_acc')
-    verbose:int, default=0,
+    verbose:int, default=0
         verbosity mode
     save_best_only: bool, default=False,
         the latest best model according to the quantity monitored will not be
         overwritten.
-    mode: str, default="auto",
+    mode: str, default="auto"
         If ``save_best_only=True``, the decision to overwrite the current save
         file is made based on either the maximization or the minimization of
         the monitored quantity. For `'acc'`, this should be `'max'`, for
         `'loss'` this should be `'min'`, etc. In `'auto'` mode, the
         direction is automatically inferred from the name of the monitored
         quantity.
-    period: int, default=1,
+    period: int, default=1
         Interval (number of epochs) between checkpoints.
     max_save: int, default=-1
         Maximum number of outputs to save. If -1 will save all outputs

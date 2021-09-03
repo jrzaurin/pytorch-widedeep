@@ -86,17 +86,17 @@ class TabResnet(nn.Module):
     r"""Defines a so-called ``TabResnet`` model that can be used as the
     ``deeptabular`` component of a Wide & Deep model.
 
-    This class combines embedding representations of the categorical
-    features with numerical (aka continuous) features. These are then
-    passed through a series of Resnet blocks. See
-    ``pytorch_widedeep.models.tab_resnet.BasicBlock`` for details
-    on the structure of each block.
+    This class combines embedding representations of the categorical features
+    with numerical (aka continuous) features. These are then passed through a
+    series of Resnet blocks. See
+    :obj:`pytorch_widedeep.models.tab_resnet.BasicBlock` for details on the
+    structure of each block.
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the TabMlp model. Required to slice the tensors. e.g. {'education':
+        the ``Resnet`` model. Required to slice the tensors. e.g. {'education':
         0, 'relationship': 1, 'workclass': 2, ...}
     embed_input: List
         List of Tuples with the column name, number of unique values and
@@ -109,11 +109,11 @@ class TabResnet(nn.Module):
         Type of normalization layer applied to the continuous features. Options
         are: 'layernorm', 'batchnorm' or None.
     concat_cont_first: bool, default = True
-        Boolean indicating whether the continuum columns will be
-        concatenated with the Embeddings and then passed through the
-        Resnet blocks (``True``) or, alternatively, will be concatenated
-        with the result of passing the embeddings through the Resnet
-        Blocks (``False``)
+        If ``True`` the continuum columns will be concatenated with the
+        Categorical Embeddings and then passed through the Resnet blocks. If
+        ``False``, the  Categorical Embeddings will be passed through the
+        Resnet blocks and then the output of the Resnet blocks will be
+        concatenated with the continuous features.
     blocks_dims: List, default = [200, 100, 100]
         List of integers that define the input and output units of each block.
         For example: [200, 100, 100] will generate 2 blocks. The first will
@@ -125,13 +125,13 @@ class TabResnet(nn.Module):
        Block's `"internal"` dropout. This dropout is applied to the first
        of the two dense layers that comprise each ``BasicBlock``.
     mlp_hidden_dims: List, Optional, default = None
-        List with the number of neurons per dense layer in the mlp. e.g:
+        List with the number of neurons per dense layer in the MLP. e.g:
         [64, 32]. If ``None`` the  output of the Resnet Blocks will be
         connected directly to the output neuron(s), i.e. using a MLP is
         optional.
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        'tanh', relu', 'leaky_relu' and 'gelu' are supported
+        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
     mlp_dropout: float, default = 0.1
         float with the dropout between the dense layers of the MLP.
     mlp_batchnorm: bool, default = False
@@ -148,7 +148,7 @@ class TabResnet(nn.Module):
     Attributes
     ----------
     cat_embed_and_cont: ``nn.Module``
-        Module that processese the categorical and continuous columns
+        This is the module that processes the categorical and continuous columns
     dense_resnet: ``nn.Sequential``
         deep dense Resnet model that will receive the concatenation of the
         embeddings and the continuous columns

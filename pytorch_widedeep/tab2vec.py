@@ -35,9 +35,6 @@ class Tab2Vec:
 
     Attributes
     ----------
-    is_transformer: bool
-        Boolean indicating if the input model belongs to the transformer
-        family currently available in the library
     vectorizer: ``nn.Module``
         Torch module with the categorical and continuous encoding process
 

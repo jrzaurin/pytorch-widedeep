@@ -30,12 +30,12 @@ class TabPreprocessor(BasePreprocessor):
     continuous_cols: List, default = None
         List with the name of the so called continuous cols
     scale: bool, default = True
-        Bool indicating whether or not to scale/standarise continuous
-        cols. The user should bear in mind that all the ``deeptabular``
-        components available within ``pytorch-widedeep`` they also include
-        the possibility of normalising the input continuous features via a
+        Bool indicating whether or not to scale/standarise continuous cols.
+        The user should bear in mind that all the ``deeptabular`` components
+        available within ``pytorch-widedeep`` they also include the
+        possibility of normalising the input continuous features via a
         ``BatchNorm`` or a ``LayerNorm`` layer. See
-        :class:`pytorch_widedeep.models`
+        :obj:`pytorch_widedeep.models.transformers._embedding_layers`
     auto_embed_dim: bool, default = True
         Boolean indicating whether the embedding dimensions will be
         automatically defined via fastai's rule of thumb':
@@ -53,26 +53,27 @@ class TabPreprocessor(BasePreprocessor):
         tabular library) and not standarize them any further
     for_transformer: bool, default = False
         Boolean indicating whether the preprocessed data will be passed to a
-        transformer-based model (i.e. ``TabTransformer`` or ``SAINT``). If
-        ``True``, the param ``embed_cols`` must just be a list containing the
-        categorical columns: e.g.:['education', 'relationship', ...] This is
-        because they will all be encoded using embeddings of the same dim
-        (32 by default).
+        transformer-based model
+        (See :obj:`pytorch_widedeep.models.transformers`). If ``True``, the
+        param ``embed_cols`` must just be a list containing the categorical
+        columns: e.g.:['education', 'relationship', ...] This is because they
+        will all be encoded using embeddings of the same dim.
     with_cls_token: bool, default = False
         Boolean indicating if a `'[CLS]'` token will be added to the dataset
-        when using transformer-based models (i.e. ``TabTransformer`` or
-        ``SAINT``). The final hidden state corresponding to this token is
-        used as the aggregate row representation for classification and
-        regression tasks. If not, the categorical (and continuous embeddings
-        if present) will be concatenated before being passed to the final
-        MLP.
+        when using transformer-based models. The final hidden state
+        corresponding to this token is used as the aggregated representation
+        for classification and regression tasks. If not, the categorical
+        (and continuous embeddings if present) will be concatenated before
+        being passed to the final MLP.
     shared_embed: bool, default = False
-        This parameter will only be used by the ``TabPreprocessor`` when the
-        data is being prepapred for a transformer-based model. If that is the
-        case and the embeddings are 'shared'
-        (see:
-        ``pytorch_widedeep.models.transformers.layers.SharedEmbeddings``)
-        then each column will be embed indepedently.
+        Boolean indicating if the embeddings will be "shared" when using
+        transformer-based models. The idea behind ``shared_embed`` is
+        described in the Appendix A in the `TabTransformer paper
+        <https://arxiv.org/abs/2012.06678>`_: `'The goal of having column
+        embedding is to enable the model to distinguish the classes in one
+        column from those in the other columns'`. In other words, the idea is
+        to let the model learn which column is embedded at the time. See:
+        :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
     verbose: int, default = 1
 
     Attributes

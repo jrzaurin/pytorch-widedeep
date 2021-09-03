@@ -17,8 +17,8 @@ on their own and can be imported as:
 	from pytorch_widedeep.losses import FocalLoss
 
 .. note:: Losses in this module expect the predictions and ground truth to have the
-	same dimensions for regression and binary classification problems (i.e.
-	:math:`N_{samples}, 1)`. In the case of multiclass classification problems
+	same dimensions for regression and binary classification problems
+	:math:`(N_{samples}, 1)`. In the case of multiclass classification problems
 	the ground truth is expected to be a 1D tensor with the corresponding
 	classes. See Examples below
 

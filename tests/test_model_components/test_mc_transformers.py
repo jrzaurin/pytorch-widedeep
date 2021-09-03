@@ -187,7 +187,7 @@ def _build_model(model_name, params):
     if model_name == "saint":
         return SAINT(n_blocks=2, n_heads=2, **params)
     if model_name == "fttransformer":
-        return FTTransformer(n_blocks=2, n_heads=2, dim_k=2, **params)
+        return FTTransformer(n_blocks=2, n_heads=2, kv_compression_factor=0.5, **params)
     if model_name == "tabfastformer":
         return TabFastFormer(n_blocks=2, n_heads=2, **params)
     if model_name == "tabperceiver":
@@ -203,7 +203,7 @@ def _build_model(model_name, params):
         (False, False, "tabtransformer"),
     ],
 )
-def test_embed_continuous_and_with_cls_token(
+def test_embed_continuous_and_with_cls_token_tabtransformer(
     embed_continuous, with_cls_token, model_name
 ):
     if with_cls_token:
@@ -240,6 +240,55 @@ def test_embed_continuous_and_with_cls_token(
     else:
         mlp_first_h = len(embed_cols) * model.input_dim + 2
         res.append(model._compute_attn_output_dim() == mlp_first_h)
+
+    assert all(res)
+
+
+@pytest.mark.parametrize(
+    "with_cls_token, model_name",
+    [
+        (True, "saint"),
+        (False, "saint"),
+        (True, "fttransformer"),
+        (False, "fttransformer"),
+        (True, "tabfastformer"),
+        (False, "tabfastformer"),
+    ],
+)
+def test_embed_continuous_and_with_cls_token_transformer_family(
+    with_cls_token, model_name
+):
+    if with_cls_token:
+        X = X_tab_with_cls_token
+        n_colnames = ["cls_token"] + copy(colnames)
+        cont_idx = n_cols + 1
+        with_cls_token_embed_input = [("cls_token", 1)] + embed_input
+    else:
+        X = X_tab
+        n_colnames = copy(colnames)
+        cont_idx = n_cols
+
+    params = {
+        "column_idx": {k: v for v, k in enumerate(n_colnames)},
+        "embed_input": with_cls_token_embed_input if with_cls_token else embed_input,
+        "continuous_cols": n_colnames[cont_idx:],
+    }
+
+    total_n_cols = n_cols * 2
+    model = _build_model(model_name, params)
+
+    out = model(X)
+    res = [out.size(0) == 10]
+    if with_cls_token:
+        if model_name in ["saint", "tabfastformer"]:
+            res.append(out.shape[1] == model.input_dim * 2)
+        elif model_name == "fttransformer":
+            res.append(out.shape[1] == model.input_dim)
+    else:
+        if model_name in ["saint", "tabfastformer"]:
+            res.append(out.shape[1] == (total_n_cols * model.input_dim) * 2)
+        elif model_name == "fttransformer":
+            res.append(out.shape[1] == (total_n_cols * model.input_dim))
 
     assert all(res)
 
@@ -339,7 +388,12 @@ def test_transformers_keep_attn(model_name):
     if model_name == "fttransformer":
         res.append(
             list(model.attention_weights[0].shape)
-            == [10, model.n_heads, total_n_cols, model.dim_k]
+            == [
+                10,
+                model.n_heads,
+                total_n_cols,
+                int(model.n_feats * model.kv_compression_factor),
+            ]
         )
     elif model_name == "tabperceiver":
         res.append(
@@ -364,3 +418,34 @@ def test_transformers_keep_attn(model_name):
             == [10, model.n_heads, total_n_cols]
         )
     assert all(res)
+
+
+###############################################################################
+# Test FTTransformer mlp set up
+###############################################################################
+
+
+@pytest.mark.parametrize(
+    "mlp_first_h, shoud_work",
+    [
+        ((n_cols * 2) * 192, True),
+        ((n_cols * 2) * (192 + 1), False),
+    ],
+)
+def test_ft_transformer_mlp(mlp_first_h, shoud_work):
+
+    mlp_hidden_dims = [mlp_first_h, mlp_first_h * 2]
+
+    params = {
+        "column_idx": {k: v for v, k in enumerate(colnames)},
+        "embed_input": embed_input,
+        "continuous_cols": colnames[n_cols:],
+        "mlp_hidden_dims": mlp_hidden_dims,
+    }
+
+    if shoud_work:
+        model = _build_model("fttransformer", params)
+        assert True
+    else:
+        with pytest.raises(AssertionError):
+            model = _build_model("fttransformer", params)  # noqa: F841
