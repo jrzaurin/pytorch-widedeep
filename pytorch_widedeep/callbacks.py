@@ -425,11 +425,11 @@ class ModelCheckpoint(Callback):
             self.monitor_op = np.less
             self.best = np.Inf
         elif self.mode == "max":
-            self.monitor_op = np.greater
+            self.monitor_op = np.greater  # type: ignore[assignment]
             self.best = -np.Inf
         else:
             if _is_metric(self.monitor):
-                self.monitor_op = np.greater
+                self.monitor_op = np.greater  # type: ignore[assignment]
                 self.best = -np.Inf
             else:
                 self.monitor_op = np.less
@@ -596,10 +596,10 @@ class EarlyStopping(Callback):
         if self.mode == "min":
             self.monitor_op = np.less
         elif self.mode == "max":
-            self.monitor_op = np.greater
+            self.monitor_op = np.greater  # type: ignore[assignment]
         else:
             if _is_metric(self.monitor):
-                self.monitor_op = np.greater
+                self.monitor_op = np.greater  # type: ignore[assignment]
             else:
                 self.monitor_op = np.less
 
