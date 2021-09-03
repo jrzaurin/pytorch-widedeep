@@ -52,7 +52,7 @@ setup_kwargs = {
     "license": "MIT",
     "install_requires": [
         "pandas",
-        "numpy",
+        "numpy==1.20.1",
         "scipy",
         "scikit-learn",
         "gensim",
