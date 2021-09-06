@@ -296,6 +296,16 @@ class TabPerceiver(nn.Module):
         between perceiver blocks each element of the list will be a list
         itself containing the Cross Attention and Latent Transformer
         attention weights respectively
+
+        The shape of the attention weights is:
+
+            - Cross Attention: :math:`(N, C, L, F)`
+            - Latent Attention: :math:`(N, T, L, L)`
+
+        WHere *N* is the batch size, *C* is the number of Cross Attention
+        heads, *L* is the number of Latents, *F* is the number of
+        features/columns in the dataset and *T* is the number of Latent
+        Attention heads
         """
         if self.share_weights:
             cross_attns = self.perceiver_blks["perceiver_block0"]["cross_attns"]

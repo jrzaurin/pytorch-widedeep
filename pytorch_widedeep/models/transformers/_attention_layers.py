@@ -203,10 +203,10 @@ class AdditiveAttention(nn.Module):
             self.v_proj = nn.Linear(input_dim, input_dim, bias=use_bias)
         self.k_proj = nn.Linear(input_dim, input_dim, bias=use_bias)
 
-        self.W_q = nn.Linear(self.head_dim, 1, bias=False)
-        self.W_k = nn.Linear(self.head_dim, 1, bias=False)
+        self.W_q = nn.Linear(input_dim, n_heads)
+        self.W_k = nn.Linear(input_dim, n_heads)
 
-        self.r_out = nn.Linear(self.head_dim, self.head_dim)
+        self.r_out = nn.Linear(input_dim, input_dim)
 
     def forward(self, X: Tensor) -> Tensor:
         # b: batch size
@@ -217,31 +217,27 @@ class AdditiveAttention(nn.Module):
         v = self.qv_proj(X) if self.share_qv_weights else self.v_proj(X)
         k = self.k_proj(X)
 
-        q, k, v = map(
-            lambda t: einops.rearrange(t, "b s (h d) -> b h s d", h=self.n_heads),
-            (q, k, v),
-        )
-
-        alphas = (
-            einops.rearrange(self.W_q(q), "b h s () -> b h s")
-            / math.sqrt(self.head_dim)
-        ).softmax(dim=-1)
-        global_query = einsum("b h s, b h s d -> b h d", alphas, q)
-        global_query = einops.rearrange(global_query, "b h d -> b h () d")
+        alphas = (self.W_q(q) / math.sqrt(self.head_dim)).softmax(dim=-1)
+        q_r = einops.rearrange(q, "b s (h d) -> b s h d", h=self.n_heads)
+        global_query = einsum(" b s h, b s h d -> b h d", alphas, q_r)
+        global_query = einops.rearrange(global_query, "b h d -> b () (h d)")
 
         p = k * global_query
 
-        betas = (
-            einops.rearrange(self.W_k(p), "b h s () -> b h s")
-            / math.sqrt(self.head_dim)
-        ).softmax(dim=-1)
-        global_key = einsum("b h s, b h s d -> b h d", betas, p)
-        global_key = einops.rearrange(global_key, "b h d -> b h () d")
+        betas = (self.W_k(p) / math.sqrt(self.head_dim)).softmax(dim=-1)
+        p_r = einops.rearrange(p, "b s (h d) -> b s h d", h=self.n_heads)
+        global_key = einsum(" b s h, b s h d -> b h d", betas, p_r)
+        global_key = einops.rearrange(global_key, "b h d -> b () (h d)")
 
         u = v * global_key
 
-        self.attn_weights = (alphas, betas)
+        # for consistency with all other transformer-based models, rearrange
+        # the attn_weights
+        self.attn_weights = (
+            einops.rearrange(alphas, "b s h -> b h s"),
+            einops.rearrange(betas, "b s h -> b h s"),
+        )
 
         output = q + self.dropout(self.r_out(u))
 
-        return einops.rearrange(output, "b h s d -> b s (h d)", h=self.n_heads)
+        return output

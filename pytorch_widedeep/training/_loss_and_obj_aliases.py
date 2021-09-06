@@ -7,7 +7,7 @@ class classproperty:
     @classmethod
     @property
 
-    Given that we support 3.6, 3.7 and 3.8 let's use this hack
+    Given that we support 3.7, 3.8 as well as 3.9, let's use this hack
     """
 
     def __init__(self, func):

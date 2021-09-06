@@ -67,7 +67,7 @@ setup_kwargs = {
         "torchmetrics",
     ],
     "extras_require": extras,
-    "python_requires": ">=3.6.0",
+    "python_requires": ">=3.7.0",
     "classifiers": [
         dev_status[majorminor],
         "Environment :: Other Environment",

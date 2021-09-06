@@ -63,7 +63,7 @@ class SAINT(nn.Module):
     use_bias: bool, default = False
         Boolean indicating whether or not to use bias in the Q, K, and V
         projection layers
-    n_blocks: int, default = 1
+    n_blocks: int, default = 2
         Number of SAINT-Transformer blocks. 1 in the paper.
     attn_dropout: float, default = 0.2
         Dropout that will be applied to the Multi-Head Attention column and
@@ -132,7 +132,7 @@ class SAINT(nn.Module):
         input_dim: int = 32,
         use_bias: bool = False,
         n_heads: int = 8,
-        n_blocks: int = 1,
+        n_blocks: int = 2,
         attn_dropout: float = 0.1,
         ff_dropout: float = 0.2,
         transformer_activation: str = "gelu",
@@ -259,6 +259,15 @@ class SAINT(nn.Module):
         r"""List with the attention weights. Each element of the list is a tuple
         where the first and the second elements are the column and row
         attention weights respectively
+
+        The shape of the attention weights is:
+
+            - column attention: :math:`(N, H, F, F)`
+
+            - row attention: :math:`(1, H, N, N)`
+
+        where *N* is the batch size, *H* is the number of heads and *F* is the
+        number of features/columns in the dataset
         """
         attention_weights = []
         for blk in self.transformer_blks:

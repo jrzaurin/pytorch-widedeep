@@ -285,6 +285,13 @@ class TabFastFormer(nn.Module):
         r"""List with the attention weights. Each element of the list is a
         tuple where the first and second elements are :math:`\alpha`
         and :math:`\beta` attention weights in the paper.
+
+        The shape of the attention weights is:
+
+        :math:`(N, H, F)`
+
+        where *N* is the batch size, *H* is the number of attention heads
+        and *F* is the number of features/columns in the dataset
         """
         if self.share_weights:
             attention_weights = [self.transformer_blks[0].attn.attn_weight]

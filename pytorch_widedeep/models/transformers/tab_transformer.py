@@ -73,7 +73,7 @@ class TabTransformer(nn.Module):
     use_bias: bool, default = False
         Boolean indicating whether or not to use bias in the Q, K, and V
         projection layers.
-    n_blocks: int, default = 6
+    n_blocks: int, default = 4
         Number of Transformer blocks
     attn_dropout: float, default = 0.2
         Dropout that will be applied to the Multi-Head Attention layers
@@ -142,7 +142,7 @@ class TabTransformer(nn.Module):
         input_dim: int = 32,
         n_heads: int = 8,
         use_bias: bool = False,
-        n_blocks: int = 6,
+        n_blocks: int = 4,
         attn_dropout: float = 0.2,
         ff_dropout: float = 0.1,
         transformer_activation: str = "gelu",
@@ -266,7 +266,15 @@ class TabTransformer(nn.Module):
 
     @property
     def attention_weights(self) -> List:
-        r"""List with the attention weights"""
+        r"""List with the attention weights
+
+        The shape of the attention weights is:
+
+        :math:`(N, H, F, F)`
+
+        Where *N* is the batch size, *H* is the number of attention heads
+        and *F* is the number of features/columns in the dataset
+        """
         return [blk.attn.attn_weights for blk in self.transformer_blks]
 
     def _compute_attn_output_dim(self) -> int:

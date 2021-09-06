@@ -54,7 +54,7 @@ class FTTransformer(nn.Module):
         Type of normalization layer applied to the continuous features before
         they are embedded. Options are: ``layernorm``, ``batchnorm`` or
         ``None``.
-    input_dim: int, default = 192
+    input_dim: int, default = 64
         The so-called *dimension of the model*. Is the number of embeddings used to encode
         the categorical and/or continuous columns.
     kv_compression_factor: int, default = 0.5
@@ -69,12 +69,12 @@ class FTTransformer(nn.Module):
         Boolean indicating if the :math:`E` and :math:`F` projection matrices
         will share weights.  See `Linformer: Self-Attention with Linear
         Complexity <https://arxiv.org/abs/2006.04768>`_ for details
-    n_heads: int, default = 6
+    n_heads: int, default = 8
         Number of attention heads per FTTransformer block
     use_bias: bool, default = False
         Boolean indicating whether or not to use bias in the Q, K, and V
         projection layers
-    n_blocks: int, default = 3
+    n_blocks: int, default = 4
         Number of FTTransformer blocks
     attn_dropout: float, default = 0.2
         Dropout that will be applied to the Linear-Attention layers
@@ -143,12 +143,12 @@ class FTTransformer(nn.Module):
         continuous_cols: Optional[List[str]] = None,
         embed_continuous_activation: str = None,
         cont_norm_layer: str = None,
-        input_dim: int = 192,
+        input_dim: int = 64,
         kv_compression_factor: float = 0.5,
         kv_sharing: bool = False,
         use_bias: bool = False,
-        n_heads: int = 6,
-        n_blocks: int = 3,
+        n_heads: int = 8,
+        n_blocks: int = 4,
         attn_dropout: float = 0.2,
         ff_dropout: float = 0.1,
         transformer_activation: str = "reglu",
@@ -286,5 +286,15 @@ class FTTransformer(nn.Module):
 
     @property
     def attention_weights(self) -> List:
-        r"""List with the attention weights"""
+        r"""List with the attention weights
+
+        The shape of the attention weights is:
+
+        :math:`(N, H, F, k)`
+
+        where *N* is the batch size, *H* is the number of attention heads, *F*
+        is the number of features/columns and *k* is the reduced sequence
+        length or dimension, i.e. :math:`k = int(kv_
+        {compression \space factor} \times s)`
+        """
         return [blk.attn.attn_weights for blk in self.transformer_blks]

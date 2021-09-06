@@ -428,8 +428,8 @@ def test_transformers_keep_attn(model_name):
 @pytest.mark.parametrize(
     "mlp_first_h, shoud_work",
     [
-        ((n_cols * 2) * 192, True),
-        ((n_cols * 2) * (192 + 1), False),
+        ((n_cols * 2) * 64, True),
+        ((n_cols * 2) * (64 + 1), False),
     ],
 )
 def test_ft_transformer_mlp(mlp_first_h, shoud_work):
