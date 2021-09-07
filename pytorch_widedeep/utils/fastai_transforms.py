@@ -220,15 +220,15 @@ class Tokenizer:
     ----------
     tok_func: Callable, default = ``SpacyTokenizer``
         Tokenizer Object. See :class:`pytorch_widedeep.utils.fastai_transforms.SpacyTokenizer`
-    lang: str, default = "en",
+    lang: str, default = "en"
         Text's Language
-    pre_rules: ListRules, Optional, default = None,
+    pre_rules: ListRules, Optional, default = None
         Custom type: ``Collection[Callable[[str], str]]``.
         see :obj:`pytorch_widedeep.wdtypes`. Preprocessing Rules
-    post_rules: ListRules, Optional, default = None,
+    post_rules: ListRules, Optional, default = None
         Custom type: ``Collection[Callable[[str], str]]``.
         see :obj:`pytorch_widedeep.wdtypes`. Postprocessing Rules
-    special_cases: Collection, Optional, default= None,
+    special_cases: Collection, Optional, default= None
         special cases to be added to the tokenizer via ``Spacy``'s
         ``add_special_case`` method
     n_cpus: int, Optional, default = None

@@ -12,5 +12,6 @@ from pytorch_widedeep.utils import (
     deeptabular_utils,
     fastai_transforms,
 )
+from pytorch_widedeep.tab2vec import Tab2Vec
 from pytorch_widedeep.version import __version__
 from pytorch_widedeep.training import Trainer

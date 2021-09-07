@@ -23,6 +23,7 @@ Documentation
     Dataloaders <dataloaders>
     Callbacks <callbacks>
     The Trainer <trainer>
+    Tab2Vec <tab2vec>
     Examples <examples>
 
 

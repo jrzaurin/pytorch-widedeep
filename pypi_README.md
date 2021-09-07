@@ -4,7 +4,7 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/jrzaurin/pytorch-widedeep/issues)
 [![codecov](https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/master/graph/badge.svg)](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
-[![Python 3.6 3.7 3.8 3.9](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue.svg)](https://www.python.org/)
+[![Python 3.7 3.8 3.9](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue.svg)](https://www.python.org/)
 
 # pytorch-widedeep
 
@@ -63,8 +63,8 @@ when running on Mac, present in previous versions, persist on this release
 and the data-loaders will not run in parallel. In addition, since `python
 3.8`, [the `multiprocessing` library start method changed from `'fork'` to`'spawn'`](https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods).
 This also affects the data-loaders (for any `torch` version) and they will
-not run in parallel. Therefore, for Mac users I recommend using `python
-3.6` or `3.7` and `torch <= 1.6` (with the corresponding, consistent
+not run in parallel. Therefore, for Mac users I recommend using `python 3.7`
+and `torch <= 1.6` (with the corresponding, consistent
 version of `torchvision`, e.g. `0.7.0` for `torch 1.6`). I do not want to
 force this versioning in the `setup.py` file since I expect that all these
 issues are fixed in the future. Therefore, after installing

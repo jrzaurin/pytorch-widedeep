@@ -2,15 +2,15 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import MLP
-from pytorch_widedeep.models.transformers._encoders import SaintEncoder
+from pytorch_widedeep.models.transformers._encoders import FastFormerEncoder
 from pytorch_widedeep.models.transformers._embeddings_layers import (
     CatAndContEmbeddings,
 )
 
 
-class SAINT(nn.Module):
-    r"""Defines a ``SAINT`` model
-    (`arXiv:2106.01342 <https://arxiv.org/abs/2106.01342>`_) that can be used
+class TabFastFormer(nn.Module):
+    r"""Defines an adaptation of a ``FastFormer`` model
+    (`arXiv:2108.09084 <https://arxiv.org/abs/2108.09084>`_) that can be used
     as the ``deeptabular`` component of a Wide & Deep model.
 
     Parameters
@@ -36,7 +36,7 @@ class SAINT(nn.Module):
         the classes in one column from those in the other columns'`. In other
         words, the idea is to let the model learn which column is embedded
         at the time.
-    add_shared_embed: bool, default = False
+    add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings
         to the column embeddings or 2) to replace the first
         ``frac_shared_embed`` with the shared embeddings.
@@ -59,17 +59,22 @@ class SAINT(nn.Module):
         The so-called *dimension of the model*. In general is the number of
         embeddings used to encode the categorical and/or continuous columns
     n_heads: int, default = 8
-        Number of attention heads per Transformer block
+        Number of attention heads per FastFormer block
     use_bias: bool, default = False
         Boolean indicating whether or not to use bias in the Q, K, and V
         projection layers
-    n_blocks: int, default = 2
-        Number of SAINT-Transformer blocks. 1 in the paper.
+    n_blocks: int, default = 4
+        Number of FastFormer blocks
     attn_dropout: float, default = 0.2
-        Dropout that will be applied to the Multi-Head Attention column and
-        row layers
+        Dropout that will be applied to the Additive Attention layers
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
+    share_qv_weights: bool, default = False
+        Following the paper, this is a boolean indicating if the the value and
+        the query transformation parameters will be shared
+    share_weights: bool, default = False
+        In addition to sharing the value and query transformation parameters,
+        the parameters across different Fastformer layers can also be shared
     transformer_activation: str, default = "gelu"
         Transformer Encoder activation function. ``tanh``, ``relu``,
         ``leaky_relu``, ``gelu``, ``geglu`` and ``reglu`` are supported
@@ -97,7 +102,7 @@ class SAINT(nn.Module):
     cat_and_cont_embed: ``nn.Module``
         This is the module that processes the categorical and continuous columns
     transformer_blks: ``nn.Sequential``
-        Sequence of SAINT-Transformer blocks
+        Sequence of FasFormer blocks.
     transformer_mlp: ``nn.Module``
         MLP component in the model
     output_dim: int
@@ -107,20 +112,20 @@ class SAINT(nn.Module):
     Example
     --------
     >>> import torch
-    >>> from pytorch_widedeep.models import SAINT
+    >>> from pytorch_widedeep.models import TabFastFormer
     >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
     >>> colnames = ['a', 'b', 'c', 'd', 'e']
     >>> embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
     >>> continuous_cols = ['e']
     >>> column_idx = {k:v for v,k in enumerate(colnames)}
-    >>> model = SAINT(column_idx=column_idx, embed_input=embed_input, continuous_cols=continuous_cols)
+    >>> model = TabFastFormer(column_idx=column_idx, embed_input=embed_input, continuous_cols=continuous_cols)
     >>> out = model(X_tab)
     """
 
     def __init__(
         self,
         column_idx: Dict[str, int],
-        embed_input: List[Tuple[str, int]],
+        embed_input: Optional[List[Tuple[str, int]]] = None,
         embed_dropout: float = 0.1,
         full_embed_dropout: bool = False,
         shared_embed: bool = False,
@@ -130,12 +135,14 @@ class SAINT(nn.Module):
         embed_continuous_activation: str = None,
         cont_norm_layer: str = None,
         input_dim: int = 32,
-        use_bias: bool = False,
         n_heads: int = 8,
-        n_blocks: int = 2,
+        use_bias: bool = False,
+        n_blocks: int = 4,
         attn_dropout: float = 0.1,
         ff_dropout: float = 0.2,
-        transformer_activation: str = "gelu",
+        share_qv_weights: bool = False,
+        share_weights: bool = False,
+        transformer_activation: str = "relu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
         mlp_dropout: float = 0.1,
@@ -143,7 +150,7 @@ class SAINT(nn.Module):
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = True,
     ):
-        super(SAINT, self).__init__()
+        super(TabFastFormer, self).__init__()
 
         self.column_idx = column_idx
         self.embed_input = embed_input
@@ -156,11 +163,13 @@ class SAINT(nn.Module):
         self.embed_continuous_activation = embed_continuous_activation
         self.cont_norm_layer = cont_norm_layer
         self.input_dim = input_dim
-        self.use_bias = use_bias
         self.n_heads = n_heads
+        self.use_bias = use_bias
         self.n_blocks = n_blocks
         self.attn_dropout = attn_dropout
         self.ff_dropout = ff_dropout
+        self.share_qv_weights = share_qv_weights
+        self.share_weights = share_weights
         self.transformer_activation = transformer_activation
         self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation
@@ -196,22 +205,39 @@ class SAINT(nn.Module):
         )
 
         self.transformer_blks = nn.Sequential()
-        for i in range(n_blocks):
-            self.transformer_blks.add_module(
-                "saint_block" + str(i),
-                SaintEncoder(
-                    input_dim,
-                    n_heads,
-                    use_bias,
-                    attn_dropout,
-                    ff_dropout,
-                    transformer_activation,
-                    self.n_feats,
-                ),
-            )
+        first_fastformer_block = FastFormerEncoder(
+            input_dim,
+            n_heads,
+            use_bias,
+            attn_dropout,
+            ff_dropout,
+            share_qv_weights,
+            transformer_activation,
+        )
+        self.transformer_blks.add_module("fastformer_block0", first_fastformer_block)
+        for i in range(1, n_blocks):
+            if share_weights:
+                self.transformer_blks.add_module(
+                    "fastformer_block" + str(i), first_fastformer_block
+                )
+            else:
+                self.transformer_blks.add_module(
+                    "fastformer_block" + str(i),
+                    FastFormerEncoder(
+                        input_dim,
+                        n_heads,
+                        use_bias,
+                        attn_dropout,
+                        ff_dropout,
+                        share_qv_weights,
+                        transformer_activation,
+                    ),
+                )
 
         attn_output_dim = (
-            self.input_dim if self.with_cls_token else self.n_feats * self.input_dim
+            self.input_dim
+            if self.with_cls_token
+            else (self.n_cat + self.n_cont) * self.input_dim
         )
         if not mlp_hidden_dims:
             mlp_hidden_dims = [
@@ -256,22 +282,19 @@ class SAINT(nn.Module):
 
     @property
     def attention_weights(self) -> List:
-        r"""List with the attention weights. Each element of the list is a tuple
-        where the first and the second elements are the column and row
-        attention weights respectively
+        r"""List with the attention weights. Each element of the list is a
+        tuple where the first and second elements are :math:`\alpha`
+        and :math:`\beta` attention weights in the paper.
 
         The shape of the attention weights is:
 
-            - column attention: :math:`(N, H, F, F)`
+        :math:`(N, H, F)`
 
-            - row attention: :math:`(1, H, N, N)`
-
-        where *N* is the batch size, *H* is the number of heads and *F* is the
-        number of features/columns in the dataset
+        where *N* is the batch size, *H* is the number of attention heads
+        and *F* is the number of features/columns in the dataset
         """
-        attention_weights = []
-        for blk in self.transformer_blks:
-            attention_weights.append(
-                (blk.col_attn.attn_weights, blk.row_attn.attn_weights)
-            )
+        if self.share_weights:
+            attention_weights = [self.transformer_blks[0].attn.attn_weight]
+        else:
+            attention_weights = [blk.attn.attn_weights for blk in self.transformer_blks]
         return attention_weights

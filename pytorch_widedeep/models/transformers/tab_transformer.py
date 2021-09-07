@@ -3,89 +3,93 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import MLP
-from pytorch_widedeep.models.transformers.layers import (
-    SharedEmbeddings,
-    TransformerEncoder,
-    ContinuousEmbeddings,
-    FullEmbeddingDropout,
+from pytorch_widedeep.models.transformers._encoders import TransformerEncoder
+from pytorch_widedeep.models.transformers._embeddings_layers import (
+    CatAndContEmbeddings,
 )
 
 
 class TabTransformer(nn.Module):
-    r"""Adaptation of TabTransformer model
-    (https://arxiv.org/abs/2012.06678) model that can be used as the
-    deeptabular component of a Wide & Deep model.
+    r"""Defines a ``TabTransformer`` model
+    (`arXiv:2012.06678 <https://arxiv.org/abs/2012.06678>`_) that can be used
+    as the ``deeptabular`` component of a Wide & Deep model.
+
+    Note that this is an enhanced adaptation of the model described in the
+    original publication, containing a series of additional features.
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the DeepDense model. Required to slice the tensors. e.g. {'education':
-        0, 'relationship': 1, 'workclass': 2, ...}
+        the model. Required to slice the tensors. e.g.
+        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
     embed_input: List
         List of Tuples with the column name and number of unique values
-        e.g. [(education, 11), ...]
+        e.g. [('education', 11), ...]
     embed_dropout: float, default = 0.1
         Dropout to be applied to the embeddings matrix
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
-        :obj:`pytorch_widedeep.models.transformers.layers.FullEmbeddingDropout`.
+        :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
         If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
     shared_embed: bool, default = False
         The idea behind ``shared_embed`` is described in the Appendix A in the paper:
         `'The goal of having column embedding is to enable the model to distinguish the
         classes in one column from those in the other columns'`. In other words, the idea
-        is to let the model learn which column is embedding at the time.
-    add_shared_embed: bool, default = False,
+        is to let the model learn which column is embedded at the time.
+    add_shared_embed: bool, default = False
         The two embedding sharing strategies are: 1) add the shared embeddings to the column
         embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
-        embeddings. See :obj:`pytorch_widedeep.models.transformers.layers.SharedEmbeddings`
+        embeddings. See :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
     frac_shared_embed: float, default = 0.25
-        The fraction of embeddings that will be shared by all the different categories for
-        one particular column.
+        The fraction of embeddings that will be shared (if ``add_shared_embed
+        = False``) by all the different categories for one particular
+        column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    embed_continuous: bool, default = False,
+    embed_continuous: bool, default = False
         Boolean indicating if the continuous features will be "embedded". See
-        ``pytorch_widedeep.models.transformers.layers.ContinuousEmbeddings``
-        Note that setting this to true is equivalent to the so called
-        `FT-Transformer <https://arxiv.org/abs/2106.11959>`_
-        (Feature Tokenizer + Transformer). The only difference is that this
-        implementation does not consider using bias for the categorical
-        embeddings.
+        ``pytorch_widedeep.models.transformers._layers.ContinuousEmbeddings``
+        Note that setting this to ``True`` is similar (but not identical) to the
+        so called `FT-Transformer <https://arxiv.org/abs/2106.11959>`_
+        (Feature Tokenizer + Transformer).
+        See :obj:`pytorch_widedeep.models.transformers.ft_transformer.FTTransformer`
+        for details on the dedicated implementation available in this
+        library
     embed_continuous_activation: str, default = None
         String indicating the activation function to be applied to the
-        continuous embeddings, if any.
-        'relu', 'leaky_relu' and 'gelu' are supported.
-    cont_norm_layer: str, default =  None,
-        Type of normalization layer applied to the continuous features. Options
-        are: 'layernorm', 'batchnorm' or None.
+        continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
+        ``gelu`` are supported.
+    cont_norm_layer: str, default =  "layernorm",
+        Type of normalization layer applied to the continuous features before
+        they are passed to the network. Options are: ``layernorm``,
+        ``batchnorm`` or ``None``.
     input_dim: int, default = 32
-        The so-called *dimension of the model*. Is the number of embeddings used to encode
-        the categorical columns
+        The so-called *dimension of the model*. In general is the number of
+        embeddings used to encode the categorical and/or continuous columns
     n_heads: int, default = 8
         Number of attention heads per Transformer block
-    n_blocks: int, default = 6
+    use_bias: bool, default = False
+        Boolean indicating whether or not to use bias in the Q, K, and V
+        projection layers.
+    n_blocks: int, default = 4
         Number of Transformer blocks
-    dropout: float, default = 0.1
-        Dropout that will be applied internally to the ``TransformerEncoder``
-        (see :obj:`pytorch_widedeep.models.transformers.layers.TransformerEncoder`)
-        and the output MLP
-    keep_attn_weights: bool, default = False
-        If set to ``True`` the model will store the attention weights in the ``attention_weights``
-        attribute.
-    ff_hidden_dim: int, default = 128
-        Hidden dimension of the ``FeedForward`` Layer. See
-        :obj:`pytorch_widedeep.models.transformers.layers.FeedForward`.
+    attn_dropout: float, default = 0.2
+        Dropout that will be applied to the Multi-Head Attention layers
+    ff_dropout: float, default = 0.1
+        Dropout that will be applied to the FeedForward network
     transformer_activation: str, default = "gelu"
-        Transformer Encoder activation function. 'relu', 'leaky_relu', 'gelu'
-        and 'geglu' are supported
+        Transformer Encoder activation function. ``tanh``, ``relu``,
+        ``leaky_relu``, ``gelu``, ``geglu`` and ``reglu`` are supported
     mlp_hidden_dims: List, Optional, default = None
-        MLP hidden dimensions. If not provided it will default to ``[4*l,
-        2*l]`` where ``l`` is the mlp input dimension
+        MLP hidden dimensions. If not provided it will default to ``[l, 4*l,
+        2*l]`` where ``l`` is the MLP input dimension
     mlp_activation: str, default = "relu"
-        MLP activation function. 'relu', 'leaky_relu' and 'gelu' are supported
+        MLP activation function. ``tanh``, ``relu``, ``leaky_relu`` and
+        ``gelu`` are supported
+    mlp_dropout: float, default = 0.1
+        Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
         Boolean indicating whether or not to apply batch normalization to the
         dense layers
@@ -99,17 +103,10 @@ class TabTransformer(nn.Module):
 
     Attributes
     ----------
-    cat_embed_layers: ``nn.ModuleDict``
-        Dict with the embeddings per column
-    cont_embed: ``nn.Module``
-        Continuous embeddings layer if ``embed_continuous=True``. See
-        ``pytorch_widedeep.models.transformers.layers.ContinuousEmbeddings``
-    cont_norm: ``nn.Module``
-        continuous normalization layer
+    cat_and_cont_embed: ``nn.Module``
+        This is the module that processes the categorical and continuous columns
     transformer_blks: ``nn.Sequential``
         Sequence of Transformer blocks
-    attention_weights: List
-        List with the attention weights per block if ``keep_attn_weights = True``.
     transformer_mlp: ``nn.Module``
         MLP component in the model
     output_dim: int
@@ -132,7 +129,7 @@ class TabTransformer(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
-        embed_input: List[Tuple[str, int]],
+        embed_input: Optional[List[Tuple[str, int]]] = None,
         embed_dropout: float = 0.1,
         full_embed_dropout: bool = False,
         shared_embed: bool = False,
@@ -144,13 +141,14 @@ class TabTransformer(nn.Module):
         cont_norm_layer: str = None,
         input_dim: int = 32,
         n_heads: int = 8,
-        n_blocks: int = 6,
-        dropout: float = 0.1,
-        keep_attn_weights: bool = False,
-        ff_hidden_dim: int = 32 * 4,
+        use_bias: bool = False,
+        n_blocks: int = 4,
+        attn_dropout: float = 0.2,
+        ff_dropout: float = 0.1,
         transformer_activation: str = "gelu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
+        mlp_dropout: float = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = True,
@@ -170,10 +168,10 @@ class TabTransformer(nn.Module):
         self.cont_norm_layer = cont_norm_layer
         self.input_dim = input_dim
         self.n_heads = n_heads
+        self.use_bias = use_bias
         self.n_blocks = n_blocks
-        self.dropout = dropout
-        self.keep_attn_weights = keep_attn_weights
-        self.ff_hidden_dim = ff_hidden_dim
+        self.attn_dropout = attn_dropout
+        self.ff_dropout = ff_dropout
         self.transformer_activation = transformer_activation
         self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation
@@ -181,36 +179,62 @@ class TabTransformer(nn.Module):
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
-        self.with_cls_token = "cls_token" in self.column_idx
-        self.categorical_cols = [ei[0] for ei in self.embed_input]
-        self.n_tokens = sum([ei[1] for ei in self.embed_input])
+        self.with_cls_token = "cls_token" in column_idx
+        self.n_cat = len(embed_input) if embed_input is not None else 0
+        self.n_cont = len(continuous_cols) if continuous_cols is not None else 0
 
-        self._set_categ_embeddings()
+        if self.n_cont and not self.n_cat and not self.embed_continuous:
+            raise ValueError(
+                "If only continuous features are used 'embed_continuous' must be set to 'True'"
+            )
 
-        self._set_cont_cols()
+        self.cat_and_cont_embed = CatAndContEmbeddings(
+            input_dim,
+            column_idx,
+            embed_input,
+            embed_dropout,
+            full_embed_dropout,
+            shared_embed,
+            add_shared_embed,
+            frac_shared_embed,
+            False,  # use_embed_bias
+            continuous_cols,
+            embed_continuous,
+            embed_continuous_activation,
+            True,  # use_cont_bias
+            cont_norm_layer,
+        )
 
         self.transformer_blks = nn.Sequential()
         for i in range(n_blocks):
             self.transformer_blks.add_module(
-                "block" + str(i),
+                "transformer_block" + str(i),
                 TransformerEncoder(
                     input_dim,
                     n_heads,
-                    keep_attn_weights,
-                    ff_hidden_dim,
-                    dropout,
+                    use_bias,
+                    attn_dropout,
+                    ff_dropout,
                     transformer_activation,
                 ),
             )
-        if keep_attn_weights:
-            self.attention_weights: List[Any] = [None] * n_blocks
 
+        attn_output_dim = self._compute_attn_output_dim()
         if not mlp_hidden_dims:
-            mlp_hidden_dims = self._set_mlp_hidden_dims()
+            mlp_hidden_dims = [
+                attn_output_dim,
+                attn_output_dim * 4,
+                attn_output_dim * 2,
+            ]
+        else:
+            assert mlp_hidden_dims[0] == attn_output_dim, (
+                f"The input dim of the MLP must be {attn_output_dim}. "
+                f"Got {mlp_hidden_dims[0]} instead"
+            )
         self.transformer_mlp = MLP(
             mlp_hidden_dims,
             mlp_activation,
-            dropout,
+            mlp_dropout,
             mlp_batchnorm,
             mlp_batchnorm_last,
             mlp_linear_first,
@@ -221,115 +245,48 @@ class TabTransformer(nn.Module):
 
     def forward(self, X: Tensor) -> Tensor:
 
-        if self.shared_embed:
-            x_cat_embed = [
-                self.cat_embed["emb_layer_" + col](
-                    X[:, self.column_idx[col]].long()
-                ).unsqueeze(1)
-                for col, _ in self.embed_input
-            ]
-            x = torch.cat(x_cat_embed, 1)
-        else:
-            x = self.cat_embed(X[:, self.cat_idx].long())
+        x_cat, x_cont = self.cat_and_cont_embed(X)
 
-        if not self.shared_embed and self.embedding_dropout is not None:
-            x = self.embedding_dropout(x)
+        if x_cat is not None:
+            x = x_cat
+        if x_cont is not None and self.embed_continuous:
+            x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
 
-        if self.continuous_cols is not None and self.embed_continuous:
-            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
-            x_cont_embed = self.cont_embed(x_cont)
-            x = torch.cat([x, x_cont_embed], 1)
-
-        for i, blk in enumerate(self.transformer_blks):
-            x = blk(x)
-            if self.keep_attn_weights:
-                if hasattr(blk, "row_attn"):
-                    self.attention_weights[i] = (
-                        blk.self_attn.attn_weights,
-                        blk.row_attn.attn_weights,
-                    )
-                else:
-                    self.attention_weights[i] = blk.self_attn.attn_weights
+        x = self.transformer_blks(x)
 
         if self.with_cls_token:
             x = x[:, 0, :]
         else:
             x = x.flatten(1)
 
-        if self.continuous_cols is not None and not self.embed_continuous:
-            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
+        if x_cont is not None and not self.embed_continuous:
             x = torch.cat([x, x_cont], 1)
 
         return self.transformer_mlp(x)
 
-    def _set_categ_embeddings(self):
-        self.cat_idx = [self.column_idx[col] for col in self.categorical_cols]
-        # Categorical: val + 1 because 0 is reserved for padding/unseen cateogories.
-        if self.shared_embed:
-            self.cat_embed = nn.ModuleDict(
-                {
-                    "emb_layer_"
-                    + col: SharedEmbeddings(
-                        val if col == "cls_token" else val + 1,
-                        self.input_dim,
-                        self.embed_dropout,
-                        self.full_embed_dropout,
-                        self.add_shared_embed,
-                        self.frac_shared_embed,
-                    )
-                    for col, val in self.embed_input
-                }
-            )
-        else:
-            self.cat_embed = nn.Embedding(
-                self.n_tokens + 1, self.input_dim, padding_idx=0
-            )
-            if self.full_embed_dropout:
-                self.embedding_dropout: DropoutLayers = FullEmbeddingDropout(
-                    self.embed_dropout
-                )
-            else:
-                self.embedding_dropout = nn.Dropout(self.embed_dropout)
+    @property
+    def attention_weights(self) -> List:
+        r"""List with the attention weights
 
-    def _set_cont_cols(self):
-        if self.continuous_cols is not None:
-            self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
-            if self.cont_norm_layer == "layernorm":
-                self.cont_norm: NormLayers = nn.LayerNorm(len(self.continuous_cols))
-            elif self.cont_norm_layer == "batchnorm":
-                self.cont_norm = nn.BatchNorm1d(len(self.continuous_cols))
-            else:
-                self.cont_norm = nn.Identity()
+        The shape of the attention weights is:
+
+        :math:`(N, H, F, F)`
+
+        Where *N* is the batch size, *H* is the number of attention heads
+        and *F* is the number of features/columns in the dataset
+        """
+        return [blk.attn.attn_weights for blk in self.transformer_blks]
+
+    def _compute_attn_output_dim(self) -> int:
+
+        if self.with_cls_token:
             if self.embed_continuous:
-                self.cont_embed = ContinuousEmbeddings(
-                    len(self.continuous_cols),
-                    self.input_dim,
-                    self.embed_continuous_activation,
-                )
-
-    def _set_mlp_hidden_dims(self) -> List[int]:
-        if self.continuous_cols is not None:
-            if self.with_cls_token:
-                if self.embed_continuous:
-                    mlp_hidden_dims = [
-                        self.input_dim,
-                        self.input_dim * 4,
-                        self.input_dim * 2,
-                    ]
-                else:
-                    mlp_inp_l = self.input_dim + len(self.continuous_cols)
-                    mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
-            elif self.embed_continuous:
-                mlp_inp_l = (
-                    len(self.embed_input) + len(self.continuous_cols)
-                ) * self.input_dim
-                mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
+                attn_output_dim = self.input_dim
             else:
-                mlp_inp_l = len(self.embed_input) * self.input_dim + len(
-                    self.continuous_cols
-                )
-                mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
+                attn_output_dim = self.input_dim + self.n_cont
+        elif self.embed_continuous:
+            attn_output_dim = (self.n_cat + self.n_cont) * self.input_dim
         else:
-            mlp_inp_l = len(self.embed_input) * self.input_dim
-            mlp_hidden_dims = [mlp_inp_l, mlp_inp_l * 4, mlp_inp_l * 2]
-        return mlp_hidden_dims
+            attn_output_dim = self.n_cat * self.input_dim + self.n_cont
+
+        return attn_output_dim

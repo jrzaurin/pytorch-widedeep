@@ -5,9 +5,10 @@ This module contains the four main components that will comprise a Wide and
 Deep model, and the ``WideDeep`` "constructor" class. These four components
 are: ``wide``, ``deeptabular``, ``deeptext``, ``deepimage``.
 
-.. note:: ``TabMlp``, ``TabResnet``, ``TabNet``, ``TabTransformer`` and ``SAINT`` can
-	all be used as the ``deeptabular``  component of the model and simply
-	represent different alternatives
+.. note:: ``TabMlp``, ``TabResnet``, ``TabNet``, ``TabTransformer``,  ``SAINT``,
+	``FTTransformer``, ``TabPerceiver`` and ``TabFastFormer`` can all be used
+	as the ``deeptabular`` component of the model and simply represent different
+	alternatives
 
 .. autoclass:: pytorch_widedeep.models.wide.Wide
 	:exclude-members: forward
@@ -30,6 +31,18 @@ are: ``wide``, ``deeptabular``, ``deeptext``, ``deepimage``.
 	:members:
 
 .. autoclass:: pytorch_widedeep.models.transformers.saint.SAINT
+	:exclude-members: forward
+	:members:
+
+.. autoclass:: pytorch_widedeep.models.transformers.ft_transformer.FTTransformer
+	:exclude-members: forward
+	:members:
+
+.. autoclass:: pytorch_widedeep.models.transformers.tab_perceiver.TabPerceiver
+	:exclude-members: forward
+	:members:
+
+.. autoclass:: pytorch_widedeep.models.transformers.tab_fastformer.TabFastFormer
 	:exclude-members: forward
 	:members:
 

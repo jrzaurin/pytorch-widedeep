@@ -1,3 +1,15 @@
+"""
+During the development of the package I realised that there is a typing
+inconsistency. The input components of a Wide and Deep model are of type
+nn.Module. These change type internally to nn.Sequential. While nn.Sequential
+is an instance of nn.Module the oppossite is, of course, not true. This does
+not affect any funcionality of the package, but it is something that needs
+fixing. However, while fixing is simple (simply define new attributes that
+are the nn.Sequential objects), its implications are quite wide within the
+package (involves changing a number of tests and tutorials). Therefore, I
+will introduce that fix when I do a major release. For now, we live with it.
+"""
+
 import warnings
 
 import torch
@@ -30,51 +42,16 @@ class WideDeep(nn.Module):
     Parameters
     ----------
     wide: ``nn.Module``, Optional, default = None
-        ``Wide`` model. I recommend using the :obj:`Wide` class in this
+        ``Wide`` model. I recommend using the ``Wide`` class in this
         package. However, it is possible to use a custom model as long as
         is consistent with the required architecture, see
         :class:`pytorch_widedeep.models.wide.Wide`
     deeptabular: ``nn.Module``, Optional, default = None
-
-        currently ``pytorch-widedeep`` implements four possible
-        architectures for the `deeptabular` component. These are:
-        TabMlp, TabResnet, TabNet, TabTransformer and SAINT.
-
-        1. TabMlp is simply an embedding layer encoding the categorical
-        features that are then concatenated and passed through a series of
-        dense (hidden) layers (i.e. and MLP).
-        See: :obj:`pytorch_widedeep.models.tab_mlp.TabMlp`
-
-        2. TabResnet is an embedding layer encoding the categorical
-        features that are then concatenated and passed through a series of
-        ResNet blocks formed by dense layers.
-        See :obj:`pytorch_widedeep.models.tab_resnet.TabResnet`
-
-        3. TabNet is detailed in `TabNet: Attentive Interpretable Tabular
-        Learning <https://arxiv.org/abs/1908.07442>`_. The TabNet
-        implementation in ``pytorch_widedeep`` is an adaptation of the
-        `dreamquark-ai <https://github.com/dreamquark-ai/tabnet>`_
-        implementation. See
-        :obj:`pytorch_widedeep.models.tabnet.tab_net.TabNet`
-
-        3. TabTransformer is detailed in `TabTransformer: Tabular Data
-        Modeling Using Contextual Embeddings
-        <https://arxiv.org/abs/2012.06678>`_. The TabTransformer
-        implementation in ``pytorch-widedeep`` is an adaptation of the
-        original implementation. See
-        :obj:`pytorch_widedeep.models.transformers.tab_transformer.TabTransformer`.
-
-        3. SAINT is detailed in `SAINT: Improved Neural Networks for Tabular
-        Data via Row Attention and Contrastive Pre-Training
-        <https://arxiv.org/abs/2106.01342>`_. The SAINT implementation in
-        ``pytorch-widedeep`` is an adaptation of the original implementation.
-        See
-        :obj:`pytorch_widedeep.models.transformers.saint.SAINT`.
-
-        I recommend using on of these as ``deeptabular``. However, it is
-        possible to use a custom model as long as is  consistent with the
-        required architecture.
-
+        currently ``pytorch-widedeep`` implements a number of possible
+        architectures for the ``deeptabular`` component. See the documenation
+        of the package. I recommend using the ``deeptabular`` components in
+        this package. However, it is possible to use a custom model as long
+        as is  consistent with the required architecture.
     deeptext: ``nn.Module``, Optional, default = None
         Model for the text input. Must be an object of class ``DeepText``
         or a custom model as long as is consistent with the required
@@ -97,8 +74,8 @@ class WideDeep(nn.Module):
         If ``head_hidden_dims`` is not None, dropout between the layers in
         ``head_hidden_dims``
     head_activation: str, default = "relu"
-        If ``head_hidden_dims`` is not None, activation function of the
-        head layers. One of "relu", gelu" or "leaky_relu"
+        If ``head_hidden_dims`` is not None, activation function of the head
+        layers. One of ``tanh``, ``relu``, ``gelu`` or ``leaky_relu``
     head_batchnorm: bool, default = False
         If ``head_hidden_dims`` is not None, specifies if batch
         normalizatin should be included in the head layers

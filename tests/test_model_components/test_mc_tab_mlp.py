@@ -5,6 +5,7 @@ import torch
 import pytest
 
 from pytorch_widedeep.models import TabMlp
+from pytorch_widedeep.models.tab_mlp import CatEmbeddingsAndCont
 
 colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 10) for _ in range(5)]
@@ -90,3 +91,50 @@ def test_act_fn_ValueError():
             embed_input=embed_input,
             continuous_cols=continuous_cols,
         )
+
+
+###############################################################################
+# Test CatEmbeddingsAndCont
+###############################################################################
+
+
+@pytest.mark.parametrize(
+    "setup, column_idx, embed_input, continuous_cols",
+    [
+        ("w_embed", {k: v for v, k in enumerate(colnames[:5])}, embed_input, None),
+        ("w_cont", {k: v for v, k in enumerate(colnames[5:])}, None, continuous_cols),
+        (
+            "w_both",
+            {k: v for v, k in enumerate(colnames)},
+            embed_input,
+            continuous_cols,
+        ),
+    ],
+)
+def test_cat_embeddings_and_cont(setup, column_idx, embed_input, continuous_cols):
+
+    if setup == "w_embed":
+        X = X_deep_emb
+    if setup == "w_cont":
+        X = X_deep_cont
+    if setup == "w_both":
+        X = X_deep
+
+    cat_embed_and_cont = CatEmbeddingsAndCont(
+        column_idx, embed_input, 0.1, continuous_cols, None
+    )
+    x_cat, x_cont = cat_embed_and_cont(X)
+
+    if setup == "w_embed":
+        assert (
+            x_cat.size() == torch.Size([X.shape[0], len(column_idx) * 16])
+            and x_cont is None
+        )
+    if setup == "w_cont":
+        assert (
+            x_cont.size() == torch.Size([X.shape[0], len(column_idx)]) and x_cat is None
+        )
+    if setup == "w_both":
+        assert x_cat.size() == torch.Size(
+            [X.shape[0], len(embed_cols) * 16]
+        ) and x_cont.size() == torch.Size([X.shape[0], len(cont_cols)])

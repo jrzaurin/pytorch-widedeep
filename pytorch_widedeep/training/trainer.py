@@ -1,5 +1,6 @@
 import os
 import json
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -24,15 +25,15 @@ from pytorch_widedeep.callbacks import (
 from pytorch_widedeep.dataloaders import DataLoaderDefault
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
 from pytorch_widedeep.training._finetune import FineTune
+from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.models.tabnet._utils import create_explain_matrix
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
-from pytorch_widedeep.training.trainer_utils import (
-    Alias,
+from pytorch_widedeep.training._trainer_utils import (
     alias_to_loss,
     save_epoch_logs,
     wd_train_val_split,
     print_loss_and_metric,
 )
-from pytorch_widedeep.models.tabnet.tab_net_utils import create_explain_matrix
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
 from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
 from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
@@ -47,7 +48,7 @@ device = torch.device("cuda" if use_cuda else "cpu")
 
 
 class Trainer:
-    r"""Method to set the of attributes that will be used during the
+    r"""Class to set the of attributes that will be used during the
     training process.
 
     Parameters
@@ -152,7 +153,8 @@ class Trainer:
           need to be normalised. See `this discussion
           <https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10>`_.
     lambda_sparse: float. default=1e-3
-        Tabnet sparse regularization factor
+        Tabnet sparse regularization factor. Used, of course, if the
+        ``deeptabular`` component is a Tabnet model
     alpha: float. default=0.25
         if ``objective`` is ``binary_focal_loss`` or
         ``multiclass_focal_loss``, the Focal Loss alpha and gamma
@@ -749,6 +751,9 @@ class Trainer:
         r"""Returns the learned embeddings for the categorical features passed through
         ``deeptabular``.
 
+        .. note:: This function will be deprecated in the next relase. Please consider
+            using ``Tab2Vec`` instead.
+
         This method is designed to take an encoding dictionary in the same
         format as that of the :obj:`LabelEncoder` Attribute in the class
         :obj:`TabPreprocessor`. See
@@ -783,6 +788,11 @@ class Trainer:
 
             trainer.get_embeddings(col_name="education", cat_encoding_dict=encoding_dict)
         """
+        warnings.warn(
+            "'get_embeddings' will be deprecated in the next release. "
+            "Please consider using 'Tab2vec' instead",
+            DeprecationWarning,
+        )
         for n, p in self.model.named_parameters():
             if "embed_layers" in n and col_name in n:
                 embed_mtx = p.cpu().data.numpy()
@@ -795,9 +805,10 @@ class Trainer:
 
     def explain(self, X_tab: np.ndarray, save_step_masks: bool = False):
         """
-        Returns the aggregated feature importance for each instance (or
-        observation) in the ``X_tab`` array. If ``save_step_masks`` is set to
-        ``True``, the masks per step will also be returned.
+        if the ``deeptabular`` component is a Tabnet model, returns the
+        aggregated feature importance for each instance (or observation) in
+        the ``X_tab`` array. If ``save_step_masks`` is set to ``True``, the
+        masks per step will also be returned.
 
         Parameters
         ----------
@@ -874,9 +885,9 @@ class Trainer:
         The exception is Tabnet. If the ``deeptabular`` component is a Tabnet
         model, an attribute (a dict) called ``feature_importance`` will be
         created at the end of the training process. Therefore, a ``save``
-        method was created that will save both the feature importance
-        dictionary to a json file and, since we are here, the model weights,
-        training history and learning rate history.
+        method was created that will save the feature importance dictionary
+        to a json file and, since we are here, the model weights, training
+        history and learning rate history.
 
         Parameters
         ----------

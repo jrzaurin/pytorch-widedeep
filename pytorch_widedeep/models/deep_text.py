@@ -20,7 +20,7 @@ class DeepText(nn.Module):
     vocab_size: int
         number of words in the vocabulary
     rnn_type: str, default = 'lstm'
-        String indicating the type of RNN to use. One of "lstm" or "gru"
+        String indicating the type of RNN to use. One of ``lstm`` or ``gru``
     hidden_dim: int, default = 64
         Hidden dim of the RNN
     n_layers: int, default = 3
@@ -30,9 +30,9 @@ class DeepText(nn.Module):
         the last layer
     bidirectional: bool, default = True
         indicates whether the staked RNNs are bidirectional
-    use_hidden_state: str, default = True,
+    use_hidden_state: str, default = True
         Boolean indicating whether to use the final hidden state or the
-        rnn output as predicting features
+        RNN output as predicting features
     padding_idx: int, default = 1
         index of the padding token in the padded-tokenised sequences. I
         use the ``fastai`` tokenizer where the token index 0 is reserved
@@ -48,7 +48,8 @@ class DeepText(nn.Module):
         List with the sizes of the stacked dense layers in the head
         e.g: [128, 64]
     head_activation: str, default = "relu"
-        Activation function for the dense layers in the head
+        Activation function for the dense layers in the head. Currently
+        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
     head_dropout: float, Optional, default = None
         dropout between the dense layers in the head
     head_batchnorm: bool, default = False

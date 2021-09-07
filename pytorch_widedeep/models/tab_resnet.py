@@ -1,15 +1,15 @@
 from collections import OrderedDict
 
-import numpy as np
 import torch
 from torch import nn
 from torch.nn import Module
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.tab_mlp import MLP
+from pytorch_widedeep.models.tab_mlp import MLP, CatEmbeddingsAndCont
 
 
 class BasicBlock(nn.Module):
+    # inspired by https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py#L37
     def __init__(self, inp: int, out: int, dropout: float = 0.0, resize: Module = None):
         super(BasicBlock, self).__init__()
 
@@ -86,20 +86,17 @@ class TabResnet(nn.Module):
     r"""Defines a so-called ``TabResnet`` model that can be used as the
     ``deeptabular`` component of a Wide & Deep model.
 
-    This class combines embedding representations of the categorical
-    features with numerical (aka continuous) features. These are then
-    passed through a series of Resnet blocks. See
-    ``pytorch_widedeep.models.tab_resnet.BasicBlock`` for details
-    on the structure of each block.
-
-    .. note:: Unlike ``TabMlp``, ``TabResnet`` assumes that there are always
-        categorical columns
+    This class combines embedding representations of the categorical features
+    with numerical (aka continuous) features. These are then passed through a
+    series of Resnet blocks. See
+    :obj:`pytorch_widedeep.models.tab_resnet.BasicBlock` for details on the
+    structure of each block.
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the TabMlp model. Required to slice the tensors. e.g. {'education':
+        the ``Resnet`` model. Required to slice the tensors. e.g. {'education':
         0, 'relationship': 1, 'workclass': 2, ...}
     embed_input: List
         List of Tuples with the column name, number of unique values and
@@ -112,11 +109,11 @@ class TabResnet(nn.Module):
         Type of normalization layer applied to the continuous features. Options
         are: 'layernorm', 'batchnorm' or None.
     concat_cont_first: bool, default = True
-        Boolean indicating whether the continuum columns will be
-        concatenated with the Embeddings and then passed through the
-        Resnet blocks (``True``) or, alternatively, will be concatenated
-        with the result of passing the embeddings through the Resnet
-        Blocks (``False``)
+        If ``True`` the continuum columns will be concatenated with the
+        Categorical Embeddings and then passed through the Resnet blocks. If
+        ``False``, the  Categorical Embeddings will be passed through the
+        Resnet blocks and then the output of the Resnet blocks will be
+        concatenated with the continuous features.
     blocks_dims: List, default = [200, 100, 100]
         List of integers that define the input and output units of each block.
         For example: [200, 100, 100] will generate 2 blocks. The first will
@@ -128,12 +125,13 @@ class TabResnet(nn.Module):
        Block's `"internal"` dropout. This dropout is applied to the first
        of the two dense layers that comprise each ``BasicBlock``.
     mlp_hidden_dims: List, Optional, default = None
-        List with the number of neurons per dense layer in the mlp. e.g:
+        List with the number of neurons per dense layer in the MLP. e.g:
         [64, 32]. If ``None`` the  output of the Resnet Blocks will be
         connected directly to the output neuron(s), i.e. using a MLP is
         optional.
     mlp_activation: str, default = "relu"
-        MLP activation function. 'relu', 'leaky_relu' and 'gelu' are supported
+        Activation function for the dense layers of the MLP. Currently
+        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
     mlp_dropout: float, default = 0.1
         float with the dropout between the dense layers of the MLP.
     mlp_batchnorm: bool, default = False
@@ -149,13 +147,11 @@ class TabResnet(nn.Module):
 
     Attributes
     ----------
-    embed_layers: ``nn.ModuleDict``
-        ``ModuleDict`` with the embeddings setup
+    cat_embed_and_cont: ``nn.Module``
+        This is the module that processes the categorical and continuous columns
     dense_resnet: ``nn.Sequential``
         deep dense Resnet model that will receive the concatenation of the
         embeddings and the continuous columns
-    cont_norm: ``nn.Module``
-        continuous normalization layer
     tab_resnet_mlp: ``nn.Sequential``
         if ``mlp_hidden_dims`` is ``True``, this attribute will be an mlp
         model that will receive:
@@ -188,7 +184,7 @@ class TabResnet(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
-        embed_input: List[Tuple[str, int, int]],
+        embed_input: Optional[List[Tuple[str, int, int]]] = None,
         embed_dropout: float = 0.1,
         continuous_cols: Optional[List[str]] = None,
         cont_norm_layer: str = "batchnorm",
@@ -204,6 +200,16 @@ class TabResnet(nn.Module):
     ):
         super(TabResnet, self).__init__()
 
+        if len(blocks_dims) < 2:
+            raise ValueError(
+                "'blocks' must contain at least two elements, e.g. [256, 128]"
+            )
+
+        if not concat_cont_first and embed_input is None:
+            raise ValueError(
+                "If 'concat_cont_first = False' 'embed_input' must be not 'None'"
+            )
+
         self.column_idx = column_idx
         self.embed_input = embed_input
         self.embed_dropout = embed_dropout
@@ -218,43 +224,26 @@ class TabResnet(nn.Module):
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
-        if len(self.blocks_dims) < 2:
-            raise ValueError(
-                "'blocks' must contain at least two elements, e.g. [256, 128]"
-            )
-
-        # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
-        self.embed_layers = nn.ModuleDict(
-            {
-                "emb_layer_" + col: nn.Embedding(val + 1, dim, padding_idx=0)
-                for col, val, dim in self.embed_input
-            }
+        self.cat_embed_and_cont = CatEmbeddingsAndCont(
+            column_idx,
+            embed_input,
+            embed_dropout,
+            continuous_cols,
+            cont_norm_layer,
         )
-        self.embedding_dropout = nn.Dropout(embed_dropout)
-        emb_inp_dim = np.sum([embed[2] for embed in self.embed_input])
 
-        # Continuous
-        if self.continuous_cols is not None:
-            self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
-            cont_inp_dim = len(self.continuous_cols)
-            if self.cont_norm_layer == "batchnorm":
-                self.cont_norm: NormLayers = nn.BatchNorm1d(cont_inp_dim)
-            elif self.cont_norm_layer == "layernorm":
-                self.cont_norm = nn.LayerNorm(cont_inp_dim)
-            else:
-                self.cont_norm = nn.Identity()
-        else:
-            cont_inp_dim = 0
+        emb_out_dim = self.cat_embed_and_cont.emb_out_dim
+        cont_out_dim = self.cat_embed_and_cont.cont_out_dim
 
         # DenseResnet
         if self.concat_cont_first:
-            dense_resnet_input_dim = emb_inp_dim + cont_inp_dim
+            dense_resnet_input_dim = emb_out_dim + cont_out_dim
             self.output_dim = blocks_dims[-1]
         else:
-            dense_resnet_input_dim = emb_inp_dim
-            self.output_dim = cont_inp_dim + blocks_dims[-1]
+            dense_resnet_input_dim = emb_out_dim
+            self.output_dim = cont_out_dim + blocks_dims[-1]
         self.tab_resnet_blks = DenseResnet(
-            dense_resnet_input_dim, blocks_dims, blocks_dropout  # type: ignore[arg-type]
+            dense_resnet_input_dim, blocks_dims, blocks_dropout
         )
 
         # MLP
@@ -262,7 +251,7 @@ class TabResnet(nn.Module):
             if self.concat_cont_first:
                 mlp_input_dim = blocks_dims[-1]
             else:
-                mlp_input_dim = cont_inp_dim + blocks_dims[-1]
+                mlp_input_dim = cont_out_dim + blocks_dims[-1]
             mlp_hidden_dims = [mlp_input_dim] + mlp_hidden_dims
             self.tab_resnet_mlp = MLP(
                 mlp_hidden_dims,
@@ -274,26 +263,21 @@ class TabResnet(nn.Module):
             )
             self.output_dim = mlp_hidden_dims[-1]
 
-    def forward(self, X: Tensor) -> Tensor:  # type: ignore
+    def forward(self, X: Tensor) -> Tensor:
         r"""Forward pass that concatenates the continuous features with the
         embeddings. The result is then passed through a series of dense Resnet
         blocks"""
-        embed = [
-            self.embed_layers["emb_layer_" + col](X[:, self.column_idx[col]].long())
-            for col, _, _ in self.embed_input
-        ]
-        x = torch.cat(embed, 1)
-        x = self.embedding_dropout(x)
 
-        if self.continuous_cols is not None:
-            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
+        x_emb, x_cont = self.cat_embed_and_cont(X)
+
+        if x_cont is not None:
             if self.concat_cont_first:
-                x = torch.cat([x, x_cont], 1)
+                x = torch.cat([x_emb, x_cont], 1) if x_emb is not None else x_cont
                 out = self.tab_resnet_blks(x)
             else:
-                out = torch.cat([self.tab_resnet_blks(x), x_cont], 1)
+                out = torch.cat([self.tab_resnet_blks(x_emb), x_cont], 1)
         else:
-            out = self.tab_resnet_blks(x)
+            out = self.tab_resnet_blks(x_emb)
 
         if self.mlp_hidden_dims is not None:
             out = self.tab_resnet_mlp(out)
