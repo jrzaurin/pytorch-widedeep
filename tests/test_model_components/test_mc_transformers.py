@@ -22,12 +22,12 @@ n_cols = 2
 batch_size = 10
 colnames = list(string.ascii_lowercase)[: (n_cols * 2)]
 embed_cols = [np.random.choice(np.arange(n_embed), batch_size) for _ in range(n_cols)]
-embed_cols_with_cls_token = [[n_embed] * batch_size] + embed_cols
+embed_cols_with_cls_token = [[n_embed] * batch_size] + embed_cols  # type: ignore[operator]
 cont_cols = [np.random.rand(batch_size) for _ in range(n_cols)]
 
 X_tab = torch.from_numpy(np.vstack(embed_cols + cont_cols).transpose())
 X_tab_with_cls_token = torch.from_numpy(
-    np.vstack(embed_cols_with_cls_token + cont_cols).transpose()
+    np.vstack(embed_cols_with_cls_token + cont_cols).transpose()  # type: ignore[operator]
 )
 
 
@@ -169,11 +169,11 @@ def test_full_embed_dropout():
     bsz = 1
     cat = 10
     esz = 4
-    full_embedding_dropout = FullEmbeddingDropout(dropout=0.5)
+    full_embedding_dropout = FullEmbeddingDropout(dropout=0.8)
     inp = torch.rand(bsz, cat, esz)
     out = full_embedding_dropout(inp)
     # simply check that at least 1 full row is all 0s
-    assert torch.any(torch.sum(out[0] == 0, axis=1) == esz)
+    assert (torch.sum(out[0] == 0, axis=1) == esz).sum() > 0
 
 
 # ###############################################################################
