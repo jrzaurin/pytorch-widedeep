@@ -449,3 +449,34 @@ def test_ft_transformer_mlp(mlp_first_h, shoud_work):
     else:
         with pytest.raises(AssertionError):
             model = _build_model("fttransformer", params)  # noqa: F841
+
+
+###############################################################################
+# Test transformers with only continuous cols
+###############################################################################
+
+
+X_tab_only_cont = torch.from_numpy(
+    np.vstack([np.random.rand(10) for _ in range(4)]).transpose()
+)
+colnames_only_cont = list(string.ascii_lowercase)[:4]
+
+
+@pytest.mark.parametrize(
+    "model_name",
+    [
+        "fttransformer",
+        "saint",
+        "tabfastformer",
+    ],
+)
+def test_transformers_only_cont(model_name):
+    params = {
+        "column_idx": {k: v for v, k in enumerate(colnames_only_cont)},
+        "continuous_cols": colnames_only_cont,
+    }
+
+    model = _build_model(model_name, params)
+    out = model(X_tab_only_cont)
+
+    assert out.size(0) == 10 and out.size(1) == model.output_dim

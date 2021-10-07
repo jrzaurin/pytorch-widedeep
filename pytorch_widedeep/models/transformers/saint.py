@@ -120,7 +120,7 @@ class SAINT(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
-        embed_input: List[Tuple[str, int]],
+        embed_input: Optional[List[Tuple[str, int]]] = None,
         embed_dropout: float = 0.1,
         full_embed_dropout: bool = False,
         shared_embed: bool = False,
@@ -172,11 +172,6 @@ class SAINT(nn.Module):
         self.n_cat = len(embed_input) if embed_input is not None else 0
         self.n_cont = len(continuous_cols) if continuous_cols is not None else 0
         self.n_feats = self.n_cat + self.n_cont
-
-        if self.n_cont and not self.n_cat and not self.embed_continuous:
-            raise ValueError(
-                "If only continuous features are used 'embed_continuous' must be set to 'True'"
-            )
 
         self.cat_and_cont_embed = CatAndContEmbeddings(
             input_dim,
