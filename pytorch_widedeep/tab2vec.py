@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import einops
 import pandas as pd
+from itertools import chain
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.preprocessing import TabPreprocessor
@@ -125,9 +126,8 @@ class Tab2Vec:
         """
         return self
 
-    def transform(
-        self, df: pd.DataFrame, target_col: Optional[str] = None
-    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    def transform(self, df: pd.DataFrame, new_embed_col_list: bool = False,
+        target_col: Optional[str] = None) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.Series]]:
         r"""
         Parameters
         ----------
@@ -138,6 +138,8 @@ class Tab2Vec:
         target_col: str, Optional
             Column name of the target_col variable. If 'None' only the array of
             predictors will be returned
+        new_embed_col_list: bool
+            List of columns names in new dataframe that were embedded
         """
 
         X_tab = self.tab_preprocessor.transform(df)
@@ -155,10 +157,25 @@ class Tab2Vec:
                 x_cont = einops.rearrange(x_cont, "s c e -> s (c e)")
 
         X_vec = torch.cat([x_cat, x_cont], 1).cpu().numpy()
+
+        col_names = list(self.tab_preprocessor.column_idx.keys())
+        embed_col_names = []
+        for col, vec_size in tab_preprocessor.embed_cols:
+            embed_col_names_temp = [col+'_'+str(i) for i in range(vec_size)]
+            embed_col_names.extend(embed_col_names_temp)
+            col_names = list(chain.from_iterable(embed_col_names_temp if item == col
+                                                 else [item] for item in col_names))
+
         if target_col:
-            return X_vec, df[target_col].values
+            if new_embed_col_list:
+                return pd.DataFrame(data=X_vec, columns=col_names), df[target_col], embed_col_names
+            else:
+                return pd.DataFrame(data=X_vec, columns=col_names), df[target_col]
         else:
-            return X_vec
+            if new_embed_col_list:
+                return pd.DataFrame(data=X_vec, columns=col_names), embed_col_names
+            else:
+                return pd.DataFrame(data=X_vec, columns=col_names)
 
     def fit_transform(
         self, df: pd.DataFrame, target_col: Optional[str] = None
