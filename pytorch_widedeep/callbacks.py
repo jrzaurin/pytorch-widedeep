@@ -14,6 +14,8 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pytorch_widedeep.metrics import MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
+from ray import tune
+
 
 def _get_current_time():
     return datetime.datetime.now().strftime("%B %d, %Y - %I:%M%p")
@@ -148,6 +150,9 @@ class History(Callback):
     This callback runs by default within :obj:`Trainer`, therefore, should not
     be passed to the :obj:`Trainer`. Is included here just for completion.
     """
+    def __init__(self, ray_tune: bool = False):
+        super(History, self).__init__()
+        self.ray_tune = ray_tune
 
     def on_train_begin(self, logs: Optional[Dict] = None):
         self.trainer.history = {}
@@ -160,7 +165,8 @@ class History(Callback):
             if isinstance(v, np.ndarray):
                 v = v.tolist()
             self.trainer.history.setdefault(k, []).append(v)
-
+        if self.ray_tune:
+            tune.report(logs)
 
 class LRShedulerCallback(Callback):
     r"""Callback for the learning rate schedulers to take a step
@@ -259,9 +265,10 @@ class LRHistory(Callback):
     >>> trainer = Trainer(model, objective="regression", callbacks=[LRHistory(n_epochs=10)])
     """
 
-    def __init__(self, n_epochs: int):
+    def __init__(self, n_epochs: int, ray_tune: bool = False):
         super(LRHistory, self).__init__()
         self.n_epochs = n_epochs
+        self.ray_tune = ray_tune
 
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
         if epoch == 0 and self.trainer.lr_scheduler is not None:
@@ -305,6 +312,8 @@ class LRHistory(Callback):
             else:
                 group_name = ("_").join(["lr", str(group_idx)])
             self.trainer.lr_history.setdefault(group_name, []).append(group["lr"])
+#            if self.ray_tune:
+#                tune.report({"opt_lr": group_name, "lr":group["lr"]})
 
     def _multiple_scheduler(self):
         return self.trainer.lr_scheduler.__class__.__name__ == "MultipleLRScheduler"
