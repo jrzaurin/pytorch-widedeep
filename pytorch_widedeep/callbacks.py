@@ -150,6 +150,7 @@ class History(Callback):
     This callback runs by default within :obj:`Trainer`, therefore, should not
     be passed to the :obj:`Trainer`. Is included here just for completion.
     """
+
     def on_train_begin(self, logs: Optional[Dict] = None):
         self.trainer.history = {}
 
@@ -158,11 +159,11 @@ class History(Callback):
     ):
         logs = logs or {}
         for k, v in logs.items():
-            if isinstance(v, np.ndarray):# or isinstance(v, list):
+            if isinstance(v, np.ndarray):
                 v = v.tolist()
-            if isinstance(v, list) and len(v)>1:
+            if isinstance(v, list) and len(v) > 1:
                 for i in range(len(v)):
-                    self.trainer.history.setdefault(k+'_'+str(i), []).append(v[i])
+                    self.trainer.history.setdefault(k + "_" + str(i), []).append(v[i])
             else:
                 self.trainer.history.setdefault(k, []).append(v)
 
@@ -264,10 +265,9 @@ class LRHistory(Callback):
     >>> trainer = Trainer(model, objective="regression", callbacks=[LRHistory(n_epochs=10)])
     """
 
-    def __init__(self, n_epochs: int, ray_tune: bool = False):
+    def __init__(self, n_epochs: int):
         super(LRHistory, self).__init__()
         self.n_epochs = n_epochs
-        self.ray_tune = ray_tune
 
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
         if epoch == 0 and self.trainer.lr_scheduler is not None:
@@ -671,48 +671,15 @@ class EarlyStopping(Callback):
 
 class RayTuneReporter(Callback):
     r"""Callback that allows reporting history and lr_history values to RayTune for Hyperparameter tuning
-
-    Parameters
-    -----------
-
-    Attributes
-    ----------
-    
-    Examples
-    --------
-    >>> from pytorch_widedeep.callbacks import RayTuneReporter
-    >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
-    >>> from pytorch_widedeep.training import Trainer
-    >>> from ray import tune
-    >>> import tracemalloc
-    >>> tracemalloc.start()
-    >>>
-    >>> config={"batch_size": tune.grid_search([1000, 5000]),}
-    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-    >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
-    >>> wide = Wide(10, 1)
-    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
-    >>> model = WideDeep(wide, deep)
-    >>>
-    >>> def training_function(config, X_train, X_val):
-    >>>    batch_size = config["batch_size"]
-    >>>    trainer = Trainer(model, objective="regression", callbacks=[RayTuneReporter])
-    >>>    trainer.fit(X_train=X_train,
-    >>>                X_val=X_val,
-    >>>                n_epochs=5,
-    >>>                batch_size=batch_size)
-    >>> X_train = {"X_wide": X_wide_train, "X_tab": X_tab_train, "target": y_train}
-    >>> X_val = {"X_wide": X_wide_valid, "X_tab": X_tab_valid, "target": y_valid}
-    >>> analysis = tune.run(tune.with_parameters(training_function, X_train=X_train, X_val=X_val),
-    >>>                     config=config)
     """
+
     def on_epoch_end(
         self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
     ):
         report_dict = {}
         for k, v in self.trainer.history.items():
             report_dict.update({k: v[-1]})
-        if hasattr(self.trainer, 'lr_history'):
+        if hasattr(self.trainer, "lr_history"):
             for k, v in self.trainer.lr_history.items():
                 report_dict.update({k: v[-1]})
         tune.report(report_dict)

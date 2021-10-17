@@ -1242,7 +1242,7 @@ class Trainer:
         else:
             self.metric = None
         sorted_callbacks_list = deepcopy(self.callbacks)
-        for obj,i in zip(self.callbacks[::-1], range(len(self.callbacks))[::-1]):
+        for obj, i in zip(self.callbacks[::-1], range(len(self.callbacks))[::-1]):
             if isinstance(obj, RayTuneReporter):
                 sorted_callbacks_list.append(sorted_callbacks_list.pop(i))
         self.callbacks = sorted_callbacks_list
