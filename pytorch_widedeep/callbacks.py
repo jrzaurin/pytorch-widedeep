@@ -670,8 +670,7 @@ class EarlyStopping(Callback):
 
 
 class RayTuneReporter(Callback):
-    r"""Callback that allows reporting history and lr_history values to RayTune for Hyperparameter tuning
-    """
+    r"""Callback that allows reporting history and lr_history values to RayTune for Hyperparameter tuning"""
 
     def on_epoch_end(
         self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
