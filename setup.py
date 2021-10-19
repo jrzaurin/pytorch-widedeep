@@ -65,6 +65,7 @@ setup_kwargs = {
         "einops",
         "wrapt",
         "torchmetrics",
+        "ray[tune]",
     ],
     "extras_require": extras,
     "python_requires": ">=3.7.0",

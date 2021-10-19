@@ -9,6 +9,7 @@ import warnings
 
 import numpy as np
 import torch
+from ray import tune
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.metrics import MultipleMetrics
@@ -159,7 +160,11 @@ class History(Callback):
         for k, v in logs.items():
             if isinstance(v, np.ndarray):
                 v = v.tolist()
-            self.trainer.history.setdefault(k, []).append(v)
+            if isinstance(v, list) and len(v) > 1:
+                for i in range(len(v)):
+                    self.trainer.history.setdefault(k + "_" + str(i), []).append(v[i])
+            else:
+                self.trainer.history.setdefault(k, []).append(v)
 
 
 class LRShedulerCallback(Callback):
@@ -661,3 +666,27 @@ class EarlyStopping(Callback):
 
     def __setstate__(self, state):
         self.__dict__ = state
+
+
+class RayTuneReporter(Callback):
+    r"""Callback that allows reporting history and lr_history values to RayTune
+    during Hyperparameter tuning
+
+    Callbacks are passed as input parameters to the :obj:`Trainer` class. See
+    :class:`pytorch_widedeep.trainer.Trainer`
+
+    Examples
+    --------
+    see /examples/12_HyperParameter_tuning_w_RayTune.ipynb
+    """
+
+    def on_epoch_end(
+        self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
+    ):
+        report_dict = {}
+        for k, v in self.trainer.history.items():
+            report_dict.update({k: v[-1]})
+        if hasattr(self.trainer, "lr_history"):
+            for k, v in self.trainer.lr_history.items():
+                report_dict.update({k: v[-1]})
+        tune.report(report_dict)

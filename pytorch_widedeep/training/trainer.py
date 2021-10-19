@@ -1,6 +1,7 @@
 import os
 import json
 import warnings
+from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -19,6 +20,7 @@ from pytorch_widedeep.callbacks import (
     History,
     Callback,
     MetricCallback,
+    RayTuneReporter,
     CallbackContainer,
     LRShedulerCallback,
 )

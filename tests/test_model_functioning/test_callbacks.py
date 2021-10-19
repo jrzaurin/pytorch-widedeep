@@ -8,6 +8,7 @@ from itertools import chain
 import numpy as np
 import torch
 import pytest
+from ray import tune
 from torch.optim.lr_scheduler import StepLR, CyclicLR
 
 from pytorch_widedeep.optim import RAdam
@@ -17,6 +18,7 @@ from pytorch_widedeep.callbacks import (
     LRHistory,
     EarlyStopping,
     ModelCheckpoint,
+    RayTuneReporter,
 )
 
 # Wide array
@@ -467,3 +469,42 @@ def test_early_stopping_get_state():
     shutil.rmtree("tests/test_model_functioning/early_stopping/")
 
     assert no_trainer and no_model
+
+
+###############################################################################
+# Test RayTuneReporter
+###############################################################################
+
+
+def test_ray_tune_reporter():
+
+    config = {
+        "batch_size": tune.grid_search([8, 16]),
+    }
+
+    def training_function(config):
+        batch_size = config["batch_size"]
+
+        trainer = Trainer(
+            model,
+            objective="binary",
+            callbacks=[RayTuneReporter],
+            verbose=0,
+        )
+
+        trainer.fit(
+            X_wide=X_wide,
+            X_tab=X_tab,
+            target=target,
+            n_epochs=1,
+            batch_size=batch_size,
+        )
+
+    analysis = tune.run(
+        tune.with_parameters(training_function),
+        config=config,
+        resources_per_trial={"cpu": 1, "gpu": 0},
+        verbose=0,
+    )
+
+    assert any(["train_loss" in el for el in analysis.results_df.keys()])
