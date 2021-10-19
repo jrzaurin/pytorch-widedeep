@@ -670,7 +670,15 @@ class EarlyStopping(Callback):
 
 class RayTuneReporter(Callback):
     r"""Callback that allows reporting history and lr_history values to RayTune
-    during Hyperparameter tuning"""
+    during Hyperparameter tuning
+    
+    Callbacks are passed as input parameters to the :obj:`Trainer` class. See
+    :class:`pytorch_widedeep.trainer.Trainer`
+
+    Examples
+    --------
+    see /examples/12_HyperParameter_tuning_w_RayTune.ipynb
+    """
 
     def on_epoch_end(
         self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
