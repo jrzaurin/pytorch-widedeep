@@ -24,3 +24,6 @@ Here are the 4 callbacks available in ``pytorch-widedepp``: ``History``,
 
 .. autoclass:: pytorch_widedeep.callbacks.EarlyStopping
 	:members:
+
+.. autoclass:: pytorch_widedeep.callbacks.RayTuneReporter
+	:members:

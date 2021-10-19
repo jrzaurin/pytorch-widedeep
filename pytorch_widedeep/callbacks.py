@@ -9,12 +9,11 @@ import warnings
 
 import numpy as np
 import torch
+from ray import tune
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.metrics import MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-
-from ray import tune
 
 
 def _get_current_time():
@@ -670,7 +669,8 @@ class EarlyStopping(Callback):
 
 
 class RayTuneReporter(Callback):
-    r"""Callback that allows reporting history and lr_history values to RayTune for Hyperparameter tuning"""
+    r"""Callback that allows reporting history and lr_history values to RayTune
+    during Hyperparameter tuning"""
 
     def on_epoch_end(
         self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None

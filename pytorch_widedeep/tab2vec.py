@@ -5,7 +5,6 @@ import numpy as np
 import torch
 import einops
 import pandas as pd
-from itertools import chain
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.preprocessing import TabPreprocessor
@@ -33,6 +32,9 @@ class Tab2Vec:
     tab_preprocessor: ``TabPreprocessor``
         ``TabPreprocessor`` object. Must be fitted.
         See :obj:`pytorch-widedeep.preprocessing.tab_preprocessor.TabPreprocessor`
+    return_dataframe: bool
+        Boolean indicating of the returned object(s) will be array(s) or
+        pandas dataframe(s)
 
     Attributes
     ----------
@@ -82,7 +84,11 @@ class Tab2Vec:
     """
 
     def __init__(
-        self, model: WideDeep, tab_preprocessor: TabPreprocessor, verbose: bool = False
+        self,
+        model: WideDeep,
+        tab_preprocessor: TabPreprocessor,
+        return_dataframe: bool = False,
+        verbose: bool = False,
     ):
         super(Tab2Vec, self).__init__()
 
@@ -101,6 +107,7 @@ class Tab2Vec:
                 "The 'tab_preprocessor' must be fitted before is passed to 'Tab2Vec'"
             )
 
+        self.return_dataframe = return_dataframe
         self.tab_preprocessor = tab_preprocessor
 
         transformer_family = [
@@ -129,9 +136,13 @@ class Tab2Vec:
     def transform(
         self,
         df: pd.DataFrame,
-        new_embed_col_list: bool = False,
         target_col: Optional[str] = None,
-    ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.Series]]:
+    ) -> Union[
+        np.ndarray,
+        Tuple[np.ndarray, np.ndarray],
+        pd.DataFrame,
+        Tuple[pd.DataFrame, pd.Series],
+    ]:
         r"""
         Parameters
         ----------
@@ -142,8 +153,6 @@ class Tab2Vec:
         target_col: str, Optional
             Column name of the target_col variable. If 'None' only the array of
             predictors will be returned
-        new_embed_col_list: bool
-            List of columns names in new dataframe that were embedded
         """
 
         X_tab = self.tab_preprocessor.transform(df)
@@ -162,41 +171,59 @@ class Tab2Vec:
 
         X_vec = torch.cat([x_cat, x_cont], 1).cpu().numpy()
 
-        col_names = list(self.tab_preprocessor.column_idx.keys())
-        embed_col_names = []
-        if self.tab_preprocessor.for_transformer:
+        if self.return_dataframe:
+            new_colnames = self._new_colnames()
             if target_col:
-                return pd.DataFrame(data=X_vec), df[target_col]
+                return pd.DataFrame(data=X_vec, columns=new_colnames), df[[target_col]]
             else:
-                return pd.DataFrame(data=X_vec)
+                return pd.DataFrame(data=X_vec, columns=new_colnames)
         else:
-            for col, vec_size in self.tab_preprocessor.embed_cols:
-                embed_col_names_temp = [col + "_" + str(i) for i in range(vec_size)]
-                embed_col_names.extend(embed_col_names_temp)
-                col_names = list(
-                    chain.from_iterable(
-                        embed_col_names_temp if item == col else [item]
-                        for item in col_names
-                    )
-                )
-
             if target_col:
-                if new_embed_col_list:
-                    return (
-                        pd.DataFrame(data=X_vec, columns=col_names),
-                        df[target_col],
-                        embed_col_names,
-                    )
-                else:
-                    return pd.DataFrame(data=X_vec, columns=col_names), df[target_col]
+                return X_vec, df[target_col].values
             else:
-                if new_embed_col_list:
-                    return pd.DataFrame(data=X_vec, columns=col_names), embed_col_names
-                else:
-                    return pd.DataFrame(data=X_vec, columns=col_names)
+                return X_vec
 
     def fit_transform(
         self, df: pd.DataFrame, target_col: Optional[str] = None
     ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         r"""Combines ``fit`` and ``transform``"""
         return self.fit(df, target_col).transform(df, target_col)
+
+    def _new_colnames(self) -> List[str]:
+
+        if self.is_transformer:
+            new_colnames = []
+            embedding_dim = self.vectorizer.cat_embed.embed.embedding_dim
+            are_cont_embed = hasattr(self.vectorizer, "cont_embed")
+            cat_cols = [
+                ei[0]
+                for ei in self.tab_preprocessor.embeddings_input
+                if ei[0] != "cls_token"
+            ]
+            all_embed_cols = (
+                cat_cols + self.tab_preprocessor.continuous_cols
+                if are_cont_embed
+                else cat_cols
+            )
+            for colname in all_embed_cols:
+                new_colnames.extend(
+                    [
+                        "_".join([colname, "embed", str(i + 1)])
+                        for i in range(embedding_dim)
+                    ]
+                )
+            if not are_cont_embed:
+                new_colnames += self.tab_preprocessor.continuous_cols
+        else:
+            new_colnames = []
+            for colname, _, embedding_dim in self.tab_preprocessor.embeddings_input:
+                new_colnames.extend(
+                    [
+                        "_".join([colname, "embed", str(i + 1)])
+                        for i in range(embedding_dim)
+                    ]
+                )
+            if self.tab_preprocessor.continuous_cols is not None:
+                new_colnames += self.tab_preprocessor.continuous_cols
+
+        return new_colnames

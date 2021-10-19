@@ -1,8 +1,8 @@
 import os
 import json
 import warnings
-from pathlib import Path
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -20,9 +20,9 @@ from pytorch_widedeep.callbacks import (
     History,
     Callback,
     MetricCallback,
+    RayTuneReporter,
     CallbackContainer,
     LRShedulerCallback,
-    RayTuneReporter,
 )
 from pytorch_widedeep.dataloaders import DataLoaderDefault
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
@@ -1241,11 +1241,6 @@ class Trainer:
             self.callbacks += [MetricCallback(self.metric)]
         else:
             self.metric = None
-        sorted_callbacks_list = deepcopy(self.callbacks)
-        for obj, i in zip(self.callbacks[::-1], range(len(self.callbacks))[::-1]):
-            if isinstance(obj, RayTuneReporter):
-                sorted_callbacks_list.append(sorted_callbacks_list.pop(i))
-        self.callbacks = sorted_callbacks_list
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self.model)
         self.callback_container.set_trainer(self)

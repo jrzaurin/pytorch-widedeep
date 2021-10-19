@@ -27,7 +27,7 @@ cat_col2_vals = ["d", "e", "f"]
 def create_df():
     cat_cols = [np.array(choices(c, k=5)) for c in [cat_col1_vals, cat_col2_vals]]
     cont_cols = [np.round(np.random.rand(5), 2) for _ in range(2)]
-    target = [np.random.choice(2, 5)]
+    target = [np.random.choice(2, 5, p=[0.8, 0.2])]
     return pd.DataFrame(
         np.vstack(cat_cols + cont_cols + target).transpose(), columns=colnames
     )
@@ -63,20 +63,27 @@ tabnet = TabNet(
 
 
 @pytest.mark.parametrize(
-    "deeptabular",
-    [tabmlp, tabresnet, tabnet],
+    "deeptabular, return_dataframe",
+    [
+        (tabmlp, True),
+        (tabmlp, False),
+        (tabresnet, True),
+        (tabresnet, False),
+        (tabnet, True),
+        (tabnet, False),
+    ],
 )
-def test_non_transformer_models(deeptabular):
+def test_non_transformer_models(deeptabular, return_dataframe):
 
     model = WideDeep(deeptabular=deeptabular)
 
     # Let's assume the model is trained
-    t2v = Tab2Vec(model, tab_preprocessor)
-    X_vec, _ = t2v.fit_transform(df_t2v, target_col="target")
+    t2v = Tab2Vec(model, tab_preprocessor, return_dataframe=return_dataframe)
+    t2v_out, _ = t2v.fit_transform(df_t2v, target_col="target")
 
     embed_dim = sum([el[2] for el in tab_preprocessor.embeddings_input])
     cont_dim = len(tab_preprocessor.continuous_cols)
-    assert X_vec.shape[1] == embed_dim + cont_dim
+    assert t2v_out.shape[1] == embed_dim + cont_dim
 
 
 ###############################################################################
@@ -154,26 +161,45 @@ def test_tab_transformer_models(
 
 
 @pytest.mark.parametrize(
-    "model_name, with_cls_token, share_embeddings",
+    "model_name, with_cls_token, share_embeddings, return_dataframe",
     [
-        ("saint", False, True),
-        ("saint", True, True),
-        ("saint", False, False),
-        ("fttransformer", False, True),
-        ("fttransformer", True, True),
-        ("fttransformer", False, False),
-        ("tabfastformer", False, True),
-        ("tabfastformer", True, True),
-        ("tabfastformer", False, False),
+        ("saint", False, True, False),
+        ("saint", True, True, False),
+        ("saint", False, False, False),
+        ("saint", False, True, True),
+        ("saint", True, True, True),
+        ("saint", False, False, True),
+        ("fttransformer", False, True, False),
+        ("fttransformer", True, True, False),
+        ("fttransformer", False, False, False),
+        ("fttransformer", False, True, True),
+        ("fttransformer", True, True, True),
+        ("fttransformer", False, False, True),
+        ("tabfastformer", False, True, False),
+        ("tabfastformer", True, True, False),
+        ("tabfastformer", False, False, False),
+        ("tabfastformer", False, True, True),
+        ("tabfastformer", True, True, True),
+        ("tabfastformer", False, False, True),
         (
             "tabperceiver",
             False,
             True,
+            False,
         ),  # for the perceiver we do not need with_cls_token
-        ("tabperceiver", False, False),
+        ("tabperceiver", False, False, False),
+        (
+            "tabperceiver",
+            False,
+            True,
+            False,
+        ),
+        ("tabperceiver", False, False, True),
     ],
 )
-def test_transformer_family_models(model_name, with_cls_token, share_embeddings):
+def test_transformer_family_models(
+    model_name, with_cls_token, share_embeddings, return_dataframe
+):
 
     embed_cols = ["a", "b"]
     cont_cols = ["c", "d"]
@@ -197,9 +223,9 @@ def test_transformer_family_models(model_name, with_cls_token, share_embeddings)
 
     # Let's assume the model is trained
     model = WideDeep(deeptabular=deeptabular)
-    t2v = Tab2Vec(model, tab_preprocessor)
-    X_vec = t2v.transform(df_t2v)
+    t2v = Tab2Vec(model, tab_preprocessor, return_dataframe=return_dataframe)
+    t2v_out = t2v.transform(df_t2v)
 
     out_dim = (len(embed_cols) + len(cont_cols)) * deeptabular.input_dim
 
-    assert X_vec.shape[1] == out_dim
+    assert t2v_out.shape[1] == out_dim

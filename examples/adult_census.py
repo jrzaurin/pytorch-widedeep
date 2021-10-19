@@ -42,12 +42,19 @@ if __name__ == "__main__":
         "gender",
     ]
     crossed_cols = [("education", "occupation"), ("native_country", "occupation")]
+    # cat_embed_cols = [
+    #     ("education", 10),
+    #     ("relationship", 8),
+    #     ("workclass", 10),
+    #     ("occupation", 10),
+    #     ("native_country", 10),
+    # ]
     cat_embed_cols = [
-        ("education", 10),
-        ("relationship", 8),
-        ("workclass", 10),
-        ("occupation", 10),
-        ("native_country", 10),
+        "education",
+        "relationship",
+        "workclass",
+        "occupation",
+        "native_country",
     ]
     continuous_cols = ["age", "hours_per_week"]
     target = "income_label"
