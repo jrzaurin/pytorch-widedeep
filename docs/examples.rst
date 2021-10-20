@@ -17,3 +17,4 @@ them to address different problems
 * `Using Custom DataLoaders and Torchmetrics <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/09_Custom_DataLoader_Imbalanced_dataset.ipynb>`__
 * `The Transformer Family <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/10_The_Transformer_Family.ipynb>`__
 * `Extracting Embeddings <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/11_Extracting_Embeddings.ipynb>`__
+* `HyperParameter Tuning With RayTune <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/12_HyperParameter_tuning_w_RayTune.ipynb>`__

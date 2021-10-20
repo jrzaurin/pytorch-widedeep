@@ -33,11 +33,11 @@ Introduction
 <https://arxiv.org/abs/1606.07792>`_.
 
 In general terms, ``pytorch-widedeep`` is a package to use deep learning with
-tabular data. In particular, is intended to facilitate the combination of text
-and images with corresponding tabular data using wide and deep models. With
-that in mind there are a number of architectures that can be implemented with
-just a few lines of code. The main components of those architectures are shown
-in the Figure below:
+tabular and multimodal data. In particular, is intended to facilitate the
+combination of text and images with corresponding tabular data using wide and
+deep models. With that in mind there are a number of architectures that can
+be implemented with just a few lines of code. The main components of those
+architectures are shown in the Figure below:
 
 .. image:: figures/widedeep_arch.png
    :width: 700px
@@ -88,29 +88,52 @@ into:
 
 
 It is important to emphasize that **each individual component, wide,
-deeptabular, deeptext and deepimage, can be used independently** and in
-isolation. For example, one could use only ``wide``, which is in simply a
-linear model. In fact, one of the most interesting offerings of
-``pytorch-widedeep`` is the ``deeptabular`` component. Currently,
-``pytorch-widedeep`` offers 4 models for that component:
+deeptabular, deeptext and deepimage, can be used independently and in
+isolation**. For example, one could use only ``wide``, which is in simply a
+linear model. In fact, one of the most interesting functionalities in
+``pytorch-widedeep`` would be the use of the ``deeptabular`` component on its
+own, i.e. what one might normally refer as Deep Learning for Tabular Data.
+Currently, ``pytorch-widedeep`` offers the following different models for
+that component:
 
-1. ``TabMlp``: this is almost identical to the `tabular
-model <https://docs.fast.ai/tutorial.tabular.html>`_ in the fantastic
-`fastai <https://docs.fast.ai/>`_ library, and consists simply in embeddings
-representing the categorical features, concatenated with the continuous
-features, and passed then through a MLP.
 
-2. ``TabRenset``: This is similar to the previous model but the embeddings are
+1. **TabMlp**: a simple MLP that receives embeddings representing the
+categorical features, concatenated with the continuous features.
+
+2. **TabResnet**: similar to the previous model but the embeddings are
 passed through a series of ResNet blocks built with dense layers.
 
-3. ``Tabnet``: Details on TabNet can be found in: `TabNet: Attentive
-Interpretable Tabular Learning <https://arxiv.org/abs/1908.07442>`_.
+3. **TabNet**: details on TabNet can be found in `TabNet: Attentive
+Interpretable Tabular Learning <https://arxiv.org/abs/1908.07442>`_
 
-4. ``TabTransformer``: Details on the TabTransformer can be found in:
+And the ``Tabformer`` family, i.e. Transformers for Tabular data:
+
+4. **TabTransformer**: details on the TabTransformer can be found in
 `TabTransformer: Tabular Data Modeling Using Contextual Embeddings
 <https://arxiv.org/pdf/2012.06678.pdf>`_.
 
-For details on these 4 models and their options please see the examples in the
+5. **SAINT**: Details on SAINT can be found in `SAINT: Improved Neural
+Networks for Tabular Data via Row Attention and Contrastive Pre-Training
+<https://arxiv.org/abs/2106.01342>`_.
+
+6. **FT-Transformer**: details on the FT-Transformer can be found in
+`Revisiting Deep Learning Models for Tabular Data
+<https://arxiv.org/abs/2106.11959>`_.
+
+7. **TabFastFormer**: adaptation of the FastFormer for tabular data. Details
+on the Fasformer can be found in `FastFormers: Highly Efficient Transformer
+Models for Natural Language Understanding
+<https://arxiv.org/abs/2010.13382>`_
+
+8. **TabPerceiver**: adaptation of the Perceiver for tabular data. Details on
+the Perceiver can be found in `Perceiver: General Perception with Iterative
+Attention <https://arxiv.org/abs/2103.03206>`_
+
+Note that while there are scientific publications for the TabTransformer,
+SAINT and FT-Transformer, the TabFasfFormer and TabPerceiver are our own
+adaptation of those algorithms for tabular data.
+
+For details on these models and their options please see the examples in the
 Examples folder and the documentation.
 
 Finally, while I recommend using the ``wide`` and ``deeptabular`` models in
@@ -120,13 +143,8 @@ possible as long as the the custom models have an attribute called
 ``output_dim`` with the size of the last layer of activations, so that
 ``WideDeep`` can be constructed. Again, examples on how to use custom
 components can be found in the Examples folder. Just in case
-``pytorch-widedeep`` includes standard text (stack of LSTMs) and image
-(pre-trained ResNets or stack of CNNs) models.
-
-References
-----------
-[1] Heng-Tze Cheng, et al. 2016. Wide & Deep Learning for Recommender Systems.
-`arXiv:1606.07792 <https://arxiv.org/abs/1606.07792>`_.
+``pytorch-widedeep`` includes standard text (stack of LSTMs or GRUs) and
+image(pre-trained ResNets or stack of CNNs) models.
 
 Indices and tables
 ==================

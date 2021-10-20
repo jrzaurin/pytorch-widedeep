@@ -18,3 +18,4 @@ torchvision
 einops
 wrapt
 torchmetrics
+ray[tune]

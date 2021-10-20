@@ -1,8 +1,8 @@
 Callbacks
 =========
 
-Here are the 4 callbacks available in ``pytorch-widedepp``: ``History``,
-``LRHistory``, ``ModelCheckpoint`` and ``EarlyStopping``.
+Here are the 5 callbacks available in ``pytorch-widedepp``: ``History``,
+``LRHistory``, ``ModelCheckpoint``, ``EarlyStopping`` and ``RayTuneReporter``.
 
 .. note:: ``History`` runs by default, so it should not be passed
     to the ``Trainer``

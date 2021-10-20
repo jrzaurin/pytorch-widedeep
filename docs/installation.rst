@@ -42,3 +42,4 @@ Dependencies
 * einops
 * wrapt
 * torchmetrics
+* ray[tune]
