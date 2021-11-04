@@ -24,8 +24,6 @@ using wide and deep models.
 
 **Experiments and comparisson with `LightGBM`**: [TabularDL vs LightGBM](https://github.com/jrzaurin/tabulardl-benchmark)
 
-**Slack**: if you want to contribute or just want to chat with us, join [slack](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
-
 The content of this document is organized as follows:
 
 1. [introduction](#introduction)
@@ -306,6 +304,10 @@ of the package and its functionalities.
 ```
 pytest tests
 ```
+
+### How to Contribute
+
+Check [CONTRIBUTING](https://github.com/jrzaurin/pytorch-widedeep/CONTRIBUTING.MD) page.
 
 ### Acknowledgments
 
