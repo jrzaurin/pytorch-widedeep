@@ -1,7 +1,6 @@
 import os
 import json
 import warnings
-from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -20,14 +19,13 @@ from pytorch_widedeep.callbacks import (
     History,
     Callback,
     MetricCallback,
-    RayTuneReporter,
     CallbackContainer,
     LRShedulerCallback,
 )
 from pytorch_widedeep.dataloaders import DataLoaderDefault
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
 from pytorch_widedeep.training._finetune import FineTune
-from pytorch_widedeep.utils.general_utils import Alias, set_default_attr
+from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.models.tabnet._utils import create_explain_matrix
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._trainer_utils import (
@@ -686,8 +684,8 @@ class Trainer:
             ``batch_size`` needs to be defined as it will not be defined as
             the :obj:`Trainer` is instantiated
         uncertainty: bool, default = False
-            If set to True the model activates the dropout layers and predicts 
-            the each sample N times (uncertainty_granularity times) and returns 
+            If set to True the model activates the dropout layers and predicts
+            the each sample N times (uncertainty_granularity times) and returns
             {max, min, mean, stdev} value for each sample
         uncertainty_granularity: int default = 1000
             number of times the model does prediction for each sample if uncertainty
@@ -711,9 +709,9 @@ class Trainer:
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
         batch_size: int = 256,
-        uncertainty_granularity = 1000,
+        uncertainty_granularity=1000,
     ) -> np.ndarray:
-        r"""Returns the predicted ucnertainty of the model for the test dataset using a 
+        r"""Returns the predicted ucnertainty of the model for the test dataset using a
         Monte Carlo method during which dropout layers are activated in the evaluation/prediction
         phase and each sample is predicted N times (uncertainty_granularity times). Based on [1].
 
@@ -746,28 +744,39 @@ class Trainer:
             number of times the model does prediction for each sample if uncertainty
             is set to True
 
-        Returns 
+        Returns
         -------
             method == regression : np.ndarray
-                {max, min, mean, stdev} values for each sample for 
+                {max, min, mean, stdev} values for each sample for
             method == binary : np.ndarray
-                {mean_cls_0_prob, mean_cls_1_prob, predicted_cls} values for each sample for 
+                {mean_cls_0_prob, mean_cls_1_prob, predicted_cls} values for each sample for
             method == multiclass : np.ndarray
-                {mean_cls_0_prob, mean_cls_1_prob, mean_cls_2_prob, ... , predicted_cls} values for each sample for 
+                {mean_cls_0_prob, mean_cls_1_prob, mean_cls_2_prob, ... , predicted_cls} values for each sample for
 
         """
-        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size,
-                                uncertainty_granularity, uncertainty=True)
+        preds_l = self._predict(
+            X_wide,
+            X_tab,
+            X_text,
+            X_img,
+            X_test,
+            batch_size,
+            uncertainty_granularity,
+            uncertainty=True,
+        )
         preds = np.vstack(preds_l)
-        samples_num = int(preds.shape[0]/uncertainty_granularity)
+        samples_num = int(preds.shape[0] / uncertainty_granularity)
         if self.method == "regression":
             preds = preds.squeeze(1)
             preds = preds.reshape((uncertainty_granularity, samples_num))
-            return np.array((
-                preds.max(axis=0),
-                preds.min(axis=0),
-                preds.mean(axis=0), 
-                preds.std(axis=0))).T
+            return np.array(
+                (
+                    preds.max(axis=0),
+                    preds.min(axis=0),
+                    preds.mean(axis=0),
+                    preds.std(axis=0),
+                )
+            ).T
         if self.method == "binary":
             preds = preds.squeeze(1)
             preds = preds.reshape((uncertainty_granularity, samples_num))
@@ -775,7 +784,6 @@ class Trainer:
             probs = np.zeros([preds.shape[0], 3])
             probs[:, 0] = 1 - preds
             probs[:, 1] = preds
-            probs[:, 2] = (preds > 0.5).astype("int")
             return probs
         if self.method == "multiclass":
             preds = preds.reshape(uncertainty_granularity, samples_num, preds.shape[1])
@@ -1190,7 +1198,7 @@ class Trainer:
             k: v for k, v in zip(tabnet_backbone.column_idx.keys(), feat_imp)  # type: ignore[operator, union-attr]
         }
 
-    def _predict(
+    def _predict(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
@@ -1198,7 +1206,7 @@ class Trainer:
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
         batch_size: int = 256,
-        uncertainty_granularity = 1000,
+        uncertainty_granularity=1000,
         uncertainty: bool = False,
     ) -> List:
         r"""Private method to avoid code repetition in predict and
@@ -1232,10 +1240,10 @@ class Trainer:
 
         self.model.eval()
         preds_l = []
-        
+
         if uncertainty:
             for m in self.model.modules():
-                if m.__class__.__name__.startswith('Dropout'):
+                if m.__class__.__name__.startswith("Dropout"):
                     m.train()
             prediction_iters = uncertainty_granularity
         else:
@@ -1246,12 +1254,20 @@ class Trainer:
                 for i, k in zip(t, range(prediction_iters)):
                     t.set_description("predict_UncertaintyIter")
 
-                    with trange(test_steps, disable=self.verbose != 1 or uncertainty is True) as tt:
+                    with trange(
+                        test_steps, disable=self.verbose != 1 or uncertainty is True
+                    ) as tt:
                         for j, data in zip(tt, test_loader):
                             tt.set_description("predict")
-                            X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
+                            X = (
+                                {k: v.cuda() for k, v in data.items()}
+                                if use_cuda
+                                else data
+                            )
                             preds = (
-                                self.model(X) if not self.model.is_tabnet else self.model(X)[0]
+                                self.model(X)
+                                if not self.model.is_tabnet
+                                else self.model(X)[0]
                             )
                             if self.method == "binary":
                                 preds = torch.sigmoid(preds)

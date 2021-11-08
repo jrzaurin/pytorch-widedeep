@@ -12,11 +12,11 @@ from pytorch_widedeep.preprocessing.base_preprocessor import (
 )
 
 
-def embed_sz_rule(n_cat: int, embedding_rule: str="fastai_new") -> int:
+def embed_sz_rule(n_cat: int, embedding_rule: str = "fastai_new") -> int:
     r"""Rule of thumb to pick embedding size corresponding to ``n_cat``. Default rule is taken
     from recent fastai's Tabular API. The function also includes previously used rule by fastai
     and rule included in the Google's Tensorflow documentation
-    
+
     Parameters
     ----------
     n_cat: int
@@ -24,10 +24,10 @@ def embed_sz_rule(n_cat: int, embedding_rule: str="fastai_new") -> int:
     embedding_rule: str, default = fastai_old
         rule of thumb to be used for embedding vector size
     """
-    if embedding_rule == 'google':
-        return int(round(n_cat**0.25))
-    elif embedding_rule == 'fastai_old':
-        return int(min(50, (n_cat//2) + 1))
+    if embedding_rule == "google":
+        return int(round(n_cat ** 0.25))
+    elif embedding_rule == "fastai_old":
+        return int(min(50, (n_cat // 2) + 1))
     else:
         return int(min(600, round(1.6 * n_cat ** 0.56)))
 
@@ -55,11 +55,11 @@ class TabPreprocessor(BasePreprocessor):
         automatically defined via rule of thumb
     embedding_rule: str, default = 'fastai_new'
         choice of embedding rule of thumb
-        'fastai_new': 
+        'fastai_new':
             :math:`min(600, round(1.6 \times n_{cat}^{0.56}))`
-        'fastai_old': 
+        'fastai_old':
             :math:`min(50, (n_{cat}//{2})+1)`
-        'google': 
+        'google':
             :math:`min(600, round(n_{cat}^{0.24}))`
     default_embed_dim: int, default=16
         Dimension for the embeddings used for the ``deeptabular``
@@ -273,7 +273,10 @@ class TabPreprocessor(BasePreprocessor):
                 embed_colname = [emb[0] for emb in self.embed_cols]
             elif self.auto_embed_dim:
                 n_cats = {col: df[col].nunique() for col in self.embed_cols}
-                self.embed_dim = {col: embed_sz_rule(n_cat, self.embedding_rule) for col, n_cat in n_cats.items()}  # type: ignore[misc]
+                self.embed_dim = {
+                    col: embed_sz_rule(n_cat, self.embedding_rule)  # type: ignore[misc]
+                    for col, n_cat in n_cats.items()
+                }
                 embed_colname = self.embed_cols  # type: ignore
             else:
                 self.embed_dim = {e: self.default_embed_dim for e in self.embed_cols}  # type: ignore
