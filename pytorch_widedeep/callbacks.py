@@ -338,12 +338,13 @@ class ModelCheckpoint(Callback):
 
     Parameters
     ----------
-    filepath: str
+    filepath: str, default=None
         Full path to save the output weights. It must contain only the root of
         the filenames. Epoch number and ``.pt`` extension (for pytorch) will
         be added. e.g. ``filepath="path/to/output_weights/weights_out"`` And
         the saved files in that directory will be named: ``weights_out_1.pt,
         weights_out_2.pt, ...``
+        If set to None the class just report best metric and best_epoch.
     monitor: str, default="loss"
         quantity to monitor. Typically 'val_loss' or metric name (e.g. 'val_acc')
     verbose:int, default=0
@@ -369,6 +370,8 @@ class ModelCheckpoint(Callback):
         best metric
     best_epoch: int
         best epoch
+    best_state_dict: dict
+        best model state dictionary to restore model to its best state using trainer.model.load_state_dict(ModelCheckpoint.best_state_dict)
 
     Examples
     --------
@@ -386,7 +389,7 @@ class ModelCheckpoint(Callback):
 
     def __init__(
         self,
-        filepath: str,
+        filepath: Optional[str] = None,
         monitor: str = "val_loss",
         verbose: int = 0,
         save_best_only: bool = False,
@@ -406,15 +409,16 @@ class ModelCheckpoint(Callback):
 
         self.epochs_since_last_save = 0
 
-        if len(self.filepath.split("/")[:-1]) == 0:
-            raise ValueError(
-                "'filepath' must be the full path to save the output weights,"
-                " including the root of the filenames. e.g. 'checkpoints/weights_out'"
-            )
+        if self.filepath is not None:
+            if len(self.filepath.split("/")[:-1]) == 0:
+                raise ValueError(
+                    "'filepath' must be the full path to save the output weights,"
+                    " including the root of the filenames. e.g. 'checkpoints/weights_out'"
+                )
 
-        root_dir = ("/").join(self.filepath.split("/")[:-1])
-        if not os.path.exists(root_dir):
-            os.makedirs(root_dir)
+            root_dir = ("/").join(self.filepath.split("/")[:-1])
+            if not os.path.exists(root_dir):
+                os.makedirs(root_dir)
 
         if self.max_save > 0:
             self.old_files: List[str] = []
@@ -458,36 +462,49 @@ class ModelCheckpoint(Callback):
                     )
                 else:
                     if self.monitor_op(current, self.best):
-                        if self.verbose > 0:
-                            print(
-                                "\nEpoch %05d: %s improved from %0.5f to %0.5f,"
-                                " saving model to %s"
-                                % (
-                                    epoch + 1,
-                                    self.monitor,
-                                    self.best,
-                                    current,
-                                    filepath,
+                        if self.verbose > 0 :
+                            if self.filepath is not None:
+                                print(
+                                    "\nEpoch %05d: %s improved from %0.5f to %0.5f,"
+                                    " saving model to %s"
+                                    % (
+                                        epoch + 1,
+                                        self.monitor,
+                                        self.best,
+                                        current,
+                                        filepath,
+                                    )
                                 )
-                            )
+                            else:
+                                print(
+                                    "\nEpoch %05d: %s improved from %0.5f to %0.5f"
+                                    % (
+                                        epoch + 1,
+                                        self.monitor,
+                                        self.best,
+                                        current,
+                                    )
+                                )
                         self.best = current
                         self.best_epoch = epoch
-                        torch.save(self.model.state_dict(), filepath)
-                        if self.max_save > 0:
-                            if len(self.old_files) == self.max_save:
-                                try:
-                                    os.remove(self.old_files[0])
-                                except FileNotFoundError:
-                                    pass
-                                self.old_files = self.old_files[1:]
-                            self.old_files.append(filepath)
+                        self.best_state_dict = self.model.state_dict()
+                        if self.filepath is not None:
+                            torch.save(self.best_state_dict, filepath)
+                            if self.max_save > 0:
+                                if len(self.old_files) == self.max_save:
+                                    try:
+                                        os.remove(self.old_files[0])
+                                    except FileNotFoundError:
+                                        pass
+                                    self.old_files = self.old_files[1:]
+                                self.old_files.append(filepath)
                     else:
                         if self.verbose > 0:
                             print(
                                 "\nEpoch %05d: %s did not improve from %0.5f"
                                 % (epoch + 1, self.monitor, self.best)
                             )
-            else:
+            if not self.save_best_only and self.filepath is not None:
                 if self.verbose > 0:
                     print("\nEpoch %05d: saving model to %s" % (epoch + 1, filepath))
                 torch.save(self.model.state_dict(), filepath)
