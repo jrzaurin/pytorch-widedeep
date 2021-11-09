@@ -363,6 +363,15 @@ class ModelCheckpoint(Callback):
         Interval (number of epochs) between checkpoints.
     max_save: int, default=-1
         Maximum number of outputs to save. If -1 will save all outputs
+    wb: obj
+        Weights&Biases API interface to report single best result usable for comparisson of multiple 
+        paramater combinations by e.g. parallel coordinates: 
+        https://docs.wandb.ai/ref/app/features/panels/parallel-coordinates. 
+        E.g W&B summary report `wandb.run.summary["best"]`:
+        If external EarlyStopping scheduler is used from e.g. RayTune in combination with W&B, 
+        the RayTune EarlyStopping stops training function and the summary log is not sent if defined 
+        after training by e.g.:
+        `wandb.run.summary["best"]=model_checkpoint.best`.
 
     Attributes
     ----------
@@ -396,6 +405,7 @@ class ModelCheckpoint(Callback):
         mode: str = "auto",
         period: int = 1,
         max_save: int = -1,
+        wb: Optional[object] = None,
     ):
         super(ModelCheckpoint, self).__init__()
 
@@ -406,6 +416,7 @@ class ModelCheckpoint(Callback):
         self.mode = mode
         self.period = period
         self.max_save = max_save
+        self.wb = wb
 
         self.epochs_since_last_save = 0
 
@@ -485,6 +496,8 @@ class ModelCheckpoint(Callback):
                                         current,
                                     )
                                 )
+                        if self.wb is not None:
+                            self.wb.run.summary["best"] = current
                         self.best = current
                         self.best_epoch = epoch
                         self.best_state_dict = self.model.state_dict()

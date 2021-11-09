@@ -1045,7 +1045,7 @@ class Trainer:
                             print(
                                 f"Model weights restored to best epoch: {callback.best_epoch + 1}"
                             )
-                        self.model.load_state_dict(torch.load(filepath))
+                        self.model.load_state_dict(callback.best_state_dict)
                     else:
                         if self.verbose:
                             print(
