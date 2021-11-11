@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
 from pytorch_widedeep.preprocessing.base_preprocessor import (
     BasePreprocessor,
@@ -112,6 +113,7 @@ class TabPreprocessor(BasePreprocessor):
     {'color': 0, 'size': 1, 'age': 2}
     """
 
+    @Alias("for_transformer", "with_attention")
     def __init__(
         self,
         embed_cols: Union[List[str], List[Tuple[str, int]]] = None,

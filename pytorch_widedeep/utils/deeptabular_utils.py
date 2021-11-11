@@ -3,6 +3,8 @@ import warnings
 import pandas as pd
 from sklearn.exceptions import NotFittedError
 
+from pytorch_widedeep.utils.general_utils import Alias
+
 from ..wdtypes import *  # noqa: F403
 
 warnings.filterwarnings("ignore")
@@ -50,6 +52,7 @@ class LabelEncoder:
         `{'colname1': {1: 'cat1', 2: 'cat2', ...}, 'colname2': {1: 'cat1', 2: 'cat2', ...}, ...}`
     """
 
+    @Alias("for_transformer", "with_attention")
     def __init__(
         self,
         columns_to_encode: Optional[List[str]] = None,

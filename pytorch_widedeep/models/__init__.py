@@ -1,12 +1,15 @@
-from pytorch_widedeep.models.wide import Wide
-from pytorch_widedeep.models.tab_mlp import TabMlp
-from pytorch_widedeep.models.deep_text import DeepText
+from pytorch_widedeep.models.image import Vision
+from pytorch_widedeep.models.tabular import (
+    SAINT,
+    Wide,
+    TabMlp,
+    TabNet,
+    TabResnet,
+    TabPerceiver,
+    FTTransformer,
+    TabFastFormer,
+    TabTransformer,
+    AttentiveTabMlp,
+)
 from pytorch_widedeep.models.wide_deep import WideDeep
-from pytorch_widedeep.models.deep_image import DeepImage
-from pytorch_widedeep.models.tab_resnet import TabResnet
-from pytorch_widedeep.models.tabnet.tab_net import TabNet
-from pytorch_widedeep.models.transformers.saint import SAINT
-from pytorch_widedeep.models.transformers.tab_perceiver import TabPerceiver
-from pytorch_widedeep.models.transformers.ft_transformer import FTTransformer
-from pytorch_widedeep.models.transformers.tab_fastformer import TabFastFormer
-from pytorch_widedeep.models.transformers.tab_transformer import TabTransformer
+from pytorch_widedeep.models.text.attentive_rnn import AttentiveRNN
