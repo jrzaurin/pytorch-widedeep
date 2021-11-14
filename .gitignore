@@ -11,7 +11,7 @@ __pycache__*
 Untitled*.ipynb
 
 # data related dirs
-data/
+# data/
 model_weights/
 tmp_dir/
 weights/
