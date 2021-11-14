@@ -2,7 +2,9 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models._embeddings_layers import CatEmbeddingsAndCont
+from pytorch_widedeep.models._embeddings_layers import (
+    DiffSizeCatAndContEmbeddings,
+)
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.resnet._layers import DenseResnet
 
@@ -109,9 +111,14 @@ class TabResnet(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
-        embed_input: Optional[List[Tuple[str, int, int]]] = None,
-        embed_dropout: float = 0.1,
+        cat_embed_input: Optional[List[Tuple[str, int, int]]] = None,
+        cat_embed_dropout: float = 0.1,
         continuous_cols: Optional[List[str]] = None,
+        embed_continuous: bool = False,
+        cont_embed_dim: int = 32,
+        cont_embed_dropout: float = 0.1,
+        cont_embed_activation: Optional[str] = None,
+        use_cont_bias: bool = True,
         cont_norm_layer: str = "batchnorm",
         concat_cont_first: bool = True,
         blocks_dims: List[int] = [200, 100, 100],
@@ -130,42 +137,55 @@ class TabResnet(nn.Module):
                 "'blocks' must contain at least two elements, e.g. [256, 128]"
             )
 
-        if not concat_cont_first and embed_input is None:
+        if not concat_cont_first and cat_embed_input is None:
             raise ValueError(
                 "If 'concat_cont_first = False' 'embed_input' must be not 'None'"
             )
 
         self.column_idx = column_idx
-        self.embed_input = embed_input
-        self.embed_dropout = embed_dropout
+        self.cat_embed_input = cat_embed_input
+        self.cat_embed_dropout = cat_embed_dropout
+
         self.continuous_cols = continuous_cols
+        self.embed_continuous = embed_continuous
+        self.cont_embed_dim = cont_embed_dim
+        self.cont_embed_dropout = cont_embed_dropout
+        self.cont_embed_activation = cont_embed_activation
+        self.use_cont_bias = use_cont_bias
         self.cont_norm_layer = cont_norm_layer
         self.concat_cont_first = concat_cont_first
+
         self.blocks_dims = blocks_dims
         self.blocks_dropout = blocks_dropout
-        self.mlp_activation = mlp_activation
         self.mlp_hidden_dims = mlp_hidden_dims
+        self.mlp_activation = mlp_activation
+        self.mlp_dropout = mlp_dropout
         self.mlp_batchnorm = mlp_batchnorm
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
-        self.cat_embed_and_cont = CatEmbeddingsAndCont(
+        self.cat_and_cont_embed = DiffSizeCatAndContEmbeddings(
             column_idx,
-            embed_input,
-            embed_dropout,
+            cat_embed_input,
+            cat_embed_dropout,
             continuous_cols,
+            embed_continuous,
+            cont_embed_dim,
+            cont_embed_dropout,
+            cont_embed_activation,
+            use_cont_bias,
             cont_norm_layer,
         )
 
-        emb_out_dim = self.cat_embed_and_cont.emb_out_dim
-        cont_out_dim = self.cat_embed_and_cont.cont_out_dim
+        cat_out_dim = self.cat_and_cont_embed.cat_out_dim
+        cont_out_dim = self.cat_and_cont_embed.cont_out_dim
 
         # DenseResnet
         if self.concat_cont_first:
-            dense_resnet_input_dim = emb_out_dim + cont_out_dim
+            dense_resnet_input_dim = cat_out_dim + cont_out_dim
             self.output_dim = blocks_dims[-1]
         else:
-            dense_resnet_input_dim = emb_out_dim
+            dense_resnet_input_dim = cat_out_dim
             self.output_dim = cont_out_dim + blocks_dims[-1]
         self.tab_resnet_blks = DenseResnet(
             dense_resnet_input_dim, blocks_dims, blocks_dropout
@@ -193,7 +213,7 @@ class TabResnet(nn.Module):
         embeddings. The result is then passed through a series of dense Resnet
         blocks"""
 
-        x_emb, x_cont = self.cat_embed_and_cont(X)
+        x_emb, x_cont = self.cat_and_cont_embed(X)
 
         if x_cont is not None:
             if self.concat_cont_first:

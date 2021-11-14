@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     tab_transformer = TabTransformer(
         column_idx=prepare_deep.column_idx,
-        embed_input=prepare_deep.embeddings_input,
+        cat_embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
         embed_continuous=True,
         n_blocks=4,
@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     saint = SAINT(
         column_idx=prepare_deep.column_idx,
-        embed_input=prepare_deep.embeddings_input,
+        cat_embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
         cont_norm_layer="batchnorm",
         n_blocks=4,
@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     tab_perceiver = TabPerceiver(
         column_idx=prepare_deep.column_idx,
-        embed_input=prepare_deep.embeddings_input,
+        cat_embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
         n_latents=6,
         latent_dim=16,
@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     tab_fastformer = TabFastFormer(
         column_idx=prepare_deep.column_idx,
-        embed_input=prepare_deep.embeddings_input,
+        cat_embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
         n_blocks=4,
         n_heads=4,
@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     ft_transformer = FTTransformer(
         column_idx=prepare_deep.column_idx,
-        embed_input=prepare_deep.embeddings_input,
+        cat_embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
         input_dim=32,
         kv_compression_factor=0.5,

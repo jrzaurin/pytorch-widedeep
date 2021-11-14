@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     deeptabular = TabNet(
         column_idx=prepare_tab.column_idx,
-        embed_input=prepare_tab.embeddings_input,
+        cat_embed_input=prepare_tab.embeddings_input,
         continuous_cols=continuous_cols,
     )
 

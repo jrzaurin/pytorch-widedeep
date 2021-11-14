@@ -45,9 +45,9 @@ if __name__ == "__main__":
         mlp_hidden_dims=[200, 100],
         mlp_dropout=0.1,
         column_idx=tab_preprocessor.column_idx,
-        embed_input=tab_preprocessor.embeddings_input,
+        cat_embed_input=tab_preprocessor.embeddings_input,
         continuous_cols=continuous_cols,
-        attention_name="self_attention",
+        attention_name="context_attention",
     )
     model = WideDeep(deeptabular=tab_mlp_attn)
 

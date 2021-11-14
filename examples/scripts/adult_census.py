@@ -75,14 +75,14 @@ if __name__ == "__main__":
         mlp_hidden_dims=[200, 100],
         mlp_dropout=[0.2, 0.2],
         column_idx=prepare_deep.column_idx,
-        embed_input=prepare_deep.embeddings_input,
+        cat_embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
     )
 
     tab_resnet = TabResnet(
         blocks_dims=[200, 100],
         column_idx=prepare_deep.column_idx,
-        embed_input=prepare_deep.embeddings_input,
+        cat_embed_input=prepare_deep.embeddings_input,
         continuous_cols=continuous_cols,
     )
 

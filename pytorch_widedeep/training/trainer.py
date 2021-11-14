@@ -1089,7 +1089,7 @@ class Trainer:
     def _compute_feature_importance(self, loader: DataLoader):
         self.model.eval()
         tabnet_backbone = list(self.model.deeptabular.children())[0]
-        feat_imp = np.zeros((tabnet_backbone.embed_and_cont_dim))  # type: ignore[arg-type]
+        feat_imp = np.zeros((tabnet_backbone.embed_out_dim))  # type: ignore[arg-type]
         for data, target in loader:
             X = data["deeptabular"].to(device)
             y = target.view(-1, 1).float() if self.method != "multiclass" else target

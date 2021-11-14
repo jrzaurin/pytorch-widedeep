@@ -37,7 +37,7 @@ def create_explain_matrix(model: WideDeep) -> csc_matrix:
     (
         embed_input,
         column_idx,
-        embed_and_cont_dim,
+        embed_out_dim,
     ) = _extract_tabnet_params(model)
 
     n_feat = len(column_idx)
@@ -59,7 +59,7 @@ def create_explain_matrix(model: WideDeep) -> csc_matrix:
             )
             embed_cum_counter += col_embeds[colname]
 
-    reducing_matrix = np.zeros((embed_and_cont_dim, n_feat))
+    reducing_matrix = np.zeros((embed_out_dim, n_feat))
     for i, cols in enumerate(indices_trick):
         reducing_matrix[cols, i] = 1
 
@@ -71,7 +71,7 @@ def _extract_tabnet_params(model: WideDeep):
     tabnet_backbone = list(model.deeptabular.children())[0]
 
     column_idx = tabnet_backbone.column_idx
-    embed_input = tabnet_backbone.embed_input
-    embed_and_cont_dim = tabnet_backbone.embed_and_cont_dim
+    embed_input = tabnet_backbone.cat_embed_input
+    embed_out_dim = tabnet_backbone.embed_out_dim
 
-    return embed_input, column_idx, embed_and_cont_dim
+    return embed_input, column_idx, embed_out_dim

@@ -2,7 +2,9 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models._embeddings_layers import CatEmbeddingsAndCont
+from pytorch_widedeep.models._embeddings_layers import (
+    DiffSizeCatAndContEmbeddings,
+)
 from pytorch_widedeep.models._get_activation_fn import allowed_activations
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 
@@ -77,9 +79,14 @@ class TabMlp(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
-        embed_input: Optional[List[Tuple[str, int, int]]] = None,
-        embed_dropout: float = 0.1,
+        cat_embed_input: Optional[List[Tuple[str, int, int]]] = None,
+        cat_embed_dropout: float = 0.1,
         continuous_cols: Optional[List[str]] = None,
+        embed_continuous: bool = False,
+        cont_embed_dim: int = 32,
+        cont_embed_dropout: float = 0.1,
+        cont_embed_activation: Optional[str] = None,
+        use_cont_bias: bool = True,
         cont_norm_layer: str = "batchnorm",
         mlp_hidden_dims: List[int] = [200, 100],
         mlp_activation: str = "relu",
@@ -91,11 +98,17 @@ class TabMlp(nn.Module):
         super(TabMlp, self).__init__()
 
         self.column_idx = column_idx
-        self.embed_input = embed_input
-        self.mlp_hidden_dims = mlp_hidden_dims
-        self.embed_dropout = embed_dropout
+        self.cat_embed_input = cat_embed_input
+        self.cat_embed_dropout = cat_embed_dropout
+
         self.continuous_cols = continuous_cols
-        self.cont_norm_layer = cont_norm_layer
+        self.embed_continuous = embed_continuous
+        self.cont_embed_dim = cont_embed_dim
+        self.cont_embed_dropout = cont_embed_dropout
+        self.cont_embed_activation = cont_embed_activation
+        self.use_cont_bias = use_cont_bias
+
+        self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation
         self.mlp_dropout = mlp_dropout
         self.mlp_batchnorm = mlp_batchnorm
@@ -109,16 +122,21 @@ class TabMlp(nn.Module):
                 )
             )
 
-        self.cat_embed_and_cont = CatEmbeddingsAndCont(
+        self.cat_and_cont_embed = DiffSizeCatAndContEmbeddings(
             column_idx,
-            embed_input,
-            embed_dropout,
+            cat_embed_input,
+            cat_embed_dropout,
             continuous_cols,
+            embed_continuous,
+            cont_embed_dim,
+            cont_embed_dropout,
+            cont_embed_activation,
+            use_cont_bias,
             cont_norm_layer,
         )
 
         # MLP
-        mlp_input_dim = self.cat_embed_and_cont.output_dim
+        mlp_input_dim = self.cat_and_cont_embed.output_dim
         mlp_hidden_dims = [mlp_input_dim] + mlp_hidden_dims
         self.tab_mlp = MLP(
             mlp_hidden_dims,
@@ -136,7 +154,7 @@ class TabMlp(nn.Module):
         r"""Forward pass that concatenates the continuous features with the
         embeddings. The result is then passed through a series of dense layers
         """
-        x_emb, x_cont = self.cat_embed_and_cont(X)
+        x_emb, x_cont = self.cat_and_cont_embed(X)
         if x_emb is not None:
             x = x_emb
         if x_cont is not None:

@@ -91,7 +91,7 @@ if __name__ == "__main__":
         mlp_hidden_dims=[64, 32],
         mlp_dropout=[0.2, 0.2],
         column_idx=tab_preprocessor.column_idx,
-        embed_input=tab_preprocessor.embeddings_input,
+        cat_embed_input=tab_preprocessor.embeddings_input,
         continuous_cols=continuous_cols,
     )
 

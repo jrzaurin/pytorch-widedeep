@@ -3,7 +3,9 @@ import einops
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models._embeddings_layers import CatAndContEmbeddings
+from pytorch_widedeep.models._embeddings_layers import (
+    SameSizeCatAndContEmbeddings,
+)
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.transformers._encoders import (
     PerceiverEncoder,
@@ -146,14 +148,16 @@ class TabPerceiver(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
-        embed_input: Optional[List[Tuple[str, int]]] = None,
-        embed_dropout: float = 0.1,
+        cat_embed_input: Optional[List[Tuple[str, int]]] = None,
+        cat_embed_dropout: float = 0.1,
         full_embed_dropout: bool = False,
         shared_embed: bool = False,
         add_shared_embed: bool = False,
         frac_shared_embed: float = 0.25,
         continuous_cols: Optional[List[str]] = None,
         embed_continuous_activation: str = None,
+        cont_embed_dropout: float = 0.0,
+        cont_embed_activation: str = None,
         cont_norm_layer: str = None,
         input_dim: int = 32,
         n_cross_attns: int = 1,
@@ -177,15 +181,19 @@ class TabPerceiver(nn.Module):
         super(TabPerceiver, self).__init__()
 
         self.column_idx = column_idx
-        self.embed_input = embed_input
-        self.embed_dropout = embed_dropout
+        self.cat_embed_input = cat_embed_input
+        self.cat_embed_dropout = cat_embed_dropout
         self.full_embed_dropout = full_embed_dropout
         self.shared_embed = shared_embed
         self.add_shared_embed = add_shared_embed
         self.frac_shared_embed = frac_shared_embed
+
         self.continuous_cols = continuous_cols
         self.embed_continuous_activation = embed_continuous_activation
+        self.cont_embed_dropout = cont_embed_dropout
+        self.cont_embed_activation = cont_embed_activation
         self.cont_norm_layer = cont_norm_layer
+
         self.input_dim = input_dim
         self.n_cross_attns = n_cross_attns
         self.n_cross_attn_heads = n_cross_attn_heads
@@ -198,26 +206,19 @@ class TabPerceiver(nn.Module):
         self.attn_dropout = attn_dropout
         self.ff_dropout = ff_dropout
         self.transformer_activation = transformer_activation
+
         self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation
+        self.mlp_dropout = mlp_dropout
         self.mlp_batchnorm = mlp_batchnorm
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
-        if mlp_hidden_dims is not None:
-            assert (
-                mlp_hidden_dims[0] == latent_dim
-            ), "The first mlp input dim must be equal to 'latent_dim'"
-
-        # This should be named 'cat_and_cont_embed' since the continuous cols
-        # will always be embedded for the TabPerceiver. However is very
-        # convenient for other funcionalities to name
-        # it 'cat_and_cont_embed'
-        self.cat_and_cont_embed = CatAndContEmbeddings(
+        self.cat_and_cont_embed = SameSizeCatAndContEmbeddings(
             input_dim,
             column_idx,
-            embed_input,
-            embed_dropout,
+            cat_embed_input,
+            cat_embed_dropout,
             full_embed_dropout,
             shared_embed,
             add_shared_embed,
@@ -225,6 +226,7 @@ class TabPerceiver(nn.Module):
             False,  # use_embed_bias
             continuous_cols,
             True,  # embed_continuous,
+            cont_embed_dropout,
             embed_continuous_activation,
             True,  # use_cont_bias
             cont_norm_layer,
@@ -250,10 +252,8 @@ class TabPerceiver(nn.Module):
         if not mlp_hidden_dims:
             self.mlp_hidden_dims = [latent_dim, latent_dim * 4, latent_dim * 2]
         else:
-            assert mlp_hidden_dims[0] == latent_dim, (
-                f"The input dim of the MLP must be {latent_dim}. "
-                f"Got {mlp_hidden_dims[0]} instead"
-            )
+            self.mlp_hidden_dims = [latent_dim] + mlp_hidden_dims
+
         self.perceiver_mlp = MLP(
             self.mlp_hidden_dims,
             mlp_activation,
