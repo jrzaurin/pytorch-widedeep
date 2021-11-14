@@ -24,7 +24,7 @@ def load_bio_kdd04(as_frame: bool = False):
     """
 
     header_list = ["EXAMPLE_ID", "BLOCK_ID", "target"] + [str(i) for i in range(4, 78)]
-    with resources.path("pytorch_widedeep.datasets", "data/bio_train.dat") as fpath:
+    with resources.path("pytorch_widedeep.datasets.data", "bio_train.dat") as fpath:
         df = pd.read_csv(fpath, sep="\t", names=header_list)
 
     if as_frame:
@@ -38,7 +38,7 @@ def load_adult(as_frame: bool = False):
     you may find detailed description [here](http://www.cs.toronto.edu/~delve/data/adult/adultDetail.html)
     """
 
-    with resources.path("pytorch_widedeep.datasets", "data/adult.csv.zip") as fpath:
+    with resources.path("pytorch_widedeep.datasets.data", "adult.csv.zip") as fpath:
         df = pd.read_csv(fpath)
 
     if as_frame:
