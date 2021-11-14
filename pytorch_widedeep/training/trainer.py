@@ -747,11 +747,11 @@ class Trainer:
         Returns
         -------
             method == regression : np.ndarray
-                {max, min, mean, stdev} values for each sample for
+                {max, min, mean, stdev} values for each sample
             method == binary : np.ndarray
-                {mean_cls_0_prob, mean_cls_1_prob, predicted_cls} values for each sample for
+                {mean_cls_0_prob, mean_cls_1_prob, predicted_cls} values for each sample
             method == multiclass : np.ndarray
-                {mean_cls_0_prob, mean_cls_1_prob, mean_cls_2_prob, ... , predicted_cls} values for each sample for
+                {mean_cls_0_prob, mean_cls_1_prob, mean_cls_2_prob, ... , predicted_cls} values for each sample
 
         """
         preds_l = self._predict(
@@ -1038,9 +1038,6 @@ class Trainer:
             for callback in self.callback_container.callbacks:
                 if callback.__class__.__name__ == "ModelCheckpoint":
                     if callback.save_best_only:
-                        filepath = "{}_{}.p".format(
-                            callback.filepath, callback.best_epoch + 1
-                        )
                         if self.verbose:
                             print(
                                 f"Model weights restored to best epoch: {callback.best_epoch + 1}"

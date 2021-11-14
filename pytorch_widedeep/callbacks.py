@@ -363,13 +363,13 @@ class ModelCheckpoint(Callback):
         Interval (number of epochs) between checkpoints.
     max_save: int, default=-1
         Maximum number of outputs to save. If -1 will save all outputs
-    wb: obj
-        Weights&Biases API interface to report single best result usable for comparisson of multiple 
-        paramater combinations by e.g. parallel coordinates: 
-        https://docs.wandb.ai/ref/app/features/panels/parallel-coordinates. 
+    wb: obj, default=None
+        Weights&Biases API interface to report single best result usable for comparisson of multiple
+        paramater combinations by e.g. parallel coordinates:
+        https://docs.wandb.ai/ref/app/features/panels/parallel-coordinates.
         E.g W&B summary report `wandb.run.summary["best"]`:
-        If external EarlyStopping scheduler is used from e.g. RayTune in combination with W&B, 
-        the RayTune EarlyStopping stops training function and the summary log is not sent if defined 
+        If external EarlyStopping scheduler is used from e.g. RayTune in combination with W&B,
+        the RayTune EarlyStopping stops training function and the summary log is not sent if defined
         after training by e.g.:
         `wandb.run.summary["best"]=model_checkpoint.best`.
 
@@ -420,7 +420,7 @@ class ModelCheckpoint(Callback):
 
         self.epochs_since_last_save = 0
 
-        if self.filepath is not None:
+        if self.filepath:
             if len(self.filepath.split("/")[:-1]) == 0:
                 raise ValueError(
                     "'filepath' must be the full path to save the output weights,"
@@ -462,7 +462,8 @@ class ModelCheckpoint(Callback):
         self.epochs_since_last_save += 1
         if self.epochs_since_last_save >= self.period:
             self.epochs_since_last_save = 0
-            filepath = "{}_{}.p".format(self.filepath, epoch + 1)
+            if self.filepath:
+                filepath = "{}_{}.p".format(self.filepath, epoch + 1)
             if self.save_best_only:
                 current = logs.get(self.monitor)
                 if current is None:
@@ -473,8 +474,8 @@ class ModelCheckpoint(Callback):
                     )
                 else:
                     if self.monitor_op(current, self.best):
-                        if self.verbose > 0 :
-                            if self.filepath is not None:
+                        if self.verbose > 0:
+                            if self.filepath:
                                 print(
                                     "\nEpoch %05d: %s improved from %0.5f to %0.5f,"
                                     " saving model to %s"
@@ -501,7 +502,7 @@ class ModelCheckpoint(Callback):
                         self.best = current
                         self.best_epoch = epoch
                         self.best_state_dict = self.model.state_dict()
-                        if self.filepath is not None:
+                        if self.filepath:
                             torch.save(self.best_state_dict, filepath)
                             if self.max_save > 0:
                                 if len(self.old_files) == self.max_save:
@@ -517,7 +518,7 @@ class ModelCheckpoint(Callback):
                                 "\nEpoch %05d: %s did not improve from %0.5f"
                                 % (epoch + 1, self.monitor, self.best)
                             )
-            if not self.save_best_only and self.filepath is not None:
+            if not self.save_best_only and self.filepath:
                 if self.verbose > 0:
                     print("\nEpoch %05d: saving model to %s" % (epoch + 1, filepath))
                 torch.save(self.model.state_dict(), filepath)

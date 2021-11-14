@@ -269,7 +269,15 @@ def test_notfittederror():
 ###############################################################################
 
 
-def test_embed_sz_rule_of_thumb():
+@pytest.mark.parametrize(
+    "rule",
+    [
+        ("google"),
+        ("fastai_old"),
+        ("fastai_new"),
+    ],
+)
+def test_embed_sz_rule_of_thumb(rule):
 
     embed_cols = ["col1", "col2"]
     df = pd.DataFrame(
@@ -279,8 +287,8 @@ def test_embed_sz_rule_of_thumb():
         }
     )
     n_cats = {c: df[c].nunique() for c in ["col1", "col2"]}
-    embed_szs = {c: embed_sz_rule(nc) for c, nc in n_cats.items()}
-    tab_preprocessor = TabPreprocessor(embed_cols=embed_cols)
+    embed_szs = {c: embed_sz_rule(nc, embedding_rule=rule) for c, nc in n_cats.items()}
+    tab_preprocessor = TabPreprocessor(embed_cols=embed_cols, embedding_rule=rule)
     tdf = tab_preprocessor.fit_transform(df)  # noqa: F841
     out = [
         tab_preprocessor.embed_dim[col] == embed_szs[col] for col in embed_szs.keys()

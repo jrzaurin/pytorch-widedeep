@@ -81,6 +81,7 @@ setup_kwargs = {
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
     "zip_safe": True,
+    "package_data": {"pytorch_widedeep": ["datasets/data/*"]},
     "packages": setuptools.find_packages(exclude=["test_*.py"]),
 }
 
