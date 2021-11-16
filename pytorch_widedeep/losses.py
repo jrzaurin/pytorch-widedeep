@@ -7,6 +7,57 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 use_cuda = torch.cuda.is_available()
 
 
+class ZILNLoss(nn.Module):
+    r"""Implementation of the `Zero Inflated LogNormal loss
+    <https://arxiv.org/pdf/1912.07753.pdf>`
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions (not probabilities)
+        target: Tensor
+            target tensor with the actual classes
+
+        Examples
+        --------
+        >>> import torch
+        >>>
+        >>> from pytorch_widedeep.losses import ZILNLoss
+        >>>
+        >>> # REGRESSION
+        >>> target = torch.tensor([[0., 1.5]]).view(-1, 1)
+        >>> input = torch.tensor([[.1, .2, .3], [.4, .5, .6]])
+        >>> ZILNLoss()(input, target)
+        tensor([0.6287, 1.9941])
+        """
+        positive = target>0
+        positive = positive.float()
+
+        assert input.shape == torch.Size([target.shape[0], 3]), "Wrong shape of input."
+        positive_input = input[..., :1]
+
+        classification_loss = F.binary_cross_entropy_with_logits(positive_input, positive)
+
+        loc = input[..., 1:2]
+        scale = torch.maximum(
+            F.softplus(input[..., 2:]),
+            torch.sqrt(torch.Tensor([torch.finfo(torch.float32).eps])))
+        safe_labels = positive * target + (
+            1 - positive) * torch.ones_like(target)
+
+        regression_loss = -torch.mean(
+            positive * torch.distributions.log_normal.LogNormal(loc=loc, scale=scale).log_prob(safe_labels),
+            dim=-1)
+
+        return classification_loss + regression_loss
+
+
 class FocalLoss(nn.Module):
     r"""Implementation of the `focal loss
     <https://arxiv.org/pdf/1708.02002.pdf>`_ for both binary and
