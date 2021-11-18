@@ -112,7 +112,7 @@ class ZILNLoss(nn.Module):
             positive * torch.distributions.log_normal.LogNormal(loc=loc, scale=scale).log_prob(safe_labels),
             dim=-1)
 
-        return classification_loss + regression_loss
+        return torch.mean(classification_loss + regression_loss)
 
 
 class FocalLoss(nn.Module):
