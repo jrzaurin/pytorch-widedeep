@@ -5,7 +5,7 @@ import torch
 import pytest
 from sklearn.metrics import mean_squared_error, mean_squared_log_error
 
-from pytorch_widedeep.losses import MSLELoss, RMSELoss
+from pytorch_widedeep.losses import MSLELoss, RMSELoss, ZILNLoss
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.training._loss_and_obj_aliases import (
@@ -60,8 +60,6 @@ def test_focal_loss(X_wide, X_tab, target, objective, pred_dim, probs_dim):
 ##############################################################################
 # Test RMSELoss and MSLELoss implementation
 ##############################################################################
-
-
 def test_mse_based_losses():
     y_true = np.array([3, 5, 2.5, 7]).reshape(-1, 1)
     y_pred = np.array([2.5, 5, 4, 8]).reshape(-1, 1)
@@ -85,7 +83,47 @@ def test_mse_based_losses():
         )
     )
 
+    # out.append(
+    #     np.isclose(
+    #         mean_squared_log_error(y_true, y_pred),
+    #         ZILNLoss()(t_pred, t_true).item(),
+    #     )
+    # )
     assert all(out)
+
+##############################################################################
+# Test ZILNloss implementation
+##############################################################################
+def test_ziln_loss():
+    target = torch.tensor([[0., 1.5]]).view(-1, 1)
+    input = torch.tensor([[.1, .2, .3], [.4, .5, .6]])
+    
+    loss_true = torch.tensor([0.7444, 1.8784])
+    target_pred = 
+    assert ZILNLoss()(input, target) == loss_true
+
+#TBD
+# @pytest.mark.parametrize(
+#     "X_wide, X_tab, target, objective, pred_dim, probs_dim",
+#     [
+#         (X_wide, X_tab, target_regres, "ziln", 1),
+#         (X_wide, X_tab, target_regres, "ziln", 3),
+#     ],
+# )
+# def test_ziln_loss_pred(X_wide, X_tab, target, objective, pred_dim):
+#     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
+#     deeptabular = TabMlp(
+#         mlp_hidden_dims=[32, 16],
+#         mlp_dropout=[0.5, 0.5],
+#         column_idx=column_idx,
+#         embed_input=embed_input,
+#         continuous_cols=colnames[-5:],
+#     )
+#     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=pred_dim)
+#     trainer = Trainer(model, objective=objective, verbose=0)
+#     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target)
+#     preds = trainer.predict(X_wide=X_wide, X_tab=X_tab)
+#     assert 
 
 
 ##############################################################################
@@ -120,6 +158,10 @@ method_to_objec = {
         "rmse",
         "root_mean_squared_log_error",
         "rmsle",
+        "zero_inflated_lognormal",
+        "ziln",
+        "quantile",
+        "tweedie",
     ],
 }
 
@@ -148,6 +190,10 @@ method_to_objec = {
             1,
         ),
         (X_wide, X_tab, target_regres, "regression", "rmsle", 1, 1),
+        (X_wide, X_tab, target_regres, "regression", "zero_inflated_lognormal", 1, 1)
+        (X_wide, X_tab, target_regres, "regression", "ziln", 1, 1)
+        (X_wide, X_tab, target_regres, "regression", "quantile", 1, 1)
+        (X_wide, X_tab, target_regres, "regression", "tweedie", 1, 1)
         (X_wide, X_tab, target_binary, "binary", "binary", 1, 2),
         (X_wide, X_tab, target_binary, "binary", "logistic", 1, 2),
         (X_wide, X_tab, target_binary, "binary", "binary_logloss", 1, 2),
@@ -187,8 +233,6 @@ def test_all_possible_objectives(
 ##############################################################################
 # Test inverse mappings
 ##############################################################################
-
-
 def test_inverse_maps():
     out = []
     out.append(_LossAliases.alias_to_loss["binary_logloss"] == "binary")
@@ -198,11 +242,16 @@ def test_inverse_maps():
     out.append(_LossAliases.alias_to_loss["msle"] == "mean_squared_log_error")
     out.append(_LossAliases.alias_to_loss["rmse"] == "root_mean_squared_error")
     out.append(_LossAliases.alias_to_loss["rmsle"] == "root_mean_squared_log_error")
+    out.append(_LossAliases.alias_to_loss["ziln"] == "zero_inflated_lognormal")
 
     out.append("binary_logloss" in _ObjectiveToMethod.method_to_objecive["binary"])
     out.append("multi_logloss" in _ObjectiveToMethod.method_to_objecive["multiclass"])
     out.append(
         "root_mean_squared_error" in _ObjectiveToMethod.method_to_objecive["regression"]
     )
-
+    out.append(
+        "zero_inflated_lognormal" in _ObjectiveToMethod.method_to_objecive["regression"]
+    )
+    out.append("quantile" in _ObjectiveToMethod.method_to_objecive["regression"])
+    out.append("tweedie" in _ObjectiveToMethod.method_to_objecive["regression"])
     assert all(out)

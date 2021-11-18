@@ -31,6 +31,9 @@ class _LossAliases:
         "mean_squared_log_error": ["mean_squared_log_error", "msle"],
         "root_mean_squared_error": ["root_mean_squared_error", "rmse"],
         "root_mean_squared_log_error": ["root_mean_squared_log_error", "rmsle"],
+        "zero_inflated_lognormal": ["zero_inflated_lognormal", "ziln"],
+        "quantile": ["quantile"],
+        "tweedie": ["tweedie"],
     }
 
     @classproperty
@@ -69,6 +72,10 @@ class _ObjectiveToMethod:
         "rmse": "regression",
         "root_mean_squared_log_error": "regression",
         "rmsle": "regression",
+        "zero_inflated_lognormal": "regression",
+        "ziln": "regression",
+        "quantile": "regression",
+        "tweedie": "regression",
     }
 
     @classproperty

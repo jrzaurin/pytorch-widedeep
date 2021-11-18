@@ -7,9 +7,66 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 use_cuda = torch.cuda.is_available()
 
 
+class TweedieLoss(nn.Module):
+    """
+    Quantile loss, i.e. a quantile of ``q=0.5`` will give half of the mean absolute error as it is calcualted as
+
+    Defined as ``max(q * (y-y_pred), (1-q) * (y_pred-y))``
+    All credits go to `pytorch-forecasting
+    <https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss>`
+    """
+
+    def __init__()
+        super().__init__()
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        # calculate quantile loss
+        losses = []
+        for i, q in enumerate(self.quantiles):
+            errors = target - input[..., i]
+            losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(-1))
+        losses = torch.cat(losses, dim=2)
+
+        return losses
+
+
+class QuantileLoss(nn.Module):
+    """
+    Quantile loss, i.e. a quantile of ``q=0.5`` will give half of the mean absolute error as it is calcualted as
+
+    Defined as ``max(q * (y-y_pred), (1-q) * (y_pred-y))``
+    All credits go to `pytorch-forecasting
+    <https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss>`
+    """
+
+    def __init__(
+        self,
+        quantiles: List[float] = [0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.98],
+        **kwargs,
+    ):
+        """
+        Quantile loss
+
+        Args:
+            quantiles: quantiles for metric
+        """
+        super().__init__(quantiles=quantiles, **kwargs)
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        # calculate quantile loss
+        losses = []
+        for i, q in enumerate(self.quantiles):
+            errors = target - input[..., i]
+            losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(-1))
+        losses = torch.cat(losses, dim=2)
+
+        return losses
+
+
 class ZILNLoss(nn.Module):
-    r"""Implementation of the `Zero Inflated LogNormal loss
-    <https://arxiv.org/pdf/1912.07753.pdf>`
+    r"""Adjusted implementation of the `Zero Inflated LogNormal loss
+    <https://arxiv.org/pdf/1912.07753.pdf>` and its `code
+    <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`
     """
 
     def __init__(self):
@@ -42,7 +99,7 @@ class ZILNLoss(nn.Module):
         assert input.shape == torch.Size([target.shape[0], 3]), "Wrong shape of input."
         positive_input = input[..., :1]
 
-        classification_loss = F.binary_cross_entropy_with_logits(positive_input, positive)
+        classification_loss = F.binary_cross_entropy_with_logits(positive_input, positive, reduction="none").flatten()
 
         loc = input[..., 1:2]
         scale = torch.maximum(

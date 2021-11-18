@@ -40,6 +40,7 @@ from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
 from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
+from pytorch_widedeep.losses import ZILNLoss
 
 n_cpus = os.cpu_count()
 
@@ -72,7 +73,7 @@ class Trainer:
         - ``multiclass_focal_loss``
 
         - ``regression``, aliases: ``mse``, ``l2``, ``mean_squared_error``
-
+    
         - ``mean_absolute_error``, aliases: ``mae``, ``l1``
 
         - ``mean_squared_log_error``, aliases: ``msle``
@@ -80,6 +81,12 @@ class Trainer:
         - ``root_mean_squared_error``, aliases:  ``rmse``
 
         - ``root_mean_squared_log_error``, aliases: ``rmsle``
+
+        - ``zero_inflated_lognormal``, aliases: ``ziln``
+
+        - ``quantile``
+
+        - ``tweedie``
     custom_loss_function: ``nn.Module``, optional, default = None
         object of class ``nn.Module``. If none of the loss functions
         available suits the user, it is possible to pass a custom loss
@@ -653,6 +660,7 @@ class Trainer:
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
         batch_size: int = 256,
+        quantiles: bool = False,
     ) -> np.ndarray:
         r"""Returns the predictions
 
@@ -691,7 +699,7 @@ class Trainer:
             number of times the model does prediction for each sample if uncertainty
             is set to True
         """
-        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size)
+        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size, quantiles)
         if self.method == "regression":
             return np.vstack(preds_l).squeeze(1)
         if self.method == "binary":
@@ -700,6 +708,23 @@ class Trainer:
         if self.method == "multiclass":
             preds = np.vstack(preds_l)
             return np.argmax(preds, 1)  # type: ignore[return-value]
+    
+    def _predict_ziln(preds: Tensor) -> Tensor:
+        """Calculates predicted mean of zero inflated lognormal logits.
+        Adjusted implementaion of `code
+        <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`
+        Arguments:
+            preds: [batch_size, 3] tensor of logits.
+        Returns:
+            ziln_preds: [batch_size, 1] tensor of predicted mean.
+        """
+        positive_probs = torch.sigmoid(preds[..., :1])
+        loc = preds[..., 1:2]
+        scale = F.softplus(preds[..., 2:])
+        ziln_preds = (
+            positive_probs *
+            torch.exp(loc + 0.5 * torch.square(scale)))
+        return ziln_preds
 
     def predict_uncertainty(  # type: ignore[return]
         self,
@@ -1205,6 +1230,7 @@ class Trainer:
         batch_size: int = 256,
         uncertainty_granularity=1000,
         uncertainty: bool = False,
+        quantiles: bool = False,
     ) -> List:
         r"""Private method to avoid code repetition in predict and
         predict_proba. For parameter information, please, see the .predict()
@@ -1270,6 +1296,8 @@ class Trainer:
                                 preds = torch.sigmoid(preds)
                             if self.method == "multiclass":
                                 preds = F.softmax(preds, dim=1)
+                            if self.method == "regression" and isinstance(self.loss_fn, ZILNLoss):
+                                preds = self._predict_ziln(preds_l)
                             preds = preds.cpu().data.numpy()
                             preds_l.append(preds)
         self.model.train()
@@ -1285,7 +1313,11 @@ class Trainer:
         elif "focal_loss" in objective:
             return alias_to_loss(objective, alpha=alpha, gamma=gamma)
         else:
-            return alias_to_loss(objective)
+            loss = alias_to_loss(objective)
+            assert (isinstance(loss, ZILNLoss) and self.model.pred_dim != 3), (
+                "the 'pred_dim' of the model that is using ZILNLoss must be equal to 3"
+                )
+            return loss
 
     def _initialize(self, initializers):
         if initializers is not None:
