@@ -699,7 +699,7 @@ class Trainer:
             number of times the model does prediction for each sample if uncertainty
             is set to True
         """
-        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size, quantiles)
+        preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size)
         if self.method == "regression":
             return np.vstack(preds_l).squeeze(1)
         if self.method == "binary":
@@ -709,7 +709,7 @@ class Trainer:
             preds = np.vstack(preds_l)
             return np.argmax(preds, 1)  # type: ignore[return-value]
     
-    def _predict_ziln(preds: Tensor) -> Tensor:
+    def _predict_ziln(self, preds: Tensor) -> Tensor:
         """Calculates predicted mean of zero inflated lognormal logits.
         Adjusted implementaion of `code
         <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`
@@ -1161,6 +1161,7 @@ class Trainer:
         else:
             loss = self.loss_fn(y_pred, y)
             score = self._get_score(y_pred, y)
+        # raise exception if the loss is exploding liw ith non scaled target values
         loss.backward()
         self.optimizer.step()
 
@@ -1297,7 +1298,7 @@ class Trainer:
                             if self.method == "multiclass":
                                 preds = F.softmax(preds, dim=1)
                             if self.method == "regression" and isinstance(self.loss_fn, ZILNLoss):
-                                preds = self._predict_ziln(preds_l)
+                                preds = self._predict_ziln(preds)
                             preds = preds.cpu().data.numpy()
                             preds_l.append(preds)
         self.model.train()
@@ -1313,11 +1314,7 @@ class Trainer:
         elif "focal_loss" in objective:
             return alias_to_loss(objective, alpha=alpha, gamma=gamma)
         else:
-            loss = alias_to_loss(objective)
-            assert (isinstance(loss, ZILNLoss) and self.model.pred_dim != 3), (
-                "the 'pred_dim' of the model that is using ZILNLoss must be equal to 3"
-                )
-            return loss
+            return alias_to_loss(objective)
 
     def _initialize(self, initializers):
         if initializers is not None:

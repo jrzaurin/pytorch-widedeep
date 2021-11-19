@@ -16,7 +16,7 @@ class TweedieLoss(nn.Module):
     <https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss>`
     """
 
-    def __init__()
+    def __init__():
         super().__init__()
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
@@ -96,7 +96,9 @@ class ZILNLoss(nn.Module):
         positive = target>0
         positive = positive.float()
 
-        assert input.shape == torch.Size([target.shape[0], 3]), "Wrong shape of input."
+        assert input.shape == torch.Size([target.shape[0], 3]), (
+            "Wrong shape of input, pred_dim of the model that is using ZILNLoss must be equal to 3."
+        )
         positive_input = input[..., :1]
 
         classification_loss = F.binary_cross_entropy_with_logits(positive_input, positive, reduction="none").flatten()
