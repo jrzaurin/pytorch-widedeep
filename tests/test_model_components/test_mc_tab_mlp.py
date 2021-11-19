@@ -5,7 +5,7 @@ import torch
 import pytest
 
 from pytorch_widedeep.models import TabMlp
-from pytorch_widedeep.models._embeddings_layers import CatEmbeddingsAndCont
+from pytorch_widedeep.models.embeddings_layers import CatEmbeddingsAndCont
 
 colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 10) for _ in range(5)]

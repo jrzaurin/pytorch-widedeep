@@ -2,9 +2,10 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models._embeddings_layers import (
+from pytorch_widedeep.models.embeddings_layers import (
     SameSizeCatAndContEmbeddings,
 )
+from pytorch_widedeep.models._get_activation_fn import allowed_activations
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.mlp._encoders import AttentionEncoder
 
@@ -175,6 +176,14 @@ class AttentiveTabMlp(nn.Module):
         self.with_cls_token = "cls_token" in column_idx
         self.n_cat = len(cat_embed_input) if cat_embed_input is not None else 0
         self.n_cont = len(continuous_cols) if continuous_cols is not None else 0
+
+        if self.mlp_activation not in allowed_activations:
+            raise ValueError(
+                "Currently, only the following activation functions are supported "
+                "for for the MLP's dense layers: {}. Got {} instead".format(
+                    ", ".join(allowed_activations), self.mlp_activation
+                )
+            )
 
         self.cat_and_cont_embed = SameSizeCatAndContEmbeddings(
             input_dim,

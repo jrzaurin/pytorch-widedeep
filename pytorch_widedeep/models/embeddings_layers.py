@@ -8,6 +8,7 @@ import math
 import numpy as np
 import torch
 import einops
+import torch.nn.functional as F
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
@@ -15,18 +16,75 @@ from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 
 
 class FullEmbeddingDropout(nn.Module):
-    def __init__(self, dropout: float):
+    def __init__(self, p: float):
         super(FullEmbeddingDropout, self).__init__()
-        self.dropout = dropout
+
+        if p < 0 or p > 1:
+            raise ValueError(f"p probability has to be between 0 and 1, but got {p}")
+        self.p = p
 
     def forward(self, X: Tensor) -> Tensor:
-        mask = X.new().resize_((X.size(1), 1)).bernoulli_(1 - self.dropout).expand_as(
-            X
-        ) / (1 - self.dropout)
+        mask = X.new().resize_((X.size(1), 1)).bernoulli_(1 - self.p).expand_as(X) / (
+            1 - self.p
+        )
         return mask * X
+
+    def extra_repr(self) -> str:
+        return f"p={self.p}"
 
 
 DropoutLayers = Union[nn.Dropout, FullEmbeddingDropout]
+
+
+class ContEmbeddings(nn.Module):
+    def __init__(
+        self,
+        n_cont_cols: int,
+        embed_dim: int,
+        embed_dropout: float,
+        use_bias: bool,
+        activation: str = None,
+    ):
+        super(ContEmbeddings, self).__init__()
+
+        self.n_cont_cols = n_cont_cols
+        self.embed_dim = embed_dim
+        self.embed_dropout = embed_dropout
+        self.use_bias = use_bias
+        self.activation = activation
+
+        self.weight = nn.Parameter(torch.Tensor(n_cont_cols, embed_dim))
+
+        self.bias = (
+            nn.Parameter(torch.Tensor(n_cont_cols, embed_dim)) if use_bias else None
+        )
+        self._reset_parameters()
+
+        self.act_fn = get_activation_fn(activation) if activation else None
+
+    def _reset_parameters(self) -> None:
+        nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
+        if self.bias is not None:
+            fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weight)
+            bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
+            nn.init.uniform_(self.bias, -bound, bound)
+
+    def forward(self, X: Tensor) -> Tensor:
+        x = self.weight.unsqueeze(0) * X.unsqueeze(2)
+
+        if self.bias is not None:
+            x = x + self.bias.unsqueeze(0)
+
+        if self.act_fn is not None:
+            x = self.act_fn(x)
+
+        return F.dropout(x, self.embed_dropout, self.training)
+
+    def extra_repr(self) -> str:
+        s = "{n_cont_cols}, {embed_dim}, embed_dropout={embed_dropout}, use_bias={use_bias}"
+        if self.activation is not None:
+            s += ", activation={activation}"
+        return s.format(**self.__dict__)
 
 
 class SharedEmbeddings(nn.Module):
@@ -64,47 +122,6 @@ class SharedEmbeddings(nn.Module):
         else:
             out[:, : shared_embed.shape[1]] = shared_embed
         return out
-
-
-class ContEmbeddings(nn.Module):
-    def __init__(
-        self,
-        n_cont_cols: int,
-        embed_dim: int,
-        embed_dropout: float,
-        use_bias: bool,
-        activation: str = None,
-    ):
-        super(ContEmbeddings, self).__init__()
-
-        self.weight = nn.Parameter(torch.Tensor(n_cont_cols, embed_dim))
-
-        self.bias = (
-            nn.Parameter(torch.Tensor(n_cont_cols, embed_dim)) if use_bias else None
-        )
-        self._reset_parameters()
-
-        self.act_fn = get_activation_fn(activation) if activation else None
-
-        self.dropout = nn.Dropout(embed_dropout)
-
-    def _reset_parameters(self) -> None:
-        nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
-        if self.bias is not None:
-            fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weight)
-            bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
-            nn.init.uniform_(self.bias, -bound, bound)
-
-    def forward(self, X: Tensor) -> Tensor:
-        x = self.weight.unsqueeze(0) * X.unsqueeze(2)
-
-        if self.bias is not None:
-            x = x + self.bias.unsqueeze(0)
-
-        if self.act_fn is not None:
-            x = self.act_fn(x)
-
-        return self.dropout(x)
 
 
 class DiffSizeCatEmbeddings(nn.Module):

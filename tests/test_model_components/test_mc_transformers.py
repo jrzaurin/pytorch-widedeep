@@ -12,7 +12,7 @@ from pytorch_widedeep.models import (
     TabFastFormer,
     TabTransformer,
 )
-from pytorch_widedeep.models._embeddings_layers import *  # noqa: F403
+from pytorch_widedeep.models.embeddings_layers import *  # noqa: F403
 from pytorch_widedeep.models.tabular.transformers._attention_layers import *  # noqa: F403
 
 # I am going over test these models due to the number of components

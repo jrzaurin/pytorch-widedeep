@@ -164,3 +164,16 @@ class RMSLELoss(nn.Module):
         tensor(0.3339)
         """
         return torch.sqrt(self.mse(torch.log(input + 1), torch.log(target + 1)))
+
+
+class BayesianRegressionLoss(nn.Module):
+    def __init__(self, noise_tolerance: float = 0.2):
+        super().__init__()
+        self.noise_tolerance = noise_tolerance
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        return (
+            torch.distributions.Normal(input, self.noise_tolerance)
+            .log_prob(target)
+            .sum()
+        )

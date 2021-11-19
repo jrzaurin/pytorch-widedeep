@@ -3,7 +3,13 @@ from tqdm import tqdm
 from torch import nn
 from sklearn.model_selection import train_test_split
 
-from pytorch_widedeep.losses import MSLELoss, RMSELoss, FocalLoss, RMSLELoss
+from pytorch_widedeep.losses import (
+    MSLELoss,
+    RMSELoss,
+    FocalLoss,
+    RMSLELoss,
+    BayesianRegressionLoss,
+)
 from pytorch_widedeep.wdtypes import Dict, List, Optional, Transforms
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._loss_and_obj_aliases import (
@@ -176,7 +182,7 @@ def save_epoch_logs(epoch_logs: Dict, loss: float, score: Dict, stage: str):
     return epoch_logs
 
 
-def alias_to_loss(loss_fn: str, **kwargs):
+def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
     r"""
     Function that returns the corresponding loss function given an alias
 
@@ -217,3 +223,9 @@ def alias_to_loss(loss_fn: str, **kwargs):
         return RMSLELoss()
     if "focal_loss" in loss_fn:
         return FocalLoss(**kwargs)
+    if "bayesian_binary" in loss_fn:
+        return nn.BCEWithLogitsLoss(pos_weight=kwargs["weight"], reduction="sum")
+    if "bayesian_multiclass" in loss_fn:
+        return nn.CrossEntropyLoss(weight=kwargs["weight"], reduction="sum")
+    if "bayesian_regression" in loss_fn:
+        return BayesianRegressionLoss(noise_tolerance=kwargs["noise_tolerance"])
