@@ -18,10 +18,13 @@ class FullEmbeddingDropout(nn.Module):
         self.dropout = dropout
 
     def forward(self, X: Tensor) -> Tensor:
-        mask = X.new().resize_((X.size(1), 1)).bernoulli_(1 - self.dropout).expand_as(
-            X
-        ) / (1 - self.dropout)
-        return mask * X
+        if self.training:
+            mask = X.new().resize_((X.size(1), 1)).bernoulli_(1 - self.dropout).expand_as(
+                X
+            ) / (1 - self.dropout)
+            return mask * X
+        else:
+            return X
 
 
 DropoutLayers = Union[nn.Dropout, FullEmbeddingDropout]
@@ -167,12 +170,11 @@ class CategoricalEmbeddings(nn.Module):
             x = torch.cat(cat_embed, 1)
         else:
             x = self.embed(X[:, self.cat_idx].long())
-            x = self.dropout(x)
 
         if self.bias is not None:
             x = x + self.bias.unsqueeze(0)
 
-        return x
+        return self.dropout(x)
 
 
 class CatAndContEmbeddings(nn.Module):
