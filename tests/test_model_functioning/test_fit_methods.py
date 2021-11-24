@@ -43,14 +43,14 @@ X_test = {"X_wide": X_wide, "X_tab": X_tab}
 # work well
 ##############################################################################
 @pytest.mark.parametrize(
-    "X_wide, X_tab, target, objective, X_wide_test, X_tab_test, X_test, pred_dim, probs_dim",
+    "X_wide, X_tab, target, objective, X_test, pred_dim, probs_dim, uncertainties_pred_dim",
     [
-        (X_wide, X_tab, target_regres, "regression", X_wide, X_tab, None, 1, None),
-        (X_wide, X_tab, target_binary, "binary", X_wide, X_tab, None, 1, 2),
-        (X_wide, X_tab, target_multic, "multiclass", X_wide, X_tab, None, 3, 3),
-        (X_wide, X_tab, target_regres, "regression", None, None, X_test, 1, None),
-        (X_wide, X_tab, target_binary, "binary", None, None, X_test, 1, 2),
-        (X_wide, X_tab, target_multic, "multiclass", None, None, X_test, 3, 3),
+        (X_wide, X_tab, target_regres, "regression", None, 1, None, 4),
+        (X_wide, X_tab, target_binary, "binary", None, 1, 2, 3),
+        (X_wide, X_tab, target_multic, "multiclass", None, 3, 3, 4),
+        (X_wide, X_tab, target_regres, "regression", X_test, 1, None, 4),
+        (X_wide, X_tab, target_binary, "binary", X_test, 1, 2, 3),
+        (X_wide, X_tab, target_multic, "multiclass", X_test, 3, 3, 4),
     ],
 )
 def test_fit_objectives(
@@ -58,11 +58,10 @@ def test_fit_objectives(
     X_tab,
     target,
     objective,
-    X_wide_test,
-    X_tab_test,
     X_test,
     pred_dim,
     probs_dim,
+    uncertainties_pred_dim,
 ):
     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
     deeptabular = TabMlp(
@@ -76,11 +75,22 @@ def test_fit_objectives(
     trainer = Trainer(model, objective=objective, verbose=0)
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, batch_size=16)
     preds = trainer.predict(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
-    if objective == "binary":
-        pass
+    probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
+    unc_preds = trainer.predict_uncertainty(
+        X_wide=X_wide, X_tab=X_tab, X_test=X_test, uncertainty_granularity=5
+    )
+    if objective == "regression":
+        assert (preds.shape[0], probs, unc_preds.shape[1]) == (
+            32,
+            probs_dim,
+            uncertainties_pred_dim,
+        )
     else:
-        probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
-    assert preds.shape[0] == 32, probs.shape[1] == probs_dim
+        assert (preds.shape[0], probs.shape[1], unc_preds.shape[1]) == (
+            32,
+            probs_dim,
+            uncertainties_pred_dim,
+        )
 
 
 ##############################################################################
@@ -100,7 +110,10 @@ def test_fit_with_deephead():
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target_binary, batch_size=16)
     preds = trainer.predict(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
     probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
-    assert preds.shape[0] == 32, probs.shape[1] == 2
+    unc_preds = trainer.predict_uncertainty(
+        X_wide=X_wide, X_tab=X_tab, X_test=X_test, uncertainty_granularity=5
+    )
+    assert (preds.shape[0], probs.shape[1], unc_preds.shape[1]) == (32, 2, 3)
 
 
 ##############################################################################
@@ -109,14 +122,14 @@ def test_fit_with_deephead():
 
 
 @pytest.mark.parametrize(
-    "X_wide, X_tab, target, objective, X_wide_test, X_tab_test, X_test, pred_dim, probs_dim",
+    "X_wide, X_tab, target, objective, X_wide_test, X_tab_test, X_test, pred_dim, probs_dim, uncertainties_pred_dim",
     [
-        (X_wide, X_tab, target_regres, "regression", X_wide, X_tab, None, 1, None),
-        (X_wide, X_tab, target_binary, "binary", X_wide, X_tab, None, 1, 2),
-        (X_wide, X_tab, target_multic, "multiclass", X_wide, X_tab, None, 3, 3),
-        (X_wide, X_tab, target_regres, "regression", None, None, X_test, 1, None),
-        (X_wide, X_tab, target_binary, "binary", None, None, X_test, 1, 2),
-        (X_wide, X_tab, target_multic, "multiclass", None, None, X_test, 3, 3),
+        (X_wide, X_tab, target_regres, "regression", X_wide, X_tab, None, 1, None, 4),
+        (X_wide, X_tab, target_binary, "binary", X_wide, X_tab, None, 1, 2, 3),
+        (X_wide, X_tab, target_multic, "multiclass", X_wide, X_tab, None, 3, 3, 4),
+        (X_wide, X_tab, target_regres, "regression", None, None, X_test, 1, None, 4),
+        (X_wide, X_tab, target_binary, "binary", None, None, X_test, 1, 2, 3),
+        (X_wide, X_tab, target_multic, "multiclass", None, None, X_test, 3, 3, 4),
     ],
 )
 def test_fit_objectives_tab_transformer(
@@ -129,6 +142,7 @@ def test_fit_objectives_tab_transformer(
     X_test,
     pred_dim,
     probs_dim,
+    uncertainties_pred_dim,
 ):
     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
     tab_transformer = TabTransformer(
@@ -140,11 +154,22 @@ def test_fit_objectives_tab_transformer(
     trainer = Trainer(model, objective=objective, verbose=0)
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, batch_size=16)
     preds = trainer.predict(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
-    if objective == "binary":
-        pass
+    probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
+    unc_preds = trainer.predict_uncertainty(
+        X_wide=X_wide, X_tab=X_tab, X_test=X_test, uncertainty_granularity=5
+    )
+    if objective == "regression":
+        assert (preds.shape[0], probs, unc_preds.shape[1]) == (
+            32,
+            probs_dim,
+            uncertainties_pred_dim,
+        )
     else:
-        probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
-    assert preds.shape[0] == 32, probs.shape[1] == probs_dim
+        assert (preds.shape[0], probs.shape[1], unc_preds.shape[1]) == (
+            32,
+            probs_dim,
+            uncertainties_pred_dim,
+        )
 
 
 ##############################################################################
@@ -153,14 +178,14 @@ def test_fit_objectives_tab_transformer(
 
 
 @pytest.mark.parametrize(
-    "X_wide, X_tab, target, objective, X_wide_test, X_tab_test, X_test, pred_dim, probs_dim",
+    "X_wide, X_tab, target, objective, X_wide_test, X_tab_test, X_test, pred_dim, probs_dim, uncertainties_pred_dim",
     [
-        (X_wide, X_tab, target_regres, "regression", X_wide, X_tab, None, 1, None),
-        (X_wide, X_tab, target_binary, "binary", X_wide, X_tab, None, 1, 2),
-        (X_wide, X_tab, target_multic, "multiclass", X_wide, X_tab, None, 3, 3),
-        (X_wide, X_tab, target_regres, "regression", None, None, X_test, 1, None),
-        (X_wide, X_tab, target_binary, "binary", None, None, X_test, 1, 2),
-        (X_wide, X_tab, target_multic, "multiclass", None, None, X_test, 3, 3),
+        (X_wide, X_tab, target_regres, "regression", X_wide, X_tab, None, 1, None, 4),
+        (X_wide, X_tab, target_binary, "binary", X_wide, X_tab, None, 1, 2, 3),
+        (X_wide, X_tab, target_multic, "multiclass", X_wide, X_tab, None, 3, 3, 4),
+        (X_wide, X_tab, target_regres, "regression", None, None, X_test, 1, None, 4),
+        (X_wide, X_tab, target_binary, "binary", None, None, X_test, 1, 2, 3),
+        (X_wide, X_tab, target_multic, "multiclass", None, None, X_test, 3, 3, 4),
     ],
 )
 def test_fit_objectives_tabnet(
@@ -173,6 +198,7 @@ def test_fit_objectives_tabnet(
     X_test,
     pred_dim,
     probs_dim,
+    uncertainties_pred_dim,
 ):
     warnings.filterwarnings("ignore")
     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
@@ -185,11 +211,22 @@ def test_fit_objectives_tabnet(
     trainer = Trainer(model, objective=objective, verbose=0)
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, batch_size=16)
     preds = trainer.predict(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
-    if objective == "binary":
-        pass
+    probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
+    unc_preds = trainer.predict_uncertainty(
+        X_wide=X_wide, X_tab=X_tab, X_test=X_test, uncertainty_granularity=5
+    )
+    if objective == "regression":
+        assert (preds.shape[0], probs, unc_preds.shape[1]) == (
+            32,
+            probs_dim,
+            uncertainties_pred_dim,
+        )
     else:
-        probs = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab, X_test=X_test)
-    assert preds.shape[0] == 32, probs.shape[1] == probs_dim
+        assert (preds.shape[0], probs.shape[1], unc_preds.shape[1]) == (
+            32,
+            probs_dim,
+            uncertainties_pred_dim,
+        )
 
 
 ##############################################################################

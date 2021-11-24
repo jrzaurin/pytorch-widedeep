@@ -1,7 +1,6 @@
 import os
 import json
 import warnings
-from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -20,7 +19,6 @@ from pytorch_widedeep.callbacks import (
     History,
     Callback,
     MetricCallback,
-    RayTuneReporter,
     CallbackContainer,
     LRShedulerCallback,
 )
@@ -685,8 +683,14 @@ class Trainer:
             If a trainer is used to predict after having trained a model, the
             ``batch_size`` needs to be defined as it will not be defined as
             the :obj:`Trainer` is instantiated
+        uncertainty: bool, default = False
+            If set to True the model activates the dropout layers and predicts
+            the each sample N times (uncertainty_granularity times) and returns
+            {max, min, mean, stdev} value for each sample
+        uncertainty_granularity: int default = 1000
+            number of times the model does prediction for each sample if uncertainty
+            is set to True
         """
-
         preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size)
         if self.method == "regression":
             return np.vstack(preds_l).squeeze(1)
@@ -696,6 +700,96 @@ class Trainer:
         if self.method == "multiclass":
             preds = np.vstack(preds_l)
             return np.argmax(preds, 1)  # type: ignore[return-value]
+
+    def predict_uncertainty(  # type: ignore[return]
+        self,
+        X_wide: Optional[np.ndarray] = None,
+        X_tab: Optional[np.ndarray] = None,
+        X_text: Optional[np.ndarray] = None,
+        X_img: Optional[np.ndarray] = None,
+        X_test: Optional[Dict[str, np.ndarray]] = None,
+        batch_size: int = 256,
+        uncertainty_granularity=1000,
+    ) -> np.ndarray:
+        r"""Returns the predicted ucnertainty of the model for the test dataset using a
+        Monte Carlo method during which dropout layers are activated in the evaluation/prediction
+        phase and each sample is predicted N times (uncertainty_granularity times). Based on [1].
+
+        [1] Gal Y. & Ghahramani Z., 2016, Dropout as a Bayesian Approximation: Representing Model
+        Uncertainty in Deep Learning, Proceedings of the 33rd International Conference on Machine Learning
+
+        Parameters
+        ----------
+        X_wide: np.ndarray, Optional. default=None
+            Input for the ``wide`` model component.
+            See :class:`pytorch_widedeep.preprocessing.WidePreprocessor`
+        X_tab: np.ndarray, Optional. default=None
+            Input for the ``deeptabular`` model component.
+            See :class:`pytorch_widedeep.preprocessing.TabPreprocessor`
+        X_text: np.ndarray, Optional. default=None
+            Input for the ``deeptext`` model component.
+            See :class:`pytorch_widedeep.preprocessing.TextPreprocessor`
+        X_img : np.ndarray, Optional. default=None
+            Input for the ``deepimage`` model component.
+            See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
+        X_test: Dict, Optional. default=None
+            The test dataset can also be passed in a dictionary. Keys are
+            `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
+            are the corresponding matrices.
+        batch_size: int, default = 256
+            If a trainer is used to predict after having trained a model, the
+            ``batch_size`` needs to be defined as it will not be defined as
+            the :obj:`Trainer` is instantiated
+        uncertainty_granularity: int default = 1000
+            number of times the model does prediction for each sample if uncertainty
+            is set to True
+
+        Returns
+        -------
+            method == regression : np.ndarray
+                {max, min, mean, stdev} values for each sample
+            method == binary : np.ndarray
+                {mean_cls_0_prob, mean_cls_1_prob, predicted_cls} values for each sample
+            method == multiclass : np.ndarray
+                {mean_cls_0_prob, mean_cls_1_prob, mean_cls_2_prob, ... , predicted_cls} values for each sample
+
+        """
+        preds_l = self._predict(
+            X_wide,
+            X_tab,
+            X_text,
+            X_img,
+            X_test,
+            batch_size,
+            uncertainty_granularity,
+            uncertainty=True,
+        )
+        preds = np.vstack(preds_l)
+        samples_num = int(preds.shape[0] / uncertainty_granularity)
+        if self.method == "regression":
+            preds = preds.squeeze(1)
+            preds = preds.reshape((uncertainty_granularity, samples_num))
+            return np.array(
+                (
+                    preds.max(axis=0),
+                    preds.min(axis=0),
+                    preds.mean(axis=0),
+                    preds.std(axis=0),
+                )
+            ).T
+        if self.method == "binary":
+            preds = preds.squeeze(1)
+            preds = preds.reshape((uncertainty_granularity, samples_num))
+            preds = preds.mean(axis=0)
+            probs = np.zeros([preds.shape[0], 3])
+            probs[:, 0] = 1 - preds
+            probs[:, 1] = preds
+            return probs
+        if self.method == "multiclass":
+            preds = preds.reshape(uncertainty_granularity, samples_num, preds.shape[1])
+            preds = preds.mean(axis=0)
+            preds = np.hstack((preds, np.vstack(np.argmax(preds, 1))))
+            return preds
 
     def predict_proba(  # type: ignore[return]
         self,
@@ -944,14 +1038,11 @@ class Trainer:
             for callback in self.callback_container.callbacks:
                 if callback.__class__.__name__ == "ModelCheckpoint":
                     if callback.save_best_only:
-                        filepath = "{}_{}.p".format(
-                            callback.filepath, callback.best_epoch + 1
-                        )
                         if self.verbose:
                             print(
                                 f"Model weights restored to best epoch: {callback.best_epoch + 1}"
                             )
-                        self.model.load_state_dict(torch.load(filepath))
+                        self.model.load_state_dict(callback.best_state_dict)
                     else:
                         if self.verbose:
                             print(
@@ -1104,7 +1195,7 @@ class Trainer:
             k: v for k, v in zip(tabnet_backbone.column_idx.keys(), feat_imp)  # type: ignore[operator, union-attr]
         }
 
-    def _predict(
+    def _predict(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
@@ -1112,6 +1203,8 @@ class Trainer:
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
         batch_size: int = 256,
+        uncertainty_granularity=1000,
+        uncertainty: bool = False,
     ) -> List:
         r"""Private method to avoid code repetition in predict and
         predict_proba. For parameter information, please, see the .predict()
@@ -1144,20 +1237,41 @@ class Trainer:
 
         self.model.eval()
         preds_l = []
+
+        if uncertainty:
+            for m in self.model.modules():
+                if m.__class__.__name__.startswith("Dropout"):
+                    m.train()
+            prediction_iters = uncertainty_granularity
+        else:
+            prediction_iters = 1
+
         with torch.no_grad():
-            with trange(test_steps, disable=self.verbose != 1) as t:
-                for i, data in zip(t, test_loader):
-                    t.set_description("predict")
-                    X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
-                    preds = (
-                        self.model(X) if not self.model.is_tabnet else self.model(X)[0]
-                    )
-                    if self.method == "binary":
-                        preds = torch.sigmoid(preds)
-                    if self.method == "multiclass":
-                        preds = F.softmax(preds, dim=1)
-                    preds = preds.cpu().data.numpy()
-                    preds_l.append(preds)
+            with trange(uncertainty_granularity, disable=uncertainty is False) as t:
+                for i, k in zip(t, range(prediction_iters)):
+                    t.set_description("predict_UncertaintyIter")
+
+                    with trange(
+                        test_steps, disable=self.verbose != 1 or uncertainty is True
+                    ) as tt:
+                        for j, data in zip(tt, test_loader):
+                            tt.set_description("predict")
+                            X = (
+                                {k: v.cuda() for k, v in data.items()}
+                                if use_cuda
+                                else data
+                            )
+                            preds = (
+                                self.model(X)
+                                if not self.model.is_tabnet
+                                else self.model(X)[0]
+                            )
+                            if self.method == "binary":
+                                preds = torch.sigmoid(preds)
+                            if self.method == "multiclass":
+                                preds = F.softmax(preds, dim=1)
+                            preds = preds.cpu().data.numpy()
+                            preds_l.append(preds)
         self.model.train()
         return preds_l
 

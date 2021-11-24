@@ -168,9 +168,15 @@ def test_early_stop():
 # Test that ModelCheckpoint behaves as expected
 ###############################################################################
 @pytest.mark.parametrize(
-    "save_best_only, max_save, n_files", [(True, 2, 2), (False, 2, 2), (False, 0, 5)]
+    "fpath, save_best_only, max_save, n_files",
+    [
+        ("tests/test_model_functioning/weights/test_weights", True, 2, 2),
+        ("tests/test_model_functioning/weights/test_weights", False, 2, 2),
+        ("tests/test_model_functioning/weights/test_weights", False, 0, 5),
+        (None, False, 0, 0),
+    ],
 )
-def test_model_checkpoint(save_best_only, max_save, n_files):
+def test_model_checkpoint(fpath, save_best_only, max_save, n_files):
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deeptabular = TabMlp(
         mlp_hidden_dims=[32, 16],
@@ -185,7 +191,7 @@ def test_model_checkpoint(save_best_only, max_save, n_files):
         objective="binary",
         callbacks=[
             ModelCheckpoint(
-                "tests/test_model_functioning/weights/test_weights",
+                filepath=fpath,
                 save_best_only=save_best_only,
                 max_save=max_save,
             )
@@ -193,10 +199,11 @@ def test_model_checkpoint(save_best_only, max_save, n_files):
         verbose=0,
     )
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=5, val_split=0.2)
-    n_saved = len(os.listdir("tests/test_model_functioning/weights/"))
-
-    shutil.rmtree("tests/test_model_functioning/weights/")
-
+    if fpath:
+        n_saved = len(os.listdir("tests/test_model_functioning/weights/"))
+        shutil.rmtree("tests/test_model_functioning/weights/")
+    else:
+        n_saved = 0
     assert n_saved <= n_files
 
 
@@ -340,6 +347,7 @@ def test_modelcheckpoint_mode_options():
     model_checkpoint_2 = ModelCheckpoint(filepath=fpath, monitor="val_loss")
     model_checkpoint_3 = ModelCheckpoint(filepath=fpath, monitor="acc", mode="max")
     model_checkpoint_4 = ModelCheckpoint(filepath=fpath, monitor="acc")
+    model_checkpoint_5 = ModelCheckpoint(filepath=None, monitor="acc")
 
     is_min = model_checkpoint_1.monitor_op is np.less
     best_inf = model_checkpoint_1.best is np.Inf
@@ -349,6 +357,8 @@ def test_modelcheckpoint_mode_options():
     best_minus_inf = -model_checkpoint_3.best == np.Inf
     auto_is_max = model_checkpoint_4.monitor_op is np.greater
     auto_best_minus_inf = -model_checkpoint_4.best == np.Inf
+    auto_is_max = model_checkpoint_5.monitor_op is np.greater
+    auto_best_minus_inf = -model_checkpoint_5.best == np.Inf
 
     shutil.rmtree("tests/test_model_functioning/modelcheckpoint/")
 
@@ -478,6 +488,16 @@ def test_early_stopping_get_state():
 
 def test_ray_tune_reporter():
 
+    rt_wide = Wide(np.unique(X_wide).shape[0], 1)
+    rt_deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+        column_idx=column_idx,
+        embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+    )
+    rt_model = WideDeep(wide=rt_wide, deeptabular=rt_deeptabular)
+
     config = {
         "batch_size": tune.grid_search([8, 16]),
     }
@@ -486,7 +506,7 @@ def test_ray_tune_reporter():
         batch_size = config["batch_size"]
 
         trainer = Trainer(
-            model,
+            rt_model,
             objective="binary",
             callbacks=[RayTuneReporter],
             verbose=0,
@@ -503,7 +523,9 @@ def test_ray_tune_reporter():
     analysis = tune.run(
         tune.with_parameters(training_function),
         config=config,
-        resources_per_trial={"cpu": 1, "gpu": 0},
+        resources_per_trial={"cpu": 1, "gpu": 0}
+        if not torch.cuda.is_available()
+        else {"cpu": 0, "gpu": 1},
         verbose=0,
     )
 
