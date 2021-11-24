@@ -54,13 +54,14 @@ class TabPreprocessor(BasePreprocessor):
         Boolean indicating whether the embedding dimensions will be
         automatically defined via rule of thumb
     embedding_rule: str, default = 'fastai_new'
-        choice of embedding rule of thumb
-        'fastai_new':
-            :math:`min(600, round(1.6 \times n_{cat}^{0.56}))`
-        'fastai_old':
-            :math:`min(50, (n_{cat}//{2})+1)`
-        'google':
-            :math:`min(600, round(n_{cat}^{0.24}))`
+        choice of embedding rule of thumb are:
+
+        - 'fastai_new' -- :math:`min(600, round(1.6 \times n_{cat}^{0.56}))`
+
+        - 'fastai_old' -- :math:`min(50, (n_{cat}//{2})+1)`
+
+        - 'google' -- :math:`min(600, round(n_{cat}^{0.24}))`
+
     default_embed_dim: int, default=16
         Dimension for the embeddings used for the ``deeptabular``
         component if the embed_dim is not provided in the ``embed_cols``

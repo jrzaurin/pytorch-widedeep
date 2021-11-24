@@ -488,6 +488,16 @@ def test_early_stopping_get_state():
 
 def test_ray_tune_reporter():
 
+    rt_wide = Wide(np.unique(X_wide).shape[0], 1)
+    rt_deeptabular = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+        column_idx=column_idx,
+        embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+    )
+    rt_model = WideDeep(wide=rt_wide, deeptabular=rt_deeptabular)
+
     config = {
         "batch_size": tune.grid_search([8, 16]),
     }
@@ -496,7 +506,7 @@ def test_ray_tune_reporter():
         batch_size = config["batch_size"]
 
         trainer = Trainer(
-            model,
+            rt_model,
             objective="binary",
             callbacks=[RayTuneReporter],
             verbose=0,
@@ -513,7 +523,9 @@ def test_ray_tune_reporter():
     analysis = tune.run(
         tune.with_parameters(training_function),
         config=config,
-        resources_per_trial={"cpu": 1, "gpu": 0},
+        resources_per_trial={"cpu": 1, "gpu": 0}
+        if not torch.cuda.is_available()
+        else {"cpu": 0, "gpu": 1},
         verbose=0,
     )
 
