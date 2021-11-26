@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.tab_mlp import MLP
+from pytorch_widedeep.models.tab_mlp import MLP, get_activation_fn
 from pytorch_widedeep.models.tabnet.tab_net import TabNetPredLayer
 
 warnings.filterwarnings("default", category=UserWarning)
@@ -87,6 +87,10 @@ class WideDeep(nn.Module):
         the order of the operations in the dense layer. If ``True``:
         ``[LIN -> ACT -> BN -> DP]``. If ``False``: ``[BN -> DP -> LIN ->
         ACT]``
+    head_activation_last: bool, default=False
+        If final layer has activation function or not. Important if you are using
+        loss functions non-negative input restrictions, e.g. RMSLE, or if you know
+        your predictions are limited only to <0, inf)
     pred_dim: int, default = 1
         Size of the final wide and deep output layer containing the
         predictions. `1` for regression and binary classification or number
@@ -131,6 +135,7 @@ class WideDeep(nn.Module):
         head_batchnorm: bool = False,
         head_batchnorm_last: bool = False,
         head_linear_first: bool = False,
+        head_activation_last: bool = False,
         pred_dim: int = 1,
     ):
         super(WideDeep, self).__init__()
@@ -154,6 +159,8 @@ class WideDeep(nn.Module):
         self.deeptext = deeptext
         self.deepimage = deepimage
         self.deephead = deephead
+        # to check when loss function is applied
+        self.head_activation_last = head_activation_last
 
         if self.deeptabular is not None:
             self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
@@ -206,12 +213,15 @@ class WideDeep(nn.Module):
             head_batchnorm_last,
             head_linear_first,
         )
-
         self.deephead.add_module(
             "head_out", nn.Linear(head_hidden_dims[-1], self.pred_dim)
         )
+        if self.head_activation_last:
+            self.deephead.add_module(
+                "head_act", get_activation_fn(head_activation)
+            )
 
-    def _add_pred_layer(self):
+    def _add_pred_layer(self, head_activation):
         if self.deeptabular is not None:
             if self.is_tabnet:
                 self.deeptabular = nn.Sequential(
@@ -230,6 +240,10 @@ class WideDeep(nn.Module):
         if self.deepimage is not None:
             self.deepimage = nn.Sequential(
                 self.deepimage, nn.Linear(self.deepimage.output_dim, self.pred_dim)
+            )
+        if self.head_activation_last:
+            self.deephead.add_module(
+                "head_act", get_activation_fn(head_activation)
             )
 
     def _forward_wide(self, X):

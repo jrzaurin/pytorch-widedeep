@@ -15,13 +15,13 @@ class TweedieLoss(nn.Module):
     <https://arxiv.org/abs/1811.10192>`
     """
 
-    def __init__():
+    def __init__(self):
         super().__init__()
 
     def forward(self, input: Tensor, target: Tensor, p=1.5) -> Tensor:
 
-        loss = - y * torch.pow(y_hat, 1 - p) / (1 - p) + \
-               torch.pow(y_hat, 2 - p) / (2 - p)
+        loss = - target * torch.pow(input, 1 - p) / (1 - p) + \
+               torch.pow(input, 2 - p) / (2 - p)
         return torch.mean(loss)
 
 
