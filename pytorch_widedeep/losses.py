@@ -9,25 +9,20 @@ use_cuda = torch.cuda.is_available()
 
 class TweedieLoss(nn.Module):
     """
-    Quantile loss, i.e. a quantile of ``q=0.5`` will give half of the mean absolute error as it is calcualted as
-
-    Defined as ``max(q * (y-y_pred), (1-q) * (y_pred-y))``
-    All credits go to `pytorch-forecasting
-    <https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss>`
+    Tweedie loss for extremely unbalanced zero-inflated data``
+    All credits go to `Wenbo Shi
+    <https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f> and
+    <https://arxiv.org/abs/1811.10192>`
     """
 
     def __init__():
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
-        # calculate quantile loss
-        losses = []
-        for i, q in enumerate(self.quantiles):
-            errors = target - input[..., i]
-            losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(-1))
-        losses = torch.cat(losses, dim=2)
+    def forward(self, input: Tensor, target: Tensor, p=1.5) -> Tensor:
 
-        return losses
+        loss = - y * torch.pow(y_hat, 1 - p) / (1 - p) + \
+               torch.pow(y_hat, 2 - p) / (2 - p)
+        return torch.mean(loss)
 
 
 class QuantileLoss(nn.Module):
@@ -53,14 +48,16 @@ class QuantileLoss(nn.Module):
         super().__init__(quantiles=quantiles, **kwargs)
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
-        # calculate quantile loss
+        assert input.shape == torch.Size([target.shape[0], 3]), (
+            f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal to number of quantiles, i.e. {len(self.quantiles)} ."
+        )
         losses = []
         for i, q in enumerate(self.quantiles):
             errors = target - input[..., i]
             losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(-1))
         losses = torch.cat(losses, dim=2)
 
-        return losses
+        return torch.mean(losses)
 
 
 class ZILNLoss(nn.Module):
