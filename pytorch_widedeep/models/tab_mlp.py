@@ -33,6 +33,8 @@ def get_activation_fn(activation):
         return GEGLU()
     if activation == "reglu":
         return REGLU()
+    if activation == "softplus":
+        return nn.Softplus()
 
 
 def dense_layer(

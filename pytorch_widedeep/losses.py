@@ -19,9 +19,15 @@ class TweedieLoss(nn.Module):
         super().__init__()
 
     def forward(self, input: Tensor, target: Tensor, p=1.5) -> Tensor:
-
-        loss = - target * torch.pow(input, 1 - p) / (1 - p) + \
-               torch.pow(input, 2 - p) / (2 - p)
+        assert (
+            input.min() > 0
+        ), """All input values must be >=0, if your model is predicting
+            values <0 try to enforce positive values by activation function
+            on last layer with `trainer.enforce_positive_output=True`"""
+        assert target.min() >= 0, "All target values must be >=0"
+        loss = -target * torch.pow(input, 1 - p) / (1 - p) + torch.pow(input, 2 - p) / (
+            2 - p
+        )
         return torch.mean(loss)
 
 
@@ -37,7 +43,6 @@ class QuantileLoss(nn.Module):
     def __init__(
         self,
         quantiles: List[float] = [0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.98],
-        **kwargs,
     ):
         """
         Quantile loss
@@ -45,12 +50,13 @@ class QuantileLoss(nn.Module):
         Args:
             quantiles: quantiles for metric
         """
-        super().__init__(quantiles=quantiles, **kwargs)
+        super().__init__()
+        self.quantiles = quantiles
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
-        assert input.shape == torch.Size([target.shape[0], 3]), (
-            f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal to number of quantiles, i.e. {len(self.quantiles)} ."
-        )
+        assert input.shape == torch.Size(
+            [target.shape[0], len(self.quantiles)]
+        ), f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal to number of quantiles, i.e. {len(self.quantiles)}."
         losses = []
         for i, q in enumerate(self.quantiles):
             errors = target - input[..., i]
@@ -88,28 +94,34 @@ class ZILNLoss(nn.Module):
         >>> target = torch.tensor([[0., 1.5]]).view(-1, 1)
         >>> input = torch.tensor([[.1, .2, .3], [.4, .5, .6]])
         >>> ZILNLoss()(input, target)
-        tensor([0.6287, 1.9941])
+        tensor(1.3114)
         """
-        positive = target>0
+        positive = target > 0
         positive = positive.float()
 
-        assert input.shape == torch.Size([target.shape[0], 3]), (
-            "Wrong shape of input, pred_dim of the model that is using ZILNLoss must be equal to 3."
-        )
+        assert input.shape == torch.Size(
+            [target.shape[0], 3]
+        ), "Wrong shape of input, pred_dim of the model that is using ZILNLoss must be equal to 3."
         positive_input = input[..., :1]
 
-        classification_loss = F.binary_cross_entropy_with_logits(positive_input, positive, reduction="none").flatten()
+        classification_loss = F.binary_cross_entropy_with_logits(
+            positive_input, positive, reduction="none"
+        ).flatten()
 
         loc = input[..., 1:2]
         scale = torch.maximum(
             F.softplus(input[..., 2:]),
-            torch.sqrt(torch.Tensor([torch.finfo(torch.float32).eps])))
-        safe_labels = positive * target + (
-            1 - positive) * torch.ones_like(target)
+            torch.sqrt(torch.Tensor([torch.finfo(torch.float32).eps])),
+        )
+        safe_labels = positive * target + (1 - positive) * torch.ones_like(target)
 
         regression_loss = -torch.mean(
-            positive * torch.distributions.log_normal.LogNormal(loc=loc, scale=scale).log_prob(safe_labels),
-            dim=-1)
+            positive
+            * torch.distributions.log_normal.LogNormal(loc=loc, scale=scale).log_prob(
+                safe_labels
+            ),
+            dim=-1,
+        )
 
         return torch.mean(classification_loss + regression_loss)
 
@@ -212,6 +224,12 @@ class MSLELoss(nn.Module):
         >>> MSLELoss()(input, target)
         tensor(0.1115)
         """
+        assert (
+            input.min() >= 0
+        ), """All input values must be >=0, if your model is predicting
+            values <0 try to enforce positive values by activation function
+            on last layer with `trainer.enforce_positive_output=True`"""
+        assert target.min() >= 0, "All target values must be >=0"
         return self.mse(torch.log(input + 1), torch.log(target + 1))
 
 
@@ -270,4 +288,10 @@ class RMSLELoss(nn.Module):
         >>> RMSLELoss()(input, target)
         tensor(0.3339)
         """
+        assert (
+            input.min() >= 0
+        ), """All input values must be >=0, if your model is predicting
+            values <0 try to enforce positive values by activation function
+            on last layer with `trainer.enforce_positive_output=True`"""
+        assert target.min() >= 0, "All target values must be >=0"
         return torch.sqrt(self.mse(torch.log(input + 1), torch.log(target + 1)))

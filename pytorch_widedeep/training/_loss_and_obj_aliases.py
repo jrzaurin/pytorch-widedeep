@@ -74,8 +74,8 @@ class _ObjectiveToMethod:
         "rmsle": "regression",
         "zero_inflated_lognormal": "regression",
         "ziln": "regression",
-        "quantile": "regression",
         "tweedie": "regression",
+        "quantile": "multiregression",
     }
 
     @classproperty

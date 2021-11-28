@@ -4,6 +4,8 @@ import numpy as np
 import torch
 import pytest
 from sklearn.metrics import mean_squared_error, mean_squared_log_error
+from scipy import stats
+from numpy.testing import assert_almost_equal
 
 from pytorch_widedeep.losses import MSLELoss, RMSELoss, ZILNLoss
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep
@@ -83,47 +85,44 @@ def test_mse_based_losses():
         )
     )
 
-    # out.append(
-    #     np.isclose(
-    #         mean_squared_log_error(y_true, y_pred),
-    #         ZILNLoss()(t_pred, t_true).item(),
-    #     )
-    # )
     assert all(out)
+
 
 ##############################################################################
 # Test ZILNloss implementation
 ##############################################################################
-def test_ziln_loss():
-    target = torch.tensor([[0., 1.5]]).view(-1, 1)
-    input = torch.tensor([[.1, .2, .3], [.4, .5, .6]])
-    
-    loss_true = torch.tensor([0.7444, 1.8784])
-    target_pred = 
-    assert ZILNLoss()(input, target) == loss_true
 
-#TBD
-# @pytest.mark.parametrize(
-#     "X_wide, X_tab, target, objective, pred_dim, probs_dim",
-#     [
-#         (X_wide, X_tab, target_regres, "ziln", 1),
-#         (X_wide, X_tab, target_regres, "ziln", 3),
-#     ],
-# )
-# def test_ziln_loss_pred(X_wide, X_tab, target, objective, pred_dim):
-#     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
-#     deeptabular = TabMlp(
-#         mlp_hidden_dims=[32, 16],
-#         mlp_dropout=[0.5, 0.5],
-#         column_idx=column_idx,
-#         embed_input=embed_input,
-#         continuous_cols=colnames[-5:],
-#     )
-#     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=pred_dim)
-#     trainer = Trainer(model, objective=objective, verbose=0)
-#     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target)
-#     preds = trainer.predict(X_wide=X_wide, X_tab=X_tab)
-#     assert 
+# adjusted test of original authors
+# https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal_test.py
+
+
+def test_ziln_loss():
+    # softplus function that calculates log(1+exp(x))
+    _softplus = lambda x: np.log(1.0 + np.exp(x))
+
+    def zero_inflated_lognormal_np(labels, logits):
+        positive_logits = logits[..., :1]
+        loss_zero = _softplus(positive_logits)
+        loc = logits[..., 1:2]
+        scale = np.maximum(
+            _softplus(logits[..., 2:]), np.sqrt(torch.finfo(torch.float32).eps)
+        )
+        log_prob_non_zero = stats.lognorm.logpdf(
+            x=labels, s=scale, loc=0, scale=np.exp(loc)
+        )
+        loss_non_zero = _softplus(-positive_logits) - log_prob_non_zero
+        return np.mean(
+            np.mean(np.where(labels == 0.0, loss_zero, loss_non_zero), axis=-1)
+        )
+
+    logits = np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]])
+    labels = np.array([[0.0], [1.5]])
+
+    expected_loss = zero_inflated_lognormal_np(labels, logits)
+    zilnloss = ZILNLoss()
+    loss = zilnloss.forward(torch.tensor(logits), torch.tensor(labels))
+    assert_almost_equal(loss.numpy(), expected_loss, decimal=6)
+    return loss.numpy(), expected_loss
 
 
 ##############################################################################
@@ -160,26 +159,55 @@ method_to_objec = {
         "rmsle",
         "zero_inflated_lognormal",
         "ziln",
-        "quantile",
         "tweedie",
+    ],
+    "multiregression": [
+        "quantile",
     ],
 }
 
 
 @pytest.mark.parametrize(
-    "X_wide, X_tab, target, method, objective, pred_dim, probs_dim",
+    "X_wide, X_tab, target, method, objective, pred_dim, probs_dim, enforce_positive",
     [
-        (X_wide, X_tab, target_regres, "regression", "regression", 1, 1),
-        (X_wide, X_tab, target_regres, "regression", "mse", 1, 1),
-        (X_wide, X_tab, target_regres, "regression", "l2", 1, 1),
-        (X_wide, X_tab, target_regres, "regression", "mean_squared_error", 1, 1),
-        (X_wide, X_tab, target_regres, "regression", "mean_absolute_error", 1, 1),
-        (X_wide, X_tab, target_regres, "regression", "mae", 1, 1),
-        (X_wide, X_tab, target_regres, "regression", "l1", 1, 1),
-        (X_wide, X_tab, target_regres, "regression", "mean_squared_log_error", 1, 1),
-        (X_wide, X_tab, target_regres, "regression", "msle", 1, 1),
-        (X_wide, X_tab, target_regres, "regression", "root_mean_squared_error", 1, 1),
-        (X_wide, X_tab, target_regres, "regression", "rmse", 1, 1),
+        (X_wide, X_tab, target_regres, "regression", "regression", 1, 1, False),
+        (X_wide, X_tab, target_regres, "regression", "mse", 1, 1, False),
+        (X_wide, X_tab, target_regres, "regression", "l2", 1, 1, False),
+        (X_wide, X_tab, target_regres, "regression", "mean_squared_error", 1, 1, False),
+        (
+            X_wide,
+            X_tab,
+            target_regres,
+            "regression",
+            "mean_absolute_error",
+            1,
+            1,
+            False,
+        ),
+        (X_wide, X_tab, target_regres, "regression", "mae", 1, 1, False),
+        (X_wide, X_tab, target_regres, "regression", "l1", 1, 1, False),
+        (
+            X_wide,
+            X_tab,
+            target_regres,
+            "regression",
+            "mean_squared_log_error",
+            1,
+            1,
+            True,
+        ),
+        (X_wide, X_tab, target_regres, "regression", "msle", 1, 1, True),
+        (
+            X_wide,
+            X_tab,
+            target_regres,
+            "regression",
+            "root_mean_squared_error",
+            1,
+            1,
+            False,
+        ),
+        (X_wide, X_tab, target_regres, "regression", "rmse", 1, 1, False),
         (
             X_wide,
             X_tab,
@@ -188,26 +216,61 @@ method_to_objec = {
             "root_mean_squared_log_error",
             1,
             1,
+            True,
         ),
-        (X_wide, X_tab, target_regres, "regression", "rmsle", 1, 1),
-        (X_wide, X_tab, target_regres, "regression", "zero_inflated_lognormal", 1, 1)
-        (X_wide, X_tab, target_regres, "regression", "ziln", 1, 1)
-        (X_wide, X_tab, target_regres, "regression", "quantile", 1, 1)
-        (X_wide, X_tab, target_regres, "regression", "tweedie", 1, 1)
-        (X_wide, X_tab, target_binary, "binary", "binary", 1, 2),
-        (X_wide, X_tab, target_binary, "binary", "logistic", 1, 2),
-        (X_wide, X_tab, target_binary, "binary", "binary_logloss", 1, 2),
-        (X_wide, X_tab, target_binary, "binary", "binary_cross_entropy", 1, 2),
-        (X_wide, X_tab, target_binary, "binary", "binary_focal_loss", 1, 2),
-        (X_wide, X_tab, target_multic, "multiclass", "multiclass", 3, 3),
-        (X_wide, X_tab, target_multic, "multiclass", "multi_logloss", 3, 3),
-        (X_wide, X_tab, target_multic, "multiclass", "cross_entropy", 3, 3),
-        (X_wide, X_tab, target_multic, "multiclass", "categorical_cross_entropy", 3, 3),
-        (X_wide, X_tab, target_multic, "multiclass", "multiclass_focal_loss", 3, 3),
+        (X_wide, X_tab, target_regres, "regression", "rmsle", 1, 1, True),
+        (
+            X_wide,
+            X_tab,
+            target_regres,
+            "regression",
+            "zero_inflated_lognormal",
+            3,
+            1,
+            False,
+        ),
+        (X_wide, X_tab, target_regres, "regression", "ziln", 3, 1, False),
+        (X_wide, X_tab, target_regres, "multiregression", "quantile", 7, 7, False),
+        (X_wide, X_tab, target_regres, "regression", "tweedie", 1, 1, True),
+        (X_wide, X_tab, target_binary, "binary", "binary", 1, 2, False),
+        (X_wide, X_tab, target_binary, "binary", "logistic", 1, 2, False),
+        (X_wide, X_tab, target_binary, "binary", "binary_logloss", 1, 2, False),
+        (X_wide, X_tab, target_binary, "binary", "binary_cross_entropy", 1, 2, False),
+        (X_wide, X_tab, target_binary, "binary", "binary_focal_loss", 1, 2, False),
+        (X_wide, X_tab, target_multic, "multiclass", "multiclass", 3, 3, False),
+        (X_wide, X_tab, target_multic, "multiclass", "multi_logloss", 3, 3, False),
+        (X_wide, X_tab, target_multic, "multiclass", "cross_entropy", 3, 3, False),
+        (
+            X_wide,
+            X_tab,
+            target_multic,
+            "multiclass",
+            "categorical_cross_entropy",
+            3,
+            3,
+            False,
+        ),
+        (
+            X_wide,
+            X_tab,
+            target_multic,
+            "multiclass",
+            "multiclass_focal_loss",
+            3,
+            3,
+            False,
+        ),
     ],
 )
 def test_all_possible_objectives(
-    X_wide, X_tab, target, method, objective, pred_dim, probs_dim
+    X_wide,
+    X_tab,
+    target,
+    method,
+    objective,
+    pred_dim,
+    probs_dim,
+    enforce_positive,
 ):
     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
     deeptabular = TabMlp(
@@ -217,13 +280,21 @@ def test_all_possible_objectives(
         embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
-    model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=pred_dim)
+    model = WideDeep(
+        wide=wide,
+        deeptabular=deeptabular,
+        pred_dim=pred_dim,
+        enforce_positive=enforce_positive,
+    )
     trainer = Trainer(model, objective=objective, verbose=0)
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target)
     out = []
     if method == "regression":
         preds = trainer.predict(X_wide=X_wide, X_tab=X_tab)
         out.append(preds.ndim == probs_dim)
+    elif method == "multiregression":
+        preds = trainer.predict(X_wide=X_wide, X_tab=X_tab)
+        out.append(preds.shape[1] == probs_dim)
     else:
         preds = trainer.predict_proba(X_wide=X_wide, X_tab=X_tab)
         out.append(preds.shape[1] == probs_dim)
@@ -252,6 +323,6 @@ def test_inverse_maps():
     out.append(
         "zero_inflated_lognormal" in _ObjectiveToMethod.method_to_objecive["regression"]
     )
-    out.append("quantile" in _ObjectiveToMethod.method_to_objecive["regression"])
+    out.append("quantile" in _ObjectiveToMethod.method_to_objecive["multiregression"])
     out.append("tweedie" in _ObjectiveToMethod.method_to_objecive["regression"])
     assert all(out)

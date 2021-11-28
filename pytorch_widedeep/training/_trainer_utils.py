@@ -4,7 +4,14 @@ from torch import nn
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.losses import (
-    MSLELoss, RMSELoss, FocalLoss, RMSLELoss, ZILNLoss, QuantileLoss, TweedieLoss)
+    MSLELoss,
+    RMSELoss,
+    FocalLoss,
+    RMSLELoss,
+    ZILNLoss,
+    QuantileLoss,
+    TweedieLoss,
+)
 from pytorch_widedeep.wdtypes import Dict, List, Optional, Transforms
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._loss_and_obj_aliases import (
