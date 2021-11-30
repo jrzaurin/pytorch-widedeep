@@ -97,7 +97,7 @@ class Trainer:
         folder in the repo.
 
         .. note:: If ``custom_loss_function`` is not None, ``objective`` must be
-            'binary', 'multiclass', 'multiregression' or 'regression', consistent with the loss
+            'binary', 'multiclass', 'multilabel' or 'regression', consistent with the loss
             function
 
     optimizers: ``Optimzer`` or dict, optional, default= None
@@ -265,11 +265,11 @@ class Trainer:
             "binary",
             "multiclass",
             "regression",
-            "multiregression",
+            "multilabel",
         ]:
             raise ValueError(
                 "If 'custom_loss_function' is not None, 'objective' must be 'binary' "
-                "'multiclass', 'regression' or 'multiregression', consistent with the loss function"
+                "'multiclass', 'regression' or 'multilabel', consistent with the loss function"
             )
 
         self.reducelronplateau = False
@@ -705,7 +705,7 @@ class Trainer:
         if self.method == "binary":
             preds = np.vstack(preds_l).squeeze(1)
             return (preds > 0.5).astype("int")
-        if self.method == "multiregression":
+        if self.method == "multilabel":
             return np.vstack(preds_l)
         if self.method == "multiclass":
             preds = np.vstack(preds_l)
@@ -802,9 +802,9 @@ class Trainer:
                     preds.std(axis=0),
                 )
             ).T
-        if self.method == "multiregression":
+        if self.method == "multilabel":
             raise ValueError(
-                "Currently predict_uncertainty is not supported for multiregression method"
+                "Currently predict_uncertainty is not supported for multilabel method"
             )
         if self.method == "binary":
             preds = preds.squeeze(1)
@@ -1154,7 +1154,11 @@ class Trainer:
     def _train_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
         self.model.train()
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
-        y = target.view(-1, 1).float() if self.method != "multiclass" else target
+        y = (
+            target.view(-1, 1).float()
+            if self.method not in ["multiclass", "multilabel"]
+            else target
+        )
         y = y.to(device)
 
         self.optimizer.zero_grad()
@@ -1179,7 +1183,11 @@ class Trainer:
         self.model.eval()
         with torch.no_grad():
             X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
-            y = target.view(-1, 1).float() if self.method != "multiclass" else target
+            y = (
+                target.view(-1, 1).float()
+                if self.method not in ["multiclass", "multilabel"]
+                else target
+            )
             y = y.to(device)
 
             y_pred = self.model(X)
@@ -1201,7 +1209,7 @@ class Trainer:
                 score = self.metric(y_pred, y)
             if self.method == "binary":
                 score = self.metric(torch.sigmoid(y_pred), y)
-            if self.method == "multiregression":
+            if self.method == "multilabel":
                 score = self.metric(y_pred, y)
             if self.method == "multiclass":
                 score = self.metric(F.softmax(y_pred, dim=1), y)
@@ -1318,7 +1326,7 @@ class Trainer:
         if custom_loss_function is not None:
             return custom_loss_function
         elif (
-            self.method not in ["regression", "multiregression"]
+            self.method not in ["regression", "multilabel"]
             and "focal_loss" not in objective
         ):
             return alias_to_loss(objective, weight=class_weight)

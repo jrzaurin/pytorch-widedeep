@@ -161,7 +161,7 @@ method_to_objec = {
         "ziln",
         "tweedie",
     ],
-    "multiregression": [
+    "multilabel": [
         "quantile",
     ],
 }
@@ -230,7 +230,7 @@ method_to_objec = {
             False,
         ),
         (X_wide, X_tab, target_regres, "regression", "ziln", 3, 1, False),
-        (X_wide, X_tab, target_regres, "multiregression", "quantile", 7, 7, False),
+        (X_wide, X_tab, target_regres, "multilabel", "quantile", 7, 7, False),
         (X_wide, X_tab, target_regres, "regression", "tweedie", 1, 1, True),
         (X_wide, X_tab, target_binary, "binary", "binary", 1, 2, False),
         (X_wide, X_tab, target_binary, "binary", "logistic", 1, 2, False),
@@ -292,7 +292,7 @@ def test_all_possible_objectives(
     if method == "regression":
         preds = trainer.predict(X_wide=X_wide, X_tab=X_tab)
         out.append(preds.ndim == probs_dim)
-    elif method == "multiregression":
+    elif method == "multilabel":
         preds = trainer.predict(X_wide=X_wide, X_tab=X_tab)
         out.append(preds.shape[1] == probs_dim)
     else:
@@ -323,6 +323,6 @@ def test_inverse_maps():
     out.append(
         "zero_inflated_lognormal" in _ObjectiveToMethod.method_to_objecive["regression"]
     )
-    out.append("quantile" in _ObjectiveToMethod.method_to_objecive["multiregression"])
+    out.append("quantile" in _ObjectiveToMethod.method_to_objecive["multilabel"])
     out.append("tweedie" in _ObjectiveToMethod.method_to_objecive["regression"])
     assert all(out)

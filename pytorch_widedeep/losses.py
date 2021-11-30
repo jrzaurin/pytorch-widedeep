@@ -57,6 +57,7 @@ class QuantileLoss(nn.Module):
         assert input.shape == torch.Size(
             [target.shape[0], len(self.quantiles)]
         ), f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal to number of quantiles, i.e. {len(self.quantiles)}."
+        target = target.view(-1, 1).float()
         losses = []
         for i, q in enumerate(self.quantiles):
             errors = target - input[..., i]
@@ -80,7 +81,7 @@ class ZILNLoss(nn.Module):
         Parameters
         ----------
         input: Tensor
-            input tensor with predictions (not probabilities)
+            input tensor with predictions (not probabilities) with spape (N,3), where N is the batch size
         target: Tensor
             target tensor with the actual classes
 
