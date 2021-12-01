@@ -41,11 +41,8 @@ from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
 from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
-<<<<<<< HEAD
-=======
 from pytorch_widedeep.losses import ZILNLoss
 from inspect import signature
->>>>>>> loss weights fixed
 
 
 class Trainer:
@@ -479,7 +476,7 @@ class Trainer:
                 self.callback_container.on_eval_begin()
                 self.valid_running_loss = 0.0
                 with trange(eval_steps, disable=self.verbose != 1) as v:
-                    for i, (data, targett) in zip(v, eval_loader):
+                    for i, (data, targett, weight) in zip(v, eval_loader):
                         v.set_description("valid")
                         val_score, val_loss = self._eval_step(data, targett, i)
                         print_loss_and_metric(v, val_loss, val_score)
@@ -1054,16 +1051,9 @@ class Trainer:
             loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
             score = self._get_score(y_pred[0], y)
         else:
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
             loss = self.loss_fn(y_pred, y, weight=weight)
-=======
->>>>>>> loss weights fixed
             if weight != None:
                 loss = self.loss_fn(y_pred, y, ldsweight=weight)
-=======
             if weight is not None:
                 if "weight" in signature(self.loss_fn.forward).parameters:
                     loss = self.loss_fn(y_pred, y, weight=weight)
@@ -1074,9 +1064,11 @@ class Trainer:
                         UserWarning,
                     )
                     loss = self.loss_fn(y_pred, y)
->>>>>>> loss weights fixed
+
             else:
                 loss = self.loss_fn(y_pred, y)
+
+            loss = self.loss_fn(y_pred, y, ldsweight=weight)
             score = self._get_score(y_pred, y)
         # TODO raise exception if the loss is exploding with non scaled target values
         loss.backward()

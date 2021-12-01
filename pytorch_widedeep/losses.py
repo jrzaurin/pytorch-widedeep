@@ -66,9 +66,12 @@ class QuantileLoss(nn.Module):
             losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(-1))
         loss = torch.cat(losses, dim=2)
 
+        return torch.mean(loss)
+
         if weight is not None:
             losses *= weight.expand_as(losses)
         return torch.mean(losses)
+
 
 
 class ZILNLoss(nn.Module):
