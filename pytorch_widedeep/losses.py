@@ -55,26 +55,17 @@ class QuantileLoss(nn.Module):
         super().__init__()
         self.quantiles = quantiles
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
         assert input.shape == torch.Size([target.shape[0], len(self.quantiles)]), (
             f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal "
             f"to number of quantiles, i.e. {len(self.quantiles)}."
         )
-=======
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
-=======
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
->>>>>>> LDS tested - working
-=======
+
     def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
->>>>>>> loss weights fixed
         assert input.shape == torch.Size(
             [target.shape[0], len(self.quantiles)]
         ), f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal to number of quantiles, i.e. {len(self.quantiles)}."
->>>>>>> lds added - not tested
+
         target = target.view(-1, 1).float()
         losses = []
         for i, q in enumerate(self.quantiles):
@@ -82,18 +73,12 @@ class QuantileLoss(nn.Module):
             losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(-1))
         loss = torch.cat(losses, dim=2)
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         return torch.mean(loss)
-=======
-        if ldsweight is not None:
-            losses *= ldsweight.expand_as(losses)
-=======
+
         if weight is not None:
             losses *= weight.expand_as(losses)
->>>>>>> loss weights fixed
         return torch.mean(losses)
->>>>>>> lds added - not tested
+
 
 
 class ZILNLoss(nn.Module):
