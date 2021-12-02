@@ -18,7 +18,7 @@ class TweedieLoss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor], p=1.5) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None, p=1.5) -> Tensor:
         assert (
             input.min() > 0
         ), """All input values must be >=0, if your model is predicting
@@ -54,7 +54,7 @@ class QuantileLoss(nn.Module):
         super().__init__()
         self.quantiles = quantiles
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
         assert input.shape == torch.Size(
             [target.shape[0], len(self.quantiles)]
         ), f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal to number of quantiles, i.e. {len(self.quantiles)}."
@@ -79,7 +79,7 @@ class ZILNLoss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
         r"""
         Parameters
         ----------
@@ -215,7 +215,7 @@ class MSLELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
         r"""
         Parameters
         ----------
@@ -250,7 +250,7 @@ class RMSELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
         r"""
         Parameters
         ----------
@@ -279,7 +279,7 @@ class RMSLELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
         r"""
         Parameters
         ----------
