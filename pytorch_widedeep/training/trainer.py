@@ -476,7 +476,7 @@ class Trainer:
                 self.callback_container.on_eval_begin()
                 self.valid_running_loss = 0.0
                 with trange(eval_steps, disable=self.verbose != 1) as v:
-                    for i, (data, targett, weight) in zip(v, eval_loader):
+                    for i, (data, targett) in zip(v, eval_loader):
                         v.set_description("valid")
                         val_score, val_loss = self._eval_step(data, targett, i)
                         print_loss_and_metric(v, val_loss, val_score)
