@@ -16,9 +16,9 @@ import torch
 import torch.nn as nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models._get_activation_fn import get_activation_fn
-from pytorch_widedeep.models.tabular.mlp._layers import MLP
-from pytorch_widedeep.models.tabular.tabnet.tab_net import TabNetPredLayer
+from pytorch_widedeep.models.tab_mlp import MLP, get_activation_fn
+from pytorch_widedeep.models.tabnet.tab_net import TabNetPredLayer
+from pytorch_widedeep.models import fds
 
 warnings.filterwarnings("default", category=UserWarning)
 
@@ -85,6 +85,9 @@ class WideDeep(nn.Module):
     enforce_positive_activation: str, default = "softplus"
         Activation function to enforce positive output from final layer. Use
         "softplus" or "relu".
+    fds: bool, default = False
+        If the feature distribution smoothing layer should be applied before the
+        final prediction layer. Only available for objective='regressor'.
     pred_dim: int, default = 1
         Size of the final wide and deep output layer containing the
         predictions. `1` for regression and binary classification or number
@@ -129,6 +132,7 @@ class WideDeep(nn.Module):
         enforce_positive: bool = False,
         enforce_positive_activation: str = "softplus",
         pred_dim: int = 1,
+        fds: bool = False,
     ):
         super(WideDeep, self).__init__()
 
@@ -152,6 +156,10 @@ class WideDeep(nn.Module):
         self.deepimage = deepimage
         self.deephead = deephead
         self.enforce_positive = enforce_positive
+
+        if fds:
+            config = dict(feature_dim=self.deeptabular.output_dim, start_update=0, start_smooth=1, kernel='gaussian', ks=5, sigma=2)
+            self.FDS = fds.FDS(**config)
 
         if self.deeptabular is not None:
             self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
