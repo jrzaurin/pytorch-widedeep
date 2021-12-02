@@ -174,6 +174,10 @@ class WideDeep(nn.Module):
         self.enforce_positive = enforce_positive
         self.fds = fds
 
+        if fds:
+            config = dict(feature_dim=self.deeptabular.output_dim, start_update=0, start_smooth=1, kernel='gaussian', ks=5, sigma=2)
+            self.FDS = fds.FDS(**config)
+
         if self.deeptabular is not None:
             self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
         else:
