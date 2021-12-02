@@ -66,18 +66,25 @@ class WideDeepDataset(Dataset):
         self.X_text = X_text
         self.X_img = X_img
         self.transforms = transforms
+        self.reweight = reweight
         if self.transforms:
             self.transforms_names = [
                 tr.__class__.__name__ for tr in self.transforms.transforms
             ]
         else:
             self.transforms_names = []
-        self.weights = self._prepare_weights(reweight=reweight, lds=lds, lds_kernel=lds_kernel, lds_ks=lds_ks, lds_sigma=lds_sigma)
         self.Y = target
-        if Ymax is None:
-            self.Ymax = max(target)
-        else:
-            self.Ymax = Ymax
+        if self.Y is not None:
+            if Ymax is None:
+                self.Ymax = int(max(target))
+            else:
+                assert type(Ymax) == int, "Ymax values must be integer"
+                self.Ymax = Ymax
+        assert reweight in {None, "inverse", "sqrt_inv"}
+        assert reweight != None if lds else True, \
+            "Set reweight to \'sqrt_inv\' (default) or \'inverse\' when using LDS"
+        if self.reweight != None:
+            self.weights = self._prepare_weights(reweight=reweight, lds=lds, lds_kernel=lds_kernel, lds_ks=lds_ks, lds_sigma=lds_sigma)
 
     def __getitem__(self, idx: int):  # noqa: C901
         X = Bunch()
@@ -116,45 +123,42 @@ class WideDeepDataset(Dataset):
             # fill the Bunch
             X.deepimage = xdi
         if self.Y is not None:
-            weight = np.asarray([self.weights[idx]]).astype("float32") if self.weights is not None else self.weights
             y = self.Y[idx]
-            return X, y, weight
+            if self.reweight != None:
+                weight = np.asarray([self.weights[idx]]).astype("float32")
+                return X, y, weight
+            else:
+                return X, y
         else:
             return X
 
     def _prepare_weights(self, reweight, lds=False, lds_kernel='gaussian', lds_ks=5, lds_sigma=2):
-        assert reweight in {None, "inverse", "sqrt_inv"}
-        assert reweight != None if lds else True, \
-            "Set reweight to \'sqrt_inv\' (default) or \'inverse\' when using LDS"
-        if reweight is None:
+        max_target = self.Ymax
+        value_dict = {x: 0 for x in range(max_target)}
+        labels = self.Y
+        # mbr
+        for label in labels:
+            value_dict[min(max_target - 1, int(label))] += 1
+        if reweight == "sqrt_inv":
+            value_dict = {k: np.sqrt(v) for k, v in value_dict.items()}
+        elif reweight == "inverse":
+            value_dict = {k: np.clip(v, 5, 1000) for k, v in value_dict.items()}  # clip weights for inverse re-weight
+        num_per_label = [value_dict[min(max_target - 1, int(label))] for label in labels]
+        if not len(num_per_label) or reweight == "none":
             return None
-        else:
-            max_target = self.Ymax
-            value_dict = {x: 0 for x in range(max_target)}
-            labels = self.Y
-            # mbr
-            for label in labels:
-                value_dict[min(max_target - 1, int(label))] += 1
-            if reweight == "sqrt_inv":
-                value_dict = {k: np.sqrt(v) for k, v in value_dict.items()}
-            elif reweight == "inverse":
-                value_dict = {k: np.clip(v, 5, 1000) for k, v in value_dict.items()}  # clip weights for inverse re-weight
-            num_per_label = [value_dict[min(max_target - 1, int(label))] for label in labels]
-            if not len(num_per_label) or reweight == "none":
-                return None
-            print(f"Using re-weighting: [{reweight.upper()}]")
+        print(f"Using re-weighting: [{reweight.upper()}]")
 
-            if lds:
-                lds_kernel_window = get_lds_kernel_window(lds_kernel, lds_ks, lds_sigma)
-                print(f"Using LDS: [{lds_kernel.upper()}] ({lds_ks}/{lds_sigma})")
-                smoothed_value = convolve1d(
-                    np.asarray([v for _, v in value_dict.items()]), weights=lds_kernel_window, mode="constant")
-                num_per_label = [smoothed_value[min(max_target - 1, int(label))] for label in labels]
+        if lds:
+            lds_kernel_window = get_lds_kernel_window(lds_kernel, lds_ks, lds_sigma)
+            print(f"Using LDS: [{lds_kernel.upper()}] ({lds_ks}/{lds_sigma})")
+            smoothed_value = convolve1d(
+                np.asarray([v for _, v in value_dict.items()]), weights=lds_kernel_window, mode="constant")
+            num_per_label = [smoothed_value[min(max_target - 1, int(label))] for label in labels]
 
-            weights = [np.float32(1 / x) for x in num_per_label]
-            scaling = len(weights) / np.sum(weights)
-            weights = [scaling * x for x in weights]
-            return weights
+        weights = [np.float32(1 / x) for x in num_per_label]
+        scaling = len(weights) / np.sum(weights)
+        weights = [scaling * x for x in weights]
+        return weights
 
     def __len__(self):
         if self.X_wide is not None:
