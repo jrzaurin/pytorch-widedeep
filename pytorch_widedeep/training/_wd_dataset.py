@@ -73,7 +73,6 @@ class WideDeepDataset(Dataset):
             ]
         else:
             self.transforms_names = []
-        self.weights = self._prepare_weights(reweight=reweight, lds=lds, lds_kernel=lds_kernel, lds_ks=lds_ks, lds_sigma=lds_sigma)
         self.Y = target
         if self.Y is not None:
             if Ymax is None:
@@ -124,7 +123,6 @@ class WideDeepDataset(Dataset):
             # fill the Bunch
             X.deepimage = xdi
         if self.Y is not None:
-            weight = np.asarray([self.weights[idx]]).astype("float32") if self.weights is not None else self.weights
             y = self.Y[idx]
             if self.reweight != None:
                 weight = np.asarray([self.weights[idx]]).astype("float32")
