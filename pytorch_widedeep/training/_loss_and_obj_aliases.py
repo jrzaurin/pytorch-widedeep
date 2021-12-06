@@ -76,6 +76,9 @@ class _ObjectiveToMethod:
         "ziln": "regression",
         "tweedie": "regression",
         "quantile": "qregression",
+        "focalmse": "regression",
+        "focall1": "regression",
+        "huber": "regression",
     }
 
     @classproperty

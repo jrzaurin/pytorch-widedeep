@@ -18,7 +18,7 @@ import torch.nn as nn
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tab_mlp import MLP, get_activation_fn
 from pytorch_widedeep.models.tabnet.tab_net import TabNetPredLayer
-from pytorch_widedeep.models import fds
+from pytorch_widedeep.models import fds_layer
 
 warnings.filterwarnings("default", category=UserWarning)
 
@@ -88,6 +88,8 @@ class WideDeep(nn.Module):
     fds: bool, default = False
         If the feature distribution smoothing layer should be applied before the
         final prediction layer. Only available for objective='regressor'.
+    fds_config: dict, default = None
+        dictionary defining specific values for FeatureDistributionSmoothing layer
     pred_dim: int, default = 1
         Size of the final wide and deep output layer containing the
         predictions. `1` for regression and binary classification or number
@@ -133,6 +135,7 @@ class WideDeep(nn.Module):
         enforce_positive_activation: str = "softplus",
         pred_dim: int = 1,
         fds: bool = False,
+        fds_config: Optional[dict] = None,
     ):
         super(WideDeep, self).__init__()
 
@@ -156,42 +159,59 @@ class WideDeep(nn.Module):
         self.deepimage = deepimage
         self.deephead = deephead
         self.enforce_positive = enforce_positive
-
-        if fds:
-            config = dict(feature_dim=self.deeptabular.output_dim, start_update=0, start_smooth=1, kernel='gaussian', ks=5, sigma=2)
-            self.FDS = fds.FDS(**config)
+        self.fds = fds
 
         if self.deeptabular is not None:
             self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
         else:
             self.is_tabnet = False
 
-        if self.deephead is None:
-            if head_hidden_dims is not None:
-                self._build_deephead(
-                    head_hidden_dims,
-                    head_activation,
-                    head_dropout,
-                    head_batchnorm,
-                    head_batchnorm_last,
-                    head_linear_first,
+        if self.deephead is None and head_hidden_dims is not None:
+            self._build_deephead(
+                head_hidden_dims,
+                head_activation,
+                head_dropout,
+                head_batchnorm,
+                head_batchnorm_last,
+                head_linear_first,
+            )
+        elif self.deephead is not None:
+            pass
+        elif self.fds and self.deeptabular:
+            if not self.pred_dim == 1:
+                raise ValueError(
+                    """Feature Distribution Smoothing is supported only for regressor without
+                    deephead component with single ouptut neuron"""
                 )
+            if fds_config:
+                self.FDS = fds_layer.FDS(**fds_config)
             else:
-                self._add_pred_layer()
+                self.FDS = fds_layer.FDS(feature_dim=self.deeptabular.output_dim)
+            self.FDS_dropout = nn.Dropout(p=self.deeptabular.mlp_dropout)
+            self.pred_layer = nn.Linear(self.deeptabular.output_dim, self.pred_dim)
+        else:
+            self._add_pred_layer()
 
         if self.enforce_positive:
             self.enf_pos = get_activation_fn(enforce_positive_activation)
 
-    def forward(self, X: Dict[str, Tensor]):
-        wide_out = self._forward_wide(X)
+    def forward(self, X: Dict[str, Tensor], y: Optional[Tensor]=None, epoch: Optional[int]=None):
+        y_pred = self._forward_wide(X)
         if self.deephead:
-            deep = self._forward_deephead(X, wide_out)
+            y_pred = self._forward_deephead(X, y_pred)
+        elif self.training and self.fds:
+            y_pred, deep_features = self._forward_deep(X, out, y, epoch)
+            if self.enforce_positive:
+                return self.enf_pos(y_pred), deep_features
+            else:
+                return y_pred, deep_features
         else:
-            deep = self._forward_deep(X, wide_out)
+            y_pred = self._forward_deep(X, y_pred)
+    
         if self.enforce_positive:
-            return self.enf_pos(deep)
+            return self.enf_pos(y_pred)
         else:
-            return deep
+            return y_pred
 
     def _build_deephead(
         self,
@@ -219,6 +239,7 @@ class WideDeep(nn.Module):
             head_batchnorm_last,
             head_linear_first,
         )
+
         self.deephead.add_module(
             "head_out", nn.Linear(head_hidden_dims[-1], self.pred_dim)
         )
@@ -277,18 +298,24 @@ class WideDeep(nn.Module):
 
         return res
 
-    def _forward_deep(self, X, wide_out):
+    def _forward_deep(self, X, wide_out, y, epoch):
         if self.deeptabular is not None:
             if self.is_tabnet:
                 tab_out, M_loss = self.deeptabular(X["deeptabular"])
                 wide_out.add_(tab_out)
             else:
-                wide_out.add_(self.deeptabular(X["deeptabular"]))
+                deeptab_features = self.deeptabular(X["deeptabular"])
+                deeptab_s = deeptab_features
+                if self.training and self.fds:
+                    deeptab_s = self.FDS.smooth(deeptab_s, y, epoch)
+                    deeptab_s = self.FDS_dropout(deeptab_s)
+                wide_out.add_(self.pred_layer(deeptab_s))
+                if self.training and self.fds:
+                    return wide_out, deeptab_features
         if self.deeptext is not None:
             wide_out.add_(self.deeptext(X["deeptext"]))
         if self.deepimage is not None:
             wide_out.add_(self.deepimage(X["deepimage"]))
-
         if self.is_tabnet:
             res = (wide_out, M_loss)
         else:
