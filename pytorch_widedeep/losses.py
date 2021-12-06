@@ -54,17 +54,18 @@ class QuantileLoss(nn.Module):
         self.quantiles = quantiles
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
-        assert input.shape == torch.Size(
-            [target.shape[0], len(self.quantiles)]
-        ), f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal to number of quantiles, i.e. {len(self.quantiles)}."
+        assert input.shape == torch.Size([target.shape[0], len(self.quantiles)]), (
+            f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal "
+            f"to number of quantiles, i.e. {len(self.quantiles)}."
+        )
         target = target.view(-1, 1).float()
         losses = []
         for i, q in enumerate(self.quantiles):
             errors = target - input[..., i]
             losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(-1))
-        losses = torch.cat(losses, dim=2)
+        loss = torch.cat(losses, dim=2)
 
-        return torch.mean(losses)
+        return torch.mean(loss)
 
 
 class ZILNLoss(nn.Module):
@@ -110,10 +111,14 @@ class ZILNLoss(nn.Module):
         ).flatten()
 
         loc = input[..., 1:2]
-        scale = torch.maximum(
-            F.softplus(input[..., 2:]),
-            torch.sqrt(torch.Tensor([torch.finfo(torch.float32).eps])),
+
+        # when using max the two input tensors (input and other) have to be of
+        # the same type
+        max_input = F.softplus(input[..., 2:])
+        max_other = torch.sqrt(torch.Tensor([torch.finfo(torch.double).eps])).type(
+            max_input.type()
         )
+        scale = torch.max(max_input, max_other)
         safe_labels = positive * target + (1 - positive) * torch.ones_like(target)
 
         regression_loss = -torch.mean(

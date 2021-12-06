@@ -301,7 +301,7 @@ class WideDeep(nn.Module):
         return res
 
     @staticmethod  # noqa: C901
-    def _check_model_components(
+    def _check_model_components(  # noqa: C901
         wide,
         deeptabular,
         deeptext,

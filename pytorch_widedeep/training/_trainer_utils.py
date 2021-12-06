@@ -6,11 +6,11 @@ from sklearn.model_selection import train_test_split
 from pytorch_widedeep.losses import (
     MSLELoss,
     RMSELoss,
+    ZILNLoss,
     FocalLoss,
     RMSLELoss,
-    ZILNLoss,
-    QuantileLoss,
     TweedieLoss,
+    QuantileLoss,
 )
 from pytorch_widedeep.wdtypes import Dict, List, Optional, Transforms
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
@@ -184,7 +184,7 @@ def save_epoch_logs(epoch_logs: Dict, loss: float, score: Dict, stage: str):
     return epoch_logs
 
 
-def alias_to_loss(loss_fn: str, **kwargs):
+def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
     r"""
     Function that returns the corresponding loss function given an alias
 

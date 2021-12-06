@@ -75,7 +75,7 @@ class _ObjectiveToMethod:
         "zero_inflated_lognormal": "regression",
         "ziln": "regression",
         "tweedie": "regression",
-        "quantile": "multilabel",
+        "quantile": "qregression",
     }
 
     @classproperty

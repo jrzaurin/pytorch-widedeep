@@ -13,6 +13,7 @@ Untitled*.ipynb
 
 # data related dirs
 # data/
+tmp_data/
 model_weights/
 tmp_dir/
 weights/

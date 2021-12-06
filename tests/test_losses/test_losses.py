@@ -3,9 +3,9 @@ import string
 import numpy as np
 import torch
 import pytest
-from sklearn.metrics import mean_squared_error, mean_squared_log_error
 from scipy import stats
 from numpy.testing import assert_almost_equal
+from sklearn.metrics import mean_squared_error, mean_squared_log_error
 
 from pytorch_widedeep.losses import MSLELoss, RMSELoss, ZILNLoss
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep
@@ -98,7 +98,10 @@ def test_mse_based_losses():
 
 def test_ziln_loss():
     # softplus function that calculates log(1+exp(x))
-    _softplus = lambda x: np.log(1.0 + np.exp(x))
+    def _softplus(x):
+        return np.log(1.0 + np.exp(x))
+
+    # _softplus = lambda x: np.log(1.0 + np.exp(x))
 
     def zero_inflated_lognormal_np(labels, logits):
         positive_logits = logits[..., :1]
@@ -161,7 +164,7 @@ method_to_objec = {
         "ziln",
         "tweedie",
     ],
-    "multilabel": [
+    "qregression": [
         "quantile",
     ],
 }
@@ -230,7 +233,7 @@ method_to_objec = {
             False,
         ),
         (X_wide, X_tab, target_regres, "regression", "ziln", 3, 1, False),
-        (X_wide, X_tab, target_regres, "multilabel", "quantile", 7, 7, False),
+        (X_wide, X_tab, target_regres, "qregression", "quantile", 7, 7, False),
         (X_wide, X_tab, target_regres, "regression", "tweedie", 1, 1, True),
         (X_wide, X_tab, target_binary, "binary", "binary", 1, 2, False),
         (X_wide, X_tab, target_binary, "binary", "logistic", 1, 2, False),
@@ -292,7 +295,7 @@ def test_all_possible_objectives(
     if method == "regression":
         preds = trainer.predict(X_wide=X_wide, X_tab=X_tab)
         out.append(preds.ndim == probs_dim)
-    elif method == "multilabel":
+    elif method == "qregression":
         preds = trainer.predict(X_wide=X_wide, X_tab=X_tab)
         out.append(preds.shape[1] == probs_dim)
     else:
@@ -323,6 +326,6 @@ def test_inverse_maps():
     out.append(
         "zero_inflated_lognormal" in _ObjectiveToMethod.method_to_objecive["regression"]
     )
-    out.append("quantile" in _ObjectiveToMethod.method_to_objecive["multilabel"])
+    out.append("quantile" in _ObjectiveToMethod.method_to_objecive["qregression"])
     out.append("tweedie" in _ObjectiveToMethod.method_to_objecive["regression"])
     assert all(out)

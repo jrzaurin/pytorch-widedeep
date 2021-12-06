@@ -498,7 +498,7 @@ class ModelCheckpoint(Callback):
                                     )
                                 )
                         if self.wb is not None:
-                            self.wb.run.summary["best"] = current
+                            self.wb.run.summary["best"] = current  # type: ignore[attr-defined]
                         self.best = current
                         self.best_epoch = epoch
                         self.best_state_dict = self.model.state_dict()

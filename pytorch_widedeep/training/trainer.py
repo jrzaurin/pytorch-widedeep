@@ -13,6 +13,7 @@ from torchmetrics import Metric as TorchMetric
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
+from pytorch_widedeep.losses import ZILNLoss
 from pytorch_widedeep.metrics import Metric, MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.callbacks import (
@@ -40,7 +41,6 @@ from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
 from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
-from pytorch_widedeep.losses import ZILNLoss
 
 n_cpus = os.cpu_count()
 
@@ -97,7 +97,7 @@ class Trainer:
         folder in the repo.
 
         .. note:: If ``custom_loss_function`` is not None, ``objective`` must be
-            'binary', 'multiclass', 'multilabel' or 'regression', consistent with the loss
+            'binary', 'multiclass' or 'regression', consistent with the loss
             function
 
     optimizers: ``Optimzer`` or dict, optional, default= None
@@ -265,11 +265,10 @@ class Trainer:
             "binary",
             "multiclass",
             "regression",
-            "multilabel",
         ]:
             raise ValueError(
                 "If 'custom_loss_function' is not None, 'objective' must be 'binary' "
-                "'multiclass', 'regression' or 'multilabel', consistent with the loss function"
+                "'multiclass' or 'regression', consistent with the loss function"
             )
 
         self.reducelronplateau = False
@@ -705,7 +704,7 @@ class Trainer:
         if self.method == "binary":
             preds = np.vstack(preds_l).squeeze(1)
             return (preds > 0.5).astype("int")
-        if self.method == "multilabel":
+        if self.method == "qregression":
             return np.vstack(preds_l)
         if self.method == "multiclass":
             preds = np.vstack(preds_l)
@@ -802,9 +801,9 @@ class Trainer:
                     preds.std(axis=0),
                 )
             ).T
-        if self.method == "multilabel":
+        if self.method == "qregression":
             raise ValueError(
-                "Currently predict_uncertainty is not supported for multilabel method"
+                "Currently predict_uncertainty is not supported for qregression method"
             )
         if self.method == "binary":
             preds = preds.squeeze(1)
@@ -1156,7 +1155,7 @@ class Trainer:
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
         y = (
             target.view(-1, 1).float()
-            if self.method not in ["multiclass", "multilabel"]
+            if self.method not in ["multiclass", "qregression"]
             else target
         )
         y = y.to(device)
@@ -1169,7 +1168,7 @@ class Trainer:
         else:
             loss = self.loss_fn(y_pred, y)
             score = self._get_score(y_pred, y)
-        # raise exception if the loss is exploding liw ith non scaled target values
+        # raise exception if the loss is exploding with non scaled target values
         loss.backward()
         self.optimizer.step()
 
@@ -1185,7 +1184,7 @@ class Trainer:
             X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
             y = (
                 target.view(-1, 1).float()
-                if self.method not in ["multiclass", "multilabel"]
+                if self.method not in ["multiclass", "qregression"]
                 else target
             )
             y = y.to(device)
@@ -1209,7 +1208,7 @@ class Trainer:
                 score = self.metric(y_pred, y)
             if self.method == "binary":
                 score = self.metric(torch.sigmoid(y_pred), y)
-            if self.method == "multilabel":
+            if self.method == "qregression":
                 score = self.metric(y_pred, y)
             if self.method == "multiclass":
                 score = self.metric(F.softmax(y_pred, dim=1), y)
@@ -1326,7 +1325,7 @@ class Trainer:
         if custom_loss_function is not None:
             return custom_loss_function
         elif (
-            self.method not in ["regression", "multilabel"]
+            self.method not in ["regression", "qregression"]
             and "focal_loss" not in objective
         ):
             return alias_to_loss(objective, weight=class_weight)
