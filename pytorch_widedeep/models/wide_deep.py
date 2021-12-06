@@ -230,7 +230,6 @@ class WideDeep(nn.Module):
                 return y_pred, deep_features
         else:
             y_pred = self._forward_deep(X, y_pred)
-
         if self.enforce_positive:
             return self.enf_pos(y_pred)
         else:

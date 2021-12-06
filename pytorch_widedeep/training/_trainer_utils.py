@@ -10,15 +10,12 @@ from pytorch_widedeep.losses import (
     FocalLoss,
     RMSLELoss,
     TweedieLoss,
-<<<<<<< HEAD
     QuantileLoss,
-=======
     L1Loss,
     FocalMSELoss,
     FocalL1Loss,
     HuberLoss,
     MSEloss,
->>>>>>> added fds code
 )
 from pytorch_widedeep.wdtypes import Dict, List, Optional, Transforms
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
