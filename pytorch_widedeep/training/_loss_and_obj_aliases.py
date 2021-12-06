@@ -75,7 +75,14 @@ class _ObjectiveToMethod:
         "zero_inflated_lognormal": "regression",
         "ziln": "regression",
         "tweedie": "regression",
+<<<<<<< HEAD
         "quantile": "qregression",
+=======
+        "focalmse": "regression",
+        "focall1": "regression",
+        "huber": "regression",
+        "quantile": "multilabel",
+>>>>>>> added fds code
     }
 
     @classproperty

@@ -10,7 +10,15 @@ from pytorch_widedeep.losses import (
     FocalLoss,
     RMSLELoss,
     TweedieLoss,
+<<<<<<< HEAD
     QuantileLoss,
+=======
+    L1Loss,
+    FocalMSELoss,
+    FocalL1Loss,
+    HuberLoss,
+    MSEloss,
+>>>>>>> added fds code
 )
 from pytorch_widedeep.wdtypes import Dict, List, Optional, Transforms
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
@@ -214,9 +222,9 @@ def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
     if loss_fn in _LossAliases.get("multiclass"):
         return nn.CrossEntropyLoss(weight=kwargs["weight"])
     if loss_fn in _LossAliases.get("regression"):
-        return nn.MSELoss()
+        return MSELoss()
     if loss_fn in _LossAliases.get("mean_absolute_error"):
-        return nn.L1Loss()
+        return L1Loss()
     if loss_fn in _LossAliases.get("mean_squared_log_error"):
         return MSLELoss()
     if loss_fn in _LossAliases.get("root_mean_squared_error"):
@@ -229,5 +237,11 @@ def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
         return QuantileLoss()
     if loss_fn in _LossAliases.get("tweedie"):
         return TweedieLoss()
+    if loss_fn in _LossAliases.get("huber"):
+        return HuberLoss()
+    if loss_fn in _LossAliases.get("focall1"):
+        return FocalL1Loss()
+    if loss_fn in _LossAliases.get("focalmse"):
+        return FocalMSELoss()
     if "focal_loss" in loss_fn:
         return FocalLoss(**kwargs)

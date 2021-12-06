@@ -291,7 +291,10 @@ class Trainer:
         self.seed = seed
         self.objective = objective
         self.method = _ObjectiveToMethod.get(objective)
-
+        if self.model.fds and self.method != "regression":
+            raise ValueError(
+                "Feature Distribution Smooting can be used only with regressor"
+            )
         # initialize early_stop. If EarlyStopping Callback is used it will
         # take care of it
         self.early_stop = False
@@ -612,9 +615,14 @@ class Trainer:
 
             self.train_running_loss = 0.0
             with trange(train_steps, disable=self.verbose != 1) as t:
-                for batch_idx, (data, targett, weight) in zip(t, train_loader):
+                for batch_idx, train_data in zip(t, train_loader):
                     t.set_description("epoch %i" % (epoch + 1))
-                    train_score, train_loss = self._train_step(data, targett, batch_idx, weight)
+                    if train_set.reweight != None:
+                        data, targett, weight = train_data
+                    else:
+                        data, targett = train_data
+                        weight = None
+                    train_score, train_loss = self._train_step(data, targett, batch_idx, weight, epoch)
                     print_loss_and_metric(t, train_loss, train_score)
                     self.callback_container.on_batch_end(batch=batch_idx)
             epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
@@ -645,6 +653,22 @@ class Trainer:
             if self.early_stop:
                 self.callback_container.on_train_end(epoch_logs)
                 break
+
+            if self.model.fds:
+                print(f"Create Epoch [{epoch}] features of all training data...")
+                encodings, labels = [], []
+                with torch.no_grad():
+                    with trange(train_steps, disable=self.verbose != 1) as t:
+                        for data, targett, weight in train_loader:
+                            y, deeptab_features = self._fds_step(data, targett, weight, epoch)
+                            encodings.extend(deeptab_features.data.squeeze().cpu().numpy())
+                            labels.extend(y.data.squeeze().cpu().numpy())
+                encodings, labels = (
+                    torch.from_numpy(np.vstack(encodings)).to(device),
+                    torch.from_numpy(np.hstack(labels)).to(device),
+                )
+                self.model.FDS.update_last_epoch_stats(epoch)
+                self.model.FDS.update_running_stats(encodings, labels, epoch)
 
         self.callback_container.on_train_end(epoch_logs)
         if self.model.is_tabnet:
@@ -1150,7 +1174,19 @@ class Trainer:
                     self.model.deepimage, "deepimage", loader, n_epochs, max_lr
                 )
 
-    def _train_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int, weight: Union[None, Tensor]):
+    def _fds_step(self, data: Dict[str, Tensor], target: Tensor, weight: Union[None, Tensor], epoch):
+        self.model.train()
+        X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
+        y = (
+            target.view(-1, 1).float()
+            if self.method not in ["multiclass", "multilabel"]
+            else target
+        )
+        y = y.to(device)
+        _, deeptab_features = self.model(X, y, epoch)
+        return y, deeptab_features
+
+    def _train_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int, weight: Union[None, Tensor], epoch):
         self.model.train()
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
         y = (
@@ -1161,12 +1197,22 @@ class Trainer:
         y = y.to(device)
 
         self.optimizer.zero_grad()
-        y_pred = self.model(X)
+        if self.model.fds:
+            y_pred, _ = self.model(X, y, epoch)
+        else:
+            y_pred = self.model(X)
         if self.model.is_tabnet:
             loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
             score = self._get_score(y_pred[0], y)
         else:
+<<<<<<< HEAD
             loss = self.loss_fn(y_pred, y, weight=weight)
+=======
+            if weight != None:
+                loss = self.loss_fn(y_pred, y, ldsweight=weight)
+            else:
+                loss = self.loss_fn(y_pred, y)
+>>>>>>> added fds code
             score = self._get_score(y_pred, y)
         # TODO raise exception if the loss is exploding with non scaled target values
         loss.backward()
@@ -1355,6 +1401,11 @@ class Trainer:
             elif isinstance(optimizers, Dict):
                 opt_names = list(optimizers.keys())
                 mod_names = [n for n, c in self.model.named_children()]
+                for layer in ["pred_layer", "FDS", "FDS_dropout"]:
+                    try:
+                        mod_names.remove(layer)
+                    except ValueError:
+                        pass
                 for mn in mod_names:
                     assert mn in opt_names, "No optimizer found for {}".format(mn)
                 optimizer = MultipleOptimizer(optimizers)
