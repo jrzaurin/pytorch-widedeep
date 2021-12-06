@@ -4,6 +4,7 @@ dist/
 __pycache__*
 *.pyc
 *.pyo
+*.key
 *.egg-info
 
 # jupyter / ipython

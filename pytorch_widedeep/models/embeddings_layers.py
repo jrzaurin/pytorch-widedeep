@@ -4,6 +4,7 @@ https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular/m
 """
 
 import math
+import warnings
 
 import numpy as np
 import torch
@@ -24,10 +25,13 @@ class FullEmbeddingDropout(nn.Module):
         self.p = p
 
     def forward(self, X: Tensor) -> Tensor:
-        mask = X.new().resize_((X.size(1), 1)).bernoulli_(1 - self.p).expand_as(X) / (
-            1 - self.p
-        )
-        return mask * X
+        if self.training:
+            mask = X.new().resize_((X.size(1), 1)).bernoulli_(
+                1 - self.dropout
+            ).expand_as(X) / (1 - self.dropout)
+            return mask * X
+        else:
+            return X
 
     def extra_repr(self) -> str:
         return f"p={self.p}"
@@ -180,13 +184,16 @@ class SameSizeCatEmbeddings(nn.Module):
         self.categorical_cols = [ei[0] for ei in embed_input]
         self.cat_idx = [self.column_idx[col] for col in self.categorical_cols]
 
-        self.bias = (
-            nn.Parameter(torch.Tensor(len(self.categorical_cols), embed_dim))
-            if use_bias
-            else None
-        )
-        if self.bias is not None:
+        if use_bias is not None:
+            self.bias = nn.Parameter(
+                torch.Tensor(len(self.categorical_cols), embed_dim)
+            )
             nn.init.kaiming_uniform_(self.bias, a=math.sqrt(5))
+            if shared_embed:
+                warnings.warn(
+                    "The current implementation of 'SharedEmbeddings' does not use bias",
+                    UserWarning,
+                )
 
         # Categorical: val + 1 because 0 is reserved for padding/unseen cateogories.
         if self.shared_embed:
@@ -222,10 +229,9 @@ class SameSizeCatEmbeddings(nn.Module):
             x = torch.cat(cat_embed, 1)
         else:
             x = self.embed(X[:, self.cat_idx].long())
+            if self.bias is not None:
+                x = x + self.bias.unsqueeze(0)
             x = self.dropout(x)
-
-        if self.bias is not None:
-            x = x + self.bias.unsqueeze(0)
 
         return x
 

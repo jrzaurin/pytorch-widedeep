@@ -6,8 +6,11 @@ from sklearn.model_selection import train_test_split
 from pytorch_widedeep.losses import (
     MSLELoss,
     RMSELoss,
+    ZILNLoss,
     FocalLoss,
     RMSLELoss,
+    TweedieLoss,
+    QuantileLoss,
     BayesianRegressionLoss,
 )
 from pytorch_widedeep.wdtypes import Dict, List, Optional, Transforms
@@ -221,6 +224,12 @@ def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
         return RMSELoss()
     if loss_fn in _LossAliases.get("root_mean_squared_log_error"):
         return RMSLELoss()
+    if loss_fn in _LossAliases.get("zero_inflated_lognormal"):
+        return ZILNLoss()
+    if loss_fn in _LossAliases.get("quantile"):
+        return QuantileLoss()
+    if loss_fn in _LossAliases.get("tweedie"):
+        return TweedieLoss()
     if "focal_loss" in loss_fn:
         return FocalLoss(**kwargs)
     if "bayesian_binary" in loss_fn:
