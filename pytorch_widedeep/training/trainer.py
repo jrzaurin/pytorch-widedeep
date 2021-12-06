@@ -1168,7 +1168,7 @@ class Trainer:
         else:
             loss = self.loss_fn(y_pred, y)
             score = self._get_score(y_pred, y)
-        # raise exception if the loss is exploding with non scaled target values
+        # TODO raise exception if the loss is exploding with non scaled target values
         loss.backward()
         self.optimizer.step()
 
