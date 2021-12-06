@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.tab_mlp import MLP
+from pytorch_widedeep.models.tab_mlp import MLP, get_activation_fn
 from pytorch_widedeep.models.tabnet.tab_net import TabNetPredLayer
 
 warnings.filterwarnings("default", category=UserWarning)
@@ -87,6 +87,13 @@ class WideDeep(nn.Module):
         the order of the operations in the dense layer. If ``True``:
         ``[LIN -> ACT -> BN -> DP]``. If ``False``: ``[BN -> DP -> LIN ->
         ACT]``
+    enforce_positive: bool, default = False
+        If final layer has activation function or not. Important if you are using
+        loss functions non-negative input restrictions, e.g. RMSLE, or if you know
+        your predictions are limited only to <0, inf)
+    enforce_positive_activation: str, default = "softplus"
+        Activation function to enforce positive output from final layer. Use
+        "softplus" or "relu".
     pred_dim: int, default = 1
         Size of the final wide and deep output layer containing the
         predictions. `1` for regression and binary classification or number
@@ -131,6 +138,8 @@ class WideDeep(nn.Module):
         head_batchnorm: bool = False,
         head_batchnorm_last: bool = False,
         head_linear_first: bool = False,
+        enforce_positive: bool = False,
+        enforce_positive_activation: str = "softplus",
         pred_dim: int = 1,
     ):
         super(WideDeep, self).__init__()
@@ -154,6 +163,7 @@ class WideDeep(nn.Module):
         self.deeptext = deeptext
         self.deepimage = deepimage
         self.deephead = deephead
+        self.enforce_positive = enforce_positive
 
         if self.deeptabular is not None:
             self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
@@ -173,12 +183,19 @@ class WideDeep(nn.Module):
             else:
                 self._add_pred_layer()
 
+        if self.enforce_positive:
+            self.enf_pos = get_activation_fn(enforce_positive_activation)
+
     def forward(self, X: Dict[str, Tensor]):
         wide_out = self._forward_wide(X)
         if self.deephead:
-            return self._forward_deephead(X, wide_out)
+            deep = self._forward_deephead(X, wide_out)
         else:
-            return self._forward_deep(X, wide_out)
+            deep = self._forward_deep(X, wide_out)
+        if self.enforce_positive:
+            return self.enf_pos(deep)
+        else:
+            return deep
 
     def _build_deephead(
         self,
@@ -206,7 +223,6 @@ class WideDeep(nn.Module):
             head_batchnorm_last,
             head_linear_first,
         )
-
         self.deephead.add_module(
             "head_out", nn.Linear(head_hidden_dims[-1], self.pred_dim)
         )
@@ -285,7 +301,7 @@ class WideDeep(nn.Module):
         return res
 
     @staticmethod  # noqa: C901
-    def _check_model_components(
+    def _check_model_components(  # noqa: C901
         wide,
         deeptabular,
         deeptext,

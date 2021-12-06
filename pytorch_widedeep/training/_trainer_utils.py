@@ -3,7 +3,15 @@ from tqdm import tqdm
 from torch import nn
 from sklearn.model_selection import train_test_split
 
-from pytorch_widedeep.losses import MSLELoss, RMSELoss, FocalLoss, RMSLELoss
+from pytorch_widedeep.losses import (
+    MSLELoss,
+    RMSELoss,
+    ZILNLoss,
+    FocalLoss,
+    RMSLELoss,
+    TweedieLoss,
+    QuantileLoss,
+)
 from pytorch_widedeep.wdtypes import Dict, List, Optional, Transforms
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._loss_and_obj_aliases import (
@@ -176,7 +184,7 @@ def save_epoch_logs(epoch_logs: Dict, loss: float, score: Dict, stage: str):
     return epoch_logs
 
 
-def alias_to_loss(loss_fn: str, **kwargs):
+def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
     r"""
     Function that returns the corresponding loss function given an alias
 
@@ -215,5 +223,11 @@ def alias_to_loss(loss_fn: str, **kwargs):
         return RMSELoss()
     if loss_fn in _LossAliases.get("root_mean_squared_log_error"):
         return RMSLELoss()
+    if loss_fn in _LossAliases.get("zero_inflated_lognormal"):
+        return ZILNLoss()
+    if loss_fn in _LossAliases.get("quantile"):
+        return QuantileLoss()
+    if loss_fn in _LossAliases.get("tweedie"):
+        return TweedieLoss()
     if "focal_loss" in loss_fn:
         return FocalLoss(**kwargs)

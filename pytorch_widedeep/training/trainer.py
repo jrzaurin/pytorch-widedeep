@@ -13,6 +13,7 @@ from torchmetrics import Metric as TorchMetric
 from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
+from pytorch_widedeep.losses import ZILNLoss
 from pytorch_widedeep.metrics import Metric, MultipleMetrics
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.callbacks import (
@@ -80,6 +81,12 @@ class Trainer:
         - ``root_mean_squared_error``, aliases:  ``rmse``
 
         - ``root_mean_squared_log_error``, aliases: ``rmsle``
+
+        - ``zero_inflated_lognormal``, aliases: ``ziln``
+
+        - ``quantile``
+
+        - ``tweedie``
     custom_loss_function: ``nn.Module``, optional, default = None
         object of class ``nn.Module``. If none of the loss functions
         available suits the user, it is possible to pass a custom loss
@@ -697,9 +704,26 @@ class Trainer:
         if self.method == "binary":
             preds = np.vstack(preds_l).squeeze(1)
             return (preds > 0.5).astype("int")
+        if self.method == "qregression":
+            return np.vstack(preds_l)
         if self.method == "multiclass":
             preds = np.vstack(preds_l)
             return np.argmax(preds, 1)  # type: ignore[return-value]
+
+    def _predict_ziln(self, preds: Tensor) -> Tensor:
+        """Calculates predicted mean of zero inflated lognormal logits.
+        Adjusted implementaion of `code
+        <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`
+        Arguments:
+            preds: [batch_size, 3] tensor of logits.
+        Returns:
+            ziln_preds: [batch_size, 1] tensor of predicted mean.
+        """
+        positive_probs = torch.sigmoid(preds[..., :1])
+        loc = preds[..., 1:2]
+        scale = F.softplus(preds[..., 2:])
+        ziln_preds = positive_probs * torch.exp(loc + 0.5 * torch.square(scale))
+        return ziln_preds
 
     def predict_uncertainty(  # type: ignore[return]
         self,
@@ -777,6 +801,10 @@ class Trainer:
                     preds.std(axis=0),
                 )
             ).T
+        if self.method == "qregression":
+            raise ValueError(
+                "Currently predict_uncertainty is not supported for qregression method"
+            )
         if self.method == "binary":
             preds = preds.squeeze(1)
             preds = preds.reshape((uncertainty_granularity, samples_num))
@@ -1125,7 +1153,11 @@ class Trainer:
     def _train_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
         self.model.train()
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
-        y = target.view(-1, 1).float() if self.method != "multiclass" else target
+        y = (
+            target.view(-1, 1).float()
+            if self.method not in ["multiclass", "qregression"]
+            else target
+        )
         y = y.to(device)
 
         self.optimizer.zero_grad()
@@ -1136,6 +1168,7 @@ class Trainer:
         else:
             loss = self.loss_fn(y_pred, y)
             score = self._get_score(y_pred, y)
+        # TODO raise exception if the loss is exploding with non scaled target values
         loss.backward()
         self.optimizer.step()
 
@@ -1149,7 +1182,11 @@ class Trainer:
         self.model.eval()
         with torch.no_grad():
             X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
-            y = target.view(-1, 1).float() if self.method != "multiclass" else target
+            y = (
+                target.view(-1, 1).float()
+                if self.method not in ["multiclass", "qregression"]
+                else target
+            )
             y = y.to(device)
 
             y_pred = self.model(X)
@@ -1171,6 +1208,8 @@ class Trainer:
                 score = self.metric(y_pred, y)
             if self.method == "binary":
                 score = self.metric(torch.sigmoid(y_pred), y)
+            if self.method == "qregression":
+                score = self.metric(y_pred, y)
             if self.method == "multiclass":
                 score = self.metric(F.softmax(y_pred, dim=1), y)
             return score
@@ -1205,6 +1244,7 @@ class Trainer:
         batch_size: int = 256,
         uncertainty_granularity=1000,
         uncertainty: bool = False,
+        quantiles: bool = False,
     ) -> List:
         r"""Private method to avoid code repetition in predict and
         predict_proba. For parameter information, please, see the .predict()
@@ -1270,6 +1310,10 @@ class Trainer:
                                 preds = torch.sigmoid(preds)
                             if self.method == "multiclass":
                                 preds = F.softmax(preds, dim=1)
+                            if self.method == "regression" and isinstance(
+                                self.loss_fn, ZILNLoss
+                            ):
+                                preds = self._predict_ziln(preds)
                             preds = preds.cpu().data.numpy()
                             preds_l.append(preds)
         self.model.train()
@@ -1280,7 +1324,10 @@ class Trainer:
             class_weight = torch.tensor(class_weight).to(device)
         if custom_loss_function is not None:
             return custom_loss_function
-        elif self.method != "regression" and "focal_loss" not in objective:
+        elif (
+            self.method not in ["regression", "qregression"]
+            and "focal_loss" not in objective
+        ):
             return alias_to_loss(objective, weight=class_weight)
         elif "focal_loss" in objective:
             return alias_to_loss(objective, alpha=alpha, gamma=gamma)

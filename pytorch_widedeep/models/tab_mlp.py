@@ -5,7 +5,15 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
-allowed_activations = ["relu", "leaky_relu", "tanh", "gelu", "geglu", "reglu"]
+allowed_activations = [
+    "relu",
+    "leaky_relu",
+    "tanh",
+    "gelu",
+    "geglu",
+    "reglu",
+    "softplus",
+]
 
 
 class GEGLU(nn.Module):
@@ -33,6 +41,8 @@ def get_activation_fn(activation):
         return GEGLU()
     if activation == "reglu":
         return REGLU()
+    if activation == "softplus":
+        return nn.Softplus()
 
 
 def dense_layer(
