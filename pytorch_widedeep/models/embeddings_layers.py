@@ -26,9 +26,9 @@ class FullEmbeddingDropout(nn.Module):
 
     def forward(self, X: Tensor) -> Tensor:
         if self.training:
-            mask = X.new().resize_((X.size(1), 1)).bernoulli_(
-                1 - self.dropout
-            ).expand_as(X) / (1 - self.dropout)
+            mask = X.new().resize_((X.size(1), 1)).bernoulli_(1 - self.p).expand_as(
+                X
+            ) / (1 - self.p)
             return mask * X
         else:
             return X

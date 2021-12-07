@@ -11,81 +11,95 @@ from pytorch_widedeep.models.tabular.mlp._encoders import AttentionEncoder
 
 
 class AttentiveTabMlp(nn.Module):
-    r"""Defines what we call an  ``AttentiveTabMlp``.
-    This is an extension of the ``TabMlp`` with a simple Attention mechanism
+    r"""Defines an ``AttentiveTabMlp`` model. This is an extension of the
+    ``TabMlp`` model with attention mechanisms
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the model. Required to slice the tensors. e.g.
-        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
-    embed_input: List
-        List of Tuples with the column name and number of unique values
-        e.g. [('education', 11), ...]
-    embed_dropout: float, default = 0.1
-        Dropout to be applied to the embeddings matrix
+        the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
+        0, 'relationship': 1, 'workclass': 2, ...}
+    cat_embed_input: List, Optional, default = None
+        List of Tuples with the column name, number of unique values and
+        embedding dimension. e.g. [(education, 11, 32), ...]
+    cat_embed_dropout: float, default = 0.1
+        embeddings dropout
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
-        :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
-        If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
+        :obj:`pytorch_widedeep.models.embeddings_layers.FullEmbeddingDropout`.
+         If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
     shared_embed: bool, default = False
-        The idea behind ``shared_embed`` is described in the Appendix A in the paper:
-        `'The goal of having column embedding is to enable the model to distinguish the
-        classes in one column from those in the other columns'`. In other words, the idea
-        is to let the model learn which column is embedded at the time.
-    add_shared_embed: bool, default = False
-        The two embedding sharing strategies are: 1) add the shared embeddings to the column
-        embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
-        embeddings. See :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
+        The of sharing part of the embeddings per column is to enable the
+        model to distinguish the classes in one column from those in the
+        other columns'`. In other words, the idea is to let the model learn
+        which column is embedded at the time.
+    add_shared_embed: bool, default = False,
+        The two embedding sharing strategies are: 1) add the shared embeddings
+        to the column embeddings or 2) to replace the first
+        ``frac_shared_embed`` with the shared embeddings.
+        See :obj:`pytorch_widedeep.models.embeddings_layers.SharedEmbeddings`
     frac_shared_embed: float, default = 0.25
         The fraction of embeddings that will be shared (if ``add_shared_embed
         = False``) by all the different categories for one particular
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    embed_continuous_activation: str, default = None
-        String indicating the activation function to be applied to the
-        continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
-        ``gelu`` are supported.
-    cont_norm_layer: str, default =  "layernorm",
-        Type of normalization layer applied to the continuous features before
-        they are passed to the network. Options are: ``layernorm``,
-        ``batchnorm`` or ``None``.
-    attention_name: str, default = "context_attention"
-        Attention mechanism. One of "context_attention" or "self_attention"
-    with_residual: bool, default = False
-        Boolean indicating if a residual connection will be use in each
-        attention block
+    embed_continuous: bool, default = False,
+        Boolean indicating if the continuous columns will be embedded
+        (i.e. passed each through a linear layer with or without activation)
+    cont_embed_dim: int, default = 32,
+        Size of the continuous embeddings
+    cont_embed_dropout: float, default = 0.1,
+        Dropout for the continuous embeddings
+    cont_embed_activation: Optional, str, default = None,
+        Activation function for the continuous embeddings
+    use_cont_bias: bool, default = True,
+        Boolean indicating in bias will be used for the continuous embeddings
+    cont_norm_layer: str, default =  "batchnorm"
+        Type of normalization layer applied to the continuous features. Options
+        are: 'layernorm', 'batchnorm' or None.
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general is the number of
         embeddings used to encode the categorical and/or continuous columns
+    attention_name: str, default = "context_attention",
+        The type of attention used. Options are 'context_attention'
+        and 'self_attention'. The former is inspired by the attention
+        mechanism described in `Hierarchical Attention Networks for Document
+        Classification
+        <https://paperswithcode.com/paper/hierarchical-attention-networks-for-document>`_.
+        While the second one is a simplication of the well known multihead
+        attention described in `Attention is all you need
+        <https://arxiv.org/abs/1706.03762>_` , where only query and key projections
+        are used.
+    with_residual: bool = False,
+        Boolean indicating if residual connections will be used in the attention blocks
     n_heads: int, default = 8
-        Number of attention heads per Transformer block
+        Number of attention heads per FastFormer block
     use_bias: bool, default = False
         Boolean indicating whether or not to use bias in the Q, K, and V
-        projection layers.
-    n_blocks: int, default = 4
-        Number of Transformer blocks
-    attn_dropout: float, default = 0.2
-        Dropout that will be applied to the Multi-Head Attention layers
-    mlp_hidden_dims: List, Optional, default = None
-        MLP hidden dimensions. If not provided it will default to ``[l, 4*l,
-        2*l]`` where ``l`` is the MLP input dimension
+        projection layers
+    n_blocks: int, default = 2
+        Number of FastFormer blocks
+    attn_dropout: float = 0.2,
+        Dropout within the attention blocks
+    mlp_hidden_dims: Optional, List, default = None
+        List with the number of neurons per dense layer in the mlp.
     mlp_activation: str, default = "relu"
-        MLP activation function. ``tanh``, ``relu``, ``leaky_relu`` and
-        ``gelu`` are supported
-    mlp_dropout: float, default = 0.1
-        Dropout that will be applied to the final MLP
+        Activation function for the dense layers of the MLP. Currently
+        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
+    mlp_dropout: float or List, default = 0.1
+        float or List of floats with the dropout between the dense layers.
+        e.g: [0.5,0.5]
     mlp_batchnorm: bool, default = False
-        Boolean indicating whether or not to apply batch normalization to the
-        dense layers
+        Boolean indicating whether or not batch normalization will be applied
+        to the dense layers
     mlp_batchnorm_last: bool, default = False
-        Boolean indicating whether or not to apply batch normalization to the
-        last of the dense layers
+        Boolean indicating whether or not batch normalization will be applied
+        to the last of the dense layers
     mlp_linear_first: bool, default = False
-        Boolean indicating whether the order of the operations in the dense
+        Boolean indicating the order of the operations in the dense
         layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
         LIN -> ACT]``
 
@@ -94,9 +108,10 @@ class AttentiveTabMlp(nn.Module):
     cat_and_cont_embed: ``nn.Module``
         This is the module that processes the categorical and continuous columns
     attention_blks: ``nn.Sequential``
-        Sequence of Transformer blocks
-    attn_tab_mlp: ``nn.Module``
-        MLP component in the model
+        Sequence of attention encoders.
+    tab_mlp: ``nn.Sequential``
+        mlp model that will receive the concatenation of the embeddings and
+        the continuous columns
     output_dim: int
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
@@ -104,13 +119,13 @@ class AttentiveTabMlp(nn.Module):
     Example
     --------
     >>> import torch
-    >>> from pytorch_widedeep.models import TabTransformer
+    >>> from pytorch_widedeep.models import TabMlp
     >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
     >>> colnames = ['a', 'b', 'c', 'd', 'e']
-    >>> embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
-    >>> continuous_cols = ['e']
+    >>> cat_embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
     >>> column_idx = {k:v for v,k in enumerate(colnames)}
-    >>> model = TabTransformer(column_idx=column_idx, embed_input=embed_input, continuous_cols=continuous_cols)
+    >>> model = TabMlp(mlp_hidden_dims=[8,4], column_idx=column_idx, cat_embed_input=cat_embed_input,
+    ... continuous_cols = ['e'])
     >>> out = model(X_tab)
     """
 
@@ -203,6 +218,7 @@ class AttentiveTabMlp(nn.Module):
             cont_norm_layer,
         )
 
+        # Attention blocks
         self.attention_blks = nn.Sequential()
         for i in range(n_blocks):
             self.attention_blks.add_module(
@@ -217,6 +233,7 @@ class AttentiveTabMlp(nn.Module):
                 ),
             )
 
+        # Mlp
         if mlp_hidden_dims is not None:
             attn_output_dim = (
                 self.input_dim

@@ -25,16 +25,16 @@ class TabTransformer(nn.Module):
         Dict containing the index of the columns that will be passed through
         the model. Required to slice the tensors. e.g.
         {'education': 0, 'relationship': 1, 'workclass': 2, ...}
-    embed_input: List
+    cat_embed_input: List
         List of Tuples with the column name and number of unique values
         e.g. [('education', 11), ...]
-    embed_dropout: float, default = 0.1
+    cat_embed_dropout: float, default = 0.1
         Dropout to be applied to the embeddings matrix
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
         :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
-        If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
+        If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
     shared_embed: bool, default = False
         The idea behind ``shared_embed`` is described in the Appendix A in the paper:
         `'The goal of having column embedding is to enable the model to distinguish the
@@ -63,10 +63,14 @@ class TabTransformer(nn.Module):
         String indicating the activation function to be applied to the
         continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
         ``gelu`` are supported.
-    cont_norm_layer: str, default =  "layernorm",
+    cont_embed_dropout: float, default = 0.0,
+        Dropout for the continuous embeddings
+    cont_embed_activation: str,  default = None,
+        Activation function for the continuous embeddings
+    cont_norm_layer: str, default =  None,
         Type of normalization layer applied to the continuous features before
-        they are passed to the network. Options are: ``layernorm``,
-        ``batchnorm`` or ``None``.
+        they are embedded. Options are: ``layernorm``, ``batchnorm`` or
+        ``None``.
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general is the number of
         embeddings used to encode the categorical and/or continuous columns
@@ -121,10 +125,10 @@ class TabTransformer(nn.Module):
     >>> from pytorch_widedeep.models import TabTransformer
     >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
     >>> colnames = ['a', 'b', 'c', 'd', 'e']
-    >>> embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
+    >>> cat_embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
     >>> continuous_cols = ['e']
     >>> column_idx = {k:v for v,k in enumerate(colnames)}
-    >>> model = TabTransformer(column_idx=column_idx, embed_input=embed_input, continuous_cols=continuous_cols)
+    >>> model = TabTransformer(column_idx=column_idx, cat_embed_input=cat_embed_input, continuous_cols=continuous_cols)
     >>> out = model(X_tab)
     """
 

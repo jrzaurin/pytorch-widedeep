@@ -8,8 +8,18 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 class BasicBlock(nn.Module):
     # inspired by https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py#L37
-    def __init__(self, inp: int, out: int, dropout: float = 0.0, resize: Module = None):
+    def __init__(
+        self,
+        inp: int,
+        out: int,
+        dropout: float = 0.0,
+        simplify: bool = False,
+        resize: Module = None,
+    ):
         super(BasicBlock, self).__init__()
+
+        self.simplify = simplify
+        self.resize = resize
 
         self.lin1 = nn.Linear(inp, out)
         self.bn1 = nn.BatchNorm1d(out)
@@ -19,39 +29,37 @@ class BasicBlock(nn.Module):
             self.dp = nn.Dropout(dropout)
         else:
             self.dropout = False
-        self.lin2 = nn.Linear(out, out)
-        self.bn2 = nn.BatchNorm1d(out)
-        self.resize = resize
 
-    def forward(self, x):
+        if not self.simplify:
+            self.lin2 = nn.Linear(out, out)
+            self.bn2 = nn.BatchNorm1d(out)
 
-        identity = x
+    def forward(self, X: Tensor) -> Tensor:
 
-        out = self.lin1(x)
+        out = self.lin1(X)
         out = self.bn1(out)
         out = self.leaky_relu(out)
         if self.dropout:
             out = self.dp(out)
 
-        out = self.lin2(out)
-        out = self.bn2(out)
+        if not self.simplify:
+            out = self.lin2(out)
+            out = self.bn2(out)
 
         if self.resize is not None:
-            identity = self.resize(x)
+            x = self.resize(X)
 
-        out += identity
+        out += x
         out = self.leaky_relu(out)
 
         return out
 
 
 class DenseResnet(nn.Module):
-    def __init__(self, input_dim: int, blocks_dims: List[int], dropout: float):
+    def __init__(
+        self, input_dim: int, blocks_dims: List[int], dropout: float, simplify: bool
+    ):
         super(DenseResnet, self).__init__()
-
-        self.input_dim = input_dim
-        self.blocks_dims = blocks_dims
-        self.dropout = dropout
 
         if input_dim != blocks_dims[0]:
             self.dense_resnet = nn.Sequential(
@@ -73,7 +81,9 @@ class DenseResnet(nn.Module):
                 )
             self.dense_resnet.add_module(
                 "block_{}".format(i - 1),
-                BasicBlock(blocks_dims[i - 1], blocks_dims[i], dropout, resize),
+                BasicBlock(
+                    blocks_dims[i - 1], blocks_dims[i], dropout, simplify, resize
+                ),
             )
 
     def forward(self, X: Tensor) -> Tensor:

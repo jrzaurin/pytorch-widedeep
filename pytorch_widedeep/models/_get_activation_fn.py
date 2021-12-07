@@ -1,7 +1,15 @@
 import torch.nn.functional as F
 from torch import nn
 
-allowed_activations = ["relu", "leaky_relu", "tanh", "gelu", "geglu", "reglu"]
+allowed_activations = [
+    "relu",
+    "leaky_relu",
+    "tanh",
+    "gelu",
+    "geglu",
+    "reglu",
+    "softplus",
+]
 
 
 class GEGLU(nn.Module):
@@ -17,15 +25,17 @@ class REGLU(nn.Module):
 
 
 def get_activation_fn(activation):
-    if activation == "tanh":
-        return nn.Tanh()
     if activation == "relu":
         return nn.ReLU(inplace=True)
     if activation == "leaky_relu":
         return nn.LeakyReLU(inplace=True)
+    if activation == "tanh":
+        return nn.Tanh()
     if activation == "gelu":
         return nn.GELU()
     if activation == "geglu":
         return GEGLU()
     if activation == "reglu":
         return REGLU()
+    if activation == "softplus":
+        return nn.Softplus()

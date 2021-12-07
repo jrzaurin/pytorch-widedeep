@@ -21,16 +21,16 @@ class TabFastFormer(nn.Module):
         Dict containing the index of the columns that will be passed through
         the model. Required to slice the tensors. e.g.
         {'education': 0, 'relationship': 1, 'workclass': 2, ...}
-    embed_input: List
+    cat_embed_input: List
         List of Tuples with the column name and number of unique values
         e.g. [('education', 11), ...]
-    embed_dropout: float, default = 0.1
+    cat_embed_dropout: float, default = 0.1
         Dropout to be applied to the embeddings matrix
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
         :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
-        If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
+        If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
     shared_embed: bool, default = False
         The idea behind ``shared_embed`` is described in the Appendix A in the
         `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
@@ -53,6 +53,10 @@ class TabFastFormer(nn.Module):
         String indicating the activation function to be applied to the
         continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
         ``gelu`` are supported.
+    cont_embed_dropout: float, default = 0.0,
+        Dropout for the continuous embeddings
+    cont_embed_activation: str,  default = None,
+        Activation function for the continuous embeddings
     cont_norm_layer: str, default =  None,
         Type of normalization layer applied to the continuous features before
         they are embedded. Options are: ``layernorm``, ``batchnorm`` or
@@ -103,9 +107,9 @@ class TabFastFormer(nn.Module):
     ----------
     cat_and_cont_embed: ``nn.Module``
         This is the module that processes the categorical and continuous columns
-    transformer_blks: ``nn.Sequential``
+    fastformer_blks: ``nn.Sequential``
         Sequence of FasFormer blocks.
-    transformer_mlp: ``nn.Module``
+    fastformer_mlp: ``nn.Module``
         MLP component in the model
     output_dim: int
         The output dimension of the model. This is a required attribute
@@ -117,10 +121,10 @@ class TabFastFormer(nn.Module):
     >>> from pytorch_widedeep.models import TabFastFormer
     >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
     >>> colnames = ['a', 'b', 'c', 'd', 'e']
-    >>> embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
+    >>> cat_embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
     >>> continuous_cols = ['e']
     >>> column_idx = {k:v for v,k in enumerate(colnames)}
-    >>> model = TabFastFormer(column_idx=column_idx, embed_input=embed_input, continuous_cols=continuous_cols)
+    >>> model = TabFastFormer(column_idx=column_idx, cat_embed_input=cat_embed_input, continuous_cols=continuous_cols)
     >>> out = model(X_tab)
     """
 
@@ -210,7 +214,8 @@ class TabFastFormer(nn.Module):
             cont_norm_layer,
         )
 
-        self.transformer_blks = nn.Sequential()
+        # Transformer bocks
+        self.fastformer_blks = nn.Sequential()
         first_fastformer_block = FastFormerEncoder(
             input_dim,
             n_heads,
@@ -220,14 +225,14 @@ class TabFastFormer(nn.Module):
             share_qv_weights,
             transformer_activation,
         )
-        self.transformer_blks.add_module("fastformer_block0", first_fastformer_block)
+        self.fastformer_blks.add_module("fastformer_block0", first_fastformer_block)
         for i in range(1, n_blocks):
             if share_weights:
-                self.transformer_blks.add_module(
+                self.fastformer_blks.add_module(
                     "fastformer_block" + str(i), first_fastformer_block
                 )
             else:
-                self.transformer_blks.add_module(
+                self.fastformer_blks.add_module(
                     "fastformer_block" + str(i),
                     FastFormerEncoder(
                         input_dim,
@@ -245,6 +250,8 @@ class TabFastFormer(nn.Module):
             if self.with_cls_token
             else (self.n_cat + self.n_cont) * self.input_dim
         )
+
+        # Mlp
         if not mlp_hidden_dims:
             mlp_hidden_dims = [
                 attn_output_dim,
@@ -254,7 +261,7 @@ class TabFastFormer(nn.Module):
         else:
             mlp_hidden_dims = [attn_output_dim] + mlp_hidden_dims
 
-        self.transformer_mlp = MLP(
+        self.fastformer_mlp = MLP(
             mlp_hidden_dims,
             mlp_activation,
             mlp_dropout,
@@ -275,14 +282,14 @@ class TabFastFormer(nn.Module):
         if x_cont is not None:
             x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
 
-        x = self.transformer_blks(x)
+        x = self.fastformer_blks(x)
 
         if self.with_cls_token:
             x = x[:, 0, :]
         else:
             x = x.flatten(1)
 
-        return self.transformer_mlp(x)
+        return self.fastformer_mlp(x)
 
     @property
     def attention_weights(self) -> List:
@@ -298,7 +305,7 @@ class TabFastFormer(nn.Module):
         and *F* is the number of features/columns in the dataset
         """
         if self.share_weights:
-            attention_weights = [self.transformer_blks[0].attn.attn_weight]
+            attention_weights = [self.fastformer_blks[0].attn.attn_weight]
         else:
-            attention_weights = [blk.attn.attn_weights for blk in self.transformer_blks]
+            attention_weights = [blk.attn.attn_weights for blk in self.fastformer_blks]
         return attention_weights

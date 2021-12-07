@@ -23,13 +23,24 @@ class TabMlp(nn.Module):
         Dict containing the index of the columns that will be passed through
         the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
         0, 'relationship': 1, 'workclass': 2, ...}
-    embed_input: List, Optional, default = None
+    cat_embed_input: List, Optional, default = None
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
-    embed_dropout: float, default = 0.1
+    cat_embed_dropout: float, default = 0.1
         embeddings dropout
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
+    embed_continuous: bool, default = False,
+        Boolean indicating if the continuous columns will be embedded
+        (i.e. passed each through a linear layer with or without activation)
+    cont_embed_dim: int, default = 32,
+        Size of the continuous embeddings
+    cont_embed_dropout: float, default = 0.1,
+        Dropout for the continuous embeddings
+    cont_embed_activation: Optional, str, default = None,
+        Activation function for the continuous embeddings
+    use_cont_bias: bool, default = True,
+        Boolean indicating in bias will be used for the continuous embeddings
     cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
         are: 'layernorm', 'batchnorm' or None.
@@ -54,7 +65,7 @@ class TabMlp(nn.Module):
 
     Attributes
     ----------
-    cat_embed_and_cont: ``nn.Module``
+    cat_and_cont_embed: ``nn.Module``
         This is the module that processes the categorical and continuous columns
     tab_mlp: ``nn.Sequential``
         mlp model that will receive the concatenation of the embeddings and
@@ -69,9 +80,9 @@ class TabMlp(nn.Module):
     >>> from pytorch_widedeep.models import TabMlp
     >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
     >>> colnames = ['a', 'b', 'c', 'd', 'e']
-    >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
+    >>> cat_embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
     >>> column_idx = {k:v for v,k in enumerate(colnames)}
-    >>> model = TabMlp(mlp_hidden_dims=[8,4], column_idx=column_idx, embed_input=embed_input,
+    >>> model = TabMlp(mlp_hidden_dims=[8,4], column_idx=column_idx, cat_embed_input=cat_embed_input,
     ... continuous_cols = ['e'])
     >>> out = model(X_tab)
     """
@@ -107,11 +118,13 @@ class TabMlp(nn.Module):
         self.cont_embed_dropout = cont_embed_dropout
         self.cont_embed_activation = cont_embed_activation
         self.use_cont_bias = use_cont_bias
+        self.cont_norm_layer = cont_norm_layer
 
         self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation
         self.mlp_dropout = mlp_dropout
         self.mlp_batchnorm = mlp_batchnorm
+        self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
         if self.mlp_activation not in allowed_activations:
@@ -135,7 +148,7 @@ class TabMlp(nn.Module):
             cont_norm_layer,
         )
 
-        # MLP
+        # Mlp
         mlp_input_dim = self.cat_and_cont_embed.output_dim
         mlp_hidden_dims = [mlp_input_dim] + mlp_hidden_dims
         self.tab_mlp = MLP(

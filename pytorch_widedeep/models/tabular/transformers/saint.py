@@ -19,16 +19,16 @@ class SAINT(nn.Module):
         Dict containing the index of the columns that will be passed through
         the model. Required to slice the tensors. e.g.
         {'education': 0, 'relationship': 1, 'workclass': 2, ...}
-    embed_input: List
+    cat_embed_input: List
         List of Tuples with the column name and number of unique values
         e.g. [('education', 11), ...]
-    embed_dropout: float, default = 0.1
+    cat_embed_dropout: float, default = 0.1
         Dropout to be applied to the embeddings matrix
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
         :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
-        If ``full_embed_dropout = True``, ``embed_dropout`` is ignored.
+        If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
     shared_embed: bool, default = False
         The idea behind ``shared_embed`` is described in the Appendix A in the
         `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
@@ -51,6 +51,10 @@ class SAINT(nn.Module):
         String indicating the activation function to be applied to the
         continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
         ``gelu`` are supported.
+    cont_embed_dropout: float, default = 0.0,
+        Dropout for the continuous embeddings
+    cont_embed_activation: str,  default = None,
+        Activation function for the continuous embeddings
     cont_norm_layer: str, default =  None,
         Type of normalization layer applied to the continuous features before
         they are embedded. Options are: ``layernorm``, ``batchnorm`` or
@@ -96,9 +100,9 @@ class SAINT(nn.Module):
     ----------
     cat_and_cont_embed: ``nn.Module``
         This is the module that processes the categorical and continuous columns
-    transformer_blks: ``nn.Sequential``
+    saint_blks: ``nn.Sequential``
         Sequence of SAINT-Transformer blocks
-    transformer_mlp: ``nn.Module``
+    saint_mlp: ``nn.Module``
         MLP component in the model
     output_dim: int
         The output dimension of the model. This is a required attribute
@@ -110,10 +114,10 @@ class SAINT(nn.Module):
     >>> from pytorch_widedeep.models import SAINT
     >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
     >>> colnames = ['a', 'b', 'c', 'd', 'e']
-    >>> embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
+    >>> cat_embed_input = [(u,i) for u,i in zip(colnames[:4], [4]*4)]
     >>> continuous_cols = ['e']
     >>> column_idx = {k:v for v,k in enumerate(colnames)}
-    >>> model = SAINT(column_idx=column_idx, embed_input=embed_input, continuous_cols=continuous_cols)
+    >>> model = SAINT(column_idx=column_idx, cat_embed_input=cat_embed_input, continuous_cols=continuous_cols)
     >>> out = model(X_tab)
     """
 
@@ -199,9 +203,10 @@ class SAINT(nn.Module):
             cont_norm_layer,
         )
 
-        self.transformer_blks = nn.Sequential()
+        # Transformer bocks
+        self.saint_blks = nn.Sequential()
         for i in range(n_blocks):
-            self.transformer_blks.add_module(
+            self.saint_blks.add_module(
                 "saint_block" + str(i),
                 SaintEncoder(
                     input_dim,
@@ -217,6 +222,8 @@ class SAINT(nn.Module):
         attn_output_dim = (
             self.input_dim if self.with_cls_token else self.n_feats * self.input_dim
         )
+
+        # Mlp
         if not mlp_hidden_dims:
             mlp_hidden_dims = [
                 attn_output_dim,
@@ -226,7 +233,7 @@ class SAINT(nn.Module):
         else:
             mlp_hidden_dims = [attn_output_dim] + mlp_hidden_dims
 
-        self.transformer_mlp = MLP(
+        self.saint_mlp = MLP(
             mlp_hidden_dims,
             mlp_activation,
             mlp_dropout,
@@ -247,14 +254,14 @@ class SAINT(nn.Module):
         if x_cont is not None:
             x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
 
-        x = self.transformer_blks(x)
+        x = self.saint_blks(x)
 
         if self.with_cls_token:
             x = x[:, 0, :]
         else:
             x = x.flatten(1)
 
-        return self.transformer_mlp(x)
+        return self.saint_mlp(x)
 
     @property
     def attention_weights(self) -> List:
@@ -272,7 +279,7 @@ class SAINT(nn.Module):
         number of features/columns in the dataset
         """
         attention_weights = []
-        for blk in self.transformer_blks:
+        for blk in self.saint_blks:
             attention_weights.append(
                 (blk.col_attn.attn_weights, blk.row_attn.attn_weights)
             )

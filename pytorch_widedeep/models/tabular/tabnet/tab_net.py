@@ -27,13 +27,24 @@ class TabNet(nn.Module):
         Dict containing the index of the columns that will be passed through
         the model. Required to slice the tensors. e.g. {'education':
         0, 'relationship': 1, 'workclass': 2, ...}
-    embed_input: List
+    cat_embed_input: List
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
-    embed_dropout: float, default = 0.
+    cat_embed_dropout: float, default = 0.
         embeddings dropout
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
+    embed_continuous: bool, default = False,
+        Boolean indicating if the continuous columns will be embedded
+        (i.e. passed each through a linear layer with or without activation)
+    cont_embed_dim: int, default = 32,
+        Size of the continuous embeddings
+    cont_embed_dropout: float, default = 0.1,
+        Dropout for the continuous embeddings
+    cont_embed_activation: Optional, str, default = None,
+        Activation function for the continuous embeddings
+    use_cont_bias: bool, default = True,
+        Boolean indicating in bias will be used for the continuous embeddings
     cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
         are: 'layernorm', 'batchnorm' or None.
@@ -90,9 +101,9 @@ class TabNet(nn.Module):
     >>> from pytorch_widedeep.models import TabNet
     >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
     >>> colnames = ['a', 'b', 'c', 'd', 'e']
-    >>> embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
+    >>> cat_embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
     >>> column_idx = {k:v for v,k in enumerate(colnames)}
-    >>> model = TabNet(column_idx=column_idx, embed_input=embed_input, continuous_cols = ['e'])
+    >>> model = TabNet(column_idx=column_idx, cat_embed_input=cat_embed_input, continuous_cols = ['e'])
     """
 
     def __init__(

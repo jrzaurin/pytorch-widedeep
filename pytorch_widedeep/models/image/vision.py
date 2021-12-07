@@ -74,7 +74,7 @@ class Vision(nn.Module):
 
     Attributes
     ----------
-    vision_model: ``nn.Module``
+    features: ``nn.Module``
         The pretrained model or Standard CNN plus the optional head
     output_dim: int
         The output dimension of the model. This is a required attribute
