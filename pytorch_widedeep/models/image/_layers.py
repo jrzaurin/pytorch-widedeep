@@ -4,13 +4,20 @@ from torch import nn
 def conv_layer(
     ni: int,
     nf: int,
-    ks: int,
-    stride: int,
-    maxpool: bool,
-    adaptiveavgpool: bool,
+    kernel_size: int = 3,
+    stride: int = 1,
+    maxpool: bool = True,
+    adaptiveavgpool: bool = False,
 ):
     layer = nn.Sequential(
-        nn.Conv2d(ni, nf, kernel_size=ks, bias=True, stride=stride, padding=ks // 2),
+        nn.Conv2d(
+            ni,
+            nf,
+            kernel_size=kernel_size,
+            stride=stride,
+            bias=True,
+            padding=kernel_size // 2,
+        ),
         nn.BatchNorm2d(nf, momentum=0.01),
         nn.LeakyReLU(negative_slope=0.1, inplace=True),
     )

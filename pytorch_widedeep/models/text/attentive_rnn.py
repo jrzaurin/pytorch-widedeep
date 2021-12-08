@@ -162,10 +162,12 @@ class AttentiveRNN(nn.Module):
         self.head_batchnorm_last = head_batchnorm_last
         self.head_linear_first = head_linear_first
 
-        # Pre-trained Embeddings
+        # Embeddings
         self.word_embed, embed_dim = self._set_embeddings(embed_matrix)
 
-        # stack of RNNs (LSTMs)
+        # stack of RNNs
+        # TO DO: Instead of RNN(n_layers) -> Attn -> OUT implement:
+        # (1-layer RNN -> Attn) x N -> OUT
         rnn_params = {
             "input_size": embed_dim,
             "hidden_size": hidden_dim,
@@ -194,6 +196,7 @@ class AttentiveRNN(nn.Module):
         else:
             self.output_dim = hidden_dim * 2 if bidirectional else hidden_dim
 
+        # FC-Head (Mlp)
         if self.head_hidden_dims is not None:
             head_hidden_dims = [self.output_dim] + head_hidden_dims
             self.attn_rnn_mlp = MLP(
@@ -245,8 +248,10 @@ class AttentiveRNN(nn.Module):
             embed_dim = embed_matrix.shape[1]
         else:
             word_embed = nn.Embedding(
-                self.vocab_size, embed_dim, padding_idx=self.padding_idx
+                self.vocab_size, self.embed_dim, padding_idx=self.padding_idx
             )
+            embed_dim = self.embed_dim
+
         return word_embed, embed_dim
 
     def _process_rnn_outputs(self, output: Tensor, hidden: Tensor) -> Tensor:
@@ -257,10 +262,12 @@ class AttentiveRNN(nn.Module):
                     attn_inp = torch.cat(
                         [output, bi_hidden.unsqueeze(1).expand_as(output)], dim=2
                     )
+                else:
+                    attn_inp = torch.cat(
+                        [output, hidden[-1].unsqueeze(1).expand_as(output)], dim=2
+                    )
             else:
-                attn_inp = torch.cat(
-                    [output, hidden[-1].unsqueeze(1).expand_as(output)], dim=2
-                )
+                attn_inp = output
             processed_outputs = self.attn(attn_inp)
         else:
             output = output.permute(1, 0, 2)

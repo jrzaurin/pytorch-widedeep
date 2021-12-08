@@ -46,11 +46,11 @@ def test_focal_loss(X_wide, X_tab, target, objective, pred_dim, probs_dim):
     objective = "_".join([objective, "focal_loss"])
     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
     deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
-        column_idx=column_idx,
-        embed_input=embed_input,
-        continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=pred_dim)
     trainer = Trainer(model, objective=objective, verbose=0)
@@ -277,11 +277,11 @@ def test_all_possible_objectives(
 ):
     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
     deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
-        column_idx=column_idx,
-        embed_input=embed_input,
-        continuous_cols=colnames[-5:],
     )
     model = WideDeep(
         wide=wide,

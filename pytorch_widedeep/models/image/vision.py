@@ -3,6 +3,7 @@ from torch import nn
 from torch.nn.modules.module import ModuleAttributeError
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.models.image._layers import conv_layer
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 
 allowed_pretrained_models = [
@@ -25,17 +26,18 @@ class Vision(nn.Module):
 
     Parameters
     ----------
-    pretrained_model_name: str, default = "resnet18"
+    pretrained_model_name: Optional, str, default = None
         Name of the pretrained model. Should be a variant of the following
         architectures: "resnet", "shufflenet", "resnext", "wide_resnet", "regnet",
-        "densenet", "mobilenetv3", "mobilenetv2", "mnasnet", "efficientnet" and
-        "squeezenet".
-    n_trainable: int, default = None
+        "densenet", "mobilenetv3", "mobilenetv2", "mnasnet", "efficientnet"
+        and "squeezenet". if `pretrained_model_name = None` a basic, fully
+        trainable CNN will be used.
+    n_trainable: Optional, int, default = None
         Number of trainable layers starting from the layer closer to the
         output neuron(s). Note that this number DOES NOT take into account
         the so-called "head" which is ALWAYS trainable. If 'trainable_params'
         is not None this parameter will be ignored
-    trainable_params: List, default = None
+    trainable_params: Optional, list, default = None
         List of strings containing the names (or substring within the name) of
         the parameters that will be trained. For example, if we use a
         `resnet18` pretrainable model and we set `trainable_params =
@@ -43,18 +45,18 @@ class Vision(nn.Module):
         head, as mentioned before) will be trained. Note that setting this or
         the previous parameter involve some knowledge of the architecture
         used.
-    channel_sizes: List, default = None
+    channel_sizes: list, default = [64, 128, 256, 512]
         List of integers with the channel sizes of a CNN in case we choose not
         to use a pretrained model
-    kernel_sizes: int, default = None
+    kernel_sizes: list or int, default = 3
         List of integers with the kernel sizes of a CNN in case we choose not
         to use a pretrained model. Must be of length equal to `len
         (channel_sizes) - 1`.
-    strides: int, default = None
+    strides: list or int, default = 1
         List of integers with the stride sizes of a CNN in case we choose not
         to use a pretrained model. Must be of length equal to `len
         (channel_sizes) - 1`.
-    head_hidden_dims: List, Optional, default = None
+    head_hidden_dims: Optional, list, default = None
         List with the number of neurons per dense layer in the head. e.g: [64,32]
     head_activation: str, default = "relu"
         Activation function for the dense layers in the head. Currently
@@ -91,15 +93,15 @@ class Vision(nn.Module):
 
     def __init__(
         self,
-        pretrained_model_name: str = "resnet18",
+        pretrained_model_name: Optional[str] = None,
         n_trainable: Optional[int] = None,
         trainable_params: Optional[List[str]] = None,
-        channel_sizes: Optional[List[int]] = None,
-        kernel_sizes: Optional[List[int]] = None,
-        strides: Optional[List[int]] = None,
+        channel_sizes: List[int] = [64, 128, 256, 512],
+        kernel_sizes: Union[int, List[int]] = [7, 3, 3, 3],
+        strides: Union[int, List[int]] = [2, 1, 1, 1],
         head_hidden_dims: Optional[List[int]] = None,
         head_activation: str = "relu",
-        head_dropout: float = 0.1,
+        head_dropout: Union[float, List[float]] = 0.1,
         head_batchnorm: bool = False,
         head_batchnorm_last: bool = False,
         head_linear_first: bool = False,
@@ -119,22 +121,24 @@ class Vision(nn.Module):
         self.head_batchnorm_last = head_batchnorm_last
         self.head_linear_first = head_linear_first
 
-        valid_pretrained_model_name = any(
-            [name in pretrained_model_name for name in allowed_pretrained_models]
-        )
-        if not valid_pretrained_model_name:
-            raise ValueError(
-                f"{pretrained_model_name} is not among the allowed pretrained models."
-                f" These are {allowed_pretrained_models}. Please choose a variant of these architectures"
+        if pretrained_model_name is not None:
+            valid_pretrained_model_name = any(
+                [name in pretrained_model_name for name in allowed_pretrained_models]
             )
-
-        if n_trainable is not None and trainable_params is not None:
-            raise UserWarning(
-                "Both 'n_trainable' and 'trainable_params' are not None. 'trainable_params' will be used"
-            )
+            if not valid_pretrained_model_name:
+                raise ValueError(
+                    f"{pretrained_model_name} is not among the allowed pretrained models."
+                    f" These are {allowed_pretrained_models}. Please choose a variant of these architectures"
+                )
+            if n_trainable is not None and trainable_params is not None:
+                raise UserWarning(
+                    "Both 'n_trainable' and 'trainable_params' are not None. 'trainable_params' will be used"
+                )
 
         self.features, output_dim = self._get_features()
-        self._freeze(self.features)
+
+        if pretrained_model_name is not None:
+            self._freeze(self.features)
 
         if self.head_hidden_dims is not None:
             head_hidden_dims = [output_dim] + self.head_hidden_dims
@@ -166,32 +170,41 @@ class Vision(nn.Module):
 
     def _get_features(self) -> Tuple[nn.Module, int]:
         if self.pretrained_model_name is not None:
-            features = torchvision.models.__dict__[self.pretrained_model_name](
+            pretrained_model = torchvision.models.__dict__[self.pretrained_model_name](
                 pretrained=True
             )
-            output_dim: int = self.get_backbone_output_dim(features)
+            output_dim: int = self.get_backbone_output_dim(pretrained_model)
+            features = nn.Sequential(*(list(pretrained_model.children())[:-1]))
         else:
             features = self._basic_cnn()
             output_dim = self.channel_sizes[-1]
 
-        if hasattr(features, "classifier"):
-            features.classifier = nn.Identity()
-        if hasattr(features, "fc"):
-            features.fc = nn.Identity()
-
         return features, output_dim
 
     def _basic_cnn(self):
+
+        channel_sizes = [3] + self.channel_sizes
+        kernel_sizes = (
+            [self.kernel_sizes] * len(self.channel_sizes)
+            if isinstance(self.kernel_sizes, int)
+            else self.kernel_sizes
+        )
+        strides = (
+            [self.strides] * len(self.channel_sizes)
+            if isinstance(self.strides, int)
+            else self.strides
+        )
+
         BasicCNN = nn.Sequential()
         for i in range(1, len(channel_sizes)):
             BasicCNN.add_module(
-                "dense_layer_{}".format(i - 1),
+                "conv_layer_{}".format(i - 1),
                 conv_layer(
-                    self.channel_sizes[i - 1],
-                    self.channel_sizes[i],
-                    self.kernel_sizes[i - 1],
-                    self.strides[i - 1],
-                    maxpool=i != len(channel_sizes) - 1,
+                    channel_sizes[i - 1],
+                    channel_sizes[i],
+                    kernel_sizes[i - 1],
+                    strides[i - 1],
+                    maxpool=i == 1,
                     adaptiveavgpool=i == len(channel_sizes) - 1,
                 ),
             )
@@ -210,7 +223,7 @@ class Vision(nn.Module):
                 param.requires_grad = i < self.n_trainable
         else:
             raise UserWarning(
-                "Both 'trainable_params' and 'n_trainable' are set to None and the entire network will be trained"
+                "Both 'trainable_params' and 'n_trainable' are 'None' and the entire network will be trained"
             )
 
     @staticmethod

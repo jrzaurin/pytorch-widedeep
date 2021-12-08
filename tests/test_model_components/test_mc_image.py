@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import pytest
 
-from pytorch_widedeep.models import DeepImage
+from pytorch_widedeep.models import Vision
 
 X_images = (torch.from_numpy(np.random.rand(10, 3, 224, 224))).float()
 
@@ -10,77 +10,64 @@ X_images = (torch.from_numpy(np.random.rand(10, 3, 224, 224))).float()
 ###############################################################################
 # Simply testing that it runs with the defaults
 ###############################################################################
-model1 = DeepImage()
-
-
-def test_deep_image_1():
-    out = model1(X_images)
-    assert out.size(0) == 10 and out.size(1) == 512
-
-
-###############################################################################
-# Testing with 'custom' backbone
-###############################################################################
-model2 = DeepImage(pretrained=False)
-
-
-def test_deep_image_custom_backbone():
-    out = model2(X_images)
+def test_output_sizes():
+    model = Vision()
+    out = model(X_images)
     assert out.size(0) == 10 and out.size(1) == 512
 
 
 ###############################################################################
 # Testing freeze_n
 ###############################################################################
-model4 = DeepImage(freeze_n=5)
 
 
-def test_deep_image_freeze_int():
-    out = model4(X_images)
+def test_n_trainable():
+    model = Vision(pretrained_model_name="resnet18", n_trainable=6)
+    out = model(X_images)
     assert out.size(0) == 10 and out.size(1) == 512
 
 
 ###############################################################################
-# Testing with resnet 34
+# Testing some the available architectures
 ###############################################################################
-model5 = DeepImage(resnet_architecture=34)
 
 
-def test_deep_image_resnet_34():
-    out = model5(X_images)
-    assert out.size(0) == 10 and out.size(1) == 512
+@pytest.mark.parametrize(
+    "arch, expected_out_shape",
+    [
+        ("shufflenet_v2_x0_5", 1024),
+        ("resnext50_32x4d", 2048),
+        ("wide_resnet50_2", 2048),
+        ("mobilenet_v2", 1280),
+        ("mnasnet1_0", 1280),
+        ("squeezenet1_0", 512),
+    ],
+)
+def test_archiectures(arch, expected_out_shape):
+    model = Vision(pretrained_model_name=arch, n_trainable=0)
+    out = model(X_images)
+    assert out.size(0) == 10 and out.size(1) == expected_out_shape
 
 
 ###############################################################################
 # Testing the head
 ###############################################################################
-model6 = DeepImage(head_hidden_dims=[512, 256, 128], head_dropout=[0.0, 0.5])
 
 
-def test_deep_image_2():
-    out = model6(X_images)
+def test_head():
+    model = Vision(head_hidden_dims=[256, 128], head_dropout=0.1)
+    out = model(X_images)
     assert out.size(0) == 10 and out.size(1) == 128
 
 
 ###############################################################################
-# Make sure is frozen
+# Make sure is all frozen
 ###############################################################################
-
-model7 = DeepImage(freeze_n=8)
 
 
 def test_all_frozen():
+    model = Vision(pretrained_model_name="resnet18", n_trainable=0)
     is_trainable = []
-    for p in model7.parameters():
+    for p in model.parameters():
         is_trainable.append(not p.requires_grad)
     assert all(is_trainable)
-
-
-###############################################################################
-# Catch Exception
-###############################################################################
-
-
-def test_too_cold():
-    with pytest.raises(ValueError):
-        mod = DeepImage(freeze_n=10)  # noqa: F841
