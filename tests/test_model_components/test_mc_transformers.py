@@ -38,7 +38,7 @@ X_tab_with_cls_token = torch.from_numpy(
 embed_input = [(u, i) for u, i in zip(colnames[:2], [n_embed] * 2)]
 model1 = TabTransformer(
     column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embed_input,
+    cat_embed_input=embed_input,
     continuous_cols=colnames[n_cols:],
 )
 
@@ -100,7 +100,7 @@ def test_tabtransformer_shared_embeddings():
 
 model2 = TabTransformer(
     column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embed_input,
+    cat_embed_input=embed_input,
     continuous_cols=colnames[n_cols:],
     shared_embed=True,
 )
@@ -120,7 +120,7 @@ def test_tabtransformer_w_shared_emb_output():
 
 
 ###############################################################################
-# Test ContinuousEmbeddings
+# Test ContEmbeddings
 ###############################################################################
 
 
@@ -131,8 +131,12 @@ def test_continuous_embeddings():
 
     X = torch.rand(bsz, n_cont_cols)
 
-    cont_embed = ContinuousEmbeddings(
-        n_cont_cols=n_cont_cols, embed_dim=embed_dim, activation=None, use_bias=False
+    cont_embed = ContEmbeddings(
+        n_cont_cols=n_cont_cols,
+        embed_dim=embed_dim,
+        embed_dropout=0.0,
+        activation=None,
+        use_bias=False,
     )
     out = cont_embed(X)
     res = (
@@ -150,7 +154,7 @@ def test_continuous_embeddings():
 
 model3 = TabTransformer(
     column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embed_input,
+    cat_embed_input=embed_input,
     continuous_cols=None,
 )
 
@@ -169,7 +173,7 @@ def test_full_embed_dropout():
     bsz = 1
     cat = 10
     esz = 4
-    full_embedding_dropout = FullEmbeddingDropout(dropout=0.8)
+    full_embedding_dropout = FullEmbeddingDropout(p=0.8)
     inp = torch.rand(bsz, cat, esz)
     out = full_embedding_dropout(inp)
     # simply check that at least 1 full row is all 0s
@@ -218,7 +222,9 @@ def test_embed_continuous_and_with_cls_token_tabtransformer(
 
     params = {
         "column_idx": {k: v for v, k in enumerate(n_colnames)},
-        "embed_input": with_cls_token_embed_input if with_cls_token else embed_input,
+        "cat_embed_input": with_cls_token_embed_input
+        if with_cls_token
+        else embed_input,
         "continuous_cols": n_colnames[cont_idx:],
         "embed_continuous": embed_continuous,
     }
@@ -270,7 +276,9 @@ def test_embed_continuous_and_with_cls_token_transformer_family(
 
     params = {
         "column_idx": {k: v for v, k in enumerate(n_colnames)},
-        "embed_input": with_cls_token_embed_input if with_cls_token else embed_input,
+        "cat_embed_input": with_cls_token_embed_input
+        if with_cls_token
+        else embed_input,
         "continuous_cols": n_colnames[cont_idx:],
     }
 
@@ -322,7 +330,7 @@ def test_transformer_activations(activation, model_name):
 
     params = {
         "column_idx": {k: v for v, k in enumerate(colnames)},
-        "embed_input": embed_input,
+        "cat_embed_input": embed_input,
         "continuous_cols": colnames[n_cols:],
         "transformer_activation": activation,
     }
@@ -352,7 +360,7 @@ def test_transformers_keep_attn(model_name):
 
     params = {
         "column_idx": {k: v for v, k in enumerate(colnames)},
-        "embed_input": embed_input,
+        "cat_embed_input": embed_input,
         "continuous_cols": colnames[n_cols:],
     }
 
@@ -418,37 +426,6 @@ def test_transformers_keep_attn(model_name):
             == [10, model.n_heads, total_n_cols]
         )
     assert all(res)
-
-
-###############################################################################
-# Test FTTransformer mlp set up
-###############################################################################
-
-
-@pytest.mark.parametrize(
-    "mlp_first_h, shoud_work",
-    [
-        ((n_cols * 2) * 64, True),
-        ((n_cols * 2) * (64 + 1), False),
-    ],
-)
-def test_ft_transformer_mlp(mlp_first_h, shoud_work):
-
-    mlp_hidden_dims = [mlp_first_h, mlp_first_h * 2]
-
-    params = {
-        "column_idx": {k: v for v, k in enumerate(colnames)},
-        "embed_input": embed_input,
-        "continuous_cols": colnames[n_cols:],
-        "mlp_hidden_dims": mlp_hidden_dims,
-    }
-
-    if shoud_work:
-        model = _build_model("fttransformer", params)
-        assert True
-    else:
-        with pytest.raises(AssertionError):
-            model = _build_model("fttransformer", params)  # noqa: F841
 
 
 ###############################################################################
