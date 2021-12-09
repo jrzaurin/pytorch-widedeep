@@ -182,8 +182,7 @@ class TabResnet(nn.Module):
 
         # Mlp
         if self.mlp_hidden_dims is not None:
-            mlp_input_dim = cont_out_dim + blocks_dims[-1]
-            mlp_hidden_dims = [mlp_input_dim] + mlp_hidden_dims
+            mlp_hidden_dims = [blocks_dims[-1]] + mlp_hidden_dims
             self.tab_resnet_mlp = MLP(
                 mlp_hidden_dims,
                 mlp_activation,

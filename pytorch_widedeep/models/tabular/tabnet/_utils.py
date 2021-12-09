@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.sparse import csc_matrix
 
-from pytorch_widedeep.wdtypes import WideDeep
+from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 def create_explain_matrix(model: WideDeep) -> csc_matrix:
@@ -34,23 +34,42 @@ def create_explain_matrix(model: WideDeep) -> csc_matrix:
             [0., 0., 0., 1., 0.],
             [0., 0., 0., 0., 1.]])
     """
-    (
-        embed_input,
-        column_idx,
-        embed_out_dim,
-    ) = _extract_tabnet_params(model)
 
-    n_feat = len(column_idx)
-    col_embeds = {e[0]: e[2] - 1 for e in embed_input}
-    embed_colname = [e[0] for e in embed_input]
-    cont_colname = [c for c in column_idx.keys() if c not in embed_colname]
+    tabnet_backbone = list(model.deeptabular.children())[0]
+
+    embed_out_dim = tabnet_backbone.embed_out_dim
+    column_idx: Dict = tabnet_backbone.column_idx  # type: ignore[assignment]
+
+    cat_setup = extract_cat_setup(tabnet_backbone)
+    cont_setup = extract_cont_setup(tabnet_backbone)
+
+    n_feat = len(cat_setup + cont_setup)
+
+    col_embeds = {}
+    embeds_colname = []
+
+    for cats in cat_setup:
+        col_embeds[cats[0]] = cats[2] - 1
+        embeds_colname.append(cats[0])
+
+    if len(cont_setup) > 0:
+        if isinstance(cont_setup[0], tuple):
+            for conts in cont_setup:
+                col_embeds[conts[0]] = conts[1] - 1
+                embeds_colname.append(conts[0])
+            cont_colname = []
+        else:
+            cont_colname = cont_setup
+    else:
+        cont_colname = []
 
     embed_cum_counter = 0
     indices_trick = []
+
     for colname, idx in column_idx.items():
         if colname in cont_colname:
             indices_trick.append([idx + embed_cum_counter])
-        elif colname in embed_colname:
+        elif colname in embeds_colname:
             indices_trick.append(
                 range(  # type: ignore[arg-type]
                     idx + embed_cum_counter,
@@ -66,12 +85,29 @@ def create_explain_matrix(model: WideDeep) -> csc_matrix:
     return csc_matrix(reducing_matrix)
 
 
-def _extract_tabnet_params(model: WideDeep):
+def extract_cat_setup(backbone: Module) -> List:
+    cat_cols: List = backbone.cat_embed_input  # type: ignore[assignment]
+    if cat_cols is not None:
+        return cat_cols
+    else:
+        return []
 
-    tabnet_backbone = list(model.deeptabular.children())[0]
 
-    column_idx = tabnet_backbone.column_idx
-    embed_input = tabnet_backbone.cat_embed_input
-    embed_out_dim = tabnet_backbone.embed_out_dim
+def extract_cont_setup(backbone: Module) -> List:
 
-    return embed_input, column_idx, embed_out_dim
+    cont_cols: List = backbone.continuous_cols  # type: ignore[assignment]
+    embed_continuous = backbone.embed_continuous
+
+    if cont_cols is not None:
+        if embed_continuous:
+            cont_embed_dim = [backbone.cont_embed_dim] * len(cont_cols)
+            cont_setup: List = [
+                (colname, embed_dim)
+                for colname, embed_dim in zip(cont_cols, cont_embed_dim)
+            ]
+        else:
+            cont_setup = cont_cols
+    else:
+        cont_setup = []
+
+    return cont_setup

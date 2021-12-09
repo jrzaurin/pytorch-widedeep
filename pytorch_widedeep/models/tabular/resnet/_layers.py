@@ -65,8 +65,8 @@ class DenseResnet(nn.Module):
             self.dense_resnet = nn.Sequential(
                 OrderedDict(
                     [
-                        ("lin1", nn.Linear(input_dim, blocks_dims[0])),
-                        ("bn1", nn.BatchNorm1d(blocks_dims[0])),
+                        ("lin_inp", nn.Linear(input_dim, blocks_dims[0])),
+                        ("bn_inp", nn.BatchNorm1d(blocks_dims[0])),
                     ]
                 )
             )

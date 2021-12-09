@@ -255,6 +255,7 @@ class DiffSizeCatAndContEmbeddings(nn.Module):
         self.cat_embed_input = cat_embed_input
         self.continuous_cols = continuous_cols
         self.embed_continuous = embed_continuous
+        self.cont_embed_dim = cont_embed_dim
 
         # Categorical
         if self.cat_embed_input is not None:
