@@ -46,17 +46,10 @@ class AttentiveTabMlp(nn.Module):
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    embed_continuous: bool, default = False,
-        Boolean indicating if the continuous columns will be embedded
-        (i.e. passed each through a linear layer with or without activation)
-    cont_embed_dim: int, default = 32,
-        Size of the continuous embeddings
     cont_embed_dropout: float, default = 0.1,
         Dropout for the continuous embeddings
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings
-    use_cont_bias: bool, default = True,
-        Boolean indicating in bias will be used for the continuous embeddings
     cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
         are: 'layernorm', 'batchnorm' or None.
@@ -270,11 +263,14 @@ class AttentiveTabMlp(nn.Module):
         x = self.attention_blks(x)
 
         if self.with_cls_token:
-            x = x[:, 0, :]
+            out = x[:, 0, :]
         else:
-            x = x.flatten(1)
+            out = x.flatten(1)
 
-        return self.attn_tab_mlp(x)
+        if self.mlp_hidden_dims is not None:
+            out = self.attn_tab_mlp(out)
+
+        return out
 
     @property
     def attention_weights(self) -> List:

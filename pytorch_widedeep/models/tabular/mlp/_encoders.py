@@ -31,7 +31,8 @@ class AttentionEncoder(nn.Module):
         if attention_name == "self_attention":
             self.attn = QueryKeySelfAttention(input_dim, use_bias, dropout, n_heads)
 
-        self.attn_addnorm = AddNorm(input_dim, dropout)
+        if with_residual:
+            self.attn_addnorm = AddNorm(input_dim, dropout)
 
     def forward(self, X: Tensor) -> Tensor:
         if self.with_residual:

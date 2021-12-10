@@ -7,9 +7,9 @@ from pytorch_widedeep.models import (
     Wide,
     TabMlp,
     TabNet,
-    AttentiveRNN,
-    WideDeep,
     Vision,
+    WideDeep,
+    AttentiveRNN,
 )
 
 embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
