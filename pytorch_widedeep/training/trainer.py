@@ -147,10 +147,14 @@ class Trainer:
           <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
           folder in the repo
         - List of objects of type :obj:`torchmetrics.Metric`. This can be any
-          metric from torchmetrics library `Examples
+          metric from torchmetrics library that has attribute num_classes `Examples
           <https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
-          classification-metrics>`_. This can also be a custom metric as
-          long as it is an object of type :obj:`Metric`. See `the instructions
+          classification-metrics>`_.
+          Objects of type :obj:`torchmetrics.Metric` can be extended with num_classes
+          attribute to be used with the Trainer object, see `examples
+          <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`.
+          This can also be a custom metric as long as it is an object of 
+          type :obj:`Metric`. See `the instructions
           <https://torchmetrics.readthedocs.io/en/latest/>`_.
     class_weight: float, List or Tuple. optional. default=None
         - float indicating the weight of the minority class in binary classification

@@ -1,13 +1,14 @@
 import numpy as np
 import torch
 import pytest
-from torchmetrics import F1, FBeta, Recall, Accuracy, Precision
+from torchmetrics import F1, FBeta, Recall, Accuracy, Precision, AUC
 from sklearn.metrics import (
     f1_score,
     fbeta_score,
     recall_score,
     accuracy_score,
     precision_score,
+    auc_score,
 )
 
 from pytorch_widedeep.metrics import MultipleMetrics
@@ -35,9 +36,12 @@ y_pred_bin_pt = torch.from_numpy(y_pred_bin_np)
         ("Recall", recall_score, Recall(num_classes=2, average="none")),
         ("F1", f1_score, F1(num_classes=2, average="none")),
         ("FBeta", f2_score_bin, FBeta(beta=2, num_classes=2, average="none")),
+        ("AUC", auc_score, AUC()),
     ],
 )
 def test_binary_metrics(metric_name, sklearn_metric, torch_metric):
+    if metric_name == "AUC":
+        torch_metric.num_classes=2
     sk_res = sklearn_metric(y_true_bin_np, y_pred_bin_np.round())
     wd_metric = MultipleMetrics(metrics=[torch_metric])
     wd_logs = wd_metric(y_pred_bin_pt, y_true_bin_pt)
@@ -82,11 +86,14 @@ def f2_score_multi(y_true, y_pred, average):
         ("Recall", recall_score, Recall(num_classes=3, average="macro")),
         ("F1", f1_score, F1(num_classes=3, average="macro")),
         ("FBeta", f2_score_multi, FBeta(beta=3, num_classes=3, average="macro")),
+        ("AUC", auc_score, AUC()),
     ],
 )
 def test_muticlass_metrics(metric_name, sklearn_metric, torch_metric):
     if metric_name == "Accuracy":
         sk_res = sklearn_metric(y_true_multi_np, y_pred_muli_np.argmax(axis=1))
+    elif metric_name == "AUC":
+        torch_metric.num_classes=3
     else:
         sk_res = sklearn_metric(
             y_true_multi_np, y_pred_muli_np.argmax(axis=1), average="macro"
