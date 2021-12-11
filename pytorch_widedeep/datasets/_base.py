@@ -67,7 +67,7 @@ def load_ecoli(as_frame: bool = False):
     See also: yeast database
 
     3. Past Usage.
-    Reference: "A Probablistic Classification System for Predicting the Cellular 
+    Reference: "A Probablistic Classification System for Predicting the Cellular
             Localization Sites of Proteins", Paul Horton & Kenta Nakai,
             Intelligent Systems in Molecular Biology, 109-115.
         St. Louis, USA 1996.
@@ -78,23 +78,23 @@ def load_ecoli(as_frame: bool = False):
 
     Predicted Attribute: Localization site of protein. ( non-numeric ).
 
-    4. The references below describe a predecessor to this dataset and its 
-    development. They also give results (not cross-validated) for classification 
+    4. The references below describe a predecessor to this dataset and its
+    development. They also give results (not cross-validated) for classification
     by a rule-based expert system with that version of the dataset.
 
-    Reference: "Expert Sytem for Predicting Protein Localization Sites in 
-            Gram-Negative Bacteria", Kenta Nakai & Minoru Kanehisa,  
+    Reference: "Expert Sytem for Predicting Protein Localization Sites in
+            Gram-Negative Bacteria", Kenta Nakai & Minoru Kanehisa,
             PROTEINS: Structure, Function, and Genetics 11:95-110, 1991.
 
     Reference: "A Knowledge Base for Predicting Protein Localization Sites in
-        Eukaryotic Cells", Kenta Nakai & Minoru Kanehisa, 
+        Eukaryotic Cells", Kenta Nakai & Minoru Kanehisa,
         Genomics 14:897-911, 1992.
 
-    5. Number of Instances:  336 for the E.coli dataset and 
+    5. Number of Instances:  336 for the E.coli dataset and
 
     6. Number of Attributes.
             for E.coli dataset:  8 ( 7 predictive, 1 name )
-            
+
     7. Attribute Information.
 
     1.  Sequence Name: Accession number for the SWISS-PROT database
@@ -115,7 +115,7 @@ def load_ecoli(as_frame: bool = False):
     9. Class Distribution. The class is the localization site. Please see Nakai & Kanehisa referenced above for more details.
 
     cp  (cytoplasm)                                    143
-    im  (inner membrane without signal sequence)        77               
+    im  (inner membrane without signal sequence)        77
     pp  (perisplasm)                                    52
     imU (inner membrane, uncleavable signal sequence)   35
     om  (outer membrane)                                20

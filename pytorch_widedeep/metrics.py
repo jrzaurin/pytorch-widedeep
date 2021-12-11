@@ -39,23 +39,7 @@ class MultipleMetrics(object):
             if isinstance(metric, Metric):
                 logs[self.prefix + metric._name] = metric(y_pred, y_true)
             if isinstance(metric, TorchMetric):
-                if not hasattr(metric, "num_classes"):
-                    raise ValueError(
-                        """TorchMetric does not have num_classes attribute.
-                        Use metric in this library or extend the metric by num_classes attribute,
-                        see `examples <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`
-                        """
-                    )
-                if metric.num_classes == 2:
-                    if isinstance(metric, AUC):
-                        metric.update(torch.round(y_pred).int(), y_true.int())
-                    else:
-                        metric.update(y_pred, y_true.int())
-                if metric.num_classes > 2:  # type: ignore[operator]
-                    if isinstance(metric, AUC):
-                        metric.update(torch.max(y_pred, dim=1).indices, y_true.int())  # type: ignore[attr-defined]
-                    else:
-                        metric.update(y_pred, y_true.int())  # type: ignore[attr-defined]
+                metric.update(y_pred, y_true.int())  # type: ignore[attr-defined]
                 logs[self.prefix + type(metric).__name__] = (
                     metric.compute().detach().cpu().numpy()
                 )
