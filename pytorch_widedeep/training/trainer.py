@@ -1064,7 +1064,6 @@ class Trainer:
                         UserWarning,
                     )
                     loss = self.loss_fn(y_pred, y)
-
             else:
                 loss = self.loss_fn(y_pred, y)
 
