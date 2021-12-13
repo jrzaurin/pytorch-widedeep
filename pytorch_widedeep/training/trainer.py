@@ -41,6 +41,11 @@ from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
 from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
+<<<<<<< HEAD
+=======
+from pytorch_widedeep.losses import ZILNLoss
+from inspect import signature
+>>>>>>> loss weights fixed
 
 n_cpus = os.cpu_count()
 
@@ -1206,10 +1211,23 @@ class Trainer:
             score = self._get_score(y_pred[0], y)
         else:
 <<<<<<< HEAD
+<<<<<<< HEAD
             loss = self.loss_fn(y_pred, y, weight=weight)
 =======
             if weight != None:
                 loss = self.loss_fn(y_pred, y, ldsweight=weight)
+=======
+            if weight is not None:
+                if "weight" in signature(self.loss_fn.forward).parameters:
+                    loss = self.loss_fn(y_pred, y, weight=weight)
+                else:
+                    warnings.warn(
+                        """You are using weightening of target values with loss
+                        function that does not support it""", 
+                        UserWarning,
+                    )
+                    loss = self.loss_fn(y_pred, y)
+>>>>>>> loss weights fixed
             else:
                 loss = self.loss_fn(y_pred, y)
 >>>>>>> added fds code

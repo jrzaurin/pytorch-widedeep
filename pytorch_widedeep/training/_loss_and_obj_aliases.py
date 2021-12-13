@@ -32,6 +32,9 @@ class _LossAliases:
         "root_mean_squared_error": ["root_mean_squared_error", "rmse"],
         "root_mean_squared_log_error": ["root_mean_squared_log_error", "rmsle"],
         "zero_inflated_lognormal": ["zero_inflated_lognormal", "ziln"],
+        "focalmse": ["focalmse"],
+        "focall1": ["focall1"],
+        "huber": ["huber"],
         "quantile": ["quantile"],
         "tweedie": ["tweedie"],
     }

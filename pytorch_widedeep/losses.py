@@ -18,7 +18,7 @@ class TweedieLoss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None, p=1.5) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None, p=1.5) -> Tensor:
         assert (
             input.min() > 0
         ), """All input values must be >=0, if your model is predicting
@@ -28,8 +28,8 @@ class TweedieLoss(nn.Module):
         loss = -target * torch.pow(input, 1 - p) / (1 - p) + torch.pow(input, 2 - p) / (
             2 - p
         )
-        if ldsweight is not None:
-            loss *= ldsweight.expand_as(loss)
+        if weight is not None:
+            loss *= weight.expand_as(loss)
         return torch.mean(loss)
 
 
@@ -57,6 +57,7 @@ class QuantileLoss(nn.Module):
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
         assert input.shape == torch.Size([target.shape[0], len(self.quantiles)]), (
             f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal "
@@ -67,6 +68,9 @@ class QuantileLoss(nn.Module):
 =======
     def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
 >>>>>>> LDS tested - working
+=======
+    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
+>>>>>>> loss weights fixed
         assert input.shape == torch.Size(
             [target.shape[0], len(self.quantiles)]
         ), f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal to number of quantiles, i.e. {len(self.quantiles)}."
@@ -79,10 +83,15 @@ class QuantileLoss(nn.Module):
         loss = torch.cat(losses, dim=2)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         return torch.mean(loss)
 =======
         if ldsweight is not None:
             losses *= ldsweight.expand_as(losses)
+=======
+        if weight is not None:
+            losses *= weight.expand_as(losses)
+>>>>>>> loss weights fixed
         return torch.mean(losses)
 >>>>>>> lds added - not tested
 
@@ -96,7 +105,7 @@ class ZILNLoss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
         r"""
         Parameters
         ----------
@@ -123,7 +132,6 @@ class ZILNLoss(nn.Module):
         assert input.shape == torch.Size(
             [target.shape[0], 3]
         ), "Wrong shape of input, pred_dim of the model that is using ZILNLoss must be equal to 3."
-        assert ldsweight is not None, "LDS is not implemented for ZILNLoss yet"
 
         positive_input = input[..., :1]
 
@@ -232,7 +240,7 @@ class MSLELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
         r"""
         Parameters
         ----------
@@ -267,7 +275,7 @@ class RMSELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
         r"""
         Parameters
         ----------
@@ -296,7 +304,7 @@ class RMSLELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
         r"""
         Parameters
         ----------
@@ -335,9 +343,8 @@ class MSEloss(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
         r"""
         Parameters
         ----------
@@ -350,8 +357,8 @@ class MSEloss(nn.Module):
         --------
         """
         loss = (input - target) ** 2
-        if ldsweight is not None:
-            loss *= ldsweight.expand_as(loss)
+        if weight is not None:
+            loss *= weight.expand_as(loss)
         loss = torch.mean(loss)
 
         return loss
@@ -369,7 +376,7 @@ class L1Loss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
         r"""
         Parameters
         ----------
@@ -382,8 +389,8 @@ class L1Loss(nn.Module):
         --------
         """
         loss = F.l1_loss(input, target, reduction='none')
-        if ldsweight is not None:
-            loss *= ldsweight.expand_as(loss)
+        if weight is not None:
+            loss *= weight.expand_as(loss)
         loss = torch.mean(loss)
 
         return loss
@@ -401,7 +408,7 @@ class FocalMSELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None, activate='sigmoid', beta=.2, gamma=1) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None, activate='sigmoid', beta=.2, gamma=1) -> Tensor:
         r"""
         Parameters
         ----------
@@ -416,8 +423,8 @@ class FocalMSELoss(nn.Module):
         loss = (input - target) ** 2
         loss *= (torch.tanh(beta * torch.abs(input - target))) ** gamma if activate == 'tanh' else \
             (2 * torch.sigmoid(beta * torch.abs(input - target)) - 1) ** gamma
-        if ldsweight is not None:
-            loss *= ldsweight.expand_as(loss)
+        if weight is not None:
+            loss *= weight.expand_as(loss)
         loss = torch.mean(loss)
 
         return loss
@@ -435,7 +442,7 @@ class FocalL1Loss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None, activate='sigmoid', beta=.2, gamma=1) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None, activate='sigmoid', beta=.2, gamma=1) -> Tensor:
         r"""
         Parameters
         ----------
@@ -450,8 +457,8 @@ class FocalL1Loss(nn.Module):
         loss = F.l1_loss(input, target, reduction='none')
         loss *= (torch.tanh(beta * torch.abs(input - target))) ** gamma if activate == 'tanh' else \
             (2 * torch.sigmoid(beta * torch.abs(input - target)) - 1) ** gamma
-        if ldsweight is not None:
-            loss *= ldsweight.expand_as(loss)
+        if weight is not None:
+            loss *= weight.expand_as(loss)
         loss = torch.mean(loss)
 
         return loss
@@ -469,7 +476,7 @@ class HuberLoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]=None, beta=.1) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None, beta=.1) -> Tensor:
         r"""
         Parameters
         ----------
@@ -484,8 +491,8 @@ class HuberLoss(nn.Module):
         l1_loss = torch.abs(input - target)
         cond = l1_loss < beta
         loss = torch.where(cond, 0.5 * l1_loss ** 2 / beta, l1_loss - 0.5 * beta)
-        if ldsweight is not None:
-            loss *= ldsweight.expand_as(loss)
+        if weight is not None:
+            loss *= weight.expand_as(loss)
         loss = torch.mean(loss)
 
         return loss
