@@ -177,12 +177,18 @@ class WideDeep(nn.Module):
             )
         elif self.deephead is not None:
             pass
-        elif self.fds and self.deeptabular:
-            if not self.pred_dim == 1:
+        elif self.fds:
+            if (
+                not self.deeptabular
+                or self.pred_dim != 1
+                #or self.wide.pred_dim != self.deeptabular.output_dim
+            ):
                 raise ValueError(
-                    """Feature Distribution Smoothing is supported only for regressor without
-                    deephead component with single ouptut neuron"""
+                    """Feature Distribution Smoothing is supported only with deeptabular
+                    component without deephead with single output neuron. If used, wide
+                    component must have pred_dim == deeptabular.output_dim """
                 )
+
             if fds_config:
                 self.FDS = fds_layer.FDS(**fds_config)
             else:
@@ -200,14 +206,14 @@ class WideDeep(nn.Module):
         if self.deephead:
             y_pred = self._forward_deephead(X, y_pred)
         elif self.training and self.fds:
-            y_pred, deep_features = self._forward_deep(X, out, y, epoch)
+            y_pred, deep_features = self._forward_deep(X, y_pred, y, epoch)
             if self.enforce_positive:
                 return self.enf_pos(y_pred), deep_features
             else:
                 return y_pred, deep_features
         else:
             y_pred = self._forward_deep(X, y_pred)
-    
+
         if self.enforce_positive:
             return self.enf_pos(y_pred)
         else:
@@ -298,7 +304,7 @@ class WideDeep(nn.Module):
 
         return res
 
-    def _forward_deep(self, X, wide_out, y, epoch):
+    def _forward_deep(self, X, wide_out, y=None, epoch=None):
         if self.deeptabular is not None:
             if self.is_tabnet:
                 tab_out, M_loss = self.deeptabular(X["deeptabular"])
@@ -309,7 +315,10 @@ class WideDeep(nn.Module):
                 if self.training and self.fds:
                     deeptab_s = self.FDS.smooth(deeptab_s, y, epoch)
                     deeptab_s = self.FDS_dropout(deeptab_s)
-                wide_out.add_(self.pred_layer(deeptab_s))
+                if self.fds:
+                    wide_out.add_(self.pred_layer(deeptab_s))
+                else:
+                    wide_out.add_(deeptab_features)
                 if self.training and self.fds:
                     return wide_out, deeptab_features
         if self.deeptext is not None:
