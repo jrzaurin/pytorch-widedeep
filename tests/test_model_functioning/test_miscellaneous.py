@@ -13,10 +13,10 @@ from pytorch_widedeep.models import (
     Wide,
     TabMlp,
     TabNet,
-    DeepText,
+    Vision,
     WideDeep,
-    DeepImage,
     TabResnet,
+    AttentiveRNN,
     TabTransformer,
 )
 from pytorch_widedeep.metrics import Accuracy, Precision
@@ -65,31 +65,31 @@ target_multi = np.random.choice(3, 32)
 # build model components
 wide = Wide(np.unique(X_wide).shape[0], 1)
 tabmlp = TabMlp(
+    column_idx={k: v for v, k in enumerate(colnames)},
+    cat_embed_input=embed_input,
+    continuous_cols=colnames[-5:],
     mlp_hidden_dims=[32, 16],
     mlp_dropout=[0.5, 0.5],
-    column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embed_input,
-    continuous_cols=colnames[-5:],
 )
 tabresnet = TabResnet(
-    blocks_dims=[32, 16],
     column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embed_input,
+    cat_embed_input=embed_input,
     continuous_cols=colnames[-5:],
+    blocks_dims=[32, 16],
 )
 tabtransformer = TabTransformer(
     column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embed_input_tt,
+    cat_embed_input=embed_input_tt,
     continuous_cols=colnames[5:],
 )
 tabnet = TabNet(
     column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embed_input,
+    cat_embed_input=embed_input,
     continuous_cols=colnames[5:],
     ghost_bn=False,
 )
-deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
-deepimage = DeepImage(pretrained=True)
+deeptext = AttentiveRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+deepimage = Vision(pretrained_model_name="resnet18", n_trainable=0)
 
 ###############################################################################
 # test consistecy between optimizers and lr_schedulers format
@@ -178,7 +178,7 @@ def test_basic_run_with_metrics_multiclass():
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
         column_idx={k: v for v, k in enumerate(colnames)},
-        embed_input=embed_input,
+        cat_embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=3)
@@ -255,7 +255,7 @@ def test_save_and_load_dict():
     tabmlp = TabMlp(
         mlp_hidden_dims=[32, 16],
         column_idx={k: v for v, k in enumerate(colnames)},
-        embed_input=embed_input,
+        cat_embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
     model1 = WideDeep(wide=deepcopy(wide), deeptabular=deepcopy(tabmlp))
@@ -385,7 +385,7 @@ def test_get_embeddings_deprecation_warning():
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
         column_idx={k: v for v, k in enumerate(df.columns)},
-        embed_input=tab_preprocessor.embeddings_input,
+        cat_embed_input=tab_preprocessor.embeddings_input,
         continuous_cols=tab_preprocessor.continuous_cols,
     )
 

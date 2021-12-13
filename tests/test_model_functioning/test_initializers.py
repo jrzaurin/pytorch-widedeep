@@ -5,7 +5,13 @@ import numpy as np
 import torch
 import pytest
 
-from pytorch_widedeep.models import Wide, TabMlp, DeepText, WideDeep, DeepImage
+from pytorch_widedeep.models import (
+    Wide,
+    TabMlp,
+    Vision,
+    WideDeep,
+    AttentiveRNN,
+)
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.initializers import (
     Normal,
@@ -82,14 +88,14 @@ def test_initializers_1(initializers, test_layers):
 
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
-        column_idx=column_idx,
-        embed_input=embed_input,
-        continuous_cols=colnames[-5:],
     )
-    deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
-    deepimage = DeepImage(pretrained=True)
+    deeptext = AttentiveRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+    deepimage = Vision(pretrained_model_name="resnet18", n_trainable=0)
     model = WideDeep(
         wide=wide,
         deeptabular=deeptabular,
@@ -133,13 +139,13 @@ def test_initializers_with_pattern():
 
     wide = Wide(100, 1)
     deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
-        column_idx=column_idx,
-        embed_input=embed_input,
-        continuous_cols=colnames[-5:],
     )
-    deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+    deeptext = AttentiveRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
     model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, pred_dim=1)
     cmodel = c(model)
     org_word_embed = []
@@ -161,11 +167,11 @@ def test_initializers_with_pattern():
 
 wide = Wide(100, 1)
 deeptabular = TabMlp(
+    column_idx=column_idx,
+    cat_embed_input=embed_input,
+    continuous_cols=colnames[-5:],
     mlp_hidden_dims=[32, 16],
     mlp_dropout=[0.5, 0.5],
-    column_idx=column_idx,
-    embed_input=embed_input,
-    continuous_cols=colnames[-5:],
 )
 model1 = WideDeep(wide=wide)
 model2 = WideDeep(wide=wide, deeptabular=deeptabular)
@@ -203,13 +209,13 @@ def test_warning_when_missing_initializer():
 
     wide = Wide(100, 1)
     deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
-        column_idx=column_idx,
-        embed_input=embed_input,
-        continuous_cols=colnames[-5:],
     )
-    deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+    deeptext = AttentiveRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
     model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, pred_dim=1)
     with pytest.warns(UserWarning):
         trainer = Trainer(  # noqa: F841

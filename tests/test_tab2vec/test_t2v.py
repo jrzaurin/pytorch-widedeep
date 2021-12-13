@@ -16,6 +16,7 @@ from pytorch_widedeep.models import (
     FTTransformer,
     TabFastFormer,
     TabTransformer,
+    AttentiveTabMlp,
 )
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
@@ -43,21 +44,21 @@ X_tab = tab_preprocessor.fit_transform(df_init)
 
 tabmlp = TabMlp(
     column_idx=tab_preprocessor.column_idx,
-    embed_input=tab_preprocessor.embeddings_input,
+    cat_embed_input=tab_preprocessor.embeddings_input,
     continuous_cols=tab_preprocessor.continuous_cols,
     mlp_hidden_dims=[8, 4],
 )
 
 tabresnet = TabResnet(
     column_idx=tab_preprocessor.column_idx,
-    embed_input=tab_preprocessor.embeddings_input,
+    cat_embed_input=tab_preprocessor.embeddings_input,
     continuous_cols=tab_preprocessor.continuous_cols,
     blocks_dims=[8, 8, 4],
 )
 
 tabnet = TabNet(
     column_idx=tab_preprocessor.column_idx,
-    embed_input=tab_preprocessor.embeddings_input,
+    cat_embed_input=tab_preprocessor.embeddings_input,
     continuous_cols=tab_preprocessor.continuous_cols,
 )
 
@@ -140,7 +141,7 @@ def test_tab_transformer_models(
 
     params = {
         "column_idx": tab_preprocessor.column_idx,
-        "embed_input": tab_preprocessor.embeddings_input,
+        "cat_embed_input": tab_preprocessor.embeddings_input,
         "continuous_cols": tab_preprocessor.continuous_cols,
         "embed_continuous": embed_continuous,
     }
@@ -156,6 +157,58 @@ def test_tab_transformer_models(
         out_dim = (len(embed_cols) + len(cont_cols)) * deeptabular.input_dim
     else:
         out_dim = len(embed_cols) * deeptabular.input_dim + len(cont_cols)
+
+    assert X_vec.shape[1] == out_dim
+
+
+###############################################################################
+# Test AttentiveTabMlp
+###############################################################################
+
+
+@pytest.mark.parametrize(
+    "with_cls_token",
+    [True, False],
+)
+@pytest.mark.parametrize(
+    "share_embeddings",
+    [True, False],
+)
+@pytest.mark.parametrize(
+    "attention_name",
+    ["context_attention", "self_attention"],
+)
+def test_attentive_mlp(
+    with_cls_token,
+    share_embeddings,
+    attention_name,
+):
+
+    embed_cols = ["a", "b"]
+    cont_cols = ["c", "d"]
+
+    tab_preprocessor = TabPreprocessor(
+        embed_cols=embed_cols,
+        continuous_cols=cont_cols,
+        with_attention=True,
+        with_cls_token=with_cls_token,
+        shared_embed=share_embeddings,
+    )
+    X_tab = tab_preprocessor.fit_transform(df_init)  # noqa: F841
+
+    deeptabular = AttentiveTabMlp(
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.embeddings_input,
+        continuous_cols=tab_preprocessor.continuous_cols,
+        attention_name=attention_name,
+    )
+
+    # Let's assume the model is trained
+    model = WideDeep(deeptabular=deeptabular)
+    t2v = Tab2Vec(model, tab_preprocessor)
+    X_vec = t2v.transform(df_t2v)
+
+    out_dim = (len(embed_cols) + len(cont_cols)) * deeptabular.input_dim
 
     assert X_vec.shape[1] == out_dim
 
@@ -215,7 +268,7 @@ def test_transformer_family_models(
 
     params = {
         "column_idx": tab_preprocessor.column_idx,
-        "embed_input": tab_preprocessor.embeddings_input,
+        "cat_embed_input": tab_preprocessor.embeddings_input,
         "continuous_cols": tab_preprocessor.continuous_cols,
     }
 

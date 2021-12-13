@@ -11,7 +11,6 @@ import pytest
 from ray import tune
 from torch.optim.lr_scheduler import StepLR, CyclicLR
 
-from pytorch_widedeep.optim import RAdam
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep, TabTransformer
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.callbacks import (
@@ -41,22 +40,22 @@ target = np.random.choice(2, 32)
 ###############################################################################
 wide = Wide(np.unique(X_wide).shape[0], 1)
 deeptabular = TabMlp(
+    column_idx=column_idx,
+    cat_embed_input=embed_input,
+    continuous_cols=colnames[-5:],
     mlp_hidden_dims=[32, 16],
     mlp_dropout=[0.5, 0.5],
-    column_idx=column_idx,
-    embed_input=embed_input,
-    continuous_cols=colnames[-5:],
 )
 model = WideDeep(wide=wide, deeptabular=deeptabular)
 
 # 1. Single optimizers_1, single scheduler, not cyclic and both passed directly
-optimizers_1 = RAdam(model.parameters())
+optimizers_1 = torch.optim.Adam(model.parameters())
 lr_schedulers_1 = StepLR(optimizers_1, step_size=4)
 
 # 2. Multiple optimizers, single scheduler, cyclic and pass via a 1 item
 # dictionary
 wide_opt_2 = torch.optim.Adam(model.wide.parameters())
-deep_opt_2 = RAdam(model.deeptabular.parameters())
+deep_opt_2 = torch.optim.AdamW(model.deeptabular.parameters())
 deep_sch_2 = CyclicLR(
     deep_opt_2, base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False
 )
@@ -65,7 +64,7 @@ lr_schedulers_2 = {"deeptabular": deep_sch_2}
 
 # 3. Multiple schedulers no cyclic
 wide_opt_3 = torch.optim.Adam(model.wide.parameters())
-deep_opt_3 = RAdam(model.deeptabular.parameters())
+deep_opt_3 = torch.optim.AdamW(model.deeptabular.parameters())
 wide_sch_3 = StepLR(wide_opt_3, step_size=4)
 deep_sch_3 = StepLR(deep_opt_3, step_size=4)
 optimizers_3 = {"wide": wide_opt_3, "deeptabular": deep_opt_3}
@@ -73,7 +72,7 @@ lr_schedulers_3 = {"wide": wide_sch_3, "deeptabular": deep_sch_3}
 
 # 4. Multiple schedulers with cyclic
 wide_opt_4 = torch.optim.Adam(model.wide.parameters())
-deep_opt_4 = torch.optim.Adam(model.deeptabular.parameters())
+deep_opt_4 = torch.optim.AdamW(model.deeptabular.parameters())
 wide_sch_4 = StepLR(wide_opt_4, step_size=4)
 deep_sch_4 = CyclicLR(
     deep_opt_4, base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False
@@ -82,7 +81,7 @@ optimizers_4 = {"wide": wide_opt_4, "deeptabular": deep_opt_4}
 lr_schedulers_4 = {"wide": wide_sch_4, "deeptabular": deep_sch_4}
 
 # 5. Single optimizers_5, single scheduler, cyclic and both passed directly
-optimizers_5 = RAdam(model.parameters())
+optimizers_5 = torch.optim.Adam(model.parameters())
 lr_schedulers_5 = CyclicLR(
     optimizers_5, base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False
 )
@@ -142,11 +141,11 @@ def test_history_callback(
 def test_early_stop():
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
-        column_idx=column_idx,
-        embed_input=embed_input,
-        continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular)
     trainer = Trainer(
@@ -182,7 +181,7 @@ def test_model_checkpoint(fpath, save_best_only, max_save, n_files):
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
         column_idx=column_idx,
-        embed_input=embed_input,
+        cat_embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular)
@@ -212,7 +211,7 @@ def test_filepath_error():
     deeptabular = TabMlp(
         mlp_hidden_dims=[16, 4],
         column_idx=column_idx,
-        embed_input=embed_input,
+        cat_embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular)
@@ -246,19 +245,19 @@ target = np.random.choice(2, 32)
 wide = Wide(np.unique(X_wide).shape[0], 1)
 tab_transformer = TabTransformer(
     column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embeds_input,
+    cat_embed_input=embeds_input,
     continuous_cols=colnames[5:],
 )
 model_tt = WideDeep(wide=wide, deeptabular=tab_transformer)
 
 # 1. Single optimizers_1, single scheduler, not cyclic and both passed directly
-optimizers_1 = RAdam(model_tt.parameters())
+optimizers_1 = torch.optim.Adam(model_tt.parameters())
 lr_schedulers_1 = StepLR(optimizers_1, step_size=4)
 
 # 2. Multiple optimizers, single scheduler, cyclic and pass via a 1 item
 # dictionary
 wide_opt_2 = torch.optim.Adam(model_tt.wide.parameters())
-deep_opt_2 = RAdam(model_tt.deeptabular.parameters())
+deep_opt_2 = torch.optim.AdamW(model_tt.deeptabular.parameters())
 deep_sch_2 = CyclicLR(
     deep_opt_2, base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False
 )
@@ -267,7 +266,7 @@ lr_schedulers_2 = {"deeptabular": deep_sch_2}
 
 # 3. Multiple schedulers no cyclic
 wide_opt_3 = torch.optim.Adam(model_tt.wide.parameters())
-deep_opt_3 = RAdam(model_tt.deeptabular.parameters())
+deep_opt_3 = torch.optim.AdamW(model_tt.deeptabular.parameters())
 wide_sch_3 = StepLR(wide_opt_3, step_size=4)
 deep_sch_3 = StepLR(deep_opt_3, step_size=4)
 optimizers_3 = {"wide": wide_opt_3, "deeptabular": deep_opt_3}
@@ -275,7 +274,7 @@ lr_schedulers_3 = {"wide": wide_sch_3, "deeptabular": deep_sch_3}
 
 # 4. Multiple schedulers with cyclic
 wide_opt_4 = torch.optim.Adam(model_tt.wide.parameters())
-deep_opt_4 = torch.optim.Adam(model_tt.deeptabular.parameters())
+deep_opt_4 = torch.optim.AdamW(model_tt.deeptabular.parameters())
 wide_sch_4 = StepLR(wide_opt_4, step_size=4)
 deep_sch_4 = CyclicLR(
     deep_opt_4, base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False
@@ -493,7 +492,7 @@ def test_ray_tune_reporter():
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
         column_idx=column_idx,
-        embed_input=embed_input,
+        cat_embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
     rt_model = WideDeep(wide=rt_wide, deeptabular=rt_deeptabular)

@@ -110,21 +110,19 @@ class Tab2Vec:
         self.return_dataframe = return_dataframe
         self.tab_preprocessor = tab_preprocessor
 
-        transformer_family = [
+        models_with_attention = [
+            "attentivetabmlp",
             "tabtransformer",
             "saint",
             "fttransformer",
             "tabperceiver",
             "tabfastformer",
         ]
-        self.is_transformer = (
-            model.deeptabular[0].__class__.__name__.lower() in transformer_family  # type: ignore[index]
+        self.with_attention = (
+            model.deeptabular[0].__class__.__name__.lower() in models_with_attention  # type: ignore[index]
         )
-        self.vectorizer = (
-            deepcopy(model.deeptabular[0].cat_embed_and_cont)  # type: ignore[index]
-            if not self.is_transformer
-            else deepcopy(model.deeptabular[0].cat_and_cont_embed)  # type: ignore[index]
-        )
+        self.vectorizer = deepcopy(model.deeptabular[0].cat_and_cont_embed)  # type: ignore[index]
+
         self.vectorizer.to(device)
 
     def fit(self, df: pd.DataFrame, target_col: Optional[str] = None) -> "Tab2Vec":
@@ -164,7 +162,7 @@ class Tab2Vec:
         if self.tab_preprocessor.with_cls_token:
             x_cat = x_cat[:, 1:, :]
 
-        if self.is_transformer:
+        if self.with_attention:
             x_cat = einops.rearrange(x_cat, "s c e -> s (c e)")
             if len(list(x_cont.shape)) == 3:
                 x_cont = einops.rearrange(x_cont, "s c e -> s (c e)")
@@ -191,7 +189,7 @@ class Tab2Vec:
 
     def _new_colnames(self) -> List[str]:
 
-        if self.is_transformer:
+        if self.with_attention:
             new_colnames = []
             embedding_dim = self.vectorizer.cat_embed.embed.embedding_dim
             are_cont_embed = hasattr(self.vectorizer, "cont_embed")
