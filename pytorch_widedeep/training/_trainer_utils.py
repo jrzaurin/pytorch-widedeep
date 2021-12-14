@@ -6,10 +6,10 @@ from torch.utils.data import TensorDataset
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.losses import (
+    L1Loss,
+    MSEloss,
     MSLELoss,
     RMSELoss,
-    ZILNLoss,
-    FocalLoss,
     RMSLELoss,
     TweedieLoss,
     QuantileLoss,
@@ -17,6 +17,9 @@ from pytorch_widedeep.losses import (
     L1Loss,
     FocalMSELoss,
     FocalL1Loss,
+    FocalMSELoss,
+    FocalRMSELoss,
+    FocalLoss,    
     HuberLoss,
     MSEloss,
 )
@@ -342,5 +345,7 @@ def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
         return FocalL1Loss()
     if loss_fn in _LossAliases.get("focalmse"):
         return FocalMSELoss()
+    if loss_fn in _LossAliases.get("focalrmse"):
+        return FocalRMSELoss()    
     if "focal_loss" in loss_fn:
         return FocalLoss(**kwargs)
