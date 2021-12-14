@@ -18,7 +18,7 @@ class TweedieLoss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor, p=1.5) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor], p=1.5) -> Tensor:
         assert (
             input.min() > 0
         ), """All input values must be >=0, if your model is predicting
@@ -28,6 +28,8 @@ class TweedieLoss(nn.Module):
         loss = -target * torch.pow(input, 1 - p) / (1 - p) + torch.pow(input, 2 - p) / (
             2 - p
         )
+        if ldsweight is not None:
+            loss *= ldsweight.expand_as(loss)
         return torch.mean(loss)
 
 
@@ -53,11 +55,18 @@ class QuantileLoss(nn.Module):
         super().__init__()
         self.quantiles = quantiles
 
+<<<<<<< HEAD
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
         assert input.shape == torch.Size([target.shape[0], len(self.quantiles)]), (
             f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal "
             f"to number of quantiles, i.e. {len(self.quantiles)}."
         )
+=======
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
+        assert input.shape == torch.Size(
+            [target.shape[0], len(self.quantiles)]
+        ), f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal to number of quantiles, i.e. {len(self.quantiles)}."
+>>>>>>> lds added - not tested
         target = target.view(-1, 1).float()
         losses = []
         for i, q in enumerate(self.quantiles):
@@ -65,7 +74,13 @@ class QuantileLoss(nn.Module):
             losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(-1))
         loss = torch.cat(losses, dim=2)
 
+<<<<<<< HEAD
         return torch.mean(loss)
+=======
+        if ldsweight is not None:
+            losses *= ldsweight.expand_as(losses)
+        return torch.mean(losses)
+>>>>>>> lds added - not tested
 
 
 class ZILNLoss(nn.Module):
@@ -77,7 +92,7 @@ class ZILNLoss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
         r"""
         Parameters
         ----------
@@ -104,6 +119,8 @@ class ZILNLoss(nn.Module):
         assert input.shape == torch.Size(
             [target.shape[0], 3]
         ), "Wrong shape of input, pred_dim of the model that is using ZILNLoss must be equal to 3."
+        assert ldsweight is not None, "LDS is not implemented for ZILNLoss yet"
+
         positive_input = input[..., :1]
 
         classification_loss = F.binary_cross_entropy_with_logits(
@@ -211,7 +228,7 @@ class MSLELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
         r"""
         Parameters
         ----------
@@ -246,7 +263,7 @@ class RMSELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
         r"""
         Parameters
         ----------
@@ -275,7 +292,7 @@ class RMSLELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
         r"""
         Parameters
         ----------
@@ -300,4 +317,171 @@ class RMSLELoss(nn.Module):
             values <0 try to enforce positive values by activation function
             on last layer with `trainer.enforce_positive_output=True`"""
         assert target.min() >= 0, "All target values must be >=0"
+
         return torch.sqrt(self.mse(torch.log(input + 1), torch.log(target + 1)))
+
+
+class MSEloss(nn.Module):
+    r"""Based on 
+    `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
+    Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
+    and their `implementation
+    <https://github.com/YyzHarry/imbalanced-regression>`
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions (not probabilities)
+        target: Tensor
+            target tensor with the actual classes
+
+        Examples
+        --------
+        """
+        loss = (input - target) ** 2
+        if ldsweight is not None:
+            loss *= ldsweight.expand_as(loss)
+        loss = torch.mean(loss)
+
+        return loss
+
+
+class L1Loss(nn.Module):
+    r"""Based on 
+    `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
+    Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
+    and their `implementation
+    <https://github.com/YyzHarry/imbalanced-regression>`
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions (not probabilities)
+        target: Tensor
+            target tensor with the actual classes
+
+        Examples
+        --------
+        """
+        loss = F.l1_loss(input, target, reduction='none')
+        if ldsweight is not None:
+            loss *= ldsweight.expand_as(loss)
+        loss = torch.mean(loss)
+
+        return loss
+
+
+class FocalMSELoss(nn.Module):
+    r"""Based on 
+    `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
+    Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
+    and their `implementation
+    <https://github.com/YyzHarry/imbalanced-regression>`
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor], activate='sigmoid', beta=.2, gamma=1) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions (not probabilities)
+        target: Tensor
+            target tensor with the actual classes
+
+        Examples
+        --------
+        """
+        loss = (input - target) ** 2
+        loss *= (torch.tanh(beta * torch.abs(input - target))) ** gamma if activate == 'tanh' else \
+            (2 * torch.sigmoid(beta * torch.abs(input - target)) - 1) ** gamma
+        if ldsweight is not None:
+            loss *= ldsweight.expand_as(loss)
+        loss = torch.mean(loss)
+
+        return loss
+
+
+class FocalL1Loss(nn.Module):
+    r"""Based on 
+    `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
+    Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
+    and their `implementation
+    <https://github.com/YyzHarry/imbalanced-regression>`
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor], activate='sigmoid', beta=.2, gamma=1) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions (not probabilities)
+        target: Tensor
+            target tensor with the actual classes
+
+        Examples
+        --------
+        """
+        loss = F.l1_loss(input, target, reduction='none')
+        loss *= (torch.tanh(beta * torch.abs(input - target))) ** gamma if activate == 'tanh' else \
+            (2 * torch.sigmoid(beta * torch.abs(input - target)) - 1) ** gamma
+        if ldsweight is not None:
+            loss *= ldsweight.expand_as(loss)
+        loss = torch.mean(loss)
+
+        return loss
+
+
+class HuberLoss(nn.Module):
+    r"""Based on 
+    `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
+    Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
+    and their `implementation
+    <https://github.com/YyzHarry/imbalanced-regression>`
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.mse = nn.MSELoss()
+
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor], beta=.1) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions (not probabilities)
+        target: Tensor
+            target tensor with the actual classes
+
+        Examples
+        --------
+        """
+        l1_loss = torch.abs(input - target)
+        cond = l1_loss < beta
+        loss = torch.where(cond, 0.5 * l1_loss ** 2 / beta, l1_loss - 0.5 * beta)
+        if ldsweight is not None:
+            loss *= ldsweight.expand_as(loss)
+        loss = torch.mean(loss)
+
+        return loss
