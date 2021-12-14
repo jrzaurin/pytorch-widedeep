@@ -18,25 +18,7 @@ class TweedieLoss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor, p=1.5) -> Tensor:
-        r"""
-        Parameters
-        ----------
-        input: Tensor
-            input tensor with predictions
-        target: Tensor
-            target tensor
-
-        Examples
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.losses import TweedieLoss
-        >>> target = torch.tensor([1., 2., 2., 3.]).view(-1, 1)
-        >>> input = torch.tensor([[0.8, 0.5, 1.6, 2.5]]).t()
-        >>> TweedieLoss()(input, target)
-        tensor(5.9363)
-        """
-
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor], p=1.5) -> Tensor:
         assert (
             input.min() > 0
         ), """All input values must be >=0, if your model is predicting
@@ -46,6 +28,8 @@ class TweedieLoss(nn.Module):
         loss = -target * torch.pow(input, 1 - p) / (1 - p) + torch.pow(input, 2 - p) / (
             2 - p
         )
+        if ldsweight is not None:
+            loss *= ldsweight.expand_as(loss)
         return torch.mean(loss)
 
 
@@ -70,29 +54,10 @@ class QuantileLoss(nn.Module):
         super().__init__()
         self.quantiles = quantiles
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
-        r"""
-        Parameters
-        ----------
-        input: Tensor
-            input tensor with predictions
-        target: Tensor
-            target tensor
-
-        Examples
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.losses import QuantileLoss
-        >>> target = torch.tensor([1., 2., 2., 3., 6., 7., 2., 9., 5., 8.]).view(-1, 1)
-        >>> input = torch.tensor([[0.6, 1., 1.6, 2.6, 5., 6.8, 1.7, 8., 4.5, 7.5],
-        ... [0.5, 0.9, 1.4, 2.2, 6.1, 6.5, 1.5, 9., 5., 9.]]).t()
-        >>> QuantileLoss(quantiles=[0.25, 0.75])(input, target)
-        tensor(1.5835)
-        """
-        assert input.shape == torch.Size([target.shape[0], len(self.quantiles)]), (
-            f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal "
-            f"to number of quantiles, i.e. {len(self.quantiles)}."
-        )
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
+        assert input.shape == torch.Size(
+            [target.shape[0], len(self.quantiles)]
+        ), f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal to number of quantiles, i.e. {len(self.quantiles)}."
         target = target.view(-1, 1).float()
         losses = []
         for i, q in enumerate(self.quantiles):
@@ -100,7 +65,9 @@ class QuantileLoss(nn.Module):
             losses.append(torch.max((q - 1) * errors, q * errors).unsqueeze(-1))
         loss = torch.cat(losses, dim=2)
 
-        return torch.mean(loss)
+        if ldsweight is not None:
+            losses *= ldsweight.expand_as(losses)
+        return torch.mean(losses)
 
 
 class ZILNLoss(nn.Module):
@@ -112,7 +79,7 @@ class ZILNLoss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
         r"""
         Parameters
         ----------
@@ -139,6 +106,8 @@ class ZILNLoss(nn.Module):
         assert input.shape == torch.Size(
             [target.shape[0], 3]
         ), "Wrong shape of input, pred_dim of the model that is using ZILNLoss must be equal to 3."
+        assert ldsweight is not None, "LDS is not implemented for ZILNLoss yet"
+
         positive_input = input[..., :1]
 
         classification_loss = F.binary_cross_entropy_with_logits(
@@ -246,7 +215,7 @@ class MSLELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
         r"""
         Parameters
         ----------
@@ -281,7 +250,7 @@ class RMSELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
         r"""
         Parameters
         ----------
@@ -310,7 +279,7 @@ class RMSLELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor, ldsweight: Union[None, Tensor]) -> Tensor:
         r"""
         Parameters
         ----------
@@ -335,6 +304,7 @@ class RMSLELoss(nn.Module):
             values <0 try to enforce positive values by activation function
             on last layer with `trainer.enforce_positive_output=True`"""
         assert target.min() >= 0, "All target values must be >=0"
+
         return torch.sqrt(self.mse(torch.log(input + 1), torch.log(target + 1)))
 
 

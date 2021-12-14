@@ -445,9 +445,9 @@ class Trainer:
 
             self.train_running_loss = 0.0
             with trange(train_steps, disable=self.verbose != 1) as t:
-                for batch_idx, (data, targett) in zip(t, train_loader):
+                for batch_idx, (data, targett, weight) in zip(t, train_loader):
                     t.set_description("epoch %i" % (epoch + 1))
-                    train_score, train_loss = self._train_step(data, targett, batch_idx)
+                    train_score, train_loss = self._train_step(data, targett, batch_idx, weight)
                     print_loss_and_metric(t, train_loss, train_score)
                     self.callback_container.on_batch_end(batch=batch_idx)
             epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
@@ -459,7 +459,7 @@ class Trainer:
                 self.callback_container.on_eval_begin()
                 self.valid_running_loss = 0.0
                 with trange(eval_steps, disable=self.verbose != 1) as v:
-                    for i, (data, targett) in zip(v, eval_loader):
+                    for i, (data, targett, weight) in zip(v, eval_loader):
                         v.set_description("valid")
                         val_score, val_loss = self._eval_step(data, targett, i)
                         print_loss_and_metric(v, val_loss, val_score)
@@ -987,7 +987,7 @@ class Trainer:
                     self.model.deepimage, "deepimage", loader, n_epochs, max_lr
                 )
 
-    def _train_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
+    def _train_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int, weight: Union[None, Tensor]):
         self.model.train()
         X = {k: v.to(self.device) for k, v in data.items()}
         y = (
@@ -1003,7 +1003,7 @@ class Trainer:
             loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
             score = self._get_score(y_pred[0], y)
         else:
-            loss = self.loss_fn(y_pred, y)
+            loss = self.loss_fn(y_pred, y, weight=weight)
             score = self._get_score(y_pred, y)
         # TODO raise exception if the loss is exploding with non scaled target values
         loss.backward()
@@ -1056,15 +1056,11 @@ class Trainer:
     def _compute_feature_importance(self, loader: DataLoader):
         self.model.eval()
         tabnet_backbone = list(self.model.deeptabular.children())[0]
-        feat_imp = np.zeros((tabnet_backbone.embed_out_dim))  # type: ignore[arg-type]
-        for data, target in loader:
-            X = data["deeptabular"].to(self.device)
-            y = (
-                target.view(-1, 1).float()
-                if self.method not in ["multiclass", "qregression"]
-                else target
-            )
-            y = y.to(self.device)
+        feat_imp = np.zeros((tabnet_backbone.embed_and_cont_dim))  # type: ignore[arg-type]
+        for data, target, weight in loader:
+            X = data["deeptabular"].to(device)
+            y = target.view(-1, 1).float() if self.method != "multiclass" else target
+            y = y.to(device)
             M_explain, masks = tabnet_backbone.forward_masks(X)  # type: ignore[operator]
             feat_imp += M_explain.sum(dim=0).cpu().detach().numpy()
 
