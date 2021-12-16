@@ -1052,8 +1052,6 @@ class Trainer:
             score = self._get_score(y_pred[0], y)
         else:
             loss = self.loss_fn(y_pred, y, weight=weight)
-            if weight != None:
-                loss = self.loss_fn(y_pred, y, ldsweight=weight)
             if weight is not None:
                 if "weight" in signature(self.loss_fn.forward).parameters:
                     loss = self.loss_fn(y_pred, y, weight=weight)
