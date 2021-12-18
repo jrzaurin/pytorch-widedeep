@@ -38,10 +38,7 @@ class MultipleMetrics(object):
             if isinstance(metric, Metric):
                 logs[self.prefix + metric._name] = metric(y_pred, y_true)
             if isinstance(metric, TorchMetric):
-                if metric.num_classes == 2:
-                    metric.update(torch.round(y_pred).int(), y_true.int())
-                if metric.num_classes > 2:  # type: ignore[operator]
-                    metric.update(torch.max(y_pred, dim=1).indices, y_true.int())  # type: ignore[attr-defined]
+                metric.update(y_pred, y_true.int())  # type: ignore[attr-defined]
                 logs[self.prefix + type(metric).__name__] = (
                     metric.compute().detach().cpu().numpy()
                 )

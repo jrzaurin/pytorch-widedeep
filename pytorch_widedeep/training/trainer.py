@@ -149,8 +149,8 @@ class Trainer:
         - List of objects of type :obj:`torchmetrics.Metric`. This can be any
           metric from torchmetrics library `Examples
           <https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
-          classification-metrics>`_. This can also be a custom metric as
-          long as it is an object of type :obj:`Metric`. See `the instructions
+          classification-metrics>`_. This can also be a custom metric as long as
+          it is an object of type :obj:`Metric`. See `the instructions
           <https://torchmetrics.readthedocs.io/en/latest/>`_.
     class_weight: float, List or Tuple. optional. default=None
         - float indicating the weight of the minority class in binary classification
