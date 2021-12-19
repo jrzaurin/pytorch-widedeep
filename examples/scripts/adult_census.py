@@ -24,7 +24,7 @@ use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
 
-    DATA_PATH = Path("../data")
+    DATA_PATH = Path("../tmp_data")
 
     df = pd.read_csv(DATA_PATH / "adult/adult.csv.zip")
     df.columns = [c.replace("-", "_") for c in df.columns]
@@ -91,7 +91,7 @@ if __name__ == "__main__":
         model = WideDeep(wide=wide, deeptabular=tab_model)
 
         wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
-        deep_opt = torch.optim.AdamW(model.wide.parameters(), lr=0.01)
+        deep_opt = torch.optim.AdamW(model.deeptabular.parameters(), lr=0.01)
         wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=2)
         deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)
 

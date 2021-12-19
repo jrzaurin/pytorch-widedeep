@@ -4,6 +4,34 @@ import einops
 from torch import nn, einsum
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.models._get_activation_fn import get_activation_fn
+
+
+# single layer perceptron or fancy dense layer: Lin -> ACT -> LN -> DP
+class SLP(nn.Module):
+    def __init__(
+        self,
+        input_dim: int,
+        dropout: float,
+        activation: str,
+        normalise: bool,
+    ):
+        super(SLP, self).__init__()
+
+        self.lin = nn.Linear(
+            input_dim,
+            input_dim * 2 if activation.endswith("glu") else input_dim,
+        )
+        self.dropout = nn.Dropout(dropout)
+        self.activation = get_activation_fn(activation)
+
+        if normalise:
+            self.norm: Union[nn.LayerNorm, nn.Identity] = nn.LayerNorm(input_dim)
+        else:
+            self.norm = nn.Identity()
+
+    def forward(self, X: Tensor) -> Tensor:
+        return self.dropout(self.norm(self.activation(self.lin(X))))
 
 
 class ContextAttention(nn.Module):
@@ -28,8 +56,8 @@ class QueryKeySelfAttention(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        use_bias: bool,
         dropout: float,
+        use_bias: bool,
         n_heads: int,
     ):
         super(QueryKeySelfAttention, self).__init__()

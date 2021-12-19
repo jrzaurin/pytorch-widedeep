@@ -5,14 +5,13 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.embeddings_layers import (
     SameSizeCatAndContEmbeddings,
 )
-from pytorch_widedeep.models._get_activation_fn import allowed_activations
-from pytorch_widedeep.models.tabular.mlp._layers import MLP
-from pytorch_widedeep.models.tabular.mlp._encoders import AttentionEncoder
+from pytorch_widedeep.models.tabular.mlp._encoders import (
+    ContextAttentionEncoder,
+)
 
 
-class AttentiveTabMlp(nn.Module):
-    r"""Defines an ``AttentiveTabMlp`` model. This is an extension of the
-    ``TabMlp`` model with attention mechanisms
+class ContextAttentionMLP(nn.Module):
+    r"""Defines a ``ContextAttentionMLP`` model.
 
     Parameters
     ----------
@@ -29,11 +28,11 @@ class AttentiveTabMlp(nn.Module):
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
         :obj:`pytorch_widedeep.models.embeddings_layers.FullEmbeddingDropout`.
-         If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
+        If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
     shared_embed: bool, default = False
         The of sharing part of the embeddings per column is to enable the
         model to distinguish the classes in one column from those in the
-        other columns'`. In other words, the idea is to let the model learn
+        other columns. In other words, the idea is to let the model learn
         which column is embedded at the time.
     add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings
@@ -46,6 +45,10 @@ class AttentiveTabMlp(nn.Module):
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
+    embed_continuous_activation: str, default = None
+        String indicating the activation function to be applied to the
+        continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
+        ``gelu`` are supported.
     cont_embed_dropout: float, default = 0.1,
         Dropout for the continuous embeddings
     cont_embed_activation: Optional, str, default = None,
@@ -56,45 +59,16 @@ class AttentiveTabMlp(nn.Module):
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general is the number of
         embeddings used to encode the categorical and/or continuous columns
-    attention_name: str, default = "context_attention",
-        The type of attention used. Options are 'context_attention'
-        and 'self_attention'. The former is inspired by the attention
-        mechanism described in `Hierarchical Attention Networks for Document
-        Classification
-        <https://paperswithcode.com/paper/hierarchical-attention-networks-for-document>`_.
-        While the second one is a simplication of the well known multihead
-        attention described in `Attention is all you need
-        <https://arxiv.org/abs/1706.03762>_` , where only query and key projections
-        are used.
-    with_residual: bool = False,
+    attn_dropout: float, default = 0.2
+        Dropout for each attention block
+    with_addnorm: bool = False,
         Boolean indicating if residual connections will be used in the attention blocks
-    n_heads: int, default = 8
-        Number of attention heads per FastFormer block
-    use_bias: bool, default = False
-        Boolean indicating whether or not to use bias in the Q, K, and V
-        projection layers
-    n_blocks: int, default = 2
-        Number of FastFormer blocks
-    attn_dropout: float = 0.2,
-        Dropout within the attention blocks
-    mlp_hidden_dims: Optional, List, default = None
-        List with the number of neurons per dense layer in the mlp.
-    mlp_activation: str, default = "relu"
-        Activation function for the dense layers of the MLP. Currently
-        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
-    mlp_dropout: float or List, default = 0.1
-        float or List of floats with the dropout between the dense layers.
-        e.g: [0.5,0.5]
-    mlp_batchnorm: bool, default = False
-        Boolean indicating whether or not batch normalization will be applied
-        to the dense layers
-    mlp_batchnorm_last: bool, default = False
-        Boolean indicating whether or not batch normalization will be applied
-        to the last of the dense layers
-    mlp_linear_first: bool, default = False
-        Boolean indicating the order of the operations in the dense
-        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-        LIN -> ACT]``
+    attn_activation: str, default = "leaky_relu"
+        String indicating the activation function to be applied to the dense
+        layer in each attention encoder. ``tanh``, ``relu``, ``leaky_relu``
+        and ``gelu`` are supported.
+    n_blocks: int, default = 3
+        Number of attention block
 
     Attributes
     ----------
@@ -102,9 +76,6 @@ class AttentiveTabMlp(nn.Module):
         This is the module that processes the categorical and continuous columns
     attention_blks: ``nn.Sequential``
         Sequence of attention encoders.
-    tab_mlp: ``nn.Sequential``
-        mlp model that will receive the concatenation of the embeddings and
-        the continuous columns
     output_dim: int
         The output dimension of the model. This is a required attribute
         neccesary to build the WideDeep class
@@ -112,13 +83,12 @@ class AttentiveTabMlp(nn.Module):
     Example
     --------
     >>> import torch
-    >>> from pytorch_widedeep.models import TabMlp
+    >>> from pytorch_widedeep.models import ContextAttentionMLP
     >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
     >>> colnames = ['a', 'b', 'c', 'd', 'e']
     >>> cat_embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
     >>> column_idx = {k:v for v,k in enumerate(colnames)}
-    >>> model = TabMlp(mlp_hidden_dims=[8,4], column_idx=column_idx, cat_embed_input=cat_embed_input,
-    ... continuous_cols = ['e'])
+    >>> model = ContextAttentionMLP(column_idx=column_idx, cat_embed_input=cat_embed_input, continuous_cols = ['e'])
     >>> out = model(X_tab)
     """
 
@@ -137,20 +107,12 @@ class AttentiveTabMlp(nn.Module):
         cont_embed_activation: str = None,
         cont_norm_layer: str = None,
         input_dim: int = 32,
-        attention_name: str = "context_attention",
         attn_dropout: float = 0.2,
-        with_residual: bool = False,
-        n_heads: int = 8,
-        use_bias: bool = False,
-        n_blocks: int = 2,
-        mlp_hidden_dims: Optional[List[int]] = None,
-        mlp_activation: str = "relu",
-        mlp_dropout: float = 0.1,
-        mlp_batchnorm: bool = False,
-        mlp_batchnorm_last: bool = False,
-        mlp_linear_first: bool = True,
+        with_addnorm: bool = False,
+        attn_activation: str = "leaky_relu",
+        n_blocks: int = 3,
     ):
-        super(AttentiveTabMlp, self).__init__()
+        super(ContextAttentionMLP, self).__init__()
 
         self.column_idx = column_idx
         self.cat_embed_input = cat_embed_input
@@ -167,31 +129,16 @@ class AttentiveTabMlp(nn.Module):
         self.cont_norm_layer = cont_norm_layer
 
         self.input_dim = input_dim
-        self.attention_name = attention_name
         self.attn_dropout = attn_dropout
-        self.with_residual = with_residual
-        self.n_heads = n_heads
-        self.use_bias = use_bias
+        self.with_addnorm = with_addnorm
+        self.attn_activation = attn_activation
         self.n_blocks = n_blocks
 
-        self.mlp_hidden_dims = mlp_hidden_dims
-        self.mlp_activation = mlp_activation
-        self.mlp_dropout = mlp_dropout
-        self.mlp_batchnorm = mlp_batchnorm
-        self.mlp_batchnorm_last = mlp_batchnorm_last
-        self.mlp_linear_first = mlp_linear_first
+        self._check_activations()
 
         self.with_cls_token = "cls_token" in column_idx
         self.n_cat = len(cat_embed_input) if cat_embed_input is not None else 0
         self.n_cont = len(continuous_cols) if continuous_cols is not None else 0
-
-        if self.mlp_activation not in allowed_activations:
-            raise ValueError(
-                "Currently, only the following activation functions are supported "
-                "for for the MLP's dense layers: {}. Got {} instead".format(
-                    ", ".join(allowed_activations), self.mlp_activation
-                )
-            )
 
         self.cat_and_cont_embed = SameSizeCatAndContEmbeddings(
             input_dim,
@@ -211,45 +158,23 @@ class AttentiveTabMlp(nn.Module):
             cont_norm_layer,
         )
 
-        # Attention blocks
         self.attention_blks = nn.Sequential()
         for i in range(n_blocks):
             self.attention_blks.add_module(
                 "attention_block" + str(i),
-                AttentionEncoder(
+                ContextAttentionEncoder(
                     input_dim,
                     attn_dropout,
-                    with_residual,
-                    attention_name,
-                    use_bias,
-                    n_heads,
+                    with_addnorm,
+                    attn_activation,
                 ),
             )
 
-        # Mlp
-        if mlp_hidden_dims is not None:
-            attn_output_dim = (
-                self.input_dim
-                if self.with_cls_token
-                else (self.n_cat + self.n_cont) * self.input_dim
-            )
-            self.attn_tab_mlp = MLP(
-                [attn_output_dim] + mlp_hidden_dims,
-                mlp_activation,
-                mlp_dropout,
-                mlp_batchnorm,
-                mlp_batchnorm_last,
-                mlp_linear_first,
-            )
-            # the output_dim attribute will be used as input_dim when "merging" the models
-            self.output_dim = mlp_hidden_dims[-1]
-        else:
-            self.attn_tab_mlp = None
-            self.output_dim = (
-                input_dim
-                if self.with_cls_token
-                else ((self.n_cat + self.n_cont) * input_dim)
-            )
+        self.output_dim = (
+            input_dim
+            if self.with_cls_token
+            else ((self.n_cat + self.n_cont) * input_dim)
+        )
 
     def forward(self, X: Tensor) -> Tensor:
 
@@ -267,25 +192,13 @@ class AttentiveTabMlp(nn.Module):
         else:
             out = x.flatten(1)
 
-        if self.mlp_hidden_dims is not None:
-            out = self.attn_tab_mlp(out)
-
         return out
 
     @property
     def attention_weights(self) -> List:
         r"""List with the attention weights
 
-        The shape of the attention weights if the attention mechanism
-        is "self_attention" is:
-
-        :math:`(N, H, F, F)`
-
-        Where *N* is the batch size, *H* is the number of attention heads
-        and *F* is the number of features/columns in the dataset
-
-        On the other hand if the attention mechanism is "context_attention",
-        the shape of the attention weights is:
+        The shape of the attention weights is:
 
         :math:`(N, F)`
 
@@ -293,3 +206,28 @@ class AttentiveTabMlp(nn.Module):
         in the dataset
         """
         return [blk.attn.attn_weights for blk in self.attention_blks]
+
+    def _check_activations(self):
+
+        allowed_activations = [
+            "relu",
+            "leaky_relu",
+            "tanh",
+            "gelu",
+        ]
+
+        allowed = []
+        allowed.append(
+            self.embed_continuous_activation in allowed_activations
+            if self.embed_continuous_activation is not None
+            else True
+        )
+        allowed.append(self.attn_activation in allowed_activations)
+
+        all_allowed = all(allowed)
+
+        if not all_allowed:
+            raise ValueError(
+                "Currently, only the following activation functions are supported for "
+                "the AttentiveTabMlp: {}.".format(", ".join(allowed_activations))
+            )

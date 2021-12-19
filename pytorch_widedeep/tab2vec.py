@@ -111,7 +111,8 @@ class Tab2Vec:
         self.tab_preprocessor = tab_preprocessor
 
         models_with_attention = [
-            "attentivetabmlp",
+            "contextattentionmlp",
+            "selfattentionmlp",
             "tabtransformer",
             "saint",
             "fttransformer",

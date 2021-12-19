@@ -5,7 +5,7 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tabular.transformers._attention_layers import (
     AddNorm,
     NormAdd,
-    PositionwiseFF,
+    FeedForward,
     LinearAttention,
     AdditiveAttention,
     MultiHeadedAttention,
@@ -30,7 +30,7 @@ class TransformerEncoder(nn.Module):
             use_bias,
             attn_dropout,
         )
-        self.ff = PositionwiseFF(input_dim, ff_dropout, activation)
+        self.ff = FeedForward(input_dim, ff_dropout, activation)
 
         self.attn_addnorm = AddNorm(input_dim, attn_dropout)
         self.ff_addnorm = AddNorm(input_dim, ff_dropout)
@@ -61,7 +61,7 @@ class SaintEncoder(nn.Module):
             use_bias,
             attn_dropout,
         )
-        self.col_attn_ff = PositionwiseFF(input_dim, ff_dropout, activation)
+        self.col_attn_ff = FeedForward(input_dim, ff_dropout, activation)
         self.col_attn_addnorm = AddNorm(input_dim, attn_dropout)
         self.col_attn_ff_addnorm = AddNorm(input_dim, ff_dropout)
 
@@ -71,7 +71,7 @@ class SaintEncoder(nn.Module):
             use_bias,
             attn_dropout,
         )
-        self.row_attn_ff = PositionwiseFF(n_feat * input_dim, ff_dropout, activation)
+        self.row_attn_ff = FeedForward(n_feat * input_dim, ff_dropout, activation)
         self.row_attn_addnorm = AddNorm(n_feat * input_dim, attn_dropout)
         self.row_attn_ff_addnorm = AddNorm(n_feat * input_dim, ff_dropout)
 
@@ -113,7 +113,7 @@ class FTTransformerEncoder(nn.Module):
             kv_compression_factor,
             kv_sharing,
         )
-        self.ff = PositionwiseFF(input_dim, ff_dropout, activation, ff_factor)
+        self.ff = FeedForward(input_dim, ff_dropout, activation, ff_factor)
 
         self.attn_normadd = NormAdd(input_dim, attn_dropout)
         self.ff_normadd = NormAdd(input_dim, ff_dropout)
@@ -147,7 +147,7 @@ class PerceiverEncoder(nn.Module):
             query_dim,
         )
         attn_dim_out = query_dim if query_dim is not None else input_dim
-        self.ff = PositionwiseFF(attn_dim_out, ff_dropout, activation)
+        self.ff = FeedForward(attn_dim_out, ff_dropout, activation)
 
         self.ln_q = nn.LayerNorm(attn_dim_out)
         self.ln_kv = nn.LayerNorm(input_dim)
@@ -184,7 +184,7 @@ class FastFormerEncoder(nn.Module):
             share_qv_weights,
         )
 
-        self.ff = PositionwiseFF(input_dim, ff_dropout, activation)
+        self.ff = FeedForward(input_dim, ff_dropout, activation)
         self.attn_addnorm = AddNorm(input_dim, attn_dropout)
         self.ff_addnorm = AddNorm(input_dim, ff_dropout)
 

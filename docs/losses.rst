@@ -22,6 +22,15 @@ on their own and can be imported as:
 	the ground truth is expected to be a 1D tensor with the corresponding
 	classes. See Examples below
 
+.. autoclass:: pytorch_widedeep.losses.TweedieLoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.QuantileLoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.ZILNLoss
+	:members:
+
 .. autoclass:: pytorch_widedeep.losses.FocalLoss
 	:members:
 

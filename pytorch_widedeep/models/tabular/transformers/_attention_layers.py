@@ -13,7 +13,7 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 
 
-class PositionwiseFF(nn.Module):
+class FeedForward(nn.Module):
     def __init__(
         self,
         input_dim: int,
@@ -21,7 +21,7 @@ class PositionwiseFF(nn.Module):
         activation: str,
         mult: float = 4.0,
     ):
-        super(PositionwiseFF, self).__init__()
+        super(FeedForward, self).__init__()
         ff_hidden_dim = int(input_dim * mult)
         self.w_1 = nn.Linear(
             input_dim,

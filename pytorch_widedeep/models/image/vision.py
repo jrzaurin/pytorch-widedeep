@@ -87,7 +87,7 @@ class Vision(nn.Module):
     >>> import torch
     >>> from pytorch_widedeep.models import Vision
     >>> X_img = torch.rand((2,3,224,224))
-    >>> model = Vision(channel_sizes=[3, 64, 128], kernel_sizes = [3, 3], strides=[1, 1], head_hidden_dims=[32, 8])
+    >>> model = Vision(channel_sizes=[64, 128], kernel_sizes = [3, 3], strides=[1, 1], head_hidden_dims=[32, 8])
     >>> out = model(X_img)
     """
 

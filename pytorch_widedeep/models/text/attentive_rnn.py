@@ -90,9 +90,9 @@ class AttentiveRNN(nn.Module):
     Example
     --------
     >>> import torch
-    >>> from pytorch_widedeep.models import RNN
+    >>> from pytorch_widedeep.models import AttentiveRNN
     >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
-    >>> model = DeepText(vocab_size=4, hidden_dim=4, n_layers=1, padding_idx=0, embed_dim=4)
+    >>> model = AttentiveRNN(vocab_size=4, hidden_dim=4, n_layers=2, padding_idx=0, embed_dim=4)
     >>> out = model(X_text)
     """
 

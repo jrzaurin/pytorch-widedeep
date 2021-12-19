@@ -16,7 +16,8 @@ from pytorch_widedeep.models import (
     FTTransformer,
     TabFastFormer,
     TabTransformer,
-    AttentiveTabMlp,
+    SelfAttentionMLP,
+    ContextAttentionMLP,
 )
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
@@ -162,7 +163,7 @@ def test_tab_transformer_models(
 
 
 ###############################################################################
-# Test AttentiveTabMlp
+# Test SelfAttentionMLP and ContextAttentionMLP
 ###############################################################################
 
 
@@ -196,12 +197,21 @@ def test_attentive_mlp(
     )
     X_tab = tab_preprocessor.fit_transform(df_init)  # noqa: F841
 
-    deeptabular = AttentiveTabMlp(
-        column_idx=tab_preprocessor.column_idx,
-        cat_embed_input=tab_preprocessor.embeddings_input,
-        continuous_cols=tab_preprocessor.continuous_cols,
-        attention_name=attention_name,
-    )
+    if attention_name == "context_attention":
+
+        deeptabular = ContextAttentionMLP(
+            column_idx=tab_preprocessor.column_idx,
+            cat_embed_input=tab_preprocessor.embeddings_input,
+            continuous_cols=tab_preprocessor.continuous_cols,
+        )
+
+    elif attention_name == "self_attention":
+
+        deeptabular = SelfAttentionMLP(
+            column_idx=tab_preprocessor.column_idx,
+            cat_embed_input=tab_preprocessor.embeddings_input,
+            continuous_cols=tab_preprocessor.continuous_cols,
+        )
 
     # Let's assume the model is trained
     model = WideDeep(deeptabular=deeptabular)

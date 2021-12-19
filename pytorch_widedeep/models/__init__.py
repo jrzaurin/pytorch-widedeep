@@ -9,7 +9,8 @@ from pytorch_widedeep.models.tabular import (
     FTTransformer,
     TabFastFormer,
     TabTransformer,
-    AttentiveTabMlp,
+    SelfAttentionMLP,
+    ContextAttentionMLP,
 )
 from pytorch_widedeep.models.wide_deep import WideDeep
 from pytorch_widedeep.models.text.attentive_rnn import AttentiveRNN

@@ -15,7 +15,7 @@ def conv_layer(
             nf,
             kernel_size=kernel_size,
             stride=stride,
-            bias=True,
+            bias=False,
             padding=kernel_size // 2,
         ),
         nn.BatchNorm2d(nf, momentum=0.01),

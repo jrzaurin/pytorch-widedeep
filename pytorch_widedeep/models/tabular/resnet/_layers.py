@@ -21,7 +21,7 @@ class BasicBlock(nn.Module):
         self.simplify = simplify
         self.resize = resize
 
-        self.lin1 = nn.Linear(inp, out)
+        self.lin1 = nn.Linear(inp, out, bias=False)
         self.bn1 = nn.BatchNorm1d(out)
         self.leaky_relu = nn.LeakyReLU(inplace=True)
         if dropout > 0.0:
@@ -31,7 +31,7 @@ class BasicBlock(nn.Module):
             self.dropout = False
 
         if not self.simplify:
-            self.lin2 = nn.Linear(out, out)
+            self.lin2 = nn.Linear(out, out, bias=False)
             self.bn2 = nn.BatchNorm1d(out)
 
     def forward(self, X: Tensor) -> Tensor:
@@ -65,7 +65,7 @@ class DenseResnet(nn.Module):
             self.dense_resnet = nn.Sequential(
                 OrderedDict(
                     [
-                        ("lin_inp", nn.Linear(input_dim, blocks_dims[0])),
+                        ("lin_inp", nn.Linear(input_dim, blocks_dims[0], bias=False)),
                         ("bn_inp", nn.BatchNorm1d(blocks_dims[0])),
                     ]
                 )
@@ -76,7 +76,7 @@ class DenseResnet(nn.Module):
             resize = None
             if blocks_dims[i - 1] != blocks_dims[i]:
                 resize = nn.Sequential(
-                    nn.Linear(blocks_dims[i - 1], blocks_dims[i]),
+                    nn.Linear(blocks_dims[i - 1], blocks_dims[i], bias=False),
                     nn.BatchNorm1d(blocks_dims[i]),
                 )
             self.dense_resnet.add_module(

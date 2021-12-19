@@ -5,16 +5,19 @@ import torch
 import pandas as pd
 
 from pytorch_widedeep import Trainer
-from pytorch_widedeep.models import WideDeep, AttentiveTabMlp
+from pytorch_widedeep.models import (
+    WideDeep,
+    SelfAttentionMLP,
+    ContextAttentionMLP,
+)
 from pytorch_widedeep.metrics import Accuracy
-from pytorch_widedeep.callbacks import EarlyStopping
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
 
-    DATA_PATH = Path("../data")
+    DATA_PATH = Path("../tmp_data")
 
     df = pd.read_csv(DATA_PATH / "adult/adult.csv.zip")
     df.columns = [c.replace("-", "_") for c in df.columns]
@@ -41,26 +44,40 @@ if __name__ == "__main__":
     )
     X_tab = tab_preprocessor.fit_transform(df)
 
-    tab_mlp_attn = AttentiveTabMlp(
-        mlp_hidden_dims=[200, 100],
-        mlp_dropout=0.1,
-        column_idx=tab_preprocessor.column_idx,
-        cat_embed_input=tab_preprocessor.embeddings_input,
-        continuous_cols=continuous_cols,
-        attention_name="context_attention",
-    )
-    model = WideDeep(deeptabular=tab_mlp_attn)
+    for attention_name in ["context_attention", "self_attention"]:
 
-    trainer = Trainer(
-        model,
-        objective="binary",
-        callbacks=[EarlyStopping(patience=5)],
-        metrics=[Accuracy],
-    )
-    trainer.fit(
-        X_tab=X_tab,
-        target=target,
-        n_epochs=2,
-        batch_size=256,
-        val_split=0.2,
-    )
+        if attention_name == "context_attention":
+            tab_mlp_attn = ContextAttentionMLP(
+                column_idx=tab_preprocessor.column_idx,
+                cat_embed_input=tab_preprocessor.embeddings_input,
+                continuous_cols=continuous_cols,
+                input_dim=16,
+                attn_dropout=0.2,
+                n_blocks=3,
+            )
+        elif attention_name == "self_attention":
+            tab_mlp_attn = SelfAttentionMLP(  # type: ignore[assignment]
+                column_idx=tab_preprocessor.column_idx,
+                cat_embed_input=tab_preprocessor.embeddings_input,
+                continuous_cols=continuous_cols,
+                input_dim=16,
+                attn_dropout=0.2,
+                n_blocks=3,
+            )
+
+        model = WideDeep(deeptabular=tab_mlp_attn)
+        # tab_opt = torch.optim.AdamW(model.deeptabular.parameters(), lr=0.01)
+
+        trainer = Trainer(
+            model,
+            # optimizers=tab_opt,
+            objective="binary",
+            metrics=[Accuracy],
+        )
+        trainer.fit(
+            X_tab=X_tab,
+            target=target,
+            n_epochs=2,
+            batch_size=256,
+            val_split=0.2,
+        )
