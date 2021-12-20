@@ -259,7 +259,7 @@ class LRHistory(Callback):
     >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
     >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
     >>> wide = Wide(10, 1)
-    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
+    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
     >>> model = WideDeep(wide, deep)
     >>> trainer = Trainer(model, objective="regression", callbacks=[LRHistory(n_epochs=10)])
     """
@@ -391,7 +391,7 @@ class ModelCheckpoint(Callback):
     >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
     >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
     >>> wide = Wide(10, 1)
-    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
+    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
     >>> model = WideDeep(wide, deep)
     >>> trainer = Trainer(model, objective="regression", callbacks=[ModelCheckpoint(filepath='checkpoints/weights_out')])
     """
@@ -592,7 +592,7 @@ class EarlyStopping(Callback):
     >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
     >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
     >>> wide = Wide(10, 1)
-    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
+    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
     >>> model = WideDeep(wide, deep)
     >>> trainer = Trainer(model, objective="regression", callbacks=[EarlyStopping(patience=10)])
     """
@@ -706,9 +706,7 @@ class RayTuneReporter(Callback):
     Callbacks are passed as input parameters to the :obj:`Trainer` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
 
-    Examples
-    --------
-    see /examples/12_HyperParameter_tuning_w_RayTune.ipynb
+    For examples see: /examples/12_HyperParameter_tuning_w_RayTune.ipynb
     """
 
     def on_epoch_end(

@@ -5,7 +5,7 @@ import torch
 import pytest
 
 from pytorch_widedeep.models import TabMlp
-from pytorch_widedeep.models.embeddings_layers import (
+from pytorch_widedeep.models.tabular.embeddings_layers import (
     DiffSizeCatAndContEmbeddings,
 )
 

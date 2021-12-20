@@ -2,11 +2,11 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.embeddings_layers import (
-    SameSizeCatAndContEmbeddings,
-)
 from pytorch_widedeep.models.tabular.mlp._encoders import (
     ContextAttentionEncoder,
+)
+from pytorch_widedeep.models.tabular.embeddings_layers import (
+    SameSizeCatAndContEmbeddings,
 )
 
 

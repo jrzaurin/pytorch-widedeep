@@ -2,11 +2,11 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.embeddings_layers import (
-    DiffSizeCatAndContEmbeddings,
-)
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.resnet._layers import DenseResnet
+from pytorch_widedeep.models.tabular.embeddings_layers import (
+    DiffSizeCatAndContEmbeddings,
+)
 
 
 class TabResnet(nn.Module):

@@ -192,25 +192,24 @@ class Trainer:
     >>> # wide deep imports
     >>> from pytorch_widedeep.callbacks import EarlyStopping, LRHistory
     >>> from pytorch_widedeep.initializers import KaimingNormal, KaimingUniform, Normal, Uniform
-    >>> from pytorch_widedeep.models import TabResnet, DeepImage, DeepText, Wide, WideDeep
+    >>> from pytorch_widedeep.models import TabResnet, Vision, AttentiveRNN, Wide, WideDeep
     >>> from pytorch_widedeep import Trainer
-    >>> from pytorch_widedeep.optim import RAdam
     >>>
     >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
     >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
     >>> wide = Wide(10, 1)
     >>>
     >>> # build the model
-    >>> deeptabular = TabResnet(blocks_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
-    >>> deeptext = DeepText(vocab_size=10, embed_dim=4, padding_idx=0)
-    >>> deepimage = DeepImage(pretrained=False)
+    >>> deeptabular = TabResnet(blocks_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
+    >>> deeptext = AttentiveRNN(vocab_size=10, embed_dim=4, padding_idx=0)
+    >>> deepimage = Vision()
     >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
     >>>
     >>> # set optimizers and schedulers
     >>> wide_opt = torch.optim.Adam(model.wide.parameters())
-    >>> deep_opt = torch.optim.Adam(model.deeptabular.parameters())
-    >>> text_opt = RAdam(model.deeptext.parameters())
-    >>> img_opt = RAdam(model.deepimage.parameters())
+    >>> deep_opt = torch.optim.AdamW(model.deeptabular.parameters())
+    >>> text_opt = torch.optim.Adam(model.deeptext.parameters())
+    >>> img_opt = torch.optim.AdamW(model.deepimage.parameters())
     >>>
     >>> wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=5)
     >>> deep_sch = torch.optim.lr_scheduler.StepLR(deep_opt, step_size=3)

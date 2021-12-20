@@ -21,7 +21,7 @@ def create_explain_matrix(model: WideDeep) -> csc_matrix:
     >>> embed_input = [("a", 4, 2), ("b", 4, 2), ("c", 4, 2)]
     >>> cont_cols = ["d", "e"]
     >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c", "d", "e"])}
-    >>> deeptabular = TabNet(column_idx=column_idx, embed_input=embed_input, continuous_cols=cont_cols)
+    >>> deeptabular = TabNet(column_idx=column_idx, cat_embed_input=embed_input, continuous_cols=cont_cols)
     >>> model = WideDeep(deeptabular=deeptabular)
     >>> reduce_mtx = create_explain_matrix(model)
     >>> reduce_mtx.todense()

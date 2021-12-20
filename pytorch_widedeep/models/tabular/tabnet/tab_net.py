@@ -2,12 +2,12 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.embeddings_layers import (
-    DiffSizeCatAndContEmbeddings,
-)
 from pytorch_widedeep.models.tabular.tabnet._layers import (
     TabNetEncoder,
     initialize_non_glu,
+)
+from pytorch_widedeep.models.tabular.embeddings_layers import (
+    DiffSizeCatAndContEmbeddings,
 )
 
 

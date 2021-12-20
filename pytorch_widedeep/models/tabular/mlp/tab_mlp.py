@@ -2,11 +2,11 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.embeddings_layers import (
-    DiffSizeCatAndContEmbeddings,
-)
 from pytorch_widedeep.models._get_activation_fn import allowed_activations
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
+from pytorch_widedeep.models.tabular.embeddings_layers import (
+    DiffSizeCatAndContEmbeddings,
+)
 
 
 class TabMlp(nn.Module):

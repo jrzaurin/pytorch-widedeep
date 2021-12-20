@@ -72,7 +72,7 @@ class Tab2Vec:
     >>> # define the model (and let's assume we train it)
     >>> tabmlp = TabMlp(
     ... column_idx=tab_preprocessor.column_idx,
-    ... embed_input=tab_preprocessor.embeddings_input,
+    ... cat_embed_input=tab_preprocessor.embeddings_input,
     ... continuous_cols=tab_preprocessor.continuous_cols,
     ... mlp_hidden_dims=[8, 4])
     >>> model = WideDeep(deeptabular=tabmlp)
