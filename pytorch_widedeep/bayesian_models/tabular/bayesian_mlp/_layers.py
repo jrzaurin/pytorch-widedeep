@@ -1,8 +1,8 @@
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.bayesian_models import bayesian_nn as bnn
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
-from pytorch_widedeep.bayesian_models.bayesian_linear import BayesianLinear
 
 
 class BayesianMLP(nn.Module):
@@ -27,7 +27,7 @@ class BayesianMLP(nn.Module):
         for i in range(1, len(d_hidden)):
             bayesian_dense_layer = nn.Sequential(
                 *[
-                    BayesianLinear(
+                    bnn.BayesianLinear(
                         d_hidden[i - 1],
                         d_hidden[i],
                         use_bias,

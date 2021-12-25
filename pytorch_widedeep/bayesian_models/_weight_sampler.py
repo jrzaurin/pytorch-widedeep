@@ -1,9 +1,19 @@
+"""
+The code here is greatly insipired by the code at the Blitz package:
+
+https://github.com/piEsposito/blitz-bayesian-deep-learning
+"""
+
 import math
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 class ScaleMixtureGaussianPrior(object):
+    r"""Defines the Scale Mixture Prior as proposed in Weight Uncertainty in
+    Neural Networks (Eq 7 in the original publication)
+    """
+
     def __init__(self, pi: float, sigma1: float, sigma2: float):
         super().__init__()
         self.pi = pi
@@ -19,6 +29,10 @@ class ScaleMixtureGaussianPrior(object):
 
 
 class GaussianPosterior(object):
+    r"""Defines the Gaussian variational posterior as proposed in Weight
+    Uncertainty in Neural Networks
+    """
+
     def __init__(self, param_mu: Tensor, param_rho: Tensor):
         super().__init__()
         self.param_mu = param_mu

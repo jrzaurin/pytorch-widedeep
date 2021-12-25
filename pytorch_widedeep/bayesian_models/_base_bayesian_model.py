@@ -1,14 +1,21 @@
+import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 class BayesianModule(nn.Module):
+    r"""Simply a 'hack' to facilitate the computation of the KL divergence for all
+    Bayesian models
+    """
+
     def init(self):
         super().__init__()
 
 
 class BaseBayesianModel(nn.Module):
+    r""" "Base model containing the two methods common to all Bayesian models"""
+
     def _kl_divergence(self):
         kld = 0
         for module in self.modules():
@@ -23,13 +30,15 @@ class BaseBayesianModel(nn.Module):
         loss_fn: nn.Module,
         n_samples: int,
         n_batches: int,
-        pred_dim: int,
-    ) -> Tensor:
-        outputs = torch.zeros(n_samples, target.shape[0], pred_dim)
+    ) -> Tuple[Tensor, Tensor]:
+
+        outputs_l = []
         kld = 0.0
-        for i in range(n_samples):
-            outputs[i] = self(input)
+        for _ in range(n_samples):
+            outputs_l.append(self(input))
             kld += self._kl_divergence()
+        outputs = torch.stack(outputs_l)
+
         complexity_cost = kld / n_batches
         likelihood_cost = loss_fn(outputs.mean(0), target)
-        return complexity_cost + likelihood_cost
+        return outputs, complexity_cost + likelihood_cost

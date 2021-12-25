@@ -1,3 +1,13 @@
+"""
+The code here is greatly insipired by a couple of sources:
+
+the Blitz package: https://github.com/piEsposito/blitz-bayesian-deep-learning and
+
+Weight Uncertainty in Neural Networks post by Nitarshan Rajkumar: https://www.nitarshan.com/bayes-by-backprop/
+
+and references therein
+"""
+
 import torch.nn.functional as F
 from torch import nn
 
@@ -12,16 +22,60 @@ from pytorch_widedeep.bayesian_models._base_bayesian_model import (
 
 
 class BayesianLinear(BayesianModule):
+    r"""Applies a linear transformation to the incoming data as proposed in Weight
+    Uncertainity on Neural Networks
+
+    Parameters
+    ----------
+    in_features: int
+        size of each input sample
+    out_features: int
+         size of each output sample
+    use_bias: bool, default = True
+        Boolean indicating if an additive bias will be learnt
+    prior_sigma_1: float, default = 1.0
+        Prior of the sigma parameter for the first of the two weight Gaussian
+        distributions that will be mixed to produce the prior weight
+        distribution
+    prior_sigma_2: float, default = 0.002
+        Prior of the sigma parameter for the second of the two weight Gaussian
+        distributions that will be mixed to produce the prior weight
+        distribution
+    prior_pi: float, default = 0.8
+        Scaling factor that will be used to mix the Gaussians to produce the
+        prior weight distribution
+    posterior_mu_init: float = 0.0,
+        The posterior sample of the weights is defined as:
+
+            :math:`\mathbf{w} = \mu + log(1 + exp(\rho))`
+
+        where :math:`\mu` and :math:`\rho` are both sampled from Gaussian
+        distributions. ``posterior_mu_init`` is the initial mean value for
+        the Gaussian distribution from which :math:`\mu` is sampled.
+
+    posterior_rho_init: float = -7.0,
+        The initial mean value for the Gaussian distribution from which `\rho`
+        is sampled.
+
+    Examples
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.bayesian_models import bayesian_nn as bnn
+    >>> linear = bnn.BayesianLinear(10, 6)
+    >>> input = torch.rand(6, 10)
+    >>> out = linear(input)
+    """
+
     def __init__(
         self,
         in_features: int,
         out_features: int,
         use_bias: bool = True,
-        prior_sigma_1: float = 0.1,
+        prior_sigma_1: float = 1.0,
         prior_sigma_2: float = 0.002,
-        prior_pi: float = 1.0,
+        prior_pi: float = 0.8,
         posterior_mu_init: float = 0.0,
-        posterior_rho_init: float = -6.0,
+        posterior_rho_init: float = -7.0,
     ):
         super(BayesianLinear, self).__init__()
 
@@ -37,8 +91,7 @@ class BayesianLinear(BayesianModule):
         self.prior_sigma_2 = prior_sigma_2
         self.prior_pi = prior_pi
 
-        # Variational weight and bias parameters and sample for the posterior
-        # computation
+        # Variational Posterior
         self.weight_mu = nn.Parameter(
             torch.Tensor(out_features, in_features).normal_(posterior_mu_init, 0.1)
         )
@@ -103,13 +156,13 @@ class BayesianLinear(BayesianModule):
         if self.use_bias is not False:
             s += ", use_bias=True"
         if self.prior_sigma_1 != 0.1:
-            s + ", prior_sigma_1={prior_sigma_1}"
+            s += ", prior_sigma_1={prior_sigma_1}"
         if self.prior_sigma_2 != 0.002:
-            s + ", prior_sigma_2={prior_sigma_2}"
-        if self.prior_pi != 1.0:
-            s + ", prior_pi={prior_pi}"
+            s += ", prior_sigma_2={prior_sigma_2}"
+        if self.prior_pi != 0.8:
+            s += ", prior_pi={prior_pi}"
         if self.posterior_mu_init != 0.0:
-            s + ", posterior_mu_init={posterior_mu_init}"
-        if self.posterior_rho_init != -6.0:
-            s + ", posterior_rho_init={posterior_rho_init}"
+            s += ", posterior_mu_init={posterior_mu_init}"
+        if self.posterior_rho_init != -8.0:
+            s += ", posterior_rho_init={posterior_rho_init}"
         return s.format(**self.__dict__)

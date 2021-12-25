@@ -1,6 +1,8 @@
 import numpy as np
+import torch
 from tqdm import tqdm
 from torch import nn
+from torch.utils.data import TensorDataset
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.losses import (
@@ -11,7 +13,7 @@ from pytorch_widedeep.losses import (
     RMSLELoss,
     TweedieLoss,
     QuantileLoss,
-    BayesianRegressionLoss,
+    BayesianSELoss,
 )
 from pytorch_widedeep.wdtypes import Dict, List, Optional, Transforms
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
@@ -19,6 +21,80 @@ from pytorch_widedeep.training._loss_and_obj_aliases import (
     _LossAliases,
     _ObjectiveToMethod,
 )
+
+
+def tabular_train_val_split(
+    seed: int,
+    method: str,
+    X: np.ndarray,
+    y: np.ndarray,
+    X_val: Optional[np.ndarray] = None,
+    y_val: Optional[np.ndarray] = None,
+    val_split: Optional[float] = None,
+):
+    r"""
+    Function to create the train/val split for the BayesianTrainer where only
+    tabular data is present
+
+    Parameters
+    ----------
+    seed: int
+        random seed to be used during train/val split
+    method: str
+        'regression',  'binary' or 'multiclass'
+    X: np.ndarray
+        tabular dataset (categorical and continuous features)
+    y: np.ndarray
+    X_val: np.ndarray, Optional, default = None
+        Dict with the validation set, where the keys are the component names
+        (e.g: 'wide') and the values the corresponding arrays
+    y_val: np.ndarray, Optional, default = None
+
+    Returns
+    -------
+    train_set: ``TensorDataset``
+    eval_set: ``TensorDataset``
+    """
+
+    if X_val is not None:
+        assert (
+            y_val is not None
+        ), "if X_val is not None the validation target 'y_val' must also be specified"
+
+        train_set = TensorDataset(
+            torch.from_numpy(X),
+            torch.from_numpy(y),
+        )
+        eval_set = TensorDataset(
+            torch.from_numpy(X_val),
+            torch.from_numpy(y_val),
+        )
+    elif val_split is not None:
+        y_tr, y_val, idx_tr, idx_val = train_test_split(
+            y,
+            np.arange(len(y)),
+            test_size=val_split,
+            random_state=seed,
+            stratify=y if method != "regression" else None,
+        )
+        X_tr, X_val = X[idx_tr], X[idx_val]
+
+        train_set = TensorDataset(
+            torch.from_numpy(X_tr),
+            torch.from_numpy(y_tr),
+        )
+        eval_set = TensorDataset(
+            torch.from_numpy(X_val),
+            torch.from_numpy(y_val),
+        )
+    else:
+        train_set = TensorDataset(
+            torch.from_numpy(X),
+            torch.from_numpy(y),
+        )
+        eval_set = None
+
+    return train_set, eval_set
 
 
 def wd_train_val_split(  # noqa: C901
@@ -185,6 +261,34 @@ def save_epoch_logs(epoch_logs: Dict, loss: float, score: Dict, stage: str):
     return epoch_logs
 
 
+def bayesian_alias_to_loss(loss_fn: str, **kwargs):
+    r"""
+    Function that returns the corresponding loss function given an alias
+
+    Parameters
+    ----------
+    loss_fn: str
+        Loss name
+
+    Returns
+    -------
+    Object
+        loss function
+
+    Examples
+    --------
+    >>> from pytorch_widedeep.training._trainer_utils import bayesian_alias_to_loss
+    >>> loss_fn = bayesian_alias_to_loss(loss_fn="binary", weight=None)
+    """
+    if loss_fn == "binary":
+        return nn.BCEWithLogitsLoss(pos_weight=kwargs["weight"], reduction="sum")
+    if loss_fn == "multiclass":
+        return nn.CrossEntropyLoss(weight=kwargs["weight"], reduction="sum")
+    if loss_fn == "regression":
+        return BayesianSELoss()
+        # return BayesianRegressionLoss(noise_tolerance=kwargs["noise_tolerance"])
+
+
 def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
     r"""
     Function that returns the corresponding loss function given an alias
@@ -232,9 +336,3 @@ def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
         return TweedieLoss()
     if "focal_loss" in loss_fn:
         return FocalLoss(**kwargs)
-    if "bayesian_binary" in loss_fn:
-        return nn.BCEWithLogitsLoss(pos_weight=kwargs["weight"], reduction="sum")
-    if "bayesian_multiclass" in loss_fn:
-        return nn.CrossEntropyLoss(weight=kwargs["weight"], reduction="sum")
-    if "bayesian_regression" in loss_fn:
-        return BayesianRegressionLoss(noise_tolerance=kwargs["noise_tolerance"])

@@ -18,6 +18,7 @@ Documentation
     Utilities <utils/index>
     Preprocessing <preprocessing>
     Model Components <model_components>
+    Bayesian Models <bayesian_models>
     Metrics <metrics>
     Losses <losses>
     Dataloaders <dataloaders>
