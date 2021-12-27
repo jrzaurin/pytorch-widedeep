@@ -42,3 +42,6 @@ on their own and can be imported as:
 
 .. autoclass:: pytorch_widedeep.losses.RMSLELoss
 	:members:
+
+.. autoclass:: pytorch_widedeep.losses.BayesianSELoss
+	:members:

@@ -166,7 +166,7 @@ class BayesianDiffSizeCatAndContEmbeddings(nn.Module):
         cont_embed_dim: int,
         cont_embed_activation: str,
         use_cont_bias: bool,
-        cont_norm_layer: str,
+        cont_norm_layer: Optional[str],
         prior_sigma_1: float,
         prior_sigma_2: float,
         prior_pi: float,

@@ -1,7 +1,6 @@
 import torch
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models._get_activation_fn import allowed_activations
 from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BaseBayesianModel,
 )
@@ -50,7 +49,7 @@ class BayesianTabMlp(BaseBayesianModel):
         are: 'layernorm', 'batchnorm' or None.
     mlp_hidden_dims: List, default = [200, 100]
         List with the number of neurons per dense layer in the mlp.
-    mlp_activation: str, default = "relu"
+    mlp_activation: str, default = "leaky_relu"
         Activation function for the dense layers of the MLP. Currently
         ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
     prior_sigma_1: float, default = 1.0
@@ -114,11 +113,11 @@ class BayesianTabMlp(BaseBayesianModel):
         cont_norm_layer: str = "batchnorm",
         mlp_hidden_dims: List[int] = [200, 100],
         mlp_activation: str = "leaky_relu",
-        prior_sigma_1: float = 0.75,
-        prior_sigma_2: float = 0.1,
-        prior_pi: float = 0.25,
+        prior_sigma_1: float = 1,
+        prior_sigma_2: float = 0.002,
+        prior_pi: float = 0.8,
         posterior_mu_init: float = 0.0,
-        posterior_rho_init: float = -3.0,
+        posterior_rho_init: float = -7.0,
         pred_dim=1,  # Bayesian models will require their own trainer and need the output layer
     ):
         super(BayesianTabMlp, self).__init__()
@@ -145,15 +144,17 @@ class BayesianTabMlp(BaseBayesianModel):
 
         self.pred_dim = pred_dim
 
+        allowed_activations = ["relu", "leaky_relu", "tanh", "gelu"]
         if self.mlp_activation not in allowed_activations:
             raise ValueError(
                 "Currently, only the following activation functions are supported "
-                "for for the MLP's dense layers: {}. Got {} instead".format(
-                    ", ".join(allowed_activations), self.mlp_activation
+                "for the Bayesian MLP's dense layers: {}. Got '{}' instead".format(
+                    ", ".join(allowed_activations),
+                    self.mlp_activation,
                 )
             )
 
-        self.bayesian_cat_and_cont_embed = BayesianDiffSizeCatAndContEmbeddings(
+        self.cat_and_cont_embed = BayesianDiffSizeCatAndContEmbeddings(
             column_idx,
             cat_embed_input,
             continuous_cols,
@@ -169,7 +170,7 @@ class BayesianTabMlp(BaseBayesianModel):
             posterior_rho_init,
         )
 
-        mlp_input_dim = self.bayesian_cat_and_cont_embed.output_dim
+        mlp_input_dim = self.cat_and_cont_embed.output_dim
         mlp_hidden_dims = [mlp_input_dim] + mlp_hidden_dims + [pred_dim]
         self.bayesian_tab_mlp = BayesianMLP(
             mlp_hidden_dims,
@@ -186,7 +187,7 @@ class BayesianTabMlp(BaseBayesianModel):
         self.output_dim = mlp_hidden_dims[-1]
 
     def forward(self, X: Tensor) -> Tensor:
-        x_emb, x_cont = self.bayesian_cat_and_cont_embed(X)
+        x_emb, x_cont = self.cat_and_cont_embed(X)
         if x_emb is not None:
             x = x_emb
         if x_cont is not None:

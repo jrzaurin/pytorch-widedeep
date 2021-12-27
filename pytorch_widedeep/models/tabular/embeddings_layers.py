@@ -330,6 +330,7 @@ class SameSizeCatAndContEmbeddings(nn.Module):
     ):
         super(SameSizeCatAndContEmbeddings, self).__init__()
 
+        self.embed_dim = embed_dim
         self.cat_embed_input = cat_embed_input
         self.continuous_cols = continuous_cols
         self.embed_continuous = embed_continuous

@@ -304,6 +304,15 @@ class RMSLELoss(nn.Module):
 
 
 class BayesianRegressionLoss(nn.Module):
+    r"""log Gaussian loss as specified in the original publication 'Weight
+    Uncertainty in Neural Networks'
+
+    Currently we do not use this loss as is proportional to the
+    ``BayesianSELoss`` and the latter does not need a scale/noise_tolerance
+    param
+
+    """
+
     def __init__(self, noise_tolerance: float):
         super().__init__()
         self.noise_tolerance = noise_tolerance
@@ -317,8 +326,29 @@ class BayesianRegressionLoss(nn.Module):
 
 
 class BayesianSELoss(nn.Module):
+    r"""Squared Loss (log Gaussian) for the case of a regression as specified in
+    the original publication 'Weight Uncertainty in Neural Networks'
+    """
+
     def __init__(self):
         super().__init__()
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions (not probabilities)
+        target: Tensor
+            target tensor with the actual classes
+
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import BayesianSELoss
+        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+        >>> BayesianSELoss()(input, target)
+        tensor(0.9700)
+        """
         return (0.5 * (input - target) ** 2).sum()

@@ -89,7 +89,7 @@ class BayesianEmbedding(BayesianModule):
         sparse: Optional[bool] = False,
         prior_sigma_1: float = 1.0,
         prior_sigma_2: float = 0.002,
-        prior_pi: float = 0.25,
+        prior_pi: float = 0.8,
         posterior_mu_init: float = 0.0,
         posterior_rho_init: float = -3.0,
     ):

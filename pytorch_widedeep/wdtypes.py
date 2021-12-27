@@ -55,6 +55,9 @@ from pytorch_widedeep.models.tabular.tabnet.sparsemax import (
     Entmax15,
     Sparsemax,
 )
+from pytorch_widedeep.bayesian_models._base_bayesian_model import (
+    BaseBayesianModel,
+)
 
 ListRules = Collection[Callable[[str], str]]
 Tokens = Collection[Collection[str]]

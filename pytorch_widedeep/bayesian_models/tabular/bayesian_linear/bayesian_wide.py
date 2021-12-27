@@ -70,7 +70,7 @@ class BayesianWide(BaseBayesianModel):
         prior_sigma_2: float = 0.002,
         prior_pi: float = 0.8,
         posterior_mu_init: float = 0.0,
-        posterior_rho_init: float = -8.0,
+        posterior_rho_init: float = -7.0,
     ):
         super(BayesianWide, self).__init__()
         #  Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.

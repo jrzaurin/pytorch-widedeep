@@ -85,44 +85,48 @@ class Tab2Vec:
 
     def __init__(
         self,
-        model: WideDeep,
+        model: Union[WideDeep, BaseBayesianModel],
         tab_preprocessor: TabPreprocessor,
         return_dataframe: bool = False,
         verbose: bool = False,
     ):
         super(Tab2Vec, self).__init__()
 
-        if verbose:
-            if model.deepimage is not None or model.deeptext is not None:
-                warnings.warn(
-                    "Currently 'Tab2Vec' is only implemented for the 'deeptabular' component."
-                )
-
-        if model.deeptabular is None:
-            raise RuntimeError(
-                "Currently 'Tab2Vec' is only implemented for the 'deeptabular' component."
-            )
-        if not tab_preprocessor.is_fitted:
-            raise RuntimeError(
-                "The 'tab_preprocessor' must be fitted before is passed to 'Tab2Vec'"
-            )
-
         self.return_dataframe = return_dataframe
         self.tab_preprocessor = tab_preprocessor
 
-        models_with_attention = [
-            "contextattentionmlp",
-            "selfattentionmlp",
-            "tabtransformer",
-            "saint",
-            "fttransformer",
-            "tabperceiver",
-            "tabfastformer",
-        ]
-        self.with_attention = (
-            model.deeptabular[0].__class__.__name__.lower() in models_with_attention  # type: ignore[index]
-        )
-        self.vectorizer = deepcopy(model.deeptabular[0].cat_and_cont_embed)  # type: ignore[index]
+        if isinstance(model, BaseBayesianModel):
+            self.vectorizer: Any = deepcopy(model.cat_and_cont_embed)  # type: ignore[index]
+            self.with_attention = False
+        else:
+            if verbose:
+                if model.deepimage is not None or model.deeptext is not None:
+                    warnings.warn(
+                        "Currently 'Tab2Vec' is only implemented for the 'deeptabular' component."
+                    )
+
+            if model.deeptabular is None:
+                raise RuntimeError(
+                    "Currently 'Tab2Vec' is only implemented for the 'deeptabular' component."
+                )
+            if not tab_preprocessor.is_fitted:
+                raise RuntimeError(
+                    "The 'tab_preprocessor' must be fitted before is passed to 'Tab2Vec'"
+                )
+
+            models_with_attention = [
+                "contextattentionmlp",
+                "selfattentionmlp",
+                "tabtransformer",
+                "saint",
+                "fttransformer",
+                "tabperceiver",
+                "tabfastformer",
+            ]
+            self.with_attention = (
+                model.deeptabular[0].__class__.__name__.lower() in models_with_attention  # type: ignore[index]
+            )
+            self.vectorizer = deepcopy(model.deeptabular[0].cat_and_cont_embed)  # type: ignore[index]
 
         self.vectorizer.to(device)
 
@@ -158,7 +162,7 @@ class Tab2Vec:
         X = torch.from_numpy(X_tab).to(device)
 
         with torch.no_grad():
-            x_cat, x_cont = self.vectorizer(X)
+            x_cat, x_cont = self.vectorizer(X)  # type: ignore[operator]
 
         if self.tab_preprocessor.with_cls_token:
             x_cat = x_cat[:, 1:, :]
@@ -191,38 +195,52 @@ class Tab2Vec:
     def _new_colnames(self) -> List[str]:
 
         if self.with_attention:
-            new_colnames = []
-            embedding_dim = self.vectorizer.cat_embed.embed.embedding_dim
-            are_cont_embed = hasattr(self.vectorizer, "cont_embed")
-            cat_cols = [
-                ei[0]
-                for ei in self.tab_preprocessor.embeddings_input
-                if ei[0] != "cls_token"
-            ]
-            all_embed_cols = (
-                cat_cols + self.tab_preprocessor.continuous_cols
-                if are_cont_embed
-                else cat_cols
-            )
-            for colname in all_embed_cols:
-                new_colnames.extend(
-                    [
-                        "_".join([colname, "embed", str(i + 1)])
-                        for i in range(embedding_dim)
-                    ]
-                )
-            if not are_cont_embed:
-                new_colnames += self.tab_preprocessor.continuous_cols
+            return self._new_colnames_with_attn()
         else:
-            new_colnames = []
-            for colname, _, embedding_dim in self.tab_preprocessor.embeddings_input:
-                new_colnames.extend(
-                    [
+            return self._new_colnames_without_attn()
+
+    def _new_colnames_with_attn(self) -> List[str]:
+        embedding_dim: int = self.vectorizer.embed_dim
+
+        cat_cols = [
+            ei[0]
+            for ei in self.tab_preprocessor.embeddings_input
+            if ei[0] != "cls_token"
+        ]
+
+        are_cont_embed = hasattr(self.vectorizer, "cont_embed")
+        all_embed_cols = (
+            cat_cols + self.tab_preprocessor.continuous_cols
+            if are_cont_embed
+            else cat_cols
+        )
+
+        new_colnames = []
+        for colname in all_embed_cols:
+            new_colnames.extend(
+                ["_".join([colname, "embed", str(i + 1)]) for i in range(embedding_dim)]
+            )
+        if not are_cont_embed:
+            new_colnames += self.tab_preprocessor.continuous_cols
+
+        return new_colnames
+
+    def _new_colnames_without_attn(self) -> List[str]:
+        new_colnames = []
+
+        for colname, _, embedding_dim in self.tab_preprocessor.embeddings_input:
+            new_colnames.extend(
+                ["_".join([colname, "embed", str(i + 1)]) for i in range(embedding_dim)]
+            )
+
+        if self.tab_preprocessor.continuous_cols is not None:
+            if hasattr(self.vectorizer, "cont_embed"):
+                for colname in self.tab_preprocessor.continuous_cols:
+                    new_colnames.extend(
                         "_".join([colname, "embed", str(i + 1)])
-                        for i in range(embedding_dim)
-                    ]
-                )
-            if self.tab_preprocessor.continuous_cols is not None:
+                        for i in range(self.vectorizer.cont_embed_dim)
+                    )
+            else:
                 new_colnames += self.tab_preprocessor.continuous_cols
 
         return new_colnames

@@ -329,7 +329,7 @@ class BayesianTrainer:
         if self.objective == "binary":
             if return_samples:
                 preds = preds.squeeze(2)
-                probs = np.zeros([n_samples, preds.shape[0], 2])
+                probs = np.zeros([n_samples, preds.shape[1], 2])
                 for i in range(n_samples):
                     probs[i, :, 0] = 1 - preds[i]
                     probs[i, :, 1] = preds[i]

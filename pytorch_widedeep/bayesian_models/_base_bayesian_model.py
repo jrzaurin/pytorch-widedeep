@@ -14,7 +14,7 @@ class BayesianModule(nn.Module):
 
 
 class BaseBayesianModel(nn.Module):
-    r""" "Base model containing the two methods common to all Bayesian models"""
+    r"""Base model containing the two methods common to all Bayesian models"""
 
     def _kl_divergence(self):
         kld = 0

@@ -155,7 +155,7 @@ class BayesianLinear(BayesianModule):
         s = "{in_features}, {out_features}"
         if self.use_bias is not False:
             s += ", use_bias=True"
-        if self.prior_sigma_1 != 0.1:
+        if self.prior_sigma_1 != 1.0:
             s += ", prior_sigma_1={prior_sigma_1}"
         if self.prior_sigma_2 != 0.002:
             s += ", prior_sigma_2={prior_sigma_2}"
@@ -163,6 +163,6 @@ class BayesianLinear(BayesianModule):
             s += ", prior_pi={prior_pi}"
         if self.posterior_mu_init != 0.0:
             s += ", posterior_mu_init={posterior_mu_init}"
-        if self.posterior_rho_init != -8.0:
+        if self.posterior_rho_init != -7.0:
             s += ", posterior_rho_init={posterior_rho_init}"
         return s.format(**self.__dict__)
