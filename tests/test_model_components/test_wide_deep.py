@@ -8,8 +8,8 @@ from pytorch_widedeep.models import (
     TabMlp,
     TabNet,
     Vision,
+    BasicRNN,
     WideDeep,
-    AttentiveRNN,
 )
 
 embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
@@ -19,7 +19,7 @@ tabmlp = TabMlp(
     mlp_hidden_dims=[16, 8], column_idx=column_idx, cat_embed_input=embed_input
 )
 tabnet = TabNet(column_idx=column_idx, cat_embed_input=embed_input)
-deeptext = AttentiveRNN(vocab_size=100, embed_dim=8)
+deeptext = BasicRNN(vocab_size=100, embed_dim=8)
 deepimage = Vision()
 
 ###############################################################################

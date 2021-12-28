@@ -11,7 +11,16 @@ from pytorch_widedeep.models.tabular.embeddings_layers import (
 
 
 class ContextAttentionMLP(nn.Module):
-    r"""Defines a ``ContextAttentionMLP`` model.
+    r"""Defines a ``ContextAttentionMLP`` model that can be used as the
+    ``deeptabular`` component of a Wide & Deep model.
+
+    This class combines embedding representations of the categorical features
+    with numerical (aka continuous) features. These are then passed through a
+    series of attention blocks. Each attention block is comprised by a
+    ``ContextAttentionEncoder``.
+    See :obj:`pytorch_widedeep.models.tabular.mlp._attention_layers` for
+    details
+
 
     Parameters
     ----------
@@ -20,8 +29,8 @@ class ContextAttentionMLP(nn.Module):
         the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
         0, 'relationship': 1, 'workclass': 2, ...}
     cat_embed_input: List, Optional, default = None
-        List of Tuples with the column name, number of unique values and
-        embedding dimension. e.g. [(education, 11, 32), ...]
+        List of Tuples with the column name and number of unique values: e.g.[
+        (education, 16), ...]
     cat_embed_dropout: float, default = 0.1
         embeddings dropout
     full_embed_dropout: bool, default = False
@@ -30,10 +39,8 @@ class ContextAttentionMLP(nn.Module):
         :obj:`pytorch_widedeep.models.embeddings_layers.FullEmbeddingDropout`.
         If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
     shared_embed: bool, default = False
-        The of sharing part of the embeddings per column is to enable the
-        model to distinguish the classes in one column from those in the
-        other columns. In other words, the idea is to let the model learn
-        which column is embedded at the time.
+        The idea behind sharing part of the embeddings per column is to let
+        the model learn which column is embedded at the time.
     add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings
         to the column embeddings or 2) to replace the first
@@ -45,14 +52,12 @@ class ContextAttentionMLP(nn.Module):
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    embed_continuous_activation: str, default = None
+    cont_embed_activation: str, default = None
         String indicating the activation function to be applied to the
         continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
         ``gelu`` are supported.
     cont_embed_dropout: float, default = 0.1,
-        Dropout for the continuous embeddings
-    cont_embed_activation: Optional, str, default = None,
-        Activation function for the continuous embeddings
+        Continuous embeddings dropout
     cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
         are: 'layernorm', 'batchnorm' or None.
@@ -62,7 +67,8 @@ class ContextAttentionMLP(nn.Module):
     attn_dropout: float, default = 0.2
         Dropout for each attention block
     with_addnorm: bool = False,
-        Boolean indicating if residual connections will be used in the attention blocks
+        Boolean indicating if residual connections will be used in the
+        attention blocks
     attn_activation: str, default = "leaky_relu"
         String indicating the activation function to be applied to the dense
         layer in each attention encoder. ``tanh``, ``relu``, ``leaky_relu``
@@ -102,7 +108,6 @@ class ContextAttentionMLP(nn.Module):
         add_shared_embed: bool = False,
         frac_shared_embed: float = 0.25,
         continuous_cols: Optional[List[str]] = None,
-        embed_continuous_activation: str = None,
         cont_embed_dropout: float = 0.0,
         cont_embed_activation: str = None,
         cont_norm_layer: str = None,
@@ -123,7 +128,6 @@ class ContextAttentionMLP(nn.Module):
         self.frac_shared_embed = frac_shared_embed
 
         self.continuous_cols = continuous_cols
-        self.embed_continuous_activation = embed_continuous_activation
         self.cont_embed_dropout = cont_embed_dropout
         self.cont_embed_activation = cont_embed_activation
         self.cont_norm_layer = cont_norm_layer
@@ -134,12 +138,11 @@ class ContextAttentionMLP(nn.Module):
         self.attn_activation = attn_activation
         self.n_blocks = n_blocks
 
-        self._check_activations()
-
         self.with_cls_token = "cls_token" in column_idx
         self.n_cat = len(cat_embed_input) if cat_embed_input is not None else 0
         self.n_cont = len(continuous_cols) if continuous_cols is not None else 0
 
+        # Embeddings
         self.cat_and_cont_embed = SameSizeCatAndContEmbeddings(
             input_dim,
             column_idx,
@@ -153,11 +156,12 @@ class ContextAttentionMLP(nn.Module):
             continuous_cols,
             True,  # embed_continuous,
             cont_embed_dropout,
-            embed_continuous_activation,
+            cont_embed_activation,
             True,  # use_cont_bias
             cont_norm_layer,
         )
 
+        # Attention Blocks
         self.attention_blks = nn.Sequential()
         for i in range(n_blocks):
             self.attention_blks.add_module(
@@ -206,28 +210,3 @@ class ContextAttentionMLP(nn.Module):
         in the dataset
         """
         return [blk.attn.attn_weights for blk in self.attention_blks]
-
-    def _check_activations(self):
-
-        allowed_activations = [
-            "relu",
-            "leaky_relu",
-            "tanh",
-            "gelu",
-        ]
-
-        allowed = []
-        allowed.append(
-            self.embed_continuous_activation in allowed_activations
-            if self.embed_continuous_activation is not None
-            else True
-        )
-        allowed.append(self.attn_activation in allowed_activations)
-
-        all_allowed = all(allowed)
-
-        if not all_allowed:
-            raise ValueError(
-                "Currently, only the following activation functions are supported for "
-                "the AttentiveTabMlp: {}.".format(", ".join(allowed_activations))
-            )

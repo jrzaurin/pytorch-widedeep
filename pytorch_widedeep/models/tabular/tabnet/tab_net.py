@@ -12,7 +12,7 @@ from pytorch_widedeep.models.tabular.embeddings_layers import (
 
 
 class TabNet(nn.Module):
-    r"""Defines a ``TabNet`` model (https://arxiv.org/abs/1908.07442) model
+    r"""Defines a ``TabNet`` model (https://arxiv.org/abs/1908.07442)
     that can be used as the ``deeptabular`` component of a Wide & Deep
     model.
 
@@ -31,7 +31,7 @@ class TabNet(nn.Module):
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
     cat_embed_dropout: float, default = 0.
-        embeddings dropout
+        Categorical embeddings dropout
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     embed_continuous: bool, default = False,
@@ -40,7 +40,7 @@ class TabNet(nn.Module):
     cont_embed_dim: int, default = 32,
         Size of the continuous embeddings
     cont_embed_dropout: float, default = 0.1,
-        Dropout for the continuous embeddings
+        Continuous embeddings dropout
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings
     use_cont_bias: bool, default = True,
@@ -158,6 +158,7 @@ class TabNet(nn.Module):
         self.epsilon = epsilon
         self.mask_type = mask_type
 
+        # Embeddings
         self.cat_and_cont_embed = DiffSizeCatAndContEmbeddings(
             column_idx,
             cat_embed_input,
@@ -170,8 +171,9 @@ class TabNet(nn.Module):
             use_cont_bias,
             cont_norm_layer,
         )
-
         self.embed_out_dim = self.cat_and_cont_embed.output_dim
+
+        # TabNet
         self.tabnet_encoder = TabNetEncoder(
             self.embed_out_dim,
             n_steps,

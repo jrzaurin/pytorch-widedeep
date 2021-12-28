@@ -21,8 +21,9 @@ allowed_pretrained_models = [
 
 
 class Vision(nn.Module):
-    r"""Standard image classifier/regressor using a pretrained network or a
-    sequence of convolution layers.
+    r"""Defines a standard image classifier/regressor using a pretrained network or a
+    sequence of convolution layers that can be used as the ``deepimage``
+    component of a Wide & Deep model.
 
     Parameters
     ----------
@@ -43,7 +44,7 @@ class Vision(nn.Module):
         `resnet18` pretrainable model and we set `trainable_params =
         ['layer4']` only the parameters of layer4 of the network (and the
         head, as mentioned before) will be trained. Note that setting this or
-        the previous parameter involve some knowledge of the architecture
+        the previous parameter involves some knowledge of the architecture
         used.
     channel_sizes: list, default = [64, 128, 256, 512]
         List of integers with the channel sizes of a CNN in case we choose not

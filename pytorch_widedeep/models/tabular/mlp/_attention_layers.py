@@ -4,37 +4,14 @@ import einops
 from torch import nn, einsum
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models._get_activation_fn import get_activation_fn
-
-
-# single layer perceptron or fancy dense layer: Lin -> ACT -> LN -> DP
-class SLP(nn.Module):
-    def __init__(
-        self,
-        input_dim: int,
-        dropout: float,
-        activation: str,
-        normalise: bool,
-    ):
-        super(SLP, self).__init__()
-
-        self.lin = nn.Linear(
-            input_dim,
-            input_dim * 2 if activation.endswith("glu") else input_dim,
-        )
-        self.dropout = nn.Dropout(dropout)
-        self.activation = get_activation_fn(activation)
-
-        if normalise:
-            self.norm: Union[nn.LayerNorm, nn.Identity] = nn.LayerNorm(input_dim)
-        else:
-            self.norm = nn.Identity()
-
-    def forward(self, X: Tensor) -> Tensor:
-        return self.dropout(self.norm(self.activation(self.lin(X))))
 
 
 class ContextAttention(nn.Module):
+    r"""Attention mechanism inspired by `Hierarchical Attention Networks for
+    Document Classification
+    <https://www.cs.cmu.edu/~./hovy/papers/16HLT-hierarchical-attention-networks.pdf>`_
+    """
+
     def __init__(self, input_dim: int, dropout: float, sum_along_seq: bool = False):
         super(ContextAttention, self).__init__()
 
@@ -53,6 +30,18 @@ class ContextAttention(nn.Module):
 
 
 class QueryKeySelfAttention(nn.Module):
+    r"""Attention mechanism inspired by the well known multi-head attention. Here,
+    rather than learning a value projection matrix that will be multiplied by
+    the attention weights, we multiply such weights directly by the input
+    tensor.
+
+    The rationale behind this implementation comes, among other
+    considerations, from the fact that Transformer based models tend to
+    heavily overfit tabular. Therefore, by reducing the number of trainable
+    parameters and multiply directly by the incoming tensor we help
+    mitigating such overfitting
+    """
+
     def __init__(
         self,
         input_dim: int,

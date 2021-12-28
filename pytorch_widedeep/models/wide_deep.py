@@ -103,12 +103,12 @@ class WideDeep(nn.Module):
     Examples
     --------
 
-    >>> from pytorch_widedeep.models import TabResnet, Vision, AttentiveRNN, Wide, WideDeep
+    >>> from pytorch_widedeep.models import TabResnet, Vision, BasicRNN, Wide, WideDeep
     >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
     >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
     >>> wide = Wide(10, 1)
     >>> deeptabular = TabResnet(blocks_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
-    >>> deeptext = AttentiveRNN(vocab_size=10, embed_dim=4, padding_idx=0)
+    >>> deeptext = BasicRNN(vocab_size=10, embed_dim=4, padding_idx=0)
     >>> deepimage = Vision()
     >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
 

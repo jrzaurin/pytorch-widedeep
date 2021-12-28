@@ -27,7 +27,7 @@ class TabPerceiver(nn.Module):
         List of Tuples with the column name and number of unique values
         e.g. [('education', 11), ...]
     cat_embed_dropout: float, default = 0.1
-        Dropout to be applied to the embeddings matrix
+        Categorical embeddings dropout
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
@@ -50,14 +50,12 @@ class TabPerceiver(nn.Module):
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    embed_continuous_activation: str, default = None
+    cont_embed_activation: str, default = None
         String indicating the activation function to be applied to the
         continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
         ``gelu`` are supported.
     cont_embed_dropout: float, default = 0.0,
-        Dropout for the continuous embeddings
-    cont_embed_activation: str,  default = None,
-        Activation function for the continuous embeddings
+        Continuous embeddings dropout
     cont_norm_layer: str, default =  None,
         Type of normalization layer applied to the continuous features before
         they are embedded. Options are: ``layernorm``, ``batchnorm`` or
@@ -193,9 +191,8 @@ class TabPerceiver(nn.Module):
         self.frac_shared_embed = frac_shared_embed
 
         self.continuous_cols = continuous_cols
-        self.embed_continuous_activation = embed_continuous_activation
-        self.cont_embed_dropout = cont_embed_dropout
         self.cont_embed_activation = cont_embed_activation
+        self.cont_embed_dropout = cont_embed_dropout
         self.cont_norm_layer = cont_norm_layer
 
         self.input_dim = input_dim
@@ -218,6 +215,7 @@ class TabPerceiver(nn.Module):
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
+        # Embeddings
         self.cat_and_cont_embed = SameSizeCatAndContEmbeddings(
             input_dim,
             column_idx,
@@ -231,11 +229,12 @@ class TabPerceiver(nn.Module):
             continuous_cols,
             True,  # embed_continuous,
             cont_embed_dropout,
-            embed_continuous_activation,
+            cont_embed_activation,
             True,  # use_cont_bias
             cont_norm_layer,
         )
 
+        # Transformer blocks
         self.latents = nn.init.trunc_normal_(
             nn.Parameter(torch.empty(n_latents, latent_dim))
         )
@@ -253,6 +252,7 @@ class TabPerceiver(nn.Module):
                     "perceiver_block" + str(n)
                 ] = self._build_perceiver_block()
 
+        # Mlp
         if not mlp_hidden_dims:
             self.mlp_hidden_dims = [latent_dim, latent_dim * 4, latent_dim * 2]
         else:

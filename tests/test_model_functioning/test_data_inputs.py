@@ -6,13 +6,7 @@ from torch import nn
 from torchvision.transforms import ToTensor, Normalize
 from sklearn.model_selection import train_test_split
 
-from pytorch_widedeep.models import (
-    Wide,
-    TabMlp,
-    Vision,
-    WideDeep,
-    AttentiveRNN,
-)
+from pytorch_widedeep.models import Wide, TabMlp, Vision, BasicRNN, WideDeep
 from pytorch_widedeep.training import Trainer
 
 np.random.seed(1)
@@ -62,7 +56,7 @@ deeptabular = TabMlp(
     mlp_hidden_dims=[32, 16],
     mlp_dropout=[0.5, 0.5],
 )
-deeptext = AttentiveRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+deeptext = BasicRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
 deepimage = Vision(pretrained_model_name="resnet18", n_trainable=0)
 
 # transforms

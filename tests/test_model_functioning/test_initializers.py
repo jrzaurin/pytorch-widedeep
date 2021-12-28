@@ -5,13 +5,7 @@ import numpy as np
 import torch
 import pytest
 
-from pytorch_widedeep.models import (
-    Wide,
-    TabMlp,
-    Vision,
-    WideDeep,
-    AttentiveRNN,
-)
+from pytorch_widedeep.models import Wide, TabMlp, Vision, BasicRNN, WideDeep
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.initializers import (
     Normal,
@@ -94,7 +88,7 @@ def test_initializers_1(initializers, test_layers):
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
     )
-    deeptext = AttentiveRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+    deeptext = BasicRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
     deepimage = Vision(pretrained_model_name="resnet18", n_trainable=0)
     model = WideDeep(
         wide=wide,
@@ -145,7 +139,7 @@ def test_initializers_with_pattern():
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
     )
-    deeptext = AttentiveRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+    deeptext = BasicRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
     model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, pred_dim=1)
     cmodel = c(model)
     org_word_embed = []
@@ -215,7 +209,7 @@ def test_warning_when_missing_initializer():
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
     )
-    deeptext = AttentiveRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+    deeptext = BasicRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
     model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, pred_dim=1)
     with pytest.warns(UserWarning):
         trainer = Trainer(  # noqa: F841

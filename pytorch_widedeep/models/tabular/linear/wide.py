@@ -7,19 +7,22 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 class Wide(nn.Module):
-    r"""wide (linear) component
-    Linear model implemented via an Embedding layer connected to the output
-    neuron(s).
+    r"""Defines a wide (linear) model where the non-linearities are captured via
+    the so-called crossed-columns. This can be used as the ``wide`` component
+    of a Wide & Deep model.
 
     Parameters
     -----------
     input_dim: int
         size of the Embedding layer. `input_dim` is the summation of all the
         individual values for all the features that go through the wide
-        component. For example, if the wide component receives 2 features with
+        model. For example, if the wide model receives 2 features with
         5 individual values each, `input_dim = 10`
     pred_dim: int, default = 1
-        size of the ouput tensor containing the predictions
+        size of the ouput tensor containing the predictions. Note that unlike
+        all the other models, the wide model is connected directly to the
+        output neuron(s) when used to build a Wide and Deep model. Therefore,
+        it requires the ``pred_dim`` parameter.
 
     Attributes
     -----------
@@ -57,7 +60,7 @@ class Wide(nn.Module):
         bound = 1 / math.sqrt(fan_in)
         nn.init.uniform_(self.bias, -bound, bound)
 
-    def forward(self, X: Tensor) -> Tensor:  # type: ignore
+    def forward(self, X: Tensor) -> Tensor:
         r"""Forward pass. Simply connecting the Embedding layer with the ouput
         neuron(s)"""
         out = self.wide_linear(X.long()).sum(dim=1) + self.bias

@@ -55,7 +55,15 @@ are: ``wide``, ``deeptabular``, ``deeptext``, ``deepimage``.
     :exclude-members: forward
     :members:
 
+.. autoclass:: pytorch_widedeep.models.text.attentive_rnn.BasicRNN
+    :exclude-members: forward
+    :members:
+
 .. autoclass:: pytorch_widedeep.models.text.attentive_rnn.AttentiveRNN
+    :exclude-members: forward
+    :members:
+
+.. autoclass:: pytorch_widedeep.models.text.attentive_rnn.StackedAttentiveRNN
     :exclude-members: forward
     :members:
 

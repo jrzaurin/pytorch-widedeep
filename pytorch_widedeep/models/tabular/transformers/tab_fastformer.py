@@ -25,7 +25,7 @@ class TabFastFormer(nn.Module):
         List of Tuples with the column name and number of unique values
         e.g. [('education', 11), ...]
     cat_embed_dropout: float, default = 0.1
-        Dropout to be applied to the embeddings matrix
+        Categorical embeddings dropout
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
@@ -49,14 +49,12 @@ class TabFastFormer(nn.Module):
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    embed_continuous_activation: str, default = None
+    cont_embed_activation: str, default = None
         String indicating the activation function to be applied to the
         continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
         ``gelu`` are supported.
     cont_embed_dropout: float, default = 0.0,
-        Dropout for the continuous embeddings
-    cont_embed_activation: str,  default = None,
-        Activation function for the continuous embeddings
+        Continuous embeddings dropout
     cont_norm_layer: str, default =  None,
         Type of normalization layer applied to the continuous features before
         they are embedded. Options are: ``layernorm``, ``batchnorm`` or
@@ -169,9 +167,8 @@ class TabFastFormer(nn.Module):
         self.frac_shared_embed = frac_shared_embed
 
         self.continuous_cols = continuous_cols
-        self.embed_continuous_activation = embed_continuous_activation
-        self.cont_embed_dropout = cont_embed_dropout
         self.cont_embed_activation = cont_embed_activation
+        self.cont_embed_dropout = cont_embed_dropout
         self.cont_norm_layer = cont_norm_layer
 
         self.input_dim = input_dim
@@ -196,6 +193,7 @@ class TabFastFormer(nn.Module):
         self.n_cont = len(continuous_cols) if continuous_cols is not None else 0
         self.n_feats = self.n_cat + self.n_cont
 
+        # Embeddings
         self.cat_and_cont_embed = SameSizeCatAndContEmbeddings(
             input_dim,
             column_idx,
@@ -209,12 +207,12 @@ class TabFastFormer(nn.Module):
             continuous_cols,
             True,  # embed_continuous,
             cont_embed_dropout,
-            embed_continuous_activation,
+            cont_embed_activation,
             True,  # use_cont_bias
             cont_norm_layer,
         )
 
-        # Transformer bocks
+        # Transformer blocks
         self.fastformer_blks = nn.Sequential()
         first_fastformer_block = FastFormerEncoder(
             input_dim,

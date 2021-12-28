@@ -102,7 +102,7 @@ def test_early_stop(model):
         objective="binary",
         callbacks=[
             EarlyStopping(
-                min_delta=1000.0, patience=3, restore_best_weights=True, verbose=1
+                min_delta=1e4, patience=3, restore_best_weights=True, verbose=1
             )
         ],
         verbose=0,

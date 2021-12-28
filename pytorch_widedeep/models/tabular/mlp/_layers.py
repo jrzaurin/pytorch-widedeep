@@ -13,11 +13,6 @@ def dense_layer(
     linear_first: bool,
 ):
     # This is basically the LinBnDrop class at the fastai library
-    if activation == "geglu":
-        raise ValueError(
-            "'geglu' activation is only used as 'transformer_activation' "
-            "in transformer-based models"
-        )
     act_fn = get_activation_fn(activation)
     layers = [nn.BatchNorm1d(out if linear_first else inp)] if bn else []
     if p != 0:
@@ -25,6 +20,33 @@ def dense_layer(
     lin = [nn.Linear(inp, out, bias=not bn), act_fn]
     layers = lin + layers if linear_first else layers + lin
     return nn.Sequential(*layers)
+
+
+# single layer perceptron or fancy dense layer: Lin -> ACT -> LN -> DP
+class SLP(nn.Module):
+    def __init__(
+        self,
+        input_dim: int,
+        dropout: float,
+        activation: str,
+        normalise: bool,
+    ):
+        super(SLP, self).__init__()
+
+        self.lin = nn.Linear(
+            input_dim,
+            input_dim * 2 if activation.endswith("glu") else input_dim,
+        )
+        self.dropout = nn.Dropout(dropout)
+        self.activation = get_activation_fn(activation)
+
+        if normalise:
+            self.norm: Union[nn.LayerNorm, nn.Identity] = nn.LayerNorm(input_dim)
+        else:
+            self.norm = nn.Identity()
+
+    def forward(self, X: Tensor) -> Tensor:
+        return self.dropout(self.norm(self.activation(self.lin(X))))
 
 
 class MLP(nn.Module):

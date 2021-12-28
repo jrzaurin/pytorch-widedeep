@@ -14,9 +14,9 @@ from pytorch_widedeep.models import (
     TabMlp,
     TabNet,
     Vision,
+    BasicRNN,
     WideDeep,
     TabResnet,
-    AttentiveRNN,
     TabTransformer,
 )
 from pytorch_widedeep.metrics import Accuracy, Precision
@@ -88,7 +88,7 @@ tabnet = TabNet(
     continuous_cols=colnames[5:],
     ghost_bn=False,
 )
-deeptext = AttentiveRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+deeptext = BasicRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
 deepimage = Vision(pretrained_model_name="resnet18", n_trainable=0)
 
 ###############################################################################

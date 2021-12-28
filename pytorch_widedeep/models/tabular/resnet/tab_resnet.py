@@ -10,8 +10,8 @@ from pytorch_widedeep.models.tabular.embeddings_layers import (
 
 
 class TabResnet(nn.Module):
-    r"""Defines a so-called ``TabResnet`` model that can be used as the
-    ``deeptabular`` component of a Wide & Deep model.
+    r"""Defines a ``TabResnet`` model that can be used as the ``deeptabular``
+    component of a Wide & Deep model.
 
     This class combines embedding representations of the categorical features
     with numerical (aka continuous) features. These are then passed through a
@@ -29,14 +29,16 @@ class TabResnet(nn.Module):
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...].
     cat_embed_dropout: float, default = 0.1
-        embeddings dropout
+        Categorical embeddings dropout
+    continuous_cols: List, Optional, default = None
+        List with the name of the numeric (aka continuous) columns
     embed_continuous: bool, default = False,
         Boolean indicating if the continuous columns will be embedded
         (i.e. passed each through a linear layer with or without activation)
     cont_embed_dim: int, default = 32,
         Size of the continuous embeddings
     cont_embed_dropout: float, default = 0.1,
-        Dropout for the continuous embeddings
+        Continuous embeddings dropout
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings
     use_cont_bias: bool, default = True,
@@ -55,7 +57,7 @@ class TabResnet(nn.Module):
        Block's `"internal"` dropout. This dropout is applied to the first
        of the two dense layers that comprise each ``BasicBlock``.
     simplify_blocks: bool, default = False,
-        Boolean indicating if the simples possible residual blocks (X ->
+        Boolean indicating if the simplest possible residual blocks (X ->
         [LIN1, BN1, ACT1] + X) will be used instead of a standard one (X ->
         [LIN1, BN1, ACT1] -> [LIN2, BN2] + X).
     mlp_hidden_dims: List, Optional, default = None
@@ -159,6 +161,7 @@ class TabResnet(nn.Module):
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
+        # Embeddings
         self.cat_and_cont_embed = DiffSizeCatAndContEmbeddings(
             column_idx,
             cat_embed_input,
@@ -174,7 +177,7 @@ class TabResnet(nn.Module):
         cat_out_dim = self.cat_and_cont_embed.cat_out_dim
         cont_out_dim = self.cat_and_cont_embed.cont_out_dim
 
-        # DenseResnet
+        # Resnet
         dense_resnet_input_dim = cat_out_dim + cont_out_dim
         self.tab_resnet_blks = DenseResnet(
             dense_resnet_input_dim, blocks_dims, blocks_dropout, self.simplify_blocks

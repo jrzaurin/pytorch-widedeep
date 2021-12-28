@@ -29,7 +29,7 @@ class TabTransformer(nn.Module):
         List of Tuples with the column name and number of unique values
         e.g. [('education', 11), ...]
     cat_embed_dropout: float, default = 0.1
-        Dropout to be applied to the embeddings matrix
+        Categorical embeddings dropout
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
@@ -59,14 +59,12 @@ class TabTransformer(nn.Module):
         See :obj:`pytorch_widedeep.models.transformers.ft_transformer.FTTransformer`
         for details on the dedicated implementation available in this
         library
-    embed_continuous_activation: str, default = None
+    cont_embed_activation: str, default = None
         String indicating the activation function to be applied to the
         continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
         ``gelu`` are supported.
     cont_embed_dropout: float, default = 0.0,
-        Dropout for the continuous embeddings
-    cont_embed_activation: str,  default = None,
-        Activation function for the continuous embeddings
+        Continuous embeddings dropout
     cont_norm_layer: str, default =  None,
         Type of normalization layer applied to the continuous features before
         they are embedded. Options are: ``layernorm``, ``batchnorm`` or
@@ -202,6 +200,7 @@ class TabTransformer(nn.Module):
                 "If only continuous features are used 'embed_continuous' must be set to 'True'"
             )
 
+        # Embeddings
         self.cat_and_cont_embed = SameSizeCatAndContEmbeddings(
             input_dim,
             column_idx,
@@ -220,6 +219,7 @@ class TabTransformer(nn.Module):
             cont_norm_layer,
         )
 
+        # Transformer
         self.transformer_blks = nn.Sequential()
         for i in range(n_blocks):
             self.transformer_blks.add_module(
@@ -234,6 +234,7 @@ class TabTransformer(nn.Module):
                 ),
             )
 
+        # Mlp
         attn_output_dim = self._compute_attn_output_dim()
         if not mlp_hidden_dims:
             mlp_hidden_dims = [

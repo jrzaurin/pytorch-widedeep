@@ -19,10 +19,10 @@ class SelfAttentionMLP(nn.Module):
         the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
         0, 'relationship': 1, 'workclass': 2, ...}
     cat_embed_input: List, Optional, default = None
-        List of Tuples with the column name, number of unique values and
-        embedding dimension. e.g. [(education, 11, 32), ...]
+        List of Tuples with the column name and number of unique values: e.g.[
+        (education, 16), ...]
     cat_embed_dropout: float, default = 0.1
-        embeddings dropout
+        Categorical embeddings dropout
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
@@ -44,37 +44,25 @@ class SelfAttentionMLP(nn.Module):
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    embed_continuous_activation: str, default = None
+    cont_embed_dropout: float, default = 0.1,
+        Continuous embeddings dropout
+    cont_embed_activation: Optional, str, default = None,
         String indicating the activation function to be applied to the
         continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
         ``gelu`` are supported.
-    cont_embed_dropout: float, default = 0.1,
-        Dropout for the continuous embeddings
-    cont_embed_activation: Optional, str, default = None,
-        Activation function for the continuous embeddings
     cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
         are: 'layernorm', 'batchnorm' or None.
-    attn_name: str, default = "context_attention",
-        The type of attention used. Options are 'context_attention'
-        and 'self_attention'. The former is inspired by the attention
-        mechanism described in `Hierarchical Attention Networks for Document
-        Classification
-        <https://paperswithcode.com/paper/hierarchical-attention-networks-for-document>`_.
-        While the second one is a simplication of the well known multihead
-        attention described in `Attention is all you need
-        <https://arxiv.org/abs/1706.03762>_` , where only query and key projections
-        are used.
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general is the number of
         embeddings used to encode the categorical and/or continuous columns
     attn_dropout: float, default = 0.2
         Dropout for each attention block
+    n_heads: int, default = 8
+        Number of attention heads per attention block.
     use_bias: bool, default = False
         Boolean indicating whether or not to use bias in the Q, K projection
         layers.
-    n_heads: int, default = 8
-        Number of attention heads per attention block.
     with_addnorm: bool = False,
         Boolean indicating if residual connections will be used in the attention blocks
     attn_activation: str, default = "leaky_relu"
@@ -116,7 +104,6 @@ class SelfAttentionMLP(nn.Module):
         add_shared_embed: bool = False,
         frac_shared_embed: float = 0.25,
         continuous_cols: Optional[List[str]] = None,
-        embed_continuous_activation: str = None,
         cont_embed_dropout: float = 0.0,
         cont_embed_activation: str = None,
         cont_norm_layer: str = None,
@@ -139,7 +126,6 @@ class SelfAttentionMLP(nn.Module):
         self.frac_shared_embed = frac_shared_embed
 
         self.continuous_cols = continuous_cols
-        self.embed_continuous_activation = embed_continuous_activation
         self.cont_embed_dropout = cont_embed_dropout
         self.cont_embed_activation = cont_embed_activation
         self.cont_norm_layer = cont_norm_layer
@@ -151,8 +137,6 @@ class SelfAttentionMLP(nn.Module):
         self.with_addnorm = with_addnorm
         self.attn_activation = attn_activation
         self.n_blocks = n_blocks
-
-        self._check_activations()
 
         self.with_cls_token = "cls_token" in column_idx
         self.n_cat = len(cat_embed_input) if cat_embed_input is not None else 0
@@ -171,7 +155,7 @@ class SelfAttentionMLP(nn.Module):
             continuous_cols,
             True,  # embed_continuous,
             cont_embed_dropout,
-            embed_continuous_activation,
+            cont_embed_activation,
             True,  # use_cont_bias
             cont_norm_layer,
         )
@@ -226,28 +210,3 @@ class SelfAttentionMLP(nn.Module):
         and *F* is the number of features/columns in the dataset
         """
         return [blk.attn.attn_weights for blk in self.attention_blks]
-
-    def _check_activations(self):
-
-        allowed_activations = [
-            "relu",
-            "leaky_relu",
-            "tanh",
-            "gelu",
-        ]
-
-        allowed = []
-        allowed.append(
-            self.embed_continuous_activation in allowed_activations
-            if self.embed_continuous_activation is not None
-            else True
-        )
-        allowed.append(self.attn_activation in allowed_activations)
-
-        all_allowed = all(allowed)
-
-        if not all_allowed:
-            raise ValueError(
-                "Currently, only the following activation functions are supported for "
-                "the AttentiveTabMlp: {}.".format(", ".join(allowed_activations))
-            )

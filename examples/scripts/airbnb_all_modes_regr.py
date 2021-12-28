@@ -11,8 +11,10 @@ from pytorch_widedeep.models import (
     Wide,
     TabMlp,
     Vision,
+    BasicRNN,
     WideDeep,
     AttentiveRNN,
+    StackedAttentiveRNN,
 )
 from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.initializers import KaimingNormal
@@ -27,7 +29,7 @@ use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
 
-    DATA_PATH = Path("../data")
+    DATA_PATH = Path("../tmp_data")
 
     df = pd.read_csv(DATA_PATH / "airbnb/airbnb_sample.csv")
 
@@ -74,7 +76,7 @@ if __name__ == "__main__":
         word_vectors_path=word_vectors_path, text_col=text_col
     )
     X_text = text_processor.fit_transform(df)
-    deeptext = AttentiveRNN(
+    deeptext = BasicRNN(
         vocab_size=len(text_processor.vocab.itos),
         hidden_dim=64,
         n_layers=3,
@@ -82,9 +84,28 @@ if __name__ == "__main__":
         rnn_dropout=0.5,
         padding_idx=1,
         embed_matrix=text_processor.embedding_matrix,
-        with_attention=True,
         head_hidden_dims=[100, 50],
     )
+    # deeptext = AttentiveRNN(
+    #     vocab_size=len(text_processor.vocab.itos),
+    #     hidden_dim=64,
+    #     n_layers=3,
+    #     bidirectional=True,
+    #     rnn_dropout=0.5,
+    #     padding_idx=1,
+    #     embed_matrix=text_processor.embedding_matrix,
+    #     with_attention=True,
+    #     head_hidden_dims=[100, 50],
+    # )
+    # deeptext = StackedAttentiveRNN(
+    #     vocab_size=len(text_processor.vocab.itos),
+    #     embed_matrix=text_processor.embedding_matrix,
+    #     hidden_dim=64,
+    #     bidirectional=True,
+    #     padding_idx=1,
+    #     with_addnorm=True,
+    #     head_hidden_dims=[100, 50],
+    # )
 
     wide = Wide(input_dim=np.unique(X_wide).shape[0], pred_dim=1)
     deepdense = TabMlp(

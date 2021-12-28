@@ -2,7 +2,6 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models._get_activation_fn import allowed_activations
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.embeddings_layers import (
     DiffSizeCatAndContEmbeddings,
@@ -27,7 +26,7 @@ class TabMlp(nn.Module):
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
     cat_embed_dropout: float, default = 0.1
-        embeddings dropout
+        Categorical embeddings dropout
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     embed_continuous: bool, default = False,
@@ -36,7 +35,7 @@ class TabMlp(nn.Module):
     cont_embed_dim: int, default = 32,
         Size of the continuous embeddings
     cont_embed_dropout: float, default = 0.1,
-        Dropout for the continuous embeddings
+        continuous embeddings dropout
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings
     use_cont_bias: bool, default = True,
@@ -127,14 +126,7 @@ class TabMlp(nn.Module):
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
-        if self.mlp_activation not in allowed_activations:
-            raise ValueError(
-                "Currently, only the following activation functions are supported "
-                "for for the MLP's dense layers: {}. Got {} instead".format(
-                    ", ".join(allowed_activations), self.mlp_activation
-                )
-            )
-
+        # Embeddings
         self.cat_and_cont_embed = DiffSizeCatAndContEmbeddings(
             column_idx,
             cat_embed_input,

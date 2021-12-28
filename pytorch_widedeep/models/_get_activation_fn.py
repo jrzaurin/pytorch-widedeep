@@ -8,7 +8,6 @@ allowed_activations = [
     "gelu",
     "geglu",
     "reglu",
-    "softplus",
 ]
 
 
@@ -27,15 +26,23 @@ class REGLU(nn.Module):
 def get_activation_fn(activation):
     if activation == "relu":
         return nn.ReLU(inplace=True)
-    if activation == "leaky_relu":
+    elif activation == "leaky_relu":
         return nn.LeakyReLU(inplace=True)
-    if activation == "tanh":
+    elif activation == "tanh":
         return nn.Tanh()
-    if activation == "gelu":
+    elif activation == "gelu":
         return nn.GELU()
-    if activation == "geglu":
+    elif activation == "geglu":
         return GEGLU()
-    if activation == "reglu":
+    elif activation == "reglu":
         return REGLU()
-    if activation == "softplus":
+    elif activation == "softplus":
         return nn.Softplus()
+    else:
+        raise ValueError(
+            "Only the following activation functions are currently "
+            "supported: {}. Note that 'geglu' and 'reglu' "
+            "should only be used as transformer's activations".format(
+                ", ".join(allowed_activations)
+            )
+        )
