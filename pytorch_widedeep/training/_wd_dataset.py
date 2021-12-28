@@ -5,7 +5,6 @@ from torch.utils.data import Dataset
 from scipy.ndimage import convolve1d
 from scipy.ndimage import gaussian_filter1d
 from scipy.signal.windows import triang
-
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 # TODO assert to limit the usage of LDS only for single value regression objective
@@ -54,10 +53,10 @@ class WideDeepDataset(Dataset):
         target: Optional[np.ndarray] = None,
         transforms: Optional[Any] = None,
         lds: bool = False,
-        lds_kernel: str = "gaussian",
+        lds_kernel: Literal['gaussian', 'triang', 'laplace'] = "gaussian",
         lds_ks: int = 5,
         lds_sigma: int = 2,
-        reweight: str = None,
+        reweight: Literal["sqrt_inv", "inverse", None] = None,
         Ymax: Optional[float] = None,
     ):
         super(WideDeepDataset, self).__init__()
@@ -144,7 +143,7 @@ class WideDeepDataset(Dataset):
         elif reweight == "inverse":
             value_dict = {k: np.clip(v, 5, 1000) for k, v in value_dict.items()}  # clip weights for inverse re-weight
         num_per_label = [value_dict[min(max_target - 1, int(label))] for label in labels]
-        if not len(num_per_label) or reweight == "none":
+        if not len(num_per_label) or not reweight:
             return None
         print(f"Using re-weighting: [{reweight.upper()}]")
 
