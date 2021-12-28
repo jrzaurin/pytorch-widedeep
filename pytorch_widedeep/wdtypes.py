@@ -13,6 +13,7 @@ from typing import (
     Optional,
     Generator,
     Collection,
+    Literal,
 )
 from pathlib import PosixPath
 
