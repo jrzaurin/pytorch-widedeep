@@ -156,7 +156,7 @@ def test_early_stop():
                 min_delta=5.0, patience=3, restore_best_weights=True, verbose=1
             )
         ],
-        verbose=1,
+        verbose=0,
     )
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, val_split=0.2, n_epochs=5)
     # length of history = patience+1

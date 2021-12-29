@@ -34,7 +34,7 @@ def tabular_train_val_split(
 ):
     r"""
     Function to create the train/val split for the BayesianTrainer where only
-    tabular data is present
+    tabular data is used
 
     Parameters
     ----------
@@ -143,10 +143,8 @@ def wd_train_val_split(  # noqa: C901
 
     Returns
     -------
-    train_set: WideDeepDataset
-        train ``WideDeepDataset`` object
-    eval_set: WideDeepDataset
-        validation ``WideDeepDataset`` object
+    train_set: ``WideDeepDataset``
+    eval_set: ``WideDeepDataset``
     """
 
     if X_val is not None:
@@ -218,9 +216,9 @@ def print_loss_and_metric(pb: tqdm, loss: float, score: Dict):
     Parameters
     ----------
     pb: tqdm
-        tqdm Object defined as trange(...)
+        tqdm object defined as trange(...)
     loss: float
-        loss value
+        Loss value
     score: Dict
         Dictionary where the keys are the metric names and the values are the
         corresponding values
@@ -262,8 +260,8 @@ def save_epoch_logs(epoch_logs: Dict, loss: float, score: Dict, stage: str):
 
 
 def bayesian_alias_to_loss(loss_fn: str, **kwargs):
-    r"""
-    Function that returns the corresponding loss function given an alias
+    r"""Function that returns the corresponding loss function given an alias.
+    To be used with the ``BayesianTrainer``
 
     Parameters
     ----------
@@ -290,8 +288,7 @@ def bayesian_alias_to_loss(loss_fn: str, **kwargs):
 
 
 def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
-    r"""
-    Function that returns the corresponding loss function given an alias
+    r"""Function that returns the corresponding loss function given an alias
 
     Parameters
     ----------

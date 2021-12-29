@@ -89,13 +89,6 @@ class BayesianTrainer:
           classification-metrics>`_. This can also be a custom metric as
           long as it is an object of type :obj:`Metric`. See `the instructions
           <https://torchmetrics.readthedocs.io/en/latest/>`_.
-    class_weight: float, List or Tuple. optional. default=None
-        - float indicating the weight of the minority class in binary classification
-          problems (e.g. 9.)
-        - a list or tuple with weights for the different classes in multiclass
-          classification problems  (e.g. [1., 2., 3.]). The weights do not
-          need to be normalised. See `this discussion
-          <https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10>`_.
     verbose: int, default=1
         Setting it to 0 will print nothing during training.
     seed: int, default=1
@@ -122,7 +115,6 @@ class BayesianTrainer:
         lr_scheduler: LRScheduler = None,
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
-        class_weight: Optional[Union[float, List[float], Tuple[float]]] = None,
         verbose: int = 1,
         seed: int = 1,
         **kwargs,
@@ -141,19 +133,14 @@ class BayesianTrainer:
         self.seed = seed
         self.objective = objective
 
-        self.loss_fn = self._set_loss_fn(objective, class_weight, custom_loss_function)
+        self.loss_fn = self._set_loss_fn(objective, custom_loss_function, **kwargs)
         self.optimizer = (
             optimizer
             if optimizer is not None
             else torch.optim.AdamW(self.model.parameters())
         )
         self.lr_scheduler = lr_scheduler
-        try:
-            self._set_lr_scheduler_running_params(
-                lr_scheduler, kwargs["reducelronplateau_criterion"]
-            )
-        except KeyError:
-            self._set_lr_scheduler_running_params(lr_scheduler)
+        self._set_lr_scheduler_running_params(lr_scheduler, **kwargs)
         self._set_callbacks_and_metrics(callbacks, metrics)
         self.model.to(device)
 
@@ -542,20 +529,24 @@ class BayesianTrainer:
 
         return preds_l
 
-    def _set_loss_fn(self, objective, class_weight, custom_loss_function):
+    def _set_loss_fn(self, objective, custom_loss_function, **kwargs):
 
         if custom_loss_function is not None:
             return custom_loss_function
 
-        if class_weight is not None:
-            class_weight = torch.tensor(class_weight).to(device)
-        elif self.objective != "regression":
+        class_weight = (
+            torch.tensor(kwargs["class_weight"]).to(device)
+            if "class_weight" in kwargs
+            else None
+        )
+
+        if self.objective != "regression":
             return bayesian_alias_to_loss(objective, weight=class_weight)
         else:
             return bayesian_alias_to_loss(objective)
 
     def _set_reduce_on_plateau_criterion(
-        self, lr_scheduler, reducelronplateau_criterion=None
+        self, lr_scheduler, reducelronplateau_criterion
     ):
 
         self.reducelronplateau = False
@@ -574,10 +565,10 @@ class BayesianTrainer:
         else:
             self.reducelronplateau_criterion = "loss"
 
-    def _set_lr_scheduler_running_params(
-        self, lr_scheduler, reducelronplateau_criterion=None
-    ):
+    def _set_lr_scheduler_running_params(self, lr_scheduler, **kwargs):
         # ReduceLROnPlateau is special
+
+        reducelronplateau_criterion = kwargs.get("reducelronplateau_criterion", None)
         self._set_reduce_on_plateau_criterion(lr_scheduler, reducelronplateau_criterion)
         if lr_scheduler is not None:
             self.cyclic_lr = "cycl" in lr_scheduler.__class__.__name__.lower()

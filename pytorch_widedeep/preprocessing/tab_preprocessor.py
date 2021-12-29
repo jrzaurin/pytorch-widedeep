@@ -40,20 +40,20 @@ class TabPreprocessor(BasePreprocessor):
     ----------
     embed_cols: List, default = None
         List containing the name of the columns that will be represented by
-        embeddings or a Tuple with the name and the embedding dimension. e.g.:
-        [('education',32), ('relationship',16), ...]
+        embeddings (e.g. ['education', 'relationship', ...]) or a Tuple with
+        the name and the embedding dimension (e.g.:[('education',32),
+        ('relationship',16), ...])
     continuous_cols: List, default = None
-        List with the name of the so called continuous cols
+        List with the name of the continuous cols
     scale: bool, default = True
         Bool indicating whether or not to scale/standarise continuous cols.
-        The user should bear in mind that all the ``deeptabular`` components
-        available within ``pytorch-widedeep`` they also include the
-        possibility of normalising the input continuous features via a
-        ``BatchNorm`` or a ``LayerNorm`` layer. See
-        :obj:`pytorch_widedeep.models.transformers._embedding_layers`
+        The user should bear in mind that all the DL models for tabular data
+        in the library also include the possibility of normalising the input
+        continuous features via a ``BatchNorm`` or a ``LayerNorm``.
     auto_embed_dim: bool, default = True
         Boolean indicating whether the embedding dimensions will be
-        automatically defined via rule of thumb
+        automatically defined via rule of thumb. See ``embedding_rule``
+        below.
     embedding_rule: str, default = 'fastai_new'
         choice of embedding rule of thumb are:
 
@@ -64,23 +64,24 @@ class TabPreprocessor(BasePreprocessor):
         - 'google' -- :math:`min(600, round(n_{cat}^{0.24}))`
 
     default_embed_dim: int, default=16
-        Dimension for the embeddings used for the ``deeptabular``
-        component if the embed_dim is not provided in the ``embed_cols``
-        parameter
+        Dimension for the embeddings if the embed_dim is not provided in the
+        ``embed_cols`` parameter and auto_embed_dim is set to ``False``.
     already_standard: List, default = None
         List with the name of the continuous cols that do not need to be
-        Standarised. For example, you might have Long and Lat in your
-        dataset and might want to encode them somehow (e.g. see the
+        Standarised. For example, you might have Long and Lat in your dataset
+        and might want to encode them somehow (e.g. see the
         ``LatLongScalarEnc`` available in the `autogluon
         <https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular>`_
         tabular library) and not standarize them any further
-    for_transformer: bool, default = False
-        Boolean indicating whether the preprocessed data will be passed to a
-        transformer-based model
-        (See :obj:`pytorch_widedeep.models.transformers`). If ``True``, the
-        param ``embed_cols`` must just be a list containing the categorical
-        columns: e.g.:['education', 'relationship', ...] This is because they
-        will all be encoded using embeddings of the same dim.
+    with_attention: bool, default = False
+        Boolean indicating whether the preprocessed data will be passed to an
+        attention-based model. If ``True``, the param ``embed_cols`` must
+        just be a list containing the categorical columns: e.g.:
+        ['education', 'relationship', ...] This is because they will all be
+        encoded using embeddings of the same dim.
+
+        Param alias: ``for_transformer``
+
     with_cls_token: bool, default = False
         Boolean indicating if a `'[CLS]'` token will be added to the dataset
         when using transformer-based models. The final hidden state
@@ -90,7 +91,7 @@ class TabPreprocessor(BasePreprocessor):
         being passed to the final MLP.
     shared_embed: bool, default = False
         Boolean indicating if the embeddings will be "shared" when using
-        transformer-based models. The idea behind ``shared_embed`` is
+        attention-based models. The idea behind ``shared_embed`` is
         described in the Appendix A in the `TabTransformer paper
         <https://arxiv.org/abs/2012.06678>`_: `'The goal of having column
         embedding is to enable the model to distinguish the classes in one
@@ -103,7 +104,7 @@ class TabPreprocessor(BasePreprocessor):
     ----------
     embed_dim: Dict
         Dictionary where keys are the embed cols and values are the embedding
-        dimensions. If ``for_transformer`` is set to ``True`` the embedding
+        dimensions. If ``with_attention`` is set to ``True`` the embedding
         dimensions are the same for all columns and this attributes is not
         generated during the ``fit`` process
     label_encoder: LabelEncoder
@@ -135,7 +136,7 @@ class TabPreprocessor(BasePreprocessor):
     {'color': 0, 'size': 1, 'age': 2}
     """
 
-    @Alias("for_transformer", "with_attention")
+    @Alias("with_attention", "for_transformer")
     def __init__(
         self,
         embed_cols: Union[List[str], List[Tuple[str, int]]] = None,
@@ -145,7 +146,7 @@ class TabPreprocessor(BasePreprocessor):
         embedding_rule: str = "fastai_new",
         default_embed_dim: int = 16,
         already_standard: List[str] = None,
-        for_transformer: bool = False,
+        with_attention: bool = False,
         with_cls_token: bool = False,
         shared_embed: bool = False,
         verbose: int = 1,
@@ -159,7 +160,7 @@ class TabPreprocessor(BasePreprocessor):
         self.embedding_rule = embedding_rule
         self.default_embed_dim = default_embed_dim
         self.already_standard = already_standard
-        self.for_transformer = for_transformer
+        self.with_attention = with_attention
         self.with_cls_token = with_cls_token
         self.shared_embed = shared_embed
         self.verbose = verbose
@@ -172,12 +173,12 @@ class TabPreprocessor(BasePreprocessor):
             )
 
         transformer_error_message = (
-            "If for_transformer is 'True' embed_cols must be a list "
+            "If with_attention is 'True' embed_cols must be a list "
             " of strings with the columns to be encoded as embeddings."
         )
-        if self.for_transformer and self.embed_cols is None:
+        if self.with_attention and self.embed_cols is None:
             raise ValueError(transformer_error_message)
-        if self.for_transformer and isinstance(self.embed_cols[0], tuple):  # type: ignore[index]
+        if self.with_attention and isinstance(self.embed_cols[0], tuple):  # type: ignore[index]
             raise ValueError(transformer_error_message)
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
@@ -187,12 +188,12 @@ class TabPreprocessor(BasePreprocessor):
             self.label_encoder = LabelEncoder(
                 columns_to_encode=df_emb.columns.tolist(),
                 shared_embed=self.shared_embed,
-                for_transformer=self.for_transformer,
+                with_attention=self.with_attention,
             )
             self.label_encoder.fit(df_emb)
             self.embeddings_input: List = []
             for k, v in self.label_encoder.encoding_dict.items():
-                if self.for_transformer:
+                if self.with_attention:
                     self.embeddings_input.append((k, len(v)))
                 else:
                     self.embeddings_input.append((k, len(v), self.embed_dim[k]))
@@ -263,7 +264,7 @@ class TabPreprocessor(BasePreprocessor):
         return self.fit(df).transform(df)
 
     def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.for_transformer:
+        if self.with_attention:
             if self.with_cls_token:
                 df_cls = df.copy()[self.embed_cols]
                 df_cls.insert(loc=0, column="cls_token", value="[CLS]")

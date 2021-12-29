@@ -17,21 +17,20 @@ class Tab2Vec:
 
     This class will take an input dataframe in the form of the dataframe used
     for training, and it will turn it into a vectorised form based on the
-    processing applied to the categorical and continuous columns.
+    processing applied by the model to the categorical and continuous
+    columns.
 
-    .. note:: Currently this class is only implemented for the deeptabular component.
-        Therefore, if the input dataframe has a text column or a column with
-        the path to images, these will be ignored. We will be adding these
-        functionalities in future versions
+    .. note:: Currently this class is only implemented for the deeptabular
+        component or the Bayesian model. Therefore, if the input dataframe has
+        a text column or a column with the path to images, these will be
+        ignored. We will be adding these functionalities in future versions
 
     Parameters
     ----------
-    model: ``WideDeep``
-        ``WideDeep`` model. Must be trained.
-        See :obj:`pytorch-widedeep.models.wide_deep.WideDeep`
+    model: ``WideDeep`` or ``BaseBayesianModel``
+        ``WideDeep`` ``BaseBayesianModel`` model. Must be trained.
     tab_preprocessor: ``TabPreprocessor``
         ``TabPreprocessor`` object. Must be fitted.
-        See :obj:`pytorch-widedeep.preprocessing.tab_preprocessor.TabPreprocessor`
     return_dataframe: bool
         Boolean indicating of the returned object(s) will be array(s) or
         pandas dataframe(s)
@@ -146,7 +145,10 @@ class Tab2Vec:
         pd.DataFrame,
         Tuple[pd.DataFrame, pd.Series],
     ]:
-        r"""
+        r"""Transforms the input dataframe into vectorized form. If a target
+        column name is passed the target values will be returned separately
+        in their corresponding type (np.ndarray or pd.DataFrame)
+
         Parameters
         ----------
         df: pd.DataFrame

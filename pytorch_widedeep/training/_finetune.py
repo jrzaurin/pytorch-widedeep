@@ -11,10 +11,9 @@ use_cuda = torch.cuda.is_available()
 
 
 class FineTune:
-    r"""
-    Fine-tune methods to be applied to the individual model components.
+    r"""Fine-tune methods to be applied to the individual model components.
 
-    Note that they can also be used to "fine-tune" those components before
+    Note that they can also be used to "warm-up" those components before
     the joined training.
 
     There are 3 fine-tune/warm-up routines available:
@@ -256,7 +255,7 @@ class FineTune:
                     X = data[model_name].cuda() if use_cuda else data[model_name]
                     y = (
                         target.view(-1, 1).float()
-                        if self.method != "multiclass"
+                        if self.method not in ["multiclass", "qregression"]
                         else target
                     )
                     y = y.cuda() if use_cuda else y
@@ -276,6 +275,8 @@ class FineTune:
                             score = self.metric(y_pred, y)
                         if self.method == "binary":
                             score = self.metric(torch.sigmoid(y_pred), y)
+                        if self.method == "qregression":
+                            score = self.metric(y_pred, y)
                         if self.method == "multiclass":
                             score = self.metric(F.softmax(y_pred, dim=1), y)
                         t.set_postfix(

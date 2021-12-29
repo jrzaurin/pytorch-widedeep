@@ -24,7 +24,9 @@ class WidePreprocessor(BasePreprocessor):
         encoded and passed through the ``wide`` component
     crossed_cols: List, default = None
         List of Tuples with the name of the columns that will be `'crossed'`
-        and then label encoded. e.g. [('education', 'occupation'), ...]
+        and then label encoded. e.g. [('education', 'occupation'), ...]. For
+        binary features, a cross-product transformation is 1 if and only if
+        the constituent features are all 1, and 0 otherwise".
 
     Attributes
     ----------

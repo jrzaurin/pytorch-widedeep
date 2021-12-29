@@ -12,34 +12,34 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class StackedAttentiveRNN(nn.Module):
-    r"""Text classifier/regressor comprised by a stack of [RNN + Attention]
+    r"""Text classifier/regressor comprised by a stack of blocks:
+    [RNN + Attention]
 
-    In addition, there is the option to add a Fully Connected (FC) set of dense
-    layers (referred as `rnn_mlp`) Attentiob blocks
+    In addition, there is the option to add a Fully Connected (FC) set of
+    dense layers (referred as `rnn_mlp`) on top of the attentiob blocks
 
     Parameters
     ----------
     vocab_size: int
-        number of words in the vocabulary
+        Number of words in the vocabulary
     embed_dim: int, Optional, default = None
         Dimension of the word embedding matrix if non-pretained word
         vectors are used
     embed_matrix: np.ndarray, Optional, default = None
-         Pretrained word embeddings
+        Pretrained word embeddings
     embed_trainable: bool, default = True
         Boolean indicating if the pretrained embeddings are trainable
     rnn_type: str, default = 'lstm'
-        String indicating the type of RNN to use. One of ``lstm`` or ``gru``
+        String indicating the type of RNN to use. One of 'lstm' or 'gru'
     hidden_dim: int, default = 64
         Hidden dim of the RNN
-    n_layers: int, default = 3
-        number of recurrent layers
-    bidirectional: bool, default = False
-        indicates whether the staked RNNs are bidirectional
+    bidirectional: bool, default = True
+        Boolean indicating whether the staked RNNs are bidirectional
     padding_idx: int, default = 1
-        index of the padding token in the padded-tokenised sequences. I
-        use the ``fastai`` tokenizer where the token index 0 is reserved
-        for the `'unknown'` word token
+        index of the padding token in the padded-tokenised sequences. The
+        ``TextPreprocessor`` class within this library uses the ``fastai``
+        tokenizer where the token index 0 is reserved for the `'unknown'`
+        word token. Therefore, the default value is set to 1.
     n_blocks: int, default = 3
         Number of attention blocks. Each block is comprised by an RNN and a
         Context Attention Encoder
@@ -50,19 +50,18 @@ class StackedAttentiveRNN(nn.Module):
     attn_dropout: float, default = 0.1
         Internal dropout for the attention mechanism
     with_addnorm: bool, default = False
-        Boolean indicating if the output of eacch block will be added to the
+        Boolean indicating if the output of each block will be added to the
         input and normalised
     head_hidden_dims: List, Optional, default = None
-        List with the sizes of the stacked dense layers in the head
-        e.g: [128, 64]
+        List with the sizes of the dense layers in the head e.g: [128, 64]
     head_activation: str, default = "relu"
         Activation function for the dense layers in the head. Currently
         ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
     head_dropout: float, Optional, default = None
-        dropout between the dense layers in the head
+        Dropout of the dense layers in the head
     head_batchnorm: bool, default = False
-        Whether or not to include batch normalization in the dense layers that
-        form the `'rnn_mlp'`
+        Boolean indicating whether or not to include batch normalization in
+        the dense layers that form the `'rnn_mlp'`
     head_batchnorm_last: bool, default = False
         Boolean indicating whether or not to apply batch normalization to the
         last of the dense layers in the head
@@ -156,8 +155,11 @@ class StackedAttentiveRNN(nn.Module):
         self.head_batchnorm_last = head_batchnorm_last
         self.head_linear_first = head_linear_first
 
+        # Embeddings
         self.word_embed, self.embed_dim = self._set_embeddings(embed_matrix)
 
+        # Linear Projection: if embed_dim is different that the input of the
+        # attention blocks we add a linear projection
         if bidirectional and attn_concatenate:
             attn_input_dim = hidden_dim * 4
         elif bidirectional or attn_concatenate:
@@ -173,6 +175,7 @@ class StackedAttentiveRNN(nn.Module):
         else:
             self.embed_proj = nn.Identity()
 
+        # RNN
         rnn_params = {
             "input_size": attn_input_dim,
             "hidden_size": hidden_dim,
@@ -184,6 +187,7 @@ class StackedAttentiveRNN(nn.Module):
         elif self.rnn_type.lower() == "gru":
             self.rnn = nn.GRU(**rnn_params)
 
+        # FC-Head (Mlp)
         self.attention_blks = nn.ModuleList()
         for i in range(n_blocks):
             self.attention_blks.append(
@@ -197,9 +201,10 @@ class StackedAttentiveRNN(nn.Module):
                 )
             )
 
+        # Mlp
         if self.head_hidden_dims is not None:
             head_hidden_dims = [self.output_dim] + head_hidden_dims
-            self.rnn_mlp = MLP(
+            self.rnn_mlp: Union[MLP, nn.Identity] = MLP(
                 head_hidden_dims,
                 head_activation,
                 head_dropout,
@@ -208,6 +213,9 @@ class StackedAttentiveRNN(nn.Module):
                 head_linear_first,
             )
             self.output_dim = head_hidden_dims[-1]
+        else:
+            # simple hack to add readability in the forward pass
+            self.rnn_mlp = nn.Identity()
 
     def forward(self, X: Tensor) -> Tensor:  # type: ignore
         x = self.embed_proj(self.word_embed(X.long()))
@@ -227,11 +235,7 @@ class StackedAttentiveRNN(nn.Module):
         for blk in self.attention_blks:
             x, h, c = blk(x, h, c)
 
-        if self.head_hidden_dims is not None:
-            head_out = self.rnn_mlp(x)
-            return head_out
-        else:
-            return x
+        return self.rnn_mlp(x)
 
     @property
     def attention_weights(self) -> List:

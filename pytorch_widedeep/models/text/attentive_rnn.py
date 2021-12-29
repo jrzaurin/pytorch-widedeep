@@ -19,49 +19,48 @@ class AttentiveRNN(BasicRNN):
     Parameters
     ----------
     vocab_size: int
-        number of words in the vocabulary
+        Number of words in the vocabulary
     embed_dim: int, Optional, default = None
         Dimension of the word embedding matrix if non-pretained word
         vectors are used
     embed_matrix: np.ndarray, Optional, default = None
-         Pretrained word embeddings
+        Pretrained word embeddings
     embed_trainable: bool, default = True
         Boolean indicating if the pretrained embeddings are trainable
     rnn_type: str, default = 'lstm'
-        String indicating the type of RNN to use. One of ``lstm`` or ``gru``
+        String indicating the type of RNN to use. One of 'lstm' or 'gru'
     hidden_dim: int, default = 64
         Hidden dim of the RNN
     n_layers: int, default = 3
-        number of recurrent layers
+        Number of recurrent layers
     rnn_dropout: float, default = 0.1
-        dropout for the dropout layer on the outputs of each RNN layer except
-        the last layer
+        Dropout for each RNN layer except the last layer
     bidirectional: bool, default = True
-        indicates whether the staked RNNs are bidirectional
+        Boolean indicating whether the staked RNNs are bidirectional
     use_hidden_state: str, default = True
-        Boolean indicating whether to use the final hidden state or the
-        RNN output as predicting features
+        Boolean indicating whether to use the final hidden state or the RNN's
+        output as predicting features. Typically the former is used.
     padding_idx: int, default = 1
-        index of the padding token in the padded-tokenised sequences. I
-        use the ``fastai`` tokenizer where the token index 0 is reserved
-        for the `'unknown'` word token
+        index of the padding token in the padded-tokenised sequences. The
+        ``TextPreprocessor`` class within this library uses the ``fastai``
+        tokenizer where the token index 0 is reserved for the `'unknown'`
+        word token. Therefore, the default value is set to 1.
     attn_concatenate: bool, default = True
         Boolean indicating if the input to the attention mechanism will be the
         output of the RNN or the output of the RNN concatenated with the last
-        hidden state or simply
+        hidden state.
     attn_dropout: float, default = 0.1
         Internal dropout for the attention mechanism
     head_hidden_dims: List, Optional, default = None
-        List with the sizes of the stacked dense layers in the head
-        e.g: [128, 64]
+        List with the sizes of the dense layers in the head e.g: [128, 64]
     head_activation: str, default = "relu"
         Activation function for the dense layers in the head. Currently
         ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
     head_dropout: float, Optional, default = None
-        dropout between the dense layers in the head
+        Dropout of the dense layers in the head
     head_batchnorm: bool, default = False
-        Whether or not to include batch normalization in the dense layers that
-        form the `'rnn_mlp'`
+        Boolean indicating whether or not to include batch normalization in
+        the dense layers that form the `'rnn_mlp'`
     head_batchnorm_last: bool, default = False
         Boolean indicating whether or not to apply batch normalization to the
         last of the dense layers in the head
@@ -134,6 +133,9 @@ class AttentiveRNN(BasicRNN):
             head_linear_first=head_linear_first,
         )
 
+        # Embeddings and RNN defined in the BasicRNN inherited class
+
+        # Attention
         self.attn_concatenate = attn_concatenate
         self.attn_dropout = attn_dropout
 
@@ -146,6 +148,7 @@ class AttentiveRNN(BasicRNN):
         self.attn = ContextAttention(attn_input_dim, attn_dropout, sum_along_seq=True)
         self.output_dim = attn_input_dim
 
+        # FC-Head (Mlp)
         if self.head_hidden_dims is not None:
             head_hidden_dims = [self.output_dim] + head_hidden_dims
             self.rnn_mlp = MLP(

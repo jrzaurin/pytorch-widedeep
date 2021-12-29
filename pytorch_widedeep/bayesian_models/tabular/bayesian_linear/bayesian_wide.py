@@ -11,9 +11,6 @@ class BayesianWide(BaseBayesianModel):
     r"""Creates a so called Wide model. This is a linear model where the
     non-linearlities are captured via crossed-columns
 
-    The model implemented via a Bayesian Embedding layer connected to the
-    output neuron(s).
-
     Parameters
     ----------
     input_dim: int
@@ -24,11 +21,11 @@ class BayesianWide(BaseBayesianModel):
     pred_dim: int
         size of the ouput tensor containing the predictions
     prior_sigma_1: float, default = 1.0
-        Prior of the sigma parameter for the first of the two weight Gaussian
+        Prior of the sigma parameter for the first of the two Gaussian
         distributions that will be mixed to produce the prior weight
         distribution
     prior_sigma_2: float, default = 0.002
-        Prior of the sigma parameter for the second of the two weight Gaussian
+        Prior of the sigma parameter for the second of the two Gaussian
         distributions that will be mixed to produce the prior weight
         distribution
     prior_pi: float, default = 0.8

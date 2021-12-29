@@ -35,7 +35,7 @@ class TabMlp(nn.Module):
     cont_embed_dim: int, default = 32,
         Size of the continuous embeddings
     cont_embed_dropout: float, default = 0.1,
-        continuous embeddings dropout
+        Dropout for the continuous embeddings
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings
     use_cont_bias: bool, default = True,

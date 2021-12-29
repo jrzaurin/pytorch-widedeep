@@ -8,8 +8,8 @@ use_cuda = torch.cuda.is_available()
 
 
 class TweedieLoss(nn.Module):
-    """
-    Tweedie loss for extremely unbalanced zero-inflated data``
+    r"""Tweedie loss for extremely unbalanced zero-inflated data``
+
     All credits go to `Wenbo Shi
     <https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f> and
     <https://arxiv.org/abs/1811.10192>`
@@ -32,8 +32,8 @@ class TweedieLoss(nn.Module):
 
 
 class QuantileLoss(nn.Module):
-    """
-    Quantile loss, i.e. a quantile of ``q=0.5`` will give half of the mean absolute error as it is calcualted as
+    r"""Quantile loss, i.e. a quantile of ``q=0.5`` will give half of the mean
+    absolute error as it is calcualted as
 
     Defined as ``max(q * (y-y_pred), (1-q) * (y_pred-y))``
     All credits go to `pytorch-forecasting
@@ -70,6 +70,7 @@ class QuantileLoss(nn.Module):
 
 class ZILNLoss(nn.Module):
     r"""Adjusted implementation of the `Zero Inflated LogNormal loss
+
     <https://arxiv.org/pdf/1912.07753.pdf>` and its `code
     <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`
     """

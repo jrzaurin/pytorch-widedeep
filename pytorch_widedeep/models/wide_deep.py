@@ -28,8 +28,7 @@ device = torch.device("cuda" if use_cuda else "cpu")
 
 class WideDeep(nn.Module):
     r"""Main collector class that combines all ``wide``, ``deeptabular``
-    (which can be a number of architectures), ``deeptext`` and
-    ``deepimage`` models.
+    ``deeptext`` and ``deepimage`` models.
 
     There are two options to combine these models that correspond to the
     two main architectures that ``pytorch-widedeep`` can build.
@@ -43,55 +42,46 @@ class WideDeep(nn.Module):
     Parameters
     ----------
     wide: ``nn.Module``, Optional, default = None
-        ``Wide`` model. I recommend using the ``Wide`` class in this
-        package. However, it is possible to use a custom model as long as
-        is consistent with the required architecture, see
-        :class:`pytorch_widedeep.models.wide.Wide`
+        ``Wide`` model. This is a linear model where the non-linearities are
+        captured via crossed-columns.
     deeptabular: ``nn.Module``, Optional, default = None
-        currently ``pytorch-widedeep`` implements a number of possible
-        architectures for the ``deeptabular`` component. See the documenation
-        of the package. I recommend using the ``deeptabular`` components in
-        this package. However, it is possible to use a custom model as long
-        as is  consistent with the required architecture.
+        Currently this library implements a number of possible architectures
+        for the ``deeptabular`` component. See the documenation of the
+        package.
     deeptext: ``nn.Module``, Optional, default = None
-        Model for the text input. Must be an object of class ``DeepText``
-        or a custom model as long as is consistent with the required
-        architecture. See
-        :class:`pytorch_widedeep.models.deep_text.DeepText`
+        Currently this library implements a number of possible architectures
+        for the ``deeptext`` component. See the documenation of the
+        package.
     deepimage: ``nn.Module``, Optional, default = None
-        Model for the images input. Must be an object of class
-        ``DeepImage`` or a custom model as long as is consistent with the
-        required architecture. See
-        :class:`pytorch_widedeep.models.deep_image.DeepImage`
-    deephead: ``nn.Module``, Optional, default = None
-        Custom model by the user that will receive the outtput of the deep
-        component. Typically a FC-Head (MLP)
+        Currently this library uses ``torchvision`` and implements a number of
+        possible architectures for the ``deepimage`` component. See the
+        documenation of the package.
     head_hidden_dims: List, Optional, default = None
-        Alternatively, the ``head_hidden_dims`` param can be used to
-        specify the sizes of the stacked dense layers in the fc-head e.g:
-        ``[128, 64]``. Use ``deephead`` or ``head_hidden_dims``, but not
-        both.
-    head_dropout: float, default = 0.1
-        If ``head_hidden_dims`` is not None, dropout between the layers in
-        ``head_hidden_dims``
+        List with the sizes of the dense layers in the head e.g: [128, 64]
     head_activation: str, default = "relu"
-        If ``head_hidden_dims`` is not None, activation function of the head
-        layers. One of ``tanh``, ``relu``, ``gelu`` or ``leaky_relu``
+        Activation function for the dense layers in the head. Currently
+        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
+    head_dropout: float, Optional, default = None
+        Dropout of the dense layers in the head
     head_batchnorm: bool, default = False
-        If ``head_hidden_dims`` is not None, specifies if batch
-        normalizatin should be included in the head layers
+        Boolean indicating whether or not to include batch normalization in
+        the dense layers that form the `'rnn_mlp'`
     head_batchnorm_last: bool, default = False
-        If ``head_hidden_dims`` is not None, boolean indicating whether or
-        not to apply batch normalization to the last of the dense layers
+        Boolean indicating whether or not to apply batch normalization to the
+        last of the dense layers in the head
     head_linear_first: bool, default = False
-        If ``head_hidden_dims`` is not None, boolean indicating whether
-        the order of the operations in the dense layer. If ``True``:
-        ``[LIN -> ACT -> BN -> DP]``. If ``False``: ``[BN -> DP -> LIN ->
-        ACT]``
+        Boolean indicating whether the order of the operations in the dense
+        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+        LIN -> ACT]``
+    deephead: ``nn.Module``, Optional, default = None
+        Alternatively, the user can pass a custom model that will receive the
+        output of the deep component. If ``deephead`` is not None all the
+        previous fc-head parameters will be ignored
     enforce_positive: bool, default = False
-        If final layer has activation function or not. Important if you are using
-        loss functions non-negative input restrictions, e.g. RMSLE, or if you know
-        your predictions are limited only to <0, inf)
+        If final layer has activation function or not. Important if you are
+        using loss functions with non-negative input restrictions, e.g.
+        RMSLE, or if you know your predictions are bounded in between 0 and
+        inf
     enforce_positive_activation: str, default = "softplus"
         Activation function to enforce positive output from final layer. Use
         "softplus" or "relu".
@@ -113,17 +103,14 @@ class WideDeep(nn.Module):
     >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
 
 
-    .. note:: While I recommend using the ``wide`` and ``deeptabular`` components
-        within this package when building the corresponding model components,
-        it is very likely that the user will want to use custom text and image
-        models. That is perfectly possible. Simply, build them and pass them
-        as the corresponding parameters. Note that the custom models MUST
-        return a last layer of activations (i.e. not the final prediction) so
-        that  these activations are collected by ``WideDeep`` and combined
-        accordingly. In addition, the models MUST also contain an attribute
-        ``output_dim`` with the size of these last layers of activations. See
-        for example :class:`pytorch_widedeep.models.tab_mlp.TabMlp`
-
+    .. note:: It is possible to use custom components to build Wide & Deep models.
+        Simply, build them and pass them as the corresponding parameters. Note
+        that the custom models MUST return a last layer of activations
+        (i.e. not the final prediction) so that  these activations are
+        collected by ``WideDeep`` and combined accordingly. In addition, the
+        models MUST also contain an attribute ``output_dim`` with the size of
+        these last layers of activations. See for
+        example :class:`pytorch_widedeep.models.tab_mlp.TabMlp`
     """
 
     def __init__(

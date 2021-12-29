@@ -30,7 +30,7 @@ class BayesianTabMlp(BaseBayesianModel):
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
     cat_embed_dropout: float, default = 0.1
-        embeddings dropout
+        Categorical embeddings dropout
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     embed_continuous: bool, default = False,
@@ -53,11 +53,11 @@ class BayesianTabMlp(BaseBayesianModel):
         Activation function for the dense layers of the MLP. Currently
         ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
     prior_sigma_1: float, default = 1.0
-        Prior of the sigma parameter for the first of the two weight Gaussian
+        Prior of the sigma parameter for the first of the two Gaussian
         distributions that will be mixed to produce the prior weight
         distribution for each Bayesian linear and embedding layer
     prior_sigma_2: float, default = 0.002
-        Prior of the sigma parameter for the second of the two weight Gaussian
+        Prior of the sigma parameter for the second of the two Gaussian
         distributions that will be mixed to produce the prior weight
         distribution for each Bayesian linear and embedding layer
     prior_pi: float, default = 0.8
@@ -182,9 +182,6 @@ class BayesianTabMlp(BaseBayesianModel):
             posterior_mu_init,
             posterior_rho_init,
         )
-
-        # the output_dim attribute will be used as input_dim when "merging" the models
-        self.output_dim = mlp_hidden_dims[-1]
 
     def forward(self, X: Tensor) -> Tensor:
         x_emb, x_cont = self.cat_and_cont_embed(X)

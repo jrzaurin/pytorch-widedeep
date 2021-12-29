@@ -144,7 +144,7 @@ class Callback(object):
 
 
 class History(Callback):
-    r"""Callback that records metrics to a ``history`` attribute.
+    r"""Callback that records metrics placing them in  the ``history`` attribute.
 
     This callback runs by default within :obj:`Trainer`, therefore, should not
     be passed to the :obj:`Trainer`. Is included here just for completion.
@@ -240,7 +240,8 @@ class MetricCallback(Callback):
 
 
 class LRHistory(Callback):
-    r"""Saves the learning rates during training to a ``lr_history`` attribute.
+    r"""Saves the learning rates during training placing them into the
+    ``lr_history`` attribute.
 
     Callbacks are passed as input parameters to the :obj:`Trainer` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
@@ -248,7 +249,7 @@ class LRHistory(Callback):
     Parameters
     ----------
     n_epochs: int
-        number of epochs durint training
+        number of training epochs
 
     Examples
     --------
@@ -364,13 +365,14 @@ class ModelCheckpoint(Callback):
     max_save: int, default=-1
         Maximum number of outputs to save. If -1 will save all outputs
     wb: obj, default=None
-        Weights&Biases API interface to report single best result usable for comparisson of multiple
-        paramater combinations by e.g. parallel coordinates:
+        Weights&Biases API interface to report single best result usable for
+        comparisson of multiple paramater combinations by e.g. parallel
+        coordinates:
         https://docs.wandb.ai/ref/app/features/panels/parallel-coordinates.
-        E.g W&B summary report `wandb.run.summary["best"]`:
-        If external EarlyStopping scheduler is used from e.g. RayTune in combination with W&B,
-        the RayTune EarlyStopping stops training function and the summary log is not sent if defined
-        after training by e.g.:
+        E.g W&B summary report `wandb.run.summary["best"]`: If external
+        EarlyStopping scheduler is used from e.g. RayTune in combination with
+        W&B, the RayTune EarlyStopping stops training function and the
+        summary log is not sent if defined after training by e.g.:
         `wandb.run.summary["best"]=model_checkpoint.best`.
 
     Attributes
@@ -380,7 +382,8 @@ class ModelCheckpoint(Callback):
     best_epoch: int
         best epoch
     best_state_dict: dict
-        best model state dictionary to restore model to its best state using trainer.model.load_state_dict(ModelCheckpoint.best_state_dict)
+        best model state dictionary to restore model to its best state using
+        trainer.model.load_state_dict(ModelCheckpoint.best_state_dict)
 
     Examples
     --------

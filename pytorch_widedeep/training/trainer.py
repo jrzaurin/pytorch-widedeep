@@ -5,7 +5,6 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from tqdm import trange
 from scipy.sparse import csc_matrix
@@ -88,11 +87,9 @@ class Trainer:
 
         - ``tweedie``
     custom_loss_function: ``nn.Module``, optional, default = None
-        object of class ``nn.Module``. If none of the loss functions
-        available suits the user, it is possible to pass a custom loss
-        function. See for example
-        :class:`pytorch_widedeep.losses.FocalLoss` for the required
-        structure of the object or the `Examples
+        It is possible to pass a custom loss function. See for example
+        :class:`pytorch_widedeep.losses.FocalLoss` for the required structure
+        of the object or the `Examples
         <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
         folder in the repo.
 
@@ -115,10 +112,6 @@ class Trainer:
         - a dictionary where there keys are the model componenst (i.e. `'wide'`,
           `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
           values are the corresponding learning rate schedulers.
-    reducelronplateau_criterion: str, optional. default="loss"
-        Quantity to be monitored during training if using the
-        :obj:`ReduceLROnPlateau` learning rate scheduler. Possible value
-        are: 'loss' or 'metric'.
     initializers: ``Initializer`` or dict, optional, default=None
         - An instance of an `Initializer`` object see :obj:`pytorch-widedeep.initializers` or
         - a dictionary where there keys are the model components (i.e. `'wide'`,
@@ -152,23 +145,6 @@ class Trainer:
           classification-metrics>`_. This can also be a custom metric as
           long as it is an object of type :obj:`Metric`. See `the instructions
           <https://torchmetrics.readthedocs.io/en/latest/>`_.
-    class_weight: float, List or Tuple. optional. default=None
-        - float indicating the weight of the minority class in binary classification
-          problems (e.g. 9.)
-        - a list or tuple with weights for the different classes in multiclass
-          classification problems  (e.g. [1., 2., 3.]). The weights do not
-          need to be normalised. See `this discussion
-          <https://discuss.pytorch.org/t/passing-the-weights-to-crossentropyloss-correctly/14731/10>`_.
-    lambda_sparse: float. default=1e-3
-        Tabnet sparse regularization factor. Used, of course, if the
-        ``deeptabular`` component is a Tabnet model
-    alpha: float. default=0.25
-        if ``objective`` is ``binary_focal_loss`` or
-        ``multiclass_focal_loss``, the Focal Loss alpha and gamma
-        parameters can be set directly in the ``Trainer`` via the
-        ``alpha`` and ``gamma`` parameters
-    gamma: float. default=2
-        Focal Loss alpha gamma parameter
     verbose: int, default=1
         Setting it to 0 will print nothing during training.
     seed: int, default=1
@@ -240,17 +216,13 @@ class Trainer:
         custom_loss_function: Optional[Module] = None,
         optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
         lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]] = None,
-        reducelronplateau_criterion: Optional[str] = "loss",
         initializers: Optional[Union[Initializer, Dict[str, Initializer]]] = None,
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
-        class_weight: Optional[Union[float, List[float], Tuple[float]]] = None,
-        lambda_sparse: float = 1e-3,
-        alpha: float = 0.25,
-        gamma: float = 2,
         verbose: int = 1,
         seed: int = 1,
+        **kwargs,
     ):
         if isinstance(optimizers, Dict):
             if lr_schedulers is not None and not isinstance(lr_schedulers, Dict):
@@ -270,56 +242,31 @@ class Trainer:
                 "'multiclass' or 'regression', consistent with the loss function"
             )
 
-        self.reducelronplateau = False
-        self.reducelronplateau_criterion = reducelronplateau_criterion
-        if isinstance(lr_schedulers, Dict):
-            for _, scheduler in lr_schedulers.items():
-                if isinstance(scheduler, ReduceLROnPlateau):
-                    self.reducelronplateau = True
-        elif isinstance(lr_schedulers, ReduceLROnPlateau):
-            self.reducelronplateau = True
-
-        self.model = model
-
-        # Tabnet related set ups
-        if self.model.is_tabnet:
-            self.lambda_sparse = lambda_sparse
-            self.reducing_matrix = create_explain_matrix(self.model)
-
         self.verbose = verbose
         self.seed = seed
-        self.objective = objective
-        self.method = _ObjectiveToMethod.get(objective)
-
         # initialize early_stop. If EarlyStopping Callback is used it will
         # take care of it
         self.early_stop = False
 
-        self.loss_fn = self._set_loss_fn(
-            objective, class_weight, custom_loss_function, alpha, gamma
-        )
+        self.model = model
+        # Tabnet related set up
+        if self.model.is_tabnet:
+            self.lambda_sparse = kwargs.get("lambda_sparse", 1e-3)
+            self.reducing_matrix = create_explain_matrix(self.model)
+        self.model.to(device)
+
+        self.objective = objective
+        self.method = _ObjectiveToMethod.get(objective)
+
         self._initialize(initializers)
+        self.loss_fn = self._set_loss_fn(objective, custom_loss_function, **kwargs)
         self.optimizer = self._set_optimizer(optimizers)
-        self.lr_scheduler = self._set_lr_scheduler(lr_schedulers)
+        self.lr_scheduler = self._set_lr_scheduler(lr_schedulers, **kwargs)
         self.transforms = self._set_transforms(transforms)
         self._set_callbacks_and_metrics(callbacks, metrics)
 
-        self.model.to(device)
-
     @Alias("finetune", "warmup")  # noqa: C901
-    @Alias("finetune_epochs", "warmup_epochs")
-    @Alias("finetune_max_lr", "warmup_max_lr")
-    @Alias("finetune_deeptabular_gradual", "warmup_deeptabular_gradual")
-    @Alias("finetune_deeptabular_max_lr", "warmup_deeptabular_max_lr")
-    @Alias("finetune_deeptabular_layers", "warmup_deeptabular_layers")
-    @Alias("finetune_deeptext_gradual", "warmup_deeptext_gradual")
-    @Alias("finetune_deeptext_max_lr", "warmup_deeptext_max_lr")
-    @Alias("finetune_deeptext_layers", "warmup_deeptext_layers")
-    @Alias("finetune_deepimage_gradual", "warmup_deepimage_gradual")
-    @Alias("finetune_deepimage_max_lr", "warmup_deepimage_max_lr")
-    @Alias("finetune_deepimage_layers", "warmup_deepimage_layers")
-    @Alias("finetune_routine", "warmup_routine")
-    def fit(  # noqa: C901
+    def fit(
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
@@ -334,18 +281,6 @@ class Trainer:
         batch_size: int = 32,
         custom_dataloader: Union[DataLoader, None] = None,
         finetune: bool = False,
-        finetune_epochs: int = 5,
-        finetune_max_lr: float = 0.01,
-        finetune_deeptabular_gradual: bool = False,
-        finetune_deeptabular_max_lr: float = 0.01,
-        finetune_deeptabular_layers: Optional[List[nn.Module]] = None,
-        finetune_deeptext_gradual: bool = False,
-        finetune_deeptext_max_lr: float = 0.01,
-        finetune_deeptext_layers: Optional[List[nn.Module]] = None,
-        finetune_deepimage_gradual: bool = False,
-        finetune_deepimage_max_lr: float = 0.01,
-        finetune_deepimage_layers: Optional[List[nn.Module]] = None,
-        finetune_routine: str = "howard",
         stop_after_finetuning: bool = False,
         **kwargs,
     ):
@@ -394,7 +329,7 @@ class Trainer:
         finetune: bool, default=False
             param alias: ``warmup``
 
-            fine-tune individual model components.
+            fine-tune individual model components
 
             .. note:: This functionality can also be used to 'warm-up'
                individual components before the joined training starts, and hence
@@ -424,77 +359,8 @@ class Trainer:
             section in this documentation and the `Examples
             <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
             folder in the repo.
-        finetune_epochs: int, default=4
-            param alias: ``warmup_epochs``
-
-            Number of fine-tune epochs for those model components that will
-            *NOT* be gradually fine-tuned. Those components with gradual
-            fine-tune follow their corresponding specific routine.
-        finetune_max_lr: float, default=0.01
-            param alias: ``warmup_max_lr``
-
-            Maximum learning rate during the Triangular Learning rate cycle
-            for those model componenst that will *NOT* be gradually fine-tuned
-        finetune_deeptabular_gradual: bool, default=False
-            param alias: ``warmup_deeptabular_gradual``
-
-            Boolean indicating if the ``deeptabular`` component will be
-            fine-tuned gradually
-        finetune_deeptabular_max_lr: float, default=0.01
-            param alias: ``warmup_deeptabular_max_lr``
-
-            Maximum learning rate during the Triangular Learning rate cycle
-            for the deeptabular component
-        finetune_deeptabular_layers: List, Optional, default=None
-            param alias: ``warmup_deeptabular_layers``
-
-            List of :obj:`nn.Modules` that will be fine-tuned gradually.
-
-            .. note:: These have to be in `fine-tune-order`: the layers or blocks
-                close to the output neuron(s) first
-
-        finetune_deeptext_gradual: bool, default=False
-            param alias: ``warmup_deeptext_gradual``
-
-            Boolean indicating if the ``deeptext`` component will be
-            fine-tuned gradually
-        finetune_deeptext_max_lr: float, default=0.01
-            param alias: ``warmup_deeptext_max_lr``
-
-            Maximum learning rate during the Triangular Learning rate cycle
-            for the deeptext component
-        finetune_deeptext_layers: List, Optional, default=None
-            param alias: ``warmup_deeptext_layers``
-
-            List of :obj:`nn.Modules` that will be fine-tuned gradually.
-
-            .. note:: These have to be in `fine-tune-order`: the layers or blocks
-                close to the output neuron(s) first
-
-        finetune_deepimage_gradual: bool, default=False
-            param alias: ``warmup_deepimage_gradual``
-
-            Boolean indicating if the ``deepimage`` component will be
-            fine-tuned gradually
-        finetune_deepimage_max_lr: float, default=0.01
-            param alias: ``warmup_deepimage_max_lr``
-
-            Maximum learning rate during the Triangular Learning rate cycle
-            for the ``deepimage`` component
-        finetune_deepimage_layers: List, Optional, default=None
-            param alias: ``warmup_deepimage_layers``
-
-            List of :obj:`nn.Modules` that will be fine-tuned gradually.
-
-            .. note:: These have to be in `fine-tune-order`: the layers or blocks
-                close to the output neuron(s) first
-
-        finetune_routine: str, default = "howard"
-            param alias: ``warmup_routine``
-
-            Warm up routine. On of "felbo" or "howard". See the examples
-            section in this documentation and the corresponding repo for
-            details on how to use fine-tune routines
+        stop_after_finetuning: bool, default = False
+            Boolean indicating if the process should stop after finetunning
 
         Examples
         --------
@@ -577,21 +443,7 @@ class Trainer:
             eval_steps = len(eval_loader)
 
         if finetune:
-            self._finetune(
-                train_loader,
-                finetune_epochs,
-                finetune_max_lr,
-                finetune_deeptabular_gradual,
-                finetune_deeptabular_layers,
-                finetune_deeptabular_max_lr,
-                finetune_deeptext_gradual,
-                finetune_deeptext_layers,
-                finetune_deeptext_max_lr,
-                finetune_deepimage_gradual,
-                finetune_deepimage_layers,
-                finetune_deepimage_max_lr,
-                finetune_routine,
-            )
+            self._finetune(train_loader, **kwargs)
             if stop_after_finetuning:
                 print("Fine-tuning finished")
                 return
@@ -1078,22 +930,7 @@ class Trainer:
                                 "the 'ModelCheckpoint' Callback to restore the best epoch weights."
                             )
 
-    def _finetune(
-        self,
-        loader: DataLoader,
-        n_epochs: int,
-        max_lr: float,
-        deeptabular_gradual: bool,
-        deeptabular_layers: List[nn.Module],
-        deeptabular_max_lr: float,
-        deeptext_gradual: bool,
-        deeptext_layers: List[nn.Module],
-        deeptext_max_lr: float,
-        deepimage_gradual: bool,
-        deepimage_layers: List[nn.Module],
-        deepimage_max_lr: float,
-        routine: str = "felbo",
-    ):  # pragma: no cover
+    def _finetune(self, loader: DataLoader, **kwargs):  # pragma: no cover
         r"""
         Simple wrap-up to individually fine-tune model components
         """
@@ -1101,11 +938,27 @@ class Trainer:
             raise ValueError(
                 "Currently warming up is only supported without a fully connected 'DeepHead'"
             )
-        # This is not the most elegant solution, but is a soluton "in-between"
-        # a non elegant one and re-factoring the whole code
+
+        n_epochs = kwargs.get("n_epochs", 5)
+        max_lr = kwargs.get("max_lr", 0.01)
+        routine = kwargs.get("routine", "howard")
+
+        deeptabular_gradual = kwargs.get("deeptabular_gradual", False)
+        deeptabular_layers = kwargs.get("deeptabular_layers", None)
+        deeptabular_max_lr = kwargs.get("deeptabular_max_lr", 0.01)
+
+        deeptext_gradual = kwargs.get("deeptext_gradual", False)
+        deeptext_layers = kwargs.get("deeptext_layers", None)
+        deeptext_max_lr = kwargs.get("deeptext_max_lr", 0.01)
+
+        deepimage_gradual = kwargs.get("deepimage_gradual", False)
+        deepimage_layers = kwargs.get("deepimage_layers", None)
+        deepimage_max_lr = kwargs.get("deepimage_max_lr", 0.01)
+
         finetuner = FineTune(self.loss_fn, self.metric, self.method, self.verbose)
         if self.model.wide:
             finetuner.finetune_all(self.model.wide, "wide", loader, n_epochs, max_lr)
+
         if self.model.deeptabular:
             if deeptabular_gradual:
                 finetuner.finetune_gradual(
@@ -1120,6 +973,7 @@ class Trainer:
                 finetuner.finetune_all(
                     self.model.deeptabular, "deeptabular", loader, n_epochs, max_lr
                 )
+
         if self.model.deeptext:
             if deeptext_gradual:
                 finetuner.finetune_gradual(
@@ -1134,6 +988,7 @@ class Trainer:
                 finetuner.finetune_all(
                     self.model.deeptext, "deeptext", loader, n_epochs, max_lr
                 )
+
         if self.model.deepimage:
             if deepimage_gradual:
                 finetuner.finetune_gradual(
@@ -1221,7 +1076,11 @@ class Trainer:
         feat_imp = np.zeros((tabnet_backbone.embed_out_dim))  # type: ignore[arg-type]
         for data, target in loader:
             X = data["deeptabular"].to(device)
-            y = target.view(-1, 1).float() if self.method != "multiclass" else target
+            y = (
+                target.view(-1, 1).float()
+                if self.method not in ["multiclass", "qregression"]
+                else target
+            )
             y = y.to(device)
             M_explain, masks = tabnet_backbone.forward_masks(X)  # type: ignore[operator]
             feat_imp += M_explain.sum(dim=0).cpu().detach().numpy()
@@ -1318,21 +1177,6 @@ class Trainer:
         self.model.train()
         return preds_l
 
-    def _set_loss_fn(self, objective, class_weight, custom_loss_function, alpha, gamma):
-        if class_weight is not None:
-            class_weight = torch.tensor(class_weight).to(device)
-        if custom_loss_function is not None:
-            return custom_loss_function
-        elif (
-            self.method not in ["regression", "qregression"]
-            and "focal_loss" not in objective
-        ):
-            return alias_to_loss(objective, weight=class_weight)
-        elif "focal_loss" in objective:
-            return alias_to_loss(objective, alpha=alpha, gamma=gamma)
-        else:
-            return alias_to_loss(objective)
-
     def _initialize(self, initializers):
         if initializers is not None:
             if isinstance(initializers, Dict):
@@ -1346,6 +1190,28 @@ class Trainer:
             elif isinstance(initializers, Initializer):
                 self.initializer = initializers
                 self.initializer(self.model)
+
+    def _set_loss_fn(self, objective, custom_loss_function, **kwargs):
+
+        class_weight = (
+            torch.tensor(kwargs["class_weight"]).to(device)
+            if "class_weight" in kwargs
+            else None
+        )
+
+        if custom_loss_function is not None:
+            return custom_loss_function
+        elif (
+            self.method not in ["regression", "qregression"]
+            and "focal_loss" not in objective
+        ):
+            return alias_to_loss(objective, weight=class_weight)
+        elif "focal_loss" in objective:
+            alpha = kwargs.get("alpha", 0.25)
+            gamma = kwargs.get("gamma", 2.0)
+            return alias_to_loss(objective, alpha=alpha, gamma=gamma)
+        else:
+            return alias_to_loss(objective)
 
     def _set_optimizer(self, optimizers):
         if optimizers is not None:
@@ -1361,10 +1227,41 @@ class Trainer:
             optimizer = torch.optim.Adam(self.model.parameters())  # type: ignore
         return optimizer
 
-    def _set_lr_scheduler(self, lr_schedulers):
+    def _set_reduce_on_plateau_criterion(
+        self, lr_schedulers, reducelronplateau_criterion
+    ):
+
+        self.reducelronplateau = False
+
+        if isinstance(lr_schedulers, Dict):
+            for _, scheduler in lr_schedulers.items():
+                if isinstance(scheduler, ReduceLROnPlateau):
+                    self.reducelronplateau = True
+        elif isinstance(lr_schedulers, ReduceLROnPlateau):
+            self.reducelronplateau = True
+
+        if self.reducelronplateau and not reducelronplateau_criterion:
+            UserWarning(
+                "The learning rate scheduler of at least one of the model components is of type "
+                "ReduceLROnPlateau. The step method in this scheduler requires a 'metrics' param "
+                "that can be either the validation loss or the validation metric. Please, when "
+                "instantiating the Trainer, specify which quantity will be tracked using "
+                "reducelronplateau_criterion = 'loss' (default) or reducelronplateau_criterion = 'metric'"
+            )
+        else:
+            self.reducelronplateau_criterion = "loss"
+
+    def _set_lr_scheduler(self, lr_schedulers, **kwargs):
+
+        # ReduceLROnPlateau is special
+        reducelronplateau_criterion = kwargs.get("reducelronplateau_criterion", None)
+
+        self._set_reduce_on_plateau_criterion(
+            lr_schedulers, reducelronplateau_criterion
+        )
+
         if lr_schedulers is not None:
-            # ReduceLROnPlateau is special, only scheduler that is 'just' an
-            # object rather than a LRScheduler
+
             if isinstance(lr_schedulers, LRScheduler) or isinstance(
                 lr_schedulers, ReduceLROnPlateau
             ):
@@ -1379,7 +1276,9 @@ class Trainer:
                 cyclic_lr = any(["cycl" in sn for sn in scheduler_names])
         else:
             lr_scheduler, cyclic_lr = None, False
+
         self.cyclic_lr = cyclic_lr
+
         return lr_scheduler
 
     @staticmethod

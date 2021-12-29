@@ -37,7 +37,9 @@ class BayesianMLP(nn.Module):
                         posterior_mu_init,
                         posterior_rho_init,
                     ),
-                    act_fn,
+                    # The activation of the output neuron(s) will happen
+                    # inside the BayesianTrainer
+                    act_fn if i != len(d_hidden) - 1 else nn.Identity(),
                 ]
             )
             self.bayesian_mlp.add_module(

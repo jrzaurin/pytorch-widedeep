@@ -36,7 +36,7 @@ class ContextAttentionEncoder(nn.Module):
 
         if isinstance(self.rnn, nn.LSTM):
             o, (h, c) = self.rnn(X, (h, c))
-        else:
+        elif isinstance(self.rnn, nn.GRU):
             o, h = self.rnn(X, h)
 
         attn_inp = self._process_rnn_outputs(o, h)

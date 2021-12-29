@@ -25,14 +25,14 @@ class LabelEncoder:
         List of strings containing the names of the columns to encode. If
         ``None`` all columns of type ``object`` in the dataframe will be label
         encoded.
-    for_transformer: bool, default = False
-        Boolean indicating whether the preprocessed data will be passed to a
-        transformer-based model.
+    with_attention: bool, default = False
+        Boolean indicating whether the preprocessed data will be passed to an
+        attention-based model.
         See :obj:`pytorch_widedeep.models.transformers`
     shared_embed: bool, default = False
         Boolean indicating if the embeddings will be "shared" when using
-        transformer-based models. The idea behind ``shared_embed`` is
-        described in the Appendix A in the `TabTransformer paper
+        attention-based models. The idea behind ``shared_embed`` is described
+        in the Appendix A in the `TabTransformer paper
         <https://arxiv.org/abs/2012.06678>`_: `'The goal of having column
         embedding is to enable the model to distinguish the classes in one
         column from those in the other columns'`. In other words, the idea is
@@ -52,19 +52,19 @@ class LabelEncoder:
         `{'colname1': {1: 'cat1', 2: 'cat2', ...}, 'colname2': {1: 'cat1', 2: 'cat2', ...}, ...}`
     """
 
-    @Alias("for_transformer", "with_attention")
+    @Alias("with_attention", "for_transformer")
     def __init__(
         self,
         columns_to_encode: Optional[List[str]] = None,
-        for_transformer: bool = False,
+        with_attention: bool = False,
         shared_embed: bool = False,
     ):
         self.columns_to_encode = columns_to_encode
 
         self.shared_embed = shared_embed
-        self.for_transformer = for_transformer
+        self.with_attention = with_attention
 
-        self.reset_embed_idx = not self.for_transformer or self.shared_embed
+        self.reset_embed_idx = not self.with_attention or self.shared_embed
 
     def fit(self, df: pd.DataFrame) -> "LabelEncoder":
         """Creates encoding attributes"""
