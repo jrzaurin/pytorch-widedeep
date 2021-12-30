@@ -102,6 +102,7 @@ model2 = TabTransformer(
     column_idx={k: v for v, k in enumerate(colnames)},
     cat_embed_input=embed_input,
     continuous_cols=colnames[n_cols:],
+    use_cont_bias=True,
     shared_embed=True,
 )
 
@@ -135,7 +136,6 @@ def test_continuous_embeddings():
         n_cont_cols=n_cont_cols,
         embed_dim=embed_dim,
         embed_dropout=0.0,
-        activation=None,
         use_bias=False,
     )
     out = cont_embed(X)

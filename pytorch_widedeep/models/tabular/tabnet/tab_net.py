@@ -6,12 +6,12 @@ from pytorch_widedeep.models.tabular.tabnet._layers import (
     TabNetEncoder,
     initialize_non_glu,
 )
-from pytorch_widedeep.models.tabular.embeddings_layers import (
-    DiffSizeCatAndContEmbeddings,
+from pytorch_widedeep.models.tabular._base_tabular_model import (
+    BaseTabularModelWithoutAttention,
 )
 
 
-class TabNet(nn.Module):
+class TabNet(BaseTabularModelWithoutAttention):
     r"""Defines a ``TabNet`` model (https://arxiv.org/abs/1908.07442)
     that can be used as the ``deeptabular`` component of a Wide & Deep
     model.
@@ -25,29 +25,33 @@ class TabNet(nn.Module):
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the model. Required to slice the tensors. e.g. {'education':
+        the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
         0, 'relationship': 1, 'workclass': 2, ...}
-    cat_embed_input: List
+    cat_embed_input: List, Optional, default = None
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. [(education, 11, 32), ...]
-    cat_embed_dropout: float, default = 0.
+    cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
+    use_cat_bias: bool, default = True,
+        Boolean indicating in bias will be used for the categorical embeddings
+    cat_embed_activation: Optional, str, default = None,
+        Activation function for the categorical embeddings
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
+    cont_norm_layer: str, default =  "batchnorm"
+        Type of normalization layer applied to the continuous features. Options
+        are: 'layernorm', 'batchnorm' or None.
     embed_continuous: bool, default = False,
         Boolean indicating if the continuous columns will be embedded
         (i.e. passed each through a linear layer with or without activation)
     cont_embed_dim: int, default = 32,
         Size of the continuous embeddings
     cont_embed_dropout: float, default = 0.1,
-        Continuous embeddings dropout
-    cont_embed_activation: Optional, str, default = None,
-        Activation function for the continuous embeddings
+        Dropout for the continuous embeddings
     use_cont_bias: bool, default = True,
         Boolean indicating in bias will be used for the continuous embeddings
-    cont_norm_layer: str, default =  "batchnorm"
-        Type of normalization layer applied to the continuous features. Options
-        are: 'layernorm', 'batchnorm' or None.
+    cont_embed_activation: Optional, str, default = None,
+        Activation function for the continuous embeddings
     n_steps: int, default = 3
         number of decision steps
     step_dim: int, default = 8
@@ -111,13 +115,15 @@ class TabNet(nn.Module):
         column_idx: Dict[str, int],
         cat_embed_input: Optional[List[Tuple[str, int, int]]] = None,
         cat_embed_dropout: float = 0.1,
+        use_cat_bias: bool = False,
+        cat_embed_activation: Optional[str] = None,
         continuous_cols: Optional[List[str]] = None,
+        cont_norm_layer: str = None,
         embed_continuous: bool = False,
         cont_embed_dim: int = 32,
         cont_embed_dropout: float = 0.1,
-        cont_embed_activation: Optional[str] = None,
         use_cont_bias: bool = True,
-        cont_norm_layer: str = None,
+        cont_embed_activation: Optional[str] = None,
         n_steps: int = 3,
         step_dim: int = 8,
         attn_dim: int = 8,
@@ -131,19 +137,20 @@ class TabNet(nn.Module):
         epsilon: float = 1e-15,
         mask_type: str = "sparsemax",
     ):
-        super(TabNet, self).__init__()
-
-        self.column_idx = column_idx
-        self.cat_embed_input = cat_embed_input
-        self.cat_embed_dropout = cat_embed_dropout
-
-        self.continuous_cols = continuous_cols
-        self.embed_continuous = embed_continuous
-        self.cont_embed_dim = cont_embed_dim
-        self.cont_embed_dropout = cont_embed_dropout
-        self.cont_embed_activation = cont_embed_activation
-        self.use_cont_bias = use_cont_bias
-        self.cont_norm_layer = cont_norm_layer
+        super(TabNet, self).__init__(
+            column_idx=column_idx,
+            cat_embed_input=cat_embed_input,
+            cat_embed_dropout=cat_embed_dropout,
+            use_cat_bias=use_cat_bias,
+            cat_embed_activation=cat_embed_activation,
+            continuous_cols=continuous_cols,
+            cont_norm_layer=cont_norm_layer,
+            embed_continuous=embed_continuous,
+            cont_embed_dim=cont_embed_dim,
+            cont_embed_dropout=cont_embed_dropout,
+            use_cont_bias=use_cont_bias,
+            cont_embed_activation=cont_embed_activation,
+        )
 
         self.n_steps = n_steps
         self.step_dim = step_dim
@@ -158,19 +165,7 @@ class TabNet(nn.Module):
         self.epsilon = epsilon
         self.mask_type = mask_type
 
-        # Embeddings
-        self.cat_and_cont_embed = DiffSizeCatAndContEmbeddings(
-            column_idx,
-            cat_embed_input,
-            cat_embed_dropout,
-            continuous_cols,
-            embed_continuous,
-            cont_embed_dim,
-            cont_embed_dropout,
-            cont_embed_activation,
-            use_cont_bias,
-            cont_norm_layer,
-        )
+        # Embeddings are be instantiated at the base model
         self.embed_out_dim = self.cat_and_cont_embed.output_dim
 
         # TabNet
@@ -192,26 +187,13 @@ class TabNet(nn.Module):
         self.output_dim = step_dim
 
     def forward(self, X: Tensor) -> Tuple[Tensor, Tensor]:
-
-        x_emb, x_cont = self.cat_and_cont_embed(X)
-        if x_emb is not None:
-            x = x_emb
-        if x_cont is not None:
-            x = torch.cat([x, x_cont], 1) if x_emb is not None else x_cont
-
+        x = self._get_embeddings(X)
         steps_output, M_loss = self.tabnet_encoder(x)
         res = torch.sum(torch.stack(steps_output, dim=0), dim=0)
-
         return (res, M_loss)
 
     def forward_masks(self, X: Tensor) -> Tuple[Tensor, Dict[int, Tensor]]:
-
-        x_emb, x_cont = self.cat_and_cont_embed(X)
-        if x_emb is not None:
-            x = x_emb
-        if x_cont is not None:
-            x = torch.cat([x, x_cont], 1) if x_emb is not None else x_cont
-
+        x = self._get_embeddings(X)
         return self.tabnet_encoder.forward_masks(x)
 
 

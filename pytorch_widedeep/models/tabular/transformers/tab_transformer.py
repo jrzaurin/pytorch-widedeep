@@ -3,15 +3,15 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
-from pytorch_widedeep.models.tabular.embeddings_layers import (
-    SameSizeCatAndContEmbeddings,
+from pytorch_widedeep.models.tabular._base_tabular_model import (
+    BaseTabularModelWithAttention,
 )
 from pytorch_widedeep.models.tabular.transformers._encoders import (
     TransformerEncoder,
 )
 
 
-class TabTransformer(nn.Module):
+class TabTransformer(BaseTabularModelWithAttention):
     r"""Defines a ``TabTransformer`` model
     (`arXiv:2012.06678 <https://arxiv.org/abs/2012.06678>`_) that can be used
     as the ``deeptabular`` component of a Wide & Deep model.
@@ -23,33 +23,43 @@ class TabTransformer(nn.Module):
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the model. Required to slice the tensors. e.g.
-        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
-    cat_embed_input: List
-        List of Tuples with the column name and number of unique values
-        e.g. [('education', 11), ...]
+        the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
+        0, 'relationship': 1, 'workclass': 2, ...}
+    cat_embed_input: List, Optional, default = None
+        List of Tuples with the column name, number of unique values and
+        embedding dimension. e.g. [(education, 11, 32), ...]
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
+    use_cat_bias: bool, default = True,
+        Boolean indicating in bias will be used for the categorical embeddings
+    cat_embed_activation: Optional, str, default = None,
+        Activation function for the categorical embeddings
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
         :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
         If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
     shared_embed: bool, default = False
-        The idea behind ``shared_embed`` is described in the Appendix A in the paper:
-        `'The goal of having column embedding is to enable the model to distinguish the
-        classes in one column from those in the other columns'`. In other words, the idea
-        is to let the model learn which column is embedded at the time.
-    add_shared_embed: bool, default = False
-        The two embedding sharing strategies are: 1) add the shared embeddings to the column
-        embeddings or 2) to replace the first ``frac_shared_embed`` with the shared
-        embeddings. See :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
+        The idea behind ``shared_embed`` is described in the Appendix A in the
+        `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
+        goal of having column embedding is to enable the model to distinguish
+        the classes in one column from those in the other columns'`. In other
+        words, the idea is to let the model learn which column is embedded
+        at the time.
+    add_shared_embed: bool, default = False,
+        The two embedding sharing strategies are: 1) add the shared embeddings
+        to the column embeddings or 2) to replace the first
+        ``frac_shared_embed`` with the shared embeddings.
+        See :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
     frac_shared_embed: float, default = 0.25
         The fraction of embeddings that will be shared (if ``add_shared_embed
         = False``) by all the different categories for one particular
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
+    cont_norm_layer: str, default =  "batchnorm"
+        Type of normalization layer applied to the continuous features. Options
+        are: 'layernorm', 'batchnorm' or None.
     embed_continuous: bool, default = False
         Boolean indicating if the continuous features will be "embedded". See
         ``pytorch_widedeep.models.transformers._layers.ContinuousEmbeddings``
@@ -59,16 +69,14 @@ class TabTransformer(nn.Module):
         See :obj:`pytorch_widedeep.models.transformers.ft_transformer.FTTransformer`
         for details on the dedicated implementation available in this
         library
+    cont_embed_dropout: float, default = 0.1,
+        Continuous embeddings dropout
+    use_cont_bias: bool, default = True,
+        Boolean indicating in bias will be used for the continuous embeddings
     cont_embed_activation: str, default = None
         String indicating the activation function to be applied to the
         continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
         ``gelu`` are supported.
-    cont_embed_dropout: float, default = 0.0,
-        Continuous embeddings dropout
-    cont_norm_layer: str, default =  None,
-        Type of normalization layer applied to the continuous features before
-        they are embedded. Options are: ``layernorm``, ``batchnorm`` or
-        ``None``.
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general is the number of
         embeddings used to encode the categorical and/or continuous columns
@@ -135,16 +143,18 @@ class TabTransformer(nn.Module):
         column_idx: Dict[str, int],
         cat_embed_input: Optional[List[Tuple[str, int]]] = None,
         cat_embed_dropout: float = 0.1,
+        use_cat_bias: bool = False,
+        cat_embed_activation: Optional[str] = None,
         full_embed_dropout: bool = False,
         shared_embed: bool = False,
         add_shared_embed: bool = False,
         frac_shared_embed: float = 0.25,
         continuous_cols: Optional[List[str]] = None,
-        embed_continuous: bool = False,
-        embed_continuous_activation: str = None,
-        cont_embed_dropout: float = 0.0,
-        cont_embed_activation: str = None,
         cont_norm_layer: str = None,
+        embed_continuous: bool = False,
+        cont_embed_dropout: float = 0.1,
+        use_cont_bias: bool = True,
+        cont_embed_activation: Optional[str] = None,
         input_dim: int = 32,
         n_heads: int = 8,
         use_bias: bool = False,
@@ -159,24 +169,25 @@ class TabTransformer(nn.Module):
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = True,
     ):
-        super(TabTransformer, self).__init__()
+        super(TabTransformer, self).__init__(
+            column_idx=column_idx,
+            cat_embed_input=cat_embed_input,
+            cat_embed_dropout=cat_embed_dropout,
+            use_cat_bias=use_cat_bias,
+            cat_embed_activation=cat_embed_activation,
+            full_embed_dropout=full_embed_dropout,
+            shared_embed=shared_embed,
+            add_shared_embed=add_shared_embed,
+            frac_shared_embed=frac_shared_embed,
+            continuous_cols=continuous_cols,
+            cont_norm_layer=cont_norm_layer,
+            embed_continuous=embed_continuous,
+            cont_embed_dropout=cont_embed_dropout,
+            use_cont_bias=use_cont_bias,
+            cont_embed_activation=cont_embed_activation,
+            input_dim=input_dim,
+        )
 
-        self.column_idx = column_idx
-        self.cat_embed_input = cat_embed_input
-        self.cat_embed_dropout = cat_embed_dropout
-        self.full_embed_dropout = full_embed_dropout
-        self.shared_embed = shared_embed
-        self.add_shared_embed = add_shared_embed
-        self.frac_shared_embed = frac_shared_embed
-
-        self.continuous_cols = continuous_cols
-        self.embed_continuous = embed_continuous
-        self.embed_continuous_activation = embed_continuous_activation
-        self.cont_embed_dropout = cont_embed_dropout
-        self.cont_embed_activation = cont_embed_activation
-        self.cont_norm_layer = cont_norm_layer
-
-        self.input_dim = input_dim
         self.n_heads = n_heads
         self.use_bias = use_bias
         self.n_blocks = n_blocks
@@ -200,26 +211,8 @@ class TabTransformer(nn.Module):
                 "If only continuous features are used 'embed_continuous' must be set to 'True'"
             )
 
-        # Embeddings
-        self.cat_and_cont_embed = SameSizeCatAndContEmbeddings(
-            input_dim,
-            column_idx,
-            cat_embed_input,
-            cat_embed_dropout,
-            full_embed_dropout,
-            shared_embed,
-            add_shared_embed,
-            frac_shared_embed,
-            False,  # use_embed_bias
-            continuous_cols,
-            embed_continuous,
-            cont_embed_dropout,
-            embed_continuous_activation,
-            True,  # use_cont_bias
-            cont_norm_layer,
-        )
-
-        # Transformer
+        # Embeddings are be instantiated at the base model
+        # Transformer blocks
         self.transformer_blks = nn.Sequential()
         for i in range(n_blocks):
             self.transformer_blks.add_module(
@@ -259,15 +252,19 @@ class TabTransformer(nn.Module):
 
     def forward(self, X: Tensor) -> Tensor:
 
-        x_cat, x_cont = self.cat_and_cont_embed(X)
-
-        if x_cat is not None:
-            x = x_cat
-        if x_cont is not None and self.embed_continuous:
-            x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
+        if not self.embed_continuous:
+            x_cat, x_cont = self.cat_and_cont_embed(X)
+            if x_cat is not None:
+                x = (
+                    self.cat_embed_act_fn(x_cat)
+                    if self.cat_embed_act_fn is not None
+                    else x_cat
+                )
+        else:
+            x = self._get_embeddings(X)
+            x_cont = None
 
         x = self.transformer_blks(x)
-
         if self.with_cls_token:
             x = x[:, 0, :]
         else:

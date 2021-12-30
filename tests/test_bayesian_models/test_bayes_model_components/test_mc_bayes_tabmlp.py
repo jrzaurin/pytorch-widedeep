@@ -75,8 +75,11 @@ def test_cont_norm_layer(cont_norm_layer):
     model = BayesianTabMlp(
         column_idx={k: v for v, k in enumerate(colnames)},
         cat_embed_input=embed_input,
+        cat_embed_activation="relu",
         continuous_cols=continuous_cols,
         cont_norm_layer=cont_norm_layer,
+        use_cont_bias=True,
+        cont_embed_activation="relu",
         mlp_hidden_dims=[32, 16, 8],
     )
     out = model(X_deep)
@@ -148,9 +151,8 @@ def test_embedddings_class(
         continuous_cols=continuous_cols,
         embed_continuous=embed_continuous,
         cont_embed_dim=16,
-        cont_embed_activation=None,
         cont_norm_layer=None,
-        use_cont_bias=False,
+        use_cont_bias=setup == "w_cont",
         prior_sigma_1=1.0,
         prior_sigma_2=0.002,
         prior_pi=0.8,

@@ -25,7 +25,7 @@ pd.set_option("display.max_rows", 300)
 
 header_list = ["EXAMPLE_ID", "BLOCK_ID", "target"] + [str(i) for i in range(4, 78)]
 
-DATA_PATH = Path("../data")
+DATA_PATH = Path("../tmp_data")
 
 df = pd.read_csv(DATA_PATH / "kddcup04/bio_train.dat", sep="\t", names=header_list)
 df.head()

@@ -1,15 +1,12 @@
-import torch
-from torch import nn
-
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.resnet._layers import DenseResnet
-from pytorch_widedeep.models.tabular.embeddings_layers import (
-    DiffSizeCatAndContEmbeddings,
+from pytorch_widedeep.models.tabular._base_tabular_model import (
+    BaseTabularModelWithoutAttention,
 )
 
 
-class TabResnet(nn.Module):
+class TabResnet(BaseTabularModelWithoutAttention):
     r"""Defines a ``TabResnet`` model that can be used as the ``deeptabular``
     component of a Wide & Deep model.
 
@@ -30,8 +27,15 @@ class TabResnet(nn.Module):
         embedding dimension. e.g. [(education, 11, 32), ...].
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
+    use_cat_bias: bool, default = True,
+        Boolean indicating in bias will be used for the categorical embeddings
+    cat_embed_activation: Optional, str, default = None,
+        Activation function for the categorical embeddings
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
+    cont_norm_layer: str, default =  "batchnorm"
+        Type of normalization layer applied to the continuous features. Options
+        are: 'layernorm', 'batchnorm' or None.
     embed_continuous: bool, default = False,
         Boolean indicating if the continuous columns will be embedded
         (i.e. passed each through a linear layer with or without activation)
@@ -39,13 +43,10 @@ class TabResnet(nn.Module):
         Size of the continuous embeddings
     cont_embed_dropout: float, default = 0.1,
         Continuous embeddings dropout
-    cont_embed_activation: Optional, str, default = None,
-        Activation function for the continuous embeddings
     use_cont_bias: bool, default = True,
         Boolean indicating in bias will be used for the continuous embeddings
-    cont_norm_layer: str, default =  "batchnorm"
-        Type of normalization layer applied to the continuous features. Options
-        are: 'layernorm', 'batchnorm' or None.
+    cont_embed_activation: Optional, str, default = None,
+        Activation function for the continuous embeddings
     blocks_dims: List, default = [200, 100, 100]
         List of integers that define the input and output units of each block.
         For example: [200, 100, 100] will generate 2 blocks. The first will
@@ -114,13 +115,15 @@ class TabResnet(nn.Module):
         column_idx: Dict[str, int],
         cat_embed_input: Optional[List[Tuple[str, int, int]]] = None,
         cat_embed_dropout: float = 0.1,
+        use_cat_bias: bool = False,
+        cat_embed_activation: Optional[str] = None,
         continuous_cols: Optional[List[str]] = None,
+        cont_norm_layer: str = "batchnorm",
         embed_continuous: bool = False,
         cont_embed_dim: int = 32,
         cont_embed_dropout: float = 0.1,
-        cont_embed_activation: Optional[str] = None,
         use_cont_bias: bool = True,
-        cont_norm_layer: str = "batchnorm",
+        cont_embed_activation: Optional[str] = None,
         blocks_dims: List[int] = [200, 100, 100],
         blocks_dropout: float = 0.1,
         simplify_blocks: bool = False,
@@ -131,24 +134,25 @@ class TabResnet(nn.Module):
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = False,
     ):
-        super(TabResnet, self).__init__()
+        super(TabResnet, self).__init__(
+            column_idx=column_idx,
+            cat_embed_input=cat_embed_input,
+            cat_embed_dropout=cat_embed_dropout,
+            use_cat_bias=use_cat_bias,
+            cat_embed_activation=cat_embed_activation,
+            continuous_cols=continuous_cols,
+            cont_norm_layer=cont_norm_layer,
+            embed_continuous=embed_continuous,
+            cont_embed_dim=cont_embed_dim,
+            cont_embed_dropout=cont_embed_dropout,
+            use_cont_bias=use_cont_bias,
+            cont_embed_activation=cont_embed_activation,
+        )
 
         if len(blocks_dims) < 2:
             raise ValueError(
                 "'blocks' must contain at least two elements, e.g. [256, 128]"
             )
-
-        self.column_idx = column_idx
-        self.cat_embed_input = cat_embed_input
-        self.cat_embed_dropout = cat_embed_dropout
-
-        self.continuous_cols = continuous_cols
-        self.embed_continuous = embed_continuous
-        self.cont_embed_dim = cont_embed_dim
-        self.cont_embed_dropout = cont_embed_dropout
-        self.cont_embed_activation = cont_embed_activation
-        self.use_cont_bias = use_cont_bias
-        self.cont_norm_layer = cont_norm_layer
 
         self.blocks_dims = blocks_dims
         self.blocks_dropout = blocks_dropout
@@ -161,19 +165,7 @@ class TabResnet(nn.Module):
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
-        # Embeddings
-        self.cat_and_cont_embed = DiffSizeCatAndContEmbeddings(
-            column_idx,
-            cat_embed_input,
-            cat_embed_dropout,
-            continuous_cols,
-            embed_continuous,
-            cont_embed_dim,
-            cont_embed_dropout,
-            cont_embed_activation,
-            use_cont_bias,
-            cont_norm_layer,
-        )
+        # Embeddings are be instantiated at the base model
         cat_out_dim = self.cat_and_cont_embed.cat_out_dim
         cont_out_dim = self.cat_and_cont_embed.cont_out_dim
 
@@ -199,20 +191,8 @@ class TabResnet(nn.Module):
             self.output_dim = blocks_dims[-1]
 
     def forward(self, X: Tensor) -> Tensor:
-        r"""Forward pass that concatenates the continuous features with the
-        embeddings. The result is then passed through a series of dense Resnet
-        blocks"""
-
-        x_emb, x_cont = self.cat_and_cont_embed(X)
-
-        if x_emb is not None:
-            x = x_emb
-        if x_cont is not None:
-            x = torch.cat([x, x_cont], 1) if x_emb is not None else x_cont
-
-        out = self.tab_resnet_blks(x)
-
+        x = self._get_embeddings(X)
+        x = self.tab_resnet_blks(x)
         if self.mlp_hidden_dims is not None:
-            out = self.tab_resnet_mlp(out)
-
-        return out
+            x = self.tab_resnet_mlp(x)
+        return x

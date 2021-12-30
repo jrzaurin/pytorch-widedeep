@@ -4,7 +4,6 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.bayesian_models import bayesian_nn as bnn
-from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.bayesian_models._weight_sampler import (
     GaussianPosterior,
     ScaleMixtureGaussianPrior,
@@ -25,14 +24,12 @@ class BayesianContEmbeddings(BayesianModule):
         posterior_mu_init: float,
         posterior_rho_init: float,
         use_bias: bool = False,
-        activation: str = None,
     ):
         super(BayesianContEmbeddings, self).__init__()
 
         self.n_cont_cols = n_cont_cols
         self.embed_dim = embed_dim
         self.use_bias = use_bias
-        self.activation = activation
 
         self.weight_mu = nn.Parameter(
             torch.Tensor(n_cont_cols, embed_dim).normal_(posterior_mu_init, 0.1)
@@ -66,8 +63,6 @@ class BayesianContEmbeddings(BayesianModule):
                 prior_sigma_2,
             )
 
-        self.act_fn = get_activation_fn(activation) if activation else None
-
         self.log_prior: Union[Tensor, float] = 0.0
         self.log_variational_posterior: Union[Tensor, float] = 0.0
 
@@ -77,8 +72,6 @@ class BayesianContEmbeddings(BayesianModule):
             x = self.weight_mu.unsqueeze(0) * X.unsqueeze(2)
             if self.bias_mu is not None:
                 x + self.bias_mu.unsqueeze(0)
-            if self.act_fn is not None:
-                x = self.act_fn(x)
             return x
 
         weight = self.weight_sampler.sample()
@@ -99,15 +92,10 @@ class BayesianContEmbeddings(BayesianModule):
         self.log_prior = self.weight_prior_dist.log_prior(weight) + bias_log_prior
 
         x = weight.unsqueeze(0) * X.unsqueeze(2) + bias
-        if self.act_fn is not None:
-            x = self.act_fn(x)
-
         return x
 
     def extra_repr(self) -> str:
         s = "{n_cont_cols}, {embed_dim}, use_bias={use_bias}"
-        if self.activation is not None:
-            s += ", activation={activation}"
         return s.format(**self.__dict__)
 
 
@@ -164,7 +152,6 @@ class BayesianDiffSizeCatAndContEmbeddings(nn.Module):
         continuous_cols: Optional[List[str]],
         embed_continuous: bool,
         cont_embed_dim: int,
-        cont_embed_activation: str,
         use_cont_bias: bool,
         cont_norm_layer: Optional[str],
         prior_sigma_1: float,
@@ -214,7 +201,6 @@ class BayesianDiffSizeCatAndContEmbeddings(nn.Module):
                     posterior_mu_init,
                     posterior_rho_init,
                     use_cont_bias,
-                    cont_embed_activation,
                 )
                 self.cont_out_dim = len(continuous_cols) * cont_embed_dim
             else:

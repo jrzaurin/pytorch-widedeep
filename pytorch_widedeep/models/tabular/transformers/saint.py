@@ -2,13 +2,13 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
-from pytorch_widedeep.models.tabular.embeddings_layers import (
-    SameSizeCatAndContEmbeddings,
+from pytorch_widedeep.models.tabular._base_tabular_model import (
+    BaseTabularModelWithAttention,
 )
 from pytorch_widedeep.models.tabular.transformers._encoders import SaintEncoder
 
 
-class SAINT(nn.Module):
+class SAINT(BaseTabularModelWithAttention):
     r"""Defines a ``SAINT`` model
     (`arXiv:2106.01342 <https://arxiv.org/abs/2106.01342>`_) that can be used
     as the ``deeptabular`` component of a Wide & Deep model.
@@ -17,13 +17,17 @@ class SAINT(nn.Module):
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the model. Required to slice the tensors. e.g.
-        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
-    cat_embed_input: List
-        List of Tuples with the column name and number of unique values
-        e.g. [('education', 11), ...]
+        the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
+        0, 'relationship': 1, 'workclass': 2, ...}
+    cat_embed_input: List, Optional, default = None
+        List of Tuples with the column name, number of unique values and
+        embedding dimension. e.g. [(education, 11, 32), ...]
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
+    use_cat_bias: bool, default = True,
+        Boolean indicating in bias will be used for the categorical embeddings
+    cat_embed_activation: Optional, str, default = None,
+        Activation function for the categorical embeddings
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
@@ -47,16 +51,17 @@ class SAINT(nn.Module):
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    cont_embed_activation: str,  default = None,
+    cont_norm_layer: str, default =  "batchnorm"
+        Type of normalization layer applied to the continuous features. Options
+        are: 'layernorm', 'batchnorm' or None.
+    cont_embed_dropout: float, default = 0.1,
+        Continuous embeddings dropout
+    use_cont_bias: bool, default = True,
+        Boolean indicating in bias will be used for the continuous embeddings
+    cont_embed_activation: str, default = None
         String indicating the activation function to be applied to the
         continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
         ``gelu`` are supported.
-    cont_embed_dropout: float, default = 0.0,
-        Continuous embeddings dropout
-    cont_norm_layer: str, default =  None,
-        Type of normalization layer applied to the continuous features before
-        they are embedded. Options are: ``layernorm``, ``batchnorm`` or
-        ``None``.
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general is the number of
         embeddings used to encode the categorical and/or continuous columns
@@ -124,14 +129,17 @@ class SAINT(nn.Module):
         column_idx: Dict[str, int],
         cat_embed_input: Optional[List[Tuple[str, int]]] = None,
         cat_embed_dropout: float = 0.1,
+        use_cat_bias: bool = False,
+        cat_embed_activation: Optional[str] = None,
         full_embed_dropout: bool = False,
         shared_embed: bool = False,
         add_shared_embed: bool = False,
         frac_shared_embed: float = 0.25,
         continuous_cols: Optional[List[str]] = None,
-        cont_embed_activation: str = None,
-        cont_embed_dropout: float = 0.0,
         cont_norm_layer: str = None,
+        cont_embed_dropout: float = 0.1,
+        use_cont_bias: bool = True,
+        cont_embed_activation: Optional[str] = None,
         input_dim: int = 32,
         use_bias: bool = False,
         n_heads: int = 8,
@@ -146,7 +154,24 @@ class SAINT(nn.Module):
         mlp_batchnorm_last: bool = False,
         mlp_linear_first: bool = True,
     ):
-        super(SAINT, self).__init__()
+        super(SAINT, self).__init__(
+            column_idx=column_idx,
+            cat_embed_input=cat_embed_input,
+            cat_embed_dropout=cat_embed_dropout,
+            use_cat_bias=use_cat_bias,
+            cat_embed_activation=cat_embed_activation,
+            full_embed_dropout=full_embed_dropout,
+            shared_embed=shared_embed,
+            add_shared_embed=add_shared_embed,
+            frac_shared_embed=frac_shared_embed,
+            continuous_cols=continuous_cols,
+            cont_norm_layer=cont_norm_layer,
+            embed_continuous=True,
+            cont_embed_dropout=cont_embed_dropout,
+            use_cont_bias=use_cont_bias,
+            cont_embed_activation=cont_embed_activation,
+            input_dim=input_dim,
+        )
 
         self.column_idx = column_idx
         self.cat_embed_input = cat_embed_input
@@ -181,25 +206,7 @@ class SAINT(nn.Module):
         self.n_cont = len(continuous_cols) if continuous_cols is not None else 0
         self.n_feats = self.n_cat + self.n_cont
 
-        # Embeddings
-        self.cat_and_cont_embed = SameSizeCatAndContEmbeddings(
-            input_dim,
-            column_idx,
-            cat_embed_input,
-            cat_embed_dropout,
-            full_embed_dropout,
-            shared_embed,
-            add_shared_embed,
-            frac_shared_embed,
-            False,  # use_embed_bias
-            continuous_cols,
-            True,  # embed_continuous,
-            cont_embed_dropout,
-            cont_embed_activation,
-            True,  # use_cont_bias
-            cont_norm_layer,
-        )
-
+        # Embeddings are be instantiated at the base model
         # Transformer blocks
         self.saint_blks = nn.Sequential()
         for i in range(n_blocks):
@@ -243,21 +250,12 @@ class SAINT(nn.Module):
         self.output_dim = mlp_hidden_dims[-1]
 
     def forward(self, X: Tensor) -> Tensor:
-
-        x_cat, x_cont = self.cat_and_cont_embed(X)
-
-        if x_cat is not None:
-            x = x_cat
-        if x_cont is not None:
-            x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
-
+        x = self._get_embeddings(X)
         x = self.saint_blks(x)
-
         if self.with_cls_token:
             x = x[:, 0, :]
         else:
             x = x.flatten(1)
-
         return self.saint_mlp(x)
 
     @property

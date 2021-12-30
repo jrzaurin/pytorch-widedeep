@@ -1,6 +1,7 @@
 import torch
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BaseBayesianModel,
 )
@@ -31,6 +32,8 @@ class BayesianTabMlp(BaseBayesianModel):
         embedding dimension. e.g. [(education, 11, 32), ...]
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
+    cat_embed_activation: Optional, str, default = None,
+        Activation function for the categorical embeddings
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     embed_continuous: bool, default = False,
@@ -104,6 +107,7 @@ class BayesianTabMlp(BaseBayesianModel):
         column_idx: Dict[str, int],
         cat_embed_input: Optional[List[Tuple[str, int, int]]] = None,
         cat_embed_dropout: float = 0.1,
+        cat_embed_activation: Optional[str] = None,
         continuous_cols: Optional[List[str]] = None,
         embed_continuous: bool = False,
         cont_embed_dim: int = 32,
@@ -125,6 +129,7 @@ class BayesianTabMlp(BaseBayesianModel):
         self.column_idx = column_idx
         self.cat_embed_input = cat_embed_input
         self.cat_embed_dropout = cat_embed_dropout
+        self.cat_embed_activation = cat_embed_activation
 
         self.continuous_cols = continuous_cols
         self.embed_continuous = embed_continuous
@@ -160,7 +165,6 @@ class BayesianTabMlp(BaseBayesianModel):
             continuous_cols,
             embed_continuous,
             cont_embed_dim,
-            cont_embed_activation,
             use_cont_bias,
             cont_norm_layer,
             prior_sigma_1,
@@ -168,6 +172,16 @@ class BayesianTabMlp(BaseBayesianModel):
             prior_pi,
             posterior_mu_init,
             posterior_rho_init,
+        )
+        self.cat_embed_act_fn = (
+            get_activation_fn(cat_embed_activation)
+            if cat_embed_activation is not None
+            else None
+        )
+        self.cont_embed_act_fn = (
+            get_activation_fn(cont_embed_activation)
+            if cont_embed_activation is not None
+            else None
         )
 
         mlp_input_dim = self.cat_and_cont_embed.output_dim
@@ -184,9 +198,15 @@ class BayesianTabMlp(BaseBayesianModel):
         )
 
     def forward(self, X: Tensor) -> Tensor:
-        x_emb, x_cont = self.cat_and_cont_embed(X)
-        if x_emb is not None:
-            x = x_emb
+        x_cat, x_cont = self.cat_and_cont_embed(X)
+        if x_cat is not None:
+            x = (
+                self.cat_embed_act_fn(x_cat)
+                if self.cat_embed_act_fn is not None
+                else x_cat
+            )
         if x_cont is not None:
-            x = torch.cat([x, x_cont], 1) if x_emb is not None else x_cont
+            if self.cont_embed_act_fn is not None:
+                x_cont = self.cont_embed_act_fn(x_cont)
+            x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
         return self.bayesian_tab_mlp(x)

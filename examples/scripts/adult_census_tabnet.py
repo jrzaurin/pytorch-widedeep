@@ -18,7 +18,7 @@ use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
 
-    DATA_PATH = Path("../data")
+    DATA_PATH = Path("../tmp_data")
 
     df = pd.read_csv(DATA_PATH / "adult/adult.csv.zip")
     df.columns = [c.replace("-", "_") for c in df.columns]

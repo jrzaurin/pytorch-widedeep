@@ -13,7 +13,6 @@ import torch.nn.functional as F
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 
 
 class FullEmbeddingDropout(nn.Module):
@@ -47,7 +46,6 @@ class ContEmbeddings(nn.Module):
         embed_dim: int,
         embed_dropout: float,
         use_bias: bool,
-        activation: str = None,
     ):
         super(ContEmbeddings, self).__init__()
 
@@ -55,39 +53,27 @@ class ContEmbeddings(nn.Module):
         self.embed_dim = embed_dim
         self.embed_dropout = embed_dropout
         self.use_bias = use_bias
-        self.activation = activation
 
-        self.weight = nn.Parameter(torch.Tensor(n_cont_cols, embed_dim))
+        self.weight = nn.init.kaiming_uniform_(
+            nn.Parameter(torch.Tensor(n_cont_cols, embed_dim)), a=math.sqrt(5)
+        )
 
         self.bias = (
-            nn.Parameter(torch.Tensor(n_cont_cols, embed_dim)) if use_bias else None
+            nn.init.kaiming_uniform_(
+                nn.Parameter(torch.Tensor(n_cont_cols, embed_dim)), a=math.sqrt(5)
+            )
+            if use_bias
+            else None
         )
-        self._reset_parameters()
-
-        self.act_fn = get_activation_fn(activation) if activation else None
-
-    def _reset_parameters(self) -> None:
-        nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
-        if self.bias is not None:
-            fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weight)
-            bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
-            nn.init.uniform_(self.bias, -bound, bound)
 
     def forward(self, X: Tensor) -> Tensor:
         x = self.weight.unsqueeze(0) * X.unsqueeze(2)
-
         if self.bias is not None:
             x = x + self.bias.unsqueeze(0)
-
-        if self.act_fn is not None:
-            x = self.act_fn(x)
-
         return F.dropout(x, self.embed_dropout, self.training)
 
     def extra_repr(self) -> str:
         s = "{n_cont_cols}, {embed_dim}, embed_dropout={embed_dropout}, use_bias={use_bias}"
-        if self.activation is not None:
-            s += ", activation={activation}"
         return s.format(**self.__dict__)
 
 
@@ -134,11 +120,13 @@ class DiffSizeCatEmbeddings(nn.Module):
         column_idx: Dict[str, int],
         embed_input: List[Tuple[str, int, int]],
         embed_dropout: float,
+        use_bias: bool,
     ):
         super(DiffSizeCatEmbeddings, self).__init__()
 
         self.column_idx = column_idx
         self.embed_input = embed_input
+        self.use_bias = use_bias
 
         # Categorical: val + 1 because 0 is reserved for padding/unseen cateogories.
         self.embed_layers = nn.ModuleDict(
@@ -149,12 +137,28 @@ class DiffSizeCatEmbeddings(nn.Module):
         )
         self.embedding_dropout = nn.Dropout(embed_dropout)
 
+        if use_bias:
+            self.biases = nn.ParameterDict()
+            for col, _, dim in self.embed_input:
+                # no major reason for this bound, I just want them to be
+                # small, and related to the number of embeddings for that
+                # particular feature
+                bound = 1 / math.sqrt(dim)
+                self.biases["bias_" + col] = nn.init.uniform_(
+                    nn.Parameter(torch.Tensor(dim)), -bound, bound
+                )
+
         self.emb_out_dim: int = int(np.sum([embed[2] for embed in self.embed_input]))
 
     def forward(self, X: Tensor) -> Tensor:
         embed = [
             self.embed_layers["emb_layer_" + col](X[:, self.column_idx[col]].long())
-            for col, _, _ in self.embed_input
+            + (
+                self.biases["bias_" + col].unsqueeze(0)
+                if self.use_bias
+                else torch.zeros(1, dim, device=X.device)
+            )
+            for col, _, dim in self.embed_input
         ]
         x = torch.cat(embed, 1)
         x = self.embedding_dropout(x)
@@ -168,32 +172,39 @@ class SameSizeCatEmbeddings(nn.Module):
         column_idx: Dict[str, int],
         embed_input: Optional[List[Tuple[str, int]]],
         embed_dropout: float,
+        use_bias: bool,
         full_embed_dropout: bool,
         shared_embed: bool,
         add_shared_embed: bool,
         frac_shared_embed: float,
-        use_bias: bool,
     ):
         super(SameSizeCatEmbeddings, self).__init__()
-        self.column_idx = column_idx
-        self.embed_input = embed_input
-        self.embed_dropout = embed_dropout
-        self.shared_embed = shared_embed
 
         self.n_tokens = sum([ei[1] for ei in embed_input])
-        self.categorical_cols = [ei[0] for ei in embed_input]
-        self.cat_idx = [self.column_idx[col] for col in self.categorical_cols]
+        self.column_idx = column_idx
+        self.embed_input = embed_input
+        self.shared_embed = shared_embed
+        self.with_cls_token = "cls_token" in column_idx
 
-        if use_bias is not None:
-            self.bias = nn.Parameter(
-                torch.Tensor(len(self.categorical_cols), embed_dim)
-            )
-            nn.init.kaiming_uniform_(self.bias, a=math.sqrt(5))
+        categorical_cols = [ei[0] for ei in embed_input]
+        self.cat_idx = [self.column_idx[col] for col in categorical_cols]
+
+        if use_bias:
             if shared_embed:
                 warnings.warn(
                     "The current implementation of 'SharedEmbeddings' does not use bias",
                     UserWarning,
                 )
+            n_cat = (
+                len(categorical_cols) - 1
+                if self.with_cls_token
+                else len(categorical_cols)
+            )
+            self.bias = nn.init.kaiming_uniform_(
+                nn.Parameter(torch.Tensor(n_cat, embed_dim)), a=math.sqrt(5)
+            )
+        else:
+            self.bias = None
 
         # Categorical: val + 1 because 0 is reserved for padding/unseen cateogories.
         if self.shared_embed:
@@ -212,7 +223,8 @@ class SameSizeCatEmbeddings(nn.Module):
                 }
             )
         else:
-            self.embed = nn.Embedding(self.n_tokens + 1, embed_dim, padding_idx=0)
+            n_tokens = sum([ei[1] for ei in embed_input])
+            self.embed = nn.Embedding(n_tokens + 1, embed_dim, padding_idx=0)
             if full_embed_dropout:
                 self.dropout: DropoutLayers = FullEmbeddingDropout(embed_dropout)
             else:
@@ -230,9 +242,16 @@ class SameSizeCatEmbeddings(nn.Module):
         else:
             x = self.embed(X[:, self.cat_idx].long())
             if self.bias is not None:
-                x = x + self.bias.unsqueeze(0)
-            x = self.dropout(x)
+                if self.with_cls_token:
+                    # no bias to be learned for the [CLS] token
+                    bias = torch.cat(
+                        [torch.zeros(1, self.bias.shape[1], device=x.device), self.bias]
+                    )
+                else:
+                    bias = self.bias
+                x = x + bias.unsqueeze(0)
 
+            x = self.dropout(x)
         return x
 
 
@@ -242,13 +261,13 @@ class DiffSizeCatAndContEmbeddings(nn.Module):
         column_idx: Dict[str, int],
         cat_embed_input: List[Tuple[str, int, int]],
         cat_embed_dropout: float,
+        use_cat_bias: bool,
         continuous_cols: Optional[List[str]],
+        cont_norm_layer: str,
         embed_continuous: bool,
         cont_embed_dim: int,
         cont_embed_dropout: float,
-        cont_embed_activation: str,
         use_cont_bias: bool,
-        cont_norm_layer: str,
     ):
         super(DiffSizeCatAndContEmbeddings, self).__init__()
 
@@ -260,7 +279,7 @@ class DiffSizeCatAndContEmbeddings(nn.Module):
         # Categorical
         if self.cat_embed_input is not None:
             self.cat_embed = DiffSizeCatEmbeddings(
-                column_idx, cat_embed_input, cat_embed_dropout
+                column_idx, cat_embed_input, cat_embed_dropout, use_cat_bias
             )
             self.cat_out_dim = int(np.sum([embed[2] for embed in self.cat_embed_input]))
         else:
@@ -281,7 +300,6 @@ class DiffSizeCatAndContEmbeddings(nn.Module):
                     cont_embed_dim,
                     cont_embed_dropout,
                     use_cont_bias,
-                    cont_embed_activation,
                 )
                 self.cont_out_dim = len(continuous_cols) * cont_embed_dim
             else:
@@ -316,17 +334,16 @@ class SameSizeCatAndContEmbeddings(nn.Module):
         column_idx: Dict[str, int],
         cat_embed_input: Optional[List[Tuple[str, int]]],
         cat_embed_dropout: float,
+        use_cat_bias: bool,
         full_embed_dropout: bool,
         shared_embed: bool,
         add_shared_embed: bool,
         frac_shared_embed: float,
-        use_embed_bias: bool,
         continuous_cols: Optional[List[str]],
+        cont_norm_layer: str,
         embed_continuous: bool,
         cont_embed_dropout: float,
-        cont_embed_activation: str,
         use_cont_bias: bool,
-        cont_norm_layer: str,
     ):
         super(SameSizeCatAndContEmbeddings, self).__init__()
 
@@ -342,11 +359,11 @@ class SameSizeCatAndContEmbeddings(nn.Module):
                 column_idx,
                 cat_embed_input,
                 cat_embed_dropout,
+                use_cat_bias,
                 full_embed_dropout,
                 shared_embed,
                 add_shared_embed,
                 frac_shared_embed,
-                use_embed_bias,
             )
         # Continuous
         if continuous_cols is not None:
@@ -363,7 +380,6 @@ class SameSizeCatAndContEmbeddings(nn.Module):
                     embed_dim,
                     cont_embed_dropout,
                     use_cont_bias,
-                    cont_embed_activation,
                 )
 
     def forward(self, X: Tensor) -> Tuple[Tensor, Any]:

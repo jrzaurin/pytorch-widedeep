@@ -78,6 +78,13 @@ def test_tab_resnet_cont(simplify_blocks, embed_continuous):
 
 
 @pytest.mark.parametrize(
+    "use_bias",
+    [
+        True,
+        False,
+    ],
+)
+@pytest.mark.parametrize(
     "simplify_blocks",
     [
         True,
@@ -91,11 +98,13 @@ def test_tab_resnet_cont(simplify_blocks, embed_continuous):
         False,
     ],
 )
-def test_full_model(simplify_blocks, embed_continuous):
+def test_full_model(use_bias, simplify_blocks, embed_continuous):
     model = TabResnet(
         column_idx={k: v for v, k in enumerate(colnames)},
         cat_embed_input=embed_input,
+        use_cat_bias=use_bias,
         continuous_cols=continuous_cols,
+        use_cont_bias=use_bias,
         embed_continuous=embed_continuous,
         blocks_dims=[64, 32],
         blocks_dropout=0.5,
