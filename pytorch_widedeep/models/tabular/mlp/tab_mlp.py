@@ -24,7 +24,7 @@ class TabMlp(BaseTabularModelWithoutAttention):
         embedding dimension. e.g. [(education, 11, 32), ...]
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
-    use_cat_bias: bool, default = True,
+    use_cat_bias: bool, default = False,
         Boolean indicating in bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings
@@ -130,7 +130,7 @@ class TabMlp(BaseTabularModelWithoutAttention):
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
-        # Embeddings are be instantiated at the base model
+        # Embeddings are instantiated at the base model
         # Mlp
         mlp_input_dim = self.cat_and_cont_embed.output_dim
         mlp_hidden_dims = [mlp_input_dim] + mlp_hidden_dims

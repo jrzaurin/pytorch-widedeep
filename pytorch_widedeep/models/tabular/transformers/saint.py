@@ -24,7 +24,7 @@ class SAINT(BaseTabularModelWithAttention):
         embedding dimension. e.g. [(education, 11, 32), ...]
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
-    use_cat_bias: bool, default = True,
+    use_cat_bias: bool, default = False,
         Boolean indicating in bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings
@@ -206,7 +206,7 @@ class SAINT(BaseTabularModelWithAttention):
         self.n_cont = len(continuous_cols) if continuous_cols is not None else 0
         self.n_feats = self.n_cat + self.n_cont
 
-        # Embeddings are be instantiated at the base model
+        # Embeddings are instantiated at the base model
         # Transformer blocks
         self.saint_blks = nn.Sequential()
         for i in range(n_blocks):

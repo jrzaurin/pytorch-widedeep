@@ -28,7 +28,7 @@ class TabPerceiver(BaseTabularModelWithAttention):
         embedding dimension. e.g. [(education, 11, 32), ...]
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
-    use_cat_bias: bool, default = True,
+    use_cat_bias: bool, default = False,
         Boolean indicating in bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings
@@ -226,7 +226,7 @@ class TabPerceiver(BaseTabularModelWithAttention):
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
-        # Embeddings are be instantiated at the base model
+        # Embeddings are instantiated at the base model
         # Transformer blocks
         self.latents = nn.init.trunc_normal_(
             nn.Parameter(torch.empty(n_latents, latent_dim))
