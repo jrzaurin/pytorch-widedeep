@@ -30,11 +30,11 @@ y_pred_bin_pt = torch.from_numpy(y_pred_bin_np)
 @pytest.mark.parametrize(
     "metric_name, sklearn_metric, torch_metric",
     [
-        ("Accuracy", accuracy_score, Accuracy(num_classes=2)),
-        ("Precision", precision_score, Precision(num_classes=2, average="none")),
-        ("Recall", recall_score, Recall(num_classes=2, average="none")),
-        ("F1", f1_score, F1(num_classes=2, average="none")),
-        ("FBeta", f2_score_bin, FBeta(beta=2, num_classes=2, average="none")),
+        ("Accuracy", accuracy_score, Accuracy()),
+        ("Precision", precision_score, Precision()),
+        ("Recall", recall_score, Recall()),
+        ("F1", f1_score, F1()),
+        ("FBeta", f2_score_bin, FBeta(beta=2)),
     ],
 )
 def test_binary_metrics(metric_name, sklearn_metric, torch_metric):
@@ -58,8 +58,8 @@ y_pred_muli_np = np.array(
         [0.1, 0.1, 0.8],
         [0.1, 0.6, 0.3],
         [0.1, 0.8, 0.1],
-        [0.1, 0.6, 0.6],
-        [0.2, 0.6, 0.8],
+        [0.1, 0.3, 0.6],
+        [0.1, 0.1, 0.8],
         [0.6, 0.1, 0.3],
         [0.7, 0.2, 0.1],
         [0.1, 0.7, 0.2],

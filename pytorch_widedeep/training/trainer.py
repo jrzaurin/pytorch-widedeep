@@ -142,8 +142,8 @@ class Trainer:
         - List of objects of type :obj:`torchmetrics.Metric`. This can be any
           metric from torchmetrics library `Examples
           <https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
-          classification-metrics>`_. This can also be a custom metric as
-          long as it is an object of type :obj:`Metric`. See `the instructions
+          classification-metrics>`_. This can also be a custom metric as long as
+          it is an object of type :obj:`Metric`. See `the instructions
           <https://torchmetrics.readthedocs.io/en/latest/>`_.
     verbose: int, default=1
         Setting it to 0 will print nothing during training.
