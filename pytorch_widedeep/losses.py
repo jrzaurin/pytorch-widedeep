@@ -8,22 +8,40 @@ use_cuda = torch.cuda.is_available()
 
 
 class TweedieLoss(nn.Module):
-    r"""Tweedie loss for extremely unbalanced zero-inflated data``
+    r"""`Tweedie loss <https://arxiv.org/abs/1811.10192>`_ for extremely
+    unbalanced zero-inflated data
 
-    All credits go to `Wenbo Shi
-    <https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f> and
-    <https://arxiv.org/abs/1811.10192>`
+    All credits go to Wenbo Shi for `their implementation
+    <https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f>`_
     """
 
     def __init__(self):
         super().__init__()
 
     def forward(self, input: Tensor, target: Tensor, p=1.5) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions
+        target: Tensor
+            target tensor
+
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import TweedieLoss
+        >>> target = torch.tensor([1., 2., 2., 3.]).view(-1, 1)
+        >>> input = torch.tensor([[0.8, 0.5, 1.6, 2.5]]).t()
+        >>> TweedieLoss()(input, target)
+        tensor(5.9363)
+        """
+
         assert (
             input.min() > 0
         ), """All input values must be >=0, if your model is predicting
             values <0 try to enforce positive values by activation function
-            on last layer with `trainer.enforce_positive_output=True`"""
+            on last layer with ``trainer.enforce_positive_output=True``"""
         assert target.min() >= 0, "All target values must be >=0"
         loss = -target * torch.pow(input, 1 - p) / (1 - p) + torch.pow(input, 2 - p) / (
             2 - p
@@ -32,28 +50,45 @@ class TweedieLoss(nn.Module):
 
 
 class QuantileLoss(nn.Module):
-    r"""Quantile loss, i.e. a quantile of ``q=0.5`` will give half of the mean
-    absolute error as it is calcualted as
+    r"""Quantile loss defined as:
 
-    Defined as ``max(q * (y-y_pred), (1-q) * (y_pred-y))``
-    All credits go to `pytorch-forecasting
-    <https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss>`
+        :math:`Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))`
+
+    All credits go to the implementation at `pytorch-forecasting
+    <https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss>`_ .
+
+    Parameters
+    ----------
+    quantiles: List, default = [0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.98]
+        List of quantiles
     """
 
     def __init__(
         self,
         quantiles: List[float] = [0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.98],
     ):
-        """
-        Quantile loss
-
-        Args:
-            quantiles: quantiles for metric
-        """
         super().__init__()
         self.quantiles = quantiles
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions
+        target: Tensor
+            target tensor
+
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import QuantileLoss
+        >>> target = torch.tensor([1., 2., 2., 3., 6., 7., 2., 9., 5., 8.]).view(-1, 1)
+        >>> input = torch.tensor([[0.6, 1., 1.6, 2.6, 5., 6.8, 1.7, 8., 4.5, 7.5],
+        ... [0.5, 0.9, 1.4, 2.2, 6.1, 6.5, 1.5, 9., 5., 9.]]).t()
+        >>> QuantileLoss(quantiles=[0.25, 0.75])(input, target)
+        tensor(1.5835)
+        """
         assert input.shape == torch.Size([target.shape[0], len(self.quantiles)]), (
             f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal "
             f"to number of quantiles, i.e. {len(self.quantiles)}."
@@ -70,9 +105,8 @@ class QuantileLoss(nn.Module):
 
 class ZILNLoss(nn.Module):
     r"""Adjusted implementation of the `Zero Inflated LogNormal loss
-
-    <https://arxiv.org/pdf/1912.07753.pdf>` and its `code
-    <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`
+    <https://arxiv.org/pdf/1912.07753.pdf>`_ using the `code here
+    <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`_
     """
 
     def __init__(self):

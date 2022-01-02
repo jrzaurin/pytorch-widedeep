@@ -56,7 +56,7 @@ if __name__ == "__main__":
     X_wide = prepare_wide.fit_transform(df)
 
     prepare_tab = TabPreprocessor(
-        embed_cols=cat_embed_cols, continuous_cols=continuous_cols, default_embed_dim=1  # type: ignore[arg-type]
+        cat_embed_cols=cat_embed_cols, continuous_cols=continuous_cols, default_embed_dim=1  # type: ignore[arg-type]
     )
     X_tab = prepare_tab.fit_transform(df)
 

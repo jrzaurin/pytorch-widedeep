@@ -38,24 +38,25 @@ class TabPreprocessor(BasePreprocessor):
 
     Parameters
     ----------
-    embed_cols: List, default = None
-        List containing the name of the columns that will be represented by
-        embeddings (e.g. ['education', 'relationship', ...]) or a Tuple with
-        the name and the embedding dimension (e.g.:[('education',32),
-        ('relationship',16), ...])
+    cat_embed_cols: List, default = None
+        List containing the name of the categorical columns that will be
+        represented by embeddings (e.g.['education', 'relationship', ...]) or
+        a Tuple with the name and the embedding dimension (e.g.:[
+        ('education',32),('relationship',16), ...])
     continuous_cols: List, default = None
         List with the name of the continuous cols
     scale: bool, default = True
-        Bool indicating whether or not to scale/standarise continuous cols.
-        The user should bear in mind that all the DL models for tabular data
-        in the library also include the possibility of normalising the input
+        Bool indicating whether or not to scale/standarise continuous cols. It
+        is important to emphasize that all the DL models for tabular data in
+        the library also include the possibility of normalising the input
         continuous features via a ``BatchNorm`` or a ``LayerNorm``.
     auto_embed_dim: bool, default = True
         Boolean indicating whether the embedding dimensions will be
         automatically defined via rule of thumb. See ``embedding_rule``
         below.
     embedding_rule: str, default = 'fastai_new'
-        choice of embedding rule of thumb are:
+        If ``auto_embed_dim=True``, this is the choice of embedding rule of
+        thumb. Choices are:
 
         - 'fastai_new' -- :math:`min(600, round(1.6 \times n_{cat}^{0.56}))`
 
@@ -65,30 +66,28 @@ class TabPreprocessor(BasePreprocessor):
 
     default_embed_dim: int, default=16
         Dimension for the embeddings if the embed_dim is not provided in the
-        ``embed_cols`` parameter and auto_embed_dim is set to ``False``.
+        ``cat_embed_cols`` parameter and ``auto_embed_dim`` is set to
+        ``False``.
     already_standard: List, default = None
         List with the name of the continuous cols that do not need to be
-        Standarised. For example, you might have Long and Lat in your dataset
-        and might want to encode them somehow (e.g. see the
-        ``LatLongScalarEnc`` available in the `autogluon
-        <https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular>`_
-        tabular library) and not standarize them any further
+        Standarised.
     with_attention: bool, default = False
         Boolean indicating whether the preprocessed data will be passed to an
-        attention-based model. If ``True``, the param ``embed_cols`` must
-        just be a list containing the categorical columns: e.g.:
-        ['education', 'relationship', ...] This is because they will all be
-        encoded using embeddings of the same dim.
+        attention-based model. If ``True``, the param ``cat_embed_cols`` must
+        just be a list containing just the categorical column names: e.g.
+        ['education', 'relationship', ...]. This is because they will all be
+        encoded using embeddings of the same dim, which will be specified
+        later when the model is defined.
 
         Param alias: ``for_transformer``
 
     with_cls_token: bool, default = False
         Boolean indicating if a `'[CLS]'` token will be added to the dataset
-        when using transformer-based models. The final hidden state
+        when using attention-based models. The final hidden state
         corresponding to this token is used as the aggregated representation
         for classification and regression tasks. If not, the categorical
         (and continuous embeddings if present) will be concatenated before
-        being passed to the final MLP.
+        being passed to the final MLP (if present).
     shared_embed: bool, default = False
         Boolean indicating if the embeddings will be "shared" when using
         attention-based models. The idea behind ``shared_embed`` is
@@ -104,31 +103,31 @@ class TabPreprocessor(BasePreprocessor):
     ----------
     embed_dim: Dict
         Dictionary where keys are the embed cols and values are the embedding
-        dimensions. If ``with_attention`` is set to ``True`` the embedding
-        dimensions are the same for all columns and this attributes is not
-        generated during the ``fit`` process
+        dimensions. If ``with_attention`` is set to ``True`` this attribute
+        is not generated during the ``fit`` process
     label_encoder: LabelEncoder
         see :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
     embeddings_input: List
         List of Tuples with the column name, number of individual values for
-        that column and the corresponding embeddings dim, e.g. [
-        ('education', 16, 10), ('relationship', 6, 8), ...]
+        that column and, If ``with_attention`` is set to ``False``, the
+        corresponding embeddings dim, e.g. [('education', 16, 10),
+        ('relationship', 6, 8), ...].
     standardize_cols: List
         List of the columns that will be standarized
     scaler: StandardScaler
         an instance of :class:`sklearn.preprocessing.StandardScaler`
     column_idx: Dict
         Dictionary where keys are column names and values are column indexes.
-        This is be neccesary to slice tensors
+        This is neccesary to slice tensors
 
     Examples
     --------
     >>> import pandas as pd
     >>> from pytorch_widedeep.preprocessing import TabPreprocessor
     >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l'], 'age': [25, 40, 55]})
-    >>> embed_cols = [('color',5), ('size',5)]
+    >>> cat_embed_cols = [('color',5), ('size',5)]
     >>> cont_cols = ['age']
-    >>> deep_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+    >>> deep_preprocessor = TabPreprocessor(cat_embed_cols=cat_embed_cols, continuous_cols=cont_cols)
     >>> X_tab = deep_preprocessor.fit_transform(df)
     >>> deep_preprocessor.embed_dim
     {'color': 5, 'size': 5}
@@ -137,9 +136,10 @@ class TabPreprocessor(BasePreprocessor):
     """
 
     @Alias("with_attention", "for_transformer")
+    @Alias("cat_embed_cols", "embed_cols")
     def __init__(
         self,
-        embed_cols: Union[List[str], List[Tuple[str, int]]] = None,
+        cat_embed_cols: Union[List[str], List[Tuple[str, int]]] = None,
         continuous_cols: List[str] = None,
         scale: bool = True,
         auto_embed_dim: bool = True,
@@ -153,7 +153,7 @@ class TabPreprocessor(BasePreprocessor):
     ):
         super(TabPreprocessor, self).__init__()
 
-        self.embed_cols = embed_cols
+        self.cat_embed_cols = cat_embed_cols
         self.continuous_cols = continuous_cols
         self.scale = scale
         self.auto_embed_dim = auto_embed_dim
@@ -167,23 +167,23 @@ class TabPreprocessor(BasePreprocessor):
 
         self.is_fitted = False
 
-        if (self.embed_cols is None) and (self.continuous_cols is None):
+        if (self.cat_embed_cols is None) and (self.continuous_cols is None):
             raise ValueError(
-                "'embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
+                "'cat_embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
             )
 
         transformer_error_message = (
-            "If with_attention is 'True' embed_cols must be a list "
+            "If with_attention is 'True' cat_embed_cols must be a list "
             " of strings with the columns to be encoded as embeddings."
         )
-        if self.with_attention and self.embed_cols is None:
+        if self.with_attention and self.cat_embed_cols is None:
             raise ValueError(transformer_error_message)
-        if self.with_attention and isinstance(self.embed_cols[0], tuple):  # type: ignore[index]
+        if self.with_attention and isinstance(self.cat_embed_cols[0], tuple):  # type: ignore[index]
             raise ValueError(transformer_error_message)
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Fits the Preprocessor and creates required attributes"""
-        if self.embed_cols is not None:
+        if self.cat_embed_cols is not None:
             df_emb = self._prepare_embed(df)
             self.label_encoder = LabelEncoder(
                 columns_to_encode=df_emb.columns.tolist(),
@@ -210,7 +210,7 @@ class TabPreprocessor(BasePreprocessor):
     def transform(self, df: pd.DataFrame) -> np.ndarray:
         """Returns the processed ``dataframe`` as a np.ndarray"""
         check_is_fitted(self, condition=self.is_fitted)
-        if self.embed_cols is not None:
+        if self.cat_embed_cols is not None:
             df_emb = self._prepare_embed(df)
             df_emb = self.label_encoder.transform(df_emb)
         if self.continuous_cols is not None:
@@ -239,11 +239,11 @@ class TabPreprocessor(BasePreprocessor):
         """
         decoded = pd.DataFrame(encoded, columns=self.column_idx.keys())
         # embeddings back to original category
-        if self.embed_cols is not None:
-            if isinstance(self.embed_cols[0], tuple):
-                emb_c: List = [c[0] for c in self.embed_cols]
+        if self.cat_embed_cols is not None:
+            if isinstance(self.cat_embed_cols[0], tuple):
+                emb_c: List = [c[0] for c in self.cat_embed_cols]
             else:
-                emb_c = self.embed_cols.copy()
+                emb_c = self.cat_embed_cols.copy()
             for c in emb_c:
                 decoded[c] = decoded[c].map(self.label_encoder.inverse_encoding_dict[c])
         # continuous_cols back to non-standarised
@@ -266,25 +266,25 @@ class TabPreprocessor(BasePreprocessor):
     def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.with_attention:
             if self.with_cls_token:
-                df_cls = df.copy()[self.embed_cols]
+                df_cls = df.copy()[self.cat_embed_cols]
                 df_cls.insert(loc=0, column="cls_token", value="[CLS]")
                 return df_cls
             else:
-                return df.copy()[self.embed_cols]
+                return df.copy()[self.cat_embed_cols]
         else:
-            if isinstance(self.embed_cols[0], tuple):
-                self.embed_dim = dict(self.embed_cols)  # type: ignore
-                embed_colname = [emb[0] for emb in self.embed_cols]
+            if isinstance(self.cat_embed_cols[0], tuple):
+                self.embed_dim = dict(self.cat_embed_cols)  # type: ignore
+                embed_colname = [emb[0] for emb in self.cat_embed_cols]
             elif self.auto_embed_dim:
-                n_cats = {col: df[col].nunique() for col in self.embed_cols}
+                n_cats = {col: df[col].nunique() for col in self.cat_embed_cols}
                 self.embed_dim = {
                     col: embed_sz_rule(n_cat, self.embedding_rule)  # type: ignore[misc]
                     for col, n_cat in n_cats.items()
                 }
-                embed_colname = self.embed_cols  # type: ignore
+                embed_colname = self.cat_embed_cols  # type: ignore
             else:
-                self.embed_dim = {e: self.default_embed_dim for e in self.embed_cols}  # type: ignore
-                embed_colname = self.embed_cols  # type: ignore
+                self.embed_dim = {e: self.default_embed_dim for e in self.cat_embed_cols}  # type: ignore
+                embed_colname = self.cat_embed_cols  # type: ignore
             return df.copy()[embed_colname]
 
     def _prepare_continuous(self, df: pd.DataFrame) -> pd.DataFrame:

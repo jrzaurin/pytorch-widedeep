@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.datasets import load_adult, load_bio_kdd04, load_ecoli
+from pytorch_widedeep.datasets import load_adult, load_ecoli, load_bio_kdd04
 
 
 @pytest.mark.parametrize(

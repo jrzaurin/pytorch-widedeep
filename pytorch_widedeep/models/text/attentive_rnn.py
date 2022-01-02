@@ -11,18 +11,20 @@ from pytorch_widedeep.models.tabular.mlp._attention_layers import (
 
 class AttentiveRNN(BasicRNN):
     r"""Text classifier/regressor comprised by a stack of RNNs
-    (LSTMs or GRUs) plus an attention layer.
+    (LSTMs or GRUs) plus an attention layer that can be used as the
+    ``deeptext`` component of a Wide & Deep model or independently by
+    itself.
 
     In addition, there is the option to add a Fully Connected (FC) set of dense
-    layers (referred as `rnn_mlp`) on top of attention layer
+    layers on top of attention layer
 
     Parameters
     ----------
     vocab_size: int
         Number of words in the vocabulary
     embed_dim: int, Optional, default = None
-        Dimension of the word embedding matrix if non-pretained word
-        vectors are used
+        Dimension of the word embeddings if non-pretained word vectors are
+        used
     embed_matrix: np.ndarray, Optional, default = None
         Pretrained word embeddings
     embed_trainable: bool, default = True
@@ -42,7 +44,7 @@ class AttentiveRNN(BasicRNN):
         output as predicting features. Typically the former is used.
     padding_idx: int, default = 1
         index of the padding token in the padded-tokenised sequences. The
-        ``TextPreprocessor`` class within this library uses the ``fastai``
+        ``TextPreprocessor`` class within this library uses ``fastai``'s
         tokenizer where the token index 0 is reserved for the `'unknown'`
         word token. Therefore, the default value is set to 1.
     attn_concatenate: bool, default = True
@@ -55,7 +57,7 @@ class AttentiveRNN(BasicRNN):
         List with the sizes of the dense layers in the head e.g: [128, 64]
     head_activation: str, default = "relu"
         Activation function for the dense layers in the head. Currently
-        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
+        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     head_dropout: float, Optional, default = None
         Dropout of the dense layers in the head
     head_batchnorm: bool, default = False
@@ -80,7 +82,7 @@ class AttentiveRNN(BasicRNN):
         ``head_layers_dim`` is not ``None``
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
+        neccesary to build the ``WideDeep`` class
 
     Example
     --------

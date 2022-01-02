@@ -13,25 +13,27 @@ from pytorch_widedeep.models.tabular.transformers._encoders import (
 
 
 class TabPerceiver(BaseTabularModelWithAttention):
-    r"""Defines an adaptation of a ``Perceiver`` model
-    (`arXiv:2103.03206 <https://arxiv.org/abs/2103.03206>`_) that can be used
-    as the ``deeptabular`` component of a Wide & Deep model.
+    r"""Defines an adaptation of a `Perceiver model
+    <https://arxiv.org/abs/2103.03206>`_ that can be used as the
+    ``deeptabular`` component of a Wide & Deep model or independently by
+    itself.
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
-        0, 'relationship': 1, 'workclass': 2, ...}
+        the model. Required to slice the tensors. e.g.
+        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
     cat_embed_input: List, Optional, default = None
-        List of Tuples with the column name, number of unique values and
-        embedding dimension. e.g. [(education, 11, 32), ...]
+        List of Tuples with the column name and number of unique values for
+        each categorical component e.g. [(education, 11), ...]
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     use_cat_bias: bool, default = False,
-        Boolean indicating in bias will be used for the categorical embeddings
+        Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
-        Activation function for the categorical embeddings
+        Activation function for the categorical embeddings, if any. `'tanh'`,
+        `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
@@ -61,11 +63,10 @@ class TabPerceiver(BaseTabularModelWithAttention):
     cont_embed_dropout: float, default = 0.1,
         Continuous embeddings dropout
     use_cont_bias: bool, default = True,
-        Boolean indicating in bias will be used for the continuous embeddings
+        Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: str, default = None
-        String indicating the activation function to be applied to the
-        continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
-        ``gelu`` are supported.
+        Activation function to be applied to the continuous embeddings, if
+        any. `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general, is the number of
         embeddings used to encode the categorical and/or continuous columns.
@@ -103,14 +104,14 @@ class TabPerceiver(BaseTabularModelWithAttention):
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
     transformer_activation: str, default = "gelu"
-        Transformer Encoder activation function. ``tanh``, ``relu``,
-        ``leaky_relu``, ``gelu``, ``geglu`` and ``reglu`` are supported
+        Transformer Encoder activation function. `tanh`, `'relu'`,
+        `'leaky_relu'`, `'gelu'`, `'geglu'` and `'reglu'` are supported
     mlp_hidden_dims: List, Optional, default = None
         MLP hidden dimensions. If not provided it will default to ``[l, 4*l,
-        2*l]`` where ``l`` is the MLP input dimension
+        2*l]`` where ``l`` is the MLP's input dimension
     mlp_activation: str, default = "relu"
-        MLP activation function. ``tanh``, ``relu``, ``leaky_relu`` and
-        ``gelu`` are supported
+        MLP activation function. `tanh`, `'relu'`, `'leaky_relu'` and
+        `'gelu'` are supported
     mlp_dropout: float, default = 0.1
         Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
@@ -136,7 +137,7 @@ class TabPerceiver(BaseTabularModelWithAttention):
         MLP component in the model
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
+        neccesary to build the ``WideDeep`` class
 
     Example
     --------

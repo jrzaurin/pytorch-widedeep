@@ -40,7 +40,9 @@ if __name__ == "__main__":
     target = df[target].values
 
     tab_preprocessor = TabPreprocessor(
-        embed_cols=cat_embed_cols, continuous_cols=continuous_cols, with_attention=True
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        with_attention=True,
     )
     X_tab = tab_preprocessor.fit_transform(df)
 

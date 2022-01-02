@@ -138,7 +138,7 @@ df = pd.DataFrame(
 )
 def test_tab_preprocessor_inverse_transform(embed_cols, continuous_cols, scale):
     tab_preprocessor = TabPreprocessor(
-        embed_cols=embed_cols,
+        cat_embed_cols=embed_cols,
         continuous_cols=continuous_cols,
         scale=scale,
         verbose=False,
@@ -180,7 +180,7 @@ def test_tab_preprocessor_trasformer(
     embed_cols, continuous_cols, scale, with_cls_token
 ):
     tab_preprocessor = TabPreprocessor(
-        embed_cols=embed_cols,
+        cat_embed_cols=embed_cols,
         continuous_cols=continuous_cols,
         scale=scale,
         for_transformer=True,
@@ -214,7 +214,7 @@ def test_tab_preprocessor_trasformer(
 def test_tab_preprocessor_trasformer_raise_error(embed_cols, continuous_cols, scale):
     with pytest.raises(ValueError):
         tab_preprocessor = TabPreprocessor(  # noqa: F841
-            embed_cols=embed_cols,
+            cat_embed_cols=embed_cols,
             continuous_cols=continuous_cols,
             scale=scale,
             for_transformer=True,
@@ -228,7 +228,7 @@ def test_tab_preprocessor_trasformer_raise_error(embed_cols, continuous_cols, sc
 def test_with_and_without_shared_embeddings(shared_embed):
 
     tab_preprocessor = TabPreprocessor(
-        embed_cols=["col1", "col2"],
+        cat_embed_cols=["col1", "col2"],
         continuous_cols=None,
         for_transformer=True,
         shared_embed=shared_embed,
@@ -258,7 +258,7 @@ def test_with_and_without_shared_embeddings(shared_embed):
 
 def test_notfittederror():
     processor = TabPreprocessor(
-        embed_cols=["col1", "col2"], continuous_cols=["col3", "col4"]
+        cat_embed_cols=["col1", "col2"], continuous_cols=["col3", "col4"]
     )
     with pytest.raises(NotFittedError):
         processor.transform(df)
@@ -288,7 +288,7 @@ def test_embed_sz_rule_of_thumb(rule):
     )
     n_cats = {c: df[c].nunique() for c in ["col1", "col2"]}
     embed_szs = {c: embed_sz_rule(nc, embedding_rule=rule) for c, nc in n_cats.items()}
-    tab_preprocessor = TabPreprocessor(embed_cols=embed_cols, embedding_rule=rule)
+    tab_preprocessor = TabPreprocessor(cat_embed_cols=embed_cols, embedding_rule=rule)
     tdf = tab_preprocessor.fit_transform(df)  # noqa: F841
     out = [
         tab_preprocessor.embed_dim[col] == embed_szs[col] for col in embed_szs.keys()

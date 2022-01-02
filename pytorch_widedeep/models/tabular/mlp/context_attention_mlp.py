@@ -11,12 +11,13 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 
 class ContextAttentionMLP(BaseTabularModelWithAttention):
     r"""Defines a ``ContextAttentionMLP`` model that can be used as the
-    ``deeptabular`` component of a Wide & Deep model.
+    ``deeptabular`` component of a Wide & Deep model or independently by
+    itself.
 
     This class combines embedding representations of the categorical features
-    with numerical (aka continuous) features. These are then passed through a
-    series of attention blocks. Each attention block is comprised by a
-    ``ContextAttentionEncoder``.
+    with numerical (aka continuous) features that are also embedded. These
+    are then passed through a series of attention blocks. Each attention
+    block is comprised by a ``ContextAttentionEncoder``.
     See :obj:`pytorch_widedeep.models.tabular.mlp._attention_layers` for
     details
 
@@ -25,17 +26,18 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the ``Resnet`` model. Required to slice the tensors. e.g. {'education':
-        0, 'relationship': 1, 'workclass': 2, ...}
+        the model. Required to slice the tensors. e.g.
+        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
     cat_embed_input: List
-        List of Tuples with the column name, number of unique values and
-        embedding dimension. e.g. [(education, 11, 32), ...].
+        List of Tuples with the column name and number of unique values per
+        categorical columns. e.g. [(education, 11), ...]
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     use_cat_bias: bool, default = False,
-        Boolean indicating in bias will be used for the categorical embeddings
+        Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
-        Activation function for the categorical embeddings
+        Activation function for the categorical embeddings, if any. `tanh`,
+        `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
@@ -61,11 +63,10 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
     cont_embed_dropout: float, default = 0.1,
         Continuous embeddings dropout
     use_cont_bias: bool, default = True,
-        Boolean indicating in bias will be used for the continuous embeddings
+        Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: str, default = None
-        String indicating the activation function to be applied to the
-        continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
-        ``gelu`` are supported.
+        Activation function to be applied to the continuous embeddings, if
+        any. `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general is the number of
         embeddings used to encode the categorical and/or continuous columns
@@ -76,8 +77,8 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
         attention blocks
     attn_activation: str, default = "leaky_relu"
         String indicating the activation function to be applied to the dense
-        layer in each attention encoder. ``tanh``, ``relu``, ``leaky_relu``
-        and ``gelu`` are supported.
+        layer in each attention encoder. `tanh`, `'relu'`, `'leaky_relu'`
+        and `'gelu'` are supported.
     n_blocks: int, default = 3
         Number of attention block
 
@@ -89,7 +90,7 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
         Sequence of attention encoders.
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
+        neccesary to build the ``WideDeep`` class
 
     Example
     --------
@@ -184,7 +185,7 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
 
     @property
     def attention_weights(self) -> List:
-        r"""List with the attention weights
+        r"""List with the attention weights per block
 
         The shape of the attention weights is:
 

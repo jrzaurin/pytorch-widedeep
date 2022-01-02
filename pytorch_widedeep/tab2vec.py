@@ -65,7 +65,7 @@ class Tab2Vec:
     >>> # fit the TabPreprocessor
     >>> embed_cols = [("a", 2), ("b", 4)]
     >>> cont_cols = ["c", "d"]
-    >>> tab_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+    >>> tab_preprocessor = TabPreprocessor(cat_embed_cols=embed_cols, continuous_cols=cont_cols)
     >>> X_tab = tab_preprocessor.fit_transform(df_inp)
     >>>
     >>> # define the model (and let's assume we train it)
@@ -156,7 +156,7 @@ class Tab2Vec:
             columns will be encoded based on the processing applied within
             the model
         target_col: str, Optional
-            Column name of the target_col variable. If 'None' only the array of
+            Column name of the target_col variable. If ``None`` only the array of
             predictors will be returned
         """
 
@@ -190,7 +190,12 @@ class Tab2Vec:
 
     def fit_transform(
         self, df: pd.DataFrame, target_col: Optional[str] = None
-    ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    ) -> Union[
+        np.ndarray,
+        Tuple[np.ndarray, np.ndarray],
+        pd.DataFrame,
+        Tuple[pd.DataFrame, pd.Series],
+    ]:
         r"""Combines ``fit`` and ``transform``"""
         return self.fit(df, target_col).transform(df, target_col)
 

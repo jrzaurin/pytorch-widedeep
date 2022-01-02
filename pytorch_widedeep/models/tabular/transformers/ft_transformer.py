@@ -11,25 +11,27 @@ from pytorch_widedeep.models.tabular.transformers._encoders import (
 
 
 class FTTransformer(BaseTabularModelWithAttention):
-    r"""Defines a ``FTTransformer`` model
-    (`arXiv:2106.11959  <https://arxiv.org/abs/2106.11959>`_) that can be
-    used as the ``deeptabular`` component of a Wide & Deep model.
+    r"""Defines a `FTTransformer model <https://arxiv.org/abs/2106.11959>`_ that
+    can be used as the ``deeptabular`` component of a Wide & Deep model or
+    independently by itself.
+
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
-        0, 'relationship': 1, 'workclass': 2, ...}
+        the model. Required to slice the tensors. e.g.
+        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
     cat_embed_input: List, Optional, default = None
-        List of Tuples with the column name, number of unique values and
-        embedding dimension. e.g. [(education, 11, 32), ...]
+        List of Tuples with the column name and number of unique values for
+        each categorical component e.g. [(education, 11), ...]
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     use_cat_bias: bool, default = False,
-        Boolean indicating in bias will be used for the categorical embeddings
+        Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
-        Activation function for the categorical embeddings
+        Activation function for the categorical embeddings, if any. `'tanh'`,
+        `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
@@ -59,11 +61,10 @@ class FTTransformer(BaseTabularModelWithAttention):
     cont_embed_dropout: float, default = 0.1,
         Continuous embeddings dropout
     use_cont_bias: bool, default = True,
-        Boolean indicating in bias will be used for the continuous embeddings
+        Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: str, default = None
-        String indicating the activation function to be applied to the
-        continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
-        ``gelu`` are supported.
+        Activation function to be applied to the continuous embeddings, if
+        any. `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     input_dim: int, default = 64
         The so-called *dimension of the model*. Is the number of embeddings used to encode
         the categorical and/or continuous columns.
@@ -81,7 +82,7 @@ class FTTransformer(BaseTabularModelWithAttention):
         Complexity <https://arxiv.org/abs/2006.04768>`_ for details
     n_heads: int, default = 8
         Number of attention heads per FTTransformer block
-    use_bias: bool, default = False
+    use_qkv_bias: bool, default = False
         Boolean indicating whether or not to use bias in the Q, K, and V
         projection layers
     n_blocks: int, default = 4
@@ -91,8 +92,8 @@ class FTTransformer(BaseTabularModelWithAttention):
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
     transformer_activation: str, default = "gelu"
-        Transformer Encoder activation function. ``tanh``, ``relu``,
-        ``leaky_relu``, ``gelu``, ``geglu`` and ``reglu`` are supported
+        Transformer Encoder activation function. `tanh`, `'relu'`,
+        `'leaky_relu'`, `'gelu'`, `'geglu'` and `'reglu'` are supported
     ff_factor: float, default = 4 / 3
         Multiplicative factor applied to the first layer of the FF network in
         each Transformer block, This is normally set to 4, but they use 4/3
@@ -101,8 +102,8 @@ class FTTransformer(BaseTabularModelWithAttention):
         MLP hidden dimensions. If not provided no MLP on top of the final
         FTTransformer block will be used
     mlp_activation: str, default = "relu"
-        MLP activation function. ``tanh``, ``relu``, ``leaky_relu`` and
-        ``gelu`` are supported
+        MLP activation function. `tanh`, `'relu'`, `'leaky_relu'` and
+        `'gelu'` are supported
     mlp_dropout: float, default = 0.1
         Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
@@ -126,7 +127,7 @@ class FTTransformer(BaseTabularModelWithAttention):
         MLP component in the model
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
+        neccesary to build the ``WideDeep`` class
 
     Example
     --------
@@ -160,7 +161,7 @@ class FTTransformer(BaseTabularModelWithAttention):
         input_dim: int = 64,
         kv_compression_factor: float = 0.5,
         kv_sharing: bool = False,
-        use_bias: bool = False,
+        use_qkv_bias: bool = False,
         n_heads: int = 8,
         n_blocks: int = 4,
         attn_dropout: float = 0.2,
@@ -195,7 +196,7 @@ class FTTransformer(BaseTabularModelWithAttention):
 
         self.kv_compression_factor = kv_compression_factor
         self.kv_sharing = kv_sharing
-        self.use_bias = use_bias
+        self.use_qkv_bias = use_qkv_bias
         self.n_heads = n_heads
         self.n_blocks = n_blocks
         self.attn_dropout = attn_dropout
@@ -226,7 +227,7 @@ class FTTransformer(BaseTabularModelWithAttention):
                     input_dim,
                     self.n_feats,
                     n_heads,
-                    use_bias,
+                    use_qkv_bias,
                     attn_dropout,
                     ff_dropout,
                     kv_compression_factor,
@@ -276,7 +277,7 @@ class FTTransformer(BaseTabularModelWithAttention):
 
     @property
     def attention_weights(self) -> List:
-        r"""List with the attention weights
+        r"""List with the attention weights per block
 
         The shape of the attention weights is:
 

@@ -14,12 +14,11 @@ from pytorch_widedeep.bayesian_models.tabular.bayesian_embeddings_layers import 
 
 
 class BayesianTabMlp(BaseBayesianModel):
-    r"""Defines a ``TabMlp`` model that can be used as the ``deeptabular``
-    component of a Wide & Deep model.
+    r"""Defines a ``BayesianTabMlp`` model.
 
     This class combines embedding representations of the categorical features
-    with numerical (aka continuous) features. These are then passed through a
-    series of dense layers (i.e. a MLP).
+    with numerical (aka continuous) features, embedded or not. These are then
+    passed through a series of dense layers (i.e. a MLP).
 
     Parameters
     ----------
@@ -33,9 +32,13 @@ class BayesianTabMlp(BaseBayesianModel):
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     cat_embed_activation: Optional, str, default = None,
-        Activation function for the categorical embeddings
+        Activation function for the categorical embeddings, if any. Currently
+        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
+    cont_norm_layer: str, default =  "batchnorm"
+        Type of normalization layer applied to the continuous features. Options
+        are: 'layernorm', 'batchnorm' or None.
     embed_continuous: bool, default = False,
         Boolean indicating if the continuous columns will be embedded
         (i.e. passed each through a linear layer with or without activation)
@@ -43,18 +46,16 @@ class BayesianTabMlp(BaseBayesianModel):
         Size of the continuous embeddings
     cont_embed_dropout: float, default = 0.1,
         Dropout for the continuous embeddings
-    cont_embed_activation: Optional, str, default = None,
-        Activation function for the continuous embeddings
     use_cont_bias: bool, default = True,
-        Boolean indicating in bias will be used for the continuous embeddings
-    cont_norm_layer: str, default =  "batchnorm"
-        Type of normalization layer applied to the continuous features. Options
-        are: 'layernorm', 'batchnorm' or None.
+        Boolean indicating if bias will be used for the continuous embeddings
+    cont_embed_activation: Optional, str, default = None,
+        Activation function for the continuous embeddings if any. Currently
+        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     mlp_hidden_dims: List, default = [200, 100]
         List with the number of neurons per dense layer in the mlp.
-    mlp_activation: str, default = "leaky_relu"
+    mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
+        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     prior_sigma_1: float, default = 1.0
         Prior of the sigma parameter for the first of the two Gaussian
         distributions that will be mixed to produce the prior weight
@@ -67,19 +68,28 @@ class BayesianTabMlp(BaseBayesianModel):
         Scaling factor that will be used to mix the Gaussians to produce the
         prior weight distribution ffor each Bayesian linear and embedding
         layer
-    posterior_mu_init: float = 0.0,
+    posterior_mu_init: float = 0.0
         The posterior sample of the weights is defined as:
 
-            :math:`\mathbf{w} = \mu + log(1 + exp(\rho))`
+        .. math::
+           \begin{aligned}
+           \mathbf{w} &= \mu + log(1 + exp(\rho))
+           \end{aligned}
 
-        where :math:`\mu` and :math:`\rho` are both sampled from Gaussian
-        distributions. ``posterior_mu_init`` is the initial mean value for
-        the Gaussian distribution from which :math:`\mu` is sampled for each
-        Bayesian linear and embedding layers.
-    posterior_rho_init: float = -7.0,
-        The initial mean value for the Gaussian distribution from
-        which :math:`\rho` is sampled for each Bayesian linear and embedding
-        layers.
+        where:
+
+        .. math::
+           \begin{aligned}
+           \mathcal{N}(x\vert \mu, \sigma) &= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\
+           \log{\mathcal{N}(x\vert \mu, \sigma)} &= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\
+           \end{aligned}
+
+        :math:`\mu` is initialised using a normal distributtion with mean
+        ``posterior_rho_init`` and std equal to 0.1.
+    posterior_rho_init: float = -7.0
+        As in the case of :math:`\mu`, :math:`\rho` is initialised using a
+        normal distributtion with mean ``posterior_rho_init`` and std equal to
+        0.1.
 
     Attributes
     ----------
@@ -132,12 +142,12 @@ class BayesianTabMlp(BaseBayesianModel):
         self.cat_embed_activation = cat_embed_activation
 
         self.continuous_cols = continuous_cols
+        self.cont_norm_layer = cont_norm_layer
         self.embed_continuous = embed_continuous
         self.cont_embed_dim = cont_embed_dim
         self.cont_embed_dropout = cont_embed_dropout
-        self.cont_embed_activation = cont_embed_activation
         self.use_cont_bias = use_cont_bias
-        self.cont_norm_layer = cont_norm_layer
+        self.cont_embed_activation = cont_embed_activation
 
         self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation

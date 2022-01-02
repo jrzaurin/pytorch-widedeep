@@ -86,59 +86,56 @@ class Trainer:
         - ``quantile``
 
         - ``tweedie``
-    custom_loss_function: ``nn.Module``, optional, default = None
+    custom_loss_function: ``nn.Module``. Optional, default = None
         It is possible to pass a custom loss function. See for example
         :class:`pytorch_widedeep.losses.FocalLoss` for the required structure
         of the object or the `Examples
         <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
-        folder in the repo.
-
-        .. note:: If ``custom_loss_function`` is not None, ``objective`` must be
-            'binary', 'multiclass' or 'regression', consistent with the loss
-            function
-
-    optimizers: ``Optimzer`` or dict, optional, default= None
-        - An instance of Pytorch's ``Optimizer`` object (e.g. :obj:`torch.optim.Adam()`) or
+        folder in the repo. Note that if ``custom_loss_function`` is not
+        None, ``objective`` must be 'binary', 'multiclass' or 'regression',
+        consistent with the loss function
+    optimizers: ``Optimzer`` or dict. Optional, default= None
+        - An instance of Pytorch's :obj:`Optimizer` object
+          (e.g. :obj:`torch.optim.Adam()`) or
         - a dictionary where there keys are the model components (i.e.
           `'wide'`, `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)  and
           the values are the corresponding optimizers. If multiple optimizers are used
           the  dictionary **MUST** contain an optimizer per model component.
 
-        if no optimizers are passed it will default to ``Adam`` for all
-        Wide and Deep components
-    lr_schedulers: ``LRScheduler`` or dict, optional, default=None
-        - An instance of Pytorch's ``LRScheduler`` object (e.g
+        if no optimizers are passed it will default to :obj:`Adam` for all
+        model components
+    lr_schedulers: ``LRScheduler`` or dict. Optional, default=None
+        - An instance of Pytorch's :obj:`LRScheduler` object (e.g
           :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
         - a dictionary where there keys are the model componenst (i.e. `'wide'`,
           `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
           values are the corresponding learning rate schedulers.
-    initializers: ``Initializer`` or dict, optional, default=None
+    initializers: ``Initializer`` or dict. Optional, default=None
         - An instance of an `Initializer`` object see :obj:`pytorch-widedeep.initializers` or
         - a dictionary where there keys are the model components (i.e. `'wide'`,
           `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)
           and the values are the corresponding initializers.
-    transforms: List, optional, default=None
+    transforms: List. Optional, default=None
         List with :obj:`torchvision.transforms` to be applied to the image
         component of the model (i.e. ``deepimage``) See `torchvision
         transforms
         <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
-    callbacks: List, optional, default=None
+    callbacks: List. Optional, default=None
         List with :obj:`Callback` objects. The three callbacks available in
-        ``pytorch-widedeep`` are: ``LRHistory``, ``ModelCheckpoint`` and
-        ``EarlyStopping``. The ``History`` and the ``LRShedulerCallback``
-        callbacks are used by default. This can also be a custom callback as
-        long as the object of type ``Callback``. See
-        :obj:`pytorch_widedeep.callbacks.Callback` or the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
-        folder in the repo
-    metrics: List, optional, default=None
+        :obj:`pytorch-widedeep` are: :obj:`LRHistory`, :obj:`ModelCheckpoint`
+        and :obj:`EarlyStopping`. The :obj:`History` and
+        the :obj:`LRShedulerCallback` callbacks are used by default. This
+        can also be a custom callback as long as the object of
+        type :obj:`Callback`. See
+        :obj:`pytorch_widedeep.callbacks.Callback` or the examples folder
+        in the repo
+    metrics: List. Optional, default=None
         - List of objects of type :obj:`Metric`. Metrics available are:
-          ``Accuracy``, ``Precision``, ``Recall``, ``FBetaScore``,
-          ``F1Score`` and ``R2Score``. This can also be a custom metric as
-          long as it is an object of type :obj:`Metric`. See
-          :obj:`pytorch_widedeep.metrics.Metric` or the `Examples
-          <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
-          folder in the repo
+          :obj:`Accuracy`, :obj:`Precision`, :obj:`Recall`, :obj:`FBetaScore`,
+          `F1Score` and `R2Score`. This can also be a custom metric as long
+          as it is an object of type :obj:`Metric`. See
+          :obj:`pytorch_widedeep.metrics.Metric` or the examples folder in the
+          repo
         - List of objects of type :obj:`torchmetrics.Metric`. This can be any
           metric from torchmetrics library `Examples
           <https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
@@ -146,15 +143,17 @@ class Trainer:
           it is an object of type :obj:`Metric`. See `the instructions
           <https://torchmetrics.readthedocs.io/en/latest/>`_.
     verbose: int, default=1
-        Setting it to 0 will print nothing during training.
+        Verbosity level. If set to 0 nothing will be printed during training
     seed: int, default=1
-        Random seed to be used internally for train_test_split
+        Random seed to be used internally for train/test split
 
     Attributes
     ----------
     cyclic_lr: bool
-        Attribute that indicates if any of the lr_schedulers is cyclic_lr (i.e. ``CyclicLR`` or
-        ``OneCycleLR``). See `Pytorch schedulers <https://pytorch.org/docs/stable/optim.html>`_.
+        Attribute that indicates if any of the lr_schedulers is cyclic_lr
+        (i.e. :obj:`CyclicLR` or
+        :obj:`OneCycleLR`). See `Pytorch schedulers
+        <https://pytorch.org/docs/stable/optim.html>`_.
     feature_importance: dict
         dict where the keys are the column names and the values are the
         corresponding feature importances. This attribute will only exist
@@ -329,11 +328,10 @@ class Trainer:
         finetune: bool, default=False
             param alias: ``warmup``
 
-            fine-tune individual model components
-
-            .. note:: This functionality can also be used to 'warm-up'
-               individual components before the joined training starts, and hence
-               its alias. See the Examples folder in the repo for more details
+            fine-tune individual model components. This functionality can also
+            be used to 'warm-up' individual components before the joined
+            training starts, and hence its alias. See the Examples folder in
+            the repo for more details
 
             ``pytorch_widedeep`` implements 3 fine-tune routines.
 
@@ -360,7 +358,8 @@ class Trainer:
             <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
             folder in the repo.
         stop_after_finetuning: bool, default = False
-            Boolean indicating if the process should stop after finetunning
+            Boolean indicating if the process should stop after finetunning or
+            finetune and then continue the training.
 
         Examples
         --------
@@ -541,13 +540,6 @@ class Trainer:
             If a trainer is used to predict after having trained a model, the
             ``batch_size`` needs to be defined as it will not be defined as
             the :obj:`Trainer` is instantiated
-        uncertainty: bool, default = False
-            If set to True the model activates the dropout layers and predicts
-            the each sample N times (uncertainty_granularity times) and returns
-            {max, min, mean, stdev} value for each sample
-        uncertainty_granularity: int default = 1000
-            number of times the model does prediction for each sample if uncertainty
-            is set to True
         """
         preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size)
         if self.method == "regression":
@@ -586,12 +578,14 @@ class Trainer:
         batch_size: int = 256,
         uncertainty_granularity=1000,
     ) -> np.ndarray:
-        r"""Returns the predicted ucnertainty of the model for the test dataset using a
-        Monte Carlo method during which dropout layers are activated in the evaluation/prediction
-        phase and each sample is predicted N times (uncertainty_granularity times). Based on [1].
+        r"""Returns the predicted ucnertainty of the model for the test dataset
+        using a Monte Carlo method during which dropout layers are activated
+        in the evaluation/prediction phase and each sample is predicted N
+        times (``uncertainty_granularity`` times).
 
-        [1] Gal Y. & Ghahramani Z., 2016, Dropout as a Bayesian Approximation: Representing Model
-        Uncertainty in Deep Learning, Proceedings of the 33rd International Conference on Machine Learning
+        This is based on `'Gal Y. & Ghahramani Z., 2016, Dropout as a Bayesian
+        Approximation: Representing Model Uncertainty in Deep Learning'`,
+        Proceedings of the 33rd International Conference on Machine Learning
 
         Parameters
         ----------
@@ -621,12 +615,12 @@ class Trainer:
 
         Returns
         -------
-            method == regression : np.ndarray
-                {max, min, mean, stdev} values for each sample
-            method == binary : np.ndarray
-                {mean_cls_0_prob, mean_cls_1_prob, predicted_cls} values for each sample
-            method == multiclass : np.ndarray
-                {mean_cls_0_prob, mean_cls_1_prob, mean_cls_2_prob, ... , predicted_cls} values for each sample
+            - if ``method == regression``, it will return an array with `{max, min, mean, stdev}`
+              values for each sample.
+            - if ``method == binary`` it will return an array with
+              `{mean_cls_0_prob, mean_cls_1_prob, predicted_cls}` for each sample.
+            - if ``method == multiclass`` it will return an array with
+              `{mean_cls_0_prob, mean_cls_1_prob, mean_cls_2_prob, ... , predicted_cls}` values for each sample.
 
         """
         preds_l = self._predict(
@@ -780,7 +774,7 @@ class Trainer:
 
     def explain(self, X_tab: np.ndarray, save_step_masks: bool = False):
         """
-        if the ``deeptabular`` component is a Tabnet model, returns the
+        if the ``deeptabular`` component is a :obj:`Tabnet` model, returns the
         aggregated feature importance for each instance (or observation) in
         the ``X_tab`` array. If ``save_step_masks`` is set to ``True``, the
         masks per step will also be returned.

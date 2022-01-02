@@ -12,28 +12,29 @@ from pytorch_widedeep.models.tabular.transformers._encoders import (
 
 
 class TabTransformer(BaseTabularModelWithAttention):
-    r"""Defines a ``TabTransformer`` model
-    (`arXiv:2012.06678 <https://arxiv.org/abs/2012.06678>`_) that can be used
-    as the ``deeptabular`` component of a Wide & Deep model.
+    r"""Defines a `TabTransformer model <https://arxiv.org/abs/2012.06678>`_ that
+    can be used as the ``deeptabular`` component of a Wide & Deep model or
+    independently by itself.
 
     Note that this is an enhanced adaptation of the model described in the
-    original publication, containing a series of additional features.
+    paper, containing a series of additional features.
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
-        0, 'relationship': 1, 'workclass': 2, ...}
+        the model. Required to slice the tensors. e.g.
+        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
     cat_embed_input: List, Optional, default = None
-        List of Tuples with the column name, number of unique values and
-        embedding dimension. e.g. [(education, 11, 32), ...]
+        List of Tuples with the column name and number of unique values for
+        each categorical component e.g. [(education, 11), ...]
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     use_cat_bias: bool, default = False,
-        Boolean indicating in bias will be used for the categorical embeddings
+        Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
-        Activation function for the categorical embeddings
+        Activation function for the categorical embeddings, if any. `'tanh'`,
+        `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
@@ -61,28 +62,21 @@ class TabTransformer(BaseTabularModelWithAttention):
         Type of normalization layer applied to the continuous features. Options
         are: 'layernorm', 'batchnorm' or None.
     embed_continuous: bool, default = False
-        Boolean indicating if the continuous features will be "embedded". See
-        ``pytorch_widedeep.models.transformers._layers.ContinuousEmbeddings``
-        Note that setting this to ``True`` is similar (but not identical) to the
-        so called `FT-Transformer <https://arxiv.org/abs/2106.11959>`_
-        (Feature Tokenizer + Transformer).
-        See :obj:`pytorch_widedeep.models.transformers.ft_transformer.FTTransformer`
-        for details on the dedicated implementation available in this
-        library
+        Boolean indicating if the continuous columns will be embedded
+        (i.e. passed each through a linear layer with or without activation)
     cont_embed_dropout: float, default = 0.1,
         Continuous embeddings dropout
     use_cont_bias: bool, default = True,
-        Boolean indicating in bias will be used for the continuous embeddings
+        Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: str, default = None
-        String indicating the activation function to be applied to the
-        continuous embeddings, if any. ``tanh``, ``relu``, ``leaky_relu`` and
-        ``gelu`` are supported.
+        Activation function to be applied to the continuous embeddings, if
+        any. `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general is the number of
         embeddings used to encode the categorical and/or continuous columns
     n_heads: int, default = 8
         Number of attention heads per Transformer block
-    use_bias: bool, default = False
+    use_qkv_bias: bool, default = False
         Boolean indicating whether or not to use bias in the Q, K, and V
         projection layers.
     n_blocks: int, default = 4
@@ -92,14 +86,14 @@ class TabTransformer(BaseTabularModelWithAttention):
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
     transformer_activation: str, default = "gelu"
-        Transformer Encoder activation function. ``tanh``, ``relu``,
-        ``leaky_relu``, ``gelu``, ``geglu`` and ``reglu`` are supported
+        Transformer Encoder activation function. `tanh`, `'relu'`,
+        `'leaky_relu'`, `'gelu'`, `'geglu'` and `'reglu'` are supported
     mlp_hidden_dims: List, Optional, default = None
         MLP hidden dimensions. If not provided it will default to ``[l, 4*l,
-        2*l]`` where ``l`` is the MLP input dimension
+        2*l]`` where ``l`` is the MLP's input dimension
     mlp_activation: str, default = "relu"
-        MLP activation function. ``tanh``, ``relu``, ``leaky_relu`` and
-        ``gelu`` are supported
+        MLP activation function. `tanh`, `'relu'`, `'leaky_relu'` and
+        `'gelu'` are supported
     mlp_dropout: float, default = 0.1
         Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
@@ -123,7 +117,7 @@ class TabTransformer(BaseTabularModelWithAttention):
         MLP component in the model
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
+        neccesary to build the ``WideDeep`` class
 
     Example
     --------
@@ -157,7 +151,7 @@ class TabTransformer(BaseTabularModelWithAttention):
         cont_embed_activation: Optional[str] = None,
         input_dim: int = 32,
         n_heads: int = 8,
-        use_bias: bool = False,
+        use_qkv_bias: bool = False,
         n_blocks: int = 4,
         attn_dropout: float = 0.2,
         ff_dropout: float = 0.1,
@@ -189,7 +183,7 @@ class TabTransformer(BaseTabularModelWithAttention):
         )
 
         self.n_heads = n_heads
-        self.use_bias = use_bias
+        self.use_qkv_bias = use_qkv_bias
         self.n_blocks = n_blocks
         self.attn_dropout = attn_dropout
         self.ff_dropout = ff_dropout
@@ -220,7 +214,7 @@ class TabTransformer(BaseTabularModelWithAttention):
                 TransformerEncoder(
                     input_dim,
                     n_heads,
-                    use_bias,
+                    use_qkv_bias,
                     attn_dropout,
                     ff_dropout,
                     transformer_activation,
@@ -277,7 +271,7 @@ class TabTransformer(BaseTabularModelWithAttention):
 
     @property
     def attention_weights(self) -> List:
-        r"""List with the attention weights
+        r"""List with the attention weights per block
 
         The shape of the attention weights is:
 

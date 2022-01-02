@@ -41,7 +41,7 @@ if __name__ == "__main__":
     X_wide = wide_preprocessor.fit_transform(df)
 
     tab_preprocessor = TabPreprocessor(
-        embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
+        cat_embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
     )
     X_deep = tab_preprocessor.fit_transform(df)
 

@@ -8,13 +8,13 @@ from pytorch_widedeep.bayesian_models._base_bayesian_model import (
 
 
 class BayesianWide(BaseBayesianModel):
-    r"""Creates a so called Wide model. This is a linear model where the
+    r"""Defines a ``Wide`` model. This is a linear model where the
     non-linearlities are captured via crossed-columns
 
     Parameters
     ----------
     input_dim: int
-        size of the Embedding layer. `input_dim` is the summation of all the
+        size of the Embedding layer. ``input_dim`` is the summation of all the
         individual values for all the features that go through the wide
         component. For example, if the wide component receives 2 features with
         5 individual values each, `input_dim = 10`
@@ -31,19 +31,28 @@ class BayesianWide(BaseBayesianModel):
     prior_pi: float, default = 0.8
         Scaling factor that will be used to mix the Gaussians to produce the
         prior weight distribution
-    posterior_mu_init: float = 0.0,
-        The posterior sample of the weights of the Bayesian Embedding layer is
-        defined as:
+    posterior_mu_init: float = 0.0
+        The posterior sample of the weights is defined as:
 
-            :math:`\mathbf{w} = \mu + log(1 + exp(\rho))`
+        .. math::
+           \begin{aligned}
+           \mathbf{w} &= \mu + log(1 + exp(\rho))
+           \end{aligned}
 
-        where :math:`\mu` and :math:`\rho` are both sampled from Gaussian
-        distributions. ``posterior_mu_init`` is the initial mean value for
-        the Gaussian distribution from which :math:`\mu` is sampled.
+        where:
 
-    posterior_rho_init: float = -7.0,
-        The initial mean value for the Gaussian distribution from
-        which :math:`\rho` is sampled.
+        .. math::
+           \begin{aligned}
+           \mathcal{N}(x\vert \mu, \sigma) &= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\
+           \log{\mathcal{N}(x\vert \mu, \sigma)} &= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\
+           \end{aligned}
+
+        :math:`\mu` is initialised using a normal distributtion with mean
+        ``posterior_rho_init`` and std equal to 0.1.
+    posterior_rho_init: float = -7.0
+        As in the case of :math:`\mu`, :math:`\rho` is initialised using a
+        normal distributtion with mean ``posterior_rho_init`` and std equal to
+        0.1.
 
     Attributes
     -----------

@@ -21,28 +21,30 @@ allowed_pretrained_models = [
 
 
 class Vision(nn.Module):
-    r"""Defines a standard image classifier/regressor using a pretrained network or a
-    sequence of convolution layers that can be used as the ``deepimage``
-    component of a Wide & Deep model.
+    r"""Defines a standard image classifier/regressor using a pretrained
+    network or a sequence of convolution layers that can be used as the
+    ``deepimage`` component of a Wide & Deep model or independently by
+    itself.
 
     Parameters
     ----------
     pretrained_model_name: Optional, str, default = None
         Name of the pretrained model. Should be a variant of the following
-        architectures: "resnet", "shufflenet", "resnext", "wide_resnet", "regnet",
-        "densenet", "mobilenetv3", "mobilenetv2", "mnasnet", "efficientnet"
-        and "squeezenet". if `pretrained_model_name = None` a basic, fully
-        trainable CNN will be used.
+        architectures: `'resnet`', `'shufflenet`', `'resnext`',
+        `'wide_resnet`', `'regnet`', `'densenet`', `'mobilenetv3`',
+        `'mobilenetv2`', `'mnasnet`', `'efficientnet`' and `'squeezenet`'. if
+        `pretrained_model_name = None` a basic, fully trainable CNN will be
+        used.
     n_trainable: Optional, int, default = None
         Number of trainable layers starting from the layer closer to the
         output neuron(s). Note that this number DOES NOT take into account
-        the so-called "head" which is ALWAYS trainable. If 'trainable_params'
-        is not None this parameter will be ignored
+        the so-called "head" which is ALWAYS trainable. If
+        ``trainable_params`` is not None this parameter will be ignored
     trainable_params: Optional, list, default = None
         List of strings containing the names (or substring within the name) of
         the parameters that will be trained. For example, if we use a
-        `resnet18` pretrainable model and we set `trainable_params =
-        ['layer4']` only the parameters of layer4 of the network (and the
+        `'resnet18'` pretrainable model and we set ``trainable_params =
+        ['layer4']`` only the parameters of `'layer4'` of the network(and the
         head, as mentioned before) will be trained. Note that setting this or
         the previous parameter involves some knowledge of the architecture
         used.
@@ -61,7 +63,7 @@ class Vision(nn.Module):
         List with the number of neurons per dense layer in the head. e.g: [64,32]
     head_activation: str, default = "relu"
         Activation function for the dense layers in the head. Currently
-        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
+        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     head_dropout: float, default = 0.1
         float indicating the dropout between the dense layers.
     head_batchnorm: bool, default = False
@@ -81,7 +83,7 @@ class Vision(nn.Module):
         The pretrained model or Standard CNN plus the optional head
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
+        neccesary to build the ``WideDeep`` class
 
     Example
     --------

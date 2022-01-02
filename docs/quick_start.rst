@@ -63,16 +63,16 @@ Preprocessing and model components definition
     # wide
     wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=cross_cols)
     X_wide = wide_preprocessor.fit_transform(df_train)
-    wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
+    wide = Wide(input_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
     # deeptabular
-    tab_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+    tab_preprocessor = TabPreprocessor(cat_embed_cols=embed_cols, continuous_cols=cont_cols)
     X_tab = tab_preprocessor.fit_transform(df_train)
     deeptabular = TabMlp(
-        mlp_hidden_dims=[64, 32],
         column_idx=tab_preprocessor.column_idx,
-        embed_input=tab_preprocessor.embeddings_input,
+        cat_embed_input=tab_preprocessor.embeddings_input,
         continuous_cols=cont_cols,
+        mlp_hidden_dims=[64, 32],
     )
 
     # wide and deep

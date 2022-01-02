@@ -376,7 +376,7 @@ def test_get_embeddings_deprecation_warning():
     continuous_cols = ["col3", "col4"]
 
     tab_preprocessor = TabPreprocessor(
-        embed_cols=embed_cols, continuous_cols=continuous_cols
+        cat_embed_cols=embed_cols, continuous_cols=continuous_cols
     )
     X_tab = tab_preprocessor.fit_transform(df)
     target = df.target.values

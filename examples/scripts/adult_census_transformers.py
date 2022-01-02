@@ -61,7 +61,7 @@ if __name__ == "__main__":
     prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
     X_wide = prepare_wide.fit_transform(df)
     prepare_deep = TabPreprocessor(
-        embed_cols=cat_embed_cols,
+        cat_embed_cols=cat_embed_cols,
         continuous_cols=continuous_cols,
         for_transformer=True,
         with_cls_token=True,

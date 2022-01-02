@@ -7,9 +7,9 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 class Wide(nn.Module):
-    r"""Defines a wide (linear) model where the non-linearities are captured via
-    the so-called crossed-columns. This can be used as the ``wide`` component
-    of a Wide & Deep model.
+    r"""Defines a ``Wide`` (linear) model where the non-linearities are
+    captured via the so-called crossed-columns. This can be used as the
+    ``wide`` component of a Wide & Deep model.
 
     Parameters
     -----------

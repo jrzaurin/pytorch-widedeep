@@ -12,13 +12,14 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 
 
 class TabNet(BaseTabularModelWithoutAttention):
-    r"""Defines a ``TabNet`` model (https://arxiv.org/abs/1908.07442)
-    that can be used as the ``deeptabular`` component of a Wide & Deep
-    model.
 
-    The implementation in this library is fully based on that here:
-    https://github.com/dreamquark-ai/tabnet, simply adapted so that it can
-    work within the ``WideDeep`` frame. Therefore, **all credit to the
+    r"""Defines a `TabNet model <https://arxiv.org/abs/1908.07442>`_ that
+    can be used as the ``deeptabular`` component of a Wide & Deep model or
+    independently by itself.
+
+    The implementation in this library is fully based on that `here
+    <https://github.com/dreamquark-ai/tabnet>`_, simply adapted so that it
+    can work within the ``WideDeep`` frame. Therefore, **all credit to the
     dreamquark-ai team**
 
     Parameters
@@ -33,9 +34,10 @@ class TabNet(BaseTabularModelWithoutAttention):
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     use_cat_bias: bool, default = False,
-        Boolean indicating in bias will be used for the categorical embeddings
+        Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
-        Activation function for the categorical embeddings
+        Activation function for the categorical embeddings, if any. `tanh`,
+        `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, default =  "batchnorm"
@@ -49,9 +51,10 @@ class TabNet(BaseTabularModelWithoutAttention):
     cont_embed_dropout: float, default = 0.1,
         Dropout for the continuous embeddings
     use_cont_bias: bool, default = True,
-        Boolean indicating in bias will be used for the continuous embeddings
+        Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: Optional, str, default = None,
-        Activation function for the continuous embeddings
+        Activation function for the continuous embeddings, if any. `tanh`,
+        `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     n_steps: int, default = 3
         number of decision steps
     step_dim: int, default = 8
@@ -97,7 +100,7 @@ class TabNet(BaseTabularModelWithoutAttention):
         <https://arxiv.org/abs/1908.07442>`_.
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
+        neccesary to build the ``WideDeep`` class
 
     Example
     --------
@@ -108,6 +111,7 @@ class TabNet(BaseTabularModelWithoutAttention):
     >>> cat_embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
     >>> column_idx = {k:v for v,k in enumerate(colnames)}
     >>> model = TabNet(column_idx=column_idx, cat_embed_input=cat_embed_input, continuous_cols = ['e'])
+    >>> out = model(X_tab)
     """
 
     def __init__(

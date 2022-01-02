@@ -40,7 +40,7 @@ df_t2v = create_df()
 
 embed_cols = [("a", 2), ("b", 4)]
 cont_cols = ["c", "d"]
-tab_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+tab_preprocessor = TabPreprocessor(cat_embed_cols=embed_cols, continuous_cols=cont_cols)
 X_tab = tab_preprocessor.fit_transform(df_init)
 
 tabmlp = TabMlp(
@@ -132,7 +132,7 @@ def test_tab_transformer_models(
     cont_cols = ["c", "d"]
 
     tab_preprocessor = TabPreprocessor(
-        embed_cols=embed_cols,
+        cat_embed_cols=embed_cols,
         continuous_cols=cont_cols,
         for_transformer=True,
         with_cls_token=with_cls_token,
@@ -189,7 +189,7 @@ def test_attentive_mlp(
     cont_cols = ["c", "d"]
 
     tab_preprocessor = TabPreprocessor(
-        embed_cols=embed_cols,
+        cat_embed_cols=embed_cols,
         continuous_cols=cont_cols,
         with_attention=True,
         with_cls_token=with_cls_token,
@@ -268,7 +268,7 @@ def test_transformer_family_models(
     cont_cols = ["c", "d"]
 
     tab_preprocessor = TabPreprocessor(
-        embed_cols=embed_cols,
+        cat_embed_cols=embed_cols,
         continuous_cols=cont_cols,
         for_transformer=True,
         with_cls_token=with_cls_token,

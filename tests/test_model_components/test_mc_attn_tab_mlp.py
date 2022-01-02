@@ -116,7 +116,7 @@ def test_shared_embed_and_cls(
 ):
 
     tab_preprocessor = TabPreprocessor(
-        embed_cols=["col1", "col2"],
+        cat_embed_cols=["col1", "col2"],
         continuous_cols=["col3", "col4"],
         with_attention=True,
         with_cls_token=with_cls_token,

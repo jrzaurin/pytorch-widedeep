@@ -7,11 +7,11 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 
 class TabMlp(BaseTabularModelWithoutAttention):
     r"""Defines a ``TabMlp`` model that can be used as the ``deeptabular``
-    component of a Wide & Deep model.
+    component of a Wide & Deep model or independently by itself.
 
     This class combines embedding representations of the categorical features
-    with numerical (aka continuous) features. These are then passed through a
-    series of dense layers (i.e. a MLP).
+    with numerical (aka continuous) features, embedded or not. These are then
+    passed through a series of dense layers (i.e. a MLP).
 
     Parameters
     ----------
@@ -25,9 +25,10 @@ class TabMlp(BaseTabularModelWithoutAttention):
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     use_cat_bias: bool, default = False,
-        Boolean indicating in bias will be used for the categorical embeddings
+        Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
-        Activation function for the categorical embeddings
+        Activation function for the categorical embeddings, if any. Currently
+        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, default =  "batchnorm"
@@ -41,14 +42,15 @@ class TabMlp(BaseTabularModelWithoutAttention):
     cont_embed_dropout: float, default = 0.1,
         Dropout for the continuous embeddings
     use_cont_bias: bool, default = True,
-        Boolean indicating in bias will be used for the continuous embeddings
+        Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: Optional, str, default = None,
-        Activation function for the continuous embeddings
+        Activation function for the continuous embeddings if any. Currently
+        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     mlp_hidden_dims: List, default = [200, 100]
         List with the number of neurons per dense layer in the mlp.
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        ``tanh``, ``relu``, ``leaky_relu`` and ``gelu`` are supported
+        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     mlp_dropout: float or List, default = 0.1
         float or List of floats with the dropout between the dense layers.
         e.g: [0.5,0.5]
@@ -72,7 +74,7 @@ class TabMlp(BaseTabularModelWithoutAttention):
         the continuous columns
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
+        neccesary to build the ``WideDeep`` class
 
     Example
     --------

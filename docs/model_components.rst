@@ -1,15 +1,10 @@
 The ``models`` module
 ======================
 
-This module contains the four main components that will comprise a Wide and
-Deep model, and the ``WideDeep`` "constructor" class. These four components
-are: ``wide``, ``deeptabular``, ``deeptext``, ``deepimage``.
-
-.. note:: ``TabMlp``, ``ContextAttentionMLP``, ``SelfAttentionMLP``,
-    ``TabResnet``, ``TabNet``, ``TabTransformer``,  ``SAINT``,
-    ``FTTransformer``, ``TabPerceiver`` and ``TabFastFormer`` can all be used
-    as the ``deeptabular`` component of the model and simply represent different
-    alternatives
+This module contains the models that can be used as the four main components
+that will comprise a Wide and Deep model (``wide``, ``deeptabular``,
+``deeptext``, ``deepimage``), as well as the ``WideDeep`` "constructor"
+class``. Note that each of the four components can be used independently.
 
 .. autoclass:: pytorch_widedeep.models.tabular.linear.wide.Wide
     :exclude-members: forward
@@ -63,7 +58,7 @@ are: ``wide``, ``deeptabular``, ``deeptext``, ``deepimage``.
     :exclude-members: forward
     :members:
 
-.. autoclass:: pytorch_widedeep.models.text.attentive_rnn.StackedAttentiveRNN
+.. autoclass:: pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN
     :exclude-members: forward
     :members:
 

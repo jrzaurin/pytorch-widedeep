@@ -1,7 +1,5 @@
-Training wide and deep models for tabular data
-===============================================
-
-`...` or just deep learning models for tabular data.
+Training multimodal Deep Learning Models
+========================================
 
 Here is the documentation for the ``Trainer`` class, that will do all the heavy lifting.
 

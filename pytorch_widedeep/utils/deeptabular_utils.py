@@ -28,7 +28,7 @@ class LabelEncoder:
     with_attention: bool, default = False
         Boolean indicating whether the preprocessed data will be passed to an
         attention-based model.
-        See :obj:`pytorch_widedeep.models.transformers`
+        Aliased as ``for_transformer``.
     shared_embed: bool, default = False
         Boolean indicating if the embeddings will be "shared" when using
         attention-based models. The idea behind ``shared_embed`` is described

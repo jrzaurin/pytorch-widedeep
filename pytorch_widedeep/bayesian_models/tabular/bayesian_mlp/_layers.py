@@ -11,11 +11,11 @@ class BayesianMLP(nn.Module):
         d_hidden: List[int],
         activation: str,
         use_bias: bool = True,
-        prior_sigma_1: float = 0.75,
-        prior_sigma_2: float = 0.1,
-        prior_pi: float = 0.25,
-        posterior_mu_init: float = 0.1,
-        posterior_rho_init: float = -3.0,
+        prior_sigma_1: float = 1.0,
+        prior_sigma_2: float = 0.002,
+        prior_pi: float = 0.8,
+        posterior_mu_init: float = 0.0,
+        posterior_rho_init: float = -7.0,
     ):
         super(BayesianMLP, self).__init__()
 

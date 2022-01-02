@@ -34,7 +34,9 @@ cont_cols = ["c", "d"]
 @pytest.mark.parametrize("embed_continuous", [True, False])
 def test_bayesian_mlp_models(return_dataframe, embed_continuous):
 
-    tab_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
+    tab_preprocessor = TabPreprocessor(
+        cat_embed_cols=embed_cols, continuous_cols=cont_cols
+    )
     X_tab = tab_preprocessor.fit_transform(df_init)  # noqa: F841
 
     model = BayesianTabMlp(
