@@ -130,7 +130,7 @@ def test_shared_embed_and_cls(
 
         model = ContextAttentionMLP(
             column_idx=tab_preprocessor.column_idx,
-            cat_embed_input=tab_preprocessor.embeddings_input,
+            cat_embed_input=tab_preprocessor.cat_embed_input,
             cat_embed_activation="relu",
             continuous_cols=["col3", "col4"],
             cont_embed_activation="relu",
@@ -141,7 +141,7 @@ def test_shared_embed_and_cls(
 
         model = SelfAttentionMLP(
             column_idx=tab_preprocessor.column_idx,
-            cat_embed_input=tab_preprocessor.embeddings_input,
+            cat_embed_input=tab_preprocessor.cat_embed_input,
             use_cat_bias=True,
             continuous_cols=["col3", "col4"],
             use_cont_bias=True,

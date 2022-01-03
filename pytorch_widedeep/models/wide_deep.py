@@ -132,7 +132,7 @@ class WideDeep(nn.Module):
     ):
         super(WideDeep, self).__init__()
 
-        self._check_model_components(
+        self._check_inputs(
             wide,
             deeptabular,
             deeptext,
@@ -289,7 +289,7 @@ class WideDeep(nn.Module):
         return res
 
     @staticmethod  # noqa: C901
-    def _check_model_components(  # noqa: C901
+    def _check_inputs(  # noqa: C901
         wide,
         deeptabular,
         deeptext,

@@ -67,8 +67,8 @@ def test_prepare_deep_without_continous_columns(input_df, X_deep, preprocessor):
     for i, c in enumerate(input_df.columns):
         if (
             # remember we have an "unseen class"
-            input_df[c].nunique() != preprocessor.embeddings_input[i][1]
-            or cat_embed_cols[i][1] != preprocessor.embeddings_input[i][2]
+            input_df[c].nunique() != preprocessor.cat_embed_input[i][1]
+            or cat_embed_cols[i][1] != preprocessor.cat_embed_input[i][2]
         ):
             error_list.append(
                 "error: the setup output does not match the intended input"

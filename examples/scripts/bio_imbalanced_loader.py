@@ -1,7 +1,6 @@
 import time
 import datetime
 import warnings
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -12,24 +11,14 @@ from sklearn.model_selection import train_test_split
 from pytorch_widedeep import Trainer
 from pytorch_widedeep.models import TabMlp, WideDeep
 from pytorch_widedeep.metrics import Recall, F1Score, Accuracy, Precision
+from pytorch_widedeep.datasets import load_bio_kdd04
 from pytorch_widedeep.dataloaders import DataLoaderImbalanced
 from pytorch_widedeep.initializers import XavierNormal
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-# increase displayed columns in jupyter notebook
-pd.set_option("display.max_columns", 200)
-pd.set_option("display.max_rows", 300)
-
-
-header_list = ["EXAMPLE_ID", "BLOCK_ID", "target"] + [str(i) for i in range(4, 78)]
-
-DATA_PATH = Path("../tmp_data")
-
-df = pd.read_csv(DATA_PATH / "kddcup04/bio_train.dat", sep="\t", names=header_list)
-df.head()
-
+df = load_bio_kdd04(as_frame=True)
 # drop columns we won't need in this example
 df.drop(columns=["EXAMPLE_ID", "BLOCK_ID"], inplace=True)
 
@@ -61,9 +50,9 @@ hidden_layers = np.linspace(
 ).tolist()
 
 deeptabular = TabMlp(
-    mlp_hidden_dims=hidden_layers,
     column_idx=tab_preprocessor.column_idx,
     continuous_cols=tab_preprocessor.continuous_cols,
+    mlp_hidden_dims=hidden_layers,
 )
 model = WideDeep(deeptabular=deeptabular)
 model
@@ -86,7 +75,7 @@ trainer = Trainer(
     lr_schedulers={"deeptabular": deep_sch},
     initializers={"deeptabular": XavierNormal},
     optimizers={"deeptabular": deep_opt},
-    metrics=[accuracy, precision],  # , recall, f1],
+    metrics=[accuracy, precision],
     verbose=1,
 )
 

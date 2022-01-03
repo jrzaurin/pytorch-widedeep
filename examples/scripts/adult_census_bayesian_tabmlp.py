@@ -1,10 +1,9 @@
-from pathlib import Path
-
 import numpy as np
 import torch
 import pandas as pd
 
 from pytorch_widedeep.metrics import Accuracy
+from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
@@ -14,9 +13,7 @@ use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
 
-    DATA_PATH = Path("../tmp_data")
-
-    df = pd.read_csv(DATA_PATH / "adult/adult.csv.zip")
+    df = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
         df.age, bins=[16, 25, 30, 35, 40, 45, 50, 55, 60, 91], labels=np.arange(9)
@@ -84,7 +81,7 @@ if __name__ == "__main__":
 
                 model = BayesianTabMlp(  # type: ignore[assignment]
                     column_idx=prepare_tab.column_idx,
-                    cat_embed_input=prepare_tab.embeddings_input,
+                    cat_embed_input=prepare_tab.cat_embed_input,
                     continuous_cols=continuous_cols,
                     # embed_continuous=True,
                     mlp_hidden_dims=[128, 64],
@@ -123,5 +120,5 @@ if __name__ == "__main__":
                 batch_size=256,
             )
 
-            # simply to check predicts functions as expected
-            preds = trainer.predict(X_tab=X_tab)
+            # # simply to check predicts functions as expected
+            # preds = trainer.predict(X_tab=X_tab)

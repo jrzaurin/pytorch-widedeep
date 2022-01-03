@@ -45,21 +45,21 @@ X_tab = tab_preprocessor.fit_transform(df_init)
 
 tabmlp = TabMlp(
     column_idx=tab_preprocessor.column_idx,
-    cat_embed_input=tab_preprocessor.embeddings_input,
+    cat_embed_input=tab_preprocessor.cat_embed_input,
     continuous_cols=tab_preprocessor.continuous_cols,
     mlp_hidden_dims=[8, 4],
 )
 
 tabresnet = TabResnet(
     column_idx=tab_preprocessor.column_idx,
-    cat_embed_input=tab_preprocessor.embeddings_input,
+    cat_embed_input=tab_preprocessor.cat_embed_input,
     continuous_cols=tab_preprocessor.continuous_cols,
     blocks_dims=[8, 8, 4],
 )
 
 tabnet = TabNet(
     column_idx=tab_preprocessor.column_idx,
-    cat_embed_input=tab_preprocessor.embeddings_input,
+    cat_embed_input=tab_preprocessor.cat_embed_input,
     continuous_cols=tab_preprocessor.continuous_cols,
 )
 
@@ -83,7 +83,7 @@ def test_non_transformer_models(deeptabular, return_dataframe):
     t2v = Tab2Vec(model, tab_preprocessor, return_dataframe=return_dataframe)
     t2v_out, _ = t2v.fit_transform(df_t2v, target_col="target")
 
-    embed_dim = sum([el[2] for el in tab_preprocessor.embeddings_input])
+    embed_dim = sum([el[2] for el in tab_preprocessor.cat_embed_input])
     cont_dim = len(tab_preprocessor.continuous_cols)
     assert t2v_out.shape[1] == embed_dim + cont_dim
 
@@ -142,7 +142,7 @@ def test_tab_transformer_models(
 
     params = {
         "column_idx": tab_preprocessor.column_idx,
-        "cat_embed_input": tab_preprocessor.embeddings_input,
+        "cat_embed_input": tab_preprocessor.cat_embed_input,
         "continuous_cols": tab_preprocessor.continuous_cols,
         "embed_continuous": embed_continuous,
     }
@@ -201,7 +201,7 @@ def test_attentive_mlp(
 
         deeptabular = ContextAttentionMLP(
             column_idx=tab_preprocessor.column_idx,
-            cat_embed_input=tab_preprocessor.embeddings_input,
+            cat_embed_input=tab_preprocessor.cat_embed_input,
             continuous_cols=tab_preprocessor.continuous_cols,
         )
 
@@ -209,7 +209,7 @@ def test_attentive_mlp(
 
         deeptabular = SelfAttentionMLP(
             column_idx=tab_preprocessor.column_idx,
-            cat_embed_input=tab_preprocessor.embeddings_input,
+            cat_embed_input=tab_preprocessor.cat_embed_input,
             continuous_cols=tab_preprocessor.continuous_cols,
         )
 
@@ -278,7 +278,7 @@ def test_transformer_family_models(
 
     params = {
         "column_idx": tab_preprocessor.column_idx,
-        "cat_embed_input": tab_preprocessor.embeddings_input,
+        "cat_embed_input": tab_preprocessor.cat_embed_input,
         "continuous_cols": tab_preprocessor.continuous_cols,
     }
 

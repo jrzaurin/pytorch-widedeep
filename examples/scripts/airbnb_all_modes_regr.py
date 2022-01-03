@@ -29,6 +29,14 @@ use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
 
+    # The airbnb dataset, which you could get from here:
+    # http://insideairbnb.com/get-the-data.html, is too big to be included in
+    # our datasets module (when including images). Therefore, go there,
+    # download it, and use the download_images.py script to get the images
+    # and the airbnb_data_processing.py to process the data. We'll find
+    # better datasets in the future ;). Note that here we are only using a
+    # small sample to illustrate the use, so PLEASE ignore the results, just
+    # focus on usage
     DATA_PATH = Path("../tmp_data")
 
     df = pd.read_csv(DATA_PATH / "airbnb/airbnb_sample.csv")
@@ -76,7 +84,8 @@ if __name__ == "__main__":
         word_vectors_path=word_vectors_path, text_col=text_col
     )
     X_text = text_processor.fit_transform(df)
-    deeptext = BasicRNN(
+
+    basic_rnn = BasicRNN(
         vocab_size=len(text_processor.vocab.itos),
         hidden_dim=64,
         n_layers=3,
@@ -86,40 +95,41 @@ if __name__ == "__main__":
         embed_matrix=text_processor.embedding_matrix,
         head_hidden_dims=[100, 50],
     )
-    # deeptext = AttentiveRNN(
-    #     vocab_size=len(text_processor.vocab.itos),
-    #     hidden_dim=64,
-    #     n_layers=3,
-    #     bidirectional=True,
-    #     rnn_dropout=0.5,
-    #     padding_idx=1,
-    #     embed_matrix=text_processor.embedding_matrix,
-    #     with_attention=True,
-    #     head_hidden_dims=[100, 50],
-    # )
-    # deeptext = StackedAttentiveRNN(
-    #     vocab_size=len(text_processor.vocab.itos),
-    #     embed_matrix=text_processor.embedding_matrix,
-    #     hidden_dim=64,
-    #     bidirectional=True,
-    #     padding_idx=1,
-    #     with_addnorm=True,
-    #     head_hidden_dims=[100, 50],
-    # )
+
+    # or you could use any of the two RNNs below
+    attentive_rnn = AttentiveRNN(
+        vocab_size=len(text_processor.vocab.itos),
+        hidden_dim=64,
+        n_layers=3,
+        bidirectional=True,
+        rnn_dropout=0.5,
+        padding_idx=1,
+        embed_matrix=text_processor.embedding_matrix,
+        head_hidden_dims=[100, 50],
+    )
+    stacked_attentive_rnn = StackedAttentiveRNN(
+        vocab_size=len(text_processor.vocab.itos),
+        embed_matrix=text_processor.embedding_matrix,
+        hidden_dim=64,
+        bidirectional=True,
+        padding_idx=1,
+        with_addnorm=True,
+        head_hidden_dims=[100, 50],
+    )
 
     wide = Wide(input_dim=np.unique(X_wide).shape[0], pred_dim=1)
     deepdense = TabMlp(
         mlp_hidden_dims=[64, 32],
         mlp_dropout=[0.2, 0.2],
         column_idx=tab_preprocessor.column_idx,
-        cat_embed_input=tab_preprocessor.embeddings_input,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=continuous_cols,
     )
 
     model = WideDeep(
         wide=wide,
         deeptabular=deepdense,
-        deeptext=deeptext,
+        deeptext=basic_rnn,  # change to attentive_rnn or stacked_attentive_rnn if you wanted
         deepimage=deepimage,
     )
 
@@ -176,27 +186,3 @@ if __name__ == "__main__":
         batch_size=32,
         val_split=0.2,
     )
-
-    # # With warm_up
-    # child = list(trainer.model.deepimage.children())[0]
-    # img_layers = list(child.backbone.children())[4:8] + [
-    #     list(trainer.model.deepimage.children())[1]
-    # ]
-    # img_layers = img_layers[::-1]
-
-    # trainer.fit(
-    #     X_wide=X_wide,
-    #     X_tab=X_tab,
-    #     X_text=X_text,
-    #     X_img=X_images,
-    #     target=target,
-    #     n_epochs=1,
-    #     batch_size=32,
-    #     val_split=0.2,
-    #     warm_up=True,
-    #     warm_epochs=1,
-    #     warm_deepimage_gradual=True,
-    #     warm_deepimage_layers=img_layers,
-    #     warm_deepimage_max_lr=0.01,
-    #     warm_routine="howard",
-    # )

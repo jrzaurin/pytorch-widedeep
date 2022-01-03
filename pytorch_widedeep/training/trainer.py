@@ -223,32 +223,18 @@ class Trainer:
         seed: int = 1,
         **kwargs,
     ):
-        if isinstance(optimizers, Dict):
-            if lr_schedulers is not None and not isinstance(lr_schedulers, Dict):
-                raise ValueError(
-                    "''optimizers' and 'lr_schedulers' must have consistent type: "
-                    "(Optimizer and LRScheduler) or (Dict[str, Optimizer] and Dict[str, LRScheduler]) "
-                    "Please, read the documentation or see the examples for more details"
-                )
 
-        if custom_loss_function is not None and objective not in [
-            "binary",
-            "multiclass",
-            "regression",
-        ]:
-            raise ValueError(
-                "If 'custom_loss_function' is not None, 'objective' must be 'binary' "
-                "'multiclass' or 'regression', consistent with the loss function"
-            )
+        self._check_inputs(
+            model, objective, optimizers, lr_schedulers, custom_loss_function
+        )
 
-        self.verbose = verbose
-        self.seed = seed
         # initialize early_stop. If EarlyStopping Callback is used it will
         # take care of it
         self.early_stop = False
+        self.verbose = verbose
+        self.seed = seed
 
         self.model = model
-        # Tabnet related set up
         if self.model.is_tabnet:
             self.lambda_sparse = kwargs.get("lambda_sparse", 1e-3)
             self.reducing_matrix = create_explain_matrix(self.model)
@@ -449,7 +435,7 @@ class Trainer:
             else:
                 if self.verbose:
                     print(
-                        "Fine-tuning of individual components completed. "
+                        "Fine-tuning (or warmup) of individual components completed. "
                         "Training the whole model for {} epochs".format(n_epochs)
                     )
 
@@ -924,7 +910,7 @@ class Trainer:
                                 "the 'ModelCheckpoint' Callback to restore the best epoch weights."
                             )
 
-    def _finetune(self, loader: DataLoader, **kwargs):  # pragma: no cover
+    def _finetune(self, loader: DataLoader, **kwargs):  # pragma: no cover  # noqa: C901
         r"""
         Simple wrap-up to individually fine-tune model components
         """
@@ -933,8 +919,14 @@ class Trainer:
                 "Currently warming up is only supported without a fully connected 'DeepHead'"
             )
 
-        n_epochs = kwargs.get("n_epochs", 5)
-        max_lr = kwargs.get("max_lr", 0.01)
+        if "warmup_epochs" in kwargs:
+            kwargs["finetune_epochs"] = kwargs.pop("warmup_epochs")
+        if "warmup_max_lr" in kwargs:
+            kwargs["finetune_max_lr"] = kwargs.pop("warmup_max_lr")
+
+        n_epochs = kwargs.get("finetune_epochs", 5)
+        max_lr = kwargs.get("finetune_max_lr", 0.01)
+
         routine = kwargs.get("routine", "howard")
 
         deeptabular_gradual = kwargs.get("deeptabular_gradual", False)
@@ -1297,3 +1289,33 @@ class Trainer:
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self.model)
         self.callback_container.set_trainer(self)
+
+    @staticmethod
+    def _check_inputs(
+        model, objective, optimizers, lr_schedulers, custom_loss_function
+    ):
+
+        if _ObjectiveToMethod.get(objective) == "multiclass" and model.pred_dim == 1:
+            raise ValueError(
+                "This is a multiclass classification problem but the size of the output layer"
+                " is set to 1. Please, set the 'pred_dim' param equal to the number of classes "
+                " when instantiating the 'WideDeep' class"
+            )
+
+        if isinstance(optimizers, Dict):
+            if lr_schedulers is not None and not isinstance(lr_schedulers, Dict):
+                raise ValueError(
+                    "''optimizers' and 'lr_schedulers' must have consistent type: "
+                    "(Optimizer and LRScheduler) or (Dict[str, Optimizer] and Dict[str, LRScheduler]) "
+                    "Please, read the documentation or see the examples for more details"
+                )
+
+        if custom_loss_function is not None and objective not in [
+            "binary",
+            "multiclass",
+            "regression",
+        ]:
+            raise ValueError(
+                "If 'custom_loss_function' is not None, 'objective' must be 'binary' "
+                "'multiclass' or 'regression', consistent with the loss function"
+            )

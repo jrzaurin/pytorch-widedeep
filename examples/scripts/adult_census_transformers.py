@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import numpy as np
 import torch
 import pandas as pd
@@ -15,6 +13,7 @@ from pytorch_widedeep.models import (
     TabTransformer,
 )
 from pytorch_widedeep.metrics import Accuracy
+from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.callbacks import (
     LRHistory,
     EarlyStopping,
@@ -27,9 +26,7 @@ use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
 
-    DATA_PATH = Path("../tmp_data")
-
-    df = pd.read_csv(DATA_PATH / "adult/adult.csv.zip")
+    df = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
         df.age, bins=[16, 25, 30, 35, 40, 45, 50, 55, 60, 91], labels=np.arange(9)
@@ -38,6 +35,7 @@ if __name__ == "__main__":
     df.drop("income", axis=1, inplace=True)
     df.head()
 
+    # Define wide, crossed and deep tabular columns
     wide_cols = [
         "age_buckets",
         "education",
@@ -48,6 +46,7 @@ if __name__ == "__main__":
         "gender",
     ]
     crossed_cols = [("education", "occupation"), ("native_country", "occupation")]
+
     cat_embed_cols = [
         "education",
         "relationship",
@@ -56,39 +55,50 @@ if __name__ == "__main__":
         "native_country",
     ]
     continuous_cols = ["age", "hours_per_week"]
+    # # Aternatively one could pass a list of Tuples with the name of the column
+    # # and the embedding dim per column
+    # cat_embed_cols = [
+    #     ("education", 10),
+    #     ("relationship", 8),
+    #     ("workclass", 10),
+    #     ("occupation", 10),
+    #     ("native_country", 10),
+    # ]
     target = "income_label"
     target = df[target].values
-    prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
-    X_wide = prepare_wide.fit_transform(df)
-    prepare_deep = TabPreprocessor(
+
+    wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+    X_wide = wide_preprocessor.fit_transform(df)
+
+    tab_preprocessor = TabPreprocessor(
         cat_embed_cols=cat_embed_cols,
         continuous_cols=continuous_cols,
         for_transformer=True,
         with_cls_token=True,
     )
-    X_tab = prepare_deep.fit_transform(df)
+    X_tab = tab_preprocessor.fit_transform(df)
 
     wide = Wide(input_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
     tab_transformer = TabTransformer(
-        column_idx=prepare_deep.column_idx,
-        cat_embed_input=prepare_deep.embeddings_input,
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=continuous_cols,
         embed_continuous=True,
         n_blocks=4,
     )
 
     saint = SAINT(
-        column_idx=prepare_deep.column_idx,
-        cat_embed_input=prepare_deep.embeddings_input,
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=continuous_cols,
         cont_norm_layer="batchnorm",
         n_blocks=4,
     )
 
     tab_perceiver = TabPerceiver(
-        column_idx=prepare_deep.column_idx,
-        cat_embed_input=prepare_deep.embeddings_input,
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=continuous_cols,
         n_latents=6,
         latent_dim=16,
@@ -98,8 +108,8 @@ if __name__ == "__main__":
     )
 
     tab_fastformer = TabFastFormer(
-        column_idx=prepare_deep.column_idx,
-        cat_embed_input=prepare_deep.embeddings_input,
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=continuous_cols,
         n_blocks=4,
         n_heads=4,
@@ -108,8 +118,8 @@ if __name__ == "__main__":
     )
 
     ft_transformer = FTTransformer(
-        column_idx=prepare_deep.column_idx,
-        cat_embed_input=prepare_deep.embeddings_input,
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=continuous_cols,
         input_dim=32,
         kv_compression_factor=0.5,

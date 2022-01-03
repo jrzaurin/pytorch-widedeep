@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import numpy as np
 import torch
 import pandas as pd
@@ -12,6 +10,7 @@ from pytorch_widedeep.models import (  # noqa: F401
     TabResnet,
 )
 from pytorch_widedeep.metrics import Accuracy, Precision
+from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.callbacks import (
     LRHistory,
     EarlyStopping,
@@ -24,17 +23,15 @@ use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
 
-    DATA_PATH = Path("../tmp_data")
-
-    df = pd.read_csv(DATA_PATH / "adult/adult.csv.zip")
+    df = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
         df.age, bins=[16, 25, 30, 35, 40, 45, 50, 55, 60, 91], labels=np.arange(9)
     )
     df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
     df.drop("income", axis=1, inplace=True)
-    df.head()
 
+    # Define wide, crossed and deep tabular columns
     wide_cols = [
         "age_buckets",
         "education",
@@ -45,6 +42,27 @@ if __name__ == "__main__":
         "gender",
     ]
     crossed_cols = [("education", "occupation"), ("native_country", "occupation")]
+
+    cat_embed_cols = []
+    for col in df.columns:
+        if df[col].dtype == "O" or df[col].nunique() < 200 and col != "income_label":
+            cat_embed_cols.append(col)
+
+    cat_embed_cols = [
+        "workclass",
+        "education",
+        "marital_status",
+        "occupation",
+        "relationship",
+        "race",
+        "gender",
+        "capital_gain",
+        "capital_loss",
+        "native_country",
+    ]
+    continuous_cols = ["age", "hours_per_week"]
+    # # Aternatively one could pass a list of Tuples with the name of the column
+    # # and the embedding dim per column
     # cat_embed_cols = [
     #     ("education", 10),
     #     ("relationship", 8),
@@ -52,38 +70,34 @@ if __name__ == "__main__":
     #     ("occupation", 10),
     #     ("native_country", 10),
     # ]
-    cat_embed_cols = [
-        "education",
-        "relationship",
-        "workclass",
-        "occupation",
-        "native_country",
-    ]
-    continuous_cols = ["age", "hours_per_week"]
     target = "income_label"
     target = df[target].values
-    prepare_wide = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
-    X_wide = prepare_wide.fit_transform(df)
-    prepare_deep = TabPreprocessor(
+
+    wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+    X_wide = wide_preprocessor.fit_transform(df)
+
+    tab_preprocessor = TabPreprocessor(
         cat_embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
     )
-    X_tab = prepare_deep.fit_transform(df)
+    X_tab = tab_preprocessor.fit_transform(df)
 
     wide = Wide(input_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
+    # for tabular data we could use a "simple" MLP...
     tab_mlp = TabMlp(
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
+        continuous_cols=continuous_cols,
         mlp_hidden_dims=[200, 100],
         mlp_dropout=[0.2, 0.2],
-        column_idx=prepare_deep.column_idx,
-        cat_embed_input=prepare_deep.embeddings_input,
-        continuous_cols=continuous_cols,
     )
 
+    # ...or a Resnet adjusted for tabular data
     tab_resnet = TabResnet(
-        blocks_dims=[200, 100],
-        column_idx=prepare_deep.column_idx,
-        cat_embed_input=prepare_deep.embeddings_input,
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=continuous_cols,
+        blocks_dims=[200, 100],
     )
 
     for tab_model in [tab_mlp, tab_resnet]:

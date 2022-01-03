@@ -385,7 +385,7 @@ def test_get_embeddings_deprecation_warning():
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
         column_idx={k: v for v, k in enumerate(df.columns)},
-        cat_embed_input=tab_preprocessor.embeddings_input,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=tab_preprocessor.continuous_cols,
     )
 

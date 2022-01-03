@@ -45,7 +45,7 @@ def simple_preprocess(
     """
     tokens = [
         token
-        for token in tokenize(doc, lower=False, deacc=deacc, errors="ignore")
+        for token in tokenize(doc, lower=lower, deacc=deacc, errors="ignore")
         if min_len <= len(token) <= max_len and not token.startswith("_")
     ]
     return tokens

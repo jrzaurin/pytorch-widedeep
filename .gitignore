@@ -49,3 +49,7 @@ _templates
 
 # test checkpoints
 checkpoints
+
+# wnb
+wandb/
+wandb_api.key

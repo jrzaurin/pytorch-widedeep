@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import numpy as np
 import torch
 import pandas as pd
@@ -11,15 +9,14 @@ from pytorch_widedeep.models import (
     ContextAttentionMLP,
 )
 from pytorch_widedeep.metrics import Accuracy
+from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
 
-    DATA_PATH = Path("../tmp_data")
-
-    df = pd.read_csv(DATA_PATH / "adult/adult.csv.zip")
+    df = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
         df.age, bins=[16, 25, 30, 35, 40, 45, 50, 55, 60, 91], labels=np.arange(9)
@@ -27,6 +24,18 @@ if __name__ == "__main__":
     df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
     df.drop("income", axis=1, inplace=True)
     df.head()
+
+    # Define wide, crossed and deep tabular columns
+    wide_cols = [
+        "age_buckets",
+        "education",
+        "relationship",
+        "workclass",
+        "occupation",
+        "native_country",
+        "gender",
+    ]
+    crossed_cols = [("education", "occupation"), ("native_country", "occupation")]
 
     cat_embed_cols = [
         "education",
@@ -36,6 +45,15 @@ if __name__ == "__main__":
         "native_country",
     ]
     continuous_cols = ["age", "hours_per_week"]
+    # # Aternatively one could pass a list of Tuples with the name of the column
+    # # and the embedding dim per column
+    # cat_embed_cols = [
+    #     ("education", 10),
+    #     ("relationship", 8),
+    #     ("workclass", 10),
+    #     ("occupation", 10),
+    #     ("native_country", 10),
+    # ]
     target = "income_label"
     target = df[target].values
 
@@ -51,7 +69,7 @@ if __name__ == "__main__":
         if attention_name == "context_attention":
             tab_mlp_attn = ContextAttentionMLP(
                 column_idx=tab_preprocessor.column_idx,
-                cat_embed_input=tab_preprocessor.embeddings_input,
+                cat_embed_input=tab_preprocessor.cat_embed_input,
                 continuous_cols=continuous_cols,
                 input_dim=16,
                 attn_dropout=0.2,
@@ -60,7 +78,7 @@ if __name__ == "__main__":
         elif attention_name == "self_attention":
             tab_mlp_attn = SelfAttentionMLP(  # type: ignore[assignment]
                 column_idx=tab_preprocessor.column_idx,
-                cat_embed_input=tab_preprocessor.embeddings_input,
+                cat_embed_input=tab_preprocessor.cat_embed_input,
                 continuous_cols=continuous_cols,
                 input_dim=16,
                 attn_dropout=0.2,

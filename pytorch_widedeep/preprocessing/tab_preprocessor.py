@@ -107,7 +107,7 @@ class TabPreprocessor(BasePreprocessor):
         is not generated during the ``fit`` process
     label_encoder: LabelEncoder
         see :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
-    embeddings_input: List
+    cat_embed_input: List
         List of Tuples with the column name, number of individual values for
         that column and, If ``with_attention`` is set to ``False``, the
         corresponding embeddings dim, e.g. [('education', 16, 10),
@@ -165,21 +165,8 @@ class TabPreprocessor(BasePreprocessor):
         self.shared_embed = shared_embed
         self.verbose = verbose
 
+        self._check_inputs()
         self.is_fitted = False
-
-        if (self.cat_embed_cols is None) and (self.continuous_cols is None):
-            raise ValueError(
-                "'cat_embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
-            )
-
-        transformer_error_message = (
-            "If with_attention is 'True' cat_embed_cols must be a list "
-            " of strings with the columns to be encoded as embeddings."
-        )
-        if self.with_attention and self.cat_embed_cols is None:
-            raise ValueError(transformer_error_message)
-        if self.with_attention and isinstance(self.cat_embed_cols[0], tuple):  # type: ignore[index]
-            raise ValueError(transformer_error_message)
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Fits the Preprocessor and creates required attributes"""
@@ -191,12 +178,12 @@ class TabPreprocessor(BasePreprocessor):
                 with_attention=self.with_attention,
             )
             self.label_encoder.fit(df_emb)
-            self.embeddings_input: List = []
+            self.cat_embed_input: List = []
             for k, v in self.label_encoder.encoding_dict.items():
                 if self.with_attention:
-                    self.embeddings_input.append((k, len(v)))
+                    self.cat_embed_input.append((k, len(v)))
                 else:
-                    self.embeddings_input.append((k, len(v), self.embed_dim[k]))
+                    self.cat_embed_input.append((k, len(v), self.embed_dim[k]))
         if self.continuous_cols is not None:
             df_cont = self._prepare_continuous(df)
             if self.scale:
@@ -296,3 +283,30 @@ class TabPreprocessor(BasePreprocessor):
             else:
                 self.standardize_cols = self.continuous_cols
         return df.copy()[self.continuous_cols]
+
+    def _check_inputs(self):
+        if (self.cat_embed_cols is None) and (self.continuous_cols is None):
+            raise ValueError(
+                "'cat_embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
+            )
+
+        if (
+            self.cat_embed_cols is not None
+            and self.continuous_cols is not None
+            and len(np.intersect1d(self.cat_embed_cols, self.continuous_cols)) > 0
+        ):
+            overlapping_cols = list(np.intersect1d(cat_embed_cols, continuous_cols))
+            raise ValueError(
+                "Currently passing columns as both categorical and continuum is not supported."
+                " Please, choose one or the other for the following columns: {}".format(
+                    ", ".join(overlapping_cols)
+                )
+            )
+        transformer_error_message = (
+            "If with_attention is 'True' cat_embed_cols must be a list "
+            " of strings with the columns to be encoded as embeddings."
+        )
+        if self.with_attention and self.cat_embed_cols is None:
+            raise ValueError(transformer_error_message)
+        if self.with_attention and isinstance(self.cat_embed_cols[0], tuple):  # type: ignore[index]
+            raise ValueError(transformer_error_message)

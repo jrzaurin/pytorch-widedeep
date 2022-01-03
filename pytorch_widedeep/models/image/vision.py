@@ -1,3 +1,5 @@
+import warnings
+
 import torchvision
 from torch import nn
 from torch.nn.modules.module import ModuleAttributeError
@@ -225,8 +227,9 @@ class Vision(nn.Module):
             ):
                 param.requires_grad = i < self.n_trainable
         else:
-            raise UserWarning(
-                "Both 'trainable_params' and 'n_trainable' are 'None' and the entire network will be trained"
+            warnings.warn(
+                "Both 'trainable_params' and 'n_trainable' are 'None' and the entire network will be trained",
+                UserWarning,
             )
 
     @staticmethod

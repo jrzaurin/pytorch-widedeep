@@ -71,7 +71,7 @@ class Tab2Vec:
     >>> # define the model (and let's assume we train it)
     >>> tabmlp = TabMlp(
     ... column_idx=tab_preprocessor.column_idx,
-    ... cat_embed_input=tab_preprocessor.embeddings_input,
+    ... cat_embed_input=tab_preprocessor.cat_embed_input,
     ... continuous_cols=tab_preprocessor.continuous_cols,
     ... mlp_hidden_dims=[8, 4])
     >>> model = WideDeep(deeptabular=tabmlp)
@@ -211,7 +211,7 @@ class Tab2Vec:
 
         cat_cols = [
             ei[0]
-            for ei in self.tab_preprocessor.embeddings_input
+            for ei in self.tab_preprocessor.cat_embed_input
             if ei[0] != "cls_token"
         ]
 
@@ -235,7 +235,7 @@ class Tab2Vec:
     def _new_colnames_without_attn(self) -> List[str]:
         new_colnames = []
 
-        for colname, _, embedding_dim in self.tab_preprocessor.embeddings_input:
+        for colname, _, embedding_dim in self.tab_preprocessor.cat_embed_input:
             new_colnames.extend(
                 ["_".join([colname, "embed", str(i + 1)]) for i in range(embedding_dim)]
             )

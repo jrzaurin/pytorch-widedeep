@@ -36,6 +36,8 @@ class BasicBlock(nn.Module):
 
     def forward(self, X: Tensor) -> Tensor:
 
+        identity = X
+
         out = self.lin1(X)
         out = self.bn1(out)
         out = self.leaky_relu(out)
@@ -47,9 +49,9 @@ class BasicBlock(nn.Module):
             out = self.bn2(out)
 
         if self.resize is not None:
-            x = self.resize(X)
+            identity = self.resize(X)
 
-        out += x
+        out += identity
         out = self.leaky_relu(out)
 
         return out

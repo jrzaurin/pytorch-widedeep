@@ -70,7 +70,7 @@ Preprocessing and model components definition
     X_tab = tab_preprocessor.fit_transform(df_train)
     deeptabular = TabMlp(
         column_idx=tab_preprocessor.column_idx,
-        cat_embed_input=tab_preprocessor.embeddings_input,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=cont_cols,
         mlp_hidden_dims=[64, 32],
     )
