@@ -300,3 +300,23 @@ def test_custom_dataloader():
     )
     # simply checking that runs with DataLoaderImbalanced
     assert "train_loss" in trainer.history.keys()
+
+
+##############################################################################
+# Test raise warning for multiclass classification
+##############################################################################
+
+
+def test_multiclass_warning():
+    wide = Wide(np.unique(X_wide).shape[0], 1)
+    deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+    )
+    model = WideDeep(wide=wide, deeptabular=deeptabular)
+
+    with pytest.raises(ValueError):
+        trainer = Trainer(model, loss="multiclass", verbose=0)  # noqa: F841

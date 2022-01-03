@@ -295,7 +295,9 @@ class TabPreprocessor(BasePreprocessor):
             and self.continuous_cols is not None
             and len(np.intersect1d(self.cat_embed_cols, self.continuous_cols)) > 0
         ):
-            overlapping_cols = list(np.intersect1d(cat_embed_cols, continuous_cols))
+            overlapping_cols = list(
+                np.intersect1d(self.cat_embed_cols, self.continuous_cols)
+            )
             raise ValueError(
                 "Currently passing columns as both categorical and continuum is not supported."
                 " Please, choose one or the other for the following columns: {}".format(

@@ -294,3 +294,19 @@ def test_embed_sz_rule_of_thumb(rule):
         tab_preprocessor.embed_dim[col] == embed_szs[col] for col in embed_szs.keys()
     ]
     assert all(out)
+
+
+###############################################################################
+# Test Valuerror for repeated cols
+###############################################################################
+
+
+def test_overlapping_cols_valueerror():
+
+    embed_cols = ["col1", "col2"]
+    cont_cols = ["col1", "col2"]
+
+    with pytest.raises(ValueError):
+        tab_preprocessor = TabPreprocessor(  # noqa: F841
+            cat_embed_cols=embed_cols, continuous_cols=cont_cols
+        )
