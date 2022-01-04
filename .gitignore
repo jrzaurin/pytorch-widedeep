@@ -27,6 +27,9 @@ htmlcov*/
 .cache
 .hypothesis/
 
+# vscode
+.vscode
+
 # sublime
 *.sublime-workspace
 sftp*-config.json

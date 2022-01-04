@@ -619,12 +619,14 @@ class Trainer:
             with trange(train_steps, disable=self.verbose != 1) as t:
                 for batch_idx, train_data in zip(t, train_loader):
                     t.set_description("epoch %i" % (epoch + 1))
-                    if train_set.reweight != None:
+                    if getattr(train_loader, "lds", False) == True:
                         data, targett, weight = train_data
                     else:
                         data, targett = train_data
                         weight = None
-                    train_score, train_loss = self._train_step(data, targett, batch_idx, weight, epoch)
+                    train_score, train_loss = self._train_step(
+                        data, targett, batch_idx, weight, epoch
+                    )
                     print_loss_and_metric(t, train_loss, train_score)
                     self.callback_container.on_batch_end(batch=batch_idx)
             epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
@@ -636,8 +638,13 @@ class Trainer:
                 self.callback_container.on_eval_begin()
                 self.valid_running_loss = 0.0
                 with trange(eval_steps, disable=self.verbose != 1) as v:
-                    for i, (data, targett) in zip(v, eval_loader):
+                    for i, eval_data in zip(v, eval_loader):
                         v.set_description("valid")
+                        if getattr(eval_loader, "lds", False) == True:
+                            data, targett, weight = eval_data
+                        else:
+                            data, targett = eval_data
+                            weight = None
                         val_score, val_loss = self._eval_step(data, targett, i)
                         print_loss_and_metric(v, val_loss, val_score)
                 epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
@@ -657,13 +664,16 @@ class Trainer:
                 break
 
             if self.model.fds:
-                print(f"Create Epoch [{epoch}] features of all training data...")
                 encodings, labels = [], []
                 with torch.no_grad():
                     with trange(train_steps, disable=self.verbose != 1) as t:
                         for data, targett, weight in train_loader:
-                            y, deeptab_features = self._fds_step(data, targett, weight, epoch)
-                            encodings.extend(deeptab_features.data.squeeze().cpu().numpy())
+                            y, deeptab_features = self._fds_step(
+                                data, targett, weight, epoch
+                            )
+                            encodings.extend(
+                                deeptab_features.data.squeeze().cpu().numpy()
+                            )
                             labels.extend(y.data.squeeze().cpu().numpy())
                 encodings, labels = (
                     torch.from_numpy(np.vstack(encodings)).to(device),
@@ -1176,19 +1186,32 @@ class Trainer:
                     self.model.deepimage, "deepimage", loader, n_epochs, max_lr
                 )
 
-    def _fds_step(self, data: Dict[str, Tensor], target: Tensor, weight: Union[None, Tensor], epoch):
+    def _fds_step(
+        self,
+        data: Dict[str, Tensor],
+        target: Tensor,
+        weight: Union[None, Tensor],
+        epoch,
+    ):
         self.model.train()
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
         y = (
             target.view(-1, 1).float()
-            if self.method not in ["multiclass", "multilabel"]
+            if self.method not in ["multiclass", "qregression"]
             else target
         )
         y = y.to(device)
         _, deeptab_features = self.model(X, y, epoch)
         return y, deeptab_features
 
-    def _train_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int, weight: Union[None, Tensor], epoch):
+    def _train_step(
+        self,
+        data: Dict[str, Tensor],
+        target: Tensor,
+        batch_idx: int,
+        weight: Union[None, Tensor],
+        epoch,
+    ):
         self.model.train()
         X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
         y = (
@@ -1207,21 +1230,18 @@ class Trainer:
             loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
             score = self._get_score(y_pred[0], y)
         else:
-            loss = self.loss_fn(y_pred, y, weight=weight)
             if weight is not None:
                 if "weight" in signature(self.loss_fn.forward).parameters:
                     loss = self.loss_fn(y_pred, y, weight=weight)
                 else:
                     warnings.warn(
                         """You are using weightening of target values with loss
-                        function that does not support it""", 
+                        function that does not support it""",
                         UserWarning,
                     )
                     loss = self.loss_fn(y_pred, y)
             else:
                 loss = self.loss_fn(y_pred, y)
-
-            loss = self.loss_fn(y_pred, y, ldsweight=weight)
             score = self._get_score(y_pred, y)
         # TODO raise exception if the loss is exploding with non scaled target values
         loss.backward()
@@ -1275,7 +1295,12 @@ class Trainer:
         self.model.eval()
         tabnet_backbone = list(self.model.deeptabular.children())[0]
         feat_imp = np.zeros((tabnet_backbone.embed_and_cont_dim))  # type: ignore[arg-type]
-        for data, target, weight in loader:
+        for loader_data in loader:
+            if getattr(loader, "lds", False) == True:
+                data, target, weight = loader_data
+            else:
+                data, target = loader_data
+                weight = None
             X = data["deeptabular"].to(device)
             y = target.view(-1, 1).float() if self.method != "multiclass" else target
             y = y.to(device)
@@ -1350,6 +1375,7 @@ class Trainer:
                         test_steps, disable=self.verbose != 1 or uncertainty is True
                     ) as tt:
                         for j, data in zip(tt, test_loader):
+
                             tt.set_description("predict")
                             X = (
                                 {k: v.cuda() for k, v in data.items()}

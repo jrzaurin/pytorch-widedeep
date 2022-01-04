@@ -1,87 +1,131 @@
-# all credits go to:
-# `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
-# Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
-# and their `implementation
-# <https://github.com/YyzHarry/imbalanced-regression>`
-
-import numpy as np
-from scipy.ndimage import gaussian_filter1d
-from scipy.signal.windows import triang
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
-
-def calibrate_mean_var(matrix, m1, v1, m2, v2, clip_min=0.1, clip_max=10):
-    if torch.sum(v1) < 1e-10:
-        return matrix
-    if (v1 == 0.).any():
-        valid = (v1 != 0.)
-        factor = torch.clamp(v2[valid] / v1[valid], clip_min, clip_max)
-        matrix[:, valid] = (matrix[:, valid] - m1[valid]) * torch.sqrt(factor) + m2[valid]
-        return matrix
-
-    factor = torch.clamp(v2 / v1, clip_min, clip_max)
-    return (matrix - m1) * torch.sqrt(factor) + m2
+from pytorch_widedeep.utils.deeptabular_utils import get_kernel_window, find_bin
+from pytorch_widedeep.wdtypes import *
 
 
 class FDS(nn.Module):
+    def __init__(
+        self,
+        feature_dim: int,
+        granularity: int = 100,
+        Ymax: Optional[float] = None,
+        Ymin: Optional[float] = None,
+        start_update: int = 0,
+        start_smooth: int = 2,
+        kernel: Literal["gaussian", "triang", "laplace", None] = "gaussian",
+        ks: int = 5,
+        sigma: Union[int, float] = 2,
+        momentum: float = 0.9,
+        clip_min: Optional[float] = None,
+        clip_max: Optional[float] = None,
+    ):
+        """Feature Distribution Smoothing layer. Layer keeps track of last epoch mean
+        and variance for each feature. The feautres are bucket-ed into bins based on
+        their target/label value. Target/label values are binned using histogram with
+        same width bins, their number is based on granularity parameter and start/end
+        edge on Ymax/Ymin values. Mean and variance are smoothed using convolution
+        with kernel function(gaussian by default). Output of the layer are features
+        values adjusted to their smoothed mean and variance. The layer is turned on
+        only during training, off during prediction/evaluation.
 
-    def __init__(self, feature_dim, bucket_num=100, bucket_start=3, start_update=0, start_smooth=1,
-                 kernel='gaussian', ks=5, sigma=2, momentum=0.9):
+        Adjusted code from `<https://github.com/YyzHarry/imbalanced-regression>`
+        For more infomation about please read the paper) :
+
+        `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
+        Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
+
+        Parameters
+        ----------
+        feature_dim: int,
+            input dimension size, i.e. output size of previous layer
+        granularity: int = 100,
+            number of bins in histogram used for storing feature mean and variance
+            values per label
+        Ymax: Optional[float] = None,
+            option to restrict the histogram bins by upper label limit
+        Ymin: Optional[float] = None,
+            option to restrict the histogram bins by lower label limit
+        start_update: int = 0,
+            epoch after which FDS layer starts to update its statistics
+        start_smooth: int = 1,
+            epoch after which FDS layer starts to smooth feautture distributions
+        kernel: Literal["gaussian", "triang", "laplace", None] = "gaussian",
+            choice of kernel for Feature Distribution Smoothing
+        ks: int = 5,
+            LDS kernel window size
+        sigma: Union[int,float] = 2,
+            standard deviation of ['gaussian','laplace'] kernel for LDS
+        momentum: float = 0.9,
+            factor parameter for running mean and variance
+        clip_min: Optional[float] = None,
+            original value = 0.1, author note: clipping is for numerical stability,
+            if some bins contain a very small number of samples, the variance
+            estimation may not be stable
+        clip_max: Optional[float] = None,
+            original value = 10, see note for clip_min
+        """
         super(FDS, self).__init__()
         self.feature_dim = feature_dim
-        self.bucket_num = bucket_num
-        self.bucket_start = bucket_start
-        self.kernel_window = self._get_kernel_window(kernel, ks, sigma)
+        self.granularity = granularity
+        self.Ymax = Ymax
+        self.Ymin = Ymin
+        self.kernel_window = torch.tensor(
+            get_kernel_window(kernel, ks, sigma), dtype=torch.float32
+        )
         self.half_ks = (ks - 1) // 2
         self.momentum = momentum
+        assert (
+            start_update + 1 < start_smooth
+        ), "initial update must start at least 2 epoch before smoothing"
         self.start_update = start_update
         self.start_smooth = start_smooth
+        self.clip_min = clip_min
+        self.clip_max = clip_max
 
-        self.register_buffer('epoch', torch.zeros(1).fill_(start_update))
-        self.register_buffer('running_mean', torch.zeros(bucket_num - bucket_start, feature_dim))
-        self.register_buffer('running_var', torch.ones(bucket_num - bucket_start, feature_dim))
-        self.register_buffer('running_mean_last_epoch', torch.zeros(bucket_num - bucket_start, feature_dim))
-        self.register_buffer('running_var_last_epoch', torch.ones(bucket_num - bucket_start, feature_dim))
-        self.register_buffer('smoothed_mean_last_epoch', torch.zeros(bucket_num - bucket_start, feature_dim))
-        self.register_buffer('smoothed_var_last_epoch', torch.ones(bucket_num - bucket_start, feature_dim))
-        self.register_buffer('num_samples_tracked', torch.zeros(bucket_num - bucket_start))
+        self.register_buffer("running_mean", torch.zeros(granularity - 1, feature_dim))
+        self.register_buffer("running_var", torch.ones(granularity - 1, feature_dim))
+        self.register_buffer(
+            "running_mean_last_epoch", torch.zeros(granularity - 1, feature_dim)
+        )
+        self.register_buffer(
+            "running_var_last_epoch", torch.ones(granularity - 1, feature_dim)
+        )
+        self.register_buffer(
+            "smoothed_mean_last_epoch", torch.zeros(granularity - 1, feature_dim)
+        )
+        self.register_buffer(
+            "smoothed_var_last_epoch", torch.ones(granularity - 1, feature_dim)
+        )
+        self.register_buffer("num_samples_tracked", torch.zeros(granularity - 1))
 
-    @staticmethod
-    def _get_kernel_window(kernel, ks, sigma):
-        assert kernel in ['gaussian', 'triang', 'laplace']
-        half_ks = (ks - 1) // 2
-        if kernel == 'gaussian':
-            base_kernel = [0.] * half_ks + [1.] + [0.] * half_ks
-            base_kernel = np.array(base_kernel, dtype=np.float32)
-            kernel_window = gaussian_filter1d(base_kernel, sigma=sigma) / sum(gaussian_filter1d(base_kernel, sigma=sigma))
-        elif kernel == 'triang':
-            kernel_window = triang(ks) / sum(triang(ks))
-        else:
-            laplace = lambda x: np.exp(-abs(x) / sigma) / (2. * sigma)
-            kernel_window = list(map(laplace, np.arange(-half_ks, half_ks + 1))) / sum(map(laplace, np.arange(-half_ks, half_ks + 1)))
+    def calibrate_mean_var(self, features, left_bin_edge_ind):
+        # rescaling of the data https://stats.stackexchange.com/a/46431
+        m1 = self.running_mean_last_epoch[left_bin_edge_ind]
+        v1 = self.running_var_last_epoch[left_bin_edge_ind]
+        m2 = self.smoothed_mean_last_epoch[left_bin_edge_ind]
+        v2 = self.smoothed_var_last_epoch[left_bin_edge_ind]
+        if torch.sum(v1) < 1e-10:
+            return features
+        if (v1 == 0.0).any():
+            valid = v1 != 0.0
+            factor = v2[valid] / v1[valid]
+            if self.clip_min and self.clip_max:
+                factor = torch.clamp(factor, self.clip_min, self.clip_max)
+            if features.dim() == 1:
+                # if there is only 1 tensor the [:,valid] is not working
+                # the tensor has to be 2d
+                features = features.unsqueeze(0)
+            features[:, valid] = (features[:, valid] - m1[valid]) * torch.sqrt(
+                factor
+            ) + m2[valid]
+            return features
 
-        print(f'Using FDS: [{kernel.upper()}] ({ks}/{sigma})')
-        # TODO check
-        return torch.tensor(kernel_window, dtype=torch.float32)#.to(device)
-
-    def _update_last_epoch_stats(self):
-        self.running_mean_last_epoch = self.running_mean
-        self.running_var_last_epoch = self.running_var
-
-        self.smoothed_mean_last_epoch = F.conv1d(
-            input=F.pad(self.running_mean_last_epoch.unsqueeze(1).permute(2, 1, 0),
-                        pad=(self.half_ks, self.half_ks), mode='reflect'),
-            weight=self.kernel_window.view(1, 1, -1), padding=0
-        ).permute(2, 1, 0).squeeze(1)
-        self.smoothed_var_last_epoch = F.conv1d(
-            input=F.pad(self.running_var_last_epoch.unsqueeze(1).permute(2, 1, 0),
-                        pad=(self.half_ks, self.half_ks), mode='reflect'),
-            weight=self.kernel_window.view(1, 1, -1), padding=0
-        ).permute(2, 1, 0).squeeze(1)
+        factor = v2 / v1
+        if self.clip_min and self.clip_max:
+            factor = torch.clamp(factor, self.clip_min, self.clip_max)
+        return (features - m1) * torch.sqrt(factor) + m2
 
     def reset(self):
         self.running_mean.zero_()
@@ -93,70 +137,94 @@ class FDS(nn.Module):
         self.num_samples_tracked.zero_()
 
     def update_last_epoch_stats(self, epoch):
-        if epoch == self.epoch + 1:
-            self.epoch += 1
-            self._update_last_epoch_stats()
-            print(f"Updated smoothed statistics on Epoch [{epoch}]!")
+        if epoch > self.start_update:
+            self.running_mean_last_epoch = self.running_mean
+            self.running_var_last_epoch = self.running_var
+
+            self.smoothed_mean_last_epoch = (
+                F.conv1d(
+                    input=F.pad(
+                        self.running_mean_last_epoch.unsqueeze(1).permute(2, 1, 0),
+                        pad=(self.half_ks, self.half_ks),
+                        mode="reflect",
+                    ),
+                    weight=self.kernel_window.view(1, 1, -1),
+                    padding=0,
+                )
+                .permute(2, 1, 0)
+                .squeeze(1)
+            )
+            self.smoothed_var_last_epoch = (
+                F.conv1d(
+                    input=F.pad(
+                        self.running_var_last_epoch.unsqueeze(1).permute(2, 1, 0),
+                        pad=(self.half_ks, self.half_ks),
+                        mode="reflect",
+                    ),
+                    weight=self.kernel_window.view(1, 1, -1),
+                    padding=0,
+                )
+                .permute(2, 1, 0)
+                .squeeze(1)
+            )
 
     def update_running_stats(self, features, labels, epoch):
-        if epoch < self.epoch:
-            return
+        assert self.feature_dim == features.size(
+            1
+        ), "Input feature dimension is not aligned!"
+        assert features.size(0) == labels.size(
+            0
+        ), "Dimensions of features and labels are not aligned!"
 
-        assert self.feature_dim == features.size(1), "Input feature dimension is not aligned!"
-        assert features.size(0) == labels.size(0), "Dimensions of features and labels are not aligned!"
+        if epoch == 0:
+            if not self.Ymax:
+                self.Ymax = labels.max()
+            if not self.Ymin:
+                self.Ymin = labels.min()
+            bin_edges = torch.linspace(self.Ymin, self.Ymax, steps=self.granularity)
+            self.register_buffer("bin_edges", bin_edges)
 
-        for label in torch.unique(labels):
-            if label > self.bucket_num - 1 or label < self.bucket_start:
-                continue
-            elif label == self.bucket_start:
-                curr_feats = features[labels <= label]
-            elif label == self.bucket_num - 1:
-                curr_feats = features[labels >= label]
-            else:
-                curr_feats = features[labels == label]
-            curr_num_sample = curr_feats.size(0)
-            curr_mean = torch.mean(curr_feats, 0)
-            curr_var = torch.var(curr_feats, 0, unbiased=True if curr_feats.size(0) != 1 else False)
+        if epoch >= self.start_update:
+            left_bin_edges_indices = find_bin(
+                self.bin_edges, labels.squeeze(), ret_value=False
+            )
+            for left_bin_edge_ind in torch.unique(left_bin_edges_indices):
+                inds = (left_bin_edges_indices == left_bin_edge_ind).nonzero().squeeze()
+                curr_feats = features[inds]
+                curr_num_sample = curr_feats.size(0)
+                curr_mean = torch.mean(curr_feats, 0)
+                curr_var = torch.var(
+                    curr_feats, 0, unbiased=True if curr_feats.size(0) != 1 else False
+                )
 
-            self.num_samples_tracked[int(label - self.bucket_start)] += curr_num_sample
-            factor = self.momentum if self.momentum is not None else \
-                (1 - curr_num_sample / float(self.num_samples_tracked[int(label - self.bucket_start)]))
-            factor = 0 if epoch == self.start_update else factor
-            self.running_mean[int(label - self.bucket_start)] = \
-                (1 - factor) * curr_mean + factor * self.running_mean[int(label - self.bucket_start)]
-            self.running_var[int(label - self.bucket_start)] = \
-                (1 - factor) * curr_var + factor * self.running_var[int(label - self.bucket_start)]
-
-        print(f"Updated running statistics with Epoch [{epoch}] features!")
+                self.num_samples_tracked[left_bin_edge_ind] += curr_num_sample
+                if not self.momentum:
+                    factor = 1 - curr_num_sample / float(
+                        self.num_samples_tracked[left_bin_edge_ind]
+                    )
+                else:
+                    factor = self.momentum
+                if epoch == self.start_update:
+                    factor = 0
+                self.running_mean[left_bin_edge_ind] = (
+                    1 - factor
+                ) * curr_mean + factor * self.running_mean[left_bin_edge_ind]
+                self.running_var[left_bin_edge_ind] = (
+                    1 - factor
+                ) * curr_var + factor * self.running_var[left_bin_edge_ind]
 
     def smooth(self, features, labels, epoch):
-        if epoch < self.start_smooth:
-            return features
+        # have to be detached, otherwise:
+        # "gradient computation has been modified by an inplace operation"
+        smoothed_features = features.detach()
+        if epoch >= self.start_smooth:
+            left_bin_edges_indices = find_bin(
+                self.bin_edges, labels.squeeze(), ret_value=False
+            )
+            for left_bin_edge_ind in torch.unique(left_bin_edges_indices):
+                inds = (left_bin_edges_indices == left_bin_edge_ind).nonzero().squeeze()
+                smoothed_features[inds] = self.calibrate_mean_var(
+                    smoothed_features[inds], left_bin_edge_ind
+                )
 
-        #labels = labels.squeeze(1)
-        labels = labels.squeeze()
-        for label in torch.unique(labels):
-            if label > self.bucket_num - 1 or label < self.bucket_start:
-                continue
-            elif label == self.bucket_start:
-                features[labels <= label] = calibrate_mean_var(
-                    features[labels <= label],
-                    self.running_mean_last_epoch[int(label - self.bucket_start)],
-                    self.running_var_last_epoch[int(label - self.bucket_start)],
-                    self.smoothed_mean_last_epoch[int(label - self.bucket_start)],
-                    self.smoothed_var_last_epoch[int(label - self.bucket_start)])
-            elif label == self.bucket_num - 1:
-                features[labels >= label] = calibrate_mean_var(
-                    features[labels >= label],
-                    self.running_mean_last_epoch[int(label - self.bucket_start)],
-                    self.running_var_last_epoch[int(label - self.bucket_start)],
-                    self.smoothed_mean_last_epoch[int(label - self.bucket_start)],
-                    self.smoothed_var_last_epoch[int(label - self.bucket_start)])
-            else:
-                features[labels == label] = calibrate_mean_var(
-                    features[labels == label],
-                    self.running_mean_last_epoch[int(label - self.bucket_start)],
-                    self.running_var_last_epoch[int(label - self.bucket_start)],
-                    self.smoothed_mean_last_epoch[int(label - self.bucket_start)],
-                    self.smoothed_var_last_epoch[int(label - self.bucket_start)])
-        return features
+        return smoothed_features

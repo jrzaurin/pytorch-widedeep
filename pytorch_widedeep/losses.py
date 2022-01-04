@@ -18,7 +18,9 @@ class TweedieLoss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None, p=1.5) -> Tensor:
+    def forward(
+        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None, p=1.5
+    ) -> Tensor:
         assert (
             input.min() > 0
         ), """All input values must be >=0, if your model is predicting
@@ -62,7 +64,9 @@ class QuantileLoss(nn.Module):
             f"to number of quantiles, i.e. {len(self.quantiles)}."
         )
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
+    def forward(
+        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None
+    ) -> Tensor:
         assert input.shape == torch.Size(
             [target.shape[0], len(self.quantiles)]
         ), f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal to number of quantiles, i.e. {len(self.quantiles)}."
@@ -76,11 +80,6 @@ class QuantileLoss(nn.Module):
         loss = torch.cat(losses, dim=2)
 
         return torch.mean(loss)
-
-        if weight is not None:
-            losses *= weight.expand_as(losses)
-        return torch.mean(losses)
-
 
 
 class ZILNLoss(nn.Module):
@@ -222,7 +221,7 @@ class FocalLoss(nn.Module):
 
 
 class L1Loss(nn.Module):
-    r"""Based on 
+    r"""Based on
     `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
     Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
     and their `implementation
@@ -232,7 +231,9 @@ class L1Loss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
+    def forward(
+        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None
+    ) -> Tensor:
         r"""
         Parameters
         ----------
@@ -244,7 +245,7 @@ class L1Loss(nn.Module):
         Examples
         --------
         """
-        loss = F.l1_loss(input, target, reduction='none')
+        loss = F.l1_loss(input, target, reduction="none")
         if weight is not None:
             loss *= weight.expand_as(loss)
         loss = torch.mean(loss)
@@ -252,8 +253,8 @@ class L1Loss(nn.Module):
         return loss
 
 
-class MSEloss(nn.Module):
-    r"""Based on 
+class MSELoss(nn.Module):
+    r"""Based on
     `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
     Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
     and their `implementation
@@ -263,7 +264,9 @@ class MSEloss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
+    def forward(
+        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None
+    ) -> Tensor:
         r"""
         Parameters
         ----------
@@ -290,7 +293,9 @@ class MSLELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
+    def forward(
+        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None
+    ) -> Tensor:
         r"""
         Parameters
         ----------
@@ -330,7 +335,9 @@ class RMSELoss(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
+    def forward(
+        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None
+    ) -> Tensor:
         r"""
         Parameters
         ----------
@@ -365,7 +372,9 @@ class RMSLELoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
+    def forward(
+        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None
+    ) -> Tensor:
         r"""
         Parameters
         ----------
@@ -400,19 +409,30 @@ class RMSLELoss(nn.Module):
         return loss
 
 
-class FocalL1Loss(nn.Module):
-    r"""Based on 
-    `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
+class FocalR_L1Loss(nn.Module):
+    r"""Focal-R L1 loss based on :
+
+    * `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
     Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
-    and their `implementation
+    * their `implementation:
     <https://github.com/YyzHarry/imbalanced-regression>`
+    * additional explanation to 2*sigmoid(..)-1:
+    https://github.com/YyzHarry/imbalanced-regression/issues/16
     """
 
     def __init__(self):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None, activate='sigmoid', beta=.2, gamma=1) -> Tensor:
+    def forward(
+        self,
+        input: Tensor,
+        target: Tensor,
+        weight: Union[None, Tensor] = None,
+        activate: Literal["sigmoid", "tanh"] = "sigmoid",
+        beta=0.2,
+        gamma=1,
+    ) -> Tensor:
         r"""
         Parameters
         ----------
@@ -424,9 +444,11 @@ class FocalL1Loss(nn.Module):
         Examples
         --------
         """
-        loss = F.l1_loss(input, target, reduction='none')
-        loss *= (torch.tanh(beta * torch.abs(input - target))) ** gamma if activate == 'tanh' else \
-            (2 * torch.sigmoid(beta * torch.abs(input - target)) - 1) ** gamma
+        loss = F.l1_loss(input, target, reduction="none")
+        if activate == "tanh":
+            loss *= (torch.tanh(beta * torch.abs(input - target))) ** gamma
+        else:
+            loss *= (2 * torch.sigmoid(beta * torch.abs(input - target)) - 1) ** gamma
         if weight is not None:
             loss *= weight.expand_as(loss)
         loss = torch.mean(loss)
@@ -434,19 +456,30 @@ class FocalL1Loss(nn.Module):
         return loss
 
 
-class FocalMSELoss(nn.Module):
-    r"""Based on 
-    `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
+class FocalR_MSELoss(nn.Module):
+    r"""Focal-R MSE loss based on :
+
+    * `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
     Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
-    and their `implementation
+    * their `implementation:
     <https://github.com/YyzHarry/imbalanced-regression>`
+    * additional explanation to 2*sigmoid(..)-1:
+    https://github.com/YyzHarry/imbalanced-regression/issues/16
     """
 
     def __init__(self):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None, activate='sigmoid', beta=.2, gamma=1) -> Tensor:
+    def forward(
+        self,
+        input: Tensor,
+        target: Tensor,
+        weight: Union[None, Tensor] = None,
+        activate: Literal["sigmoid", "tanh"] = "sigmoid",
+        beta=0.2,
+        gamma=1,
+    ) -> Tensor:
         r"""
         Parameters
         ----------
@@ -459,8 +492,12 @@ class FocalMSELoss(nn.Module):
         --------
         """
         loss = (input - target) ** 2
-        loss *= (torch.tanh(beta * torch.abs(input - target))) ** gamma if activate == 'tanh' else \
-            (2 * torch.sigmoid(beta * torch.abs(input - target)) - 1) ** gamma
+        if activate == "tanh":
+            loss *= (torch.tanh(beta * torch.abs(input - target))) ** gamma
+        else:
+            loss *= (
+                2 * torch.sigmoid(beta * torch.abs((input - target) ** 2)) - 1
+            ) ** gamma
         if weight is not None:
             loss *= weight.expand_as(loss)
         loss = torch.mean(loss)
@@ -468,19 +505,30 @@ class FocalMSELoss(nn.Module):
         return loss
 
 
-class FocalRMSELoss(nn.Module):
-    r"""Based on 
-    `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
+class FocalR_RMSELoss(nn.Module):
+    r"""Focal-R RMSE loss based on :
+
+    * `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
     Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
-    and their `implementation
+    * their `implementation:
     <https://github.com/YyzHarry/imbalanced-regression>`
+    * additional explanation to 2*sigmoid(..)-1:
+    https://github.com/YyzHarry/imbalanced-regression/issues/16
     """
 
     def __init__(self):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None, activate='sigmoid', beta=.2, gamma=1) -> Tensor:
+    def forward(
+        self,
+        input: Tensor,
+        target: Tensor,
+        weight: Union[None, Tensor] = None,
+        activate: Literal["sigmoid", "tanh"] = "sigmoid",
+        beta=0.2,
+        gamma=1,
+    ) -> Tensor:
         r"""
         Parameters
         ----------
@@ -493,8 +541,12 @@ class FocalRMSELoss(nn.Module):
         --------
         """
         loss = (input - target) ** 2
-        loss *= (torch.tanh(beta * torch.abs(input - target))) ** gamma if activate == 'tanh' else \
-            (2 * torch.sigmoid(beta * torch.abs(input - target)) - 1) ** gamma
+        if activate == "tanh":
+            loss *= (torch.tanh(beta * torch.abs(input - target))) ** gamma
+        else:
+            loss *= (
+                2 * torch.sigmoid(beta * torch.abs((input - target) ** 2)) - 1
+            ) ** gamma
         if weight is not None:
             loss *= weight.expand_as(loss)
         loss = torch.mean(loss)
@@ -504,7 +556,7 @@ class FocalRMSELoss(nn.Module):
 
 
 class HuberLoss(nn.Module):
-    r"""Based on 
+    r"""Based on
     `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
     Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
     and their `implementation
@@ -515,7 +567,13 @@ class HuberLoss(nn.Module):
         super().__init__()
         self.mse = nn.MSELoss()
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None, beta=.1) -> Tensor:
+    def forward(
+        self,
+        input: Tensor,
+        target: Tensor,
+        weight: Union[None, Tensor] = None,
+        beta=0.1,
+    ) -> Tensor:
         r"""
         Parameters
         ----------

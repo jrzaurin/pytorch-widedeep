@@ -163,6 +163,10 @@ method_to_objec = {
         "zero_inflated_lognormal",
         "ziln",
         "tweedie",
+        "focalr_mse",
+        "focalr_rmse",
+        "focalr_l1",
+        "huber",
     ],
     "qregression": [
         "quantile",
@@ -222,6 +226,10 @@ method_to_objec = {
             True,
         ),
         (X_wide, X_tab, target_regres, "regression", "rmsle", 1, 1, True),
+        (X_wide, X_tab, target_regres, "regression", "focalr_mse", 1, 1, False),
+        (X_wide, X_tab, target_regres, "regression", "focalr_rmse", 1, 1, False),
+        (X_wide, X_tab, target_regres, "regression", "focalr_l1", 1, 1, False),
+        (X_wide, X_tab, target_regres, "regression", "huber", 1, 1, False),
         (
             X_wide,
             X_tab,
