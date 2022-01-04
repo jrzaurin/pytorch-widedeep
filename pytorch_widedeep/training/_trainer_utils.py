@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.losses import (
     L1Loss,
-    MSEloss,
+    MSELoss,
     MSLELoss,
     RMSELoss,
     RMSLELoss,
@@ -15,13 +15,12 @@ from pytorch_widedeep.losses import (
     QuantileLoss,
     BayesianSELoss,
     L1Loss,
-    FocalMSELoss,
-    FocalL1Loss,
-    FocalMSELoss,
-    FocalRMSELoss,
-    FocalLoss,    
+    FocalR_L1Loss,
+    FocalR_MSELoss,
+    FocalR_RMSELoss,
+    FocalLoss,
     HuberLoss,
-    MSEloss,
+    ZILNLoss,
 )
 from pytorch_widedeep.wdtypes import Dict, List, Optional, Transforms
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
@@ -341,11 +340,11 @@ def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
         return TweedieLoss()
     if loss_fn in _LossAliases.get("huber"):
         return HuberLoss()
-    if loss_fn in _LossAliases.get("focall1"):
-        return FocalL1Loss()
-    if loss_fn in _LossAliases.get("focalmse"):
-        return FocalMSELoss()
-    if loss_fn in _LossAliases.get("focalrmse"):
-        return FocalRMSELoss()    
+    if loss_fn in _LossAliases.get("focalr_l1"):
+        return FocalR_L1Loss()
+    if loss_fn in _LossAliases.get("focalr_mse"):
+        return FocalR_MSELoss()
+    if loss_fn in _LossAliases.get("focalr_rmse"):
+        return FocalR_RMSELoss()
     if "focal_loss" in loss_fn:
         return FocalLoss(**kwargs)

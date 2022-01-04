@@ -16,7 +16,7 @@ from pytorch_widedeep.preprocessing.base_preprocessor import (
 def embed_sz_rule(
     n_cat: int,
     embedding_rule: Literal["google", "fastai_old", "fastai_new"] = "fastai_new",
-    ) -> int:
+) -> int:
     r"""Rule of thumb to pick embedding size corresponding to ``n_cat``. Default rule is taken
     from recent fastai's Tabular API. The function also includes previously used rule by fastai
     and rule included in the Google's Tensorflow documentation

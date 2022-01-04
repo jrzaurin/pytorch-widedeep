@@ -3,25 +3,8 @@ import torch
 from sklearn.utils import Bunch
 from torch.utils.data import Dataset
 from scipy.ndimage import convolve1d
-from scipy.ndimage import gaussian_filter1d
-from scipy.signal.windows import triang
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-
-# TODO assert to limit the usage of LDS only for single value regression objective
-
-def get_lds_kernel_window(kernel, ks, sigma):
-    assert kernel in ['gaussian', 'triang', 'laplace']
-    half_ks = (ks - 1) // 2
-    if kernel == 'gaussian':
-        base_kernel = [0.] * half_ks + [1.] + [0.] * half_ks
-        kernel_window = gaussian_filter1d(base_kernel, sigma=sigma) / max(gaussian_filter1d(base_kernel, sigma=sigma))
-    elif kernel == 'triang':
-        kernel_window = triang(ks)
-    else:
-        laplace = lambda x: np.exp(-abs(x) / sigma) / (2. * sigma)
-        kernel_window = list(map(laplace, np.arange(-half_ks, half_ks + 1))) / max(map(laplace, np.arange(-half_ks, half_ks + 1)))
-
-    return kernel_window
+from pytorch_widedeep.utils.deeptabular_utils import get_kernel_window, find_bin
 
 
 class WideDeepDataset(Dataset):
@@ -42,6 +25,22 @@ class WideDeepDataset(Dataset):
         target array
     transforms: :obj:`MultipleTransforms`
         torchvision Compose object. See models/_multiple_transforms.py
+    lds: bool
+        option wether the Label Distribution Smoothing will be applied to dataset
+    lds_kernel: Literal['gaussian', 'triang', 'laplace'] = 'gaussian'
+        choice of kernel for Label Distribution Smoothing
+    lds_ks: int = 5
+        LDS kernel window size
+    lds_sigma: int = 2
+        standard deviation of ['gaussian','laplace'] kernel for LDS
+    lds_granularity: int = 100,
+        number of bins in histogram used in LDS to count occurence of sample values
+    lds_reweight: Literal["sqrt", None] = None
+        option to reweight bin frequency counts in LDS
+    lds_Ymax: Optional[float] = None
+        option to restrict LDS bins by upper label limit
+    lds_Ymin: Optional[float] = None
+        option to restrict LDS bins by lower label limit
     """
 
     def __init__(
@@ -53,11 +52,13 @@ class WideDeepDataset(Dataset):
         target: Optional[np.ndarray] = None,
         transforms: Optional[Any] = None,
         lds: bool = False,
-        lds_kernel: Literal['gaussian', 'triang', 'laplace'] = "gaussian",
+        lds_kernel: Literal["gaussian", "triang", "laplace", None] = "gaussian",
         lds_ks: int = 5,
-        lds_sigma: int = 2,
-        reweight: Literal["sqrt_inv", "inverse", None] = None,
-        Ymax: Optional[float] = None,
+        lds_sigma: Union[int, float] = 2,
+        lds_granularity: int = 100,
+        lds_reweight: Literal["sqrt", None] = None,
+        lds_Ymax: Optional[float] = None,
+        lds_Ymin: Optional[float] = None,
     ):
         super(WideDeepDataset, self).__init__()
         self.X_wide = X_wide
@@ -65,7 +66,7 @@ class WideDeepDataset(Dataset):
         self.X_text = X_text
         self.X_img = X_img
         self.transforms = transforms
-        self.reweight = reweight
+        self.lds = lds
         if self.transforms:
             self.transforms_names = [
                 tr.__class__.__name__ for tr in self.transforms.transforms
@@ -73,17 +74,23 @@ class WideDeepDataset(Dataset):
         else:
             self.transforms_names = []
         self.Y = target
-        if self.Y is not None:
-            if Ymax is None:
-                self.Ymax = int(max(target))
-            else:
-                assert type(Ymax) == int, "Ymax values must be integer"
-                self.Ymax = Ymax
-        assert reweight in {None, "inverse", "sqrt_inv"}
-        assert reweight != None if lds else True, \
-            "Set reweight to \'sqrt_inv\' (default) or \'inverse\' when using LDS"
-        if self.reweight != None:
-            self.weights = self._prepare_weights(reweight=reweight, lds=lds, lds_kernel=lds_kernel, lds_ks=lds_ks, lds_sigma=lds_sigma)
+        if self.lds:
+            if self.Y is not None:
+                if lds_Ymax is None:
+                    self.lds_Ymax = max(self.Y)
+                else:
+                    self.lds_Ymax = lds_Ymax
+                if lds_Ymin is None:
+                    self.lds_Ymin = min(self.Y)
+                else:
+                    self.lds_Ymin = lds_Ymin
+            self.weights = self._prepare_weights(
+                granularity=lds_granularity,
+                reweight=lds_reweight,
+                kernel=lds_kernel,
+                ks=lds_ks,
+                sigma=lds_sigma,
+            )
 
     def __getitem__(self, idx: int):  # noqa: C901
         X = Bunch()
@@ -123,7 +130,7 @@ class WideDeepDataset(Dataset):
             X.deepimage = xdi
         if self.Y is not None:
             y = self.Y[idx]
-            if self.reweight != None:
+            if self.lds:
                 weight = np.asarray([self.weights[idx]]).astype("float32")
                 return X, y, weight
             else:
@@ -131,32 +138,69 @@ class WideDeepDataset(Dataset):
         else:
             return X
 
-    def _prepare_weights(self, reweight, lds=False, lds_kernel='gaussian', lds_ks=5, lds_sigma=2):
-        max_target = self.Ymax
-        value_dict = {x: 0 for x in range(max_target)}
+    def _prepare_weights(
+        self,
+        granularity: int = 100,
+        reweight: Literal["sqrt", None] = None,
+        kernel: Literal["gaussian", "triang", "laplace", None] = "gaussian",
+        ks: int = 5,
+        sigma: Union[int, float] = 2,
+    ):
+        """Assign weight to each sample by following procedure:
+        1.      creating histogram from label values with nuber of bins = granularity
+        2[opt]. reweighting label frequencies by sqrt
+        3[opt]. smoothing label frequencies by convolution of kernel function window with frequencies list
+        4.      inverting values by n_samples / (n_classes * np.bincount(y)), see:
+        https://scikit-learn.org/stable/modules/generated/sklearn.utils.class_weight.compute_sample_weight.html
+        5.      assigning weight to each sample from closest bin value
+
+
+        Parameters
+        ----------
+        granularity: int = 100,
+            number of bins in histogram used in LDS to count occurence of sample values
+        reweight: Literal["sqrt", None] = None
+            option to reweight bin frequency counts in LDS
+        kernel: Literal['gaussian', 'triang', 'laplace'] = 'gaussian'
+            choice of kernel for Label Distribution Smoothing
+        ks: int = 5
+            LDS kernel window size
+        sigma: int = 2
+            standard deviation of ['gaussian','laplace'] kernel for LDS
+
+        Returns
+        -------
+        weights: list
+            list with weight for each sample
+        """
+
+        bin_edges = np.linspace(
+            self.lds_Ymin, self.lds_Ymax, num=granularity, endpoint=True
+        )
         labels = self.Y
-        # mbr
-        for label in labels:
-            value_dict[min(max_target - 1, int(label))] += 1
-        if reweight == "sqrt_inv":
-            value_dict = {k: np.sqrt(v) for k, v in value_dict.items()}
-        elif reweight == "inverse":
-            value_dict = {k: np.clip(v, 5, 1000) for k, v in value_dict.items()}  # clip weights for inverse re-weight
-        num_per_label = [value_dict[min(max_target - 1, int(label))] for label in labels]
-        if not len(num_per_label) or not reweight:
-            return None
-        print(f"Using re-weighting: [{reweight.upper()}]")
+        value_dict = dict(zip(bin_edges[:-1], np.histogram(labels, bin_edges)[0]))
 
-        if lds:
-            lds_kernel_window = get_lds_kernel_window(lds_kernel, lds_ks, lds_sigma)
-            print(f"Using LDS: [{lds_kernel.upper()}] ({lds_ks}/{lds_sigma})")
-            smoothed_value = convolve1d(
-                np.asarray([v for _, v in value_dict.items()]), weights=lds_kernel_window, mode="constant")
-            num_per_label = [smoothed_value[min(max_target - 1, int(label))] for label in labels]
+        if reweight == "sqrt":
+            value_dict = dict(
+                zip(value_dict.keys(), np.sqrt(list(value_dict.values())))
+            )
 
-        weights = [np.float32(1 / x) for x in num_per_label]
-        scaling = len(weights) / np.sum(weights)
-        weights = [scaling * x for x in weights]
+        if kernel:
+            lds_kernel_window = get_kernel_window(kernel, ks, sigma)
+            smoothed_values = convolve1d(
+                list(value_dict.values()), weights=lds_kernel_window, mode="constant"
+            )
+
+            weigths = sum(smoothed_values) / (len(smoothed_values) * smoothed_values)
+            value_dict = dict(zip(value_dict.keys(), weigths))
+        else:
+            values = list(value_dict.values())
+            weigths = sum(values) / (len(values) * values)
+            value_dict = dict(zip(value_dict.keys(), weigths))
+
+        left_bin_edges = find_bin(bin_edges, labels)
+        weights = [value_dict[edge] for edge in left_bin_edges]
+
         return weights
 
     def __len__(self):

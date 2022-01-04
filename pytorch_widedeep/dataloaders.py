@@ -29,7 +29,10 @@ def get_class_weights(dataset: WideDeepDataset) -> Tuple[np.ndarray, int, int]:
 
 
 class DataLoaderDefault(DataLoader):
-    def __init__(self, dataset, batch_size, num_workers, **kwargs):
+    def __init__(
+        self, dataset: WideDeepDataset, batch_size: int, num_workers: int, **kwargs
+    ):
+        self.lds = dataset.lds
         super().__init__(dataset, batch_size, num_workers)
 
 
@@ -53,6 +56,7 @@ class DataLoaderImbalanced(DataLoader):
     def __init__(
         self, dataset: WideDeepDataset, batch_size: int, num_workers: int, **kwargs
     ):
+        self.lds = dataset.lds
         if "oversample_mul" in kwargs:
             oversample_mul = kwargs["oversample_mul"]
         else:

@@ -161,10 +161,6 @@ class WideDeep(nn.Module):
         self.enforce_positive = enforce_positive
         self.fds = fds
 
-        if fds:
-            config = dict(feature_dim=self.deeptabular.output_dim, start_update=0, start_smooth=1, kernel='gaussian', ks=5, sigma=2)
-            self.FDS = fds.FDS(**config)
-
         if self.deeptabular is not None:
             self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
         else:
@@ -185,7 +181,7 @@ class WideDeep(nn.Module):
             if (
                 not self.deeptabular
                 or self.pred_dim != 1
-                #or self.wide.pred_dim != self.deeptabular.output_dim
+                # or self.wide.pred_dim != self.deeptabular.output_dim
             ):
                 raise ValueError(
                     """Feature Distribution Smoothing is supported only with deeptabular
@@ -205,7 +201,12 @@ class WideDeep(nn.Module):
         if self.enforce_positive:
             self.enf_pos = get_activation_fn(enforce_positive_activation)
 
-    def forward(self, X: Dict[str, Tensor], y: Optional[Tensor]=None, epoch: Optional[int]=None):
+    def forward(
+        self,
+        X: Dict[str, Tensor],
+        y: Optional[Tensor] = None,
+        epoch: Optional[int] = None,
+    ):
         y_pred = self._forward_wide(X)
         if self.deephead:
             y_pred = self._forward_deephead(X, y_pred)
@@ -314,16 +315,15 @@ class WideDeep(nn.Module):
                 wide_out.add_(tab_out)
             else:
                 deeptab_features = self.deeptabular(X["deeptabular"])
-                deeptab_s = deeptab_features
                 if self.training and self.fds:
-                    deeptab_s = self.FDS.smooth(deeptab_s, y, epoch)
-                    deeptab_s = self.FDS_dropout(deeptab_s)
-                if self.fds:
-                    wide_out.add_(self.pred_layer(deeptab_s))
+                    deeptab_features = self.FDS.smooth(deeptab_features, y, epoch)
+                    deeptab_features = self.FDS_dropout(deeptab_features)
+                    wide_out.add_(self.pred_layer(deeptab_features))
+                    return wide_out, deeptab_features
+                elif self.fds:
+                    wide_out.add_(self.pred_layer(deeptab_features))
                 else:
                     wide_out.add_(deeptab_features)
-                if self.training and self.fds:
-                    return wide_out, deeptab_features
         if self.deeptext is not None:
             wide_out.add_(self.deeptext(X["deeptext"]))
         if self.deepimage is not None:

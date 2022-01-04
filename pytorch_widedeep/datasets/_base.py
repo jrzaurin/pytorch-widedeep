@@ -1,3 +1,6 @@
+# dataframes are saved as parquet, pyarrow, brotli
+# pd.to_parquet(path=None, engine="auto", compression="brotli", index=False)
+# see related post: https://python.plainenglish.io/storing-pandas-98-faster-disk-reads-and-72-less-space-208e2e2be8bb
 from importlib import resources
 
 import pandas as pd
@@ -24,8 +27,10 @@ def load_bio_kdd04(as_frame: bool = False):
     the native protein sequence and the sequence that is tested for homology.
     """
 
-    #header_list = ["EXAMPLE_ID", "BLOCK_ID", "target"] + [str(i) for i in range(4, 78)]
-    with resources.path("pytorch_widedeep.datasets.data", "bio_train.parquet.brotli") as fpath:
+    # header_list = ["EXAMPLE_ID", "BLOCK_ID", "target"] + [str(i) for i in range(4, 78)]
+    with resources.path(
+        "pytorch_widedeep.datasets.data", "bio_train.parquet.brotli"
+    ) as fpath:
         df = pd.read_parquet(fpath)
 
     if as_frame:
@@ -39,7 +44,9 @@ def load_adult(as_frame: bool = False):
     you may find detailed description [here](http://www.cs.toronto.edu/~delve/data/adult/adultDetail.html)
     """
 
-    with resources.path("pytorch_widedeep.datasets.data", "adult.parquet.brotli") as fpath:
+    with resources.path(
+        "pytorch_widedeep.datasets.data", "adult.parquet.brotli"
+    ) as fpath:
         df = pd.read_parquet(fpath)
 
     if as_frame:
@@ -124,7 +131,9 @@ def load_ecoli(as_frame: bool = False):
     imS (inner membrane, cleavable signal sequence)      2
     """
 
-    with resources.path("pytorch_widedeep.datasets.data", "ecoli.parquet.brotli") as fpath:
+    with resources.path(
+        "pytorch_widedeep.datasets.data", "ecoli.parquet.brotli"
+    ) as fpath:
         df = pd.read_parquet(fpath)
 
     if as_frame:
@@ -135,7 +144,7 @@ def load_ecoli(as_frame: bool = False):
 
 def load_california_housing(as_frame: bool = False):
     """Load and return the higly imbalanced regression California housing dataset.
-    
+
     Characteristics:
     Number of Instances: 20640
     Number of Attributes: 8 numeric, predictive attributes and the target
@@ -164,13 +173,15 @@ def load_california_housing(as_frame: bool = False):
     number of rooms and bedrooms in this dataset are provided per household, these
     columns may take surpinsingly large values for block groups with few households
     and many empty houses, such as vacation resorts.
-    
+
     References
     ----------
     Pace, R. Kelley and Ronald Barry, Sparse Spatial Autoregressions,
     Statistics and Probability Letters, 33 (1997) 291-297.
     """
-    with resources.path("pytorch_widedeep.datasets.data", "california_housing.parquet.brotli") as fpath:
+    with resources.path(
+        "pytorch_widedeep.datasets.data", "california_housing.parquet.brotli"
+    ) as fpath:
         df = pd.read_parquet(fpath)
 
     if as_frame:
@@ -194,7 +205,9 @@ def load_birds(as_frame: bool = False):
     simultaneous bird species in a noisy environment", in proc. 2013 IEEE International Workshop
     on Machine Learning for Signal Processing (MLSP)
     """
-    with resources.path("pytorch_widedeep.datasets.data", "birds_train.parquet.brotli") as fpath:
+    with resources.path(
+        "pytorch_widedeep.datasets.data", "birds_train.parquet.brotli"
+    ) as fpath:
         df = pd.read_parquet(fpath)
 
     if as_frame:
@@ -206,20 +219,22 @@ def load_birds(as_frame: bool = False):
 def load_rf1(as_frame: bool = False):
     """Load and return the multi-target regression River Flow(RF1) dataset.
 
-    Characterisctics:
-    The river flow data set (RF1) concerns a prediction task in which flows in a river network are
-predicted for 48 hours in the future at 8 different locations in the Mississippi River network
-in the United States [18]. RF1 is one of the multi-target regression problems listed in the
-literature survey on multi-target regression problems by Borchani et al. [2], and therefore
-serves as a good test case for the active learning algorithm. Each row includes the most recent
-observation for each of the 8 sites as well as time-lagged observations from 6, 12, 18, 24, 36,
-48 and 60 hours in the past. Therefore, the data set consists in total of 64 attribute variables
-and 8 target variables. The data set contains over 1 year of hourly observations (over 9000
-data points) collected from September 2011 to September 2012 by the US National Weather
-Service. From these 9000 data points, 1000 points have been randomly sampled for training
-and 2000 for evaluation.
+        Characterisctics:
+        The river flow data set (RF1) concerns a prediction task in which flows in a river network are
+    predicted for 48 hours in the future at 8 different locations in the Mississippi River network
+    in the United States [18]. RF1 is one of the multi-target regression problems listed in the
+    literature survey on multi-target regression problems by Borchani et al. [2], and therefore
+    serves as a good test case for the active learning algorithm. Each row includes the most recent
+    observation for each of the 8 sites as well as time-lagged observations from 6, 12, 18, 24, 36,
+    48 and 60 hours in the past. Therefore, the data set consists in total of 64 attribute variables
+    and 8 target variables. The data set contains over 1 year of hourly observations (over 9000
+    data points) collected from September 2011 to September 2012 by the US National Weather
+    Service. From these 9000 data points, 1000 points have been randomly sampled for training
+    and 2000 for evaluation.
     """
-    with resources.path("pytorch_widedeep.datasets.data", "rf1-train.parquet.brotli") as fpath:
+    with resources.path(
+        "pytorch_widedeep.datasets.data", "rf1-train.parquet.brotli"
+    ) as fpath:
         df = pd.read_parquet(fpath)
 
     if as_frame:
