@@ -43,11 +43,6 @@ if __name__ == "__main__":
     ]
     crossed_cols = [("education", "occupation"), ("native_country", "occupation")]
 
-    cat_embed_cols = []
-    for col in df.columns:
-        if df[col].dtype == "O" or df[col].nunique() < 200 and col != "income_label":
-            cat_embed_cols.append(col)
-
     cat_embed_cols = [
         "workclass",
         "education",

@@ -8,8 +8,6 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.text._encoders import ContextAttentionEncoder
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 class StackedAttentiveRNN(nn.Module):
     r"""Text classifier/regressor comprised by a stack of blocks:
@@ -223,13 +221,13 @@ class StackedAttentiveRNN(nn.Module):
 
         h = nn.init.zeros_(
             torch.Tensor(2 if self.bidirectional else 1, X.shape[0], self.hidden_dim)
-        ).to(device)
+        ).to(x.device)
         if self.rnn_type == "lstm":
             c = nn.init.zeros_(
                 torch.Tensor(
                     2 if self.bidirectional else 1, X.shape[0], self.hidden_dim
                 )
-            ).to(device)
+            ).to(x.device)
         else:
             c = None
 

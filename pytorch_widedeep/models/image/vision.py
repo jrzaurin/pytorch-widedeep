@@ -2,7 +2,6 @@ import warnings
 
 import torchvision
 from torch import nn
-from torch.nn.modules.module import ModuleAttributeError
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.image._layers import conv_layer
@@ -236,7 +235,7 @@ class Vision(nn.Module):
     def get_backbone_output_dim(features):
         try:
             return features.fc.in_features
-        except ModuleAttributeError:
+        except AttributeError:
             try:
                 features.classifier.__dict__["_modules"]["0"].in_features
             except AttributeError:

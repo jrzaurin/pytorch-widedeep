@@ -44,7 +44,7 @@ class GaussianPosterior(object):
         return torch.log1p(torch.exp(self.param_rho))
 
     def sample(self) -> Tensor:
-        epsilon = self.normal.sample(self.param_rho.size())
+        epsilon = self.normal.sample(self.param_rho.size()).to(self.param_rho.device)
         return self.param_mu + self.sigma * epsilon
 
     def log_posterior(self, input: Tensor) -> Tensor:

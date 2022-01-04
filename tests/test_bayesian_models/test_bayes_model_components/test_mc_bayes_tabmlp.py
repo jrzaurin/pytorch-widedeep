@@ -91,7 +91,7 @@ def test_cont_norm_layer(cont_norm_layer):
 ###############################################################################
 
 
-def test_act_fn_ValueError():
+def test_act_fn_valueerror():
     with pytest.raises(ValueError):
         model = BayesianTabMlp(  # noqa: F841
             column_idx={k: v for v, k in enumerate(colnames)},
