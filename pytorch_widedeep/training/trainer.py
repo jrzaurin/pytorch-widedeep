@@ -1,3 +1,4 @@
+import sys
 import os
 import json
 import warnings
@@ -41,7 +42,10 @@ from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
 
-n_cpus = os.cpu_count()
+# Important note for Mac users: Since python 3.8, the multiprocessing
+# library start method changed from 'fork' to 'spawn'. This affects the
+# data-loaders, which will not run in parallel.
+n_cpus = 0 if sys.platform == "darwin" and sys.version_info.minor > 7 else os.cpu_count()
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")

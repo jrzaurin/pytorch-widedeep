@@ -30,8 +30,10 @@ from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BaseBayesianModel,
 )
 
-n_cpus = os.cpu_count()
-
+# Important note for Mac users: Since python 3.8, the multiprocessing
+# library start method changed from 'fork' to 'spawn'. This affects the
+# data-loaders, which will not run in parallel.
+n_cpus = 0 if sys.platform == "darwin" and sys.version_info.minor > 7 else os.cpu_count()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
