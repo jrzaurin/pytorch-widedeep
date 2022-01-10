@@ -5,16 +5,16 @@ This section provides links to example notebooks that may be helpful to better
 understand the functionalities withing ``pytorch-widedeep`` and how to use
 them to address different problems
 
-* `Preprocessors and Utils <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/01_Preprocessors_and_utils.ipynb>`__
-* `Model Components <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/02_1_Model_Components.ipynb>`__
-* `deeptabular Models <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/02_2_deeptabular_models.ipynb>`__
-* `Binary Classification with default parameters <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/03_Binary_Classification_with_Defaults.ipynb>`__
-* `Binary Classification with varying parameters <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/04_Binary_Classification_Varying_Parameters.ipynb>`__
-* `Regression with Images and Text <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/05_Regression_with_Images_and_Text.ipynb>`__
-* `FineTune routines <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/06_FineTune_and_WarmUp_Model_Components.ipynb>`__
-* `Custom Components <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/07_Custom_Components.ipynb>`__
-* `Save and Load Model and Artifacts <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/08_save_and_load_model_and_artifacts.ipynb>`__
-* `Using Custom DataLoaders and Torchmetrics <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/09_Custom_DataLoader_Imbalanced_dataset.ipynb>`__
-* `The Transformer Family <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/10_The_Transformer_Family.ipynb>`__
-* `Extracting Embeddings <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/11_Extracting_Embeddings.ipynb>`__
-* `HyperParameter Tuning With RayTune <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/12_HyperParameter_tuning_w_RayTune.ipynb>`__
+* `Preprocessors and Utils <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/01_Preprocessors_and_utils.ipynb>`__
+* `Model Components <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/02_model_components.ipynb>`__
+* `Binary Classification with default parameters <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/03_Binary_Classification_with_Defaults.ipynb>`__
+* `Regression with Images and Text <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/04_regression_with_images_and_text.ipynb>`__
+* `Save and Load Model and Artifacts <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/05_save_and_load_model_and_artifacts.ipynb>`__
+* `FineTune routines <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/06_fineTune_and_warmup.ipynb>`__
+* `Custom Components <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/07_Custom_Components.ipynb>`__
+* `Using Custom DataLoaders and Torchmetrics <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/08_custom_dataLoader_imbalanced_dataset.ipynb>`__
+* `Extracting Embeddings <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/09_extracting_embeddings.ipynb>`__
+* `HyperParameter Tuning With RayTune <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/10_hyperParameter_tuning_w_raytune_n_wnb.ipynb>`__
+* `Model Uncertainty Prediction <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/13_Model_Uncertainty_prediction.ipynb>`__
+* `Bayesian Models <https://github.com/jrzaurin/pytorch-widedeep/blob/jrzaurin/attention_mlp/examples/notebooks/14_bayesian_models.ipynb>`__
+

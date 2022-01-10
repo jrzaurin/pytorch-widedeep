@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 import json
 import warnings
 from pathlib import Path
@@ -41,14 +41,6 @@ from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
 from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
-
-# Important note for Mac users: Since python 3.8, the multiprocessing
-# library start method changed from 'fork' to 'spawn'. This affects the
-# data-loaders, which will not run in parallel.
-n_cpus = 0 if sys.platform == "darwin" and sys.version_info.minor > 7 else os.cpu_count()
-
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
 
 
 class Trainer:
@@ -231,6 +223,7 @@ class Trainer:
         self._check_inputs(
             model, objective, optimizers, lr_schedulers, custom_loss_function
         )
+        self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
 
         # initialize early_stop. If EarlyStopping Callback is used it will
         # take care of it
@@ -242,7 +235,7 @@ class Trainer:
         if self.model.is_tabnet:
             self.lambda_sparse = kwargs.get("lambda_sparse", 1e-3)
             self.reducing_matrix = create_explain_matrix(self.model)
-        self.model.to(device)
+        self.model.to(self.device)
 
         self.objective = objective
         self.method = _ObjectiveToMethod.get(objective)
@@ -407,7 +400,7 @@ class Trainer:
                 train_loader = custom_dataloader(
                     dataset=train_set,
                     batch_size=batch_size,
-                    num_workers=n_cpus,
+                    num_workers=self.num_workers,
                     **kwargs,
                 )
             else:
@@ -419,14 +412,14 @@ class Trainer:
                 )
         else:
             train_loader = DataLoaderDefault(
-                dataset=train_set, batch_size=batch_size, num_workers=n_cpus
+                dataset=train_set, batch_size=batch_size, num_workers=self.num_workers
             )
         train_steps = len(train_loader)
         if eval_set is not None:
             eval_loader = DataLoader(
                 dataset=eval_set,
                 batch_size=batch_size,
-                num_workers=n_cpus,
+                num_workers=self.num_workers,
                 shuffle=False,
             )
             eval_steps = len(eval_loader)
@@ -786,7 +779,7 @@ class Trainer:
         loader = DataLoader(
             dataset=WideDeepDataset(**{"X_tab": X_tab}),
             batch_size=self.batch_size,
-            num_workers=n_cpus,
+            num_workers=self.num_workers,
             shuffle=False,
         )
 
@@ -795,7 +788,7 @@ class Trainer:
 
         m_explain_l = []
         for batch_nb, data in enumerate(loader):
-            X = data["deeptabular"].to(device)
+            X = data["deeptabular"].to(self.device)
             M_explain, masks = tabnet_backbone.forward_masks(X)  # type: ignore[operator]
             m_explain_l.append(
                 csc_matrix.dot(M_explain.cpu().detach().numpy(), self.reducing_matrix)
@@ -996,13 +989,13 @@ class Trainer:
 
     def _train_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
         self.model.train()
-        X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
+        X = {k: v.to(self.device) for k, v in data.items()}
         y = (
             target.view(-1, 1).float()
             if self.method not in ["multiclass", "qregression"]
             else target
         )
-        y = y.to(device)
+        y = y.to(self.device)
 
         self.optimizer.zero_grad()
         y_pred = self.model(X)
@@ -1025,13 +1018,13 @@ class Trainer:
 
         self.model.eval()
         with torch.no_grad():
-            X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
+            X = {k: v.to(self.device) for k, v in data.items()}
             y = (
                 target.view(-1, 1).float()
                 if self.method not in ["multiclass", "qregression"]
                 else target
             )
-            y = y.to(device)
+            y = y.to(self.device)
 
             y_pred = self.model(X)
             if self.model.is_tabnet:
@@ -1065,13 +1058,13 @@ class Trainer:
         tabnet_backbone = list(self.model.deeptabular.children())[0]
         feat_imp = np.zeros((tabnet_backbone.embed_out_dim))  # type: ignore[arg-type]
         for data, target in loader:
-            X = data["deeptabular"].to(device)
+            X = data["deeptabular"].to(self.device)
             y = (
                 target.view(-1, 1).float()
                 if self.method not in ["multiclass", "qregression"]
                 else target
             )
-            y = y.to(device)
+            y = y.to(self.device)
             M_explain, masks = tabnet_backbone.forward_masks(X)  # type: ignore[operator]
             feat_imp += M_explain.sum(dim=0).cpu().detach().numpy()
 
@@ -1118,7 +1111,7 @@ class Trainer:
         test_loader = DataLoader(
             dataset=test_set,
             batch_size=self.batch_size,
-            num_workers=n_cpus,
+            num_workers=self.num_workers,
             shuffle=False,
         )
         test_steps = (len(test_loader.dataset) // test_loader.batch_size) + 1  # type: ignore[arg-type]
@@ -1144,11 +1137,7 @@ class Trainer:
                     ) as tt:
                         for j, data in zip(tt, test_loader):
                             tt.set_description("predict")
-                            X = (
-                                {k: v.cuda() for k, v in data.items()}
-                                if use_cuda
-                                else data
-                            )
+                            X = {k: v.to(self.device) for k, v in data.items()}
                             preds = (
                                 self.model(X)
                                 if not self.model.is_tabnet
@@ -1184,7 +1173,7 @@ class Trainer:
     def _set_loss_fn(self, objective, custom_loss_function, **kwargs):
 
         class_weight = (
-            torch.tensor(kwargs["class_weight"]).to(device)
+            torch.tensor(kwargs["class_weight"]).to(self.device)
             if "class_weight" in kwargs
             else None
         )
@@ -1296,7 +1285,7 @@ class Trainer:
 
     @staticmethod
     def _check_inputs(
-        model, objective, optimizers, lr_schedulers, custom_loss_function
+        model, objective, optimizers, lr_schedulers, custom_loss_function, **kwargs
     ):
 
         if _ObjectiveToMethod.get(objective) == "multiclass" and model.pred_dim == 1:
@@ -1323,3 +1312,19 @@ class Trainer:
                 "If 'custom_loss_function' is not None, 'objective' must be 'binary' "
                 "'multiclass' or 'regression', consistent with the loss function"
             )
+
+    @staticmethod
+    def _set_device_and_num_workers(**kwargs):
+
+        # Important note for Mac users: Since python 3.8, the multiprocessing
+        # library start method changed from 'fork' to 'spawn'. This affects the
+        # data-loaders, which will not run in parallel.
+        default_num_workers = (
+            0
+            if sys.platform == "darwin" and sys.version_info.minor > 7
+            else os.cpu_count()
+        )
+        default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = kwargs.get("device", default_device)
+        num_workers = kwargs.get("num_workers", default_num_workers)
+        return device, num_workers

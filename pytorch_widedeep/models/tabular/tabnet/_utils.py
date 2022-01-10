@@ -37,7 +37,7 @@ def create_explain_matrix(model: WideDeep) -> csc_matrix:
 
     tabnet_backbone = list(model.deeptabular.children())[0]
 
-    embed_out_dim = tabnet_backbone.embed_out_dim
+    embed_out_dim: int = tabnet_backbone.embed_out_dim  # type: ignore[assignment]
     column_idx: Dict = tabnet_backbone.column_idx  # type: ignore[assignment]
 
     cat_setup = extract_cat_setup(tabnet_backbone)

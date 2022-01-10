@@ -30,12 +30,6 @@ from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BaseBayesianModel,
 )
 
-# Important note for Mac users: Since python 3.8, the multiprocessing
-# library start method changed from 'fork' to 'spawn'. This affects the
-# data-loaders, which will not run in parallel.
-n_cpus = 0 if sys.platform == "darwin" and sys.version_info.minor > 7 else os.cpu_count()
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 class BayesianTrainer:
     r"""Class to set the of attributes that will be used during the
@@ -128,6 +122,8 @@ class BayesianTrainer:
                 "'multiclass' or 'regression', consistent with the loss function"
             )
 
+        self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
+
         self.model = model
         self.early_stop = False
 
@@ -144,7 +140,7 @@ class BayesianTrainer:
         self.lr_scheduler = lr_scheduler
         self._set_lr_scheduler_running_params(lr_scheduler, **kwargs)
         self._set_callbacks_and_metrics(callbacks, metrics)
-        self.model.to(device)
+        self.model.to(self.device)
 
     def fit(  # noqa: C901
         self,
@@ -192,7 +188,7 @@ class BayesianTrainer:
             self.seed, self.objective, X_tab, target, X_tab_val, target_val, val_split
         )
         train_loader = DataLoader(
-            dataset=train_set, batch_size=batch_size, num_workers=n_cpus
+            dataset=train_set, batch_size=batch_size, num_workers=self.num_workers
         )
         train_steps = len(train_loader)
 
@@ -200,7 +196,7 @@ class BayesianTrainer:
             eval_loader = DataLoader(
                 dataset=eval_set,
                 batch_size=batch_size,
-                num_workers=n_cpus,
+                num_workers=self.num_workers,
                 shuffle=False,
             )
             eval_steps = len(eval_loader)
@@ -422,9 +418,9 @@ class BayesianTrainer:
 
         self.model.train()
 
-        X = X_tab.to(device)
+        X = X_tab.to(self.device)
         y = target.view(-1, 1).float() if self.objective != "multiclass" else target
-        y = y.to(device)
+        y = y.to(self.device)
 
         self.optimizer.zero_grad()
         y_pred, loss = self.model.sample_elbo(X, y, self.loss_fn, n_samples, n_batches)  # type: ignore[arg-type]
@@ -451,9 +447,9 @@ class BayesianTrainer:
 
         self.model.eval()
         with torch.no_grad():
-            X = X_tab.to(device)
+            X = X_tab.to(self.device)
             y = target.view(-1, 1).float() if self.objective != "multiclass" else target
-            y = y.to(device)
+            y = y.to(self.device)
 
             y_pred, loss = self.model.sample_elbo(
                 X,  # type: ignore[arg-type]
@@ -496,7 +492,7 @@ class BayesianTrainer:
         test_loader = DataLoader(
             dataset=test_set,
             batch_size=self.batch_size,
-            num_workers=n_cpus,
+            num_workers=self.num_workers,
             shuffle=False,
         )
         test_steps = (len(test_loader.dataset) // test_loader.batch_size) + 1  # type: ignore[arg-type]
@@ -507,7 +503,7 @@ class BayesianTrainer:
                 for j, Xl in zip(tt, test_loader):
                     tt.set_description("predict")
 
-                    X = Xl[0].to(device)
+                    X = Xl[0].to(self.device)
 
                     if return_samples:
                         preds = torch.stack([self.model(X) for _ in range(n_samples)])
@@ -537,7 +533,7 @@ class BayesianTrainer:
             return custom_loss_function
 
         class_weight = (
-            torch.tensor(kwargs["class_weight"]).to(device)
+            torch.tensor(kwargs["class_weight"]).to(self.device)
             if "class_weight" in kwargs
             else None
         )
@@ -592,3 +588,19 @@ class BayesianTrainer:
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self.model)
         self.callback_container.set_trainer(self)
+
+    @staticmethod
+    def _set_device_and_num_workers(**kwargs):
+
+        # Important note for Mac users: Since python 3.8, the multiprocessing
+        # library start method changed from 'fork' to 'spawn'. This affects the
+        # data-loaders, which will not run in parallel.
+        default_num_workers = (
+            0
+            if sys.platform == "darwin" and sys.version_info.minor > 7
+            else os.cpu_count()
+        )
+        default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = kwargs.get("device", default_device)
+        num_workers = kwargs.get("num_workers", default_num_workers)
+        return device, num_workers

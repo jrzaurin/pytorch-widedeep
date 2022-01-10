@@ -38,7 +38,7 @@ def ifnone(a: Any, b: Any) -> Any:
 def num_cpus() -> Optional[int]:
     "Get number of cpus"
     try:
-        return len(os.sched_getaffinity(0))
+        return len(os.sched_getaffinity(0))  # type: ignore[attr-defined]
     except AttributeError:
         return os.cpu_count()
 
