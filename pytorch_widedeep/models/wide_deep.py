@@ -16,8 +16,9 @@ import torch
 import torch.nn as nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.models.tab_mlp import MLP, get_activation_fn
-from pytorch_widedeep.models.tabnet.tab_net import TabNetPredLayer
+from pytorch_widedeep.models._get_activation_fn import get_activation_fn
+from pytorch_widedeep.models.tabular.mlp._layers import MLP
+from pytorch_widedeep.models.tabular.tabnet.tab_net import TabNetPredLayer
 from pytorch_widedeep.models import fds_layer
 
 warnings.filterwarnings("default", category=UserWarning)

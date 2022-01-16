@@ -8,30 +8,34 @@ use_cuda = torch.cuda.is_available()
 
 
 class TweedieLoss(nn.Module):
-    r"""`Tweedie loss <https://arxiv.org/abs/1811.10192>`_ for extremely
-    unbalanced zero-inflated data
-
-    All credits go to Wenbo Shi for `their implementation
-    <https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f>`_
+    """
+    Tweedie loss for extremely unbalanced zero-inflated data``
+    All credits go to `Wenbo Shi
+    <https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f> and
+    <https://arxiv.org/abs/1811.10192>`
     """
 
     def __init__(self):
         super().__init__()
 
     def forward(
-        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None, p=1.5
+        self,
+        input: Tensor,
+        target: Tensor,
+        lds_weight: Union[None, Tensor] = None,
+        p=1.5,
     ) -> Tensor:
         assert (
             input.min() > 0
         ), """All input values must be >=0, if your model is predicting
             values <0 try to enforce positive values by activation function
-            on last layer with ``trainer.enforce_positive_output=True``"""
+            on last layer with `trainer.enforce_positive_output=True`"""
         assert target.min() >= 0, "All target values must be >=0"
         loss = -target * torch.pow(input, 1 - p) / (1 - p) + torch.pow(input, 2 - p) / (
             2 - p
         )
-        if weight is not None:
-            loss *= weight.expand_as(loss)
+        if lds_weight is not None:
+            loss *= lds_weight.expand_as(loss)
 
         return torch.mean(loss)
 
@@ -57,12 +61,12 @@ class QuantileLoss(nn.Module):
         super().__init__()
         self.quantiles = quantiles
 
-    def forward(self, input: Tensor, target: Tensor, weight: Union[None, Tensor]=None) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
 
-        assert input.shape == torch.Size(
-            [target.shape[0], len(self.quantiles)]
-        ), f"""Wrong shape of input, pred_dim of the model that is using QuantileLoss must be
-        equal to number of quantiles, i.e. {len(self.quantiles)}."""
+        assert input.shape == torch.Size([target.shape[0], len(self.quantiles)]), (
+            f"Wrong shape of input, pred_dim of the model that is using QuantileLoss must be equal "
+            f"to number of quantiles, i.e. {len(self.quantiles)}."
+        )
         target = target.view(-1, 1).float()
         losses = []
         for i, q in enumerate(self.quantiles):
@@ -76,8 +80,8 @@ class QuantileLoss(nn.Module):
 
 class ZILNLoss(nn.Module):
     r"""Adjusted implementation of the `Zero Inflated LogNormal loss
-    <https://arxiv.org/pdf/1912.07753.pdf>`_ using the `code here
-    <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`_
+    <https://arxiv.org/pdf/1912.07753.pdf>` and its `code
+    <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`
     """
 
     def __init__(self):
@@ -224,7 +228,7 @@ class L1Loss(nn.Module):
         super().__init__()
 
     def forward(
-        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None
+        self, input: Tensor, target: Tensor, lds_weight: Union[None, Tensor] = None
     ) -> Tensor:
         r"""
         Parameters
@@ -238,8 +242,8 @@ class L1Loss(nn.Module):
         --------
         """
         loss = F.l1_loss(input, target, reduction="none")
-        if weight is not None:
-            loss *= weight.expand_as(loss)
+        if lds_weight is not None:
+            loss *= lds_weight.expand_as(loss)
         loss = torch.mean(loss)
 
         return loss
@@ -257,7 +261,7 @@ class MSELoss(nn.Module):
         super().__init__()
 
     def forward(
-        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None
+        self, input: Tensor, target: Tensor, lds_weight: Union[None, Tensor] = None
     ) -> Tensor:
         r"""
         Parameters
@@ -271,8 +275,8 @@ class MSELoss(nn.Module):
         --------
         """
         loss = (input - target) ** 2
-        if weight is not None:
-            loss *= weight.expand_as(loss)
+        if lds_weight is not None:
+            loss *= lds_weight.expand_as(loss)
         loss = torch.mean(loss)
 
         return loss
@@ -286,7 +290,7 @@ class MSLELoss(nn.Module):
         self.mse = nn.MSELoss()
 
     def forward(
-        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None
+        self, input: Tensor, target: Tensor, lds_weight: Union[None, Tensor] = None
     ) -> Tensor:
         r"""
         Parameters
@@ -314,8 +318,8 @@ class MSLELoss(nn.Module):
         assert target.min() >= 0, "All target values must be >=0"
 
         loss = (torch.log(input + 1) - torch.log(target + 1)) ** 2
-        if weight is not None:
-            loss *= weight.expand_as(loss)
+        if lds_weight is not None:
+            loss *= lds_weight.expand_as(loss)
         loss = torch.mean(loss)
 
         return loss
@@ -328,7 +332,7 @@ class RMSELoss(nn.Module):
         super().__init__()
 
     def forward(
-        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None
+        self, input: Tensor, target: Tensor, lds_weight: Union[None, Tensor] = None
     ) -> Tensor:
         r"""
         Parameters
@@ -349,8 +353,8 @@ class RMSELoss(nn.Module):
         tensor(0.6964)
         """
         loss = (input - target) ** 2
-        if weight is not None:
-            loss *= weight.expand_as(loss)
+        if lds_weight is not None:
+            loss *= lds_weight.expand_as(loss)
         loss = torch.mean(loss)
         loss = torch.sqrt(loss)
 
@@ -365,7 +369,7 @@ class RMSLELoss(nn.Module):
         self.mse = nn.MSELoss()
 
     def forward(
-        self, input: Tensor, target: Tensor, weight: Union[None, Tensor] = None
+        self, input: Tensor, target: Tensor, lds_weight: Union[None, Tensor] = None
     ) -> Tensor:
         r"""
         Parameters
@@ -393,8 +397,8 @@ class RMSLELoss(nn.Module):
         assert target.min() >= 0, "All target values must be >=0"
 
         loss = (torch.log(input + 1) - torch.log(target + 1)) ** 2
-        if weight is not None:
-            loss *= weight.expand_as(loss)
+        if lds_weight is not None:
+            loss *= lds_weight.expand_as(loss)
         loss = torch.mean(loss)
         loss = torch.sqrt(loss)
 
@@ -420,7 +424,7 @@ class FocalR_L1Loss(nn.Module):
         self,
         input: Tensor,
         target: Tensor,
-        weight: Union[None, Tensor] = None,
+        lds_weight: Union[None, Tensor] = None,
         activate: Literal["sigmoid", "tanh"] = "sigmoid",
         beta=0.2,
         gamma=1,
@@ -441,15 +445,12 @@ class FocalR_L1Loss(nn.Module):
             loss *= (torch.tanh(beta * torch.abs(input - target))) ** gamma
         else:
             loss *= (2 * torch.sigmoid(beta * torch.abs(input - target)) - 1) ** gamma
-        if weight is not None:
-            loss *= weight.expand_as(loss)
+        if lds_weight is not None:
+            loss *= lds_weight.expand_as(loss)
         loss = torch.mean(loss)
 
         return loss
 
-    Currently we do not use this loss as is proportional to the
-    ``BayesianSELoss`` and the latter does not need a scale/noise_tolerance
-    param
 
 class FocalR_MSELoss(nn.Module):
     r"""Focal-R MSE loss based on :
@@ -462,15 +463,15 @@ class FocalR_MSELoss(nn.Module):
     https://github.com/YyzHarry/imbalanced-regression/issues/16
     """
 
-    def __init__(self, noise_tolerance: float):
+    def __init__(self):
         super().__init__()
-        self.noise_tolerance = noise_tolerance
+        self.mse = nn.MSELoss()
 
     def forward(
         self,
         input: Tensor,
         target: Tensor,
-        weight: Union[None, Tensor] = None,
+        lds_weight: Union[None, Tensor] = None,
         activate: Literal["sigmoid", "tanh"] = "sigmoid",
         beta=0.2,
         gamma=1,
@@ -493,8 +494,8 @@ class FocalR_MSELoss(nn.Module):
             loss *= (
                 2 * torch.sigmoid(beta * torch.abs((input - target) ** 2)) - 1
             ) ** gamma
-        if weight is not None:
-            loss *= weight.expand_as(loss)
+        if lds_weight is not None:
+            loss *= lds_weight.expand_as(loss)
         loss = torch.mean(loss)
 
         return loss
@@ -519,7 +520,7 @@ class FocalR_RMSELoss(nn.Module):
         self,
         input: Tensor,
         target: Tensor,
-        weight: Union[None, Tensor] = None,
+        lds_weight: Union[None, Tensor] = None,
         activate: Literal["sigmoid", "tanh"] = "sigmoid",
         beta=0.2,
         gamma=1,
@@ -542,17 +543,14 @@ class FocalR_RMSELoss(nn.Module):
             loss *= (
                 2 * torch.sigmoid(beta * torch.abs((input - target) ** 2)) - 1
             ) ** gamma
-        if weight is not None:
-            loss *= weight.expand_as(loss)
+        if lds_weight is not None:
+            loss *= lds_weight.expand_as(loss)
         loss = torch.mean(loss)
         loss = torch.sqrt(loss)
 
         return loss
 
 
-class BayesianSELoss(nn.Module):
-    r"""Squared Loss (log Gaussian) for the case of a regression as specified in
-    the original publication 'Weight Uncertainty in Neural Networks'
 class HuberLoss(nn.Module):
     r"""Based on
     `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
@@ -563,12 +561,13 @@ class HuberLoss(nn.Module):
 
     def __init__(self):
         super().__init__()
+        self.mse = nn.MSELoss()
 
     def forward(
         self,
         input: Tensor,
         target: Tensor,
-        weight: Union[None, Tensor] = None,
+        lds_weight: Union[None, Tensor] = None,
         beta=0.1,
     ) -> Tensor:
         r"""
@@ -581,6 +580,55 @@ class HuberLoss(nn.Module):
 
         Examples
         --------
+        """
+        l1_loss = torch.abs(input - target)
+        cond = l1_loss < beta
+        loss = torch.where(cond, 0.5 * l1_loss ** 2 / beta, l1_loss - 0.5 * beta)
+        if lds_weight is not None:
+            loss *= lds_weight.expand_as(loss)
+        loss = torch.mean(loss)
+
+        return loss
+
+
+class BayesianRegressionLoss(nn.Module):
+    r"""log Gaussian loss as specified in the original publication 'Weight
+    Uncertainty in Neural Networks'
+    Currently we do not use this loss as is proportional to the
+    ``BayesianSELoss`` and the latter does not need a scale/noise_tolerance
+    param
+    """
+
+    def __init__(self, noise_tolerance: float):
+        super().__init__()
+        self.noise_tolerance = noise_tolerance
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        return (
+            -torch.distributions.Normal(input, self.noise_tolerance)
+            .log_prob(target)
+            .sum()
+        )
+
+
+class BayesianSELoss(nn.Module):
+    r"""Squared Loss (log Gaussian) for the case of a regression as specified in
+    the original publication 'Weight Uncertainty in Neural Networks'
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        input: Tensor
+            input tensor with predictions (not probabilities)
+        target: Tensor
+            target tensor with the actual classes
+        Examples
+        --------
         >>> import torch
         >>> from pytorch_widedeep.losses import BayesianSELoss
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
@@ -588,11 +636,4 @@ class HuberLoss(nn.Module):
         >>> BayesianSELoss()(input, target)
         tensor(0.9700)
         """
-        l1_loss = torch.abs(input - target)
-        cond = l1_loss < beta
-        loss = torch.where(cond, 0.5 * l1_loss ** 2 / beta, l1_loss - 0.5 * beta)
-        if weight is not None:
-            loss *= weight.expand_as(loss)
-        loss = torch.mean(loss)
-
-        return loss
+        return (0.5 * (input - target) ** 2).sum()

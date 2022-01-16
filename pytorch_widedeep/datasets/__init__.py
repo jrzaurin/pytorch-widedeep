@@ -5,6 +5,7 @@ from ._base import (
     load_california_housing,
     load_birds,
     load_rf1,
+    load_womens_ecommerce,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "load_california_housing",
     "load_birds",
     "load_rf1",
+    "load_womens_ecommerce",
 ]

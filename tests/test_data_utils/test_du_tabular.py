@@ -314,6 +314,10 @@ def test_overlapping_cols_valueerror():
     with pytest.raises(ValueError):
         tab_preprocessor = TabPreprocessor(  # noqa: F841
             cat_embed_cols=embed_cols, continuous_cols=cont_cols
+        )
+
+
+###############################################################################
 # Test get_kernel_window
 ###############################################################################
 
