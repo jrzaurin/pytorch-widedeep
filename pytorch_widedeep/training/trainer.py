@@ -44,6 +44,11 @@ from pytorch_widedeep.training._multiple_lr_scheduler import (
 from pytorch_widedeep.losses import ZILNLoss
 from inspect import signature
 
+n_cpus = os.cpu_count()
+
+use_cuda = torch.cuda.is_available()
+device = torch.device("cuda" if use_cuda else "cpu")
+
 
 class Trainer:
     r"""Class to set the of attributes that will be used during the
@@ -1034,6 +1039,25 @@ class Trainer:
         self,
         data: Dict[str, Tensor],
         target: Tensor,
+        weight: Union[None, Tensor],
+        epoch,
+    ):
+        self.model.train()
+        X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
+        y = (
+            target.view(-1, 1).float()
+            if self.method not in ["multiclass", "qregression"]
+            else target
+        )
+        y = y.to(device)
+        _, deeptab_features = self.model(X, y, epoch)
+        return y, deeptab_features
+
+    def _train_step(
+        self,
+        data: Dict[str, Tensor],
+        target: Tensor,
+        batch_idx: int,
         weight: Union[None, Tensor],
         epoch,
     ):
