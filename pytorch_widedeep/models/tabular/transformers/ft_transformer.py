@@ -257,7 +257,7 @@ class FTTransformer(BaseTabularModelWithAttention):
                 mlp_linear_first,
             )
             # the output_dim attribute will be used as input_dim when "merging" the models
-            self.output_dim = mlp_hidden_dims[-1]
+            self.output_dim: int = mlp_hidden_dims[-1]
         else:
             self.fttransformer_mlp = None
             self.output_dim = (

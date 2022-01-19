@@ -270,7 +270,8 @@ def load_womens_ecommerce(as_frame: bool = False):
     Class Name: Categorical name of the product class name.
     """
     with resources.path(
-        "pytorch_widedeep.datasets.data", "WomensClothingE-CommerceReviews.parquet.brotli"
+        "pytorch_widedeep.datasets.data",
+        "WomensClothingE-CommerceReviews.parquet.brotli",
     ) as fpath:
         df = pd.read_parquet(fpath)
 

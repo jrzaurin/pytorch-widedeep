@@ -144,8 +144,8 @@ class DiffSizeCatEmbeddings(nn.Module):
                 # small, and related to the number of embeddings for that
                 # particular feature
                 bound = 1 / math.sqrt(dim)
-                self.biases["bias_" + col] = nn.init.uniform_(
-                    nn.Parameter(torch.Tensor(dim)), -bound, bound
+                self.biases["bias_" + col] = nn.Parameter(
+                    nn.init.uniform_(torch.Tensor(dim), -bound, bound)
                 )
 
         self.emb_out_dim: int = int(np.sum([embed[2] for embed in self.embed_input]))

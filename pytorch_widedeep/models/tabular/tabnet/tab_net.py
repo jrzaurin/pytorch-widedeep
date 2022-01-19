@@ -188,7 +188,7 @@ class TabNet(BaseTabularModelWithoutAttention):
             epsilon,
             mask_type,
         )
-        self.output_dim = step_dim
+        self.output_dim: int = step_dim
 
     def forward(self, X: Tensor) -> Tuple[Tensor, Tensor]:
         x = self._get_embeddings(X)

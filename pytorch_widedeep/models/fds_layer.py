@@ -1,8 +1,12 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from pytorch_widedeep.utils.deeptabular_utils import get_kernel_window, find_bin
-from pytorch_widedeep.wdtypes import *
+
+from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.utils.deeptabular_utils import (
+    find_bin,
+    get_kernel_window,
+)
 
 
 class FDS(nn.Module):

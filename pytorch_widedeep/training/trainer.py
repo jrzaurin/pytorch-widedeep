@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import warnings
+from inspect import signature
 from pathlib import Path
 
 import numpy as np
@@ -41,8 +42,6 @@ from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
 from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
-from pytorch_widedeep.losses import ZILNLoss
-from inspect import signature
 
 n_cpus = os.cpu_count()
 

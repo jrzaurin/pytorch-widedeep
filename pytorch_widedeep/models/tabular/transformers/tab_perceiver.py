@@ -262,7 +262,7 @@ class TabPerceiver(BaseTabularModelWithAttention):
         )
 
         # the output_dim attribute will be used as input_dim when "merging" the models
-        self.output_dim = self.mlp_hidden_dims[-1]
+        self.output_dim: int = self.mlp_hidden_dims[-1]
 
     def forward(self, X: Tensor) -> Tensor:
 

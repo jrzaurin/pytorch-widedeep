@@ -1,11 +1,11 @@
 import warnings
 
-import pandas as pd
 import numpy as np
 import torch
+import pandas as pd
 from scipy.ndimage import gaussian_filter1d
-from scipy.signal.windows import triang
 from sklearn.exceptions import NotFittedError
+from scipy.signal.windows import triang
 
 from pytorch_widedeep.utils.general_utils import Alias
 
@@ -21,7 +21,7 @@ def find_bin(
     bin_edges: Union[np.ndarray, Tensor],
     values: Union[np.ndarray, Tensor],
     ret_value: bool = True,
-):
+) -> Union[np.ndarray, Tensor]:
     """Returns histograms left bin edge value or array indices from monotonically
     increasing array of bin edges for each value in values.
     If ret_value
@@ -41,25 +41,28 @@ def find_bin(
         left bin edges
     """
     if type(bin_edges) == np.ndarray and type(values) == np.ndarray:
-        indices = np.searchsorted(bin_edges, values, side="left")
+        indices: Union[np.ndarray, Tensor] = np.searchsorted(
+            bin_edges, values, side="left"
+        )
         indices = np.where(
             (indices == 0) | (indices == len(bin_edges)), indices, indices - 1
         )
         indices = np.where(indices != len(bin_edges), indices, indices - 2)
-        left_bin_edges = bin_edges[indices]
     elif type(bin_edges) == Tensor and type(values) == Tensor:
         indices = torch.searchsorted(bin_edges, values, right=False)
         indices = torch.where(
             (indices == 0) | (indices == len(bin_edges)), indices, indices - 1
         )
         indices = torch.where(indices != len(bin_edges), indices, indices - 2)
-        left_bin_edges = bin_edges[indices]
     else:
-        raise TypeError("Both input arrays must be either np.ndarray of Tensor")
-    if ret_value:
-        return left_bin_edges
-    else:
-        return indices
+        raise TypeError(
+            "Both input arrays must be of teh same type, either np.ndarray of Tensor"
+        )
+    return indices if not ret_value else bin_edges[indices]  # type: ignore[index]
+
+
+def _laplace(x):
+    np.exp(-abs(x) / sigma) / (2.0 * sigma)
 
 
 def get_kernel_window(
@@ -91,8 +94,7 @@ def get_kernel_window(
     elif kernel == "triang":
         kernel_window = triang(ks) / sum(triang(ks))
     elif kernel == "laplace":
-        laplace = lambda x: np.exp(-abs(x) / sigma) / (2.0 * sigma)
-        kernel_window = list(map(laplace, np.arange(-half_ks, half_ks + 1)))
+        kernel_window = list(map(_laplace, np.arange(-half_ks, half_ks + 1)))
     else:
         raise ValueError("Kernel can be only ['gaussian', 'triang', 'laplace'].")
 

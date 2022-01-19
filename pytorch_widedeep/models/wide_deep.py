@@ -15,11 +15,11 @@ import warnings
 import torch
 import torch.nn as nn
 
+from pytorch_widedeep.models import fds_layer
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.tabnet.tab_net import TabNetPredLayer
-from pytorch_widedeep.models import fds_layer
 
 warnings.filterwarnings("default", category=UserWarning)
 
@@ -193,9 +193,10 @@ class WideDeep(nn.Module):
             if fds_config:
                 self.FDS = fds_layer.FDS(**fds_config)
             else:
-                self.FDS = fds_layer.FDS(feature_dim=self.deeptabular.output_dim)
-            self.FDS_dropout = nn.Dropout(p=self.deeptabular.mlp_dropout)
-            self.pred_layer = nn.Linear(self.deeptabular.output_dim, self.pred_dim)
+                # this type ignore annoys the hell out of me
+                self.FDS = fds_layer.FDS(feature_dim=self.deeptabular.output_dim)  # type: ignore[arg-type]
+            self.FDS_dropout = nn.Dropout(p=self.deeptabular.mlp_dropout)  # type: ignore[arg-type]
+            self.pred_layer = nn.Linear(self.deeptabular.output_dim, self.pred_dim)  # type: ignore[arg-type]
         else:
             self._add_pred_layer()
 

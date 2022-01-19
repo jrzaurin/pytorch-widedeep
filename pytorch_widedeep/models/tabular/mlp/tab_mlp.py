@@ -146,7 +146,7 @@ class TabMlp(BaseTabularModelWithoutAttention):
         )
 
         # the output_dim attribute will be used as input_dim when "merging" the models
-        self.output_dim = mlp_hidden_dims[-1]
+        self.output_dim: int = mlp_hidden_dims[-1]
 
     def forward(self, X: Tensor) -> Tensor:
         x = self._get_embeddings(X)

@@ -177,7 +177,7 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
                 ),
             )
 
-        self.output_dim = (
+        self.output_dim: int = (
             input_dim
             if self.with_cls_token
             else ((self.n_cat + self.n_cont) * input_dim)

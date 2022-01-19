@@ -10,17 +10,16 @@ from pytorch_widedeep.losses import (
     MSELoss,
     MSLELoss,
     RMSELoss,
+    ZILNLoss,
+    FocalLoss,
+    HuberLoss,
     RMSLELoss,
     TweedieLoss,
     QuantileLoss,
-    BayesianSELoss,
-    L1Loss,
     FocalR_L1Loss,
+    BayesianSELoss,
     FocalR_MSELoss,
     FocalR_RMSELoss,
-    FocalLoss,
-    HuberLoss,
-    ZILNLoss,
 )
 from pytorch_widedeep.wdtypes import Dict, List, Optional, Transforms
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset

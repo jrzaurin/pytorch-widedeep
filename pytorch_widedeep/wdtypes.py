@@ -13,7 +13,6 @@ from typing import (
     Optional,
     Generator,
     Collection,
-    Literal,
 )
 from pathlib import PosixPath
 
@@ -59,6 +58,16 @@ from pytorch_widedeep.models.tabular.tabnet.sparsemax import (
 from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BaseBayesianModel,
 )
+
+if sys.version_info.minor == 7:
+    try:
+        from typing_extensions import Literal
+    except ImportError:
+        # Need 'typing_extensions' for type checking
+        pass
+if sys.version_info.minor >= 8:
+    from typing import Literal  # type: ignore[attr-defined, no-redef]
+
 
 ListRules = Collection[Callable[[str], str]]
 Tokens = Collection[Collection[str]]

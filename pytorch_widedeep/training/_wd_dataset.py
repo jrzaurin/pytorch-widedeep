@@ -1,10 +1,14 @@
 import numpy as np
 import torch
+from scipy.ndimage import convolve1d
 from sklearn.utils import Bunch
 from torch.utils.data import Dataset
-from scipy.ndimage import convolve1d
+
 from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.utils.deeptabular_utils import get_kernel_window, find_bin
+from pytorch_widedeep.utils.deeptabular_utils import (
+    find_bin,
+    get_kernel_window,
+)
 
 
 class WideDeepDataset(Dataset):

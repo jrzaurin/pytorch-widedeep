@@ -187,7 +187,7 @@ class TabResnet(BaseTabularModelWithoutAttention):
                 mlp_batchnorm_last,
                 mlp_linear_first,
             )
-            self.output_dim = mlp_hidden_dims[-1]
+            self.output_dim: int = mlp_hidden_dims[-1]
         else:
             self.output_dim = blocks_dims[-1]
 
