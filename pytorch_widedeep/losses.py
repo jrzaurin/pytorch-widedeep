@@ -35,7 +35,7 @@ class TweedieLoss(nn.Module):
             2 - p
         )
         if lds_weight is not None:
-            loss *= lds_weight.expand_as(loss)
+            loss *= lds_weight
 
         return torch.mean(loss)
 
@@ -243,7 +243,7 @@ class L1Loss(nn.Module):
         """
         loss = F.l1_loss(input, target, reduction="none")
         if lds_weight is not None:
-            loss *= lds_weight.expand_as(loss)
+            loss *= lds_weight
         loss = torch.mean(loss)
 
         return loss
@@ -276,7 +276,7 @@ class MSELoss(nn.Module):
         """
         loss = (input - target) ** 2
         if lds_weight is not None:
-            loss *= lds_weight.expand_as(loss)
+            loss *= lds_weight
         loss = torch.mean(loss)
 
         return loss
@@ -319,7 +319,7 @@ class MSLELoss(nn.Module):
 
         loss = (torch.log(input + 1) - torch.log(target + 1)) ** 2
         if lds_weight is not None:
-            loss *= lds_weight.expand_as(loss)
+            loss *= lds_weight
         loss = torch.mean(loss)
 
         return loss
@@ -354,7 +354,7 @@ class RMSELoss(nn.Module):
         """
         loss = (input - target) ** 2
         if lds_weight is not None:
-            loss *= lds_weight.expand_as(loss)
+            loss *= lds_weight
         loss = torch.mean(loss)
         loss = torch.sqrt(loss)
 
@@ -398,7 +398,7 @@ class RMSLELoss(nn.Module):
 
         loss = (torch.log(input + 1) - torch.log(target + 1)) ** 2
         if lds_weight is not None:
-            loss *= lds_weight.expand_as(loss)
+            loss *= lds_weight
         loss = torch.mean(loss)
         loss = torch.sqrt(loss)
 
@@ -446,7 +446,7 @@ class FocalR_L1Loss(nn.Module):
         else:
             loss *= (2 * torch.sigmoid(beta * torch.abs(input - target)) - 1) ** gamma
         if lds_weight is not None:
-            loss *= lds_weight.expand_as(loss)
+            loss *= lds_weight
         loss = torch.mean(loss)
 
         return loss
@@ -495,7 +495,7 @@ class FocalR_MSELoss(nn.Module):
                 2 * torch.sigmoid(beta * torch.abs((input - target) ** 2)) - 1
             ) ** gamma
         if lds_weight is not None:
-            loss *= lds_weight.expand_as(loss)
+            loss *= lds_weight
         loss = torch.mean(loss)
 
         return loss
@@ -544,7 +544,7 @@ class FocalR_RMSELoss(nn.Module):
                 2 * torch.sigmoid(beta * torch.abs((input - target) ** 2)) - 1
             ) ** gamma
         if lds_weight is not None:
-            loss *= lds_weight.expand_as(loss)
+            loss *= lds_weight
         loss = torch.mean(loss)
         loss = torch.sqrt(loss)
 
@@ -585,7 +585,7 @@ class HuberLoss(nn.Module):
         cond = l1_loss < beta
         loss = torch.where(cond, 0.5 * l1_loss ** 2 / beta, l1_loss - 0.5 * beta)
         if lds_weight is not None:
-            loss *= lds_weight.expand_as(loss)
+            loss *= lds_weight
         loss = torch.mean(loss)
 
         return loss

@@ -7,98 +7,13 @@ from scipy.ndimage import gaussian_filter1d
 from sklearn.exceptions import NotFittedError
 from scipy.signal.windows import triang
 
+from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.utils.general_utils import Alias
-
-from ..wdtypes import *  # noqa: F403
 
 warnings.filterwarnings("ignore")
 pd.options.mode.chained_assignment = None
 
-__all__ = ["LabelEncoder"]
-
-
-def find_bin(
-    bin_edges: Union[np.ndarray, Tensor],
-    values: Union[np.ndarray, Tensor],
-    ret_value: bool = True,
-) -> Union[np.ndarray, Tensor]:
-    """Returns histograms left bin edge value or array indices from monotonically
-    increasing array of bin edges for each value in values.
-    If ret_value
-
-    Parameters
-    ----------
-    bin_edges: Union[np.ndarray, Tensor]
-        monotonically increasing array of bin edges
-    values: Union[np.ndarray, Tensor]
-        values for which we want corresponding bins
-    ret_value: bool
-        if True, return bin values else indices
-
-    Returns
-    -------
-    left_bin_edges: Union[np.ndarray, Tensor]
-        left bin edges
-    """
-    if type(bin_edges) == np.ndarray and type(values) == np.ndarray:
-        indices: Union[np.ndarray, Tensor] = np.searchsorted(
-            bin_edges, values, side="left"
-        )
-        indices = np.where(
-            (indices == 0) | (indices == len(bin_edges)), indices, indices - 1
-        )
-        indices = np.where(indices != len(bin_edges), indices, indices - 2)
-    elif type(bin_edges) == Tensor and type(values) == Tensor:
-        indices = torch.searchsorted(bin_edges, values, right=False)
-        indices = torch.where(
-            (indices == 0) | (indices == len(bin_edges)), indices, indices - 1
-        )
-        indices = torch.where(indices != len(bin_edges), indices, indices - 2)
-    else:
-        raise TypeError(
-            "Both input arrays must be of teh same type, either np.ndarray of Tensor"
-        )
-    return indices if not ret_value else bin_edges[indices]  # type: ignore[index]
-
-
-def _laplace(x):
-    np.exp(-abs(x) / sigma) / (2.0 * sigma)
-
-
-def get_kernel_window(
-    kernel: Literal["gaussian", "triang", "laplace"] = "gaussian",
-    ks: int = 5,
-    sigma: Union[int, float] = 2,
-):
-    """Procedure to prepare window of values from symetrical kernel function for smoothing of the distribution in
-    Label and Feature Distribution Smoothing (LDS & FDS).
-
-    Parameters
-    ----------
-    kernel: Literal['gaussian', 'triang', 'laplace'] = 'gaussian'
-        choice of kernel for label distribution smoothing
-    ks: int = 5
-        kernel size, i.e. count of samples in symmetric window
-    sigma: Union[int,float] = 2
-        standard deviation of ['gaussian','laplace'] kernel
-
-    Returns
-    -------
-    kernel_window: list
-        list with values from the chosen kernel function
-    """
-    half_ks = (ks - 1) // 2
-    if kernel == "gaussian":
-        base_kernel = [0.0] * half_ks + [1.0] + [0.0] * half_ks
-        kernel_window = gaussian_filter1d(base_kernel, sigma=sigma)
-    elif kernel == "triang":
-        kernel_window = triang(ks) / sum(triang(ks))
-    elif kernel == "laplace":
-        kernel_window = list(map(_laplace, np.arange(-half_ks, half_ks + 1)))
-    else:
-        raise ValueError("Kernel can be only ['gaussian', 'triang', 'laplace'].")
-
-    return kernel_window
+__all__ = ["LabelEncoder", "find_bin", "get_kernel_window"]
 
 
 class LabelEncoder:
@@ -257,3 +172,88 @@ class LabelEncoder:
         for k, v in self.inverse_encoding_dict.items():
             df[k] = df[k].apply(lambda x: v[x])
         return df
+
+
+def find_bin(
+    bin_edges: Union[np.ndarray, Tensor],
+    values: Union[np.ndarray, Tensor],
+    ret_value: bool = True,
+) -> Union[np.ndarray, Tensor]:
+    """Returns histograms left bin edge value or array indices from monotonically
+    increasing array of bin edges for each value in values.
+    If ret_value
+
+    Parameters
+    ----------
+    bin_edges: Union[np.ndarray, Tensor]
+        monotonically increasing array of bin edges
+    values: Union[np.ndarray, Tensor]
+        values for which we want corresponding bins
+    ret_value: bool
+        if True, return bin values else indices
+
+    Returns
+    -------
+    left_bin_edges: Union[np.ndarray, Tensor]
+        left bin edges
+    """
+    if type(bin_edges) == np.ndarray and type(values) == np.ndarray:
+        indices: Union[np.ndarray, Tensor] = np.searchsorted(
+            bin_edges, values, side="left"
+        )
+        indices = np.where(
+            (indices == 0) | (indices == len(bin_edges)), indices, indices - 1
+        )
+        indices = np.where(indices != len(bin_edges), indices, indices - 2)
+    elif type(bin_edges) == Tensor and type(values) == Tensor:
+        indices = torch.searchsorted(bin_edges, values, right=False)
+        indices = torch.where(
+            (indices == 0) | (indices == len(bin_edges)), indices, indices - 1
+        )
+        indices = torch.where(indices != len(bin_edges), indices, indices - 2)
+    else:
+        raise TypeError(
+            "Both input arrays must be of teh same type, either np.ndarray of Tensor"
+        )
+    return indices if not ret_value else bin_edges[indices]  # type: ignore[index]
+
+
+def _laplace(x):
+    return np.exp(-abs(x) / sigma) / (2.0 * sigma)
+
+
+def get_kernel_window(
+    kernel: Literal["gaussian", "triang", "laplace"] = "gaussian",
+    ks: int = 5,
+    sigma: Union[int, float] = 2,
+) -> List[float]:
+
+    """Procedure to prepare window of values from symetrical kernel function for smoothing of the distribution in
+    Label and Feature Distribution Smoothing (LDS & FDS).
+
+    Parameters
+    ----------
+    kernel: Literal['gaussian', 'triang', 'laplace'] = 'gaussian'
+        choice of kernel for label distribution smoothing
+    ks: int = 5
+        kernel size, i.e. count of samples in symmetric window
+    sigma: Union[int,float] = 2
+        standard deviation of ['gaussian','laplace'] kernel
+
+    Returns
+    -------
+    kernel_window: list
+        list with values from the chosen kernel function
+    """
+    half_ks = (ks - 1) // 2
+    if kernel == "gaussian":
+        base_kernel = [0.0] * half_ks + [1.0] + [0.0] * half_ks
+        kernel_window = gaussian_filter1d(base_kernel, sigma=sigma)
+    elif kernel == "triang":
+        kernel_window = triang(ks) / sum(triang(ks))
+    elif kernel == "laplace":
+        kernel_window = list(map(_laplace, np.arange(-half_ks, half_ks + 1)))
+    else:
+        raise ValueError("Kernel can be only ['gaussian', 'triang', 'laplace'].")
+
+    return kernel_window

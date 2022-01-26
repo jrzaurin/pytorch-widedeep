@@ -9,6 +9,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from tqdm import trange
+from torch import nn
 from scipy.sparse import csc_matrix
 from torchmetrics import Metric as TorchMetric
 from torch.utils.data import DataLoader
@@ -42,11 +43,6 @@ from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
 from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
-
-n_cpus = os.cpu_count()
-
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
 
 
 class Trainer:
@@ -245,10 +241,6 @@ class Trainer:
 
         self.objective = objective
         self.method = _ObjectiveToMethod.get(objective)
-        if self.model.fds and self.method != "regression":
-            raise ValueError(
-                "Feature Distribution Smooting can be used only with regressor"
-            )
 
         self._initialize(initializers)
         self.loss_fn = self._set_loss_fn(objective, custom_loss_function, **kwargs)
@@ -271,9 +263,9 @@ class Trainer:
         n_epochs: int = 1,
         validation_freq: int = 1,
         batch_size: int = 32,
-        custom_dataloader: Union[DataLoader, None] = None,
+        custom_dataloader: Optional[DataLoader] = None,
         finetune: bool = False,
-        stop_after_finetuning: bool = False,
+        with_lds: bool = False,
         **kwargs,
     ):
         r"""Fit method.
@@ -350,9 +342,6 @@ class Trainer:
             section in this documentation and the `Examples
             <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
             folder in the repo.
-        stop_after_finetuning: bool, default = False
-            Boolean indicating if the process should stop after finetunning or
-            finetune and then continue the training.
 
         Examples
         --------
@@ -392,6 +381,9 @@ class Trainer:
             trainer.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
         """
 
+        lds_args, dataloader_args, finetune_args = self._extract_kwargs(kwargs)
+        lds_args["with_lds"] = with_lds
+
         self.batch_size = batch_size
         train_set, eval_set = wd_train_val_split(
             self.seed,
@@ -404,6 +396,7 @@ class Trainer:
             X_val,
             val_split,
             target,
+            **lds_args,
         )
         if isinstance(custom_dataloader, type):
             if issubclass(custom_dataloader, DataLoader):
@@ -411,7 +404,7 @@ class Trainer:
                     dataset=train_set,
                     batch_size=batch_size,
                     num_workers=self.num_workers,
-                    **kwargs,
+                    **dataloader_args,
                 )
             else:
                 NotImplementedError(
@@ -422,7 +415,10 @@ class Trainer:
                 )
         else:
             train_loader = DataLoaderDefault(
-                dataset=train_set, batch_size=batch_size, num_workers=self.num_workers
+                dataset=train_set,
+                batch_size=batch_size,
+                num_workers=self.num_workers,
+                **dataloader_args,
             )
         train_steps = len(train_loader)
         if eval_set is not None:
@@ -435,8 +431,8 @@ class Trainer:
             eval_steps = len(eval_loader)
 
         if finetune:
-            self._finetune(train_loader, **kwargs)
-            if stop_after_finetuning:
+            self._finetune(train_loader, **finetune_args)
+            if finetune_args["stop_after_finetuning"]:
                 print("Fine-tuning finished")
                 return
             else:
@@ -455,15 +451,10 @@ class Trainer:
 
             self.train_running_loss = 0.0
             with trange(train_steps, disable=self.verbose != 1) as t:
-                for batch_idx, train_data in zip(t, train_loader):
+                for batch_idx, (data, targett, lds_weightt) in zip(t, train_loader):
                     t.set_description("epoch %i" % (epoch + 1))
-                    if getattr(train_loader, "lds", False):
-                        data, targett, lds_weight = train_data
-                    else:
-                        data, targett = train_data
-                        lds_weight = None
                     train_score, train_loss = self._train_step(
-                        data, targett, batch_idx, lds_weight, epoch
+                        data, targett, batch_idx, epoch, lds_weightt
                     )
                     print_loss_and_metric(t, train_loss, train_score)
                     self.callback_container.on_batch_end(batch=batch_idx)
@@ -476,13 +467,8 @@ class Trainer:
                 self.callback_container.on_eval_begin()
                 self.valid_running_loss = 0.0
                 with trange(eval_steps, disable=self.verbose != 1) as v:
-                    for i, eval_data in zip(v, eval_loader):
+                    for i, (data, targett) in zip(v, eval_loader):
                         v.set_description("valid")
-                        if getattr(eval_loader, "lds", False):
-                            data, targett, lds_weight = eval_data
-                        else:
-                            data, targett = eval_data
-                            lds_weight = None
                         val_score, val_loss = self._eval_step(data, targett, i)
                         print_loss_and_metric(v, val_loss, val_score)
                 epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
@@ -501,29 +487,8 @@ class Trainer:
                 self.callback_container.on_train_end(epoch_logs)
                 break
 
-            if self.model.fds:
-                encodings, labels = [], []
-                with torch.no_grad():
-                    with trange(train_steps, disable=self.verbose != 1) as t:
-                        for loader_data in train_loader:
-                            if getattr(train_loader, "lds", False):
-                                data, targett, lds_weight = loader_data
-                            else:
-                                data, target = loader_data
-                                lds_weight = None
-                            y, deeptab_features = self._fds_step(
-                                data, targett, lds_weight, epoch
-                            )
-                            encodings.extend(
-                                deeptab_features.data.squeeze().cpu().numpy()
-                            )
-                            labels.extend(y.data.squeeze().cpu().numpy())
-                encodings, labels = (
-                    torch.from_numpy(np.vstack(encodings)).to(device),
-                    torch.from_numpy(np.hstack(labels)).to(device),
-                )
-                self.model.FDS.update_last_epoch_stats(epoch)
-                self.model.FDS.update_running_stats(encodings, labels, epoch)
+            if self.model.with_fds:
+                self._update_fds_stats(train_loader, epoch)
 
         self.callback_container.on_train_end(epoch_logs)
         if self.model.is_tabnet:
@@ -823,7 +788,7 @@ class Trainer:
             is set to ``True``
         """
         loader = DataLoader(
-            dataset=WideDeepDataset(**{"X_tab": X_tab}),
+            dataset=WideDeepDataset(X_tab=X_tab),
             batch_size=self.batch_size,
             num_workers=self.num_workers,
             shuffle=False,
@@ -953,7 +918,24 @@ class Trainer:
                                 "the 'ModelCheckpoint' Callback to restore the best epoch weights."
                             )
 
-    def _finetune(self, loader: DataLoader, **kwargs):  # pragma: no cover  # noqa: C901
+    @Alias("n_epochs", ["finetune_epochs", "warmup_epochs"])
+    @Alias("max_lr", ["finetune_max_lr", "warmup_max_lr"])
+    def _finetune(
+        self,
+        loader: DataLoader,
+        n_epochs: int = 5,
+        max_lr: float = 0.01,
+        routine: Literal["howard", "felbo"] = "howard",
+        deeptabular_gradual: bool = False,
+        deeptabular_layers: Optional[List[nn.Module]] = None,
+        deeptabular_max_lr: float = 0.01,
+        deeptext_gradual: bool = False,
+        deeptext_layers: Optional[List[nn.Module]] = None,
+        deeptext_max_lr: float = 0.01,
+        deepimage_gradual: bool = False,
+        deepimage_layers: Optional[List[nn.Module]] = None,
+        deepimage_max_lr: float = 0.01,
+    ):
         r"""
         Simple wrap-up to individually fine-tune model components
         """
@@ -961,28 +943,6 @@ class Trainer:
             raise ValueError(
                 "Currently warming up is only supported without a fully connected 'DeepHead'"
             )
-
-        if "warmup_epochs" in kwargs:
-            kwargs["finetune_epochs"] = kwargs.pop("warmup_epochs")
-        if "warmup_max_lr" in kwargs:
-            kwargs["finetune_max_lr"] = kwargs.pop("warmup_max_lr")
-
-        n_epochs = kwargs.get("finetune_epochs", 5)
-        max_lr = kwargs.get("finetune_max_lr", 0.01)
-
-        routine = kwargs.get("routine", "howard")
-
-        deeptabular_gradual = kwargs.get("deeptabular_gradual", False)
-        deeptabular_layers = kwargs.get("deeptabular_layers", None)
-        deeptabular_max_lr = kwargs.get("deeptabular_max_lr", 0.01)
-
-        deeptext_gradual = kwargs.get("deeptext_gradual", False)
-        deeptext_layers = kwargs.get("deeptext_layers", None)
-        deeptext_max_lr = kwargs.get("deeptext_max_lr", 0.01)
-
-        deepimage_gradual = kwargs.get("deepimage_gradual", False)
-        deepimage_layers = kwargs.get("deepimage_layers", None)
-        deepimage_max_lr = kwargs.get("deepimage_max_lr", 0.01)
 
         finetuner = FineTune(self.loss_fn, self.metric, self.method, self.verbose)
         if self.model.wide:
@@ -1033,34 +993,30 @@ class Trainer:
                     self.model.deepimage, "deepimage", loader, n_epochs, max_lr
                 )
 
-    def _fds_step(
-        self,
-        data: Dict[str, Tensor],
-        target: Tensor,
-        lds_weight: Union[None, Tensor],
-        epoch,
-    ):
-        self.model.train()
-        X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
-        y = (
-            target.view(-1, 1).float()
-            if self.method not in ["multiclass", "qregression"]
-            else target
-        )
-        y = y.to(device)
-        _, deeptab_features = self.model(X, y, epoch)
-        return y, deeptab_features
-
     def _train_step(
         self,
         data: Dict[str, Tensor],
         target: Tensor,
         batch_idx: int,
-        lds_weight: Union[None, Tensor],
-        epoch,
+        epoch: int,
+        lds_weightt: Tensor,
     ):
+
+        lds_weight = None if torch.all(lds_weightt == 0) else lds_weightt.view(-1, 1)
+        if (
+            self.model.with_fds
+            and lds_weight is not None
+            and "lds_weight" not in signature(self.loss_fn.forward).parameters
+        ):
+            warnings.warn(
+                """LDS weights are not None but the loss function used does not"
+                " support LDS weightening. For loss functions that support LDS"
+                " weightening please read the docs""",
+                UserWarning,
+            )
+
         self.model.train()
-        X = {k: v.cuda() for k, v in data.items()} if use_cuda else data
+        X = {k: v.to(self.device) for k, v in data.items()}
         y = (
             target.view(-1, 1).float()
             if self.method not in ["multiclass", "qregression"]
@@ -1069,28 +1025,23 @@ class Trainer:
         y = y.to(self.device)
 
         self.optimizer.zero_grad()
-        if self.model.fds:
-            y_pred, _ = self.model(X, y, epoch)
+
+        if self.model.with_fds:
+            _, y_pred = self.model(X, y, epoch)
         else:
             y_pred = self.model(X)
+
         if self.model.is_tabnet:
             loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
             score = self._get_score(y_pred[0], y)
         else:
-            if lds_weight is not None:
-                if "lds_weight" in signature(self.loss_fn.forward).parameters:
-                    loss = self.loss_fn(y_pred, y, lds_weight=lds_weight)
-                else:
-                    warnings.warn(
-                        """You are using LDS weightening of target values with loss
-                        function that does not support it""",
-                        UserWarning,
-                    )
-                    loss = self.loss_fn(y_pred, y)
-            else:
-                loss = self.loss_fn(y_pred, y)
+            loss = (
+                self.loss_fn(y_pred, y)
+                if not self.model.with_fds
+                else self.loss_fn(y_pred, y, lds_weight=lds_weight)
+            )
             score = self._get_score(y_pred, y)
-        # TODO raise exception if the loss is exploding with non scaled target values
+
         loss.backward()
         self.optimizer.step()
 
@@ -1138,19 +1089,48 @@ class Trainer:
         else:
             return None
 
+    def _fds_step(
+        self,
+        data: Dict[str, Tensor],
+        target: Tensor,
+        lds_weight: Union[None, Tensor],
+        epoch: int,
+    ) -> Tuple[Tensor, Tensor]:
+        self.model.train()
+        X = {k: v.to(self.device) for k, v in data.items()}
+        y = target.view(-1, 1).float().to(self.device)
+        smoothed_features, _ = self.model(X, y, epoch)
+        return smoothed_features, y
+
+    def _update_fds_stats(self, train_loader: DataLoader, epoch: int):
+        train_steps = len(train_loader)
+        features_l, y_pred_l = [], []
+        with torch.no_grad():
+            with trange(train_steps, disable=self.verbose != 1) as t:
+                for idx, (data, targett, lds_weight) in zip(t, train_loader):
+                    t.set_description("FDS update")
+                    deeptab_features, deeptab_preds = self._fds_step(
+                        data, targett, lds_weight, epoch
+                    )
+                    features_l.append(deeptab_features)
+                    y_pred_l.append(deeptab_preds)
+        features = torch.cat(features_l)
+        y_pred = torch.cat(y_pred_l)
+        self.model.fds_layer.update_last_epoch_stats(epoch)
+        self.model.fds_layer.update_running_stats(features, y_pred, epoch)
+
     def _compute_feature_importance(self, loader: DataLoader):
         self.model.eval()
         tabnet_backbone = list(self.model.deeptabular.children())[0]
-        feat_imp = np.zeros((tabnet_backbone.embed_and_cont_dim))  # type: ignore[arg-type]
-        for loader_data in loader:
-            if getattr(loader, "lds", False):
-                data, target, lds_weight = loader_data
-            else:
-                data, target = loader_data
-                lds_weight = None
-            X = data["deeptabular"].to(device)
-            y = target.view(-1, 1).float() if self.method != "multiclass" else target
-            y = y.to(device)
+        feat_imp = np.zeros((tabnet_backbone.embed_out_dim))  # type: ignore[arg-type]
+        for data, target, _ in loader:
+            X = data["deeptabular"].to(self.device)
+            y = (
+                target.view(-1, 1).float()
+                if self.method not in ["multiclass", "qregression"]
+                else target
+            )
+            y = y.to(self.device)
             M_explain, masks = tabnet_backbone.forward_masks(X)  # type: ignore[operator]
             feat_imp += M_explain.sum(dim=0).cpu().detach().numpy()
 
@@ -1178,7 +1158,7 @@ class Trainer:
         method documentation
         """
         if X_test is not None:
-            test_set = WideDeepDataset(**X_test)
+            test_set = WideDeepDataset(**X_test)  # type: ignore[arg-type]
         else:
             load_dict = {}
             if X_wide is not None:
@@ -1189,7 +1169,7 @@ class Trainer:
                 load_dict.update({"X_text": X_text})
             if X_img is not None:
                 load_dict.update({"X_img": X_img})
-            test_set = WideDeepDataset(**load_dict)
+            test_set = WideDeepDataset(**load_dict)  # type: ignore[arg-type]
 
         if not hasattr(self, "batch_size"):
             self.batch_size = batch_size
@@ -1242,6 +1222,61 @@ class Trainer:
                             preds_l.append(preds)
         self.model.train()
         return preds_l
+
+    @staticmethod
+    def _extract_kwargs(kwargs):
+
+        dataloader_params = [
+            "sampler",
+            "batch_sampler",
+            "num_workers",
+            "collate_fn",
+            "pin_memory",
+            "drop_last",
+            "timeout",
+            "worker_init_fn",
+            "generator",
+            "prefetch_factor",
+            "persistent_workers",
+        ]
+        lds_params = [
+            "lds_kernel",
+            "lds_ks",
+            "lds_sigma",
+            "lds_granularity",
+            "lds_reweight",
+            "lds_y_max",
+            "lds_y_min",
+        ]
+        finetune_params = [
+            "n_epochs",
+            "finetune_epochs",
+            "warmup_epochs",
+            "max_lr",
+            "finetune_max_lr",
+            "warmup_max_lr",
+            "routine",
+            "deeptabular_gradual",
+            "deeptabular_layers",
+            "deeptabular_max_lr",
+            "deeptext_gradual",
+            "deeptext_layers",
+            "deeptext_max_lr",
+            "deepimage_gradual",
+            "deepimage_layers",
+            "deepimage_max_lr",
+        ]
+
+        lds_args, dataloader_args, finetune_args = {}, {}, {}
+        for k, v in kwargs.items():
+            if k in lds_params:
+                lds_args[k] = v
+            if k in dataloader_params:
+                dataloader_args[k] = v
+            if k in finetune_params:
+                finetune_args[k] = v
+
+        return lds_args, dataloader_args, finetune_args
 
     def _initialize(self, initializers):
         if initializers is not None:
@@ -1377,8 +1412,17 @@ class Trainer:
 
     @staticmethod
     def _check_inputs(
-        model, objective, optimizers, lr_schedulers, custom_loss_function, **kwargs
+        model,
+        objective,
+        optimizers,
+        lr_schedulers,
+        custom_loss_function,
     ):
+
+        if model.with_fds and _ObjectiveToMethod.get(objective) != "regression":
+            raise ValueError(
+                "Feature Distribution Smooting can be used only for regression"
+            )
 
         if _ObjectiveToMethod.get(objective) == "multiclass" and model.pred_dim == 1:
             raise ValueError(

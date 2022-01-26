@@ -15,8 +15,8 @@ import warnings
 import torch
 import torch.nn as nn
 
-from pytorch_widedeep.models import fds_layer
 from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.models.fds_layer import FDSLayer
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.tabnet.tab_net import TabNetPredLayer
@@ -135,8 +135,8 @@ class WideDeep(nn.Module):
         enforce_positive: bool = False,
         enforce_positive_activation: str = "softplus",
         pred_dim: int = 1,
-        fds: bool = False,
-        fds_config: Optional[dict] = None,
+        with_fds: bool = False,
+        **fds_config,
     ):
         super(WideDeep, self).__init__()
 
@@ -148,6 +148,7 @@ class WideDeep(nn.Module):
             deephead,
             head_hidden_dims,
             pred_dim,
+            with_fds,
         )
 
         # required as attribute just in case we pass a deephead
@@ -160,7 +161,7 @@ class WideDeep(nn.Module):
         self.deepimage = deepimage
         self.deephead = deephead
         self.enforce_positive = enforce_positive
-        self.fds = fds
+        self.with_fds = with_fds
 
         if self.deeptabular is not None:
             self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
@@ -178,27 +179,11 @@ class WideDeep(nn.Module):
             )
         elif self.deephead is not None:
             pass
-        elif self.fds:
-            if (
-                not self.deeptabular
-                or self.pred_dim != 1
-                # or self.wide.pred_dim != self.deeptabular.output_dim
-            ):
-                raise ValueError(
-                    """Feature Distribution Smoothing is supported only with deeptabular
-                    component without deephead with single output neuron. If used, wide
-                    component must have pred_dim == deeptabular.output_dim """
-                )
 
-            if fds_config:
-                self.FDS = fds_layer.FDS(**fds_config)
-            else:
-                # this type ignore annoys the hell out of me
-                self.FDS = fds_layer.FDS(feature_dim=self.deeptabular.output_dim)  # type: ignore[arg-type]
-            self.FDS_dropout = nn.Dropout(p=self.deeptabular.mlp_dropout)  # type: ignore[arg-type]
-            self.pred_layer = nn.Linear(self.deeptabular.output_dim, self.pred_dim)  # type: ignore[arg-type]
-        else:
-            self._add_pred_layer()
+        if self.with_fds:
+            self.fds_layer = FDSLayer(feature_dim=self.deeptabular.output_dim, **fds_config)  # type: ignore[arg-type]
+
+        self._add_pred_layer()
 
         if self.enforce_positive:
             self.enf_pos = get_activation_fn(enforce_positive_activation)
@@ -209,21 +194,20 @@ class WideDeep(nn.Module):
         y: Optional[Tensor] = None,
         epoch: Optional[int] = None,
     ):
-        y_pred = self._forward_wide(X)
+
+        if self.with_fds:
+            return self._forward_deep_with_fds(X, y, epoch)
+
+        wide_out = self._forward_wide(X)
         if self.deephead:
-            y_pred = self._forward_deephead(X, y_pred)
-        elif self.training and self.fds:
-            y_pred, deep_features = self._forward_deep(X, y_pred, y, epoch)
-            if self.enforce_positive:
-                return self.enf_pos(y_pred), deep_features
-            else:
-                return y_pred, deep_features
+            deep = self._forward_deephead(X, wide_out)
         else:
-            y_pred = self._forward_deep(X, y_pred)
+            deep = self._forward_deep(X, wide_out)
+
         if self.enforce_positive:
-            return self.enf_pos(y_pred)
+            return self.enf_pos(deep)
         else:
-            return y_pred
+            return deep
 
     def _build_deephead(
         self,
@@ -257,7 +241,8 @@ class WideDeep(nn.Module):
         )
 
     def _add_pred_layer(self):
-        if self.deeptabular is not None:
+        # if FDS the FDS Layer already includes the pred layer
+        if self.deeptabular is not None and not self.with_fds:
             if self.is_tabnet:
                 self.deeptabular = nn.Sequential(
                     self.deeptabular,
@@ -310,31 +295,37 @@ class WideDeep(nn.Module):
 
         return res
 
-    def _forward_deep(self, X, wide_out, y=None, epoch=None):
+    def _forward_deep(self, X, wide_out):
         if self.deeptabular is not None:
             if self.is_tabnet:
                 tab_out, M_loss = self.deeptabular(X["deeptabular"])
                 wide_out.add_(tab_out)
             else:
-                deeptab_features = self.deeptabular(X["deeptabular"])
-                if self.training and self.fds:
-                    deeptab_features = self.FDS.smooth(deeptab_features, y, epoch)
-                    deeptab_features = self.FDS_dropout(deeptab_features)
-                    wide_out.add_(self.pred_layer(deeptab_features))
-                    return wide_out, deeptab_features
-                elif self.fds:
-                    wide_out.add_(self.pred_layer(deeptab_features))
-                else:
-                    wide_out.add_(deeptab_features)
+                wide_out.add_(self.deeptabular(X["deeptabular"]))
         if self.deeptext is not None:
             wide_out.add_(self.deeptext(X["deeptext"]))
         if self.deepimage is not None:
             wide_out.add_(self.deepimage(X["deepimage"]))
+
         if self.is_tabnet:
             res = (wide_out, M_loss)
         else:
             res = wide_out
 
+        return res
+
+    def _forward_deep_with_fds(
+        self,
+        X: Dict[str, Tensor],
+        y: Optional[Tensor] = None,
+        epoch: Optional[int] = None,
+    ):
+        res = self.fds_layer(self.deeptabular(X["deeptabular"]), y, epoch)
+        if self.enforce_positive:
+            if isinstance(res, Tuple):  # type: ignore[arg-type]
+                res[1] = self.enf_pos(res[1])
+            else:
+                res = self.enf_pos(res)
         return res
 
     @staticmethod  # noqa: C901
@@ -346,6 +337,7 @@ class WideDeep(nn.Module):
         deephead,
         head_hidden_dims,
         pred_dim,
+        with_fds,
     ):
 
         if wide is not None:
@@ -414,4 +406,14 @@ class WideDeep(nn.Module):
                 "the output features of the deep component ({})".format(
                     deephead_inp_feat, output_dim
                 )
+            )
+
+        if (
+            with_fds
+            and (wide is not None or deeptext is not None or deepimage is not None)
+            or pred_dim != 1
+        ):
+            raise ValueError(
+                """Feature Distribution Smoothing (FDS) is supported when using only a deeptabular component"
+                " and for regression problems."""
             )

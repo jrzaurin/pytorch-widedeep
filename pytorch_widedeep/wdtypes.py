@@ -14,6 +14,17 @@ from typing import (
     Generator,
     Collection,
 )
+
+# isort: off
+if sys.version_info.minor == 7:
+    try:
+        from typing_extensions import Literal
+    except ModuleNotFoundError:
+        pass
+else:
+    from typing import Literal  # type: ignore[attr-defined, no-redef]  # noqa: F811
+# isort: on
+
 from pathlib import PosixPath
 
 import torch
@@ -58,16 +69,6 @@ from pytorch_widedeep.models.tabular.tabnet.sparsemax import (
 from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BaseBayesianModel,
 )
-
-if sys.version_info.minor == 7:
-    try:
-        from typing_extensions import Literal
-    except ImportError:
-        # Need 'typing_extensions' for type checking
-        pass
-if sys.version_info.minor >= 8:
-    from typing import Literal  # type: ignore[attr-defined, no-redef]
-
 
 ListRules = Collection[Callable[[str], str]]
 Tokens = Collection[Collection[str]]

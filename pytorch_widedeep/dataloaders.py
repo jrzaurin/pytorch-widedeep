@@ -32,8 +32,10 @@ class DataLoaderDefault(DataLoader):
     def __init__(
         self, dataset: WideDeepDataset, batch_size: int, num_workers: int, **kwargs
     ):
-        self.lds = dataset.lds
-        super().__init__(dataset, batch_size, num_workers)
+        self.with_lds = dataset.with_lds
+        super().__init__(
+            dataset=dataset, batch_size=batch_size, num_workers=num_workers, **kwargs
+        )
 
 
 class DataLoaderImbalanced(DataLoader):
@@ -56,7 +58,7 @@ class DataLoaderImbalanced(DataLoader):
     def __init__(
         self, dataset: WideDeepDataset, batch_size: int, num_workers: int, **kwargs
     ):
-        self.lds = dataset.lds
+        self.with_lds = dataset.with_lds
         if "oversample_mul" in kwargs:
             oversample_mul = kwargs["oversample_mul"]
         else:

@@ -115,6 +115,7 @@ def wd_train_val_split(  # noqa: C901
     val_split: Optional[float] = None,
     target: Optional[np.ndarray] = None,
     transforms: Optional[List[Transforms]] = None,
+    **lds_args,
 ):
     r"""
     Function to create the train/val split for a wide and deep model
@@ -157,8 +158,8 @@ def wd_train_val_split(  # noqa: C901
         assert (
             X_train is not None
         ), "if the validation set is passed as a dictionary, the training set must also be a dictionary"
-        train_set = WideDeepDataset(**X_train, transforms=transforms)  # type: ignore
-        eval_set = WideDeepDataset(**X_val, transforms=transforms)  # type: ignore
+        train_set = WideDeepDataset(**X_train, transforms=transforms, **lds_args)  # type: ignore
+        eval_set = WideDeepDataset(**X_val, transforms=transforms, is_training=False)  # type: ignore
     elif val_split is not None:
         if not X_train:
             X_train = _build_train_dict(X_wide, X_tab, X_text, X_img, target)
@@ -190,12 +191,12 @@ def wd_train_val_split(  # noqa: C901
                 X_train["X_img"][idx_tr],
                 X_train["X_img"][idx_val],
             )
-        train_set = WideDeepDataset(**X_tr, transforms=transforms)  # type: ignore
-        eval_set = WideDeepDataset(**X_val, transforms=transforms)  # type: ignore
+        train_set = WideDeepDataset(**X_tr, transforms=transforms, **lds_args)  # type: ignore
+        eval_set = WideDeepDataset(**X_val, transforms=transforms, is_training=False)  # type: ignore
     else:
         if not X_train:
             X_train = _build_train_dict(X_wide, X_tab, X_text, X_img, target)
-        train_set = WideDeepDataset(**X_train, transforms=transforms)  # type: ignore
+        train_set = WideDeepDataset(**X_train, transforms=transforms, **lds_args)  # type: ignore
         eval_set = None
 
     return train_set, eval_set
