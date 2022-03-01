@@ -383,6 +383,7 @@ class Trainer:
 
         lds_args, dataloader_args, finetune_args = self._extract_kwargs(kwargs)
         lds_args["with_lds"] = with_lds
+        self.with_lds = with_lds
 
         self.batch_size = batch_size
         train_set, eval_set = wd_train_val_split(
@@ -432,15 +433,11 @@ class Trainer:
 
         if finetune:
             self._finetune(train_loader, **finetune_args)
-            if finetune_args["stop_after_finetuning"]:
-                print("Fine-tuning finished")
-                return
-            else:
-                if self.verbose:
-                    print(
-                        "Fine-tuning (or warmup) of individual components completed. "
-                        "Training the whole model for {} epochs".format(n_epochs)
-                    )
+            if self.verbose:
+                print(
+                    "Fine-tuning (or warmup) of individual components completed. "
+                    "Training the whole model for {} epochs".format(n_epochs)
+                )
 
         self.callback_container.on_train_begin(
             {"batch_size": batch_size, "train_steps": train_steps, "n_epochs": n_epochs}
@@ -1004,7 +1001,7 @@ class Trainer:
 
         lds_weight = None if torch.all(lds_weightt == 0) else lds_weightt.view(-1, 1)
         if (
-            self.model.with_fds
+            self.with_lds
             and lds_weight is not None
             and "lds_weight" not in signature(self.loss_fn.forward).parameters
         ):
@@ -1037,7 +1034,7 @@ class Trainer:
         else:
             loss = (
                 self.loss_fn(y_pred, y)
-                if not self.model.with_fds
+                if not self.with_lds
                 else self.loss_fn(y_pred, y, lds_weight=lds_weight)
             )
             score = self._get_score(y_pred, y)
@@ -1321,11 +1318,13 @@ class Trainer:
             elif isinstance(optimizers, Dict):
                 opt_names = list(optimizers.keys())
                 mod_names = [n for n, c in self.model.named_children()]
-                for layer in ["pred_layer", "FDS", "FDS_dropout"]:
-                    try:
-                        mod_names.remove(layer)
-                    except ValueError:
-                        pass
+                # if with_fds - the prediction layer is part of the layer and
+                # should be optimized with the rest of deeptabular model
+                if self.model.with_fds:
+                    mod_names.remove("fds_layer")
+                    optimizers["deeptabular"].add_param_group(
+                        {"params": self.model.fds_layer.pred_layer.parameters()}
+                    )
                 for mn in mod_names:
                     assert mn in opt_names, "No optimizer found for {}".format(mn)
                 optimizer = MultipleOptimizer(optimizers)

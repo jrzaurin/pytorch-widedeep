@@ -36,7 +36,7 @@ class WideDeepDataset(Dataset):
         choice of kernel for Label Distribution Smoothing
     lds_ks: int = 5
         LDS kernel window size
-    lds_sigma: int = 2
+    lds_sigma: float = 2
         standard deviation of ['gaussian','laplace'] kernel for LDS
     lds_granularity: int = 100,
         number of bins in histogram used in LDS to count occurence of sample values
@@ -57,9 +57,9 @@ class WideDeepDataset(Dataset):
         target: Optional[np.ndarray] = None,
         transforms: Optional[Any] = None,
         with_lds: bool = False,
-        lds_kernel: Literal["gaussian", "triang", "laplace"] = "gaussian",
+        lds_kernel: Literal["gaussian", "triang", "laplace", None] = "gaussian",
         lds_ks: int = 5,
-        lds_sigma: int = 2,
+        lds_sigma: float = 2,
         lds_granularity: int = 100,
         lds_reweight: bool = False,
         lds_y_max: Optional[float] = None,
@@ -120,13 +120,13 @@ class WideDeepDataset(Dataset):
 
     def _compute_lds_weights(
         self,
-        lds_y_min: Union[int, float],
-        lds_y_max: Union[int, float],
+        lds_y_min: Optional[float],
+        lds_y_max: Optional[float],
         granularity: int,
         reweight: bool,
         kernel: Literal["gaussian", "triang", "laplace", None],
         ks: int,
-        sigma: Union[int, float],
+        sigma: float,
     ) -> np.ndarray:
 
         """Assign weight to each sample by following procedure:

@@ -179,11 +179,11 @@ class WideDeep(nn.Module):
             )
         elif self.deephead is not None:
             pass
+        else:
+            self._add_pred_layer()
 
         if self.with_fds:
             self.fds_layer = FDSLayer(feature_dim=self.deeptabular.output_dim, **fds_config)  # type: ignore[arg-type]
-
-        self._add_pred_layer()
 
         if self.enforce_positive:
             self.enf_pos = get_activation_fn(enforce_positive_activation)
@@ -408,9 +408,13 @@ class WideDeep(nn.Module):
                 )
             )
 
-        if (
-            with_fds
-            and (wide is not None or deeptext is not None or deepimage is not None)
+        if with_fds and (
+            (
+                wide is not None
+                or deeptext is not None
+                or deepimage is not None
+                or deephead is not None
+            )
             or pred_dim != 1
         ):
             raise ValueError(
