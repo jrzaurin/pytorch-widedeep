@@ -583,7 +583,7 @@ class HuberLoss(nn.Module):
         """
         l1_loss = torch.abs(input - target)
         cond = l1_loss < beta
-        loss = torch.where(cond, 0.5 * l1_loss ** 2 / beta, l1_loss - 0.5 * beta)
+        loss = torch.where(cond, 0.5 * l1_loss**2 / beta, l1_loss - 0.5 * beta)
         if lds_weight is not None:
             loss *= lds_weight
         loss = torch.mean(loss)

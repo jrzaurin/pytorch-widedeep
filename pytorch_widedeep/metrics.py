@@ -289,7 +289,7 @@ class FBetaScore(Metric):
 
         prec = self.precision(y_pred, y_true)
         rec = self.recall(y_pred, y_true)
-        beta2 = self.beta ** 2
+        beta2 = self.beta**2
 
         fbeta = ((1 + beta2) * prec * rec) / (beta2 * prec + rec + self.eps)
 
