@@ -67,6 +67,8 @@ setup_kwargs = {
         "wrapt",
         "torchmetrics",
         "ray[tune]",
+        "pyarrow",
+        "fastparquet",
     ],
     "extras_require": extras,
     "python_requires": ">=3.7.0",
