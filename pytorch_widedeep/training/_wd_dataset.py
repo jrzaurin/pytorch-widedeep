@@ -57,7 +57,7 @@ class WideDeepDataset(Dataset):
         target: Optional[np.ndarray] = None,
         transforms: Optional[Any] = None,
         with_lds: bool = False,
-        lds_kernel: Literal["gaussian", "triang", "laplace", None] = "gaussian",
+        lds_kernel: Literal["gaussian", "triang", "laplace"] = "gaussian",
         lds_ks: int = 5,
         lds_sigma: float = 2,
         lds_granularity: int = 100,
@@ -124,7 +124,7 @@ class WideDeepDataset(Dataset):
         lds_y_max: Optional[float],
         granularity: int,
         reweight: bool,
-        kernel: Literal["gaussian", "triang", "laplace", None],
+        kernel: Literal["gaussian", "triang", "laplace"],
         ks: int,
         sigma: float,
     ) -> np.ndarray:

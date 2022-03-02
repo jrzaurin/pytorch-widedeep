@@ -205,11 +205,15 @@ def test_embedddings_class(
 def test_fds(with_lds):
     # lds with model
     model = WideDeep(deeptabular=tabmlp, with_fds=True)
-    trainer = Trainer(model, objective="regression", verbose=0)
-    trainer.fit(X_tab=X_deep, target=target, with_lds=with_lds)
+    trainer = Trainer(model, objective="regression", everbose=0)
+    # n_epochs=2 to run self._calibrate_mean_var
+    trainer.fit(X_tab=X_deep, target=target, n_epochs=3, with_lds=with_lds)
     # simply checking that runs and produces outputs
     preds = trainer.predict(X_tab=X_deep)
     module_names = list(model.named_modules())
     assert module_names[-2][0] == "fds_layer"
     assert module_names[-1][0] == "fds_layer.pred_layer"
     assert preds.shape[0] == 10 and "train_loss" in trainer.history
+
+    trainer.model.fds_layer.reset()
+    assert float(trainer.model.fds_layer.num_samples_tracked.sum()) == 0

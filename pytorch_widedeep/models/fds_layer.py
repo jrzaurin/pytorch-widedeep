@@ -20,8 +20,8 @@ class FDSLayer(nn.Module):
         start_smooth: int = 2,
         kernel: Literal["gaussian", "triang", "laplace"] = "gaussian",
         ks: int = 5,
-        sigma: Union[int, float] = 2,
-        momentum: float = 0.9,
+        sigma: float = 2,
+        momentum: Optional[float] = 0.9,
         clip_min: Optional[float] = None,
         clip_max: Optional[float] = None,
     ):
