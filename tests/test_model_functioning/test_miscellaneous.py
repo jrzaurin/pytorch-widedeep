@@ -23,6 +23,7 @@ from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.callbacks import EarlyStopping
 from pytorch_widedeep.preprocessing import TabPreprocessor
+from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 
 # Wide array
 X_wide = np.random.choice(50, (32, 10))
@@ -402,3 +403,26 @@ def test_get_embeddings_deprecation_warning():
             col_name="col1",
             cat_encoding_dict=tab_preprocessor.label_encoder.encoding_dict,
         )
+
+
+###############################################################################
+# test Label Distribution Smoothing
+###############################################################################
+
+
+def test_lds_component_with_model():
+
+    model = WideDeep(deeptabular=tabmlp)
+    trainer = Trainer(model, objective="regression", verbose=0)
+    trainer.fit(X_tab=X_tab, target=target, with_lds=True)
+    # simply checking that runs and produces outputs
+    preds = trainer.predict(X_tab=X_tab)
+
+    assert preds.shape[0] == 32 and "train_loss" in trainer.history
+
+
+def test_lds_component_with_dataset():
+
+    dataset_with_lds = WideDeepDataset(X_tab=X_tab, target=target, with_lds=True)
+    # test if weights were created
+    assert dataset_with_lds.weights.shape[0] == 32

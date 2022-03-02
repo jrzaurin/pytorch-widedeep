@@ -233,7 +233,7 @@ def load_rf1(as_frame: bool = False):
     and 2000 for evaluation.
     """
     with resources.path(
-        "pytorch_widedeep.datasets.data", "rf1-train.parquet.brotli"
+        "pytorch_widedeep.datasets.data", "rf1_train.parquet.brotli"
     ) as fpath:
         df = pd.read_parquet(fpath)
 

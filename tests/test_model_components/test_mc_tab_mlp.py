@@ -4,10 +4,12 @@ import numpy as np
 import torch
 import pytest
 
-from pytorch_widedeep.models import TabMlp
+from pytorch_widedeep.models import TabMlp, WideDeep
 from pytorch_widedeep.models.tabular.embeddings_layers import (
     DiffSizeCatAndContEmbeddings,
 )
+from pytorch_widedeep.training import Trainer
+
 
 colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 10) for _ in range(5)]
@@ -18,8 +20,15 @@ continuous_cols = colnames[-5:]
 X_deep = torch.from_numpy(np.vstack(embed_cols + cont_cols).transpose())
 X_deep_emb = X_deep[:, :5]
 X_deep_cont = X_deep[:, 5:]
+target = np.random.choice(2, 32)
 
-
+tabmlp = TabMlp(
+    column_idx={k: v for v, k in enumerate(colnames)},
+    cat_embed_input=embed_input,
+    continuous_cols=colnames[-5:],
+    mlp_hidden_dims=[32, 16],
+    mlp_dropout=[0.5, 0.5],
+)
 ###############################################################################
 # Embeddings and NO continuous_cols
 ###############################################################################
@@ -182,3 +191,25 @@ def test_embedddings_class(
         assert x_cat.size() == torch.Size((s1, s2_cat)) and x_cont.size() == torch.Size(
             (s1, s2_cont)
         )
+
+
+###############################################################################
+# Test Feature Dsitribution Smoothing
+###############################################################################
+
+
+@pytest.mark.parametrize(
+    "with_lds",
+    [True, False],
+)
+def test_fds(with_lds):
+    # lds with model
+    model = WideDeep(deeptabular=tabmlp, with_fds=True)
+    trainer = Trainer(model, objective="regression", verbose=0)
+    trainer.fit(X_tab=X_deep, target=target, with_lds=with_lds)
+    # simply checking that runs and produces outputs
+    preds = trainer.predict(X_tab=X_deep)
+    module_names = list(model.named_modules())
+    assert module_names[-2][0] == "fds_layer"
+    assert module_names[-1][0] == "fds_layer.pred_layer"
+    assert preds.shape[0] == 10 and "train_loss" in trainer.history
