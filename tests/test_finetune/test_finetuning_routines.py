@@ -10,6 +10,7 @@ from torch.utils.data import Dataset, DataLoader
 
 from pytorch_widedeep.models import Wide, TabMlp
 from pytorch_widedeep.metrics import Accuracy, MultipleMetrics
+from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.models.image._layers import conv_layer
 
@@ -46,29 +47,6 @@ class TestImageMode(nn.Module):
         return self.linear(x)
 
 
-# Define a simple MultiModal Dataset
-class MMSet(Dataset):
-    def __init__(self, X_wide, X_tab, X_text, X_img, target):
-
-        self.X_wide = X_wide
-        self.X_tab = X_tab
-        self.X_text = X_text
-        self.X_img = X_img
-        self.Y = target
-
-    def __getitem__(self, idx: int):
-
-        X = Bunch(wide=self.X_wide[idx])
-        X.tab_mlp = self.X_tab[idx]
-        X.deeptext = self.X_text[idx]
-        X.deepimage = self.X_img[idx]
-        y = self.Y[idx]
-        return X, y
-
-    def __len__(self):
-        return len(self.X_tab)
-
-
 # Remember that the FineTune class will be instantiated inside WideDeep and
 # will take, among others, the activation_fn and the loss_fn of that class as
 # parameters. Therefore, we define equivalent classes to replicate the
@@ -84,10 +62,10 @@ def loss_fn(y_pred, y_true):
 # Define the data components:
 
 # target
-target = torch.empty(100, 1).random_(0, 2)
+target = np.random.randint(0, 2, (100, 1)).astype(float)
 
 # wide
-X_wide = torch.empty(100, 4).random_(1, 20)
+X_wide = np.random.randint(1, 20, (100, 4)).astype(float)
 
 # deep
 colnames = list(string.ascii_lowercase)[:10]
@@ -96,18 +74,20 @@ cont_cols = [np.random.rand(100) for _ in range(5)]
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 column_idx = {k: v for v, k in enumerate(colnames[:10])}
 continuous_cols = colnames[-5:]
-X_tab = torch.from_numpy(np.vstack(embed_cols + cont_cols).transpose())
+X_tab = np.vstack(embed_cols + cont_cols).transpose()
 
 # text
-X_text = torch.cat((torch.zeros([100, 1]), torch.empty(100, 4).random_(1, 4)), axis=1)  # type: ignore[call-overload]
+X_text = np.concatenate(
+    (np.zeros([100, 1]), np.random.randint(1, 4, (100, 4)).astype(float)), axis=1
+)
 
 # image
-X_image = torch.rand(100, 3, 28, 28)
+X_image = np.random.rand(100, 28, 28, 3)
 
 # Define the model components
 
 # wide/linear
-wide = Wide(X_wide.unique().size(0), 1)
+wide = Wide(np.unique(X_wide).size, 1)
 if use_cuda:
     wide.cuda()
 
@@ -134,7 +114,7 @@ if use_cuda:
     deepimage.cuda()
 
 # Define the loader
-mmset = MMSet(X_wide, X_tab, X_text, X_image, target)
+mmset = WideDeepDataset(X_wide, X_tab, X_text, X_image, target)
 mmloader = DataLoader(mmset, batch_size=10, shuffle=True)
 
 # Instantiate the FineTune class
@@ -161,7 +141,7 @@ image_layers = [c for c in list(deepimage.children())][::-1]
     "model, modelname, loader, n_epochs, max_lr",
     [
         (wide, "wide", mmloader, 1, 0.01),
-        (tab_mlp, "tab_mlp", mmloader, 1, 0.01),
+        (tab_mlp, "deeptabular", mmloader, 1, 0.01),
         (deeptext, "deeptext", mmloader, 1, 0.01),
         (deepimage, "deepimage", mmloader, 1, 0.01),
     ],
@@ -181,8 +161,8 @@ def test_finetune_all(model, modelname, loader, n_epochs, max_lr):
 @pytest.mark.parametrize(
     "model, modelname, loader, max_lr, layers, routine",
     [
-        (tab_mlp, "tab_mlp", mmloader, 0.01, tab_layers, "felbo"),
-        (tab_mlp, "tab_mlp", mmloader, 0.01, tab_layers, "howard"),
+        (tab_mlp, "deeptabular", mmloader, 0.01, tab_layers, "felbo"),
+        (tab_mlp, "deeptabular", mmloader, 0.01, tab_layers, "howard"),
         (deeptext, "deeptext", mmloader, 0.01, text_layers, "felbo"),
         (deeptext, "deeptext", mmloader, 0.01, text_layers, "howard"),
         (deepimage, "deepimage", mmloader, 0.01, image_layers, "felbo"),
