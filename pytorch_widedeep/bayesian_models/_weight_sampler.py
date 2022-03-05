@@ -51,5 +51,5 @@ class GaussianPosterior(object):
         return (
             -math.log(math.sqrt(2 * math.pi))
             - torch.log(self.sigma)
-            - ((input - self.param_mu) ** 2) / (2 * self.sigma ** 2)
+            - ((input - self.param_mu) ** 2) / (2 * self.sigma**2)
         ).sum()

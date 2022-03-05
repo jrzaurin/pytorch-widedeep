@@ -29,11 +29,11 @@ def embed_sz_rule(
         rule of thumb to be used for embedding vector size
     """
     if embedding_rule == "google":
-        return int(round(n_cat ** 0.25))
+        return int(round(n_cat**0.25))
     elif embedding_rule == "fastai_old":
         return int(min(50, (n_cat // 2) + 1))
     else:
-        return int(min(600, round(1.6 * n_cat ** 0.56)))
+        return int(min(600, round(1.6 * n_cat**0.56)))
 
 
 class TabPreprocessor(BasePreprocessor):
