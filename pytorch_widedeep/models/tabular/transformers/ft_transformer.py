@@ -64,7 +64,7 @@ class FTTransformer(BaseTabularModelWithAttention):
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: str, default = None
         Activation function to be applied to the continuous embeddings, if
-        any. `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
+        any. `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     input_dim: int, default = 64
         The so-called *dimension of the model*. Is the number of embeddings used to encode
         the categorical and/or continuous columns.
@@ -92,7 +92,7 @@ class FTTransformer(BaseTabularModelWithAttention):
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
     transformer_activation: str, default = "gelu"
-        Transformer Encoder activation function. `tanh`, `'relu'`,
+        Transformer Encoder activation function. `'tanh'`, `'relu'`,
         `'leaky_relu'`, `'gelu'`, `'geglu'` and `'reglu'` are supported
     ff_factor: float, default = 4 / 3
         Multiplicative factor applied to the first layer of the FF network in
@@ -102,7 +102,7 @@ class FTTransformer(BaseTabularModelWithAttention):
         MLP hidden dimensions. If not provided no MLP on top of the final
         FTTransformer block will be used
     mlp_activation: str, default = "relu"
-        MLP activation function. `tanh`, `'relu'`, `'leaky_relu'` and
+        MLP activation function. `'tanh'`, `'relu'`, `'leaky_relu'` and
         `'gelu'` are supported
     mlp_dropout: float, default = 0.1
         Dropout that will be applied to the final MLP

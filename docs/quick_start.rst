@@ -28,6 +28,7 @@ Prepare the wide and deep columns
 
 .. code-block:: python
 
+    import torch
     from pytorch_widedeep import Trainer
     from pytorch_widedeep.preprocessing import WidePreprocessor, TabPreprocessor
     from pytorch_widedeep.models import Wide, TabMlp, WideDeep

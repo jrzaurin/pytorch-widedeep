@@ -544,21 +544,6 @@ class Trainer:
             preds = np.vstack(preds_l)
             return np.argmax(preds, 1)  # type: ignore[return-value]
 
-    def _predict_ziln(self, preds: Tensor) -> Tensor:
-        """Calculates predicted mean of zero inflated lognormal logits.
-        Adjusted implementaion of `code
-        <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`
-        Arguments:
-            preds: [batch_size, 3] tensor of logits.
-        Returns:
-            ziln_preds: [batch_size, 1] tensor of predicted mean.
-        """
-        positive_probs = torch.sigmoid(preds[..., :1])
-        loc = preds[..., 1:2]
-        scale = F.softplus(preds[..., 2:])
-        ziln_preds = positive_probs * torch.exp(loc + 0.5 * torch.square(scale))
-        return ziln_preds
-
     def predict_uncertainty(  # type: ignore[return]
         self,
         X_wide: Optional[np.ndarray] = None,
@@ -1221,6 +1206,24 @@ class Trainer:
         return preds_l
 
     @staticmethod
+    def _predict_ziln(preds: Tensor) -> Tensor:
+        """Calculates predicted mean of zero inflated lognormal logits.
+
+        Adjusted implementaion of `code
+        <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`
+
+        Arguments:
+            preds: [batch_size, 3] tensor of logits.
+        Returns:
+            ziln_preds: [batch_size, 1] tensor of predicted mean.
+        """
+        positive_probs = torch.sigmoid(preds[..., :1])
+        loc = preds[..., 1:2]
+        scale = F.softplus(preds[..., 2:])
+        ziln_preds = positive_probs * torch.exp(loc + 0.5 * torch.square(scale))
+        return ziln_preds
+
+    @staticmethod
     def _extract_kwargs(kwargs):
 
         dataloader_params = [
@@ -1318,8 +1321,9 @@ class Trainer:
             elif isinstance(optimizers, Dict):
                 opt_names = list(optimizers.keys())
                 mod_names = [n for n, c in self.model.named_children()]
-                # if with_fds - the prediction layer is part of the layer and
-                # should be optimized with the rest of deeptabular model
+                # if with_fds - the prediction layer is part of the model and
+                # should be optimized with the rest of deeptabular
+                # component/model
                 if self.model.with_fds:
                     mod_names.remove("fds_layer")
                     optimizers["deeptabular"].add_param_group(

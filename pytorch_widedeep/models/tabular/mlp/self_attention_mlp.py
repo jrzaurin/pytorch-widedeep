@@ -34,7 +34,7 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
         Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings, if any. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
@@ -65,7 +65,7 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: str, default = None
         Activation function to be applied to the continuous embeddings, if
-        any. `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
+        any. `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general is the number of
         embeddings used to encode the categorical and/or continuous columns
@@ -80,10 +80,10 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
         Boolean indicating if residual connections will be used in the attention blocks
     attn_activation: str, default = "leaky_relu"
         String indicating the activation function to be applied to the dense
-        layer in each attention encoder. `tanh`, `'relu'`, `'leaky_relu'`
+        layer in each attention encoder. `'tanh'`, `'relu'`, `'leaky_relu'`
         and `'gelu'` are supported.
     n_blocks: int, default = 3
-        Number of attention block
+        Number of attention blocks
 
     Attributes
     ----------

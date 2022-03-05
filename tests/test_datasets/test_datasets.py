@@ -1,13 +1,14 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from pytorch_widedeep.datasets import (
+    load_rf1,
     load_adult,
+    load_birds,
     load_ecoli,
     load_bio_kdd04,
     load_womens_ecommerce,
-    load_rf1,
-    load_birds,
     load_california_housing,
 )
 

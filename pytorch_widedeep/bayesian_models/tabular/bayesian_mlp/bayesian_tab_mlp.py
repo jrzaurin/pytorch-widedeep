@@ -33,7 +33,7 @@ class BayesianTabMlp(BaseBayesianModel):
         Categorical embeddings dropout
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings, if any. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, default =  "batchnorm"
@@ -50,12 +50,12 @@ class BayesianTabMlp(BaseBayesianModel):
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings if any. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     mlp_hidden_dims: List, default = [200, 100]
         List with the number of neurons per dense layer in the mlp.
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     prior_sigma_1: float, default = 1.0
         Prior of the sigma parameter for the first of the two Gaussian
         distributions that will be mixed to produce the prior weight

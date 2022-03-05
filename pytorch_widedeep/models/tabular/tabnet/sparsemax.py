@@ -156,8 +156,8 @@ class Entmax15Function(Function):
 
         rho = _make_ix_like(input, dim)
         mean = Xsrt.cumsum(dim) / rho
-        mean_sq = (Xsrt**2).cumsum(dim) / rho
-        ss = rho * (mean_sq - mean**2)
+        mean_sq = (Xsrt ** 2).cumsum(dim) / rho
+        ss = rho * (mean_sq - mean ** 2)
         delta = (1 - ss) / rho
 
         # NOTE this is not exactly the same as in reference algo

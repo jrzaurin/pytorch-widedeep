@@ -55,7 +55,7 @@ class StackedAttentiveRNN(nn.Module):
         List with the sizes of the dense layers in the head e.g: [128, 64]
     head_activation: str, default = "relu"
         Activation function for the dense layers in the head. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     head_dropout: float, Optional, default = None
         Dropout of the dense layers in the head
     head_batchnorm: bool, default = False

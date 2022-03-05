@@ -4,7 +4,7 @@ The ``models`` module
 This module contains the models that can be used as the four main components
 that will comprise a Wide and Deep model (``wide``, ``deeptabular``,
 ``deeptext``, ``deepimage``), as well as the ``WideDeep`` "constructor"
-class``. Note that each of the four components can be used independently.
+class. Note that each of the four components can be used independently.
 
 .. autoclass:: pytorch_widedeep.models.tabular.linear.wide.Wide
     :exclude-members: forward

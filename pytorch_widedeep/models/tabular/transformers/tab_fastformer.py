@@ -63,7 +63,7 @@ class TabFastFormer(BaseTabularModelWithAttention):
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: str, default = None
         String indicating the activation function to be applied to the
-        continuous embeddings, if any. `tanh`, `'relu'`, `'leaky_relu'` and
+        continuous embeddings, if any. `'tanh'`, `'relu'`, `'leaky_relu'` and
         `'gelu'` are supported.
     input_dim: int, default = 32
         The so-called *dimension of the model*. In general is the number of
@@ -86,13 +86,13 @@ class TabFastFormer(BaseTabularModelWithAttention):
         In addition to sharing the value and query transformation parameters,
         the parameters across different Fastformer layers can also be shared
     transformer_activation: str, default = "gelu"
-        Transformer Encoder activation function. `tanh`, `'relu'`,
+        Transformer Encoder activation function. `'tanh'`, `'relu'`,
         `'leaky_relu'`, `'gelu'`, `'geglu'` and `'reglu'` are supported
     mlp_hidden_dims: List, Optional, default = None
         MLP hidden dimensions. If not provided it will default to ``[l, 4*l,
         2*l]`` where ``l`` is the MLP's input dimension
     mlp_activation: str, default = "relu"
-        MLP activation function. `tanh`, `'relu'`, `'leaky_relu'` and
+        MLP activation function. `'tanh'`, `'relu'`, `'leaky_relu'` and
         `'gelu'` are supported
     mlp_dropout: float, default = 0.1
         Dropout that will be applied to the final MLP

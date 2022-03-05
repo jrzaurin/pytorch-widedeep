@@ -22,16 +22,7 @@ always use them on their own and can be imported as:
 	the ground truth is expected to be a 1D tensor with the corresponding
 	classes. See Examples below
 
-.. autoclass:: pytorch_widedeep.losses.TweedieLoss
-	:members:
-
-.. autoclass:: pytorch_widedeep.losses.QuantileLoss
-	:members:
-
-.. autoclass:: pytorch_widedeep.losses.ZILNLoss
-	:members:
-
-.. autoclass:: pytorch_widedeep.losses.FocalLoss
+.. autoclass:: pytorch_widedeep.losses.MSELoss
 	:members:
 
 .. autoclass:: pytorch_widedeep.losses.MSLELoss
@@ -43,5 +34,32 @@ always use them on their own and can be imported as:
 .. autoclass:: pytorch_widedeep.losses.RMSLELoss
 	:members:
 
+.. autoclass:: pytorch_widedeep.losses.QuantileLoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.FocalLoss
+	:members:
+
 .. autoclass:: pytorch_widedeep.losses.BayesianSELoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.TweedieLoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.ZILNLoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.L1Loss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.FocalR_L1Loss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.FocalR_MSELoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.FocalR_RMSELoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.HuberLoss
 	:members:

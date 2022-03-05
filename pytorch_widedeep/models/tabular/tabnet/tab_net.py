@@ -36,7 +36,7 @@ class TabNet(BaseTabularModelWithoutAttention):
     use_cat_bias: bool, default = False,
         Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
-        Activation function for the categorical embeddings, if any. `tanh`,
+        Activation function for the categorical embeddings, if any. `'tanh'`,
         `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
@@ -53,7 +53,7 @@ class TabNet(BaseTabularModelWithoutAttention):
     use_cont_bias: bool, default = True,
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: Optional, str, default = None,
-        Activation function for the continuous embeddings, if any. `tanh`,
+        Activation function for the continuous embeddings, if any. `'tanh'`,
         `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     n_steps: int, default = 3
         number of decision steps

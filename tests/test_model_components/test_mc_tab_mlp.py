@@ -5,11 +5,10 @@ import torch
 import pytest
 
 from pytorch_widedeep.models import TabMlp, WideDeep
+from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.models.tabular.embeddings_layers import (
     DiffSizeCatAndContEmbeddings,
 )
-from pytorch_widedeep.training import Trainer
-
 
 colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 10) for _ in range(5)]

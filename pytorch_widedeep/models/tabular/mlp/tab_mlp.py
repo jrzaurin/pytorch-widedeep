@@ -28,7 +28,7 @@ class TabMlp(BaseTabularModelWithoutAttention):
         Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings, if any. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, default =  "batchnorm"
@@ -45,12 +45,12 @@ class TabMlp(BaseTabularModelWithoutAttention):
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings if any. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     mlp_hidden_dims: List, default = [200, 100]
         List with the number of neurons per dense layer in the mlp.
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     mlp_dropout: float or List, default = 0.1
         float or List of floats with the dropout between the dense layers.
         e.g: [0.5,0.5]

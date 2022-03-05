@@ -10,9 +10,9 @@ from torch.utils.data import Dataset, DataLoader
 
 from pytorch_widedeep.models import Wide, TabMlp
 from pytorch_widedeep.metrics import Accuracy, MultipleMetrics
-from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.models.image._layers import conv_layer
+from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 
 use_cuda = torch.cuda.is_available()
 

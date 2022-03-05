@@ -61,7 +61,7 @@ class WideDeep(nn.Module):
         List with the sizes of the dense layers in the head e.g: [128, 64]
     head_activation: str, default = "relu"
         Activation function for the dense layers in the head. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     head_dropout: float, Optional, default = None
         Dropout of the dense layers in the head
     head_batchnorm: bool, default = False
@@ -79,22 +79,25 @@ class WideDeep(nn.Module):
         output of the deep component. If ``deephead`` is not None all the
         previous fc-head parameters will be ignored
     enforce_positive: bool, default = False
-        If final layer has activation function or not. Important if you are
-        using loss functions with non-negative input restrictions, e.g.
-        RMSLE, or if you know your predictions are bounded in between 0 and
-        inf
+        Boolean indicating if the output from the final layer must be
+        positive. This is important if you are using loss functions with
+        non-negative input restrictions, e.g. RMSLE, or if you know your
+        predictions are bounded in between 0 and inf
     enforce_positive_activation: str, default = "softplus"
-        Activation function to enforce positive output from final layer. Use
-        "softplus" or "relu".
-    fds: bool, default = False
-        If the feature distribution smoothing layer should be applied before the
-        final prediction layer. Only available for objective='regressor'.
-    fds_config: dict, default = None
-        dictionary defining specific values for FeatureDistributionSmoothing layer
+        Activation function to enforce that the final layer has a positive
+        output. `'softplus'` or `'relu'` are supported.
     pred_dim: int, default = 1
         Size of the final wide and deep output layer containing the
         predictions. `1` for regression and binary classification or number
         of classes for multiclass classification.
+    with_fds: bool, default = False
+        If feature distribution smoothing (FDS) should be applied before the
+        final prediction layer. Only available for regression problems. See
+        `Delving into Deep Imbalanced Regression <https://arxiv.org/abs/2102.09554>`_
+        for details.
+    fds_config: dict, default = None
+        Dictionary defining specific values for
+        ``FeatureDistributionSmoothing`` layer
 
     Examples
     --------

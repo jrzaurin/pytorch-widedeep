@@ -31,7 +31,7 @@ class TabResnet(BaseTabularModelWithoutAttention):
         Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings, if any. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, default =  "batchnorm"
@@ -48,7 +48,7 @@ class TabResnet(BaseTabularModelWithoutAttention):
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings, if any. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     blocks_dims: List, default = [200, 100, 100]
         List of integers that define the input and output units of each block.
         For example: [200, 100, 100] will generate 2 blocks. The first will
@@ -69,7 +69,7 @@ class TabResnet(BaseTabularModelWithoutAttention):
         optional.
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        `tanh`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     mlp_dropout: float, default = 0.1
         float with the dropout between the dense layers of the MLP.
     mlp_batchnorm: bool, default = False
