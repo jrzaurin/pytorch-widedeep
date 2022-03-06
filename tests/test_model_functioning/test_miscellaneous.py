@@ -426,3 +426,17 @@ def test_lds_component_with_dataset():
     dataset_with_lds = WideDeepDataset(X_tab=X_tab, target=target, with_lds=True)
     # test if weights were created
     assert dataset_with_lds.weights.shape[0] == 32
+
+
+###############################################################################
+# test Trainer _extract_kwargs
+###############################################################################
+
+
+def test_Trainer_extract_kwargs():
+    lds_args, dataloader_args, finetune_args = Trainer._extract_kwargs(
+        {"pin_memory": True, "lds_ks": 7, "n_epochs": 10}
+    )
+    assert lds_args == {"lds_ks": 7}
+    assert dataloader_args == {"pin_memory": True}
+    assert finetune_args == {"n_epochs": 10}

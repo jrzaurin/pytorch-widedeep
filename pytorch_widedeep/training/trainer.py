@@ -477,7 +477,11 @@ class Trainer:
                         on_epoch_end_metric = val_score[
                             self.reducelronplateau_criterion
                         ]
-
+            else:
+                if self.reducelronplateau:
+                    raise NotImplementedError(
+                        "ReduceLROnPlateau scheduler can be used only with validation data."
+                    )
             self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
 
             if self.early_stop:
@@ -1357,8 +1361,9 @@ class Trainer:
                 "instantiating the Trainer, specify which quantity will be tracked using "
                 "reducelronplateau_criterion = 'loss' (default) or reducelronplateau_criterion = 'metric'"
             )
-        else:
             self.reducelronplateau_criterion = "loss"
+        else:
+            self.reducelronplateau_criterion = reducelronplateau_criterion
 
     def _set_lr_scheduler(self, lr_schedulers, **kwargs):
 

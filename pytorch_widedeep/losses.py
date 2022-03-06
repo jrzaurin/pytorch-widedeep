@@ -557,19 +557,28 @@ class FocalR_L1Loss(nn.Module):
         Focal Loss ``beta`` parameter in their implementation
     gamma: float
         Focal Loss ``gamma`` parameter
+    activation_fn: str, default = "sigmoid"
+        Activation function to be used during the computation of the loss.
+        Possible values are `'sigmoid'` and `'tanh'`. See the original
+        publication for details.
     """
 
-    def __init__(self, beta: float = 0.2, gamma: float = 1.0):
+    def __init__(
+        self,
+        beta: float = 0.2,
+        gamma: float = 1.0,
+        activation_fn: Literal["sigmoid", "tanh"] = "sigmoid",
+    ):
         super().__init__()
         self.beta = beta
         self.gamma = gamma
+        self.activation_fn = activation_fn
 
     def forward(
         self,
         input: Tensor,
         target: Tensor,
         lds_weight: Optional[Tensor] = None,
-        activation_fn: Literal["sigmoid", "tanh"] = "sigmoid",
     ) -> Tensor:
         r"""
         Parameters
@@ -581,10 +590,6 @@ class FocalR_L1Loss(nn.Module):
         lds_weight: Tensor, Optional
             If we choose to use LDS this is the tensor of weights that will
             multiply the loss value.
-        activation_fn: str, default = "sigmoid"
-            Activation function to be used during the computation of the loss.
-            Possible values are `'sigmoid'` and `'tanh'`. See the original
-            publication for details.
 
         Examples
         --------
@@ -598,12 +603,16 @@ class FocalR_L1Loss(nn.Module):
         tensor(0.0483)
         """
         loss = F.l1_loss(input, target, reduction="none")
-        if activation_fn == "tanh":
+        if self.activation_fn == "tanh":
             loss *= (torch.tanh(self.beta * torch.abs(input - target))) ** self.gamma
-        else:
+        elif self.activation_fn == "sigmoid":
             loss *= (
                 2 * torch.sigmoid(self.beta * torch.abs(input - target)) - 1
             ) ** self.gamma
+        else:
+            ValueError(
+                "Incorrect activation function value - must be in ['sigmoid', 'tanh']"
+            )
         if lds_weight is not None:
             loss *= lds_weight
         return torch.mean(loss)
@@ -622,19 +631,28 @@ class FocalR_MSELoss(nn.Module):
         Focal Loss ``beta`` parameter in their implementation
     gamma: float
         Focal Loss ``gamma`` parameter
+    activation_fn: str, default = "sigmoid"
+        Activation function to be used during the computation of the loss.
+        Possible values are `'sigmoid'` and `'tanh'`. See the original
+        publication for details.
     """
 
-    def __init__(self, beta: float = 0.2, gamma: float = 1.0):
+    def __init__(
+        self,
+        beta: float = 0.2,
+        gamma: float = 1.0,
+        activation_fn: Literal["sigmoid", "tanh"] = "sigmoid",
+    ):
         super().__init__()
         self.beta = beta
         self.gamma = gamma
+        self.activation_fn = activation_fn
 
     def forward(
         self,
         input: Tensor,
         target: Tensor,
         lds_weight: Optional[Tensor] = None,
-        activation_fn: Literal["sigmoid", "tanh"] = "sigmoid",
     ) -> Tensor:
         r"""
         Parameters
@@ -646,10 +664,6 @@ class FocalR_MSELoss(nn.Module):
         lds_weight: Tensor, Optional
             If we choose to use LDS this is the tensor of weights that will
             multiply the loss value.
-        activation_fn: str, default = "sigmoid"
-            Activation function to be used during the computation of the loss.
-            Possible values are `'sigmoid'` and `'tanh'`. See the original
-            publication for details.
 
         Examples
         --------
@@ -663,12 +677,16 @@ class FocalR_MSELoss(nn.Module):
         tensor(0.0539)
         """
         loss = (input - target) ** 2
-        if activation_fn == "tanh":
+        if self.activation_fn == "tanh":
             loss *= (torch.tanh(self.beta * torch.abs(input - target))) ** self.gamma
-        else:
+        elif self.activation_fn == "sigmoid":
             loss *= (
                 2 * torch.sigmoid(self.beta * torch.abs((input - target) ** 2)) - 1
             ) ** self.gamma
+        else:
+            ValueError(
+                "Incorrect activation function value - must be in ['sigmoid', 'tanh']"
+            )
         if lds_weight is not None:
             loss *= lds_weight
         return torch.mean(loss)
@@ -687,19 +705,28 @@ class FocalR_RMSELoss(nn.Module):
         Focal Loss ``beta`` parameter in their implementation
     gamma: float
         Focal Loss ``gamma`` parameter
+    activation_fn: str, default = "sigmoid"
+        Activation function to be used during the computation of the loss.
+        Possible values are `'sigmoid'` and `'tanh'`. See the original
+        publication for details.
     """
 
-    def __init__(self, beta: float = 0.2, gamma: float = 1.0):
+    def __init__(
+        self,
+        beta: float = 0.2,
+        gamma: float = 1.0,
+        activation_fn: Literal["sigmoid", "tanh"] = "sigmoid",
+    ):
         super().__init__()
         self.beta = beta
         self.gamma = gamma
+        self.activation_fn = activation_fn
 
     def forward(
         self,
         input: Tensor,
         target: Tensor,
         lds_weight: Optional[Tensor] = None,
-        activation_fn: Literal["sigmoid", "tanh"] = "sigmoid",
     ) -> Tensor:
         r"""
         Parameters
@@ -711,10 +738,6 @@ class FocalR_RMSELoss(nn.Module):
         lds_weight: Tensor, Optional
             If we choose to use LDS this is the tensor of weights that will
             multiply the loss value.
-        activation_fn: str, default = "sigmoid"
-            Activation function to be used during the computation of the loss.
-            Possible values are `'sigmoid'` and `'tanh'`. See the original
-            publication for details.
 
         Examples
         --------
@@ -728,12 +751,16 @@ class FocalR_RMSELoss(nn.Module):
         tensor(0.2321)
         """
         loss = (input - target) ** 2
-        if activation_fn == "tanh":
+        if self.activation_fn == "tanh":
             loss *= (torch.tanh(self.beta * torch.abs(input - target))) ** self.gamma
-        else:
+        elif self.activation_fn == "sigmoid":
             loss *= (
                 2 * torch.sigmoid(self.beta * torch.abs((input - target) ** 2)) - 1
             ) ** self.gamma
+        else:
+            ValueError(
+                "Incorrect activation function value - must be in ['sigmoid', 'tanh']"
+            )
         if lds_weight is not None:
             loss *= lds_weight
         return torch.sqrt(torch.mean(loss))

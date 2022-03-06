@@ -6,8 +6,19 @@ import pytest
 from scipy import stats
 from numpy.testing import assert_almost_equal
 from sklearn.metrics import mean_squared_error, mean_squared_log_error
-
-from pytorch_widedeep.losses import MSLELoss, RMSELoss, ZILNLoss
+from pytorch_widedeep.losses import (
+    MSELoss,
+    MSLELoss,
+    RMSELoss,
+    RMSLELoss,
+    TweedieLoss,
+    L1Loss,
+    FocalR_L1Loss,
+    FocalR_MSELoss,
+    FocalR_RMSELoss,
+    HuberLoss,
+    ZILNLoss,
+)
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.training._loss_and_obj_aliases import (
@@ -31,6 +42,10 @@ target_regres = np.random.rand(100)
 target_binary = np.random.choice(2, 100)
 target_multic = np.random.choice(3, 100)
 
+y_true = np.array([3, 5, 2.5, 7]).reshape(-1, 1)
+y_pred = np.array([2.5, 5, 4, 8]).reshape(-1, 1)
+t_true = torch.from_numpy(y_true)
+t_pred = torch.from_numpy(y_pred)
 
 ##############################################################################
 # Test that the model runs with the focal loss
@@ -337,3 +352,51 @@ def test_inverse_maps():
     out.append("quantile" in _ObjectiveToMethod.method_to_objecive["qregression"])
     out.append("tweedie" in _ObjectiveToMethod.method_to_objecive["regression"])
     assert all(out)
+
+
+##############################################################################
+# Test LDS weight compatible losses
+##############################################################################
+@pytest.mark.parametrize(
+    "loss_f",
+    [
+        MSELoss,
+        MSLELoss,
+        RMSELoss,
+        RMSLELoss,
+        TweedieLoss,
+        L1Loss,
+        FocalR_L1Loss,
+        FocalR_MSELoss,
+        FocalR_RMSELoss,
+        HuberLoss,
+    ],
+)
+def test_lds_losses(loss_f):
+    lds_weight = np.array([1, 1, 1, 1]).reshape(-1, 1)
+    t_lds_weight = torch.from_numpy(lds_weight)
+    assert (
+        loss_f()(t_pred, t_true).item()
+        == loss_f()(t_pred, t_true, lds_weight=t_lds_weight).item()
+    )
+
+
+##############################################################################
+# Test FocalR loss activation functions
+##############################################################################
+@pytest.mark.parametrize(
+    "loss_f",
+    [
+        FocalR_L1Loss,
+        FocalR_MSELoss,
+        FocalR_RMSELoss,
+    ],
+)
+def test_FocalR_losses_act_f(loss_f):
+    for act_fn in ["sigmoid", "tanh"]:
+        has_run = True
+        try:
+            loss_f(activation_fn=act_fn)(t_pred, t_true)
+        except Exception:
+            has_run = False
+        assert has_run

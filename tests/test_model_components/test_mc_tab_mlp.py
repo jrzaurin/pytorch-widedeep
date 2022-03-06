@@ -203,7 +203,13 @@ def test_embedddings_class(
 )
 def test_fds(with_lds):
     # lds with model
-    model = WideDeep(deeptabular=tabmlp, with_fds=True)
+    model = WideDeep(
+        deeptabular=tabmlp,
+        with_fds=True,
+        momentum=None,
+        clip_min=0,
+        clip_max=10,
+    )
     trainer = Trainer(model, objective="regression", everbose=0)
     # n_epochs=2 to run self._calibrate_mean_var
     trainer.fit(X_tab=X_deep, target=target, n_epochs=3, with_lds=with_lds)

@@ -46,7 +46,7 @@ class FineTune:
         self,
         loss_fn: Any,
         metric: Union[Metric, MultipleMetrics],
-        method: str,
+        method: Literal["binary", "regression", "multiclass"],
         verbose: int,
     ):
         self.loss_fn = loss_fn

@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from sklearn.metrics import mean_squared_error
 
-from pytorch_widedeep.losses import BayesianSELoss
+from pytorch_widedeep.losses import BayesianSELoss, BayesianRegressionLoss
 
 
 ##############################################################################

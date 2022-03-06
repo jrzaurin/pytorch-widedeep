@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import pytest
 from ray import tune
-from torch.optim.lr_scheduler import StepLR, CyclicLR
+from torch.optim.lr_scheduler import StepLR, CyclicLR, ReduceLROnPlateau
 
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep, TabTransformer
 from pytorch_widedeep.training import Trainer
@@ -22,6 +22,7 @@ from pytorch_widedeep.callbacks import (
 
 # Wide array
 X_wide = np.random.choice(50, (32, 10))
+X_wide_val = np.random.choice(50, (4, 10))
 
 # Deep Array
 colnames = list(string.ascii_lowercase)[:10]
@@ -31,8 +32,13 @@ cont_cols = [np.random.rand(32) for _ in range(5)]
 column_idx = {k: v for v, k in enumerate(colnames)}
 X_tab = np.vstack(embed_cols + cont_cols).transpose()
 
+embed_cols_val = [np.random.choice(np.arange(5), 4) for _ in range(5)]
+cont_cols_val = [np.random.rand(4) for _ in range(5)]
+X_tab_val = np.vstack(embed_cols + cont_cols).transpose()
+
 # target
 target = np.random.choice(2, 32)
+target_val = np.random.choice(2, 4)
 
 
 ###############################################################################
@@ -86,6 +92,10 @@ lr_schedulers_5 = CyclicLR(
     optimizers_5, base_lr=0.001, max_lr=0.01, step_size_up=5, cycle_momentum=False
 )
 
+# 6. Single optimizers_6, single ReduceLROnPlateau lr_schedulers_6
+optimizers_6 = torch.optim.Adam(model.parameters())
+lr_schedulers_6 = ReduceLROnPlateau(optimizers_6)
+
 
 @pytest.mark.parametrize(
     "optimizers, schedulers, len_loss_output, len_lr_output, init_lr, schedulers_type",
@@ -95,6 +105,7 @@ lr_schedulers_5 = CyclicLR(
         (optimizers_3, lr_schedulers_3, 5, 5, None, None),
         (optimizers_4, lr_schedulers_4, 5, 11, None, None),
         (optimizers_5, lr_schedulers_5, 5, 11, 0.001, "cyclic"),
+        (optimizers_6, lr_schedulers_6, 5, 5, None, None),
     ],
 )
 def test_history_callback(
@@ -110,9 +121,8 @@ def test_history_callback(
         verbose=0,
     )
     trainer.fit(
-        X_wide=X_wide,
-        X_tab=X_tab,
-        target=target,
+        X_train={"X_wide": X_wide, "X_tab": X_tab, "target": target},
+        X_val={"X_wide": X_wide_val, "X_tab": X_tab_val, "target": target_val},
         n_epochs=5,
         batch_size=16,
     )
