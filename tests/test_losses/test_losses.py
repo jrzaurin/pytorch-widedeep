@@ -6,18 +6,19 @@ import pytest
 from scipy import stats
 from numpy.testing import assert_almost_equal
 from sklearn.metrics import mean_squared_error, mean_squared_log_error
+
 from pytorch_widedeep.losses import (
+    L1Loss,
     MSELoss,
     MSLELoss,
     RMSELoss,
+    ZILNLoss,
+    HuberLoss,
     RMSLELoss,
     TweedieLoss,
-    L1Loss,
     FocalR_L1Loss,
     FocalR_MSELoss,
     FocalR_RMSELoss,
-    HuberLoss,
-    ZILNLoss,
 )
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep
 from pytorch_widedeep.training import Trainer
@@ -50,6 +51,8 @@ t_pred = torch.from_numpy(y_pred)
 ##############################################################################
 # Test that the model runs with the focal loss
 ##############################################################################
+
+
 @pytest.mark.parametrize(
     "X_wide, X_tab, target, objective, pred_dim, probs_dim",
     [

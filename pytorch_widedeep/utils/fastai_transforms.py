@@ -121,7 +121,7 @@ class SpacyTokenizer(BaseTokenizer):
             strings that are the special cases to add to the tokenizer
         """
         for w in toks:
-            self.tok.tokenizer.add_special_case(w, [{ORTH: w}])
+            self.tok.tokenizer.add_special_case(w, [{ORTH: w}])  # type: ignore[union-attr]
 
 
 def spec_add_spaces(t: str) -> str:

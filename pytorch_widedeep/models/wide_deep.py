@@ -326,10 +326,12 @@ class WideDeep(nn.Module):
         res = self.fds_layer(self.deeptabular(X["deeptabular"]), y, epoch)
         if self.enforce_positive:
             if isinstance(res, Tuple):  # type: ignore[arg-type]
-                res[1] = self.enf_pos(res[1])
+                out = (res[0], self.enf_pos(res[1]))
             else:
-                res = self.enf_pos(res)
-        return res
+                out = self.enf_pos(res)
+        else:
+            out = res
+        return out
 
     @staticmethod  # noqa: C901
     def _check_inputs(  # noqa: C901
