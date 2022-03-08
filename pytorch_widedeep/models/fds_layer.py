@@ -114,27 +114,36 @@ class FDSLayer(nn.Module):
             self.running_mean_last_epoch = self.running_mean
             self.running_var_last_epoch = self.running_var
 
+            smoothed_mean_last_epoch_inp = F.pad(
+                self.running_mean_last_epoch.unsqueeze(1).permute(2, 1, 0),
+                pad=(self.half_ks, self.half_ks),
+                mode="reflect",
+            )
+            smoothed_mean_last_epoch_weight = self.kernel_window.view(1, 1, -1).to(
+                smoothed_mean_last_epoch_inp.device
+            )
             self.smoothed_mean_last_epoch = (
                 F.conv1d(
-                    input=F.pad(
-                        self.running_mean_last_epoch.unsqueeze(1).permute(2, 1, 0),
-                        pad=(self.half_ks, self.half_ks),
-                        mode="reflect",
-                    ),
-                    weight=self.kernel_window.view(1, 1, -1),
+                    input=smoothed_mean_last_epoch_inp,
+                    weight=smoothed_mean_last_epoch_weight,
                     padding=0,
                 )
                 .permute(2, 1, 0)
                 .squeeze(1)
             )
+
+            smoothed_var_last_epoch_inp = F.pad(
+                self.running_var_last_epoch.unsqueeze(1).permute(2, 1, 0),
+                pad=(self.half_ks, self.half_ks),
+                mode="reflect",
+            )
+            smoothed_var_last_epoch_weight = self.kernel_window.view(1, 1, -1).to(
+                smoothed_var_last_epoch_inp.device
+            )
             self.smoothed_var_last_epoch = (
                 F.conv1d(
-                    input=F.pad(
-                        self.running_var_last_epoch.unsqueeze(1).permute(2, 1, 0),
-                        pad=(self.half_ks, self.half_ks),
-                        mode="reflect",
-                    ),
-                    weight=self.kernel_window.view(1, 1, -1),
+                    input=smoothed_var_last_epoch_inp,
+                    weight=smoothed_var_last_epoch_weight,
                     padding=0,
                 )
                 .permute(2, 1, 0)

@@ -206,6 +206,7 @@ def find_bin(
         )
         indices = np.where(indices != len(bin_edges), indices, indices - 2)
     elif type(bin_edges) == Tensor and type(values) == Tensor:
+        bin_edges = bin_edges.to(values.device)
         indices = torch.searchsorted(bin_edges, values, right=False)
         indices = torch.where(
             (indices == 0) | (indices == len(bin_edges)), indices, indices - 1

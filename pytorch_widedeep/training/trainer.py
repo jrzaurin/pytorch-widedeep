@@ -988,7 +988,11 @@ class Trainer:
         lds_weightt: Tensor,
     ):
 
-        lds_weight = None if torch.all(lds_weightt == 0) else lds_weightt.view(-1, 1)
+        lds_weight = (
+            None
+            if torch.all(lds_weightt == 0)
+            else lds_weightt.view(-1, 1).to(self.device)
+        )
         if (
             self.with_lds
             and lds_weight is not None
@@ -1079,7 +1083,6 @@ class Trainer:
         self,
         data: Dict[str, Tensor],
         target: Tensor,
-        lds_weight: Union[None, Tensor],
         epoch: int,
     ) -> Tuple[Tensor, Tensor]:
         self.model.train()
@@ -1096,7 +1099,9 @@ class Trainer:
                 for idx, (data, targett, lds_weight) in zip(t, train_loader):
                     t.set_description("FDS update")
                     deeptab_features, deeptab_preds = self._fds_step(
-                        data, targett, lds_weight, epoch
+                        data,
+                        targett,
+                        epoch,
                     )
                     features_l.append(deeptab_features)
                     y_pred_l.append(deeptab_preds)
