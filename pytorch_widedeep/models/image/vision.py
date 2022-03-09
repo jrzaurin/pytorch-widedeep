@@ -45,7 +45,7 @@ class Vision(nn.Module):
         List of strings containing the names (or substring within the name) of
         the parameters that will be trained. For example, if we use a
         `'resnet18'` pretrainable model and we set ``trainable_params =
-        ['layer4']`` only the parameters of `'layer4'` of the network(and the
+        ['layer4']`` only the parameters of `'layer4'` of the network (and the
         head, as mentioned before) will be trained. Note that setting this or
         the previous parameter involves some knowledge of the architecture
         used.

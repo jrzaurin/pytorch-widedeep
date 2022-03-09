@@ -57,9 +57,17 @@ class BayesianTabMlp(BaseBayesianModel):
         Activation function for the dense layers of the MLP. Currently
         `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
     prior_sigma_1: float, default = 1.0
-        Prior of the sigma parameter for the first of the two Gaussian
-        distributions that will be mixed to produce the prior weight
-        distribution for each Bayesian linear and embedding layer
+        The prior weight distribution is a scaled mixture of two Gaussian
+        densities:
+
+        .. math::
+           \begin{aligned}
+           P(\mathbf{w}) = \prod_{i=j} \pi N (\mathbf{w}_j | 0, \sigma_{1}^{2}) + (1 - \pi) N (\mathbf{w}_j | 0, \sigma_{2}^{2})
+           \end{aligned}
+
+        This is the prior of the sigma parameter for the first of the two
+        Gaussians that will be mixed to produce the prior weight
+        distribution.
     prior_sigma_2: float, default = 0.002
         Prior of the sigma parameter for the second of the two Gaussian
         distributions that will be mixed to produce the prior weight

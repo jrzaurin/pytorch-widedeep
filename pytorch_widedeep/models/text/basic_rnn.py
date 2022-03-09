@@ -28,7 +28,7 @@ class BasicRNN(nn.Module):
     embed_trainable: bool, default = True
         Boolean indicating if the pretrained embeddings are trainable
     rnn_type: str, default = 'lstm'
-        String indicating the type of RNN to use. One of 'lstm' or 'gru'
+        String indicating the type of RNN to use. One of `'lstm'` or `'gru'`
     hidden_dim: int, default = 64
         Hidden dim of the RNN
     n_layers: int, default = 3

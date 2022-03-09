@@ -68,8 +68,8 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
         Activation function to be applied to the continuous embeddings, if
         any. `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     input_dim: int, default = 32
-        The so-called *dimension of the model*. In general is the number of
-        embeddings used to encode the categorical and/or continuous columns
+        The so-called *dimension of the model*. Is the number of embeddings
+        used to encode the categorical and/or continuous columns
     attn_dropout: float, default = 0.2
         Dropout for each attention block
     with_addnorm: bool = False,

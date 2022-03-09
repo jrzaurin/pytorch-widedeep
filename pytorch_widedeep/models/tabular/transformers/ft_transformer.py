@@ -73,7 +73,7 @@ class FTTransformer(BaseTabularModelWithAttention):
         (See `Linformer: Self-Attention with Linear Complexity
         <https://arxiv.org/abs/2006.04768>`_ ) The compression factor that
         will be used to reduce the input sequence length. If we denote the
-        resulting sequence length as :math:`k`
+        resulting sequence length as
         :math:`k = int(kv_{compression \space factor} \times s)`
         where :math:`s` is the input sequence length.
     kv_sharing: bool, default = False

@@ -53,6 +53,12 @@ class TabPreprocessor(BasePreprocessor):
         is important to emphasize that all the DL models for tabular data in
         the library also include the possibility of normalising the input
         continuous features via a ``BatchNorm`` or a ``LayerNorm``.
+
+        Param alias: ``scale_cont_cols``
+
+    already_standard: List, default = None
+        List with the name of the continuous cols that do not need to be
+        scaled/standarised.
     auto_embed_dim: bool, default = True
         Boolean indicating whether the embedding dimensions will be
         automatically defined via rule of thumb. See ``embedding_rule``
@@ -61,19 +67,16 @@ class TabPreprocessor(BasePreprocessor):
         If ``auto_embed_dim=True``, this is the choice of embedding rule of
         thumb. Choices are:
 
-        - 'fastai_new' -- :math:`min(600, round(1.6 \times n_{cat}^{0.56}))`
+        - `'fastai_new'` -- :math:`min(600, round(1.6 \times n_{cat}^{0.56}))`
 
-        - 'fastai_old' -- :math:`min(50, (n_{cat}//{2})+1)`
+        - `'fastai_old'` -- :math:`min(50, (n_{cat}//{2})+1)`
 
-        - 'google' -- :math:`min(600, round(n_{cat}^{0.24}))`
+        - `'google'` -- :math:`min(600, round(n_{cat}^{0.24}))`
 
     default_embed_dim: int, default=16
         Dimension for the embeddings if the embed_dim is not provided in the
         ``cat_embed_cols`` parameter and ``auto_embed_dim`` is set to
         ``False``.
-    already_standard: List, default = None
-        List with the name of the continuous cols that do not need to be
-        Standarised.
     with_attention: bool, default = False
         Boolean indicating whether the preprocessed data will be passed to an
         attention-based model. If ``True``, the param ``cat_embed_cols`` must
@@ -140,6 +143,7 @@ class TabPreprocessor(BasePreprocessor):
 
     @Alias("with_attention", "for_transformer")
     @Alias("cat_embed_cols", "embed_cols")
+    @Alias("scale", "scale_cont_cols")
     def __init__(
         self,
         cat_embed_cols: Union[List[str], List[Tuple[str, int]]] = None,

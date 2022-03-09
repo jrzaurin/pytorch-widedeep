@@ -72,7 +72,7 @@ class TabTransformer(BaseTabularModelWithAttention):
         Activation function to be applied to the continuous embeddings, if
         any. `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
     input_dim: int, default = 32
-        The so-called *dimension of the model*. In general is the number of
+        The so-called *dimension of the model*. Is the number of
         embeddings used to encode the categorical and/or continuous columns
     n_heads: int, default = 8
         Number of attention heads per Transformer block
