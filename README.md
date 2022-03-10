@@ -15,14 +15,14 @@
 
 # pytorch-widedeep
 
-A flexible package to use Deep Learning with tabular data, text and images
-using wide and deep models.
+A flexible package for multimodal-deep-learning to combine tabular data with
+text and images using Wide and Deep models in Pytorch
 
 **Documentation:** [https://pytorch-widedeep.readthedocs.io](https://pytorch-widedeep.readthedocs.io/en/latest/index.html)
 
 **Companion posts and tutorials:** [infinitoml](https://jrzaurin.github.io/infinitoml/)
 
-**Experiments and comparisson with `LightGBM`**: [TabularDL vs LightGBM](https://github.com/jrzaurin/tabulardl-benchmark)
+**Experiments and comparison with `LightGBM`**: [TabularDL vs LightGBM](https://github.com/jrzaurin/tabulardl-benchmark)
 
 The content of this document is organized as follows:
 
@@ -33,7 +33,8 @@ The content of this document is organized as follows:
 
 ### Introduction
 
-``pytorch-widedeep`` is based on Google's [Wide and Deep Algorithm](https://arxiv.org/abs/1606.07792)
+``pytorch-widedeep`` is based on Google's [Wide and Deep Algorithm](https://arxiv.org/abs/1606.07792),
+adjusted for multi-modal datasets
 
 In general terms, `pytorch-widedeep` is a package to use deep learning with
 tabular data. In particular, is intended to facilitate the combination of text
@@ -89,15 +90,11 @@ into:
   <img width="300" src="docs/figures/architecture_2_math.png">
 </p>
 
-I recommend using the ``wide`` and ``deeptabular`` models in
-``pytorch-widedeep``. However it is very likely that users will want to use
-their own models for the ``deeptext`` and ``deepimage`` components. That is
-perfectly possible as long as the the custom models have an attribute called
+It is perfectly possible to use custom models (and not necessarily those in
+the library) as long as the the custom models have an attribute called
 ``output_dim`` with the size of the last layer of activations, so that
-``WideDeep`` can be constructed. Again, examples on how to use custom
-components can be found in the Examples folder. Just in case
-``pytorch-widedeep`` includes standard text (stack of LSTMs) and image
-(pre-trained ResNets or stack of CNNs) models.
+``WideDeep`` can be constructed. Examples on how to use custom components can
+be found in the Examples folder.
 
 ### The ``deeptabular`` component
 
@@ -110,15 +107,17 @@ its own, i.e. what one might normally refer as Deep Learning for Tabular
 Data. Currently, ``pytorch-widedeep`` offers the following different models
 for that component:
 
-
+0. **Wide**: a simple linear model where the nonlinearities are captured via
+cross-product transformations, as explained before.
 1. **TabMlp**: a simple MLP that receives embeddings representing the
-categorical features, concatenated with the continuous features.
+categorical features, concatenated with the continuous features, which can
+also be embedded.
 2. **TabResnet**: similar to the previous model but the embeddings are
 passed through a series of ResNet blocks built with dense layers.
 3. **TabNet**: details on TabNet can be found in
 [TabNet: Attentive Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442)
 
-And the ``Tabformer`` family, i.e. Transformers for Tabular data:
+The ``Tabformer`` family, i.e. Transformers for Tabular data:
 
 4. **TabTransformer**: details on the TabTransformer can be found in
 [TabTransformer: Tabular Data Modeling Using Contextual Embeddings](https://arxiv.org/pdf/2012.06678.pdf).
@@ -133,12 +132,19 @@ on the Fasformer can be found in
 the Perceiver can be found in
 [Perceiver: General Perception with Iterative Attention](https://arxiv.org/abs/2103.03206)
 
+And probabilistic DL models for tabular data based on
+[Weight Uncertainty in Neural Networks](https://arxiv.org/abs/1505.05424):
+
+9. **BayesianWide**: Probabilistic adaptation of the `Wide` model.
+10. **BayesianTabMlp**: Probabilistic adaptation of the `TabMlp` model
+
 Note that while there are scientific publications for the TabTransformer,
 SAINT and FT-Transformer, the TabFasfFormer and TabPerceiver are our own
 adaptation of those algorithms for tabular data.
 
-For details on these models and their options please see the examples in the
-Examples folder and the documentation.
+For details on these models (and all the other models in the library for the
+different data modes) and their corresponding options please see the examples
+in the Examples folder and the documentation.
 
 ###  Installation
 
@@ -165,27 +171,6 @@ cd pytorch-widedeep
 pip install -e .
 ```
 
-**Important note for Mac users**: at the time of writing the latest `torch`
-release is `1.9`. Some past [issues](https://stackoverflow.com/questions/64772335/pytorch-w-parallelnative-cpp206)
-when running on Mac, present in previous versions, persist on this release
-and the data-loaders will not run in parallel. In addition, since `python
-3.8`, [the `multiprocessing` library start method changed from `'fork'` to`'spawn'`](https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods).
-This also affects the data-loaders (for any `torch` version) and they will
-not run in parallel. Therefore, for Mac users I recommend using `python 3.7`
-and `torch <= 1.6` (with the corresponding, consistent
-version of `torchvision`, e.g. `0.7.0` for `torch 1.6`). I do not want to
-force this versioning in the `setup.py` file since I expect that all these
-issues are fixed in the future. Therefore, after installing
-`pytorch-widedeep` via pip or directly from github, downgrade `torch` and
-`torchvision` manually:
-
-```bash
-pip install pytorch-widedeep
-pip install torch==1.6.0 torchvision==0.7.0
-```
-
-None of these issues affect Linux users.
-
 ### Quick start
 
 Binary classification with the [adult
@@ -195,7 +180,6 @@ using `Wide` and `DeepDense` and defaults settings.
 Building a wide (linear) and deep model with ``pytorch-widedeep``:
 
 ```python
-
 import pandas as pd
 import numpy as np
 import torch
@@ -205,16 +189,15 @@ from pytorch_widedeep import Trainer
 from pytorch_widedeep.preprocessing import WidePreprocessor, TabPreprocessor
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep
 from pytorch_widedeep.metrics import Accuracy
+from pytorch_widedeep.datasets import load_adult
 
-# the following 4 lines are not directly related to ``pytorch-widedeep``. I
-# assume you have downloaded the dataset and place it in a dir called
-# data/adult/
-df = pd.read_csv("data/adult/adult.csv.zip")
+
+df = load_adult(as_frame=True)
 df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
 df.drop("income", axis=1, inplace=True)
 df_train, df_test = train_test_split(df, test_size=0.2, stratify=df.income_label)
 
-# prepare wide, crossed, embedding and continuous columns
+# Define the 'column set up'
 wide_cols = [
     "education",
     "relationship",
@@ -223,38 +206,43 @@ wide_cols = [
     "native-country",
     "gender",
 ]
-cross_cols = [("education", "occupation"), ("native-country", "occupation")]
-embed_cols = [
-    ("education", 16),
-    ("workclass", 16),
-    ("occupation", 16),
-    ("native-country", 32),
+crossed_cols = [("education", "occupation"), ("native-country", "occupation")]
+
+cat_embed_cols = [
+    "workclass",
+    "education",
+    "marital-status",
+    "occupation",
+    "relationship",
+    "race",
+    "gender",
+    "capital-gain",
+    "capital-loss",
+    "native-country",
 ]
-cont_cols = ["age", "hours-per-week"]
-target_col = "income_label"
+continuous_cols = ["age", "hours-per-week"]
+target = "income_label"
+target = df_train[target].values
 
-# target
-target = df_train[target_col].values
-
-# wide
-wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=cross_cols)
+# prepare the data
+wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
 X_wide = wide_preprocessor.fit_transform(df_train)
-wide = Wide(wide_dim=np.unique(X_wide).shape[0], pred_dim=1)
 
-# deeptabular
-tab_preprocessor = TabPreprocessor(embed_cols=embed_cols, continuous_cols=cont_cols)
-X_tab = tab_preprocessor.fit_transform(df_train)
-deeptabular = TabMlp(
-    mlp_hidden_dims=[64, 32],
-    column_idx=tab_preprocessor.column_idx,
-    embed_input=tab_preprocessor.embeddings_input,
-    continuous_cols=cont_cols,
+tab_preprocessor = TabPreprocessor(
+    cat_embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
 )
+X_tab = tab_preprocessor.fit_transform(df_train)
 
-# wide and deep
-model = WideDeep(wide=wide, deeptabular=deeptabular)
+# build the model
+wide = Wide(input_dim=np.unique(X_wide).shape[0], pred_dim=1)
+tab_mlp = TabMlp(
+    column_idx=tab_preprocessor.column_idx,
+    cat_embed_input=tab_preprocessor.cat_embed_input,
+    continuous_cols=continuous_cols,
+)
+model = WideDeep(wide=wide, deeptabular=tab_mlp)
 
-# train the model
+# train and validate
 trainer = Trainer(model, objective="binary", metrics=[Accuracy])
 trainer.fit(
     X_wide=X_wide,
@@ -262,10 +250,9 @@ trainer.fit(
     target=target,
     n_epochs=5,
     batch_size=256,
-    val_split=0.1,
 )
 
-# predict
+# predict on test
 X_wide_te = wide_preprocessor.transform(df_test)
 X_tab_te = tab_preprocessor.transform(df_test)
 preds = trainer.predict(X_wide=X_wide_te, X_tab=X_tab_te)
@@ -282,14 +269,11 @@ torch.save(model.state_dict(), "model_weights/wd_model.pt")
 # From here in advance, Option 1 or 2 are the same. I assume the user has
 # prepared the data and defined the new model components:
 # 1. Build the model
-model_new = WideDeep(wide=wide, deeptabular=deeptabular)
+model_new = WideDeep(wide=wide, deeptabular=tab_mlp)
 model_new.load_state_dict(torch.load("model_weights/wd_model.pt"))
 
 # 2. Instantiate the trainer
-trainer_new = Trainer(
-    model_new,
-    objective="binary",
-)
+trainer_new = Trainer(model_new, objective="binary")
 
 # 3. Either start the fit or directly predict
 preds = trainer_new.predict(X_wide=X_wide, X_tab=X_tab)

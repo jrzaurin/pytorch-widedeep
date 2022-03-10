@@ -144,10 +144,10 @@ class Callback(object):
 
 
 class History(Callback):
-    r"""Callback that records metrics to a ``history`` attribute.
+    r"""Saves the metrics in the ``history`` attribute of the ``Trainer``.
 
-    This callback runs by default within :obj:`Trainer`, therefore, should not
-    be passed to the :obj:`Trainer`. Is included here just for completion.
+    This callback runs by default within ``Trainer``, therefore, should not
+    be passed to the ``Trainer``. It is included here just for completion.
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):
@@ -170,8 +170,8 @@ class History(Callback):
 class LRShedulerCallback(Callback):
     r"""Callback for the learning rate schedulers to take a step
 
-    This callback runs by default within :obj:`Trainer`, therefore, should not
-    be passed to the :obj:`Trainer`. Is included here just for completion.
+    This callback runs by default within ``Trainer``, therefore, should not
+    be passed to the ``Trainer``. It is included here just for completion.
     """
 
     def on_batch_end(self, batch: int, logs: Optional[Dict] = None):
@@ -225,8 +225,8 @@ class LRShedulerCallback(Callback):
 class MetricCallback(Callback):
     r"""Callback that resets the metrics (if any metric is used)
 
-    This callback runs by default within :obj:`Trainer`, therefore, should not
-    be passed to the :obj:`Trainer`. Is included here just for completion.
+    This callback runs by default within ``Trainer``, therefore, should not
+    be passed to the ``Trainer``. It is included here just for completion.
     """
 
     def __init__(self, container: MultipleMetrics):
@@ -240,15 +240,16 @@ class MetricCallback(Callback):
 
 
 class LRHistory(Callback):
-    r"""Saves the learning rates during training to a ``lr_history`` attribute.
+    r"""Saves the learning rates during training in the ``lr_history`` attribute
+    of the ``Trainer``.
 
-    Callbacks are passed as input parameters to the :obj:`Trainer` class. See
+    Callbacks are passed as input parameters to the ``Trainer`` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
 
     Parameters
     ----------
     n_epochs: int
-        number of epochs durint training
+        number of training epochs
 
     Examples
     --------
@@ -259,7 +260,7 @@ class LRHistory(Callback):
     >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
     >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
     >>> wide = Wide(10, 1)
-    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
+    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
     >>> model = WideDeep(wide, deep)
     >>> trainer = Trainer(model, objective="regression", callbacks=[LRHistory(n_epochs=10)])
     """
@@ -333,7 +334,7 @@ class ModelCheckpoint(Callback):
     This class is almost identical to the corresponding keras class.
     Therefore, **credit** to the Keras Team.
 
-    Callbacks are passed as input parameters to the :obj:`Trainer` class. See
+    Callbacks are passed as input parameters to the ``Trainer`` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
 
     Parameters
@@ -342,11 +343,13 @@ class ModelCheckpoint(Callback):
         Full path to save the output weights. It must contain only the root of
         the filenames. Epoch number and ``.pt`` extension (for pytorch) will
         be added. e.g. ``filepath="path/to/output_weights/weights_out"`` And
-        the saved files in that directory will be named: ``weights_out_1.pt,
-        weights_out_2.pt, ...``
-        If set to None the class just report best metric and best_epoch.
+        the saved files in that directory will be named:
+        `'weights_out_1.pt',
+        'weights_out_2.pt', ...` If set to None the class just report best
+        metric and best_epoch.
     monitor: str, default="loss"
-        quantity to monitor. Typically 'val_loss' or metric name (e.g. 'val_acc')
+        quantity to monitor. Typically `'val_loss'` or metric name
+        (e.g. `'val_acc'`)
     verbose:int, default=0
         verbosity mode
     save_best_only: bool, default=False,
@@ -364,14 +367,11 @@ class ModelCheckpoint(Callback):
     max_save: int, default=-1
         Maximum number of outputs to save. If -1 will save all outputs
     wb: obj, default=None
-        Weights&Biases API interface to report single best result usable for comparisson of multiple
-        paramater combinations by e.g. parallel coordinates:
-        https://docs.wandb.ai/ref/app/features/panels/parallel-coordinates.
-        E.g W&B summary report `wandb.run.summary["best"]`:
-        If external EarlyStopping scheduler is used from e.g. RayTune in combination with W&B,
-        the RayTune EarlyStopping stops training function and the summary log is not sent if defined
-        after training by e.g.:
-        `wandb.run.summary["best"]=model_checkpoint.best`.
+        Weights&Biases API interface to report single best result usable for
+        comparisson of multiple paramater combinations by, for example,
+        `parallel coordinates
+        <https://docs.wandb.ai/ref/app/features/panels/parallel-coordinates>`_.
+        E.g W&B summary report `wandb.run.summary["best"]`.
 
     Attributes
     ----------
@@ -380,7 +380,13 @@ class ModelCheckpoint(Callback):
     best_epoch: int
         best epoch
     best_state_dict: dict
-        best model state dictionary to restore model to its best state using trainer.model.load_state_dict(ModelCheckpoint.best_state_dict)
+        best model state dictionary to restore model to its best state using
+
+        .. code-block:: python
+
+            Trainer.model.load_state_dict(model_checkpoint.best_state_dict)
+
+        where ``model_checkpoint`` is an instance of the class ``ModelCheckpoint``
 
     Examples
     --------
@@ -391,7 +397,7 @@ class ModelCheckpoint(Callback):
     >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
     >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
     >>> wide = Wide(10, 1)
-    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
+    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
     >>> model = WideDeep(wide, deep)
     >>> trainer = Trainer(model, objective="regression", callbacks=[ModelCheckpoint(filepath='checkpoints/weights_out')])
     """
@@ -546,13 +552,14 @@ class EarlyStopping(Callback):
     This class is almost identical to the corresponding keras class.
     Therefore, **credit** to the Keras Team.
 
-    Callbacks are passed as input parameters to the :obj:`Trainer` class. See
+    Callbacks are passed as input parameters to the ``Trainer`` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
 
     Parameters
     -----------
     monitor: str, default='val_loss'.
-        Quantity to monitor. Typically 'val_loss' or metric name (e.g. 'val_acc')
+        Quantity to monitor. Typically `'val_loss'` or metric name
+        (e.g. `'val_acc'`)
     min_delta: float, default=0.
         minimum change in the monitored quantity to qualify as an
         improvement, i.e. an absolute change of less than min_delta, will
@@ -592,7 +599,7 @@ class EarlyStopping(Callback):
     >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
     >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
     >>> wide = Wide(10, 1)
-    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, embed_input=embed_input)
+    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
     >>> model = WideDeep(wide, deep)
     >>> trainer = Trainer(model, objective="regression", callbacks=[EarlyStopping(patience=10)])
     """
@@ -703,12 +710,14 @@ class RayTuneReporter(Callback):
     r"""Callback that allows reporting history and lr_history values to RayTune
     during Hyperparameter tuning
 
-    Callbacks are passed as input parameters to the :obj:`Trainer` class. See
+    Callbacks are passed as input parameters to the ``Trainer`` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
 
-    Examples
-    --------
-    see /examples/12_HyperParameter_tuning_w_RayTune.ipynb
+    For examples see the examples folder at:
+
+        .. code-block:: bash
+
+            /examples/12_HyperParameter_tuning_w_RayTune.ipynb
     """
 
     def on_epoch_end(

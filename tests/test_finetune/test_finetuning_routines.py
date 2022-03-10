@@ -10,16 +10,17 @@ from torch.utils.data import Dataset, DataLoader
 
 from pytorch_widedeep.models import Wide, TabMlp
 from pytorch_widedeep.metrics import Accuracy, MultipleMetrics
-from pytorch_widedeep.models.deep_image import conv_layer
 from pytorch_widedeep.training._finetune import FineTune
+from pytorch_widedeep.models.image._layers import conv_layer
+from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 
 use_cuda = torch.cuda.is_available()
 
 
 # Define a series of simple models to quickly test the FineTune class
-class TestDeepText(nn.Module):
+class TestTextMode(nn.Module):
     def __init__(self):
-        super(TestDeepText, self).__init__()
+        super(TestTextMode, self).__init__()
         self.word_embed = nn.Embedding(5, 16, padding_idx=0)
         self.rnn = nn.LSTM(16, 8, batch_first=True)
         self.linear = nn.Linear(8, 1)
@@ -30,9 +31,9 @@ class TestDeepText(nn.Module):
         return self.linear(h).view(-1, 1)
 
 
-class TestDeepImage(nn.Module):
+class TestImageMode(nn.Module):
     def __init__(self):
-        super(TestDeepImage, self).__init__()
+        super(TestImageMode, self).__init__()
 
         self.conv_block = nn.Sequential(
             conv_layer(3, 64, 3),
@@ -46,32 +47,9 @@ class TestDeepImage(nn.Module):
         return self.linear(x)
 
 
-# Define a simple WideDeep Dataset
-class WDset(Dataset):
-    def __init__(self, X_wide, X_tab, X_text, X_img, target):
-
-        self.X_wide = X_wide
-        self.X_tab = X_tab
-        self.X_text = X_text
-        self.X_img = X_img
-        self.Y = target
-
-    def __getitem__(self, idx: int):
-
-        X = Bunch(wide=self.X_wide[idx])
-        X.deeptabular = self.X_tab[idx]
-        X.deeptext = self.X_text[idx]
-        X.deepimage = self.X_img[idx]
-        y = self.Y[idx]
-        return X, y
-
-    def __len__(self):
-        return len(self.X_tab)
-
-
-# Remember that the FineTune class will be instantiated inside the WideDeep
-# and will take, among others, the activation_fn and the loss_fn of that class
-# as parameters. Therefore, we define equivalent classes to replicate the
+# Remember that the FineTune class will be instantiated inside WideDeep and
+# will take, among others, the activation_fn and the loss_fn of that class as
+# parameters. Therefore, we define equivalent classes to replicate the
 # scenario
 # def activ_fn(inp):
 #     return torch.sigmoid(inp)
@@ -84,10 +62,10 @@ def loss_fn(y_pred, y_true):
 # Define the data components:
 
 # target
-target = torch.empty(100, 1).random_(0, 2)
+target = np.random.randint(0, 2, (100, 1)).astype(float)
 
 # wide
-X_wide = torch.empty(100, 4).random_(1, 20)
+X_wide = np.random.randint(1, 20, (100, 4)).astype(float)
 
 # deep
 colnames = list(string.ascii_lowercase)[:10]
@@ -96,58 +74,60 @@ cont_cols = [np.random.rand(100) for _ in range(5)]
 embed_input = [(u, i, j) for u, i, j in zip(colnames[:5], [5] * 5, [16] * 5)]
 column_idx = {k: v for v, k in enumerate(colnames[:10])}
 continuous_cols = colnames[-5:]
-X_tab = torch.from_numpy(np.vstack(embed_cols + cont_cols).transpose())
+X_tab = np.vstack(embed_cols + cont_cols).transpose()
 
 # text
-X_text = torch.cat((torch.zeros([100, 1]), torch.empty(100, 4).random_(1, 4)), axis=1)  # type: ignore[call-overload]
+X_text = np.concatenate(
+    (np.zeros([100, 1]), np.random.randint(1, 4, (100, 4)).astype(float)), axis=1
+)
 
 # image
-X_image = torch.rand(100, 3, 28, 28)
+X_image = np.random.rand(100, 28, 28, 3)
 
 # Define the model components
 
-# wide
-wide = Wide(X_wide.unique().size(0), 1)
+# wide/linear
+wide = Wide(np.unique(X_wide).size, 1)
 if use_cuda:
     wide.cuda()
 
-# deep
-deeptabular = TabMlp(
+# tabular
+tab_mlp = TabMlp(
+    column_idx=column_idx,
+    cat_embed_input=embed_input,
+    continuous_cols=continuous_cols,
     mlp_hidden_dims=[32, 16, 8],
     mlp_dropout=0.2,
-    column_idx=column_idx,
-    embed_input=embed_input,
-    continuous_cols=continuous_cols,
 )
-deeptabular = nn.Sequential(deeptabular, nn.Linear(8, 1))  # type: ignore[assignment]
+tab_mlp = nn.Sequential(tab_mlp, nn.Linear(8, 1))  # type: ignore[assignment]
 if use_cuda:
-    deeptabular.cuda()
+    tab_mlp.cuda()
 
 # text
-deeptext = TestDeepText()
+deeptext = TestTextMode()
 if use_cuda:
     deeptext.cuda()
 
 # image
-deepimage = TestDeepImage()
+deepimage = TestImageMode()
 if use_cuda:
     deepimage.cuda()
 
 # Define the loader
-wdset = WDset(X_wide, X_tab, X_text, X_image, target)
-wdloader = DataLoader(wdset, batch_size=10, shuffle=True)
+mmset = WideDeepDataset(X_wide, X_tab, X_text, X_image, target)
+mmloader = DataLoader(mmset, batch_size=10, shuffle=True)
 
 # Instantiate the FineTune class
 finetuner = FineTune(loss_fn, MultipleMetrics([Accuracy()]), "binary", False)
 
 # List the layers for the finetune_gradual method
-# deeptabular childrens -> TabMmlp and the final Linear layer
+# tab_mlp childrens -> TabMmlp and the final Linear layer
 # TabMlp children -> Embeddings and MLP
 # MLP children -> dense layers
 # so here we go...
-last_linear = list(deeptabular.children())[1]
+last_linear = list(tab_mlp.children())[1]
 inverted_mlp_layers = list(
-    list(list(deeptabular.named_modules())[11][1].children())[0].children()
+    list(list(tab_mlp.named_modules())[12][1].children())[0].children()
 )[::-1]
 tab_layers = [last_linear] + inverted_mlp_layers
 text_layers = [c for c in list(deeptext.children())[1:]][::-1]
@@ -160,10 +140,10 @@ image_layers = [c for c in list(deepimage.children())][::-1]
 @pytest.mark.parametrize(
     "model, modelname, loader, n_epochs, max_lr",
     [
-        (wide, "wide", wdloader, 1, 0.01),
-        (deeptabular, "deeptabular", wdloader, 1, 0.01),
-        (deeptext, "deeptext", wdloader, 1, 0.01),
-        (deepimage, "deepimage", wdloader, 1, 0.01),
+        (wide, "wide", mmloader, 1, 0.01),
+        (tab_mlp, "deeptabular", mmloader, 1, 0.01),
+        (deeptext, "deeptext", mmloader, 1, 0.01),
+        (deepimage, "deepimage", mmloader, 1, 0.01),
     ],
 )
 def test_finetune_all(model, modelname, loader, n_epochs, max_lr):
@@ -181,12 +161,12 @@ def test_finetune_all(model, modelname, loader, n_epochs, max_lr):
 @pytest.mark.parametrize(
     "model, modelname, loader, max_lr, layers, routine",
     [
-        (deeptabular, "deeptabular", wdloader, 0.01, tab_layers, "felbo"),
-        (deeptabular, "deeptabular", wdloader, 0.01, tab_layers, "howard"),
-        (deeptext, "deeptext", wdloader, 0.01, text_layers, "felbo"),
-        (deeptext, "deeptext", wdloader, 0.01, text_layers, "howard"),
-        (deepimage, "deepimage", wdloader, 0.01, image_layers, "felbo"),
-        (deepimage, "deepimage", wdloader, 0.01, image_layers, "howard"),
+        (tab_mlp, "deeptabular", mmloader, 0.01, tab_layers, "felbo"),
+        (tab_mlp, "deeptabular", mmloader, 0.01, tab_layers, "howard"),
+        (deeptext, "deeptext", mmloader, 0.01, text_layers, "felbo"),
+        (deeptext, "deeptext", mmloader, 0.01, text_layers, "howard"),
+        (deepimage, "deepimage", mmloader, 0.01, image_layers, "felbo"),
+        (deepimage, "deepimage", mmloader, 0.01, image_layers, "howard"),
     ],
 )
 def test_finetune_gradual(model, modelname, loader, max_lr, layers, routine):

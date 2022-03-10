@@ -13,9 +13,9 @@ from pytorch_widedeep.models import (
     Wide,
     TabMlp,
     TabNet,
-    DeepText,
+    Vision,
+    BasicRNN,
     WideDeep,
-    DeepImage,
     TabResnet,
     TabTransformer,
 )
@@ -23,6 +23,7 @@ from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.callbacks import EarlyStopping
 from pytorch_widedeep.preprocessing import TabPreprocessor
+from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 
 # Wide array
 X_wide = np.random.choice(50, (32, 10))
@@ -65,31 +66,31 @@ target_multi = np.random.choice(3, 32)
 # build model components
 wide = Wide(np.unique(X_wide).shape[0], 1)
 tabmlp = TabMlp(
+    column_idx={k: v for v, k in enumerate(colnames)},
+    cat_embed_input=embed_input,
+    continuous_cols=colnames[-5:],
     mlp_hidden_dims=[32, 16],
     mlp_dropout=[0.5, 0.5],
-    column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embed_input,
-    continuous_cols=colnames[-5:],
 )
 tabresnet = TabResnet(
-    blocks_dims=[32, 16],
     column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embed_input,
+    cat_embed_input=embed_input,
     continuous_cols=colnames[-5:],
+    blocks_dims=[32, 16],
 )
 tabtransformer = TabTransformer(
     column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embed_input_tt,
+    cat_embed_input=embed_input_tt,
     continuous_cols=colnames[5:],
 )
 tabnet = TabNet(
     column_idx={k: v for v, k in enumerate(colnames)},
-    embed_input=embed_input,
+    cat_embed_input=embed_input,
     continuous_cols=colnames[5:],
     ghost_bn=False,
 )
-deeptext = DeepText(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
-deepimage = DeepImage(pretrained=True)
+deeptext = BasicRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+deepimage = Vision(pretrained_model_name="resnet18", n_trainable=0)
 
 ###############################################################################
 # test consistecy between optimizers and lr_schedulers format
@@ -178,7 +179,7 @@ def test_basic_run_with_metrics_multiclass():
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
         column_idx={k: v for v, k in enumerate(colnames)},
-        embed_input=embed_input,
+        cat_embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=3)
@@ -255,7 +256,7 @@ def test_save_and_load_dict():
     tabmlp = TabMlp(
         mlp_hidden_dims=[32, 16],
         column_idx={k: v for v, k in enumerate(colnames)},
-        embed_input=embed_input,
+        cat_embed_input=embed_input,
         continuous_cols=colnames[-5:],
     )
     model1 = WideDeep(wide=deepcopy(wide), deeptabular=deepcopy(tabmlp))
@@ -376,7 +377,7 @@ def test_get_embeddings_deprecation_warning():
     continuous_cols = ["col3", "col4"]
 
     tab_preprocessor = TabPreprocessor(
-        embed_cols=embed_cols, continuous_cols=continuous_cols
+        cat_embed_cols=embed_cols, continuous_cols=continuous_cols
     )
     X_tab = tab_preprocessor.fit_transform(df)
     target = df.target.values
@@ -385,7 +386,7 @@ def test_get_embeddings_deprecation_warning():
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
         column_idx={k: v for v, k in enumerate(df.columns)},
-        embed_input=tab_preprocessor.embeddings_input,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=tab_preprocessor.continuous_cols,
     )
 
@@ -402,3 +403,40 @@ def test_get_embeddings_deprecation_warning():
             col_name="col1",
             cat_encoding_dict=tab_preprocessor.label_encoder.encoding_dict,
         )
+
+
+###############################################################################
+# test Label Distribution Smoothing
+###############################################################################
+
+
+def test_lds_component_with_model():
+
+    model = WideDeep(deeptabular=tabmlp)
+    trainer = Trainer(model, objective="regression", verbose=0)
+    trainer.fit(X_tab=X_tab, target=target, with_lds=True)
+    # simply checking that runs and produces outputs
+    preds = trainer.predict(X_tab=X_tab)
+
+    assert preds.shape[0] == 32 and "train_loss" in trainer.history
+
+
+def test_lds_component_with_dataset():
+
+    dataset_with_lds = WideDeepDataset(X_tab=X_tab, target=target, with_lds=True)
+    # test if weights were created
+    assert dataset_with_lds.weights.shape[0] == 32
+
+
+###############################################################################
+# test Trainer _extract_kwargs
+###############################################################################
+
+
+def test_Trainer_extract_kwargs():
+    lds_args, dataloader_args, finetune_args = Trainer._extract_kwargs(
+        {"pin_memory": True, "lds_ks": 7, "n_epochs": 10}
+    )
+    assert lds_args == {"lds_ks": 7}
+    assert dataloader_args == {"pin_memory": True}
+    assert finetune_args == {"n_epochs": 10}

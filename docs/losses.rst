@@ -7,10 +7,10 @@ passed to the ``Trainer`` class via the parameter ``objective``
 that ``pytorch-widedeep`` will use internally is already implemented in
 Pytorch.
 
-In addition, ``pytorch-widedeep`` implements four "custom" loss functions.
-These are described below for completion since, as I mentioned before, they
-are used internally by the ``Trainer``. Of course, onen could always use them
-on their own and can be imported as:
+In addition, ``pytorch-widedeep`` implements a series of  "custom" loss
+functions. These are described below for completion since, as mentioned
+before, they are used internally by the ``Trainer``. Of course, onen could
+always use them on their own and can be imported as:
 
 .. code-block:: python
 
@@ -22,7 +22,7 @@ on their own and can be imported as:
 	the ground truth is expected to be a 1D tensor with the corresponding
 	classes. See Examples below
 
-.. autoclass:: pytorch_widedeep.losses.FocalLoss
+.. autoclass:: pytorch_widedeep.losses.MSELoss
 	:members:
 
 .. autoclass:: pytorch_widedeep.losses.MSLELoss
@@ -32,4 +32,34 @@ on their own and can be imported as:
 	:members:
 
 .. autoclass:: pytorch_widedeep.losses.RMSLELoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.QuantileLoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.FocalLoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.BayesianSELoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.TweedieLoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.ZILNLoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.L1Loss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.FocalR_L1Loss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.FocalR_MSELoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.FocalR_RMSELoss
+	:members:
+
+.. autoclass:: pytorch_widedeep.losses.HuberLoss
 	:members:

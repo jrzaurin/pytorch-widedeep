@@ -32,6 +32,10 @@ class _LossAliases:
         "root_mean_squared_error": ["root_mean_squared_error", "rmse"],
         "root_mean_squared_log_error": ["root_mean_squared_log_error", "rmsle"],
         "zero_inflated_lognormal": ["zero_inflated_lognormal", "ziln"],
+        "focalr_mse": ["focalr_mse"],
+        "focalr_rmse": ["focalr_rmse"],
+        "focalr_l1": ["focalr_l1"],
+        "huber": ["huber"],
         "quantile": ["quantile"],
         "tweedie": ["tweedie"],
     }
@@ -75,6 +79,10 @@ class _ObjectiveToMethod:
         "zero_inflated_lognormal": "regression",
         "ziln": "regression",
         "tweedie": "regression",
+        "focalr_mse": "regression",
+        "focalr_rmse": "regression",
+        "focalr_l1": "regression",
+        "huber": "regression",
         "quantile": "qregression",
     }
 

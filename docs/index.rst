@@ -18,6 +18,7 @@ Documentation
     Utilities <utils/index>
     Preprocessing <preprocessing>
     Model Components <model_components>
+    Bayesian Models <bayesian_models>
     Metrics <metrics>
     Losses <losses>
     Dataloaders <dataloaders>
@@ -30,7 +31,8 @@ Documentation
 Introduction
 ------------
 ``pytorch-widedeep`` is based on Google's `Wide and Deep Algorithm
-<https://arxiv.org/abs/1606.07792>`_.
+<https://arxiv.org/abs/1606.07792>`_, adjusted for multi-modal datasets
+
 
 In general terms, ``pytorch-widedeep`` is a package to use deep learning with
 tabular and multimodal data. In particular, is intended to facilitate the
@@ -96,9 +98,12 @@ own, i.e. what one might normally refer as Deep Learning for Tabular Data.
 Currently, ``pytorch-widedeep`` offers the following different models for
 that component:
 
+0. **Wide**: a simple linear model where the nonlinearities are captured via
+cross-product transformations, as explained before.
 
 1. **TabMlp**: a simple MLP that receives embeddings representing the
-categorical features, concatenated with the continuous features.
+categorical features, concatenated with the continuous features, which can
+also be embedded.
 
 2. **TabResnet**: similar to the previous model but the embeddings are
 passed through a series of ResNet blocks built with dense layers.
@@ -106,7 +111,7 @@ passed through a series of ResNet blocks built with dense layers.
 3. **TabNet**: details on TabNet can be found in `TabNet: Attentive
 Interpretable Tabular Learning <https://arxiv.org/abs/1908.07442>`_
 
-And the ``Tabformer`` family, i.e. Transformers for Tabular data:
+The ``Tabformer`` family, i.e. Transformers for Tabular data:
 
 4. **TabTransformer**: details on the TabTransformer can be found in
 `TabTransformer: Tabular Data Modeling Using Contextual Embeddings
@@ -129,22 +134,24 @@ Models for Natural Language Understanding
 the Perceiver can be found in `Perceiver: General Perception with Iterative
 Attention <https://arxiv.org/abs/2103.03206>`_
 
+And probabilistic DL models for tabular data based on
+`Weight Uncertainty in Neural Networks <https://arxiv.org/abs/1505.05424>`_:
+
+9. **BayesianWide**: Probabilistic adaptation of the `Wide` model.
+
+10. **BayesianTabMlp**: Probabilistic adaptation of the `TabMlp` model
+
 Note that while there are scientific publications for the TabTransformer,
 SAINT and FT-Transformer, the TabFasfFormer and TabPerceiver are our own
-adaptation of those algorithms for tabular data.
+adaptation of those algorithms for tabular data. For details on these models
+and their options please see the examples in the Examples folder and the
+documentation.
 
-For details on these models and their options please see the examples in the
-Examples folder and the documentation.
-
-Finally, while I recommend using the ``wide`` and ``deeptabular`` models in
-``pytorch-widedeep`` it is very likely that users will want to use their own
-models for the ``deeptext`` and ``deepimage`` components. That is perfectly
-possible as long as the the custom models have an attribute called
-``output_dim`` with the size of the last layer of activations, so that
-``WideDeep`` can be constructed. Again, examples on how to use custom
-components can be found in the Examples folder. Just in case
-``pytorch-widedeep`` includes standard text (stack of LSTMs or GRUs) and
-image(pre-trained ResNets or stack of CNNs) models.
+Finally, it is perfectly possible to use custom models as long as the the
+custom models have an attribute called ``output_dim`` with the size of the
+last layer of activations, so that ``WideDeep`` can be constructed. Again,
+examples on how to use custom components can be found in the Examples
+folder.
 
 Indices and tables
 ==================

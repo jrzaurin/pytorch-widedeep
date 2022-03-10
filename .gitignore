@@ -11,6 +11,10 @@ __pycache__*
 .ipynb_checkpoints
 Untitled*.ipynb
 
+# sublime debugger
+*.sublime-project
+*.sublime-workspace
+
 # data related dirs
 tmp_data/
 model_weights/
@@ -26,6 +30,9 @@ htmlcov*/
 .pytest_cache
 .cache
 .hypothesis/
+
+# vscode
+.vscode
 
 # sublime
 *.sublime-workspace
@@ -45,3 +52,7 @@ _templates
 
 # test checkpoints
 checkpoints
+
+# wnb
+wandb/
+wandb_api.key

@@ -2,8 +2,10 @@
 parallel = True
 omit =
     pytorch_widedeep/optim/*
+    pytorch_widedeep/bayesian_models/bayesian_nn/modules/*
 
 [report]
 omit =
     pytorch_widedeep/optim/*
+    pytorch_widedeep/bayesian_models/bayesian_nn/modules/*
 precision = 2

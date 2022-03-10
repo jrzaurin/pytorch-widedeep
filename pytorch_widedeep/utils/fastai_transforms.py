@@ -38,7 +38,7 @@ def ifnone(a: Any, b: Any) -> Any:
 def num_cpus() -> Optional[int]:
     "Get number of cpus"
     try:
-        return len(os.sched_getaffinity(0))
+        return len(os.sched_getaffinity(0))  # type: ignore[attr-defined]
     except AttributeError:
         return os.cpu_count()
 
@@ -121,7 +121,7 @@ class SpacyTokenizer(BaseTokenizer):
             strings that are the special cases to add to the tokenizer
         """
         for w in toks:
-            self.tok.tokenizer.add_special_case(w, [{ORTH: w}])
+            self.tok.tokenizer.add_special_case(w, [{ORTH: w}])  # type: ignore[union-attr]
 
 
 def spec_add_spaces(t: str) -> str:

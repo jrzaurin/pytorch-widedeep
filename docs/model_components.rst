@@ -1,59 +1,71 @@
 The ``models`` module
 ======================
 
-This module contains the four main components that will comprise a Wide and
-Deep model, and the ``WideDeep`` "constructor" class. These four components
-are: ``wide``, ``deeptabular``, ``deeptext``, ``deepimage``.
+This module contains the models that can be used as the four main components
+that will comprise a Wide and Deep model (``wide``, ``deeptabular``,
+``deeptext``, ``deepimage``), as well as the ``WideDeep`` "constructor"
+class. Note that each of the four components can be used independently.
 
-.. note:: ``TabMlp``, ``TabResnet``, ``TabNet``, ``TabTransformer``,  ``SAINT``,
-	``FTTransformer``, ``TabPerceiver`` and ``TabFastFormer`` can all be used
-	as the ``deeptabular`` component of the model and simply represent different
-	alternatives
+.. autoclass:: pytorch_widedeep.models.tabular.linear.wide.Wide
+    :exclude-members: forward
+    :members:
 
-.. autoclass:: pytorch_widedeep.models.wide.Wide
-	:exclude-members: forward
-	:members:
+.. autoclass:: pytorch_widedeep.models.tabular.mlp.tab_mlp.TabMlp
+    :exclude-members: forward
+    :members:
 
-.. autoclass:: pytorch_widedeep.models.tab_mlp.TabMlp
-	:exclude-members: forward
-	:members:
+.. autoclass:: pytorch_widedeep.models.tabular.mlp.context_attention_mlp.ContextAttentionMLP
+    :exclude-members: forward
+    :members:
 
-.. autoclass:: pytorch_widedeep.models.tab_resnet.TabResnet
-	:exclude-members: forward
-	:members:
+.. autoclass:: pytorch_widedeep.models.tabular.mlp.self_attention_mlp.SelfAttentionMLP
+    :exclude-members: forward
+    :members:
 
-.. autoclass:: pytorch_widedeep.models.tabnet.tab_net.TabNet
-	:exclude-members: forward
-	:members:
+.. autoclass:: pytorch_widedeep.models.tabular.resnet.tab_resnet.TabResnet
+    :exclude-members: forward
+    :members:
 
-.. autoclass:: pytorch_widedeep.models.transformers.tab_transformer.TabTransformer
-	:exclude-members: forward
-	:members:
+.. autoclass:: pytorch_widedeep.models.tabular.tabnet.tab_net.TabNet
+    :exclude-members: forward
+    :members:
 
-.. autoclass:: pytorch_widedeep.models.transformers.saint.SAINT
-	:exclude-members: forward
-	:members:
+.. autoclass:: pytorch_widedeep.models.tabular.transformers.tab_transformer.TabTransformer
+    :exclude-members: forward
+    :members:
 
-.. autoclass:: pytorch_widedeep.models.transformers.ft_transformer.FTTransformer
-	:exclude-members: forward
-	:members:
+.. autoclass:: pytorch_widedeep.models.tabular.transformers.saint.SAINT
+    :exclude-members: forward
+    :members:
 
-.. autoclass:: pytorch_widedeep.models.transformers.tab_perceiver.TabPerceiver
-	:exclude-members: forward
-	:members:
+.. autoclass:: pytorch_widedeep.models.tabular.transformers.ft_transformer.FTTransformer
+    :exclude-members: forward
+    :members:
 
-.. autoclass:: pytorch_widedeep.models.transformers.tab_fastformer.TabFastFormer
-	:exclude-members: forward
-	:members:
+.. autoclass:: pytorch_widedeep.models.tabular.transformers.tab_perceiver.TabPerceiver
+    :exclude-members: forward
+    :members:
 
-.. autoclass:: pytorch_widedeep.models.deep_text.DeepText
-	:exclude-members: forward
-	:members:
+.. autoclass:: pytorch_widedeep.models.tabular.transformers.tab_fastformer.TabFastFormer
+    :exclude-members: forward
+    :members:
 
-.. autoclass:: pytorch_widedeep.models.deep_image.DeepImage
-	:exclude-members: forward
-	:members:
+.. autoclass:: pytorch_widedeep.models.text.attentive_rnn.BasicRNN
+    :exclude-members: forward
+    :members:
+
+.. autoclass:: pytorch_widedeep.models.text.attentive_rnn.AttentiveRNN
+    :exclude-members: forward
+    :members:
+
+.. autoclass:: pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN
+    :exclude-members: forward
+    :members:
+
+.. autoclass:: pytorch_widedeep.models.image.vision.Vision
+    :exclude-members: forward
+    :members:
 
 .. autoclass:: pytorch_widedeep.models.wide_deep.WideDeep
-	:exclude-members: forward
-	:members:
+    :exclude-members: forward
+    :members:

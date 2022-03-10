@@ -37,7 +37,7 @@ class MultipleMetrics(object):
         for metric in self._metrics:
             if isinstance(metric, Metric):
                 logs[self.prefix + metric._name] = metric(y_pred, y_true)
-            if isinstance(metric, TorchMetric):
+            elif isinstance(metric, TorchMetric):
                 metric.update(y_pred, y_true.int())  # type: ignore[attr-defined]
                 logs[self.prefix + type(metric).__name__] = (
                     metric.compute().detach().cpu().numpy()
@@ -289,7 +289,7 @@ class FBetaScore(Metric):
 
         prec = self.precision(y_pred, y_true)
         rec = self.recall(y_pred, y_true)
-        beta2 = self.beta ** 2
+        beta2 = self.beta**2
 
         fbeta = ((1 + beta2) * prec * rec) / (beta2 * prec + rec + self.eps)
 

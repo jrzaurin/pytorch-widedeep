@@ -65,11 +65,11 @@ def test_fit_objectives(
 ):
     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
     deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
-        column_idx=column_idx,
-        embed_input=embed_input,
-        continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=pred_dim)
     trainer = Trainer(model, objective=objective, verbose=0)
@@ -99,10 +99,10 @@ def test_fit_objectives(
 def test_fit_with_deephead():
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deeptabular = TabMlp(
-        mlp_hidden_dims=[32, 16],
         column_idx=column_idx,
-        embed_input=embed_input,
+        cat_embed_input=embed_input,
         continuous_cols=colnames[-5:],
+        mlp_hidden_dims=[32, 16],
     )
     deephead = nn.Sequential(nn.Linear(16, 8), nn.Linear(8, 4))
     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=1, deephead=deephead)
@@ -147,7 +147,7 @@ def test_fit_objectives_tab_transformer(
     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
     tab_transformer = TabTransformer(
         column_idx={k: v for v, k in enumerate(colnames)},
-        embed_input=embed_input_tt,
+        cat_embed_input=embed_input_tt,
         continuous_cols=colnames[5:],
     )
     model = WideDeep(wide=wide, deeptabular=tab_transformer, pred_dim=pred_dim)
@@ -204,7 +204,7 @@ def test_fit_objectives_tabnet(
     wide = Wide(np.unique(X_wide).shape[0], pred_dim)
     tab_transformer = TabNet(
         column_idx={k: v for v, k in enumerate(colnames)},
-        embed_input=embed_input,
+        cat_embed_input=embed_input,
         continuous_cols=colnames[5:],
     )
     model = WideDeep(wide=wide, deeptabular=tab_transformer, pred_dim=pred_dim)
@@ -237,11 +237,11 @@ def test_fit_objectives_tabnet(
 def test_fit_with_regression_and_metric():
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
-        column_idx=column_idx,
-        embed_input=embed_input,
-        continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=1)
     trainer = Trainer(model, objective="regression", metrics=[R2Score], verbose=0)
@@ -257,11 +257,11 @@ def test_fit_with_regression_and_metric():
 def test_aliases():
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
-        column_idx=column_idx,
-        embed_input=embed_input,
-        continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=1)
     trainer = Trainer(model, loss="regression", verbose=0)
@@ -283,11 +283,11 @@ def test_aliases():
 def test_custom_dataloader():
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
         mlp_hidden_dims=[32, 16],
         mlp_dropout=[0.5, 0.5],
-        column_idx=column_idx,
-        embed_input=embed_input,
-        continuous_cols=colnames[-5:],
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular)
     trainer = Trainer(model, loss="binary", verbose=0)
@@ -300,3 +300,23 @@ def test_custom_dataloader():
     )
     # simply checking that runs with DataLoaderImbalanced
     assert "train_loss" in trainer.history.keys()
+
+
+##############################################################################
+# Test raise warning for multiclass classification
+##############################################################################
+
+
+def test_multiclass_warning():
+    wide = Wide(np.unique(X_wide).shape[0], 1)
+    deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+    )
+    model = WideDeep(wide=wide, deeptabular=deeptabular)
+
+    with pytest.raises(ValueError):
+        trainer = Trainer(model, loss="multiclass", verbose=0)  # noqa: F841

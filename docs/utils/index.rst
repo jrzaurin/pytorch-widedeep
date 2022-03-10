@@ -1,7 +1,7 @@
 The ``utils`` module
 ====================
 
-These are a series utilities that might be useful for a number of
+These are a series of utilities that might be useful for a number of
 preprocessing tasks, even not directly related to ``pytorch-widedeep``. All
 the classes and functions discussed here are available directly from the
 ``utils`` module. For example, the ``LabelEncoder`` within the

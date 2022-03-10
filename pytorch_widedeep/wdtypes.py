@@ -14,6 +14,17 @@ from typing import (
     Generator,
     Collection,
 )
+
+# isort: off
+if sys.version_info.minor == 7:
+    try:
+        from typing_extensions import Literal
+    except ModuleNotFoundError:
+        pass
+else:
+    from typing import Literal  # type: ignore[attr-defined, no-redef]  # noqa: F811
+# isort: on
+
 from pathlib import PosixPath
 
 import torch
@@ -51,7 +62,13 @@ from torch.optim.lr_scheduler import _LRScheduler
 from torch.utils.data.dataloader import DataLoader
 
 from pytorch_widedeep.models import WideDeep
-from pytorch_widedeep.models.tabnet.sparsemax import Entmax15, Sparsemax
+from pytorch_widedeep.models.tabular.tabnet.sparsemax import (
+    Entmax15,
+    Sparsemax,
+)
+from pytorch_widedeep.bayesian_models._base_bayesian_model import (
+    BaseBayesianModel,
+)
 
 ListRules = Collection[Callable[[str], str]]
 Tokens = Collection[Collection[str]]
