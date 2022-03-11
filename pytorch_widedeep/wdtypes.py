@@ -16,13 +16,13 @@ from typing import (
 )
 
 # isort: off
-if sys.version_info.minor == 7:
+if sys.version_info >= (3, 8):
+    from typing import Literal
+else:
     try:
         from typing_extensions import Literal
     except ModuleNotFoundError:
         pass
-else:
-    from typing import Literal  # type: ignore[attr-defined, no-redef]  # noqa: F811
 # isort: on
 
 from pathlib import PosixPath
@@ -33,7 +33,6 @@ from torch.nn import Module
 from torch.optim.optimizer import Optimizer
 from torchvision.transforms import (
     Pad,
-    Scale,
     Lambda,
     Resize,
     Compose,
@@ -46,17 +45,28 @@ from torchvision.transforms import (
     RandomCrop,
     ToPILImage,
     ColorJitter,
+    PILToTensor,
     RandomApply,
     RandomOrder,
+    GaussianBlur,
     RandomAffine,
     RandomChoice,
+    RandomInvert,
+    RandomErasing,
+    RandomEqualize,
     RandomRotation,
+    RandomSolarize,
     RandomGrayscale,
-    RandomSizedCrop,
+    RandomPosterize,
+    ConvertImageDtype,
+    InterpolationMode,
+    RandomPerspective,
     RandomResizedCrop,
+    RandomAutocontrast,
     RandomVerticalFlip,
     LinearTransformation,
     RandomHorizontalFlip,
+    RandomAdjustSharpness,
 )
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.utils.data.dataloader import DataLoader
@@ -73,31 +83,41 @@ from pytorch_widedeep.bayesian_models._base_bayesian_model import (
 ListRules = Collection[Callable[[str], str]]
 Tokens = Collection[Collection[str]]
 Transforms = Union[
-    CenterCrop,
-    ColorJitter,
-    Compose,
-    FiveCrop,
-    Grayscale,
-    Lambda,
-    LinearTransformation,
-    Normalize,
     Pad,
-    RandomAffine,
-    RandomApply,
-    RandomChoice,
-    RandomCrop,
-    RandomGrayscale,
-    RandomHorizontalFlip,
-    RandomOrder,
-    RandomResizedCrop,
-    RandomRotation,
-    RandomSizedCrop,
-    RandomVerticalFlip,
+    Lambda,
     Resize,
-    Scale,
+    Compose,
     TenCrop,
-    ToPILImage,
+    FiveCrop,
     ToTensor,
+    Grayscale,
+    Normalize,
+    CenterCrop,
+    RandomCrop,
+    ToPILImage,
+    ColorJitter,
+    PILToTensor,
+    RandomApply,
+    RandomOrder,
+    GaussianBlur,
+    RandomAffine,
+    RandomChoice,
+    RandomInvert,
+    RandomErasing,
+    RandomEqualize,
+    RandomRotation,
+    RandomSolarize,
+    RandomGrayscale,
+    RandomPosterize,
+    ConvertImageDtype,
+    InterpolationMode,
+    RandomPerspective,
+    RandomResizedCrop,
+    RandomAutocontrast,
+    RandomVerticalFlip,
+    LinearTransformation,
+    RandomHorizontalFlip,
+    RandomAdjustSharpness,
 ]
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
