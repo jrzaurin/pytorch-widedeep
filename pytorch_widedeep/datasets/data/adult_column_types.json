@@ -1,0 +1,22 @@
+{
+    "identifier": "",
+    "target": "income",
+    "categorical": [
+        "workclass",
+        "fnlwgt",
+        "education",
+        "marital-status",
+        "occupation",
+        "relationship",
+        "race",
+        "gender",
+        "native-country"
+    ],
+    "continuous": [
+        "age",
+        "educational-num",
+        "capital-gain",
+        "capital-loss",
+        "hours-per-week"
+    ]
+}

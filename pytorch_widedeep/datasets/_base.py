@@ -1,9 +1,12 @@
 # dataframes are saved as parquet, pyarrow, brotli
 # pd.to_parquet(path=None, engine="auto", compression="brotli", index=False)
 # see related post: https://python.plainenglish.io/storing-pandas-98-faster-disk-reads-and-72-less-space-208e2e2be8bb
+from pytorch_widedeep.wdtypes import *
 from importlib import resources
 
 import pandas as pd
+import numpy as np
+import json
 
 
 def load_bio_kdd04(as_frame: bool = False):
@@ -39,7 +42,7 @@ def load_bio_kdd04(as_frame: bool = False):
         return df.to_numpy()
 
 
-def load_adult(as_frame: bool = False):
+def load_adult(as_frame: bool = False) -> Tuple[Union[pd.DataFrame, np.ndarray], dict]:
     """Load and return the higly imbalanced binary classification [adult income datatest](http://www.cs.toronto.edu/~delve/data/adult/desc.html).
     you may find detailed description [here](http://www.cs.toronto.edu/~delve/data/adult/adultDetail.html)
     """
@@ -49,13 +52,18 @@ def load_adult(as_frame: bool = False):
     ) as fpath:
         df = pd.read_parquet(fpath)
 
+    with resources.path("pytorch_widedeep.datasets.data", "adult_column_types.json") as fpath:
+        with open(fpath, 'rb') as f:
+            cols_def = json.load(f)
+
+
     if as_frame:
-        return df
+        return df, cols_def
     else:
-        return df.to_numpy()
+        return df.to_numpy(), cols_def
 
 
-def load_ecoli(as_frame: bool = False):
+def load_ecoli(as_frame: bool = False) -> Tuple[Union[pd.DataFrame, np.ndarray], dict]:
     """Load and return the higly imbalanced multiclass classification e.coli dataset
     Dataset from [UCI Machine learning Repository](https://archive.ics.uci.edu/ml/datasets/ecoli).
 
@@ -136,13 +144,17 @@ def load_ecoli(as_frame: bool = False):
     ) as fpath:
         df = pd.read_parquet(fpath)
 
+    with resources.path("pytorch_widedeep.datasets.data", "ecoli_column_types.json") as fpath:
+        with open(fpath, 'rb') as f:
+            cols_def = json.load(f)
+
     if as_frame:
-        return df
+        return df, cols_def
     else:
-        return df.to_numpy()
+        return df.to_numpy(), cols_def
 
 
-def load_california_housing(as_frame: bool = False):
+def load_california_housing(as_frame: bool = False) -> Tuple[Union[pd.DataFrame, np.ndarray], dict]:
     """Load and return the higly imbalanced regression California housing dataset.
 
     Characteristics:
@@ -184,10 +196,14 @@ def load_california_housing(as_frame: bool = False):
     ) as fpath:
         df = pd.read_parquet(fpath)
 
+    with resources.path("pytorch_widedeep.datasets.data", "california_housing_column_types.json") as fpath:
+        with open(fpath, 'rb') as f:
+            cols_def = json.load(f)
+
     if as_frame:
-        return df
+        return df, cols_def
     else:
-        return df.to_numpy()
+        return df.to_numpy(), cols_def
 
 
 def load_birds(as_frame: bool = False):

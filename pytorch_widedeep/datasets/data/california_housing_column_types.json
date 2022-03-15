@@ -1,0 +1,15 @@
+{
+    "identifier": "",
+    "target": "MedHouseVal",
+    "categorical": [],
+    "continuous":[
+        "MedInc",
+        "HouseAge",
+        "AveRooms",
+        "AveBedrms",
+        "Population",
+        "AveOccup",
+        "Latitude",
+        "Longitude"
+    ]
+}
