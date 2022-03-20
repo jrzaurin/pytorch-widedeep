@@ -1,1 +1,0 @@
-{"identifier": "user_id", "target": "target", "target_ltv": "target_ltv", "categorical": ["city_first", "continent_first", "country_first", "state_first", "mobile_model_name_first", "campaign_first", "adset_first", "af_status_first"], "target_ltv_cls": "target_ltv_cls"}
