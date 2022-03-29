@@ -18,7 +18,9 @@ class Sigmoid2d(Module):
 
 
 class ShapExplainer(object):
-    def __init__(self,):
+    def __init__(
+        self,
+    ):
         super(ShapExplainer, self).__init__()
 
     def fit(
@@ -86,7 +88,8 @@ class ShapExplainer(object):
             # of SHAP values and predictions
             self.model = self._deep_explain_data_model(tab_trainer)
             self.explainer = shap.GradientExplainer(
-                model=self.model, data=torch.tensor(X_tab_train),
+                model=self.model,
+                data=torch.tensor(X_tab_train),
             )
             warnings.warn(
                 """
@@ -132,10 +135,14 @@ class ShapExplainer(object):
         if tab_trainer_dpc.objective == "regression":
             explain_model = tab_trainer_dpc.model.deeptabular
         elif tab_trainer_dpc.objective == "binary":
-            explain_model = Sequential(tab_trainer_dpc.model.deeptabular, Sigmoid2d(),)
+            explain_model = Sequential(
+                tab_trainer_dpc.model.deeptabular,
+                Sigmoid2d(),
+            )
         elif tab_trainer_dpc.objective == "multiclass":
             explain_model = Sequential(
-                tab_trainer_dpc.model.deeptabular, Softmax(dim=1),
+                tab_trainer_dpc.model.deeptabular,
+                Softmax(dim=1),
             )
         return explain_model
 
@@ -197,7 +204,8 @@ class ShapExplainer(object):
         return labels
 
     def compute_shap_values(
-        self, X_tab_explain: np.ndarray,
+        self,
+        X_tab_explain: np.ndarray,
     ) -> Union[np.ndarray, torch.Tensor]:
         """Helper method to compute SHAP values for other shap plots not
         included in the ShapExplainer object.
@@ -214,7 +222,10 @@ class ShapExplainer(object):
             shap_values = self.explainer.shap_values(X_tab_explain_tensor)
         return shap_values
 
-    def compute_preds(self, X_tab_explain: np.ndarray,) -> np.ndarray:
+    def compute_preds(
+        self,
+        X_tab_explain: np.ndarray,
+    ) -> np.ndarray:
         """Helper method to compute SHAP values for other shap plots not
         included in the ShapExplainer object.
 

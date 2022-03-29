@@ -42,7 +42,11 @@ target_multic = np.random.choice(3, 32)
     ],
 )
 def test_fit_objectives(
-    X_tab, target, objective, pred_dim, explainer_type,
+    X_tab,
+    target,
+    objective,
+    pred_dim,
+    explainer_type,
 ):
     deeptabular = TabMlp(
         column_idx=column_idx,
