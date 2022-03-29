@@ -69,6 +69,7 @@ setup_kwargs = {
         "ray[tune]",
         "pyarrow",
         "fastparquet",
+        "shap",
     ],
     "extras_require": extras,
     "python_requires": ">=3.7.0",
