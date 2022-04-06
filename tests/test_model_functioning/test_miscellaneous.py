@@ -406,6 +406,43 @@ def test_get_embeddings_deprecation_warning():
 
 
 ###############################################################################
+# test test_handle_columns_with_dots
+###############################################################################
+
+
+def test_handle_columns_with_dots():
+    data = df.copy()
+    data = data.rename(columns={"col1": "col.1", "a": "a.1"})
+
+    embed_cols = [("col.1", 5), ("col2", 5)]
+    continuous_cols = ["col3", "col4"]
+
+    tab_preprocessor = TabPreprocessor(
+        cat_embed_cols=embed_cols, continuous_cols=continuous_cols
+    )
+    X_tab = tab_preprocessor.fit_transform(data)
+    target = data.target.values
+
+    tabmlp = TabMlp(
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+        column_idx={k: v for v, k in enumerate(data.columns)},
+        cat_embed_input=tab_preprocessor.cat_embed_input,
+        continuous_cols=tab_preprocessor.continuous_cols,
+    )
+
+    model = WideDeep(deeptabular=tabmlp)
+    trainer = Trainer(model, objective="binary", verbose=0)
+    trainer.fit(
+        X_tab=X_tab,
+        target=target,
+        batch_size=16,
+    )
+    preds = trainer.predict(X_tab=X_tab, batch_size=16)
+    assert preds.shape[0] == 32 and "train_loss" in trainer.history
+
+
+###############################################################################
 # test Label Distribution Smoothing
 ###############################################################################
 
