@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import pytest
-from torchmetrics import F1, FBeta, Recall, Accuracy, Precision
+from torchmetrics import Recall, F1Score, Accuracy, Precision, FBetaScore
 from sklearn.metrics import (
     f1_score,
     fbeta_score,
@@ -33,8 +33,8 @@ y_pred_bin_pt = torch.from_numpy(y_pred_bin_np)
         ("Accuracy", accuracy_score, Accuracy()),
         ("Precision", precision_score, Precision()),
         ("Recall", recall_score, Recall()),
-        ("F1", f1_score, F1()),
-        ("FBeta", f2_score_bin, FBeta(beta=2)),
+        ("F1Score", f1_score, F1Score()),
+        ("FBetaScore", f2_score_bin, FBetaScore(beta=2)),
     ],
 )
 def test_binary_metrics(metric_name, sklearn_metric, torch_metric):
@@ -80,8 +80,12 @@ def f2_score_multi(y_true, y_pred, average):
         ("Accuracy", accuracy_score, Accuracy(num_classes=3, average="micro")),
         ("Precision", precision_score, Precision(num_classes=3, average="macro")),
         ("Recall", recall_score, Recall(num_classes=3, average="macro")),
-        ("F1", f1_score, F1(num_classes=3, average="macro")),
-        ("FBeta", f2_score_multi, FBeta(beta=3, num_classes=3, average="macro")),
+        ("F1Score", f1_score, F1Score(num_classes=3, average="macro")),
+        (
+            "FBetaScore",
+            f2_score_multi,
+            FBetaScore(beta=3, num_classes=3, average="macro"),
+        ),
     ],
 )
 def test_muticlass_metrics(metric_name, sklearn_metric, torch_metric):
