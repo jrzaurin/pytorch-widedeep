@@ -250,8 +250,8 @@ class Trainer:
         self.transforms = self._set_transforms(transforms)
         self._set_callbacks_and_metrics(callbacks, metrics)
 
-    @Alias("finetune", "warmup")  # noqa: C901
-    def fit(
+    @Alias("finetune", "warmup")
+    def fit(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,

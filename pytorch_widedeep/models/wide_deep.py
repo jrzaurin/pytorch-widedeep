@@ -153,7 +153,7 @@ class WideDeep(nn.Module):
 
         # this attribute will be eventually over-written by the Trainer's
         # device. Acts here as a 'placeholder'.
-        self.wd_device = "cpu"
+        self.wd_device: str = None
 
         # required as attribute just in case we pass a deephead
         self.pred_dim = pred_dim
