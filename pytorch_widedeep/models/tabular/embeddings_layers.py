@@ -128,10 +128,19 @@ class DiffSizeCatEmbeddings(nn.Module):
         self.embed_input = embed_input
         self.use_bias = use_bias
 
+        self.embed_layers_names = None
+        if self.embed_input is not None:
+            self.embed_layers_names = {
+                e[0]: e[0].replace(".", "_") for e in self.embed_input
+            }
+
         # Categorical: val + 1 because 0 is reserved for padding/unseen cateogories.
         self.embed_layers = nn.ModuleDict(
             {
-                "emb_layer_" + col: nn.Embedding(val + 1, dim, padding_idx=0)
+                "emb_layer_"
+                + self.embed_layers_names[col]: nn.Embedding(
+                    val + 1, dim, padding_idx=0
+                )
                 for col, val, dim in self.embed_input
             }
         )
@@ -152,7 +161,9 @@ class DiffSizeCatEmbeddings(nn.Module):
 
     def forward(self, X: Tensor) -> Tensor:
         embed = [
-            self.embed_layers["emb_layer_" + col](X[:, self.column_idx[col]].long())
+            self.embed_layers["emb_layer_" + self.embed_layers_names[col]](
+                X[:, self.column_idx[col]].long()
+            )
             + (
                 self.biases["bias_" + col].unsqueeze(0)
                 if self.use_bias
@@ -186,6 +197,12 @@ class SameSizeCatEmbeddings(nn.Module):
         self.shared_embed = shared_embed
         self.with_cls_token = "cls_token" in column_idx
 
+        self.embed_layers_names = None
+        if self.embed_input is not None:
+            self.embed_layers_names = {
+                e[0]: e[0].replace(".", "_") for e in self.embed_input
+            }
+
         categorical_cols = [ei[0] for ei in embed_input]
         self.cat_idx = [self.column_idx[col] for col in categorical_cols]
 
@@ -211,7 +228,7 @@ class SameSizeCatEmbeddings(nn.Module):
             self.embed: Union[nn.ModuleDict, nn.Embedding] = nn.ModuleDict(
                 {
                     "emb_layer_"
-                    + col: SharedEmbeddings(
+                    + self.embed_layers_names[col]: SharedEmbeddings(
                         val if col == "cls_token" else val + 1,
                         embed_dim,
                         embed_dropout,
@@ -233,9 +250,11 @@ class SameSizeCatEmbeddings(nn.Module):
     def forward(self, X: Tensor) -> Tensor:
         if self.shared_embed:
             cat_embed = [
-                self.embed["emb_layer_" + col](  # type: ignore[index]
+                self.embed["emb_layer_" + self.embed_layers_names[col]](  # type: ignore[index]
                     X[:, self.column_idx[col]].long()
-                ).unsqueeze(1)
+                ).unsqueeze(
+                    1
+                )
                 for col, _ in self.embed_input
             ]
             x = torch.cat(cat_embed, 1)
