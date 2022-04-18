@@ -23,9 +23,6 @@ from pytorch_widedeep.models.tabular.tabnet.tab_net import TabNetPredLayer
 
 warnings.filterwarnings("default", category=UserWarning)
 
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
-
 
 class WideDeep(nn.Module):
     r"""Main collector class that combines all ``wide``, ``deeptabular``
@@ -154,6 +151,10 @@ class WideDeep(nn.Module):
             with_fds,
         )
 
+        # this attribute will be eventually over-written by the Trainer's
+        # device. Acts here as a 'placeholder'.
+        self.wd_device: str = None
+
         # required as attribute just in case we pass a deephead
         self.pred_dim = pred_dim
 
@@ -270,7 +271,7 @@ class WideDeep(nn.Module):
             out = self.wide(X["wide"])
         else:
             batch_size = X[list(X.keys())[0]].size(0)
-            out = torch.zeros(batch_size, self.pred_dim).to(device)
+            out = torch.zeros(batch_size, self.pred_dim).to(self.wd_device)
 
         return out
 
@@ -282,14 +283,14 @@ class WideDeep(nn.Module):
             else:
                 deepside = self.deeptabular(X["deeptabular"])
         else:
-            deepside = torch.FloatTensor().to(device)
+            deepside = torch.FloatTensor().to(self.wd_device)
         if self.deeptext is not None:
             deepside = torch.cat([deepside, self.deeptext(X["deeptext"])], axis=1)
         if self.deepimage is not None:
             deepside = torch.cat([deepside, self.deepimage(X["deepimage"])], axis=1)
 
         deephead_out = self.deephead(deepside)
-        deepside_out = nn.Linear(deephead_out.size(1), self.pred_dim).to(device)
+        deepside_out = nn.Linear(deephead_out.size(1), self.pred_dim).to(self.wd_device)
 
         if self.is_tabnet:
             res = (wide_out.add_(deepside_out(deephead_out)), M_loss)

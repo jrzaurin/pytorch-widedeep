@@ -238,6 +238,7 @@ class Trainer:
             self.lambda_sparse = kwargs.get("lambda_sparse", 1e-3)
             self.reducing_matrix = create_explain_matrix(self.model)
         self.model.to(self.device)
+        self.model.wd_device = self.device
 
         self.objective = objective
         self.method = _ObjectiveToMethod.get(objective)
@@ -249,8 +250,8 @@ class Trainer:
         self.transforms = self._set_transforms(transforms)
         self._set_callbacks_and_metrics(callbacks, metrics)
 
-    @Alias("finetune", "warmup")  # noqa: C901
-    def fit(
+    @Alias("finetune", "warmup")
+    def fit(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
@@ -1474,7 +1475,7 @@ class Trainer:
             if sys.platform == "darwin" and sys.version_info.minor > 7
             else os.cpu_count()
         )
-        default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        default_device = "cuda" if torch.cuda.is_available() else "cpu"
         device = kwargs.get("device", default_device)
         num_workers = kwargs.get("num_workers", default_num_workers)
         return device, num_workers
