@@ -136,7 +136,6 @@ class WideDeep(nn.Module):
         enforce_positive_activation: str = "softplus",
         pred_dim: int = 1,
         with_fds: bool = False,
-        device: Optional[str] = None,
         **fds_config,
     ):
         super(WideDeep, self).__init__()
@@ -152,11 +151,9 @@ class WideDeep(nn.Module):
             with_fds,
         )
 
-        self.wd_device = (
-            device
-            if device is not None
-            else torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        )
+        # this attribute will be eventually over-written by the Trainer's
+        # device. Acts here as a 'placeholder'.
+        self.wd_device = "cpu"
 
         # required as attribute just in case we pass a deephead
         self.pred_dim = pred_dim

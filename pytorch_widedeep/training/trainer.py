@@ -238,6 +238,7 @@ class Trainer:
             self.lambda_sparse = kwargs.get("lambda_sparse", 1e-3)
             self.reducing_matrix = create_explain_matrix(self.model)
         self.model.to(self.device)
+        self.model.wd_device = self.device
 
         self.objective = objective
         self.method = _ObjectiveToMethod.get(objective)
@@ -1474,7 +1475,7 @@ class Trainer:
             if sys.platform == "darwin" and sys.version_info.minor > 7
             else os.cpu_count()
         )
-        default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        default_device = "cuda" if torch.cuda.is_available() else "cpu"
         device = kwargs.get("device", default_device)
         num_workers = kwargs.get("num_workers", default_num_workers)
         return device, num_workers
