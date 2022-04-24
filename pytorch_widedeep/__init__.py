@@ -14,4 +14,4 @@ from pytorch_widedeep.utils import (
 )
 from pytorch_widedeep.tab2vec import Tab2Vec
 from pytorch_widedeep.version import __version__
-from pytorch_widedeep.training import Trainer
+from pytorch_widedeep.training import Trainer, BayesianTrainer

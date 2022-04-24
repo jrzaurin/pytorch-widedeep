@@ -347,11 +347,6 @@ def test_save_load_and_predict():
     assert preds.shape[0] == X_tab.shape[0]
 
 
-###############################################################################
-# test get_embeddings DeprecationWarning
-###############################################################################
-
-
 def create_test_dataset(input_type, input_type_2=None):
     df = pd.DataFrame()
     col1 = list(np.random.choice(input_type, 32))
@@ -369,40 +364,6 @@ df = create_test_dataset(some_letters)
 df["col3"] = np.round(np.random.rand(32), 3)
 df["col4"] = np.round(np.random.rand(32), 3)
 df["target"] = np.random.choice(2, 32)
-
-
-def test_get_embeddings_deprecation_warning():
-
-    embed_cols = [("col1", 5), ("col2", 5)]
-    continuous_cols = ["col3", "col4"]
-
-    tab_preprocessor = TabPreprocessor(
-        cat_embed_cols=embed_cols, continuous_cols=continuous_cols
-    )
-    X_tab = tab_preprocessor.fit_transform(df)
-    target = df.target.values
-
-    tabmlp = TabMlp(
-        mlp_hidden_dims=[32, 16],
-        mlp_dropout=[0.5, 0.5],
-        column_idx={k: v for v, k in enumerate(df.columns)},
-        cat_embed_input=tab_preprocessor.cat_embed_input,
-        continuous_cols=tab_preprocessor.continuous_cols,
-    )
-
-    model = WideDeep(deeptabular=tabmlp)
-    trainer = Trainer(model, objective="binary", verbose=0)
-    trainer.fit(
-        X_tab=X_tab,
-        target=target,
-        batch_size=16,
-    )
-
-    with pytest.warns(DeprecationWarning):
-        trainer.get_embeddings(
-            col_name="col1",
-            cat_encoding_dict=tab_preprocessor.label_encoder.encoding_dict,
-        )
 
 
 ###############################################################################
