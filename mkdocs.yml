@@ -1,0 +1,99 @@
+site_name: pytorch_widedeep
+repo_name: 'pytorch_widedeep'
+repo_url: 'https://github.com/jrzaurin/pytorch-widedeep'
+copyright: 'Javier Zaurin and Pavol Mulinka'
+docs_dir: docs_mk/sources
+site_url: ""
+
+extra:
+    social:
+        - icon: fontawesome/brands/medium
+          link: https://jrzaurin.medium.com/
+
+# Navigation
+# There is no 'nav' in this config because we use mkdocs-awesome-pages-plugin
+# The ordering of pages in the docs folder are now in a `.pages` file instead
+
+theme:
+    name: material
+    custom_dir: docs_mk/templates/overrides
+
+    palette:
+        # scheme: preference uses dark or light mode based on user (OS) preference
+        scheme: preference
+        primary: deep-orange
+        accent: deep-purple
+    icon:
+        logo: fontawesome/solid/code
+    favicon: 'assets/images/favicon.ico'
+    language: 'en'
+
+
+plugins:
+    - search
+    - minify:
+        minify_html: true
+    - git-revision-date-localized:
+        type: timeago
+    - git-authors:
+        show_contribution: True
+    - table-reader
+    - img2fig
+    - mkdocs-jupyter:
+        ignore_h1_titles: True
+        include_source: True
+    - awesome-pages
+    - print-site:
+        exclude:
+            - archive/*
+    - mkdocstrings
+
+
+markdown_extensions:
+    - codehilite
+    - markdown.extensions.admonition
+    - markdown.extensions.attr_list
+    - markdown.extensions.md_in_html
+    - markdown.extensions.codehilite:
+        guess_lang: false
+    - markdown.extensions.def_list
+    - markdown.extensions.footnotes
+    - markdown.extensions.meta
+    - markdown.extensions.toc:
+        permalink: true
+    - pymdownx.arithmatex:
+        generic: true
+    - pymdownx.betterem:
+        smart_enable: all
+    - pymdownx.caret
+    - pymdownx.critic
+    - pymdownx.details
+    - pymdownx.emoji:
+        emoji_index: !!python/name:materialx.emoji.twemoji
+        emoji_generator: !!python/name:materialx.emoji.to_svg
+    - pymdownx.inlinehilite
+    - pymdownx.keys
+    - pymdownx.mark
+    - pymdownx.smartsymbols
+    - pymdownx.snippets:
+        check_paths: true
+    - pymdownx.superfences
+    - pymdownx.tabbed
+    - pymdownx.tasklist:
+        custom_checkbox: true
+    - pymdownx.tilde
+
+# Lots of other settings
+edit_uri: edit/MkDocs/docs/
+use_directory_urls: false
+
+# Better PDF styling for when you create PDFs using mkdocs-pdf-export-plugin
+extra_css:
+  - assets/stylesheets/pdf-export.css
+
+# Setup mathjax, see
+# https://squidfunk.github.io/mkdocs-material/reference/mathjax/
+extra_javascript:
+    - assets/javascripts/config.js
+    - https://polyfill.io/v3/polyfill.min.js?features=es6
+    - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

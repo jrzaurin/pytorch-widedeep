@@ -17,7 +17,7 @@ from concurrent.futures.process import ProcessPoolExecutor
 import spacy
 from spacy.symbols import ORTH
 
-from ..wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 def partition(a: Collection, sz: int) -> List[Collection]:

@@ -46,6 +46,7 @@ sftp*-config.json
 
 # Documentation
 _build
+site/
 
 # _static
 _templates

@@ -298,7 +298,7 @@ class FineTune:
         n_epochs: int, default=1
             number of fine-tune epochs
 
-        Returns:
+        Returns
         -------
         up, down: Tuple, int
             number of steps increasing/decreasing the learning rate during the cycle
