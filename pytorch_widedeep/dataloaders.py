@@ -8,19 +8,13 @@ from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 def get_class_weights(dataset: WideDeepDataset) -> Tuple[np.ndarray, int, int]:
     """Helper function to get weights of classes in the imbalanced dataset.
 
-    Parameters
-    ----------
-    dataset: ``WideDeepDataset``
-        dataset containing target classes in dataset.Y
+    Args:
+        dataset (WideDeepDataset): dataset containing target classes in dataset.Y
 
-    Returns
-    ----------
-    weights: array
-        numpy array with weights
-    minor_class_count: int
-        count of samples in the smallest class for undersampling
-    num_classes: int
-        number of classes
+    Returns:
+        weights (array): numpy array with weights
+        minor_class_count (int): count of samples in the smallest class for undersampling
+        num_classes (int): number of classes
     """
     weights = 1 / np.unique(dataset.Y, return_counts=True)[1]
     minor_class_count = min(np.unique(dataset.Y, return_counts=True)[1])
