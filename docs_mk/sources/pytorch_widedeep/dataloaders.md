@@ -17,24 +17,22 @@ datasets. If the classes do not begin from 0 remapping is necessary. See
 <https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab>`_
 .
 
-Parameters
-----------
-dataset: ``WideDeepDataset``
-see ``pytorch_widedeep.training._wd_dataset``
----
-    size of batch
-    number of workers
+
+**Args**
+
+* **dataset** (WideDeepDataset) : see ``pytorch_widedeep.training._wd_dataset``
+* **batch_size** (int) : size of batch
+* **num_workers** (int) : number of workers
+
 
 
 **Methods:**
 
 
-### .__init__
-[source](https://github.com/jrzaurin/pytorch-widedeep/blob/master/pytorch_widedeep/dataloaders.py/#L52)
+### .dummy
+[source](https://github.com/jrzaurin/pytorch-widedeep/blob/master/pytorch_widedeep/dataloaders.py/#L61)
 ```python
-.__init__(
-   dataset: WideDeepDataset, batch_size: int, num_workers: int, **kwargs
-)
+.dummy()
 ```
 
 

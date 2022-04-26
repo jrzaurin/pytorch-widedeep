@@ -24,24 +24,17 @@ def simple_preprocess(
     <https://radimrehurek.com/gensim/utils.html>`_. Returns the list of tokens
     for a given doc
 
-    Parameters
-    ----------
-    doc: str
-        Input document.
-    lower: bool, default = False
-        Lower case tokens in the input doc
-    deacc: bool, default = False
-        Remove accent marks from tokens using ``Gensim``'s :obj:`deaccent`
-    min_len: int, default = 2
-        Minimum length of token (inclusive). Shorter tokens are discarded.
-    max_len: int, default = 15
-        Maximum length of token in result (inclusive). Longer tokens are discarded.
+    Args:
+        doc (str): Input document.
+        lower (bool, default = False): Lower case tokens in the input doc
+        deacc (bool, default = False): Remove accent marks from tokens using ``Gensim``'s :obj:`deaccent`
+        min_len (int, default = 2): Minimum length of token (inclusive). Shorter tokens are discarded.
+        max_len (int, default = 15): Maximum length of token in result (inclusive). Longer tokens are discarded.
 
-    Examples
-    --------
-    >>> from pytorch_widedeep.utils import simple_preprocess
-    >>> simple_preprocess('Machine learning is great')
-    ['Machine', 'learning', 'is', 'great']
+    Examples:
+        >>> from pytorch_widedeep.utils import simple_preprocess
+        >>> simple_preprocess('Machine learning is great')
+        ['Machine', 'learning', 'is', 'great']
     """
     tokens = [
         token
@@ -59,24 +52,21 @@ def get_texts(texts: List[str]) -> List[List[str]]:
 
     Returns a list containing the tokens per text or document
 
-    Parameters
-    ----------
-    texts: List
-        List of str with the texts (or documents). One str per document
+    Args:
+        texts (List): List of str with the texts (or documents). One str per document
 
-    Examples
-    --------
-    >>> from pytorch_widedeep.utils import get_texts
-    >>> texts = ['Machine learning is great', 'but building stuff is even better']
-    >>> get_texts(texts)
-    [['xxmaj', 'machine', 'learning', 'is', 'great'], ['but', 'building', 'stuff', 'is', 'even', 'better']]
+    Examples:
+        >>> from pytorch_widedeep.utils import get_texts
+        >>> texts = ['Machine learning is great', 'but building stuff is even better']
+        >>> get_texts(texts)
+        [['xxmaj', 'machine', 'learning', 'is', 'great'], ['but', 'building', 'stuff', 'is', 'even', 'better']]
 
-    .. note:: :obj:`get_texts` uses :class:`pytorch_widedeep.utils.fastai_transforms.Tokenizer`.
-        Such tokenizer uses a series of convenient processing steps, including
-        the  addition of some special tokens, such as ``TK_MAJ`` (`xxmaj`), used to
-        indicate the next word begins with a capital in the original text. For more
-        details of special tokens please see the ``fastai`` `docs
-        <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
+        .. note:: :obj:`get_texts` uses :class:`pytorch_widedeep.utils.fastai_transforms.Tokenizer`.
+            Such tokenizer uses a series of convenient processing steps, including
+            the  addition of some special tokens, such as ``TK_MAJ`` (`xxmaj`), used to
+            indicate the next word begins with a capital in the original text. For more
+            details of special tokens please see the ``fastai`` `docs
+            <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
     """
     processed_textx = [" ".join(simple_preprocess(t)) for t in texts]
     tok = Tokenizer().process_all(processed_textx)
@@ -90,24 +80,18 @@ def pad_sequences(
     Given a List of tokenized and `numericalised` sequences it will return
     padded sequences according to the input parameters.
 
-    Parameters
-    ----------
-    seq: List
-        List of int with the `numericalised` tokens
-    maxlen: int
-        Maximum length of the padded sequences
-    pad_first: bool,  default = True
-        Indicates whether the padding index will be added at the beginning or the
-        end of the sequences
-    pad_idx: int, default = 1
-        padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
+    Args:
+        seq (List): List of int with the `numericalised` tokens
+        maxlen (int): Maximum length of the padded sequences
+        pad_first (bool,  default = True): Indicates whether the padding index will be added at the beginning or the
+            end of the sequences
+        pad_idx (int, default = 1): padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
 
-    Examples
-    --------
-    >>> from pytorch_widedeep.utils import pad_sequences
-    >>> seq = [1,2,3]
-    >>> pad_sequences(seq, maxlen=5, pad_idx=0)
-    array([0, 0, 1, 2, 3], dtype=int32)
+    Examples:
+        >>> from pytorch_widedeep.utils import pad_sequences
+        >>> seq = [1,2,3]
+        >>> pad_sequences(seq, maxlen=5, pad_idx=0)
+        array([0, 0, 1, 2, 3], dtype=int32)
     """
     if len(seq) == 0:
         return np.zeros(maxlen, dtype="int32") + pad_idx
@@ -133,16 +117,11 @@ def build_embeddings_matrix(
     among the pretrained embeddings it will be assigned the mean pretrained
     word-embeddings vector
 
-    Parameters
-    ----------
-    vocab: Vocab
-        see :class:`pytorch_widedeep.utils.fastai_utils.Vocab`
-    word_vectors_path: str
-        path to the pretrained word embeddings
-    min_freq: int
-        minimum frequency required for a word to be in the vocabulary
-    verbose: int,  default=1
-        level of verbosity. Set to 0 for no verbosity
+    Args:
+        vocab (Vocab): see :class:`pytorch_widedeep.utils.fastai_utils.Vocab`
+        word_vectors_path (str): path to the pretrained word embeddings
+        min_freq (int): minimum frequency required for a word to be in the vocabulary
+        verbose (int,  default=1): level of verbosity. Set to 0 for no verbosity
     """
     if not os.path.isfile(word_vectors_path):
         raise FileNotFoundError("{} not found".format(word_vectors_path))

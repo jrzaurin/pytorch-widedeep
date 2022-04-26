@@ -18,18 +18,14 @@ class AspectAwarePreprocessor:
     r"""Class to resize an image to a certain width and height taking into account
     the image aspect ratio
 
-    Parameters
-    ----------
-    width: int
-        output width
-    height: int
-        output height
-    inter: interpolation method,  default = ``cv2.INTER_AREA``
-        ``opencv`` interpolation method. See ``opencv``
-        :obj:`InterpolationFlags`.
+    Args:
+        width (int): output width
+        height (int): output height
+        inter (interpolation method,  default = ``cv2.INTER_AREA``): ``opencv`` interpolation method. See ``opencv``
+            :obj:`InterpolationFlags`.
 
-        .. note:: The value 3 that appears in the class parameters above is a Sphinx
-            formatting error.
+            .. note:: The value 3 that appears in the class Args: above is a Sphinx
+                formatting error.
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
@@ -40,22 +36,19 @@ class AspectAwarePreprocessor:
     def preprocess(self, image: np.ndarray) -> np.ndarray:
         r"""Returns the resized input image taking into account the image aspect ratio
 
-        Parameters
-        ----------
-        image: np.ndarray
-            Input image to be resized
+        Args:
+            image (np.ndarray): Input image to be resized
 
-        Examples
-        --------
-        >>> import cv2
-        >>> from pytorch_widedeep.utils import AspectAwarePreprocessor
-        >>> img = cv2.imread("tests/test_data_utils/images/galaxy1.png")
-        >>> img.shape
-        (694, 890, 3)
-        >>> app = AspectAwarePreprocessor(width=224, height=224)
-        >>> resized_img = app.preprocess(img)
-        >>> resized_img.shape
-        (224, 224, 3)
+        Examples:
+            >>> import cv2
+            >>> from pytorch_widedeep.utils import AspectAwarePreprocessor
+            >>> img = cv2.imread("tests/test_data_utils/images/galaxy1.png")
+            >>> img.shape
+            (694, 890, 3)
+            >>> app = AspectAwarePreprocessor(width=224, height=224)
+            >>> resized_img = app.preprocess(img)
+            >>> resized_img.shape
+            (224, 224, 3)
         """
         (h, w) = image.shape[:2]
         dW = 0
@@ -81,18 +74,14 @@ class AspectAwarePreprocessor:
 class SimplePreprocessor:
     r"""Class to resize an image to a certain width and height
 
-    Parameters
-    ----------
-    width: int
-        output width
-    height: int
-        output height
-    inter: interpolation method, default = ``cv2.INTER_AREA``
-        ``opencv`` interpolation method. See ``opencv``
-        :obj:`InterpolationFlags`.
+    Args:
+        width (int): output width
+        height (int): output height
+        inter (interpolation method, default = ``cv2.INTER_AREA``): ``opencv`` interpolation method. See ``opencv``
+            :obj:`InterpolationFlags`.
 
-        .. note:: The value 3 that appears in the class parameters above is a Sphinx
-            formatting error.
+            .. note:: The value 3 that appears in the class Args: above is a Sphinx
+                formatting error.
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
@@ -103,10 +92,8 @@ class SimplePreprocessor:
     def preprocess(self, image: np.ndarray) -> np.ndarray:
         r"""Returns the resized input image
 
-        Parameters
-        ----------
-        image: np.ndarray
-            Input image to be resized
+        Args:
+            image (np.ndarray): Input image to be resized
         """
         resized_image = cv2.resize(
             image, (self.width, self.height), interpolation=self.inter

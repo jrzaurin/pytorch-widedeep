@@ -32,12 +32,25 @@ extras["docs"] = [
     "sphinx-copybutton",
     "sphinx-autodoc-typehints",
 ]
+extras["mkdocs"] = [
+    "mkdocs",  # static site generator for documentation in Markdown
+    "mkdocs-material",  # Material support for MkDocs
+    "mkdocs-minify-plugin",  # strips whitespaces in HTML markdown documentation pages
+    "mkdocs-git-revision-date-localized-plugin",  # displays the date of the last git modification of a markdown page
+    "mkdocs-git-authors-plugin",  # displays git authors of a markdown page
+    "mkdocs-table-reader-plugin",  # enables automatic CSV imports as a table into a markdown page
+    "mkdocs-img2fig-plugin",  # converts markdown encoded images to HTML figures
+    "mkdocs-jupyter",  # enables inclusion of Jupyter notebook in markdown page
+    "mkdocs-awesome-pages-plugin",  # enables naive configuration of page titles and their order
+    "mkdocs-print-site-plugin",  # allows visiters to File > Print > Save as PDF entire markdown documentation
+    "mkgendocs",  # generate MkDocs pages from Google-style docstrings of Python functions
+]
 extras["quality"] = [
     "black",
     "isort",
     "flake8",
 ]
-extras["all"] = extras["test"] + extras["docs"] + extras["quality"]
+extras["all"] = extras["test"] + extras["docs"] + extras["mkdocs"] + extras["quality"]
 
 # main setup kw args
 setup_kwargs = {

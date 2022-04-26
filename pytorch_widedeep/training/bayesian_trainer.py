@@ -35,67 +35,53 @@ class BayesianTrainer:
     r"""Class to set the of attributes that will be used during the
     training process.
 
-    Parameters
-    ----------
-    model: ``BaseBayesianModel``
-        An object of class ``BaseBayesianModel``
-    objective: str
-        Defines the objective, loss or cost function.
+    Args:
+        model (BaseBayesianModel): An object of class ``BaseBayesianModel``
+        objective (str): Defines the objective, loss or cost function.
+            Param aliases: ``loss_function``, ``loss_fn``, ``loss``,
+            ``cost_function``, ``cost_fn``, ``cost``
+            Possible values are: 'binary', 'multiclass', 'regression'
+        custom_loss_function (nn.Module, optional, default = None): object of class ``nn.Module``. If none of the loss functions
+            available suits the user, it is possible to pass a custom loss
+            function. See for example
+            :class:`pytorch_widedeep.losses.FocalLoss` for the required
+            structure of the object or the `Examples
+            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
+            folder in the repo.
+        optimizer (Optimzer, optional, default= None): An instance of Pytorch's ``Optimizer`` object
+            (e.g. :obj:`torch.optim.Adam()`). if no optimizer is passed it will
+            default to ``AdamW``.
+        lr_schedulers (LRScheduler, optional, default=None): An instance of Pytorch's ``LRScheduler`` object (e.g
+            :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`)
+        callbacks (List, optional, default=None): List with :obj:`Callback` objects. The three callbacks available in
+            ``pytorch-widedeep`` are: ``LRHistory``, ``ModelCheckpoint`` and
+            ``EarlyStopping``. The ``History`` and the ``LRShedulerCallback``
+            callbacks are used by default. This can also be a custom callback as
+            long as the object of type ``Callback``. See
+            :obj:`pytorch_widedeep.callbacks.Callback` or the `Examples
+            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
+            folder in the repo
+        metrics (List, optional, default=None):
+            - List of objects of type :obj:`Metric`. Metrics available are:
+            ``Accuracy``, ``Precision``, ``Recall``, ``FBetaScore``,
+            ``F1Score`` and ``R2Score``. This can also be a custom metric as
+            long as it is an object of type :obj:`Metric`. See
+            :obj:`pytorch_widedeep.metrics.Metric` or the `Examples
+            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
+            folder in the repo
+            - List of objects of type :obj:`torchmetrics.Metric`. This can be any
+            metric from torchmetrics library `Examples
+            <https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
+            classification-metrics>`_. This can also be a custom metric as
+            long as it is an object of type :obj:`Metric`. See `the instructions
+            <https://torchmetrics.readthedocs.io/en/latest/>`_.
+        verbose (int, default=1): Setting it to 0 will print nothing during training.
+        seed (int, default=1): Random seed to be used internally for train_test_split
 
-        Param aliases: ``loss_function``, ``loss_fn``, ``loss``,
-        ``cost_function``, ``cost_fn``, ``cost``
-
-        Possible values are: 'binary', 'multiclass', 'regression'
-
-    custom_loss_function: ``nn.Module``, optional, default = None
-        object of class ``nn.Module``. If none of the loss functions
-        available suits the user, it is possible to pass a custom loss
-        function. See for example
-        :class:`pytorch_widedeep.losses.FocalLoss` for the required
-        structure of the object or the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
-        folder in the repo.
-    optimizer: ``Optimzer``, optional, default= None
-        An instance of Pytorch's ``Optimizer`` object
-        (e.g. :obj:`torch.optim.Adam()`). if no optimizer is passed it will
-        default to ``AdamW``.
-    lr_schedulers: ``LRScheduler``, optional, default=None
-        An instance of Pytorch's ``LRScheduler`` object (e.g
-        :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`)
-    callbacks: List, optional, default=None
-        List with :obj:`Callback` objects. The three callbacks available in
-        ``pytorch-widedeep`` are: ``LRHistory``, ``ModelCheckpoint`` and
-        ``EarlyStopping``. The ``History`` and the ``LRShedulerCallback``
-        callbacks are used by default. This can also be a custom callback as
-        long as the object of type ``Callback``. See
-        :obj:`pytorch_widedeep.callbacks.Callback` or the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
-        folder in the repo
-    metrics: List, optional, default=None
-        - List of objects of type :obj:`Metric`. Metrics available are:
-          ``Accuracy``, ``Precision``, ``Recall``, ``FBetaScore``,
-          ``F1Score`` and ``R2Score``. This can also be a custom metric as
-          long as it is an object of type :obj:`Metric`. See
-          :obj:`pytorch_widedeep.metrics.Metric` or the `Examples
-          <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
-          folder in the repo
-        - List of objects of type :obj:`torchmetrics.Metric`. This can be any
-          metric from torchmetrics library `Examples
-          <https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
-          classification-metrics>`_. This can also be a custom metric as
-          long as it is an object of type :obj:`Metric`. See `the instructions
-          <https://torchmetrics.readthedocs.io/en/latest/>`_.
-    verbose: int, default=1
-        Setting it to 0 will print nothing during training.
-    seed: int, default=1
-        Random seed to be used internally for train_test_split
-
-    Attributes
-    ----------
-    cyclic_lr: bool
-        Attribute that indicates if  the lr_scheduler is cyclic_lr
-        (i.e. ``CyclicLR`` or ``OneCycleLR``). See `Pytorch schedulers
-        <https://pytorch.org/docs/stable/optim.html>`_.
+    Attributes:
+        cyclic_lr (bool): Attribute that indicates if  the lr_scheduler is cyclic_lr
+            (i.e. ``CyclicLR`` or ``OneCycleLR``). See `Pytorch schedulers
+            <https://pytorch.org/docs/stable/optim.html>`_.
     """
 
     @Alias(  # noqa: C901
@@ -157,29 +143,18 @@ class BayesianTrainer:
     ):
         r"""Fit method.
 
-        Parameters
-        ----------
-        X_tab: np.ndarray,
-            tabular dataset
-        target: np.ndarray
-            target values
-        X_tab_val: np.ndarray, Optional, default = None
-            validation data
-        target_val: np.ndarray, Optional, default = None
-            validation target values
-        val_split: float, Optional. default=None
-            An alterative to passing the validation set is to use a train/val
-            split fraction via 'val_split'
-        n_epochs: int, default=1
-            number of epochs
-        validation_freq: int, default=1
-            epochs validation frequency
-        batch_size: int, default=32
-            batch size
-        n_train_samples: int, default=2
-            number of samples to average over during the training process.
-        n_val_samples: int, default=2
-            number of samples to average over during the validation process.
+        Args:
+            X_tab (np.ndarray): tabular dataset
+            target (np.ndarray): target values
+            X_tab_val (np.ndarray, Optional, default = None): validation data
+            target_val (np.ndarray, Optional, default = None): validation target values
+            val_split (float, Optional. default=None): An alterative to passing the validation set is to use a train/val
+                split fraction via 'val_split'
+            n_epochs (int, default=1): number of epochs
+            validation_freq (int, default=1): epochs validation frequency
+            batch_size (int, default=32): batch size
+            n_train_samples (int, default=2): number of samples to average over during the training process.
+            n_val_samples (int, default=2): number of samples to average over during the validation process.
         """
 
         self.batch_size = batch_size
@@ -263,17 +238,12 @@ class BayesianTrainer:
     ) -> np.ndarray:
         r"""Returns the predictions
 
-        Parameters
-        ----------
-        X_tab: np.ndarray,
-            tabular dataset
-        n_samples: int, default=5
-            number of samples that will be either returned or averaged to
-            produce an overal prediction
-        return_samples: bool, default = False
-            Boolean indicating whether the n samples will be averaged or directly returned
-        batch_size: int, default = 256
-            batch size
+        Args:
+            X_tab (np.ndarray): tabular dataset
+            n_samples (int, default=5): number of samples that will be either returned or averaged to
+                produce an overal prediction
+            return_samples (bool, default = False): Boolean indicating whether the n samples will be averaged or directly returned
+            batch_size (int, default = 256): batch size
         """
 
         preds_l = self._predict(X_tab, n_samples, return_samples, batch_size)
@@ -296,17 +266,12 @@ class BayesianTrainer:
     ) -> np.ndarray:
         r"""Returns the predicted probabilities
 
-        Parameters
-        ----------
-        X_tab: np.ndarray,
-            tabular dataset
-        n_samples: int, default=5
-            number of samples that will be either returned or averaged to
-            produce an overal prediction
-        return_samples: bool, default = False
-            Boolean indicating whether the n samples will be averaged or directly returned
-        batch_size: int, default = 256
-            batch size
+        Args:
+            X_tab (np.ndarray): tabular dataset
+            n_samples (int, default=5): number of samples that will be either returned or averaged to
+                produce an overal prediction
+            return_samples (bool, default = False): Boolean indicating whether the n samples will be averaged or directly returned
+            batch_size (int, default = 256): batch size
         """
         preds_l = self._predict(X_tab, n_samples, return_samples, batch_size)
         preds = np.hstack(preds_l) if return_samples else np.vstack(preds_l)
@@ -345,16 +310,12 @@ class BayesianTrainer:
         saved other than the ``model`` object itself, which can be saved as
         any other torch model (e.g. ``torch.save(model, path)``).
 
-        Parameters
-        ----------
-        path: str
-            path to the directory where the model and the feature importance
-            attribute will be saved.
-        save_state_dict: bool, default = False
-            Boolean indicating whether to save directly the model or the
-            model's state dictionary
-        model_filename: str, Optional, default = "wd_model.pt"
-            filename where the model weights will be store
+        Args:
+            path (str): path to the directory where the model and the feature importance
+                attribute will be saved.
+            save_state_dict (bool, default = False): Boolean indicating whether to save directly the model or the
+                model's state dictionary
+            model_filename (str, Optional, default = "wd_model.pt"): filename where the model weights will be store
         """
 
         save_dir = Path(path)

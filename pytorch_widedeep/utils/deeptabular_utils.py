@@ -22,37 +22,27 @@ class LabelEncoder:
     .. note:: LabelEncoder reserves 0 for `unseen` new categories. This is convenient
         when defining the embedding layers, since we can just set padding idx to 0.
 
-    Parameters
-    ----------
-    columns_to_encode: list, Optional, default = None
-        List of strings containing the names of the columns to encode. If
-        ``None`` all columns of type ``object`` in the dataframe will be label
-        encoded.
-    with_attention: bool, default = False
-        Boolean indicating whether the preprocessed data will be passed to an
-        attention-based model.
-        Aliased as ``for_transformer``.
-    shared_embed: bool, default = False
-        Boolean indicating if the embeddings will be "shared" when using
-        attention-based models. The idea behind ``shared_embed`` is described
-        in the Appendix A in the `TabTransformer paper
-        <https://arxiv.org/abs/2012.06678>`_: `'The goal of having column
-        embedding is to enable the model to distinguish the classes in one
-        column from those in the other columns'`. In other words, the idea is
-        to let the model learn which column is embedded at the time. See:
-        :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
+    Args:
+        columns_to_encode (list, Optional, default = None): List of strings containing the names of the columns to encode. If
+            ``None`` all columns of type ``object`` in the dataframe will be label
+            encoded.
+        with_attention (bool, default = False): Boolean indicating whether the preprocessed data will be passed to an
+            attention-based model.
+            Aliased as ``for_transformer``.
+        shared_embed (bool, default = False): Boolean indicating if the embeddings will be "shared" when using
+            attention-based models. The idea behind ``shared_embed`` is described
+            in the Appendix A in the `TabTransformer paper
+            <https://arxiv.org/abs/2012.06678>`_: `'The goal of having column
+            embedding is to enable the model to distinguish the classes in one
+            column from those in the other columns'`. In other words, the idea is
+            to let the model learn which column is embedded at the time. See:
+            :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
 
-    Attributes
-    -----------
-    encoding_dict: Dict
-        Dictionary containing the encoding mappings in the format, e.g.
-
-        `{'colname1': {'cat1': 1, 'cat2': 2, ...}, 'colname2': {'cat1': 1, 'cat2': 2, ...}, ...}`
-
-    inverse_encoding_dict: Dict
-        Dictionary containing the insverse encoding mappings in the format, e.g.
-
-        `{'colname1': {1: 'cat1', 2: 'cat2', ...}, 'colname2': {1: 'cat1', 2: 'cat2', ...}, ...}`
+    Attributes:
+        encoding_dict (Dict): Dictionary containing the encoding mappings in the format, e.g.
+            `{'colname1': {'cat1': 1, 'cat2': 2, ...}, 'colname2': {'cat1': 1, 'cat2': 2, ...}, ...}`
+        inverse_encoding_dict (Dict): Dictionary containing the insverse encoding mappings in the format, e.g.
+            `{'colname1': {1: 'cat1', 2: 'cat2', ...}, 'colname2': {1: 'cat1', 2: 'cat2', ...}, ...}`
     """
 
     @Alias("with_attention", "for_transformer")
@@ -133,41 +123,37 @@ class LabelEncoder:
     def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """Combines ``fit`` and ``transform``
 
-        Examples
-        --------
-
-        >>> import pandas as pd
-        >>> from pytorch_widedeep.utils import LabelEncoder
-        >>> df = pd.DataFrame({'col1': [1,2,3], 'col2': ['me', 'you', 'him']})
-        >>> columns_to_encode = ['col2']
-        >>> encoder = LabelEncoder(columns_to_encode)
-        >>> encoder.fit_transform(df)
-           col1  col2
-        0     1     1
-        1     2     2
-        2     3     3
-        >>> encoder.encoding_dict
-        {'col2': {'me': 1, 'you': 2, 'him': 3}}
+        Examples:
+            >>> import pandas as pd
+            >>> from pytorch_widedeep.utils import LabelEncoder
+            >>> df = pd.DataFrame({'col1': [1,2,3], 'col2': ['me', 'you', 'him']})
+            >>> columns_to_encode = ['col2']
+            >>> encoder = LabelEncoder(columns_to_encode)
+            >>> encoder.fit_transform(df)
+            col1  col2
+            0     1     1
+            1     2     2
+            2     3     3
+            >>> encoder.encoding_dict
+            {'col2': {'me': 1, 'you': 2, 'him': 3}}
         """
         return self.fit(df).transform(df)
 
     def inverse_transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """Returns the original categories
 
-        Examples
-        --------
-
-        >>> import pandas as pd
-        >>> from pytorch_widedeep.utils import LabelEncoder
-        >>> df = pd.DataFrame({'col1': [1,2,3], 'col2': ['me', 'you', 'him']})
-        >>> columns_to_encode = ['col2']
-        >>> encoder = LabelEncoder(columns_to_encode)
-        >>> df_enc = encoder.fit_transform(df)
-        >>> encoder.inverse_transform(df_enc)
-           col1 col2
-        0     1   me
-        1     2  you
-        2     3  him
+        Examples:
+            >>> import pandas as pd
+            >>> from pytorch_widedeep.utils import LabelEncoder
+            >>> df = pd.DataFrame({'col1': [1,2,3], 'col2': ['me', 'you', 'him']})
+            >>> columns_to_encode = ['col2']
+            >>> encoder = LabelEncoder(columns_to_encode)
+            >>> df_enc = encoder.fit_transform(df)
+            >>> encoder.inverse_transform(df_enc)
+            col1 col2
+            0     1   me
+            1     2  you
+            2     3  him
         """
         for k, v in self.inverse_encoding_dict.items():
             df[k] = df[k].apply(lambda x: v[x])
@@ -183,19 +169,13 @@ def find_bin(
     increasing array of bin edges for each value in values.
     If ret_value
 
-    Parameters
-    ----------
-    bin_edges: Union[np.ndarray, Tensor]
-        monotonically increasing array of bin edges
-    values: Union[np.ndarray, Tensor]
-        values for which we want corresponding bins
-    ret_value: bool
-        if True, return bin values else indices
+    Args:
+        bin_edges (Union[np.ndarray, Tensor]): monotonically increasing array of bin edges
+        values (Union[np.ndarray, Tensor]): values for which we want corresponding bins
+        ret_value (bool): if True, return bin values else indices
 
-    Returns
-    -------
-    left_bin_edges: Union[np.ndarray, Tensor]
-        left bin edges
+    Returns:
+        left_bin_edges (Union[np.ndarray, Tensor]): left bin edges
     """
     if type(bin_edges) == np.ndarray and type(values) == np.ndarray:
         indices: Union[np.ndarray, Tensor] = np.searchsorted(
@@ -232,19 +212,13 @@ def get_kernel_window(
     """Procedure to prepare window of values from symetrical kernel function for smoothing of the distribution in
     Label and Feature Distribution Smoothing (LDS & FDS).
 
-    Parameters
-    ----------
-    kernel: Literal['gaussian', 'triang', 'laplace'] = 'gaussian'
-        choice of kernel for label distribution smoothing
-    ks: int = 5
-        kernel size, i.e. count of samples in symmetric window
-    sigma: Union[int,float] = 2
-        standard deviation of ['gaussian','laplace'] kernel
+    Args:
+        kernel (Literal['gaussian', 'triang', 'laplace'] = 'gaussian'): choice of kernel for label distribution smoothing
+        ks (int = 5): kernel size, i.e. count of samples in symmetric window
+        sigma (Union[int,float] = 2): standard deviation of ['gaussian','laplace'] kernel
 
-    Returns
-    -------
-    kernel_window: list
-        list with values from the chosen kernel function
+    Returns:
+        kernel_window (list): list with values from the chosen kernel function
     """
     half_ks = (ks - 1) // 2
     if kernel == "gaussian":

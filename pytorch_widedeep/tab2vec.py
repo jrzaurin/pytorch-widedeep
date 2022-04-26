@@ -25,61 +25,53 @@ class Tab2Vec:
         a text column or a column with the path to images, these will be
         ignored. We will be adding these functionalities in future versions
 
-    Parameters
-    ----------
-    model: ``WideDeep`` or ``BaseBayesianModel``
-        ``WideDeep`` ``BaseBayesianModel`` model. Must be trained.
-    tab_preprocessor: ``TabPreprocessor``
-        ``TabPreprocessor`` object. Must be fitted.
-    return_dataframe: bool
-        Boolean indicating of the returned object(s) will be array(s) or
-        pandas dataframe(s)
+    Args:
+        model (WideDeep or BaseBayesianModel): ``WideDeep`` ``BaseBayesianModel`` model. Must be trained.
+        tab_preprocessor (TabPreprocessor): ``TabPreprocessor`` object. Must be fitted.
+        return_dataframe (bool): Boolean indicating of the returned object(s) will be array(s) or pandas dataframe(s)
 
-    Attributes
-    ----------
-    vectorizer: ``nn.Module``
-        Torch module with the categorical and continuous encoding process
+    Attributes:
+        vectorizer (nn.Module): Torch module with the categorical and continuous encoding process
 
-    Examples
-    --------
-    >>> import string
-    >>> from random import choices
-    >>> import numpy as np
-    >>> import pandas as pd
-    >>> from pytorch_widedeep import Tab2Vec
-    >>> from pytorch_widedeep.models import TabMlp, WideDeep
-    >>> from pytorch_widedeep.preprocessing import TabPreprocessor
-    >>>
-    >>> colnames = list(string.ascii_lowercase)[:4]
-    >>> cat_col1_vals = ["a", "b", "c"]
-    >>> cat_col2_vals = ["d", "e", "f"]
-    >>>
-    >>> # Create the toy input dataframe and a toy dataframe to be vectorised
-    >>> cat_inp = [np.array(choices(c, k=5)) for c in [cat_col1_vals, cat_col2_vals]]
-    >>> cont_inp = [np.round(np.random.rand(5), 2) for _ in range(2)]
-    >>> df_inp = pd.DataFrame(np.vstack(cat_inp + cont_inp).transpose(), columns=colnames)
-    >>> cat_t2v = [np.array(choices(c, k=5)) for c in [cat_col1_vals, cat_col2_vals]]
-    >>> cont_t2v = [np.round(np.random.rand(5), 2) for _ in range(2)]
-    >>> df_t2v = pd.DataFrame(np.vstack(cat_t2v + cont_t2v).transpose(), columns=colnames)
-    >>>
-    >>> # fit the TabPreprocessor
-    >>> embed_cols = [("a", 2), ("b", 4)]
-    >>> cont_cols = ["c", "d"]
-    >>> tab_preprocessor = TabPreprocessor(cat_embed_cols=embed_cols, continuous_cols=cont_cols)
-    >>> X_tab = tab_preprocessor.fit_transform(df_inp)
-    >>>
-    >>> # define the model (and let's assume we train it)
-    >>> tabmlp = TabMlp(
-    ... column_idx=tab_preprocessor.column_idx,
-    ... cat_embed_input=tab_preprocessor.cat_embed_input,
-    ... continuous_cols=tab_preprocessor.continuous_cols,
-    ... mlp_hidden_dims=[8, 4])
-    >>> model = WideDeep(deeptabular=tabmlp)
-    >>> # ...train the model...
-    >>>
-    >>> # vectorise the dataframe
-    >>> t2v = Tab2Vec(model, tab_preprocessor)
-    >>> X_vec = t2v.transform(df_t2v)
+    Examples:
+        >>> import string
+        >>> from random import choices
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> from pytorch_widedeep import Tab2Vec
+        >>> from pytorch_widedeep.models import TabMlp, WideDeep
+        >>> from pytorch_widedeep.preprocessing import TabPreprocessor
+        >>>
+        >>> colnames = list(string.ascii_lowercase)[:4]
+        >>> cat_col1_vals = ["a", "b", "c"]
+        >>> cat_col2_vals = ["d", "e", "f"]
+        >>>
+        >>> # Create the toy input dataframe and a toy dataframe to be vectorised
+        >>> cat_inp = [np.array(choices(c, k=5)) for c in [cat_col1_vals, cat_col2_vals]]
+        >>> cont_inp = [np.round(np.random.rand(5), 2) for _ in range(2)]
+        >>> df_inp = pd.DataFrame(np.vstack(cat_inp + cont_inp).transpose(), columns=colnames)
+        >>> cat_t2v = [np.array(choices(c, k=5)) for c in [cat_col1_vals, cat_col2_vals]]
+        >>> cont_t2v = [np.round(np.random.rand(5), 2) for _ in range(2)]
+        >>> df_t2v = pd.DataFrame(np.vstack(cat_t2v + cont_t2v).transpose(), columns=colnames)
+        >>>
+        >>> # fit the TabPreprocessor
+        >>> embed_cols = [("a", 2), ("b", 4)]
+        >>> cont_cols = ["c", "d"]
+        >>> tab_preprocessor = TabPreprocessor(cat_embed_cols=embed_cols, continuous_cols=cont_cols)
+        >>> X_tab = tab_preprocessor.fit_transform(df_inp)
+        >>>
+        >>> # define the model (and let's assume we train it)
+        >>> tabmlp = TabMlp(
+        ... column_idx=tab_preprocessor.column_idx,
+        ... cat_embed_input=tab_preprocessor.cat_embed_input,
+        ... continuous_cols=tab_preprocessor.continuous_cols,
+        ... mlp_hidden_dims=[8, 4])
+        >>> model = WideDeep(deeptabular=tabmlp)
+        >>> # ...train the model...
+        >>>
+        >>> # vectorise the dataframe
+        >>> t2v = Tab2Vec(model, tab_preprocessor)
+        >>> X_vec = t2v.transform(df_t2v)
     """
 
     def __init__(
@@ -149,15 +141,11 @@ class Tab2Vec:
         column name is passed the target values will be returned separately
         in their corresponding type (np.ndarray or pd.DataFrame)
 
-        Parameters
-        ----------
-        df: pd.DataFrame
-            DataFrame to be vectorised, i.e. the categorical and continuous
-            columns will be encoded based on the processing applied within
-            the model
-        target_col: str, Optional
-            Column name of the target_col variable. If ``None`` only the array of
-            predictors will be returned
+        Args:
+            df (pd.DataFrame) DataFrame to be vectorised, i.e. the categorical and continuous
+                columns will be encoded based on the processing applied within the model
+            target_col (str, Optional): Column name of the target_col variable. If ``None`` only the array of
+                predictors will be returned
         """
 
         X_tab = self.tab_preprocessor.transform(df)

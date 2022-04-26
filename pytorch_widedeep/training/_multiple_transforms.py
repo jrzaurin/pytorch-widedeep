@@ -16,3 +16,6 @@ class MultipleTransforms(object):
 
     def __call__(self):
         return Compose(self._transforms)
+
+    def dummy(self):
+        pass

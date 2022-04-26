@@ -31,15 +31,11 @@ class FineTune:
     re-structure most of the existing code. This will change in future
     releases.
 
-    Parameters
-    ----------
-    loss_fn: Any
-       any function with the same strucure as 'loss_fn' in the class ``Trainer``
-    metric: ``Metric`` or ``MultipleMetrics``
-       object of class Metric (see Metric in pytorch_widedeep.metrics)
-    method: str
-       one of 'binary', 'regression' or 'multiclass'
-    verbose: Boolean
+    Args:
+        loss_fn (Any): any function with the same strucure as 'loss_fn' in the class ``Trainer``
+        metric ([Metric, MultipleMetrics]): object of class Metric (see Metric in pytorch_widedeep.metrics)
+        method (str): one of 'binary', 'regression' or 'multiclass'
+        verbose (Boolean):
     """
 
     def __init__(
@@ -75,20 +71,14 @@ class FineTune:
 
         The optimizer used in the process is AdamW
 
-        Parameters:
-        ----------
-        model: `Module``
-            ``Module`` object containing one the WideDeep model components (wide,
-            deeptabular, deeptext or deepimage)
-        model_name: str
-            string indicating the model name to access the corresponding parameters.
-            One of 'wide', 'deeptabular', 'deeptext' or 'deepimage'
-        loader: ``DataLoader``
-            Pytorch DataLoader containing the data used to fine-tune
-        n_epochs: int
-            number of epochs used to fine-tune the model
-        max_lr: float
-            maximum learning rate value during the triangular cycle.
+        Args:
+            model (Module):``Module`` object containing one the WideDeep model components (wide,
+                deeptabular, deeptext or deepimage)
+            model_name (str): string indicating the model name to access the corresponding parameters.
+                One of 'wide', 'deeptabular', 'deeptext' or 'deepimage'
+            loader (DataLoader): Pytorch DataLoader containing the data used to fine-tune
+            n_epochs (int): number of epochs used to fine-tune the model
+            max_lr (float): maximum learning rate value during the triangular cycle.
         """
         if self.verbose:
             print("Training {} for {} epochs".format(model_name, n_epochs))
@@ -141,26 +131,19 @@ class FineTune:
            epoch. Then traine the next layer in the model for one epoch while
            keeping the already trained up layer(s) trainable. Repeat.
 
-        Parameters:
-        ----------
-        model: ``Module``
-           ``Module`` object containing one the WideDeep model components (wide,
-           deeptabular, deeptext or deepimage)
-        model_name: str
-           string indicating the model name to access the corresponding parameters.
-           One of 'wide', 'deeptabular', 'deeptext' or 'deepimage'
-        loader: ``DataLoader``
-           Pytorch DataLoader containing the data to fine-tune with.
-        last_layer_max_lr: float
-           maximum learning rate value during the triangular cycle for the layer
-           closest to the output neuron(s). Deeper layers in 'model' will be trained
-           with a gradually descending learning rate. The descending factor is fixed
-           and is 2.5
-        layers: list
-           List of ``Module`` objects containing the layers that will be fine-tuned.
-           This must be in *'FINE-TUNE ORDER'*.
-        routine: str
-           one of 'howard' or 'felbo'
+        Args:
+            model (Module): ``Module`` object containing one the WideDeep model components (wide,
+            deeptabular, deeptext or deepimage)
+            model_name (str): string indicating the model name to access the corresponding parameters.
+            One of 'wide', 'deeptabular', 'deeptext' or 'deepimage'
+            loader (DataLoader): Pytorch DataLoader containing the data to fine-tune with.
+            last_layer_max_lr (float): maximum learning rate value during the triangular cycle for the layer
+            closest to the output neuron(s). Deeper layers in 'model' will be trained
+            with a gradually descending learning rate. The descending factor is fixed
+            and is 2.5
+            layers (list): List of ``Module`` objects containing the layers that will be fine-tuned.
+            This must be in *'FINE-TUNE ORDER'*.
+            routine (str): one of 'howard' or 'felbo'
         """
         model.train()
 
@@ -291,17 +274,12 @@ class FineTune:
         Calculate the number of steps up and down during the one cycle fine-tune for a
         given number of epochs
 
-        Parameters:
-        ----------
-        steps: int
-            steps per epoch
-        n_epochs: int, default=1
-            number of fine-tune epochs
+        Args:
+            steps (int): steps per epoch
+            n_epochs (int, default=1): number of fine-tune epochs
 
-        Returns
-        -------
-        up, down: Tuple, int
-            number of steps increasing/decreasing the learning rate during the cycle
+        Returns:
+            up, down (Tuple, int): number of steps increasing/decreasing the learning rate during the cycle
         """
         up = round((steps * n_epochs) * 0.1)
         down = (steps * n_epochs) - up

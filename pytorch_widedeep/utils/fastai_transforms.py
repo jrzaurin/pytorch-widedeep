@@ -94,31 +94,25 @@ class SpacyTokenizer(BaseTokenizer):
     def __init__(self, lang: str):
         """Wrapper around a spacy tokenizer to make it a :obj:`BaseTokenizer`.
 
-        Parameters
-        ----------
-        lang: str
-            Language of the text to be tokenized
+        Args:
+            lang (str): Language of the text to be tokenized
         """
         self.tok = spacy.blank(lang)
 
     def tokenizer(self, t: str):
         """Runs ``Spacy``'s ``tokenizer``
 
-        Parameters
-        ----------
-        t: str
-            text to be tokenized
+        Args:
+            t (str): text to be tokenized
         """
         return [t.text for t in self.tok.tokenizer(t)]
 
     def add_special_cases(self, toks: Collection[str]):
         """Runs ``Spacy``'s ``add_special_case`` method
 
-        Parameters
-        ----------
-        toks: Collection
-            `List`, `Tuple`, `Set` or `Dictionary` where the values are
-            strings that are the special cases to add to the tokenizer
+        Args:
+            toks (Collection): `List`, `Tuple`, `Set` or `Dictionary` where the values are
+                strings that are the special cases to add to the tokenizer
         """
         for w in toks:
             self.tok.tokenizer.add_special_case(w, [{ORTH: w}])  # type: ignore[union-attr]
@@ -216,23 +210,16 @@ class Tokenizer:
     r"""Class to combine a series of rules and a tokenizer function to tokenize
     text with multiprocessing.
 
-    Parameters
-    ----------
-    tok_func: Callable, default = ``SpacyTokenizer``
-        Tokenizer Object. See :class:`pytorch_widedeep.utils.fastai_transforms.SpacyTokenizer`
-    lang: str, default = "en"
-        Text's Language
-    pre_rules: ListRules, Optional, default = None
-        Custom type: ``Collection[Callable[[str], str]]``.
-        see :obj:`pytorch_widedeep.wdtypes`. Preprocessing Rules
-    post_rules: ListRules, Optional, default = None
-        Custom type: ``Collection[Callable[[str], str]]``.
-        see :obj:`pytorch_widedeep.wdtypes`. Postprocessing Rules
-    special_cases: Collection, Optional, default= None
-        special cases to be added to the tokenizer via ``Spacy``'s
-        ``add_special_case`` method
-    n_cpus: int, Optional, default = None
-        number of CPUs to used during the tokenization process
+    Args:
+        tok_func (Callable, default = ``SpacyTokenizer``): Tokenizer Object. See :class:`pytorch_widedeep.utils.fastai_transforms.SpacyTokenizer`
+        lang (str, default = "en"): Text's Language
+        pre_rules (ListRules, Optional, default = None): Custom type: ``Collection[Callable[[str], str]]``.
+            see :obj:`pytorch_widedeep.wdtypes`. Preprocessing Rules
+        post_rules (ListRules, Optional, default = None): Custom type: ``Collection[Callable[[str], str]]``.
+            see :obj:`pytorch_widedeep.wdtypes`. Postprocessing Rules
+        special_cases (Collection, Optional, default= None): special cases to be added to the tokenizer via ``Spacy``'s
+            ``add_special_case`` method
+        n_cpus (int, Optional, default = None): number of CPUs to used during the tokenization process
     """
 
     def __init__(
@@ -263,13 +250,10 @@ class Tokenizer:
     def process_text(self, t: str, tok: BaseTokenizer) -> List[str]:
         """Process and tokenize one text ``t`` with tokenizer ``tok``.
 
-        Parameters
-        ----------
-        t: str
-            text to be processed and tokenized
-        tok: ``BaseTokenizer``
-            Instance of :obj:`BaseTokenizer`. See
-            :obj:`pytorch_widedeep.utils.fastai_transforms.BaseTokenizer`
+        Args:
+            t (str): text to be processed and tokenized
+            tok (BaseTokenizer): Instance of :obj:`BaseTokenizer`. See
+                :obj:`pytorch_widedeep.utils.fastai_transforms.BaseTokenizer`
         """
         for rule in self.pre_rules:
             t = rule(t)
@@ -289,18 +273,17 @@ class Tokenizer:
     def process_all(self, texts: Collection[str]) -> List[List[str]]:
         r"""Process a list of texts. Parallel execution of ``process_text``.
 
-        Examples
-        --------
-        >>> from pytorch_widedeep.utils import Tokenizer
-        >>> texts = ['Machine learning is great', 'but building stuff is even better']
-        >>> tok = Tokenizer()
-        >>> tok.process_all(texts)
-        [['xxmaj', 'machine', 'learning', 'is', 'great'], ['but', 'building', 'stuff', 'is', 'even', 'better']]
+        Examples:
+            >>> from pytorch_widedeep.utils import Tokenizer
+            >>> texts = ['Machine learning is great', 'but building stuff is even better']
+            >>> tok = Tokenizer()
+            >>> tok.process_all(texts)
+            [['xxmaj', 'machine', 'learning', 'is', 'great'], ['but', 'building', 'stuff', 'is', 'even', 'better']]
 
-        .. note:: Note the token ``TK_MAJ`` (`xxmaj`), used to indicate the
-            next word begins with a capital in the original text. For more
-            details of special tokens please see the ``fastai`` `docs
-            <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
+            .. note:: Note the token ``TK_MAJ`` (`xxmaj`), used to indicate the
+                next word begins with a capital in the original text. For more
+                details of special tokens please see the ``fastai`` `docs
+                <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
         """
 
         if self.n_cpus <= 1:
@@ -314,17 +297,13 @@ class Tokenizer:
 class Vocab:
     r"""Contains the correspondence between numbers and tokens.
 
-    Parameters
-    ----------
-    itos: Collection
-        `index to str`. Collection of strings that are the tokens of the
-        vocabulary
+    Args:
+        itos (Collection): `index to str`. Collection of strings that are the tokens of the
+            vocabulary
 
-    Attributes
-    ----------
-    stoi: defaultdict
-        `str to index`. Dictionary containing the tokens of the vocabulary and
-        their corresponding index
+    Attributes:
+        stoi (defaultdict): `str to index`. Dictionary containing the tokens of the vocabulary and
+            their corresponding index
     """
 
     def __init__(self, itos: Collection[str]):
@@ -354,33 +333,28 @@ class Vocab:
     def create(cls, tokens: Tokens, max_vocab: int, min_freq: int) -> "Vocab":
         r"""Create a vocabulary object from a set of tokens.
 
-        Parameters
-        ----------
-        tokens: Tokens
-            Custom type: ``Collection[Collection[str]]``  see
-            :obj:`pytorch_widedeep.wdtypes`. Collection of collection of
-            strings(e.g. list of tokenized sentences)
-        max_vocab: int
-            maximum vocabulary size
-        min_freq: int
-            minimum frequency that a token has to appear to be part of the
-            vocabulary
+        Args:
+            tokens (Tokens): Custom type: ``Collection[Collection[str]]``  see
+                :obj:`pytorch_widedeep.wdtypes`. Collection of collection of
+                strings(e.g. list of tokenized sentences)
+            max_vocab (int): maximum vocabulary size
+            min_freq (int): minimum frequency that a token has to appear to be part of the
+                vocabulary
 
-        Examples
-        --------
-        >>> from pytorch_widedeep.utils import Tokenizer, Vocab
-        >>> texts = ['Machine learning is great', 'but building stuff is even better']
-        >>> tokens = Tokenizer().process_all(texts)
-        >>> vocab = Vocab.create(tokens, max_vocab=18, min_freq=1)
-        >>> vocab.numericalize(['machine', 'learning', 'is', 'great'])
-        [10, 11, 9, 12]
-        >>> vocab.textify([10, 11, 9, 12])
-        'machine learning is great'
+        Examples:
+            >>> from pytorch_widedeep.utils import Tokenizer, Vocab
+            >>> texts = ['Machine learning is great', 'but building stuff is even better']
+            >>> tokens = Tokenizer().process_all(texts)
+            >>> vocab = Vocab.create(tokens, max_vocab=18, min_freq=1)
+            >>> vocab.numericalize(['machine', 'learning', 'is', 'great'])
+            [10, 11, 9, 12]
+            >>> vocab.textify([10, 11, 9, 12])
+            'machine learning is great'
 
-        .. note:: Note the many special tokens that ``fastai``'s' tokenizer
-            adds. These are particularly useful when building Language models and/or in
-            classification/Regression tasks. Please see the ``fastai``
-            `docs <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
+            .. note:: Note the many special tokens that ``fastai``'s' tokenizer
+                adds. These are particularly useful when building Language models and/or in
+                classification/Regression tasks. Please see the ``fastai``
+                `docs <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
         """
         freq = Counter(p for o in tokens for p in o)
         itos = [o for o, c in freq.most_common(max_vocab) if c >= min_freq]

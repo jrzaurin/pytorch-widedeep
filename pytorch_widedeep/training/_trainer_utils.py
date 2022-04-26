@@ -42,24 +42,18 @@ def tabular_train_val_split(
     Function to create the train/val split for the BayesianTrainer where only
     tabular data is used
 
-    Parameters
-    ----------
-    seed: int
-        random seed to be used during train/val split
-    method: str
-        'regression',  'binary' or 'multiclass'
-    X: np.ndarray
-        tabular dataset (categorical and continuous features)
-    y: np.ndarray
-    X_val: np.ndarray, Optional, default = None
-        Dict with the validation set, where the keys are the component names
-        (e.g: 'wide') and the values the corresponding arrays
-    y_val: np.ndarray, Optional, default = None
+    Args:
+        seed (int): random seed to be used during train/val split
+        method (str): 'regression',  'binary' or 'multiclass'
+        X (np.ndarray): tabular dataset (categorical and continuous features)
+        y (np.ndarray)
+        X_val (np.ndarray, Optional, default = None): Dict with the validation set, where the keys are the component names
+            (e.g: 'wide') and the values the corresponding arrays
+        y_val (np.ndarray, Optional, default = None):
 
-    Returns
-    -------
-    train_set: ``TensorDataset``
-    eval_set: ``TensorDataset``
+    Returns:
+        train_set (TensorDataset):
+        eval_set (TensorDataset):
     """
 
     if X_val is not None:
@@ -125,33 +119,22 @@ def wd_train_val_split(  # noqa: C901
     are allowed in terms of data inputs. For parameter information, please,
     see the ``Trainer``'s' ``.fit()`` method documentation
 
-    Parameters
-    ----------
-    seed: int
-        random seed to be used during train/val split
-    method: str
-        'regression',  'binary' or 'multiclass'
-    X_wide: np.ndarray, Optional, default = None
-        wide dataset
-    X_tab: np.ndarray, Optional, default = None
-        tabular dataset (categorical and continuous features)
-    X_img: np.ndarray, Optional, default = None
-        image dataset
-    X_text: np.ndarray, Optional, default = None
-        text dataset
-    X_val: Dict, Optional, default = None
-        Dict with the validation set, where the keys are the component names
-        (e.g: 'wide') and the values the corresponding arrays
-    val_split: float, Optional, default = None
-        Alternatively, the validation split can be specified via a float
-    target: np.ndarray, Optional, default = None
-    transforms: List, Optional, default = None
-        List of Transforms to be applied to the image dataset
+    Args:
+        seed (int): random seed to be used during train/val split
+        method (str): 'regression',  'binary' or 'multiclass'
+        X_wide (np.ndarray, Optional, default = None): wide dataset
+        X_tab (np.ndarray, Optional, default = None): tabular dataset (categorical and continuous features)
+        X_img (np.ndarray, Optional, default = None): image dataset
+        X_text (np.ndarray, Optional, default = None): text dataset
+        X_val (Dict, Optional, default = None): Dict with the validation set, where the keys are the component names
+            (e.g: 'wide') and the values the corresponding arrays
+        val_split (float, Optional, default = None): Alternatively, the validation split can be specified via a float
+        target (np.ndarray, Optional, default = None): 
+        transforms (List, Optional, default = None): List of Transforms to be applied to the image dataset
 
-    Returns
-    -------
-    train_set: ``WideDeepDataset``
-    eval_set: ``WideDeepDataset``
+    Returns:
+        train_set (WideDeepDataset):
+        eval_set (WideDeepDataset):
     """
 
     if X_val is not None:
@@ -220,15 +203,11 @@ def print_loss_and_metric(pb: tqdm, loss: float, score: Dict):
     Function to improve readability and avoid code repetition in the
     training/validation loop within the Trainer's fit method
 
-    Parameters
-    ----------
-    pb: tqdm
-        tqdm object defined as trange(...)
-    loss: float
-        Loss value
-    score: Dict
-        Dictionary where the keys are the metric names and the values are the
-        corresponding values
+    Args:
+        pb (tqdm): tqdm object defined as trange(...)
+        loss (float): Loss value
+        score (Dict): Dictionary where the keys are the metric names and the values are the
+            corresponding values
     """
     if score is not None:
         pb.set_postfix(
@@ -246,17 +225,12 @@ def save_epoch_logs(epoch_logs: Dict, loss: float, score: Dict, stage: str):
     Function to improve readability and avoid code repetition in the
     training/validation loop within the Trainer's fit method
 
-    Parameters
-    ----------
-    epoch_logs: Dict
-        Dict containing the epoch logs
-    loss: float
-        loss value
-    score: Dict
-        Dictionary where the keys are the metric names and the values are the
-        corresponding values
-    stage: str
-        one of 'train' or 'val'
+    Args:
+        epoch_logs (Dict): Dict containing the epoch logs
+        loss (float): loss value
+        score (Dict): Dictionary where the keys are the metric names and the values are the
+            corresponding values
+        stage (str): one of 'train' or 'val'
     """
     epoch_logs["_".join([stage, "loss"])] = loss
     if score is not None:
@@ -270,20 +244,15 @@ def bayesian_alias_to_loss(loss_fn: str, **kwargs):
     r"""Function that returns the corresponding loss function given an alias.
     To be used with the ``BayesianTrainer``
 
-    Parameters
-    ----------
-    loss_fn: str
-        Loss name
+    Args:
+        loss_fn (str): Loss name
 
-    Returns
-    -------
-    Object
-        loss function
+    Returns:
+        Object (): loss function
 
-    Examples
-    --------
-    >>> from pytorch_widedeep.training._trainer_utils import bayesian_alias_to_loss
-    >>> loss_fn = bayesian_alias_to_loss(loss_fn="binary", weight=None)
+    Examples:
+        >>> from pytorch_widedeep.training._trainer_utils import bayesian_alias_to_loss
+        >>> loss_fn = bayesian_alias_to_loss(loss_fn="binary", weight=None)
     """
     if loss_fn == "binary":
         return nn.BCEWithLogitsLoss(pos_weight=kwargs["weight"], reduction="sum")
@@ -297,20 +266,15 @@ def bayesian_alias_to_loss(loss_fn: str, **kwargs):
 def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
     r"""Function that returns the corresponding loss function given an alias
 
-    Parameters
-    ----------
-    loss_fn: str
-        Loss name or alias
+    Args:
+        loss_fn (str): Loss name or alias
 
-    Returns
-    -------
-    Object
-        loss function
+    Returns:
+        Object (): loss function
 
-    Examples
-    --------
-    >>> from pytorch_widedeep.training._trainer_utils import alias_to_loss
-    >>> loss_fn = alias_to_loss(loss_fn="binary_logloss", weight=None)
+    Examples:
+        >>> from pytorch_widedeep.training._trainer_utils import alias_to_loss
+        >>> loss_fn = alias_to_loss(loss_fn="binary_logloss", weight=None)
     """
     if loss_fn not in _ObjectiveToMethod.keys():
         raise ValueError(

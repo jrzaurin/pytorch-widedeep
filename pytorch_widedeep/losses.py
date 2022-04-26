@@ -23,26 +23,21 @@ class MSELoss(nn.Module):
         self, input: Tensor, target: Tensor, lds_weight: Optional[Tensor] = None
     ) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions
-        target: Tensor
-            Target tensor with the actual values
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+        Args:
+            input (Tensor): Input tensor with predictions
+            target (Tensor): Target tensor with the actual values
+            lds_weight (Tensor, Optional): If we choose to use LDS this is the tensor of weights that will
+                multiply the loss value.
 
-        Examples
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.losses import MSELoss
-        >>>
-        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> MSELoss()(input, target, lds_weight)
-        tensor(0.1673)
+        Examples:
+            >>> import torch
+            >>> from pytorch_widedeep.losses import MSELoss
+            >>>
+            >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+            >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
+            >>> MSELoss()(input, target, lds_weight)
+            tensor(0.1673)
         """
         loss = (input - target) ** 2
         if lds_weight is not None:
@@ -66,26 +61,21 @@ class MSLELoss(nn.Module):
         self, input: Tensor, target: Tensor, lds_weight: Optional[Tensor] = None
     ) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions (not probabilities)
-        target: Tensor
-            Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+        Args:
+            input (Tensor): Input tensor with predictions (not probabilities)
+            target (Tensor): Target tensor with the actual classes
+            lds_weight (Tensor, Optional): If we choose to use LDS this is the tensor of weights that will
+                multiply the loss value.
 
-        Examples
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.losses import MSLELoss
-        >>>
-        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> MSLELoss()(input, target, lds_weight)
-        tensor(0.0358)
+        Examples:
+            >>> import torch
+            >>> from pytorch_widedeep.losses import MSLELoss
+            >>>
+            >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+            >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
+            >>> MSLELoss()(input, target, lds_weight)
+            tensor(0.0358)
         """
         assert (
             input.min() >= 0
@@ -116,26 +106,21 @@ class RMSELoss(nn.Module):
         self, input: Tensor, target: Tensor, lds_weight: Optional[Tensor] = None
     ) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions (not probabilities)
-        target: Tensor
-            Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+        Args:
+            input (Tensor): Input tensor with predictions (not probabilities)
+            target: (Tensor): Target tensor with the actual classes
+            lds_weight (Tensor, Optional): If we choose to use LDS this is the tensor of weights that will
+                multiply the loss value.
 
-        Examples
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.losses import RMSELoss
-        >>>
-        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> RMSELoss()(input, target, lds_weight)
-        tensor(0.4090)
+        Examples:
+            >>> import torch
+            >>> from pytorch_widedeep.losses import RMSELoss
+            >>>
+            >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+            >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
+            >>> RMSELoss()(input, target, lds_weight)
+            tensor(0.4090)
         """
         loss = (input - target) ** 2
         if lds_weight is not None:
@@ -159,26 +144,21 @@ class RMSLELoss(nn.Module):
         self, input: Tensor, target: Tensor, lds_weight: Optional[Tensor] = None
     ) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions (not probabilities)
-        target: Tensor
-            Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+        Args:
+            input (Tensor): Input tensor with predictions (not probabilities)
+            target (Tensor): Target tensor with the actual classes
+            lds_weight (Tensor, Optional): If we choose to use LDS this is the tensor of weights that will
+                multiply the loss value.
 
-        Examples
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.losses import RMSLELoss
-        >>>
-        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> RMSELoss()(input, target, lds_weight)
-        tensor(0.4090)
+        Examples:
+            >>> import torch
+            >>> from pytorch_widedeep.losses import RMSLELoss
+            >>>
+            >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+            >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
+            >>> RMSELoss()(input, target, lds_weight)
+            tensor(0.4090)
         """
         assert (
             input.min() >= 0
@@ -201,10 +181,8 @@ class QuantileLoss(nn.Module):
     All credits go to the implementation at `pytorch-forecasting
     <https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss>`_ .
 
-    Parameters
-    ----------
-    quantiles: List, default = [0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.98]
-        List of quantiles
+    Args:
+        quantiles (List, default = [0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.98]): List of quantiles
     """
 
     def __init__(
@@ -216,25 +194,21 @@ class QuantileLoss(nn.Module):
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions
-        target: Tensor
-            Target tensor with the actual values
+        Args:
+            input (Tensor): Input tensor with predictions
+            target (Tensor): Target tensor with the actual values
 
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.losses import QuantileLoss
-        >>>
-        >>> # REGRESSION
-        >>> target = torch.tensor([[0.6, 1.5]]).view(-1, 1)
-        >>> input = torch.tensor([[.1, .2,], [.4, .5]])
-        >>> qloss = QuantileLoss([0.25, 0.75])
-        >>> qloss(input, target)
-        tensor(0.3625)
+        Examples:
+            >>> import torch
+            >>>
+            >>> from pytorch_widedeep.losses import QuantileLoss
+            >>>
+            >>> # REGRESSION
+            >>> target = torch.tensor([[0.6, 1.5]]).view(-1, 1)
+            >>> input = torch.tensor([[.1, .2,], [.4, .5]])
+            >>> qloss = QuantileLoss([0.25, 0.75])
+            >>> qloss(input, target)
+            tensor(0.3625)
         """
 
         assert input.shape == torch.Size([target.shape[0], len(self.quantiles)]), (
@@ -264,12 +238,9 @@ class FocalLoss(nn.Module):
 
     :math:`\begin{equation} p_t= \begin{cases}p, & \text{if $y=1$}.\\1-p, & \text{otherwise}. \end{cases} \end{equation}`
 
-    Parameters
-    ----------
-    alpha: float
-        Focal Loss ``alpha`` parameter
-    gamma: float
-        Focal Loss ``gamma`` parameter
+    Args:
+        alpha (float): Focal Loss ``alpha`` parameter
+        gamma (float): Focal Loss ``gamma`` parameter
     """
 
     def __init__(self, alpha: float = 0.25, gamma: float = 1.0):
@@ -284,30 +255,26 @@ class FocalLoss(nn.Module):
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions (not probabilities)
-        target: Tensor
-            Target tensor with the actual classes
+        Args:
+            input (Tensor): Input tensor with predictions (not probabilities)
+            target (Tensor): Target tensor with the actual classes
 
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.losses import FocalLoss
-        >>>
-        >>> # BINARY
-        >>> target = torch.tensor([0, 1, 0, 1]).view(-1, 1)
-        >>> input = torch.tensor([[0.6, 0.7, 0.3, 0.8]]).t()
-        >>> FocalLoss()(input, target)
-        tensor(0.1762)
-        >>>
-        >>> # MULTICLASS
-        >>> target = torch.tensor([1, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([[0.2, 0.5, 0.3], [0.8, 0.1, 0.1], [0.7, 0.2, 0.1]])
-        >>> FocalLoss()(input, target)
-        tensor(0.2573)
+        Examples:
+            >>> import torch
+            >>>
+            >>> from pytorch_widedeep.losses import FocalLoss
+            >>>
+            >>> # BINARY
+            >>> target = torch.tensor([0, 1, 0, 1]).view(-1, 1)
+            >>> input = torch.tensor([[0.6, 0.7, 0.3, 0.8]]).t()
+            >>> FocalLoss()(input, target)
+            tensor(0.1762)
+            >>>
+            >>> # MULTICLASS
+            >>> target = torch.tensor([1, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([[0.2, 0.5, 0.3], [0.8, 0.1, 0.1], [0.7, 0.2, 0.1]])
+            >>> FocalLoss()(input, target)
+            tensor(0.2573)
         """
         input_prob = torch.sigmoid(input)
         if input.size(1) == 1:
@@ -357,20 +324,17 @@ class BayesianSELoss(nn.Module):
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions (not probabilities)
-        target: Tensor
-            Target tensor with the actual classes
-        Examples
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.losses import BayesianSELoss
-        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> BayesianSELoss()(input, target)
-        tensor(0.9700)
+        Args:
+            input (Tensor): Input tensor with predictions (not probabilities)
+            target (Tensor): Target tensor with the actual classes
+
+        Examples:
+            >>> import torch
+            >>> from pytorch_widedeep.losses import BayesianSELoss
+            >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+            >>> BayesianSELoss()(input, target)
+            tensor(0.9700)
         """
         return (0.5 * (input - target) ** 2).sum()
 
@@ -395,29 +359,23 @@ class TweedieLoss(nn.Module):
         p: float = 1.5,
     ) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions
-        target: Tensor
-            Target tensor with the actual values
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
-        p: float, default = 1.5
-            the power to be used to compute the loss. See the original
-            publication for details
+        Args:
+            input (Tensor): Input tensor with predictions
+            target (Tensor)" Target tensor with the actual values
+            lds_weight (Tensor, Optional): If we choose to use LDS this is the tensor of weights that will
+                multiply the loss value.
+            p (float, default = 1.5): the power to be used to compute the loss. See the original
+                publication for details
 
-        Examples
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.losses import TweedieLoss
-        >>>
-        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> TweedieLoss()(input, target, lds_weight)
-        tensor(1.0386)
+        Examples:
+            >>> import torch
+            >>> from pytorch_widedeep.losses import TweedieLoss
+            >>>
+            >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+            >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
+            >>> TweedieLoss()(input, target, lds_weight)
+            tensor(1.0386)
         """
 
         assert (
@@ -448,22 +406,18 @@ class ZILNLoss(nn.Module):
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions with spape (N,3), where N is the batch size
-        target: Tensor
-            Target tensor with the actual target values
+        Args:
+            input (Tensor): Input tensor with predictions with spape (N,3), where N is the batch size
+            target (Tensor): Target tensor with the actual target values
 
-        Examples
-        --------
-        >>> import torch
-        >>> from pytorch_widedeep.losses import ZILNLoss
-        >>>
-        >>> target = torch.tensor([[0., 1.5]]).view(-1, 1)
-        >>> input = torch.tensor([[.1, .2, .3], [.4, .5, .6]])
-        >>> ZILNLoss()(input, target)
-        tensor(1.3114)
+        Examples:
+            >>> import torch
+            >>> from pytorch_widedeep.losses import ZILNLoss
+            >>>
+            >>> target = torch.tensor([[0., 1.5]]).view(-1, 1)
+            >>> input = torch.tensor([[.1, .2, .3], [.4, .5, .6]])
+            >>> ZILNLoss()(input, target)
+            tensor(1.3114)
         """
         positive = target > 0
         positive = positive.float()
@@ -517,26 +471,21 @@ class L1Loss(nn.Module):
         self, input: Tensor, target: Tensor, lds_weight: Optional[Tensor] = None
     ) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions
-        target: Tensor
-            Target tensor with the actual values
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+        Args:
+            input (Tensor): Input tensor with predictions
+            target (Tensor): Target tensor with the actual values
+            lds_weight (Tensor, Optional): If we choose to use LDS this is the tensor of weights that will
+                multiply the loss value.
 
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.losses import L1Loss
-        >>>
-        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> L1Loss()(input, target)
-        tensor(0.6000)
+        Examples:
+            >>> import torch
+            >>>
+            >>> from pytorch_widedeep.losses import L1Loss
+            >>>
+            >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+            >>> L1Loss()(input, target)
+            tensor(0.6000)
         """
         loss = F.l1_loss(input, target, reduction="none")
         if lds_weight is not None:
@@ -551,16 +500,12 @@ class FocalR_L1Loss(nn.Module):
     <https://arxiv.org/abs/2102.09554>`_ and their `implementation
     <https://github.com/YyzHarry/imbalanced-regression>`_
 
-    Parameters
-    ----------
-    beta: float
-        Focal Loss ``beta`` parameter in their implementation
-    gamma: float
-        Focal Loss ``gamma`` parameter
-    activation_fn: str, default = "sigmoid"
-        Activation function to be used during the computation of the loss.
-        Possible values are `'sigmoid'` and `'tanh'`. See the original
-        publication for details.
+    Args:
+        beta (float): Focal Loss ``beta`` parameter in their implementation
+        gamma (float): Focal Loss ``gamma`` parameter
+        activation_fn (str, default = "sigmoid"): Activation function to be used during the computation of the loss.
+            Possible values are `'sigmoid'` and `'tanh'`. See the original
+            publication for details.
     """
 
     def __init__(
@@ -581,26 +526,21 @@ class FocalR_L1Loss(nn.Module):
         lds_weight: Optional[Tensor] = None,
     ) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions (not probabilities)
-        target: Tensor
-            Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+        Args:
+            input (Tensor): Input tensor with predictions (not probabilities)
+            target (Tensor): Target tensor with the actual classes
+            lds_weight (Tensor, Optional): If we choose to use LDS this is the tensor of weights that will
+                multiply the loss value.
 
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.losses import FocalR_L1Loss
-        >>>
-        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> FocalR_L1Loss()(input, target)
-        tensor(0.0483)
+        Examples:
+            >>> import torch
+            >>>
+            >>> from pytorch_widedeep.losses import FocalR_L1Loss
+            >>>
+            >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+            >>> FocalR_L1Loss()(input, target)
+            tensor(0.0483)
         """
         loss = F.l1_loss(input, target, reduction="none")
         if self.activation_fn == "tanh":
@@ -625,16 +565,12 @@ class FocalR_MSELoss(nn.Module):
     <https://arxiv.org/abs/2102.09554>`_ and their `implementation
     <https://github.com/YyzHarry/imbalanced-regression>`_
 
-    Parameters
-    ----------
-    beta: float
-        Focal Loss ``beta`` parameter in their implementation
-    gamma: float
-        Focal Loss ``gamma`` parameter
-    activation_fn: str, default = "sigmoid"
-        Activation function to be used during the computation of the loss.
-        Possible values are `'sigmoid'` and `'tanh'`. See the original
-        publication for details.
+    Args:
+        beta (float): Focal Loss ``beta`` parameter in their implementation
+        gamma (float): Focal Loss ``gamma`` parameter
+        activation_fn (str, default = "sigmoid"): Activation function to be used during the computation of the loss.
+            Possible values are `'sigmoid'` and `'tanh'`. See the original
+            publication for details.
     """
 
     def __init__(
@@ -655,26 +591,21 @@ class FocalR_MSELoss(nn.Module):
         lds_weight: Optional[Tensor] = None,
     ) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions (not probabilities)
-        target: Tensor
-            Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+        Args:
+            input (Tensor): Input tensor with predictions (not probabilities)
+            target (Tensor): Target tensor with the actual classes
+            lds_weight (Tensor, Optional): If we choose to use LDS this is the tensor of weights that will
+                multiply the loss value.
 
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.losses import FocalR_MSELoss
-        >>>
-        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> FocalR_MSELoss()(input, target)
-        tensor(0.0539)
+        Examples:
+            >>> import torch
+            >>>
+            >>> from pytorch_widedeep.losses import FocalR_MSELoss
+            >>>
+            >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+            >>> FocalR_MSELoss()(input, target)
+            tensor(0.0539)
         """
         loss = (input - target) ** 2
         if self.activation_fn == "tanh":
@@ -699,16 +630,12 @@ class FocalR_RMSELoss(nn.Module):
     <https://arxiv.org/abs/2102.09554>`_ and their `implementation
     <https://github.com/YyzHarry/imbalanced-regression>`_
 
-    Parameters
-    ----------
-    beta: float
-        Focal Loss ``beta`` parameter in their implementation
-    gamma: float
-        Focal Loss ``gamma`` parameter
-    activation_fn: str, default = "sigmoid"
-        Activation function to be used during the computation of the loss.
-        Possible values are `'sigmoid'` and `'tanh'`. See the original
-        publication for details.
+    Args:
+        beta (float): Focal Loss ``beta`` parameter in their implementation
+        gamma (float): Focal Loss ``gamma`` parameter
+        activation_fn (str, default = "sigmoid"): Activation function to be used during the computation of the loss.
+            Possible values are `'sigmoid'` and `'tanh'`. See the original
+            publication for details.
     """
 
     def __init__(
@@ -729,26 +656,21 @@ class FocalR_RMSELoss(nn.Module):
         lds_weight: Optional[Tensor] = None,
     ) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions (not probabilities)
-        target: Tensor
-            Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+        Args:
+            input (Tensor): Input tensor with predictions (not probabilities)
+            target (Tensor): Target tensor with the actual classes
+            lds_weight (Tensor, Optional): If we choose to use LDS this is the tensor of weights that will
+                multiply the loss value.
 
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.losses import FocalR_RMSELoss
-        >>>
-        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> FocalR_RMSELoss()(input, target)
-        tensor(0.2321)
+        Examples:
+            >>> import torch
+            >>>
+            >>> from pytorch_widedeep.losses import FocalR_RMSELoss
+            >>>
+            >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+            >>> FocalR_RMSELoss()(input, target)
+            tensor(0.2321)
         """
         loss = (input - target) ** 2
         if self.activation_fn == "tanh":
@@ -767,7 +689,7 @@ class FocalR_RMSELoss(nn.Module):
 
 
 class HuberLoss(nn.Module):
-    r"""Hubbler Loss
+    r"""Hubber Loss
 
     Based on `Delving into Deep Imbalanced Regression
     <https://arxiv.org/abs/2102.09554>`_ and their `implementation
@@ -785,30 +707,24 @@ class HuberLoss(nn.Module):
         lds_weight: Optional[Tensor] = None,
     ) -> Tensor:
         r"""
-        Parameters
-        ----------
-        input: Tensor
-            Input tensor with predictions (not probabilities)
-        target: Tensor
-            Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
-        activation_fn: str, default = "sigmoid"
-            Activation function to be used during the computation of the loss.
-            Possible values are `'sigmoid'` and `'tanh'`. See the original
-            publication for details.
+        Args:
+            input (Tensor): Input tensor with predictions (not probabilities)
+            target (Tensor): Target tensor with the actual classes
+            lds_weight (Tensor, Optional): If we choose to use LDS this is the tensor of weights that will
+                multiply the loss value.
+            activation_fn (str, default = "sigmoid"): Activation function to be used during the computation of the loss.
+                Possible values are `'sigmoid'` and `'tanh'`. See the original
+                publication for details.
 
-        Examples
-        --------
-        >>> import torch
-        >>>
-        >>> from pytorch_widedeep.losses import HuberLoss
-        >>>
-        >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
-        >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> HuberLoss()(input, target)
-        tensor(0.5000)
+        Examples:
+            >>> import torch
+            >>>
+            >>> from pytorch_widedeep.losses import HuberLoss
+            >>>
+            >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
+            >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
+            >>> HuberLoss()(input, target)
+            tensor(0.5000)
         """
         l1_loss = torch.abs(input - target)
         cond = l1_loss < self.beta
