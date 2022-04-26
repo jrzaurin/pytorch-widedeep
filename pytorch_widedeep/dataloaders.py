@@ -57,6 +57,3 @@ class DataLoaderImbalanced(DataLoader):
         samples_weight = list(np.array([weights[i] for i in dataset.Y]))
         sampler = WeightedRandomSampler(samples_weight, num_samples, replacement=True)
         super().__init__(dataset, batch_size, num_workers=num_workers, sampler=sampler)
-
-    def dummy(self):
-        pass
