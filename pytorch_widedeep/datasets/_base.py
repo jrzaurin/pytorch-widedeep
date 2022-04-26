@@ -146,38 +146,37 @@ def load_california_housing(as_frame: bool = False):
     """Load and return the higly imbalanced regression California housing dataset.
 
     Characteristics:
-    Number of Instances: 20640
-    Number of Attributes: 8 numeric, predictive attributes and the target
-    Attribute Information:
-        - MedInc        median income in block group
-        - HouseAge      median house age in block group
-        - AveRooms      average number of rooms per household
-        - AveBedrms     average number of bedrooms per household
-        - Population    block group population
-        - AveOccup      average number of household members
-        - Latitude      block group latitude
-        - Longitude     block group longitude
+        Number of Instances: 20640
+        Number of Attributes: 8 numeric, predictive attributes and the target
+        Attribute Information:
+            - MedInc        median income in block group
+            - HouseAge      median house age in block group
+            - AveRooms      average number of rooms per household
+            - AveBedrms     average number of bedrooms per household
+            - Population    block group population
+            - AveOccup      average number of household members
+            - Latitude      block group latitude
+            - Longitude     block group longitude
 
-    This dataset was obtained from the StatLib repository.
-    https://www.dcc.fc.up.pt/~ltorgo/Regression/cal_housing.html
+        This dataset was obtained from the StatLib repository.
+        https://www.dcc.fc.up.pt/~ltorgo/Regression/cal_housing.html
 
-    The target variable is the median house value for California districts,
-    expressed in hundreds of thousands of dollars ($100,000).
+        The target variable is the median house value for California districts,
+        expressed in hundreds of thousands of dollars ($100,000).
 
-    This dataset was derived from the 1990 U.S. census, using one row per census
-    block group. A block group is the smallest geographical unit for which the U.S.
-    Census Bureau publishes sample data (a block group typically has a population
-    of 600 to 3,000 people).
+        This dataset was derived from the 1990 U.S. census, using one row per census
+        block group. A block group is the smallest geographical unit for which the U.S.
+        Census Bureau publishes sample data (a block group typically has a population
+        of 600 to 3,000 people).
 
-    An household is a group of people residing within a home. Since the average
-    number of rooms and bedrooms in this dataset are provided per household, these
-    columns may take surpinsingly large values for block groups with few households
-    and many empty houses, such as vacation resorts.
+        An household is a group of people residing within a home. Since the average
+        number of rooms and bedrooms in this dataset are provided per household, these
+        columns may take surpinsingly large values for block groups with few households
+        and many empty houses, such as vacation resorts.
 
-    References
-    ----------
-    Pace, R. Kelley and Ronald Barry, Sparse Spatial Autoregressions,
-    Statistics and Probability Letters, 33 (1997) 291-297.
+    References:
+        Pace, R. Kelley and Ronald Barry, Sparse Spatial Autoregressions,
+        Statistics and Probability Letters, 33 (1997) 291-297.
     """
     with resources.path(
         "pytorch_widedeep.datasets.data", "california_housing.parquet.brotli"
@@ -193,17 +192,16 @@ def load_california_housing(as_frame: bool = False):
 def load_birds(as_frame: bool = False):
     """Load and return the multi-label classification bird dataset.
 
-    References
-    ----------
-    http://mulan.sourceforge.net/datasets-mlc.html
+    References:
+        http://mulan.sourceforge.net/datasets-mlc.html
 
-    F. Briggs, Yonghong Huang, R. Raich, K. Eftaxias, Zhong Lei, W. Cukierski, S. Hadley, A. Hadley,
-    M. Betts, X. Fern, J. Irvine, L. Neal, A. Thomas, G. Fodor, G. Tsoumakas, Hong Wei Ng,
-    Thi Ngoc Tho Nguyen, H. Huttunen, P. Ruusuvuori, T. Manninen, A. Diment, T. Virtanen,
-    J. Marzat, J. Defretin, D. Callender, C. Hurlburt, K. Larrey, M. Milakov.
-    "The 9th annual MLSP competition: New methods for acoustic classification of multiple
-    simultaneous bird species in a noisy environment", in proc. 2013 IEEE International Workshop
-    on Machine Learning for Signal Processing (MLSP)
+        F. Briggs, Yonghong Huang, R. Raich, K. Eftaxias, Zhong Lei, W. Cukierski, S. Hadley, A. Hadley,
+        M. Betts, X. Fern, J. Irvine, L. Neal, A. Thomas, G. Fodor, G. Tsoumakas, Hong Wei Ng,
+        Thi Ngoc Tho Nguyen, H. Huttunen, P. Ruusuvuori, T. Manninen, A. Diment, T. Virtanen,
+        J. Marzat, J. Defretin, D. Callender, C. Hurlburt, K. Larrey, M. Milakov.
+        "The 9th annual MLSP competition: New methods for acoustic classification of multiple
+        simultaneous bird species in a noisy environment", in proc. 2013 IEEE International Workshop
+        on Machine Learning for Signal Processing (MLSP)
     """
     with resources.path(
         "pytorch_widedeep.datasets.data", "birds_train.parquet.brotli"
@@ -219,18 +217,18 @@ def load_birds(as_frame: bool = False):
 def load_rf1(as_frame: bool = False):
     """Load and return the multi-target regression River Flow(RF1) dataset.
 
-        Characterisctics:
+    Characterisctics:
         The river flow data set (RF1) concerns a prediction task in which flows in a river network are
-    predicted for 48 hours in the future at 8 different locations in the Mississippi River network
-    in the United States [18]. RF1 is one of the multi-target regression problems listed in the
-    literature survey on multi-target regression problems by Borchani et al. [2], and therefore
-    serves as a good test case for the active learning algorithm. Each row includes the most recent
-    observation for each of the 8 sites as well as time-lagged observations from 6, 12, 18, 24, 36,
-    48 and 60 hours in the past. Therefore, the data set consists in total of 64 attribute variables
-    and 8 target variables. The data set contains over 1 year of hourly observations (over 9000
-    data points) collected from September 2011 to September 2012 by the US National Weather
-    Service. From these 9000 data points, 1000 points have been randomly sampled for training
-    and 2000 for evaluation.
+        predicted for 48 hours in the future at 8 different locations in the Mississippi River network
+        in the United States [18]. RF1 is one of the multi-target regression problems listed in the
+        literature survey on multi-target regression problems by Borchani et al. [2], and therefore
+        serves as a good test case for the active learning algorithm. Each row includes the most recent
+        observation for each of the 8 sites as well as time-lagged observations from 6, 12, 18, 24, 36,
+        48 and 60 hours in the past. Therefore, the data set consists in total of 64 attribute variables
+        and 8 target variables. The data set contains over 1 year of hourly observations (over 9000
+        data points) collected from September 2011 to September 2012 by the US National Weather
+        Service. From these 9000 data points, 1000 points have been randomly sampled for training
+        and 2000 for evaluation.
     """
     with resources.path(
         "pytorch_widedeep.datasets.data", "rf1_train.parquet.brotli"
@@ -245,15 +243,15 @@ def load_rf1(as_frame: bool = False):
 
 def load_womens_ecommerce(as_frame: bool = False):
     """
-    Context
-    This is a Women’s Clothing E-Commerce dataset revolving around the reviews written by customers.
-    Its nine supportive features offer a great environment to parse out the text through its multiple
-    dimensions. Because this is real commercial data, it has been anonymized, and references to the company
-    in the review text and body have been replaced with “retailer”.
+    Context:
+        This is a Women’s Clothing E-Commerce dataset revolving around the reviews written by customers.
+        Its nine supportive features offer a great environment to parse out the text through its multiple
+        dimensions. Because this is real commercial data, it has been anonymized, and references to the company
+        in the review text and body have been replaced with “retailer”.
 
-    Content
-    This dataset includes 23486 rows and 10 feature variables. Each row corresponds to a customer review,
-    and includes the variables:
+    Content:
+        This dataset includes 23486 rows and 10 feature variables. Each row corresponds to a customer review,
+        and includes the variables:
 
     Clothing ID: Integer Categorical variable that refers to the specific piece being reviewed.
     Age: Positive Integer variable of the reviewers age.

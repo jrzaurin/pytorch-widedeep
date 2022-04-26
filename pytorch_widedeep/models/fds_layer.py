@@ -40,35 +40,22 @@ class FDSLayer(nn.Module):
         `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
         Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
 
-        Parameters
-        ----------
-        feature_dim: int,
-            input dimension size, i.e. output size of previous layer
-        granularity: int = 100,
-            number of bins in histogram used for storing feature mean and variance
-            values per label
-        y_max: Optional[float] = None,
-            option to restrict the histogram bins by upper label limit
-        y_min: Optional[float] = None,
-            option to restrict the histogram bins by lower label limit
-        start_update: int = 0,
-            epoch after which FDS layer starts to update its statistics
-        start_smooth: int = 1,
-            epoch after which FDS layer starts to smooth feautture distributions
-        kernel: Literal["gaussian", "triang", "laplace", None] = "gaussian",
-            choice of kernel for Feature Distribution Smoothing
-        ks: int = 5,
-            LDS kernel window size
-        sigma: Union[int,float] = 2,
-            standard deviation of ['gaussian','laplace'] kernel for LDS
-        momentum: float = 0.9,
-            factor parameter for running mean and variance
-        clip_min: Optional[float] = None,
-            original value = 0.1, author note: clipping is for numerical stability,
-            if some bins contain a very small number of samples, the variance
-            estimation may not be stable
-        clip_max: Optional[float] = None,
-            original value = 10, see note for clip_min
+        Args:
+            feature_dim (int): input dimension size, i.e. output size of previous layer
+            granularity (int = 100): number of bins in histogram used for storing feature mean and variance
+                values per label
+            y_max (Optional[float] = None): option to restrict the histogram bins by upper label limit
+            y_min (Optional[float] = None): option to restrict the histogram bins by lower label limit
+            start_update (int = 0): epoch after which FDS layer starts to update its statistics
+            start_smooth (int = 1): epoch after which FDS layer starts to smooth feautture distributions
+            kernel (Literal["gaussian", "triang", "laplace", None] = "gaussian"): choice of kernel for Feature Distribution Smoothing
+            ks (int = 5): LDS kernel window size
+            sigma (Union[int,float] = 2): standard deviation of ['gaussian','laplace'] kernel for LDS
+            momentum (float = 0.9): factor parameter for running mean and variance
+            clip_min (Optional[float] = None): original value = 0.1, author note: clipping is for numerical stability,
+                if some bins contain a very small number of samples, the variance
+                estimation may not be stable
+            clip_max (Optional[float] = None): original value = 10, see note for clip_min
         """
         super(FDSLayer, self).__init__()
         assert (

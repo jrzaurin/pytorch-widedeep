@@ -39,16 +39,11 @@ class DataLoaderImbalanced(DataLoader):
     <https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab>`_
     .
 
-    Parameters
-    ----------
-    dataset: ``WideDeepDataset``
-        see ``pytorch_widedeep.training._wd_dataset``
-    batch_size: int
-        size of batch
-    num_workers: int
-        number of workers
+    Args:
+        dataset (WideDeepDataset): see ``pytorch_widedeep.training._wd_dataset``
+        batch_size (int): size of batch
+        num_workers (int): number of workers
     """
-
     def __init__(
         self, dataset: WideDeepDataset, batch_size: int, num_workers: int, **kwargs
     ):
@@ -62,3 +57,6 @@ class DataLoaderImbalanced(DataLoader):
         samples_weight = list(np.array([weights[i] for i in dataset.Y]))
         sampler = WeightedRandomSampler(samples_weight, num_samples, replacement=True)
         super().__init__(dataset, batch_size, num_workers=num_workers, sampler=sampler)
+
+    def dummy(self):
+        pass

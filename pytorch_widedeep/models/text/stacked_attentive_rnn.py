@@ -17,78 +17,53 @@ class StackedAttentiveRNN(nn.Module):
     In addition, there is the option to add a Fully Connected (FC) set of
     dense layers on top of the attentiob blocks
 
-    Parameters
-    ----------
-    vocab_size: int
-        Number of words in the vocabulary
-    embed_dim: int, Optional, default = None
-        Dimension of the word embeddings if non-pretained word vectors are
-        used
-    embed_matrix: np.ndarray, Optional, default = None
-        Pretrained word embeddings
-    embed_trainable: bool, default = True
-        Boolean indicating if the pretrained embeddings are trainable
-    rnn_type: str, default = 'lstm'
-        String indicating the type of RNN to use. One of 'lstm' or 'gru'
-    hidden_dim: int, default = 64
-        Hidden dim of the RNN
-    bidirectional: bool, default = True
-        Boolean indicating whether the staked RNNs are bidirectional
-    padding_idx: int, default = 1
-        index of the padding token in the padded-tokenised sequences. The
-        ``TextPreprocessor`` class within this library uses ``fastai``'s
-        tokenizer where the token index 0 is reserved for the `'unknown'`
-        word token. Therefore, the default value is set to 1.
-    n_blocks: int, default = 3
-        Number of attention blocks. Each block is comprised by an RNN and a
-        Context Attention Encoder
-    attn_concatenate: bool, default = True
-        Boolean indicating if the input to the attention mechanism will be the
-        output of the RNN or the output of the RNN concatenated with the last
-        hidden state or simply
-    attn_dropout: float, default = 0.1
-        Internal dropout for the attention mechanism
-    with_addnorm: bool, default = False
-        Boolean indicating if the output of each block will be added to the
-        input and normalised
-    head_hidden_dims: List, Optional, default = None
-        List with the sizes of the dense layers in the head e.g: [128, 64]
-    head_activation: str, default = "relu"
-        Activation function for the dense layers in the head. Currently
-        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
-    head_dropout: float, Optional, default = None
-        Dropout of the dense layers in the head
-    head_batchnorm: bool, default = False
-        Boolean indicating whether or not to include batch normalization in
-        the dense layers that form the `'rnn_mlp'`
-    head_batchnorm_last: bool, default = False
-        Boolean indicating whether or not to apply batch normalization to the
-        last of the dense layers in the head
-    head_linear_first: bool, default = False
-        Boolean indicating whether the order of the operations in the dense
-        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-        LIN -> ACT]``
+    Args:
+        vocab_size (int): Number of words in the vocabulary
+        embed_dim (int, Optional, default = None): Dimension of the word embeddings if non-pretained word vectors are
+            used
+        embed_matrix (np.ndarray, Optional, default = None): Pretrained word embeddings
+        embed_trainable (bool, default = True): Boolean indicating if the pretrained embeddings are trainable
+        rnn_type (str, default = 'lstm'): String indicating the type of RNN to use. One of 'lstm' or 'gru'
+        hidden_dim (int, default = 64): Hidden dim of the RNN
+        bidirectional (bool, default = True): Boolean indicating whether the staked RNNs are bidirectional
+        padding_idx (int, default = 1): index of the padding token in the padded-tokenised sequences. The
+            ``TextPreprocessor`` class within this library uses ``fastai``'s
+            tokenizer where the token index 0 is reserved for the `'unknown'`
+            word token. Therefore, the default value is set to 1.
+        n_blocks (int, default = 3): Number of attention blocks. Each block is comprised by an RNN and a
+            Context Attention Encoder
+        attn_concatenate (bool, default = True): Boolean indicating if the input to the attention mechanism will be the
+            output of the RNN or the output of the RNN concatenated with the last
+            hidden state or simply
+        attn_dropout (float, default = 0.1): Internal dropout for the attention mechanism
+        with_addnorm (bool, default = False): Boolean indicating if the output of each block will be added to the
+            input and normalised
+        head_hidden_dims (List, Optional, default = None): List with the sizes of the dense layers in the head e.g: [128, 64]
+        head_activation (str, default = "relu"): Activation function for the dense layers in the head. Currently
+            `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        head_dropout (float, Optional, default = None): Dropout of the dense layers in the head
+        head_batchnorm (bool, default = False): Boolean indicating whether or not to include batch normalization in
+            the dense layers that form the `'rnn_mlp'`
+        head_batchnorm_last (bool, default = False): Boolean indicating whether or not to apply batch normalization to the
+            last of the dense layers in the head
+        head_linear_first (bool, default = False): Boolean indicating whether the order of the operations in the dense
+            layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+            LIN -> ACT]``
 
-    Attributes
-    ----------
-    word_embed: ``nn.Module``
-        word embedding matrix
-    rnn: ``nn.Module``
-        Stack of RNNs
-    rnn_mlp: ``nn.Sequential``
-        Stack of dense layers on top of the RNN. This will only exists if
-        ``head_layers_dim`` is not ``None``
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the ``WideDeep`` class
+    Attributes:
+        word_embed (nn.Module): word embedding matrix
+        rnn (nn.Module): Stack of RNNs
+        rnn_mlp (nn.Sequential): Stack of dense layers on top of the RNN. This will only exists if
+            ``head_layers_dim`` is not ``None``
+        output_dim (int): The output dimension of the model. This is a required attribute
+            neccesary to build the ``WideDeep`` class
 
-    Example
-    --------
-    >>> import torch
-    >>> from pytorch_widedeep.models import StackedAttentiveRNN
-    >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
-    >>> model = StackedAttentiveRNN(vocab_size=4, hidden_dim=4, padding_idx=0, embed_dim=4)
-    >>> out = model(X_text)
+    Example:
+        >>> import torch
+        >>> from pytorch_widedeep.models import StackedAttentiveRNN
+        >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
+        >>> model = StackedAttentiveRNN(vocab_size=4, hidden_dim=4, padding_idx=0, embed_dim=4)
+        >>> out = model(X_text)
     """
 
     def __init__(

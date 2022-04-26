@@ -246,23 +246,20 @@ class LRHistory(Callback):
     Callbacks are passed as input parameters to the ``Trainer`` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
 
-    Parameters
-    ----------
-    n_epochs: int
-        number of training epochs
+    Args:
+        n_epochs (int): number of training epochs
 
-    Examples
-    --------
-    >>> from pytorch_widedeep.callbacks import LRHistory
-    >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
-    >>> from pytorch_widedeep.training import Trainer
-    >>>
-    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-    >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
-    >>> wide = Wide(10, 1)
-    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
-    >>> model = WideDeep(wide, deep)
-    >>> trainer = Trainer(model, objective="regression", callbacks=[LRHistory(n_epochs=10)])
+    Examples:
+        >>> from pytorch_widedeep.callbacks import LRHistory
+        >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
+        >>> from pytorch_widedeep.training import Trainer
+        >>>
+        >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+        >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+        >>> wide = Wide(10, 1)
+        >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
+        >>> model = WideDeep(wide, deep)
+        >>> trainer = Trainer(model, objective="regression", callbacks=[LRHistory(n_epochs=10)])
     """
 
     def __init__(self, n_epochs: int):
@@ -337,69 +334,54 @@ class ModelCheckpoint(Callback):
     Callbacks are passed as input parameters to the ``Trainer`` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
 
-    Parameters
-    ----------
-    filepath: str, default=None
-        Full path to save the output weights. It must contain only the root of
-        the filenames. Epoch number and ``.pt`` extension (for pytorch) will
-        be added. e.g. ``filepath="path/to/output_weights/weights_out"`` And
-        the saved files in that directory will be named:
-        `'weights_out_1.pt',
-        'weights_out_2.pt', ...` If set to None the class just report best
-        metric and best_epoch.
-    monitor: str, default="loss"
-        quantity to monitor. Typically `'val_loss'` or metric name
-        (e.g. `'val_acc'`)
-    verbose:int, default=0
-        verbosity mode
-    save_best_only: bool, default=False,
-        the latest best model according to the quantity monitored will not be
-        overwritten.
-    mode: str, default="auto"
-        If ``save_best_only=True``, the decision to overwrite the current save
-        file is made based on either the maximization or the minimization of
-        the monitored quantity. For `'acc'`, this should be `'max'`, for
-        `'loss'` this should be `'min'`, etc. In `'auto'` mode, the
-        direction is automatically inferred from the name of the monitored
-        quantity.
-    period: int, default=1
-        Interval (number of epochs) between checkpoints.
-    max_save: int, default=-1
-        Maximum number of outputs to save. If -1 will save all outputs
-    wb: obj, default=None
-        Weights&Biases API interface to report single best result usable for
-        comparisson of multiple paramater combinations by, for example,
-        `parallel coordinates
-        <https://docs.wandb.ai/ref/app/features/panels/parallel-coordinates>`_.
-        E.g W&B summary report `wandb.run.summary["best"]`.
+    Args:
+        filepath (str, default=None): Full path to save the output weights. It must contain only the root of
+            the filenames. Epoch number and ``.pt`` extension (for pytorch) will
+            be added. e.g. ``filepath="path/to/output_weights/weights_out"`` And
+            the saved files in that directory will be named:
+            `'weights_out_1.pt',
+            'weights_out_2.pt', ...` If set to None the class just report best
+            metric and best_epoch.
+        monitor (str, default="loss"): quantity to monitor. Typically `'val_loss'` or metric name
+            (e.g. `'val_acc'`)
+        verbose (int, default=0): verbosity mode
+        save_best_only (bool, default=False): the latest best model according to the quantity monitored will not be
+            overwritten.
+        mode (str, default="auto"): If ``save_best_only=True``, the decision to overwrite the current save
+            file is made based on either the maximization or the minimization of
+            the monitored quantity. For `'acc'`, this should be `'max'`, for
+            `'loss'` this should be `'min'`, etc. In `'auto'` mode, the
+            direction is automatically inferred from the name of the monitored
+            quantity.
+        period (int, default=1): Interval (number of epochs) between checkpoints.
+        max_save (int, default=-1): Maximum number of outputs to save. If -1 will save all outputs
+        wb (obj, default=None): Weights&Biases API interface to report single best result usable for
+            comparisson of multiple paramater combinations by, for example,
+            `parallel coordinates
+            <https://docs.wandb.ai/ref/app/features/panels/parallel-coordinates>`_.
+            E.g W&B summary report `wandb.run.summary["best"]`.
 
-    Attributes
-    ----------
-    best: float
-        best metric
-    best_epoch: int
-        best epoch
-    best_state_dict: dict
-        best model state dictionary to restore model to its best state using
+    Attributes:
+        best (float): best metric
+        best_epoch (int): best epoch
+        best_state_dict (dict): best model state dictionary to restore model to its best state using
+            .. code-block:: python
 
-        .. code-block:: python
+                Trainer.model.load_state_dict(model_checkpoint.best_state_dict)
 
-            Trainer.model.load_state_dict(model_checkpoint.best_state_dict)
+            where ``model_checkpoint`` is an instance of the class ``ModelCheckpoint``
 
-        where ``model_checkpoint`` is an instance of the class ``ModelCheckpoint``
-
-    Examples
-    --------
-    >>> from pytorch_widedeep.callbacks import ModelCheckpoint
-    >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
-    >>> from pytorch_widedeep.training import Trainer
-    >>>
-    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-    >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
-    >>> wide = Wide(10, 1)
-    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
-    >>> model = WideDeep(wide, deep)
-    >>> trainer = Trainer(model, objective="regression", callbacks=[ModelCheckpoint(filepath='checkpoints/weights_out')])
+    Examples:
+        >>> from pytorch_widedeep.callbacks import ModelCheckpoint
+        >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
+        >>> from pytorch_widedeep.training import Trainer
+        >>>
+        >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+        >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+        >>> wide = Wide(10, 1)
+        >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
+        >>> model = WideDeep(wide, deep)
+        >>> trainer = Trainer(model, objective="regression", callbacks=[ModelCheckpoint(filepath='checkpoints/weights_out')])
     """
 
     def __init__(
@@ -555,53 +537,41 @@ class EarlyStopping(Callback):
     Callbacks are passed as input parameters to the ``Trainer`` class. See
     :class:`pytorch_widedeep.trainer.Trainer`
 
-    Parameters
-    -----------
-    monitor: str, default='val_loss'.
-        Quantity to monitor. Typically `'val_loss'` or metric name
-        (e.g. `'val_acc'`)
-    min_delta: float, default=0.
-        minimum change in the monitored quantity to qualify as an
-        improvement, i.e. an absolute change of less than min_delta, will
-        count as no improvement.
-    patience: int, default=10.
-        Number of epochs that produced the monitored quantity with no
-        improvement after which training will be stopped.
-    verbose: int.
-        verbosity mode.
-    mode: str, default='auto'
-        one of {'`auto`', '`min`', '`max`'}. In `'min'` mode, training will
-        stop when the quantity monitored has stopped decreasing; in `'max'`
-        mode it will stop when the quantity monitored has stopped increasing;
-        in `'auto'` mode, the direction is automatically inferred from the
-        name of the monitored quantity.
-    baseline: float, Optional. default=None.
-        Baseline value for the monitored quantity to reach. Training will
-        stop if the model does not show improvement over the baseline.
-    restore_best_weights: bool, default=None
-        Whether to restore model weights from the epoch with the best
-        value of the monitored quantity. If ``False``, the model weights
-        obtained at the last step of training are used.
+    Args:
+        monitor (str, default='val_loss'): Quantity to monitor. Typically `'val_loss'` or metric name
+            (e.g. `'val_acc'`)
+        min_delta (float, default=0): minimum change in the monitored quantity to qualify as an
+            improvement, i.e. an absolute change of less than min_delta, will
+            count as no improvement.
+        patience (int, default=10): Number of epochs that produced the monitored quantity with no
+            improvement after which training will be stopped.
+        verbose (int): verbosity mode
+        mode (str, default='auto'): one of {'`auto`', '`min`', '`max`'}. In `'min'` mode, training will
+            stop when the quantity monitored has stopped decreasing; in `'max'`
+            mode it will stop when the quantity monitored has stopped increasing;
+            in `'auto'` mode, the direction is automatically inferred from the
+            name of the monitored quantity.
+        baseline (float, Optional. default=None): Baseline value for the monitored quantity to reach. Training will
+            stop if the model does not show improvement over the baseline.
+        restore_best_weights (bool, default=None): Whether to restore model weights from the epoch with the best
+            value of the monitored quantity. If ``False``, the model weights
+            obtained at the last step of training are used.
 
-    Attributes
-    ----------
-    best: float
-        best metric
-    stopped_epoch: int
-        epoch when the training stopped
+    Attributes:
+        best (float): best metric
+        stopped_epoch (int): epoch when the training stopped
 
-    Examples
-    --------
-    >>> from pytorch_widedeep.callbacks import EarlyStopping
-    >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
-    >>> from pytorch_widedeep.training import Trainer
-    >>>
-    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-    >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
-    >>> wide = Wide(10, 1)
-    >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
-    >>> model = WideDeep(wide, deep)
-    >>> trainer = Trainer(model, objective="regression", callbacks=[EarlyStopping(patience=10)])
+    Examples:
+        >>> from pytorch_widedeep.callbacks import EarlyStopping
+        >>> from pytorch_widedeep.models import TabMlp, Wide, WideDeep
+        >>> from pytorch_widedeep.training import Trainer
+        >>>
+        >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+        >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+        >>> wide = Wide(10, 1)
+        >>> deep = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
+        >>> model = WideDeep(wide, deep)
+        >>> trainer = Trainer(model, objective="regression", callbacks=[EarlyStopping(patience=10)])
     """
 
     def __init__(

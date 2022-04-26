@@ -31,17 +31,12 @@ def check_is_fitted(
 ):
     r"""Checks if an estimator is fitted
 
-    Parameters
-    ----------
-    estimator: ``BasePreprocessor``,
-        An object of type ``BasePreprocessor``
-    attributes: List, default = None
-        List of strings with the attributes to check for
-    all_or_any: str, default = "all"
-        whether all or any of the attributes in the list must be present
-    condition: bool, default = True,
-        If not attribute list is passed, this condition that must be True for
-        the estimator to be considered as fitted
+    Args:
+        estimator (BasePreprocessor): An object of type ``BasePreprocessor``
+        attributes (List, default = None): List of strings with the attributes to check for
+        all_or_any (str, default = "all"): whether all or any of the attributes in the list must be present
+        condition (bool, default = True): If not attribute list is passed, this condition that must be True for
+            the estimator to be considered as fitted
     """
 
     estimator_name: str = estimator.__class__.__name__

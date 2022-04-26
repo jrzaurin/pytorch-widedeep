@@ -19,48 +19,37 @@ class ImagePreprocessor(BasePreprocessor):
     The Preprocessing consists simply on resizing according to their
     aspect ratio
 
-    Parameters
-    ----------
-    img_col: str
-        name of the column with the images filenames
-    img_path: str
-        path to the dicrectory where the images are stored
-    width: int, default=224
-        width of the resulting processed image.
-    height: int, default=224
-        width of the resulting processed image.
-    verbose: int, default 1
-        Enable verbose output.
+    Args:
+        img_col (str): name of the column with the images filenames
+        img_path (str): path to the dicrectory where the images are stored
+        width (int, default=224): width of the resulting processed image.
+        height (int, default=224): width of the resulting processed image.
+        verbose (int, default 1): Enable verbose output.
 
-    Attributes
-    ----------
-    aap: AspectAwarePreprocessor
-        an instance of :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
-    spp: SimplePreprocessor
-        an instance of :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`
-    normalise_metrics: Dict
-        Dict containing the normalisation metrics of the image dataset, i.e.
-        mean and std for the R, G and B channels
+    Attributes:
+        aap (AspectAwarePreprocessor): an instance of :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
+        spp (SimplePreprocessor): an instance of :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`
+        normalise_metrics (Dict): Dict containing the normalisation metrics of the image dataset, i.e.
+            mean and std for the R, G and B channels
 
-    Examples
-    --------
-    >>> import pandas as pd
-    >>>
-    >>> from pytorch_widedeep.preprocessing import ImagePreprocessor
-    >>>
-    >>> path_to_image1 = 'tests/test_data_utils/images/galaxy1.png'
-    >>> path_to_image2 = 'tests/test_data_utils/images/galaxy2.png'
-    >>>
-    >>> df_train = pd.DataFrame({'images_column': [path_to_image1]})
-    >>> df_test = pd.DataFrame({'images_column': [path_to_image2]})
-    >>> img_preprocessor = ImagePreprocessor(img_col='images_column', img_path='.', verbose=0)
-    >>> resized_images = img_preprocessor.fit_transform(df_train)
-    >>> new_resized_images = img_preprocessor.transform(df_train)
+    Examples:
+        >>> import pandas as pd
+        >>>
+        >>> from pytorch_widedeep.preprocessing import ImagePreprocessor
+        >>>
+        >>> path_to_image1 = 'tests/test_data_utils/images/galaxy1.png'
+        >>> path_to_image2 = 'tests/test_data_utils/images/galaxy2.png'
+        >>>
+        >>> df_train = pd.DataFrame({'images_column': [path_to_image1]})
+        >>> df_test = pd.DataFrame({'images_column': [path_to_image2]})
+        >>> img_preprocessor = ImagePreprocessor(img_col='images_column', img_path='.', verbose=0)
+        >>> resized_images = img_preprocessor.fit_transform(df_train)
+        >>> new_resized_images = img_preprocessor.transform(df_train)
 
-    .. note:: Normalising metrics will only be computed when the
-        ``fit_transform`` method is run. Running ``transform`` only will not
-        change the computed metrics and running ``fit`` only simply
-        instantiates the resizing functions.
+        .. note:: Normalising metrics will only be computed when the
+            ``fit_transform`` method is run. Running ``transform`` only will not
+            change the computed metrics and running ``fit`` only simply
+            instantiates the resizing functions.
     """
 
     def __init__(
@@ -84,9 +73,9 @@ class ImagePreprocessor(BasePreprocessor):
         :obj:`AspectAwarePreprocessor`` and :obj:`SimplePreprocessor` for image
         resizing.
 
-        See
-        :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
-        and :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`.
+        See:
+            :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
+            and :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`.
 
         """
         self.aap = AspectAwarePreprocessor(self.width, self.height)

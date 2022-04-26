@@ -9,30 +9,27 @@ def create_explain_matrix(model: WideDeep) -> csc_matrix:
     Returns a sparse matrix used to compute the feature importances after
     training
 
-    Parameters
-    ----------
-    model: WideDeep
-        object of type ``WideDeep``
+    Args:
+        model (WideDeep): object of type ``WideDeep``
 
-    Examples
-    --------
-    >>> from pytorch_widedeep.models import TabNet, WideDeep
-    >>> from pytorch_widedeep.models.tabular.tabnet._utils import create_explain_matrix
-    >>> embed_input = [("a", 4, 2), ("b", 4, 2), ("c", 4, 2)]
-    >>> cont_cols = ["d", "e"]
-    >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c", "d", "e"])}
-    >>> deeptabular = TabNet(column_idx=column_idx, cat_embed_input=embed_input, continuous_cols=cont_cols)
-    >>> model = WideDeep(deeptabular=deeptabular)
-    >>> reduce_mtx = create_explain_matrix(model)
-    >>> reduce_mtx.todense()
-    matrix([[1., 0., 0., 0., 0.],
-            [1., 0., 0., 0., 0.],
-            [0., 1., 0., 0., 0.],
-            [0., 1., 0., 0., 0.],
-            [0., 0., 1., 0., 0.],
-            [0., 0., 1., 0., 0.],
-            [0., 0., 0., 1., 0.],
-            [0., 0., 0., 0., 1.]])
+    Examples:
+        >>> from pytorch_widedeep.models import TabNet, WideDeep
+        >>> from pytorch_widedeep.models.tabular.tabnet._utils import create_explain_matrix
+        >>> embed_input = [("a", 4, 2), ("b", 4, 2), ("c", 4, 2)]
+        >>> cont_cols = ["d", "e"]
+        >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c", "d", "e"])}
+        >>> deeptabular = TabNet(column_idx=column_idx, cat_embed_input=embed_input, continuous_cols=cont_cols)
+        >>> model = WideDeep(deeptabular=deeptabular)
+        >>> reduce_mtx = create_explain_matrix(model)
+        >>> reduce_mtx.todense()
+        matrix([[1., 0., 0., 0., 0.],
+                [1., 0., 0., 0., 0.],
+                [0., 1., 0., 0., 0.],
+                [0., 1., 0., 0., 0.],
+                [0., 0., 1., 0., 0.],
+                [0., 0., 1., 0., 0.],
+                [0., 0., 0., 1., 0.],
+                [0., 0., 0., 0., 1.]])
     """
 
     tabnet_backbone = list(model.deeptabular.children())[0]

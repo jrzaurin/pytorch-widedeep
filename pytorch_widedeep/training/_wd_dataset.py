@@ -15,37 +15,22 @@ class WideDeepDataset(Dataset):
     r"""
     Defines the Dataset object to load WideDeep data to the model
 
-    Parameters
-    ----------
-    X_wide: np.ndarray
-        wide input
-    X_tab: np.ndarray
-        deeptabular input
-    X_text: np.ndarray
-        deeptext input
-    X_img: np.ndarray
-        deepimage input
-    target: np.ndarray
-        target array
-    transforms: :obj:`MultipleTransforms`
-        torchvision Compose object. See models/_multiple_transforms.py
-    with_lds: bool
-        Boolean indicating if Label Distribution Smoothing will be applied to
-        the dataset
-    lds_kernel: Literal['gaussian', 'triang', 'laplace'] = 'gaussian'
-        choice of kernel for Label Distribution Smoothing
-    lds_ks: int = 5
-        LDS kernel window size
-    lds_sigma: float = 2
-        standard deviation of ['gaussian','laplace'] kernel for LDS
-    lds_granularity: int = 100,
-        number of bins in histogram used in LDS to count occurence of sample values
-    lds_reweight: bool
-        option to reweight bin frequency counts in LDS
-    lds_y_max: Optional[float] = None
-        option to restrict LDS bins by upper label limit
-    lds_y_min: Optional[float] = None
-        option to restrict LDS bins by lower label limit
+    Args:
+        X_wide (np.ndarray): wide input
+        X_tab (np.ndarray): deeptabular input
+        X_text (np.ndarray): deeptext input
+        X_img (np.ndarray): deepimage input
+        target (np.ndarray): target array
+        transforms (:obj:`MultipleTransforms`): torchvision Compose object. See models/_multiple_transforms.py
+        with_lds (bool): Boolean indicating if Label Distribution Smoothing will be applied to
+            the dataset
+        lds_kernel (Literal['gaussian', 'triang', 'laplace'] = 'gaussian'): choice of kernel for Label Distribution Smoothing
+        lds_ks (int = 5): LDS kernel window size
+        lds_sigma (float = 2): standard deviation of ['gaussian','laplace'] kernel for LDS
+        lds_granularity (int = 100): number of bins in histogram used in LDS to count occurence of sample values
+        lds_reweight (bool): option to reweight bin frequency counts in LDS
+        lds_y_max (Optional[float] = None): option to restrict LDS bins by upper label limit
+        lds_y_min (Optional[float] = None): option to restrict LDS bins by lower label limit
     """
 
     def __init__(

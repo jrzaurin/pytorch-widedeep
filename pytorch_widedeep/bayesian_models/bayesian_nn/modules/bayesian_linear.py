@@ -25,55 +25,41 @@ class BayesianLinear(BayesianModule):
     r"""Applies a linear transformation to the incoming data as proposed in Weight
     Uncertainity on Neural Networks
 
-    Parameters
-    ----------
-    in_features: int
-        size of each input sample
-    out_features: int
-         size of each output sample
-    use_bias: bool, default = True
-        Boolean indicating if an additive bias will be learnt
-    prior_sigma_1: float, default = 1.0
-        Prior of the sigma parameter for the first of the two Gaussian
-        distributions that will be mixed to produce the prior weight
-        distribution
-    prior_sigma_2: float, default = 0.002
-        Prior of the sigma parameter for the second of the two Gaussian
-        distributions that will be mixed to produce the prior weight
-        distribution
-    prior_pi: float, default = 0.8
-        Scaling factor that will be used to mix the Gaussians to produce the
-        prior weight distribution
-    posterior_mu_init: float = 0.0
-        The posterior sample of the weights is defined as:
+    Args:
+        in_features (int): size of each input sample
+        out_features (int): size of each output sample
+        use_bias (bool, default = True): Boolean indicating if an additive bias will be learnt
+        prior_sigma_1 (float, default = 1.0): Prior of the sigma parameter for the first of the two Gaussian
+            distributions that will be mixed to produce the prior weight
+            distribution
+        prior_sigma_2 (float, default = 0.002): Prior of the sigma parameter for the second of the two Gaussian
+            distributions that will be mixed to produce the prior weight
+            distribution
+        prior_pi (float, default = 0.8): Scaling factor that will be used to mix the Gaussians to produce the
+            prior weight distribution
+        posterior_mu_init (float = 0.0): The posterior sample of the weights is defined as:
+            .. math::
+            \begin{aligned}
+            \mathbf{w} &= \mu + log(1 + exp(\rho))
+            \end{aligned}
+            where:
+            .. math::
+            \begin{aligned}
+            \mathcal{N}(x\vert \mu, \sigma) &= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\
+            \log{\mathcal{N}(x\vert \mu, \sigma)} &= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\
+            \end{aligned}
+            :math:`\mu` is initialised using a normal distributtion with mean
+            ``posterior_rho_init`` and std equal to 0.1.
+        posterior_rho_init (float = -7.0): As in the case of :math:`\mu`, :math:`\rho` is initialised using a
+            normal distributtion with mean ``posterior_rho_init`` and std equal to
+            0.1.
 
-        .. math::
-           \begin{aligned}
-           \mathbf{w} &= \mu + log(1 + exp(\rho))
-           \end{aligned}
-
-        where:
-
-        .. math::
-           \begin{aligned}
-           \mathcal{N}(x\vert \mu, \sigma) &= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\
-           \log{\mathcal{N}(x\vert \mu, \sigma)} &= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\
-           \end{aligned}
-
-        :math:`\mu` is initialised using a normal distributtion with mean
-        ``posterior_rho_init`` and std equal to 0.1.
-    posterior_rho_init: float = -7.0
-        As in the case of :math:`\mu`, :math:`\rho` is initialised using a
-        normal distributtion with mean ``posterior_rho_init`` and std equal to
-        0.1.
-
-    Examples
-    --------
-    >>> import torch
-    >>> from pytorch_widedeep.bayesian_models import bayesian_nn as bnn
-    >>> linear = bnn.BayesianLinear(10, 6)
-    >>> input = torch.rand(6, 10)
-    >>> out = linear(input)
+    Examples:
+        >>> import torch
+        >>> from pytorch_widedeep.bayesian_models import bayesian_nn as bnn
+        >>> linear = bnn.BayesianLinear(10, 6)
+        >>> input = torch.rand(6, 10)
+        >>> out = linear(input)
     """
 
     def __init__(

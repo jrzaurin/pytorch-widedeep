@@ -37,86 +37,67 @@ class WideDeep(nn.Module):
           This FC-Head will combine the output form the ``deeptabular``, ``deeptext`` and
           ``deepimage`` and will be then connected to the output neuron(s).
 
-    Parameters
-    ----------
-    wide: ``nn.Module``, Optional, default = None
-        ``Wide`` model. This is a linear model where the non-linearities are
-        captured via crossed-columns.
-    deeptabular: ``nn.Module``, Optional, default = None
-        Currently this library implements a number of possible architectures
-        for the ``deeptabular`` component. See the documenation of the
-        package.
-    deeptext: ``nn.Module``, Optional, default = None
-        Currently this library implements a number of possible architectures
-        for the ``deeptext`` component. See the documenation of the
-        package.
-    deepimage: ``nn.Module``, Optional, default = None
-        Currently this library uses ``torchvision`` and implements a number of
-        possible architectures for the ``deepimage`` component. See the
-        documenation of the package.
-    head_hidden_dims: List, Optional, default = None
-        List with the sizes of the dense layers in the head e.g: [128, 64]
-    head_activation: str, default = "relu"
-        Activation function for the dense layers in the head. Currently
-        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
-    head_dropout: float, Optional, default = None
-        Dropout of the dense layers in the head
-    head_batchnorm: bool, default = False
-        Boolean indicating whether or not to include batch normalization in
-        the dense layers that form the `'rnn_mlp'`
-    head_batchnorm_last: bool, default = False
-        Boolean indicating whether or not to apply batch normalization to the
-        last of the dense layers in the head
-    head_linear_first: bool, default = False
-        Boolean indicating whether the order of the operations in the dense
-        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-        LIN -> ACT]``
-    deephead: ``nn.Module``, Optional, default = None
-        Alternatively, the user can pass a custom model that will receive the
-        output of the deep component. If ``deephead`` is not None all the
-        previous fc-head parameters will be ignored
-    enforce_positive: bool, default = False
-        Boolean indicating if the output from the final layer must be
-        positive. This is important if you are using loss functions with
-        non-negative input restrictions, e.g. RMSLE, or if you know your
-        predictions are bounded in between 0 and inf
-    enforce_positive_activation: str, default = "softplus"
-        Activation function to enforce that the final layer has a positive
-        output. `'softplus'` or `'relu'` are supported.
-    pred_dim: int, default = 1
-        Size of the final wide and deep output layer containing the
-        predictions. `1` for regression and binary classification or number
-        of classes for multiclass classification.
-    with_fds: bool, default = False
-        If feature distribution smoothing (FDS) should be applied before the
-        final prediction layer. Only available for regression problems. See
-        `Delving into Deep Imbalanced Regression <https://arxiv.org/abs/2102.09554>`_
-        for details.
-    fds_config: dict, default = None
-        Dictionary defining specific values for
-        ``FeatureDistributionSmoothing`` layer
+    Args:
+        wide (nn.Module, Optional, default = None): ``Wide`` model. This is a linear model where the non-linearities are
+            captured via crossed-columns.
+        deeptabular (nn.Module, Optional, default = None): Currently this library implements a number of possible architectures
+            for the ``deeptabular`` component. See the documenation of the
+            package.
+        deeptext (nn.Module, Optional, default = None): Currently this library implements a number of possible architectures
+            for the ``deeptext`` component. See the documenation of the
+            package.
+        deepimage (nn.Module, Optional, default = None): Currently this library uses ``torchvision`` and implements a number of
+            possible architectures for the ``deepimage`` component. See the
+            documenation of the package.
+        head_hidden_dims (List, Optional, default = None): List with the sizes of the dense layers in the head e.g: [128, 64]
+        head_activation (str, default = "relu"): Activation function for the dense layers in the head. Currently
+            `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        head_dropout (float, Optional, default = None): Dropout of the dense layers in the head
+        head_batchnorm (bool, default = False): Boolean indicating whether or not to include batch normalization in
+            the dense layers that form the `'rnn_mlp'`
+        head_batchnorm_last (bool, default = False): Boolean indicating whether or not to apply batch normalization to the
+            last of the dense layers in the head
+        head_linear_first (bool, default = False): Boolean indicating whether the order of the operations in the dense
+            layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+            LIN -> ACT]``
+        deephead (nn.Module, Optional, default = None): Alternatively, the user can pass a custom model that will receive the
+            output of the deep component. If ``deephead`` is not None all the
+            previous fc-head parameters will be ignored
+        enforce_positive (bool, default = False): Boolean indicating if the output from the final layer must be
+            positive. This is important if you are using loss functions with
+            non-negative input restrictions, e.g. RMSLE, or if you know your
+            predictions are bounded in between 0 and inf
+        enforce_positive_activation (str, default = "softplus"): Activation function to enforce that the final layer has a positive
+            output. `'softplus'` or `'relu'` are supported.
+        pred_dim (int, default = 1): Size of the final wide and deep output layer containing the
+            predictions. `1` for regression and binary classification or number
+            of classes for multiclass classification.
+        with_fds (bool, default = False): If feature distribution smoothing (FDS) should be applied before the
+            final prediction layer. Only available for regression problems. See
+            `Delving into Deep Imbalanced Regression <https://arxiv.org/abs/2102.09554>`_
+            for details.
+        fds_config (dict, default = None): Dictionary defining specific values for
+            ``FeatureDistributionSmoothing`` layer
 
-    Examples
-    --------
-
-    >>> from pytorch_widedeep.models import TabResnet, Vision, BasicRNN, Wide, WideDeep
-    >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
-    >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
-    >>> wide = Wide(10, 1)
-    >>> deeptabular = TabResnet(blocks_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
-    >>> deeptext = BasicRNN(vocab_size=10, embed_dim=4, padding_idx=0)
-    >>> deepimage = Vision()
-    >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
+    Examples:
+        >>> from pytorch_widedeep.models import TabResnet, Vision, BasicRNN, Wide, WideDeep
+        >>> embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
+        >>> column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}
+        >>> wide = Wide(10, 1)
+        >>> deeptabular = TabResnet(blocks_dims=[8, 4], column_idx=column_idx, cat_embed_input=embed_input)
+        >>> deeptext = BasicRNN(vocab_size=10, embed_dim=4, padding_idx=0)
+        >>> deepimage = Vision()
+        >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
 
 
-    .. note:: It is possible to use custom components to build Wide & Deep models.
-        Simply, build them and pass them as the corresponding parameters. Note
-        that the custom models MUST return a last layer of activations
-        (i.e. not the final prediction) so that  these activations are
-        collected by ``WideDeep`` and combined accordingly. In addition, the
-        models MUST also contain an attribute ``output_dim`` with the size of
-        these last layers of activations. See for
-        example :class:`pytorch_widedeep.models.tab_mlp.TabMlp`
+        .. note:: It is possible to use custom components to build Wide & Deep models.
+            Simply, build them and pass them as the corresponding parameters. Note
+            that the custom models MUST return a last layer of activations
+            (i.e. not the final prediction) so that  these activations are
+            collected by ``WideDeep`` and combined accordingly. In addition, the
+            models MUST also contain an attribute ``output_dim`` with the size of
+            these last layers of activations. See for
+            example :class:`pytorch_widedeep.models.tab_mlp.TabMlp`
     """
 
     def __init__(

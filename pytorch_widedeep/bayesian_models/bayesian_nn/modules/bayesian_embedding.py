@@ -21,71 +21,53 @@ class BayesianEmbedding(BayesianModule):
     r"""A simple lookup table that looks up embeddings in a fixed dictionary and
     size.
 
-    Parameters
-    ----------
-    n_embed: int
-        number of embeddings. Typically referred as size of the vocabulary
-    embed_dim: int
-        Dimension of the embeddings
-    padding_idx: int, optional, default = None
-        If specified, the entries at ``padding_idx`` do not contribute to the
-        gradient; therefore, the embedding vector at ``padding_idx`` is not
-        updated during training, i.e. it remains as a fixed “pad”. For a
-        newly constructed Embedding, the embedding vector at ``padding_idx``
-        will default to all zeros, but can be updated to another value to be
-        used as the padding vector
-    max_norm: float, optional, default = None
-        If given, each embedding vector with norm larger than ``max_norm`` is
-        renormalized to have norm max_norm
-    norm_type: float, optional, default = 2.
-        The p of the p-norm to compute for the ``max_norm`` option.
-    scale_grad_by_freq: bool, optional, default = False
-        If given, this will scale gradients by the inverse of frequency of the
-        words in the mini-batch.
-    sparse: bool, optional, default = False
-        If True, gradient w.r.t. weight matrix will be a sparse tensor. See
-        Notes for more details regarding sparse gradients.
-    prior_sigma_1: float, default = 1.0
-        Prior of the sigma parameter for the first of the two Gaussian
-        distributions that will be mixed to produce the prior weight
-        distribution
-    prior_sigma_2: float, default = 0.002
-        Prior of the sigma parameter for the second of the two Gaussian
-        distributions that will be mixed to produce the prior weight
-        distribution
-    prior_pi: float, default = 0.8
-        Scaling factor that will be used to mix the Gaussians to produce the
-        prior weight distribution
-    posterior_mu_init: float = 0.0
-        The posterior sample of the weights is defined as:
+    Args:
+        n_embed (int): number of embeddings. Typically referred as size of the vocabulary
+        embed_dim (int): Dimension of the embeddings
+        padding_idx (int, optional, default = None): If specified, the entries at ``padding_idx`` do not contribute to the
+            gradient; therefore, the embedding vector at ``padding_idx`` is not
+            updated during training, i.e. it remains as a fixed “pad”. For a
+            newly constructed Embedding, the embedding vector at ``padding_idx``
+            will default to all zeros, but can be updated to another value to be
+            used as the padding vector
+        max_norm (float, optional, default = None): If given, each embedding vector with norm larger than ``max_norm`` is
+            renormalized to have norm max_norm
+        norm_type (float, optional, default = 2): The p of the p-norm to compute for the ``max_norm`` option.
+        scale_grad_by_freq (bool, optional, default = False): If given, this will scale gradients by the inverse of frequency of the
+            words in the mini-batch.
+        sparse (bool, optional, default = False): If True, gradient w.r.t. weight matrix will be a sparse tensor. See
+            Notes for more details regarding sparse gradients.
+        prior_sigma_1 (float, default = 1.0): Prior of the sigma parameter for the first of the two Gaussian
+            distributions that will be mixed to produce the prior weight
+            distribution
+        prior_sigma_2 (float, default = 0.002): Prior of the sigma parameter for the second of the two Gaussian
+            distributions that will be mixed to produce the prior weight
+            distribution
+        prior_pi (float, default = 0.8): Scaling factor that will be used to mix the Gaussians to produce the
+            prior weight distribution
+        posterior_mu_init (float = 0.0): The posterior sample of the weights is defined as:
+            .. math::
+            \begin{aligned}
+            \mathbf{w} &= \mu + log(1 + exp(\rho))
+            \end{aligned}
+            where:
+            .. math::
+            \begin{aligned}
+            \mathcal{N}(x\vert \mu, \sigma) &= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\
+            \log{\mathcal{N}(x\vert \mu, \sigma)} &= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\
+            \end{aligned}
+            :math:`\mu` is initialised using a normal distributtion with mean
+            ``posterior_rho_init`` and std equal to 0.1.
+        posterior_rho_init (float = -7.0): As in the case of :math:`\mu`, :math:`\rho` is initialised using a
+            normal distributtion with mean ``posterior_rho_init`` and std equal to
+            0.1.
 
-        .. math::
-           \begin{aligned}
-           \mathbf{w} &= \mu + log(1 + exp(\rho))
-           \end{aligned}
-
-        where:
-
-        .. math::
-           \begin{aligned}
-           \mathcal{N}(x\vert \mu, \sigma) &= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\
-           \log{\mathcal{N}(x\vert \mu, \sigma)} &= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\
-           \end{aligned}
-
-        :math:`\mu` is initialised using a normal distributtion with mean
-        ``posterior_rho_init`` and std equal to 0.1.
-    posterior_rho_init: float = -7.0
-        As in the case of :math:`\mu`, :math:`\rho` is initialised using a
-        normal distributtion with mean ``posterior_rho_init`` and std equal to
-        0.1.
-
-    Examples
-    --------
-    >>> import torch
-    >>> from pytorch_widedeep.bayesian_models import bayesian_nn as bnn
-    >>> embedding = bnn.BayesianEmbedding(10, 3)
-    >>> input = torch.LongTensor([[1,2,4,5],[4,3,2,9]])
-    >>> out = embedding(input)
+    Examples:
+        >>> import torch
+        >>> from pytorch_widedeep.bayesian_models import bayesian_nn as bnn
+        >>> embedding = bnn.BayesianEmbedding(10, 3)
+        >>> input = torch.LongTensor([[1,2,4,5],[4,3,2,9]])
+        >>> out = embedding(input)
     """
 
     def __init__(
