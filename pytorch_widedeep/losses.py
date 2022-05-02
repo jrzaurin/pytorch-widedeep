@@ -818,3 +818,76 @@ class HuberLoss(nn.Module):
         if lds_weight is not None:
             loss *= lds_weight
         return torch.mean(loss)
+
+
+class InfoNCELoss(nn.Module):
+    def __init__(self, temperature: float = 0.1, reduction: str = "mean"):
+
+        super(InfoNCELoss, self).__init__()
+
+        self.temperature = temperature
+        self.reduction = reduction
+
+    def forward(self, z: Tensor, z_: Tensor) -> Tensor:
+
+        norm_z = F.normalize(z, dim=-1)
+        norm_z_ = F.normalize(z_, dim=-1)
+
+        logits = (norm_z @ norm_z_.t()) / self.temperature
+        logits_ = (norm_z_ @ norm_z.t()) / self.temperature
+
+        # the target/labels are the entries on the diagonal
+        target = torch.arange(len(norm_z), device=norm_z.device)
+
+        loss = F.cross_entropy(logits, target, reduction=self.reduction)
+        loss_ = F.cross_entropy(logits_, target, reduction=self.reduction)
+
+        return (loss + loss_) / 2.0
+
+
+class ContrastiveLoss(nn.Module):
+    def __init__(self, temperature: float = 0.1, reduction: str = "mean"):
+
+        super(ContrastiveLoss, self).__init__()
+
+        self.temperature = temperature
+        self.reduction = reduction
+
+    def forward(self, z: Tensor, z_: Tensor) -> Tensor:
+
+        norm_z = F.normalize(z, dim=-1)
+        norm_z_ = F.normalize(z_, dim=-1)
+
+        logits = (norm_z @ norm_z_.t()) / self.temperature
+
+        return torch.diagonal(-1 * logits).add_(1).pow_(2).sum()
+
+
+class DenoisingLoss(nn.Module):
+    def __init__(self, lambda_cont: float, lambda_cat: float, reduction: str = "mean"):
+        super(DenoisingLoss, self).__init__()
+
+        self.lambda_cont = lambda_cont
+        self.lambda_cat = lambda_cat
+        self.reduction = reduction
+
+    def forward(
+        self,
+        x_cont: Optional[Tensor],
+        x_cat: Optional[Tensor],
+        x_cont_: Optional[Tensor],
+        x_cat_: Optional[Tensor],
+    ) -> Tensor:
+
+        loss_cont = (
+            F.MSELoss(x_cont, x_cont_, reduction=self.reduction)
+            if x_cont is not None
+            else 0
+        )
+        loss_cat = (
+            F.cross_entropy(x_cat, x_cat_, reduction=self.reduction)
+            if x_cat is not None
+            else 0
+        )
+
+        return self.lambda_cont * loss_cont + self.lambda_cat * loss_cat

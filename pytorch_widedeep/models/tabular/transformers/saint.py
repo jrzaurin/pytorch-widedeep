@@ -174,20 +174,6 @@ class SAINT(BaseTabularModelWithAttention):
             input_dim=input_dim,
         )
 
-        self.column_idx = column_idx
-        self.cat_embed_input = cat_embed_input
-        self.cat_embed_dropout = cat_embed_dropout
-        self.full_embed_dropout = full_embed_dropout
-        self.shared_embed = shared_embed
-        self.add_shared_embed = add_shared_embed
-        self.frac_shared_embed = frac_shared_embed
-
-        self.continuous_cols = continuous_cols
-        self.cont_embed_activation = cont_embed_activation
-        self.cont_embed_dropout = cont_embed_dropout
-        self.cont_norm_layer = cont_norm_layer
-
-        self.input_dim = input_dim
         self.use_qkv_bias = use_qkv_bias
         self.n_heads = n_heads
         self.n_blocks = n_blocks
