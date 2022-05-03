@@ -142,17 +142,16 @@ class AttentiveRNN(BasicRNN):
         self.attn_dropout = attn_dropout
 
         if bidirectional and attn_concatenate:
-            attn_input_dim = hidden_dim * 4
+            self.rnn_output_dim = hidden_dim * 4
         elif bidirectional or attn_concatenate:
-            attn_input_dim = hidden_dim * 2
+            self.rnn_output_dim = hidden_dim * 2
         else:
-            attn_input_dim = hidden_dim
-        self.attn = ContextAttention(attn_input_dim, attn_dropout, sum_along_seq=True)
-        self.output_dim = attn_input_dim
+            self.rnn_output_dim = hidden_dim
+        self.attn = ContextAttention(self.rnn_output_dim, attn_dropout, sum_along_seq=True)
 
         # FC-Head (Mlp)
         if self.head_hidden_dims is not None:
-            head_hidden_dims = [self.output_dim] + head_hidden_dims
+            head_hidden_dims = [self.rnn_output_dim] + head_hidden_dims
             self.rnn_mlp = MLP(
                 head_hidden_dims,
                 head_activation,
@@ -161,7 +160,6 @@ class AttentiveRNN(BasicRNN):
                 head_batchnorm_last,
                 head_linear_first,
             )
-            self.output_dim = head_hidden_dims[-1]
 
     def _process_rnn_outputs(self, output: Tensor, hidden: Tensor) -> Tensor:
         if self.attn_concatenate:

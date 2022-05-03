@@ -16,6 +16,7 @@ class BaseSelfSupervisedTrainer(ABC):
     def __init__(
         self,
         model,
+        loss_type: Literal["contrastive", "denoising", "both"],
         optimizer: Optimizer,
         lr_scheduler: LRScheduler,
         callbacks: Optional[List[Callback]],

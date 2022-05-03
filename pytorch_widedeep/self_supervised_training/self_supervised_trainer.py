@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from tqdm import trange
 from torch.utils.data import DataLoader, TensorDataset
-from pytorch_widedeep.losses import InfoNCELoss, DenoisingLoss, ContrastiveLoss
+from pytorch_widedeep.losses import InfoNCELoss, ContrastiveLoss
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.training._trainer_utils import save_epoch_logs
@@ -90,7 +90,7 @@ class SelfSupervisedTrainer(BaseSelfSupervisedTrainer):
         cut_mixed_x = cut_mix(X)
         cut_mixed_x_embed = self.model.cat_and_cont_embed(cut_mixed_x)
         cut_mixed_x_mixed_up_embed = mix_up(cut_mixed_x_embed)
-        encoded_ = self.model.transformer_blks(cut_mixed_x_mixed_up_embed)
+        encoded_ = self.model.encoder(cut_mixed_x_mixed_up_embed)
         proj_encoded = self.projection_head1(encoded)
         proj_encoded_ = (
             self.projection_head2(encoded_)

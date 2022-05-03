@@ -69,7 +69,7 @@ class TabMlp(BaseTabularModelWithoutAttention):
     ----------
     cat_and_cont_embed: ``nn.Module``
         This is the module that processes the categorical and continuous columns
-    tab_mlp: ``nn.Sequential``
+    encoder: ``nn.Sequential``
         mlp model that will receive the concatenation of the embeddings and
         the continuous columns
     output_dim: int
@@ -136,7 +136,7 @@ class TabMlp(BaseTabularModelWithoutAttention):
         # Mlp
         mlp_input_dim = self.cat_and_cont_embed.output_dim
         mlp_hidden_dims = [mlp_input_dim] + mlp_hidden_dims
-        self.tab_mlp = MLP(
+        self.encoder = MLP(
             mlp_hidden_dims,
             mlp_activation,
             mlp_dropout,
@@ -145,9 +145,14 @@ class TabMlp(BaseTabularModelWithoutAttention):
             mlp_linear_first,
         )
 
-        # the output_dim attribute will be used as input_dim when "merging" the models
-        self.output_dim: int = mlp_hidden_dims[-1]
-
     def forward(self, X: Tensor) -> Tensor:
         x = self._get_embeddings(X)
-        return self.tab_mlp(x)
+        return self.encoder(x)
+
+    @property
+    def encoder_output_dim(self):
+        return self.mlp_hidden_dims[-1]
+
+    @property
+    def output_dim(self):
+        return self.encoder_output_dim

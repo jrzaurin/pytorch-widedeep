@@ -87,10 +87,10 @@ class TabResnet(BaseTabularModelWithoutAttention):
     ----------
     cat_and_cont_embed: ``nn.Module``
         This is the module that processes the categorical and continuous columns
-    tab_resnet_blks: ``nn.Sequential``
+    encoder: ``nn.Sequential``
         deep dense Resnet model that will receive the concatenation of the
         embeddings and the continuous columns
-    tab_resnet_mlp: ``nn.Sequential``
+    mlp: ``nn.Sequential``
         if ``mlp_hidden_dims`` is ``True``, this attribute will be an mlp
         model that will receive the results of the concatenation of the
         embeddings and the continuous columns -- if present --.
@@ -172,14 +172,14 @@ class TabResnet(BaseTabularModelWithoutAttention):
 
         # Resnet
         dense_resnet_input_dim = cat_out_dim + cont_out_dim
-        self.tab_resnet_blks = DenseResnet(
+        self.encoder = DenseResnet(
             dense_resnet_input_dim, blocks_dims, blocks_dropout, self.simplify_blocks
         )
 
         # Mlp
         if self.mlp_hidden_dims is not None:
-            mlp_hidden_dims = [blocks_dims[-1]] + mlp_hidden_dims
-            self.tab_resnet_mlp = MLP(
+            mlp_hidden_dims = [self.encoder_output_dim] + mlp_hidden_dims
+            self.mlp = MLP(
                 mlp_hidden_dims,
                 mlp_activation,
                 mlp_dropout,
@@ -187,13 +187,24 @@ class TabResnet(BaseTabularModelWithoutAttention):
                 mlp_batchnorm_last,
                 mlp_linear_first,
             )
-            self.output_dim: int = mlp_hidden_dims[-1]
         else:
-            self.output_dim = blocks_dims[-1]
+            self.mlp = None
 
     def forward(self, X: Tensor) -> Tensor:
         x = self._get_embeddings(X)
-        x = self.tab_resnet_blks(x)
-        if self.mlp_hidden_dims is not None:
-            x = self.tab_resnet_mlp(x)
+        x = self.encoder(x)
+        if self.mlp is not None:
+            x = self.mlp(x)
         return x
+
+    @property
+    def encoder_output_dim(self) -> int:
+        return self.blocks_dims[-1]
+
+    @property
+    def output_dim(self) -> int:
+        return (
+            self.mlp_hidden_dims[-1]
+            if self.mlp_hidden_dims is not None
+            else self.encoder_output_dim
+        )

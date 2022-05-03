@@ -151,7 +151,7 @@ class BaseTrainer(ABC):
                         if self.verbose:
                             print(
                                 "Model weights after training corresponds to the those of the "
-                                "final epoch which might not be the best performing weights. Use"
+                                "final epoch which might not be the best performing weights. Use "
                                 "the 'ModelCheckpoint' Callback to restore the best epoch weights."
                             )
 
@@ -464,7 +464,7 @@ class BaseBayesianTrainer(ABC):
                         if self.verbose:
                             print(
                                 "Model weights after training corresponds to the those of the "
-                                "final epoch which might not be the best performing weights. Use"
+                                "final epoch which might not be the best performing weights. Use "
                                 "the 'ModelCheckpoint' Callback to restore the best epoch weights."
                             )
 

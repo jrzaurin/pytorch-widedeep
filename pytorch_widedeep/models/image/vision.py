@@ -139,13 +139,13 @@ class Vision(nn.Module):
                     "Both 'n_trainable' and 'trainable_params' are not None. 'trainable_params' will be used"
                 )
 
-        self.features, output_dim = self._get_features()
+        self.features, self.backbone_output_dim = self._get_features()
 
         if pretrained_model_name is not None:
             self._freeze(self.features)
 
         if self.head_hidden_dims is not None:
-            head_hidden_dims = [output_dim] + self.head_hidden_dims
+            head_hidden_dims = [self.backbone_output_dim] + self.head_hidden_dims
             self.vision_mlp = MLP(
                 head_hidden_dims,
                 self.head_activation,
@@ -154,9 +154,6 @@ class Vision(nn.Module):
                 self.head_batchnorm_last,
                 self.head_linear_first,
             )
-            output_dim = self.head_hidden_dims[-1]  # type: ignore[assignment]
-
-        self.output_dim = output_dim
 
     def forward(self, X: Tensor) -> Tensor:
 
@@ -171,6 +168,14 @@ class Vision(nn.Module):
             x = self.vision_mlp(x)
 
         return x
+
+    @property
+    def output_dim(self) -> int:
+        return (
+            self.head_hidden_dims[-1]
+            if self.head_hidden_dims is not None
+            else self.backbone_output_dim
+        )
 
     def _get_features(self) -> Tuple[nn.Module, int]:
         if self.pretrained_model_name is not None:

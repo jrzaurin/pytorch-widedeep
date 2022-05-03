@@ -121,9 +121,9 @@ class FTTransformer(BaseTabularModelWithAttention):
     ----------
     cat_and_cont_embed: ``nn.Module``
         This is the module that processes the categorical and continuous columns
-    fttransformer_blks: ``nn.Sequential``
+    encoder: ``nn.Sequential``
         Sequence of FTTransformer blocks
-    fttransformer_mlp: ``nn.Module``
+    mlp: ``nn.Module``
         MLP component in the model
     output_dim: int
         The output dimension of the model. This is a required attribute
@@ -219,9 +219,9 @@ class FTTransformer(BaseTabularModelWithAttention):
         # Embeddings are instantiated at the base model
         # Transformer blocks
         is_first = True
-        self.fttransformer_blks = nn.Sequential()
+        self.encoder = nn.Sequential()
         for i in range(n_blocks):
-            self.fttransformer_blks.add_module(
+            self.encoder.add_module(
                 "fttransformer_block" + str(i),
                 FTTransformerEncoder(
                     input_dim,
@@ -241,39 +241,41 @@ class FTTransformer(BaseTabularModelWithAttention):
 
         # Mlp
         if mlp_hidden_dims is not None:
-            attn_output_dim = (
-                self.input_dim
-                if self.with_cls_token
-                else (self.n_cat + self.n_cont) * self.input_dim
-            )
-            mlp_hidden_dims = [attn_output_dim] + mlp_hidden_dims
-
-            self.fttransformer_mlp = MLP(
-                mlp_hidden_dims,
+            self.mlp = MLP(
+                [self.encoder_output_dim] + mlp_hidden_dims,
                 mlp_activation,
                 mlp_dropout,
                 mlp_batchnorm,
                 mlp_batchnorm_last,
                 mlp_linear_first,
             )
-            # the output_dim attribute will be used as input_dim when "merging" the models
-            self.output_dim: int = mlp_hidden_dims[-1]
         else:
-            self.fttransformer_mlp = None
-            self.output_dim = (
-                input_dim if self.with_cls_token else (self.n_feats * input_dim)
-            )
+            self.mlp = None
 
     def forward(self, X: Tensor) -> Tensor:
         x = self._get_embeddings(X)
-        x = self.fttransformer_blks(x)
+        x = self.encoder(x)
         if self.with_cls_token:
             x = x[:, 0, :]
         else:
             x = x.flatten(1)
-        if self.fttransformer_mlp is not None:
-            x = self.fttransformer_mlp(x)
+        if self.mlp is not None:
+            x = self.mlp(x)
         return x
+
+    @property
+    def encoder_output_dim(self) -> int:
+        return (
+            self.input_dim if self.with_cls_token else (self.n_feats * self.input_dim)
+        )
+
+    @property
+    def output_dim(self) -> int:
+        return (
+            self.mlp_hidden_dims[-1]
+            if self.mlp_hidden_dims is not None
+            else self.encoder_output_dim
+        )
 
     @property
     def attention_weights(self) -> List:
@@ -288,4 +290,4 @@ class FTTransformer(BaseTabularModelWithAttention):
         length or dimension, i.e. :math:`k = int(kv_
         {compression \space factor} \times s)`
         """
-        return [blk.attn.attn_weights for blk in self.fttransformer_blks]
+        return [blk.attn.attn_weights for blk in self.encoder]

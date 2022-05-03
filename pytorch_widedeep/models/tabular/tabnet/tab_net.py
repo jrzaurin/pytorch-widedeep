@@ -95,7 +95,7 @@ class TabNet(BaseTabularModelWithoutAttention):
     ----------
     cat_and_cont_embed: ``nn.Module``
         This is the module that processes the categorical and continuous columns
-    tabnet_encoder: ``nn.Module``
+    encoder: ``nn.Module``
         ``Module`` containing the TabNet encoder. See the `paper
         <https://arxiv.org/abs/1908.07442>`_.
     output_dim: int
@@ -173,7 +173,7 @@ class TabNet(BaseTabularModelWithoutAttention):
         self.embed_out_dim = self.cat_and_cont_embed.output_dim
 
         # TabNet
-        self.tabnet_encoder = TabNetEncoder(
+        self.encoder = TabNetEncoder(
             self.embed_out_dim,
             n_steps,
             step_dim,
@@ -188,17 +188,24 @@ class TabNet(BaseTabularModelWithoutAttention):
             epsilon,
             mask_type,
         )
-        self.output_dim: int = step_dim
 
     def forward(self, X: Tensor) -> Tuple[Tensor, Tensor]:
         x = self._get_embeddings(X)
-        steps_output, M_loss = self.tabnet_encoder(x)
+        steps_output, M_loss = self.encoder(x)
         res = torch.sum(torch.stack(steps_output, dim=0), dim=0)
         return (res, M_loss)
 
     def forward_masks(self, X: Tensor) -> Tuple[Tensor, Dict[int, Tensor]]:
         x = self._get_embeddings(X)
-        return self.tabnet_encoder.forward_masks(x)
+        return self.encoder.forward_masks(x)
+
+    @property
+    def encoder_output_dim(self) -> int:
+        return self.step_dim
+
+    @property
+    def output_dim(self) -> int:
+        return self.encoder_output_dim
 
 
 class TabNetPredLayer(nn.Module):

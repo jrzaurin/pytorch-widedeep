@@ -162,11 +162,11 @@ class BasicRNN(nn.Module):
         elif self.rnn_type.lower() == "gru":
             self.rnn = nn.GRU(**rnn_params)
 
-        self.output_dim = hidden_dim * 2 if bidirectional else hidden_dim
+        self.rnn_output_dim = hidden_dim * 2 if bidirectional else hidden_dim
 
         # FC-Head (Mlp)
         if self.head_hidden_dims is not None:
-            head_hidden_dims = [self.output_dim] + head_hidden_dims
+            head_hidden_dims = [self.rnn_output_dim] + head_hidden_dims
             self.rnn_mlp: Union[MLP, nn.Identity] = MLP(
                 head_hidden_dims,
                 head_activation,
@@ -175,7 +175,6 @@ class BasicRNN(nn.Module):
                 head_batchnorm_last,
                 head_linear_first,
             )
-            self.output_dim = head_hidden_dims[-1]
         else:
             # simple hack to add readability in the forward pass
             self.rnn_mlp = nn.Identity()
@@ -191,6 +190,14 @@ class BasicRNN(nn.Module):
         processed_outputs = self._process_rnn_outputs(o, h)
 
         return self.rnn_mlp(processed_outputs)
+
+    @property
+    def output_dim(self) -> int:
+        return (
+            self.head_hidden_dims[-1]
+            if self.head_hidden_dims is not None
+            else self.rnn_output_dim
+        )
 
     def _set_embeddings(
         self, embed_matrix: Union[Any, np.ndarray]

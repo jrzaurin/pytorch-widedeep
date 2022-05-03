@@ -355,7 +355,7 @@ class WideDeep(nn.Module):
             )
         if deeptabular is not None and not hasattr(deeptabular, "output_dim"):
             raise AttributeError(
-                "deeptabular model must have an 'output_dim' attribute. "
+                "deeptabular model must have an 'output_dim' attribute or property. "
                 "See pytorch-widedeep.models.deep_text.DeepText"
             )
         if deeptabular is not None:
@@ -377,12 +377,12 @@ class WideDeep(nn.Module):
                 )
         if deeptext is not None and not hasattr(deeptext, "output_dim"):
             raise AttributeError(
-                "deeptext model must have an 'output_dim' attribute. "
+                "deeptext model must have an 'output_dim' attribute or property. "
                 "See pytorch-widedeep.models.deep_text.DeepText"
             )
         if deepimage is not None and not hasattr(deepimage, "output_dim"):
             raise AttributeError(
-                "deepimage model must have an 'output_dim' attribute. "
+                "deepimage model must have an 'output_dim' attribute or property. "
                 "See pytorch-widedeep.models.deep_text.DeepText"
             )
         if deephead is not None and head_hidden_dims is not None:
@@ -424,6 +424,6 @@ class WideDeep(nn.Module):
             or pred_dim != 1
         ):
             raise ValueError(
-                """Feature Distribution Smoothing (FDS) is supported when using only a deeptabular component"
-                " and for regression problems."""
+                "Feature Distribution Smoothing (FDS) is supported when using only a deeptabular component"
+                " and for regression problems."
             )

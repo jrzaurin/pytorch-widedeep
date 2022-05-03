@@ -22,33 +22,6 @@ tabnet = TabNet(column_idx=column_idx, cat_embed_input=embed_input)
 deeptext = BasicRNN(vocab_size=100, embed_dim=8)
 deepimage = Vision()
 
-###############################################################################
-# test raising 'output dim errors'
-###############################################################################
-
-
-@pytest.mark.parametrize(
-    "deepcomponent, component_name",
-    [
-        (None, "dense"),
-        (deeptext, "text"),
-        (deepimage, "image"),
-    ],
-)
-def test_history_callback(deepcomponent, component_name):
-    if deepcomponent is None:
-        deepcomponent = deepcopy(tabmlp)
-    deepcomponent.__dict__.pop("output_dim")
-    with pytest.raises(AttributeError):
-        if component_name == "dense":
-            model = WideDeep(wide, deeptabular=deepcomponent)
-        elif component_name == "text":
-            model = WideDeep(wide, deeptabular=tabmlp, deeptext=deepcomponent)
-        elif component_name == "image":
-            model = WideDeep(  # noqa: F841
-                wide, deeptabular=tabmlp, deepimage=deepcomponent
-            )
-
 
 ###############################################################################
 # test warning on head_layers_dim and deephead

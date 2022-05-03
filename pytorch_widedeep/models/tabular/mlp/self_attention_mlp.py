@@ -89,7 +89,7 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
     ----------
     cat_and_cont_embed: ``nn.Module``
         This is the module that processes the categorical and continuous columns
-    attention_blks: ``nn.Sequential``
+    encoder: ``nn.Sequential``
         Sequence of attention encoders.
     output_dim: int
         The output dimension of the model. This is a required attribute
@@ -163,9 +163,9 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
 
         # Embeddings are instantiated at the base model
         # Attention Blocks
-        self.attention_blks = nn.Sequential()
+        self.encoder = nn.Sequential()
         for i in range(n_blocks):
-            self.attention_blks.add_module(
+            self.encoder.add_module(
                 "attention_block" + str(i),
                 SelfAttentionEncoder(
                     input_dim,
@@ -177,20 +177,26 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
                 ),
             )
 
-        self.output_dim: int = (
-            input_dim
-            if self.with_cls_token
-            else ((self.n_cat + self.n_cont) * input_dim)
-        )
-
     def forward(self, X: Tensor) -> Tensor:
         x = self._get_embeddings(X)
-        x = self.attention_blks(x)
+        x = self.encoder(x)
         if self.with_cls_token:
             out = x[:, 0, :]
         else:
             out = x.flatten(1)
         return out
+
+    @property
+    def encoder_output_dim(self) -> int:
+        return (
+            self.input_dim
+            if self.with_cls_token
+            else ((self.n_cat + self.n_cont) * self.input_dim)
+        )
+
+    @property
+    def output_dim(self) -> int:
+        return self.encoder_output_dim
 
     @property
     def attention_weights(self) -> List:
@@ -203,4 +209,4 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
         Where *N* is the batch size, *H* is the number of attention heads
         and *F* is the number of features/columns in the dataset
         """
-        return [blk.attn.attn_weights for blk in self.attention_blks]
+        return [blk.attn.attn_weights for blk in self.encoder]
