@@ -78,10 +78,6 @@ class BaseTabularModelWithoutAttention(nn.Module):
         return x
 
     @property
-    def encoder_output_dim(self) -> int:
-        raise NotImplementedError
-
-    @property
     def output_dim(self) -> int:
         raise NotImplementedError
 
@@ -167,10 +163,6 @@ class BaseTabularModelWithAttention(nn.Module):
                 x_cont = self.cont_embed_act_fn(x_cont)
             x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
         return x
-
-    @property
-    def encoder_output_dim(self) -> int:
-        raise NotImplementedError
 
     @property
     def output_dim(self) -> int:

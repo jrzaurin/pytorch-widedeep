@@ -215,7 +215,7 @@ def _build_train_dict(X_wide, X_tab, X_text, X_img, target):
     return X_train
 
 
-def print_loss_and_metric(pb: tqdm, loss: float, score: Dict):
+def print_loss_and_metric(pb: tqdm, loss: float, score: Optional[Dict] = None):
     r"""
     Function to improve readability and avoid code repetition in the
     training/validation loop within the Trainer's fit method

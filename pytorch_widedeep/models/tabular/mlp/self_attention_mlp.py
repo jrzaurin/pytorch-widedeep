@@ -187,16 +187,12 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
         return out
 
     @property
-    def encoder_output_dim(self) -> int:
+    def output_dim(self) -> int:
         return (
             self.input_dim
             if self.with_cls_token
             else ((self.n_cat + self.n_cont) * self.input_dim)
         )
-
-    @property
-    def output_dim(self) -> int:
-        return self.encoder_output_dim
 
     @property
     def attention_weights(self) -> List:

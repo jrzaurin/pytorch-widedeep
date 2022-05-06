@@ -178,7 +178,7 @@ class TabResnet(BaseTabularModelWithoutAttention):
 
         # Mlp
         if self.mlp_hidden_dims is not None:
-            mlp_hidden_dims = [self.encoder_output_dim] + mlp_hidden_dims
+            mlp_hidden_dims = [self.blocks_dims[-1]] + mlp_hidden_dims
             self.mlp = MLP(
                 mlp_hidden_dims,
                 mlp_activation,
@@ -198,13 +198,9 @@ class TabResnet(BaseTabularModelWithoutAttention):
         return x
 
     @property
-    def encoder_output_dim(self) -> int:
-        return self.blocks_dims[-1]
-
-    @property
     def output_dim(self) -> int:
         return (
             self.mlp_hidden_dims[-1]
             if self.mlp_hidden_dims is not None
-            else self.encoder_output_dim
+            else self.blocks_dims[-1]
         )

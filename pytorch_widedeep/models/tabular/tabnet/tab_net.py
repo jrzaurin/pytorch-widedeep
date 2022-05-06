@@ -200,12 +200,8 @@ class TabNet(BaseTabularModelWithoutAttention):
         return self.encoder.forward_masks(x)
 
     @property
-    def encoder_output_dim(self) -> int:
-        return self.step_dim
-
-    @property
     def output_dim(self) -> int:
-        return self.encoder_output_dim
+        return self.step_dim
 
 
 class TabNetPredLayer(nn.Module):

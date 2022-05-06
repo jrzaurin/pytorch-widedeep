@@ -236,10 +236,14 @@ class TabFastFormer(BaseTabularModelWithAttention):
                     ),
                 )
 
+        self.mlp_first_hidden_dim = (
+            self.input_dim if self.with_cls_token else (self.n_feats * self.input_dim)
+        )
+
         # Mlp
         if mlp_hidden_dims is not None:
             self.mlp = MLP(
-                [self.encoder_output_dim] + mlp_hidden_dims,
+                [self.mlp_first_hidden_dim] + mlp_hidden_dims,
                 mlp_activation,
                 mlp_dropout,
                 mlp_batchnorm,
@@ -261,17 +265,11 @@ class TabFastFormer(BaseTabularModelWithAttention):
         return x
 
     @property
-    def encoder_output_dim(self) -> int:
-        return (
-            self.input_dim if self.with_cls_token else (self.n_feats * self.input_dim)
-        )
-
-    @property
     def output_dim(self) -> int:
         return (
             self.mlp_hidden_dims[-1]
             if self.mlp_hidden_dims is not None
-            else self.encoder_output_dim
+            else self.mlp_first_hidden_dim
         )
 
     @property

@@ -244,10 +244,12 @@ class TabPerceiver(BaseTabularModelWithAttention):
             for n in range(1, n_perceiver_blocks):
                 self.encoder["perceiver_block" + str(n)] = self._build_perceiver_block()
 
+        self.mlp_first_hidden_dim = self.latent_dim
+
         # Mlp
         if mlp_hidden_dims is not None:
             self.mlp = MLP(
-                [self.encoder_output_dim] + mlp_hidden_dims,
+                [self.mlp_first_hidden_dim] + mlp_hidden_dims,
                 mlp_activation,
                 mlp_dropout,
                 mlp_batchnorm,
@@ -281,15 +283,11 @@ class TabPerceiver(BaseTabularModelWithAttention):
         return x
 
     @property
-    def encoder_output_dim(self) -> int:
-        return self.latent_dim
-
-    @property
     def output_dim(self) -> int:
         return (
             self.mlp_hidden_dims[-1]
             if self.mlp_hidden_dims is not None
-            else self.latent_dim
+            else self.mlp_first_hidden_dim
         )
 
     @property

@@ -147,7 +147,9 @@ class AttentiveRNN(BasicRNN):
             self.rnn_output_dim = hidden_dim * 2
         else:
             self.rnn_output_dim = hidden_dim
-        self.attn = ContextAttention(self.rnn_output_dim, attn_dropout, sum_along_seq=True)
+        self.attn = ContextAttention(
+            self.rnn_output_dim, attn_dropout, sum_along_seq=True
+        )
 
         # FC-Head (Mlp)
         if self.head_hidden_dims is not None:

@@ -1,6 +1,6 @@
 import numpy as np
-
 import torch
+
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 

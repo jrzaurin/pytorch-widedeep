@@ -150,9 +150,5 @@ class TabMlp(BaseTabularModelWithoutAttention):
         return self.encoder(x)
 
     @property
-    def encoder_output_dim(self):
-        return self.mlp_hidden_dims[-1]
-
-    @property
     def output_dim(self):
-        return self.encoder_output_dim
+        return self.mlp_hidden_dims[-1]

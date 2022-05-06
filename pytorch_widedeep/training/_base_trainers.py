@@ -376,8 +376,9 @@ class BaseBayesianTrainer(ABC):
 
         self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
 
-        self.model = model
         self.early_stop = False
+        self.model = model
+        self.model.to(self.device)
 
         self.verbose = verbose
         self.seed = seed
@@ -392,7 +393,6 @@ class BaseBayesianTrainer(ABC):
         self.lr_scheduler = lr_scheduler
         self._set_lr_scheduler_running_params(lr_scheduler, **kwargs)
         self._set_callbacks_and_metrics(callbacks, metrics)
-        self.model.to(self.device)
 
     @abstractmethod
     def fit(
