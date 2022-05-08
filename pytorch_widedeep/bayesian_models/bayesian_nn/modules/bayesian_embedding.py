@@ -1,8 +1,6 @@
-"""
-The code here is greatly insipired by the code at the Blitz package:
+# The code here is greatly insipired by the code at the Blitz package:
+# https://github.com/piEsposito/blitz-bayesian-deep-learning
 
-https://github.com/piEsposito/blitz-bayesian-deep-learning
-"""
 
 import torch.nn.functional as F
 from torch import nn

@@ -20,7 +20,8 @@ class Tab2Vec:
     processing applied by the model to the categorical and continuous
     columns.
 
-    .. note:: Currently this class is only implemented for the deeptabular
+    Note:
+        Currently this class is only implemented for the deeptabular
         component or the Bayesian model. Therefore, if the input dataframe has
         a text column or a column with the path to images, these will be
         ignored. We will be adding these functionalities in future versions
@@ -142,7 +143,7 @@ class Tab2Vec:
         in their corresponding type (np.ndarray or pd.DataFrame)
 
         Args:
-            df (pd.DataFrame) DataFrame to be vectorised, i.e. the categorical and continuous
+            df (pd.DataFrame): DataFrame to be vectorised, i.e. the categorical and continuous
                 columns will be encoded based on the processing applied within the model
             target_col (str, Optional): Column name of the target_col variable. If ``None`` only the array of
                 predictors will be returned

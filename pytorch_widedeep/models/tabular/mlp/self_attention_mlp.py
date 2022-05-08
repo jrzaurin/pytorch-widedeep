@@ -16,7 +16,7 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
     with numerical (aka continuous) features that are also embedded. These
     are then passed through a series of attention blocks. Each attention
     block is comprised by a ``SelfAttentionEncoder``.
-    See :obj:`pytorch_widedeep.models.tabular.mlp._attention_layers` for
+    See `pytorch_widedeep.models.tabular.mlp._attention_layers` for
     details
 
     Args:
@@ -31,7 +31,7 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
             `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
         full_embed_dropout (bool, default = False): Boolean indicating if an entire embedding (i.e. the representation of
             one column) will be dropped in the batch. See:
-            :obj:`pytorch_widedeep.models.embeddings_layers.FullEmbeddingDropout`.
+            `pytorch_widedeep.models.embeddings_layers.FullEmbeddingDropout`.
             If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
         shared_embed (bool, default = False): The of sharing part of the embeddings per column is to enable the
             model to distinguish the classes in one column from those in the
@@ -40,7 +40,7 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
         add_shared_embed (bool, default = False): The two embedding sharing strategies are: 1) add the shared embeddings
             to the column embeddings or 2) to replace the first
             ``frac_shared_embed`` with the shared embeddings.
-            See :obj:`pytorch_widedeep.models.embeddings_layers.SharedEmbeddings`
+            See `pytorch_widedeep.models.embeddings_layers.SharedEmbeddings`
         frac_shared_embed (float, default = 0.25): The fraction of embeddings that will be shared (if ``add_shared_embed
             = False``) by all the different categories for one particular
             column.

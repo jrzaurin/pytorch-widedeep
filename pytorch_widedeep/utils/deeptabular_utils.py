@@ -19,7 +19,8 @@ __all__ = ["LabelEncoder", "find_bin", "get_kernel_window"]
 class LabelEncoder:
     r"""Label Encode categorical values for multiple columns at once
 
-    .. note:: LabelEncoder reserves 0 for `unseen` new categories. This is convenient
+    Note:
+        LabelEncoder reserves 0 for `unseen` new categories. This is convenient
         when defining the embedding layers, since we can just set padding idx to 0.
 
     Args:
@@ -31,12 +32,11 @@ class LabelEncoder:
             Aliased as ``for_transformer``.
         shared_embed (bool, default = False): Boolean indicating if the embeddings will be "shared" when using
             attention-based models. The idea behind ``shared_embed`` is described
-            in the Appendix A in the `TabTransformer paper
-            <https://arxiv.org/abs/2012.06678>`_: `'The goal of having column
+            in the Appendix A in the [TabTransformer paper](https://arxiv.org/abs/2012.06678): 'The goal of having column
             embedding is to enable the model to distinguish the classes in one
-            column from those in the other columns'`. In other words, the idea is
+            column from those in the other columns'. In other words, the idea is
             to let the model learn which column is embedded at the time. See:
-            :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
+            `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
 
     Attributes:
         encoding_dict (Dict): Dictionary containing the encoding mappings in the format, e.g.

@@ -1,8 +1,6 @@
-"""
-Code here is mostly based on the code from the torchsample and Keras packages
+# Code here is mostly based on the code from the torchsample and Keras packages
+# CREDIT TO THE TORCHSAMPLE AND KERAS TEAMS
 
-CREDIT TO THE TORCHSAMPLE AND KERAS TEAMS
-"""
 import os
 import datetime
 import warnings
@@ -244,7 +242,7 @@ class LRHistory(Callback):
     of the ``Trainer``.
 
     Callbacks are passed as input parameters to the ``Trainer`` class. See
-    :class:`pytorch_widedeep.trainer.Trainer`
+    `pytorch_widedeep.trainer.Trainer`
 
     Args:
         n_epochs (int): number of training epochs
@@ -332,7 +330,7 @@ class ModelCheckpoint(Callback):
     Therefore, **credit** to the Keras Team.
 
     Callbacks are passed as input parameters to the ``Trainer`` class. See
-    :class:`pytorch_widedeep.trainer.Trainer`
+    `pytorch_widedeep.trainer.Trainer`
 
     Args:
         filepath (str, default=None): Full path to save the output weights. It must contain only the root of
@@ -357,8 +355,7 @@ class ModelCheckpoint(Callback):
         max_save (int, default=-1): Maximum number of outputs to save. If -1 will save all outputs
         wb (obj, default=None): Weights&Biases API interface to report single best result usable for
             comparisson of multiple paramater combinations by, for example,
-            `parallel coordinates
-            <https://docs.wandb.ai/ref/app/features/panels/parallel-coordinates>`_.
+            [parallel coordinates](https://docs.wandb.ai/ref/app/features/panels/parallel-coordinates).
             E.g W&B summary report `wandb.run.summary["best"]`.
 
     Attributes:
@@ -535,7 +532,7 @@ class EarlyStopping(Callback):
     Therefore, **credit** to the Keras Team.
 
     Callbacks are passed as input parameters to the ``Trainer`` class. See
-    :class:`pytorch_widedeep.trainer.Trainer`
+    `pytorch_widedeep.trainer.Trainer`
 
     Args:
         monitor (str, default='val_loss'): Quantity to monitor. Typically `'val_loss'` or metric name
@@ -681,7 +678,7 @@ class RayTuneReporter(Callback):
     during Hyperparameter tuning
 
     Callbacks are passed as input parameters to the ``Trainer`` class. See
-    :class:`pytorch_widedeep.trainer.Trainer`
+    `pytorch_widedeep.trainer.Trainer`
 
     For examples see the examples folder at:
 

@@ -34,7 +34,7 @@ class FDSLayer(nn.Module):
         values adjusted to their smoothed mean and variance. The layer is turned on
         only during training, off during prediction/evaluation.
 
-        Adjusted code from `<https://github.com/YyzHarry/imbalanced-regression>`
+        Adjusted code from [here](https://github.com/YyzHarry/imbalanced-regression)
         For more infomation about please read the paper) :
 
         `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).

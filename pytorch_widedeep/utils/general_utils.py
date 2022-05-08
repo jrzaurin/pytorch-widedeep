@@ -1,7 +1,7 @@
 """
-Code for 'Alias' and 'set_default_attr' taken from the one and only Hunter
-McGushion and his library:
-https://github.com/HunterMcGushion/hyperparameter_hunter
+Note:
+    Code for 'Alias' and 'set_default_attr' taken from the one and only Hunter
+    McGushion and his [library](https://github.com/HunterMcGushion/hyperparameter_hunter)
 """
 from typing import Any, List, Union
 

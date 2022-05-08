@@ -13,12 +13,12 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 
 class TabNet(BaseTabularModelWithoutAttention):
 
-    r"""Defines a `TabNet model <https://arxiv.org/abs/1908.07442>`_ that
+    r"""Defines a [TabNet model](https://arxiv.org/abs/1908.07442) that
     can be used as the ``deeptabular`` component of a Wide & Deep model or
     independently by itself.
 
-    The implementation in this library is fully based on that `here
-    <https://github.com/dreamquark-ai/tabnet>`_, simply adapted so that it
+    The implementation in this library is fully based on that
+    [here](https://github.com/dreamquark-ai/tabnet), simply adapted so that it
     can work within the ``WideDeep`` frame. Therefore, **all credit to the
     dreamquark-ai team**
 
@@ -46,17 +46,15 @@ class TabNet(BaseTabularModelWithoutAttention):
         step_dim (int, default = 8): Step's output dimension. This is the output dimension that
             ``WideDeep`` will collect and connect to the output neuron(s). For
             a better understanding of the function of this and the upcoming
-            parameters, please see the `paper
-            <https://arxiv.org/abs/1908.07442>`_.
+            parameters, please see the [paper](https://arxiv.org/abs/1908.07442).
         attn_dim (int, default = 8): Attention dimension
         dropout (float, default = 0.0): GLU block's internal dropout
         n_glu_step_dependent (int, default = 2): number of GLU Blocks [FC -> BN -> GLU] that are step dependent
         n_glu_shared (int, default = 2): number of GLU Blocks [FC -> BN -> GLU] that will be shared
             across decision steps
-        ghost_bn (bool, default=True): Boolean indicating if `Ghost Batch Normalization
-            <https://arxiv.org/abs/1705.08741>`_ will be used.
-        virtual_batch_size (int, default = 128)
-            Batch size when using Ghost Batch Normalization
+        ghost_bn (bool, default=True): Boolean indicating if
+            [Ghost Batch Normalization](https://arxiv.org/abs/1705.08741) will be used.
+        virtual_batch_size (int, default = 128): Batch size when using Ghost Batch Normalization
         momentum (float, default = 0.02): Ghost Batch Normalization's momentum. The dreamquark-ai advises for
             very low values. However high values are used in the original
             publication. During our tests higher values lead to better results
@@ -69,8 +67,8 @@ class TabNet(BaseTabularModelWithoutAttention):
 
     Attributes:
         cat_and_cont_embed (nn.Module): This is the module that processes the categorical and continuous columns
-        tabnet_encoder (nn.Module): ``Module`` containing the TabNet encoder. See the `paper
-            <https://arxiv.org/abs/1908.07442>`_.
+        tabnet_encoder (nn.Module): ``Module`` containing the TabNet encoder. See the
+            [paper](https://arxiv.org/abs/1908.07442).
         output_dim (int): The output dimension of the model. This is a required attribute
             neccesary to build the ``WideDeep`` class
 

@@ -3,15 +3,15 @@
   <img width="300" src="docs/figures/widedeep_logo.png">
 </p>
 
-[<img src="https://badge.fury.io/py/pytorch-widedeep.svg" alt="PyPI version">](https://pypi.org/project/pytorch-widedeep/)
-[<img src="https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue.svg" alt="Python 3.7 3.8 3.9">](https://pypi.org/project/pytorch-widedeep/)
-[<img src="https://github.com/jrzaurin/pytorch-widedeep/actions/workflows/build.yml/badge.svg" alt="Build Status">](https://github.com/jrzaurin/pytorch-widedeep/actions)
-[<img src="https://readthedocs.org/projects/pytorch-widedeep/badge/?version=latest" alt="Documentation Status">](https://pytorch-widedeep.readthedocs.io/en/latest/?badge=latest)
-[<img src="https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/master/graph/badge.svg" alt="codecov">](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
-[<img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black">](https://github.com/psf/black)
-[<img src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" alt="Maintenance">](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
-[<img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="contributions welcome">](https://github.com/jrzaurin/pytorch-widedeep/issues)
-[<img src="https://img.shields.io/badge/slack-chat-green.svg?logo=slack" alt="Slack">](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
+[![PyPI version](https://badge.fury.io/py/pytorch-widedeep.svg)](https://pypi.org/project/pytorch-widedeep/)
+[![Python 3.7 3.8 3.9](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue.svg)](https://pypi.org/project/pytorch-widedeep/)
+[![Build Status](https://github.com/jrzaurin/pytorch-widedeep/actions/workflows/build.yml/badge.svg)](https://github.com/jrzaurin/pytorch-widedeep/actions)
+[![Documentation Status](https://readthedocs.org/projects/pytorch-widedeep/badge/?version=latest)](https://pytorch-widedeep.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/master/graph/badge.svg)](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/jrzaurin/pytorch-widedeep/issues)
+[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
 
 # pytorch-widedeep
 
@@ -26,15 +26,10 @@ text and images using Wide and Deep models in Pytorch
 
 The content of this document is organized as follows:
 
-- [pytorch-widedeep](#pytorch-widedeep)
-    - [Introduction](#introduction)
-    - [The ``deeptabular`` component](#the-deeptabular-component)
-    - [Installation](#installation)
-      - [Developer Install](#developer-install)
-    - [Quick start](#quick-start)
-    - [Testing](#testing)
-    - [How to Contribute](#how-to-contribute)
-    - [Acknowledgments](#acknowledgments)
+1. [introduction](#introduction)
+2. [The deeptabular component](#the-deeptabular-component)
+3. [installation](#installation)
+4. [quick start (tl;dr)](#quick-start)
 
 ### Introduction
 

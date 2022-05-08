@@ -11,7 +11,7 @@ from pytorch_widedeep.models.tabular.transformers._encoders import (
 
 
 class FTTransformer(BaseTabularModelWithAttention):
-    r"""Defines a `FTTransformer model <https://arxiv.org/abs/2106.11959>`_ that
+    r"""Defines a [FTTransformer model](https://arxiv.org/abs/2106.11959) that
     can be used as the ``deeptabular`` component of a Wide & Deep model or
     independently by itself.
 
@@ -28,10 +28,10 @@ class FTTransformer(BaseTabularModelWithAttention):
             `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
         full_embed_dropout (bool, default = False): Boolean indicating if an entire embedding (i.e. the representation of
             one column) will be dropped in the batch. See:
-            :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
+            `pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
             If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
         shared_embed (bool, default = False): The idea behind ``shared_embed`` is described in the Appendix A in the
-            `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
+            [TabTransformer paper](https://arxiv.org/abs/2012.06678): `'The
             goal of having column embedding is to enable the model to distinguish
             the classes in one column from those in the other columns'`. In other
             words, the idea is to let the model learn which column is embedded
@@ -39,7 +39,7 @@ class FTTransformer(BaseTabularModelWithAttention):
         add_shared_embed (bool, default = False): The two embedding sharing strategies are: 1) add the shared embeddings
             to the column embeddings or 2) to replace the first
             ``frac_shared_embed`` with the shared embeddings.
-            See :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
+            See `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
         frac_shared_embed (float, default = 0.25): The fraction of embeddings that will be shared (if ``add_shared_embed
             = False``) by all the different categories for one particular
             column.
@@ -53,15 +53,15 @@ class FTTransformer(BaseTabularModelWithAttention):
         input_dim (int, default = 64): The so-called *dimension of the model*. Is the number of embeddings used to encode
             the categorical and/or continuous columns.
         kv_compression_factor (int, default = 0.5): By default, the FTTransformer uses Linear Attention
-            (See `Linformer: Self-Attention with Linear Complexity
-            <https://arxiv.org/abs/2006.04768>`_ ) The compression factor that
+            (See [Linformer: Self-Attention with Linear Complexity](https://arxiv.org/abs/2006.04768)).
+            The compression factor that
             will be used to reduce the input sequence length. If we denote the
             resulting sequence length as
             :math:`k = int(kv_{compression \space factor} \times s)`
             where :math:`s` is the input sequence length.
         kv_sharing (bool, default = False): Boolean indicating if the :math:`E` and :math:`F` projection matrices
-            will share weights.  See `Linformer: Self-Attention with Linear
-            Complexity <https://arxiv.org/abs/2006.04768>`_ for details
+            will share weights.  See [Linformer: Self-Attention with Linear
+            Complexity](https://arxiv.org/abs/2006.04768) for details
         n_heads (int, default = 8): Number of attention heads per FTTransformer block
         use_qkv_bias (bool, default = False): Boolean indicating whether or not to use bias in the Q, K, and V
             projection layers

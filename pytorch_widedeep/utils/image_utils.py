@@ -1,11 +1,8 @@
-"""
-AspectAwarePreprocessor and SimplePreprocessor are directly taked from the
-great series of Books "Deep Learning for Computer Vision" by Adrian
-(https://www.pyimagesearch.com/author/adrian/). Check here
-https://www.pyimagesearch.com/
+# AspectAwarePreprocessor and SimplePreprocessor are directly taked from the
+# great series of Books "Deep Learning for Computer Vision" by [Adrian]
+# (https://www.pyimagesearch.com/author/adrian/). Check [here](https://www.pyimagesearch.com/)
 
-Credit for the code here to ADRIAN ROSEBROCK
-"""
+# Credit for the code here to ADRIAN ROSEBROCK
 
 import cv2
 import numpy as np
@@ -22,10 +19,10 @@ class AspectAwarePreprocessor:
         width (int): output width
         height (int): output height
         inter (interpolation method,  default = ``cv2.INTER_AREA``): ``opencv`` interpolation method. See ``opencv``
-            :obj:`InterpolationFlags`.
+            `InterpolationFlags`.
 
-            .. note:: The value 3 that appears in the class Args: above is a Sphinx
-                formatting error.
+    Note:
+        The value 3 that appears in the class Args: above is a Sphinx formatting error.
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
@@ -78,10 +75,10 @@ class SimplePreprocessor:
         width (int): output width
         height (int): output height
         inter (interpolation method, default = ``cv2.INTER_AREA``): ``opencv`` interpolation method. See ``opencv``
-            :obj:`InterpolationFlags`.
+            `InterpolationFlags`.
 
-            .. note:: The value 3 that appears in the class Args: above is a Sphinx
-                formatting error.
+    Note:
+        The value 3 that appears in the class Args: above is a Sphinx formatting error.
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):

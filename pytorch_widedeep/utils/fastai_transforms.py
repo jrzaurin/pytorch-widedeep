@@ -1,12 +1,10 @@
-"""
-NLP data processing; tokenizes text and creates vocab indexes
+# NLP data processing; tokenizes text and creates vocab indexes
 
-I have directly copied and paste part of OF THE TRANSFORMS.PY FASTAI LIBRARY.
-I only need the Tokenizer and the Vocab classes which are both in this module.
-This way I avoid extra dependencies.
+# I have directly copied and paste part of OF THE TRANSFORMS.PY FASTAI LIBRARY.
+# I only need the Tokenizer and the Vocab classes which are both in this module.
+# This way I avoid extra dependencies.
 
-Credit for the code here to Jeremy Howard and the fastai team
-"""
+# Credit for the code here to Jeremy Howard and the fastai team
 
 import os
 import re
@@ -92,7 +90,7 @@ class BaseTokenizer:
 
 class SpacyTokenizer(BaseTokenizer):
     def __init__(self, lang: str):
-        """Wrapper around a spacy tokenizer to make it a :obj:`BaseTokenizer`.
+        """Wrapper around a spacy tokenizer to make it a `BaseTokenizer`.
 
         Args:
             lang (str): Language of the text to be tokenized
@@ -214,9 +212,9 @@ class Tokenizer:
         tok_func (Callable, default = ``SpacyTokenizer``): Tokenizer Object. See :class:`pytorch_widedeep.utils.fastai_transforms.SpacyTokenizer`
         lang (str, default = "en"): Text's Language
         pre_rules (ListRules, Optional, default = None): Custom type: ``Collection[Callable[[str], str]]``.
-            see :obj:`pytorch_widedeep.wdtypes`. Preprocessing Rules
+            see `pytorch_widedeep.wdtypes`. Preprocessing Rules
         post_rules (ListRules, Optional, default = None): Custom type: ``Collection[Callable[[str], str]]``.
-            see :obj:`pytorch_widedeep.wdtypes`. Postprocessing Rules
+            see `pytorch_widedeep.wdtypes`. Postprocessing Rules
         special_cases (Collection, Optional, default= None): special cases to be added to the tokenizer via ``Spacy``'s
             ``add_special_case`` method
         n_cpus (int, Optional, default = None): number of CPUs to used during the tokenization process
@@ -252,8 +250,8 @@ class Tokenizer:
 
         Args:
             t (str): text to be processed and tokenized
-            tok (BaseTokenizer): Instance of :obj:`BaseTokenizer`. See
-                :obj:`pytorch_widedeep.utils.fastai_transforms.BaseTokenizer`
+            tok (BaseTokenizer): Instance of `BaseTokenizer`. See
+                `pytorch_widedeep.utils.fastai_transforms.BaseTokenizer`
         """
         for rule in self.pre_rules:
             t = rule(t)
@@ -280,10 +278,10 @@ class Tokenizer:
             >>> tok.process_all(texts)
             [['xxmaj', 'machine', 'learning', 'is', 'great'], ['but', 'building', 'stuff', 'is', 'even', 'better']]
 
-            .. note:: Note the token ``TK_MAJ`` (`xxmaj`), used to indicate the
-                next word begins with a capital in the original text. For more
-                details of special tokens please see the ``fastai`` `docs
-                <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
+        Note:
+            Note the token ``TK_MAJ`` (`xxmaj`), used to indicate the
+            next word begins with a capital in the original text. For more
+            details of special tokens please see the ``fastai`` [docs](https://docs.fast.ai/text.transform.html#Tokenizer).
         """
 
         if self.n_cpus <= 1:
@@ -335,7 +333,7 @@ class Vocab:
 
         Args:
             tokens (Tokens): Custom type: ``Collection[Collection[str]]``  see
-                :obj:`pytorch_widedeep.wdtypes`. Collection of collection of
+                `pytorch_widedeep.wdtypes`. Collection of collection of
                 strings(e.g. list of tokenized sentences)
             max_vocab (int): maximum vocabulary size
             min_freq (int): minimum frequency that a token has to appear to be part of the
@@ -351,10 +349,11 @@ class Vocab:
             >>> vocab.textify([10, 11, 9, 12])
             'machine learning is great'
 
-            .. note:: Note the many special tokens that ``fastai``'s' tokenizer
-                adds. These are particularly useful when building Language models and/or in
-                classification/Regression tasks. Please see the ``fastai``
-                `docs <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
+        Note:
+            Note the many special tokens that ``fastai``'s' tokenizer
+            adds. These are particularly useful when building Language models and/or in
+            classification/Regression tasks. Please see the ``fastai``
+            [docs](https://docs.fast.ai/text.transform.html#Tokenizer).
         """
         freq = Counter(p for o in tokens for p in o)
         itos = [o for o, c in freq.most_common(max_vocab) if c >= min_freq]
@@ -372,6 +371,6 @@ class Vocab:
 
     @classmethod
     def load(cls, path):
-        """Load an intance of :obj:`Vocab` contained in ``path``"""
+        """Load an intance of `Vocab` contained in ``path``"""
         itos = pickle.load(open(path, "rb"))
         return cls(itos)

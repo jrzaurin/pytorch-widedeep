@@ -11,8 +11,8 @@ from pytorch_widedeep.models.tabular.transformers._encoders import (
 
 
 class TabFastFormer(BaseTabularModelWithAttention):
-    r"""Defines an adaptation of a `FastFormer model
-    <https://arxiv.org/abs/2108.09084>`_ that can be used as the
+    r"""Defines an adaptation of a [FastFormer model](https://arxiv.org/abs/2108.09084)
+    that can be used as the
     ``deeptabular`` component of a Wide & Deep model or independently by
     itself.
 
@@ -27,10 +27,10 @@ class TabFastFormer(BaseTabularModelWithAttention):
         cat_embed_activation (Optional, str, default = None): Activation function for the categorical embeddings
         full_embed_dropout (bool, default = False): Boolean indicating if an entire embedding (i.e. the representation of
             one column) will be dropped in the batch. See:
-            :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
+            `pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
             If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
         shared_embed (bool, default = False): The idea behind ``shared_embed`` is described in the Appendix A in the
-            `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
+            [TabTransformer paper](https://arxiv.org/abs/2012.06678): `'The
             goal of having column embedding is to enable the model to distinguish
             the classes in one column from those in the other columns'`. In other
             words, the idea is to let the model learn which column is embedded
@@ -38,7 +38,7 @@ class TabFastFormer(BaseTabularModelWithAttention):
         add_shared_embed (bool, default = False): The two embedding sharing strategies are: 1) add the shared embeddings
             to the column embeddings or 2) to replace the first
             ``frac_shared_embed`` with the shared embeddings.
-            See :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
+            See `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
         frac_shared_embed (float, default = 0.25): The fraction of embeddings that will be shared (if ``add_shared_embed
             = False``) by all the different categories for one particular
             column.

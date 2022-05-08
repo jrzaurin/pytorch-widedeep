@@ -1,12 +1,7 @@
-"""
-The code here is greatly insipired by a couple of sources:
-
-the Blitz package: https://github.com/piEsposito/blitz-bayesian-deep-learning and
-
-Weight Uncertainty in Neural Networks post by Nitarshan Rajkumar: https://www.nitarshan.com/bayes-by-backprop/
-
-and references therein
-"""
+# The code here is greatly insipired by a couple of sources:
+# the Blitz package: https://github.com/piEsposito/blitz-bayesian-deep-learning and
+# Weight Uncertainty in Neural Networks post by Nitarshan Rajkumar: https://www.nitarshan.com/bayes-by-backprop/
+# and references therein
 
 import torch.nn.functional as F
 from torch import nn

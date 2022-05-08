@@ -35,8 +35,7 @@ class DataLoaderDefault(DataLoader):
 class DataLoaderImbalanced(DataLoader):
     r"""Class to load and shuffle batches with adjusted weights for imbalanced
     datasets. If the classes do not begin from 0 remapping is necessary. See
-    `here
-    <https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab>`_
+    [here](https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab).
     .
 
     Args:

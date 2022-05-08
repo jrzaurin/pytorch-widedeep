@@ -20,6 +20,7 @@ tmp_data/
 model_weights/
 tmp_dir/
 weights/
+mkdocs/site
 
 # Unit Tests/Coverage
 .coverage
@@ -46,7 +47,6 @@ sftp*-config.json
 
 # Documentation
 _build
-site/
 
 # _static
 _templates

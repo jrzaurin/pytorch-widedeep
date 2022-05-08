@@ -1,28 +1,18 @@
-"""
-The code in this module is taken directly from the fantastic tabnet implementation
-here: https://github.com/dreamquark-ai/tabnet
-
-which is in itself taken directly from the also fantastic NODE implementation
-here: https://github.com/Qwicen/node
-
-In particular: https://github.com/Qwicen/node/blob/master/lib/nn_utils.py
-
-Therefore, credit to the dreamquark-ai team, but in this case
-
-ALL CREDIT TO SERGEY POPOV and contributors
------------------------------------------------
-"""
-
+# The code in this module is taken directly from the fantastic tabnet implementation
+# here: https://github.com/dreamquark-ai/tabnet
+# which is in itself taken directly from the also fantastic NODE implementation
+# here: https://github.com/Qwicen/node
+# In particular: https://github.com/Qwicen/node/blob/master/lib/nn_utils.py
+# Therefore, credit to the dreamquark-ai team, but in this case
+# ALL CREDIT TO SERGEY POPOV and contributors
+# -----------------------------------------------
+# Other possible implementations:
+# https://github.com/KrisKorrel/sparsemax-pytorch/blob/master/sparsemax.py
+# https://github.com/msobroza/SparsemaxPytorch/blob/master/mnist/sparsemax.py
+# https://github.com/vene/sparse-structured-attention/blob/master/pytorch/torchsparseattn/sparsemax.py
 import torch
 from torch import nn
 from torch.autograd import Function
-
-"""
-Other possible implementations:
-https://github.com/KrisKorrel/sparsemax-pytorch/blob/master/sparsemax.py
-https://github.com/msobroza/SparsemaxPytorch/blob/master/mnist/sparsemax.py
-https://github.com/vene/sparse-structured-attention/blob/master/pytorch/torchsparseattn/sparsemax.py
-"""
 
 
 def _make_ix_like(input, dim=0):
@@ -113,8 +103,8 @@ class Sparsemax(nn.Module):
 class Entmax15Function(Function):
     """
     An implementation of exact Entmax with alpha=1.5 (B. Peters, V. Niculae, A. Martins). See
-    :cite:`https://arxiv.org/abs/1905.05702 for detailed description.
-    Source: https://github.com/deep-spin/entmax
+    [paper](https://arxiv.org/abs/1905.05702) for detailed description.
+    [Source](https://github.com/deep-spin/entmax)
     """
 
     @staticmethod

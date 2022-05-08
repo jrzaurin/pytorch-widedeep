@@ -2,7 +2,7 @@ site_name: pytorch_widedeep
 repo_name: 'pytorch_widedeep'
 repo_url: 'https://github.com/jrzaurin/pytorch-widedeep'
 copyright: 'Javier Zaurin and Pavol Mulinka'
-docs_dir: docs_mk/sources
+docs_dir: sources
 site_url: ""
 
 extra:
@@ -13,10 +13,53 @@ extra:
 # Navigation
 # There is no 'nav' in this config because we use mkdocs-awesome-pages-plugin
 # The ordering of pages in the docs folder are now in a `.pages` file instead
+nav:
+    - Home: index.md
+    - Installation: installation.md
+    - Quick Start: quick_start.md
+    - Pytorch-widedeep:
+        - Trainer: pytorch-widedeep/trainer.md
+        - Tab2Vec: pytorch-widedeep/tab2vec.md
+        - Preprocessing: pytorch-widedeep/preprocessing.md  
+        - Model Components: pytorch-widedeep/model_components.md
+        - Losses: pytorch-widedeep/losses.md
+        - Dataloaders: pytorch-widedeep/dataloaders.md
+        - Callbacks: pytorch-widedeep/callbacks.md
+        - Bayesian models: pytorch-widedeep/bayesian_models.md
+        - Utils:
+            - pytorch-widedeep/utils/index.md
+            - Deeptabular utils: pytorch-widedeep/utils/deeptabular_utils.md
+            - Fastai transforms: pytorch-widedeep/utils/fastai_transforms.md
+            - Image utils: pytorch-widedeep/utils/image_utils.md
+            - Text utils: pytorch-widedeep/utils/text_utils.md
+    - Examples:
+        - 01_Preprocessors_and_utils: examples/01_Preprocessors_and_utils.ipynb
+        - 02_model_components: examples/02_model_components.ipynb
+        - 03_Binary_Classification_with_Defaults: examples/03_Binary_Classification_with_Defaults.ipynb
+        - 04_regression_with_images_and_text: examples/04_regression_with_images_and_text.ipynb
+        - 05_save_and_load_model_and_artifacts: examples/05_save_and_load_model_and_artifacts.ipynb
+        - 06_fineTune_and_warmup: examples/06_fineTune_and_warmup.ipynb
+        - 07_Custom_Components: examples/07_Custom_Components.ipynb
+        - 08_custom_dataLoader_imbalanced_dataset: examples/08_custom_dataLoader_imbalanced_dataset.ipynb
+        - 09_extracting_embeddings: examples/09_extracting_embeddings.ipynb
+        - 10_hyperParameter_tuning_w_raytune_n_wnb: examples/10_hyperParameter_tuning_w_raytune_n_wnb.ipynb
+        - 11_auc_multiclass: examples/11_auc_multiclass.ipynb
+        - 12_ZILNLoss_origkeras_vs_pytorch_multimodal: examples/12_ZILNLoss_origkeras_vs_pytorch_multimodal.ipynb
+        - 13_Model_Uncertainty_prediction: examples/13_Model_Uncertainty_prediction.ipynb
+        - 14_bayesian_models: examples/14_bayesian_models.ipynb
+        - 15_DIR-LDS_and_FDS: examples/15_DIR-LDS_and_FDS.ipynb
+        - airbnb_data_preprocessing: examples/airbnb_data_preprocessing.ipynb
+    - Contributing: contributing.md
 
 theme:
     name: material
-    custom_dir: docs_mk/templates/overrides
+    custom_dir: sources/overrides
+
+    features:
+        - navigation.tabs
+        - navigation.tabs.sticky
+        - navigation.indexes
+        - navigation.expand
 
     palette:
         # scheme: preference uses dark or light mode based on user (OS) preference
@@ -29,71 +72,71 @@ theme:
     language: 'en'
 
 
+use_directory_urls: false
+
 plugins:
     - search
-    - minify:
-        minify_html: true
-    - git-revision-date-localized:
-        type: timeago
+    - autolinks
     - git-authors:
         show_contribution: True
-    - table-reader
-    - img2fig
     - mkdocs-jupyter:
         ignore_h1_titles: True
         include_source: True
-    - awesome-pages
-    - print-site:
-        exclude:
-            - archive/*
-    - mkdocstrings
-
-
-markdown_extensions:
-    - codehilite
-    - markdown.extensions.admonition
-    - markdown.extensions.attr_list
-    - markdown.extensions.md_in_html
-    - markdown.extensions.codehilite:
-        guess_lang: false
-    - markdown.extensions.def_list
-    - markdown.extensions.footnotes
-    - markdown.extensions.meta
-    - markdown.extensions.toc:
-        permalink: true
-    - pymdownx.arithmatex:
-        generic: true
-    - pymdownx.betterem:
-        smart_enable: all
-    - pymdownx.caret
-    - pymdownx.critic
-    - pymdownx.details
-    - pymdownx.emoji:
-        emoji_index: !!python/name:materialx.emoji.twemoji
-        emoji_generator: !!python/name:materialx.emoji.to_svg
-    - pymdownx.inlinehilite
-    - pymdownx.keys
-    - pymdownx.mark
-    - pymdownx.smartsymbols
-    - pymdownx.snippets:
-        check_paths: true
-    - pymdownx.superfences
-    - pymdownx.tabbed
-    - pymdownx.tasklist:
-        custom_checkbox: true
-    - pymdownx.tilde
-
-# Lots of other settings
-edit_uri: edit/MkDocs/docs/
-use_directory_urls: false
-
-# Better PDF styling for when you create PDFs using mkdocs-pdf-export-plugin
-extra_css:
-  - assets/stylesheets/pdf-export.css
-
-# Setup mathjax, see
-# https://squidfunk.github.io/mkdocs-material/reference/mathjax/
+    - mkdocstrings:
+        default_handler: python
+        handlers:
+            python:
+                setup_commands:
+                    - import sys
+                    - import os
+                    - sys.path.insert(0, "..")
+                rendering:
+                    show_root_heading: True
+                    show_object_full_path: False
+                    separate_signature: True
+                    merge_init_into_class: True
+                    heading_level: 2
+                    show_source: True
+                    show_category_heading: true
+                    docstring_section_style: table
+                selection:
+                    docstring_style: google
+                    filters:
+                       - "!^_"  # exclude all members starting with _
+## Custom theme additions
 extra_javascript:
-    - assets/javascripts/config.js
-    - https://polyfill.io/v3/polyfill.min.js?features=es6
-    - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+        - 'stylesheets/extra.js'
+extra_css:
+        - stylesheets/extra.css
+
+## Extensions
+markdown_extensions:
+  - markdown.extensions.admonition
+  - markdown.extensions.attr_list
+  - markdown.extensions.def_list
+  - markdown.extensions.footnotes
+  - markdown.extensions.meta
+  - markdown.extensions.toc:
+      baselevel: 1
+      permalink: true
+  - pymdownx.arithmatex
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde

@@ -50,7 +50,7 @@ class Trainer:
     training process.
 
     Args:
-        model (WideDeep): An object of class ``WideDeep``
+        model (WideDeep): An object of class ``WideDeep`` tadatada
         objective (str): Defines the objective, loss or cost function.
 
             Param aliases: ``loss_function``, ``loss_fn``, ``loss``,
@@ -71,8 +71,7 @@ class Trainer:
             - ``tweedie``
         custom_loss_function (nn.Module, Optional, default = None): It is possible to pass a custom loss function. See for example
             :class:`pytorch_widedeep.losses.FocalLoss` for the required structure
-            of the object or the `Examples
-            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
+            of the object or the [Examples](https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples)
             folder in the repo. Note that if ``custom_loss_function`` is not
             None, ``objective`` must be 'binary', 'multiclass' or 'regression',
             consistent with the loss function
@@ -98,9 +97,8 @@ class Trainer:
             `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)
             and the values are the corresponding initializers.
         transforms (List. Optional, default=None): List with :obj:`torchvision.transforms` to be applied to the image
-            component of the model (i.e. ``deepimage``) See `torchvision
-            transforms
-            <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
+            component of the model (i.e. ``deepimage``) See [torchvision
+            transforms](https://pytorch.org/docs/stable/torchvision/transforms.html).
         callbacks (List. Optional, default=None): List with :obj:`Callback` objects. The three callbacks available in
             :obj:`pytorch-widedeep` are: :obj:`LRHistory`, :obj:`ModelCheckpoint`
             and :obj:`EarlyStopping`. The :obj:`History` and
@@ -117,24 +115,21 @@ class Trainer:
             :obj:`pytorch_widedeep.metrics.Metric` or the examples folder in the
             repo
             - List of objects of type :obj:`torchmetrics.Metric`. This can be any
-            metric from torchmetrics library `Examples
-            <https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
-            classification-metrics>`_. This can also be a custom metric as long as
-            it is an object of type :obj:`Metric`. See `the instructions
-            <https://torchmetrics.readthedocs.io/en/latest/>`_.
+            metric from torchmetrics library [Examples](https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
+            classification-metrics). This can also be a custom metric as long as
+            it is an object of type :obj:`Metric`. See [the instructions](https://torchmetrics.readthedocs.io/en/latest/).
         verbose (int, default=1): Verbosity level. If set to 0 nothing will be printed during training
         seed (int, default=1): Random seed to be used internally for train/test split
 
     Attributes:
         cyclic_lr (bool): Attribute that indicates if any of the lr_schedulers is cyclic_lr
             (i.e. :obj:`CyclicLR` or
-            :obj:`OneCycleLR`). See `Pytorch schedulers
-            <https://pytorch.org/docs/stable/optim.html>`_.
+            :obj:`OneCycleLR`). See [Pytorch schedulers](https://pytorch.org/docs/stable/optim.html).
         feature_importance (dict): dict where the keys are the column names and the values are the
             corresponding feature importances. This attribute will only exist
             if the ``deeptabular`` component is a Tabnet model
 
-    Examples:    
+    Examples:
         >>> import torch
         >>> from torchvision.transforms import ToTensor
         >>>
@@ -285,9 +280,9 @@ class Trainer:
 
                 - fine-tune all trainable layers at once. This routine is is
                 inspired by the work of Howard & Sebastian Ruder 2018 in their
-                `ULMfit paper <https://arxiv.org/abs/1801.06146>`_. Using a
-                Slanted Triangular learing (see `Leslie N. Smith paper
-                <https://arxiv.org/pdf/1506.01186.pdf>`_), the process is the
+                [ULMfit paper](https://arxiv.org/abs/1801.06146). Using a
+                Slanted Triangular learing (see [Leslie N. Smith paper](https://arxiv.org/pdf/1506.01186.pdf)),
+                the process is the
                 following: `i`) the learning rate will gradually increase for
                 10% of the training steps from max_lr/10 to max_lr. `ii`) It
                 will then gradually decrease to max_lr/10 for the remaining 90%
@@ -297,49 +292,41 @@ class Trainer:
                 trained at a time.
 
                 - The so called `Felbo` gradual fine-tune rourine, based on the the
-                Felbo et al., 2017 `DeepEmoji paper <https://arxiv.org/abs/1708.00524>`_.
+                Felbo et al., 2017 [DeepEmoji paper](https://arxiv.org/abs/1708.00524).
                 - The `Howard` routine based on the work of Howard & Sebastian Ruder 2018 in their
-                `ULMfit paper <https://arxiv.org/abs/1801.06146>`_.
+                [ULMfit paper](https://arxiv.org/abs/1801.06146).
 
                 For details on how these routines work, please see the Examples
-                section in this documentation and the `Examples
-                <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
+                section in this documentation and the [Examples](https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples)
                 folder in the repo.
 
         Examples:
-            For a series of comprehensive examples please, see the `Examples
-            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
+            For a series of comprehensive examples please, see the
+            [Examples](https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples)
             folder in the repo
 
             For completion, here we include some `"fabricated"` examples, i.e.
             these assume you have already built a model and instantiated a
             ``Trainer``, that is ready to fit
-
-            .. code-block:: python
-
-                # Ex 1. using train input arrays directly and no validation
-                trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256)
-
-
-            .. code-block:: python
-
-                # Ex 2: using train input arrays directly and validation with val_split
-                trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256, val_split=0.2)
-
-
-            .. code-block:: python
-
-                # Ex 3: using train dict and val_split
-                X_train = {'X_wide': X_wide, 'X_tab': X_tab, 'target': y}
-                trainer.fit(X_train, n_epochs=10, batch_size=256, val_split=0.2)
-
-
-            .. code-block:: python
-
-                # Ex 4: validation using training and validation dicts
-                X_train = {'X_wide': X_wide_tr, 'X_tab': X_tab_tr, 'target': y_tr}
-                X_val = {'X_wide': X_wide_val, 'X_tab': X_tab_val, 'target': y_val}
-                trainer.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
+            ```
+            # Ex 1. using train input arrays directly and no validation
+            trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256)
+            ```
+            ```
+            # Ex 2: using train input arrays directly and validation with val_split
+            trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256, val_split=0.2)
+            ```
+            ```
+            # Ex 3: using train dict and val_split
+            X_train = {'X_wide': X_wide, 'X_tab': X_tab, 'target': y}
+            trainer.fit(X_train, n_epochs=10, batch_size=256, val_split=0.2)
+            ```
+            ```
+            # Ex 4: validation using training and validation dicts
+            X_train = {'X_wide': X_wide_tr, 'X_tab': X_tab_tr, 'target': y_tr}
+            X_val = {'X_wide': X_wide_val, 'X_tab': X_tab_val, 'target': y_val}
+            trainer.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
+            ```
         """
         lds_args, dataloader_args, finetune_args = self._extract_kwargs(kwargs)
         lds_args["with_lds"] = with_lds
@@ -634,7 +621,8 @@ class Trainer:
         r"""Returns the learned embeddings for the categorical features passed through
         ``deeptabular``.
 
-        .. note:: This function will be deprecated in the next relase. Please consider
+        Note:
+            This function will be deprecated in the next relase. Please consider
             using ``Tab2Vec`` instead.
 
         This method is designed to take an encoding dictionary in the same
@@ -652,8 +640,8 @@ class Trainer:
                 e.g.: {'column': {'cat_0': 1, 'cat_1': 2, ...}}
 
         Examples:
-            For a series of comprehensive examples please, see the `Examples
-            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
+            For a series of comprehensive examples please, see the
+            [Examples](https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples)
             folder in the repo
 
             For completion, here we include a `"fabricated"` example, i.e.
@@ -661,9 +649,9 @@ class Trainer:
             categorical encodings in a dictionary name ``encoding_dict``, and that
             there is a column called `'education'`:
 
-            .. code-block:: python
-
-                trainer.get_embeddings(col_name="education", cat_encoding_dict=encoding_dict)
+            ```
+            trainer.get_embeddings(col_name="education", cat_encoding_dict=encoding_dict)
+            ```
         """
         warnings.warn(
             "'get_embeddings' will be deprecated in the next release. "
@@ -1137,8 +1125,8 @@ class Trainer:
     def _predict_ziln(preds: Tensor) -> Tensor:
         """Calculates predicted mean of zero inflated lognormal logits.
 
-        Adjusted implementaion of `code
-        <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`
+        Adjusted implementaion of
+        [code](https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py)
 
         Args:
             preds (Tensor): tensor of logits.

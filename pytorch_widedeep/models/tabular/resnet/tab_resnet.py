@@ -13,7 +13,7 @@ class TabResnet(BaseTabularModelWithoutAttention):
     This class combines embedding representations of the categorical features
     with numerical (aka continuous) features, embedded or not. These are then
     passed through a series of Resnet blocks. See
-    :obj:`pytorch_widedeep.models.tab_resnet._layers` for details on the
+    `pytorch_widedeep.models.tab_resnet._layers` for details on the
     structure of each block.
 
     Args:
@@ -40,7 +40,7 @@ class TabResnet(BaseTabularModelWithoutAttention):
             For example: [200, 100, 100] will generate 2 blocks. The first will
             receive a tensor of size 200 and output a tensor of size 100, and the
             second will receive a tensor of size 100 and output a tensor of size
-            100. See :obj:`pytorch_widedeep.models.tab_resnet._layers` for
+            100. See `pytorch_widedeep.models.tab_resnet._layers` for
             details on the structure of each block.
         blocks_dropout (float, default =  0.1): Block's `"internal"` dropout.
         simplify_blocks (bool, default = False): Boolean indicating if the simplest possible residual blocks (``X -> [

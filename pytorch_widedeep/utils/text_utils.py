@@ -17,17 +17,16 @@ def simple_preprocess(
     max_len: int = 15,
 ) -> List[str]:
     r"""
-    This is ``Gensim``'s :obj:`simple_preprocess` with a ``lower`` param to
+    This is ``Gensim``'s `simple_preprocess` with a ``lower`` param to
     indicate wether or not to lower case all the token in the doc
 
-    For more information see: ``Gensim`` `utils module
-    <https://radimrehurek.com/gensim/utils.html>`_. Returns the list of tokens
-    for a given doc
+    For more information see: ``Gensim`` [utils module](https://radimrehurek.com/gensim/utils.html).
+    Returns the list of tokens for a given doc.
 
     Args:
         doc (str): Input document.
         lower (bool, default = False): Lower case tokens in the input doc
-        deacc (bool, default = False): Remove accent marks from tokens using ``Gensim``'s :obj:`deaccent`
+        deacc (bool, default = False): Remove accent marks from tokens using ``Gensim``'s `deaccent`
         min_len (int, default = 2): Minimum length of token (inclusive). Shorter tokens are discarded.
         max_len (int, default = 15): Maximum length of token in result (inclusive). Longer tokens are discarded.
 
@@ -45,10 +44,10 @@ def simple_preprocess(
 
 
 def get_texts(texts: List[str]) -> List[List[str]]:
-    r"""Tokenization using ``Fastai``'s :obj:`Tokenizer` because it does a
+    r"""Tokenization using ``Fastai``'s `Tokenizer` because it does a
     series of very convenients things during the tokenization process
 
-    See :class:`pytorch_widedeep.utils.fastai_utils.Tokenizer`
+    See `pytorch_widedeep.utils.fastai_utils.Tokenizer`
 
     Returns a list containing the tokens per text or document
 
@@ -61,12 +60,12 @@ def get_texts(texts: List[str]) -> List[List[str]]:
         >>> get_texts(texts)
         [['xxmaj', 'machine', 'learning', 'is', 'great'], ['but', 'building', 'stuff', 'is', 'even', 'better']]
 
-        .. note:: :obj:`get_texts` uses :class:`pytorch_widedeep.utils.fastai_transforms.Tokenizer`.
-            Such tokenizer uses a series of convenient processing steps, including
-            the  addition of some special tokens, such as ``TK_MAJ`` (`xxmaj`), used to
-            indicate the next word begins with a capital in the original text. For more
-            details of special tokens please see the ``fastai`` `docs
-            <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
+    Note:
+        `get_texts` uses `pytorch_widedeep.utils.fastai_transforms.Tokenizer`.
+        Such tokenizer uses a series of convenient processing steps, including
+        the  addition of some special tokens, such as ``TK_MAJ`` (`xxmaj`), used to
+        indicate the next word begins with a capital in the original text. For more
+        details of special tokens please see the ``fastai`` [docs](https://docs.fast.ai/text.transform.html#Tokenizer).
     """
     processed_textx = [" ".join(simple_preprocess(t)) for t in texts]
     tok = Tokenizer().process_all(processed_textx)
@@ -118,7 +117,7 @@ def build_embeddings_matrix(
     word-embeddings vector
 
     Args:
-        vocab (Vocab): see :class:`pytorch_widedeep.utils.fastai_utils.Vocab`
+        vocab (Vocab): see `pytorch_widedeep.utils.fastai_utils.Vocab`
         word_vectors_path (str): path to the pretrained word embeddings
         min_freq (int): minimum frequency required for a word to be in the vocabulary
         verbose (int,  default=1): level of verbosity. Set to 0 for no verbosity

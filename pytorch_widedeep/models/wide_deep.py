@@ -74,7 +74,7 @@ class WideDeep(nn.Module):
             of classes for multiclass classification.
         with_fds (bool, default = False): If feature distribution smoothing (FDS) should be applied before the
             final prediction layer. Only available for regression problems. See
-            `Delving into Deep Imbalanced Regression <https://arxiv.org/abs/2102.09554>`_
+            [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554)
             for details.
         fds_config (dict, default = None): Dictionary defining specific values for
             ``FeatureDistributionSmoothing`` layer
@@ -97,7 +97,7 @@ class WideDeep(nn.Module):
             collected by ``WideDeep`` and combined accordingly. In addition, the
             models MUST also contain an attribute ``output_dim`` with the size of
             these last layers of activations. See for
-            example :class:`pytorch_widedeep.models.tab_mlp.TabMlp`
+            example `pytorch_widedeep.models.tab_mlp.TabMlp`
     """
 
     def __init__(

@@ -11,9 +11,8 @@ class MSELoss(nn.Module):
     r"""Mean square error loss adjusted for the possibility of using Label Smooth
     Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 
     def __init__(self):
@@ -49,9 +48,8 @@ class MSLELoss(nn.Module):
     r"""Mean square log error loss adjusted for the possibility of using Label
     Smooth Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 
     def __init__(self):
@@ -94,9 +92,8 @@ class RMSELoss(nn.Module):
     r"""Root mean square error loss adjusted for the possibility of using Label
     Smooth Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 
     def __init__(self):
@@ -132,9 +129,8 @@ class RMSLELoss(nn.Module):
     r"""Root mean square log error loss adjusted for the possibility of using Label
     Smooth Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 
     def __init__(self):
@@ -178,8 +174,8 @@ class QuantileLoss(nn.Module):
 
         :math:`Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))`
 
-    All credits go to the implementation at `pytorch-forecasting
-    <https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss>`_ .
+    All credits go to the implementation at 
+    [pytorch-forecasting](https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss).
 
     Args:
         quantiles (List, default = [0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.98]): List of quantiles
@@ -228,9 +224,8 @@ class QuantileLoss(nn.Module):
 
 
 class FocalLoss(nn.Module):
-    r"""Implementation of the `focal loss
-    <https://arxiv.org/pdf/1708.02002.pdf>`_ for both binary and
-    multiclass classification
+    r"""Implementation of the [focal loss](https://arxiv.org/pdf/1708.02002.pdf)
+    for both binary and multiclass classification
 
     :math:`FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)`
 
@@ -315,8 +310,7 @@ class BayesianRegressionLoss(nn.Module):
 
 class BayesianSELoss(nn.Module):
     r"""Squared Loss (log Gaussian) for the case of a regression as specified in
-    the original publication `Weight Uncertainty in Neural Networks
-    <https://arxiv.org/abs/1505.05424>`_
+    the original publication [Weight Uncertainty in Neural Networks](https://arxiv.org/abs/1505.05424)
     """
 
     def __init__(self):
@@ -344,8 +338,8 @@ class TweedieLoss(nn.Module):
     Tweedie loss for extremely unbalanced zero-inflated data
 
     All credits go to Wenbo Shi.
-    See `this post <https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f>`_
-    and the `original publication <https://arxiv.org/abs/1811.10192>`_ for details
+    See [this post](https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f)
+    and the [original publication](https://arxiv.org/abs/1811.10192) for details.
     """
 
     def __init__(self):
@@ -361,7 +355,7 @@ class TweedieLoss(nn.Module):
         r"""
         Args:
             input (Tensor): Input tensor with predictions
-            target (Tensor)" Target tensor with the actual values
+            target (Tensor): Target tensor with the actual values
             lds_weight (Tensor, Optional): If we choose to use LDS this is the tensor of weights that will
                 multiply the loss value.
             p (float, default = 1.5): the power to be used to compute the loss. See the original
@@ -396,9 +390,8 @@ class TweedieLoss(nn.Module):
 class ZILNLoss(nn.Module):
     r"""Adjusted implementation of the Zero Inflated LogNormal Loss
 
-    See the `paper <https://arxiv.org/pdf/1912.07753.pdf>`_ and
-    the corresponding `code
-    <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`_
+    See the [paper](https://arxiv.org/pdf/1912.07753.pdf) and
+    the corresponding [code](https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py)
     """
 
     def __init__(self):
@@ -459,9 +452,8 @@ class L1Loss(nn.Module):
     r"""L1 loss adjusted for the possibility of using Label Smooth
     Distribution (LDS)
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 
     def __init__(self):
@@ -496,9 +488,8 @@ class L1Loss(nn.Module):
 class FocalR_L1Loss(nn.Module):
     r"""Focal-R L1 loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
 
     Args:
         beta (float): Focal Loss ``beta`` parameter in their implementation
@@ -561,9 +552,8 @@ class FocalR_L1Loss(nn.Module):
 class FocalR_MSELoss(nn.Module):
     r"""Focal-R MSE loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
 
     Args:
         beta (float): Focal Loss ``beta`` parameter in their implementation
@@ -626,9 +616,8 @@ class FocalR_MSELoss(nn.Module):
 class FocalR_RMSELoss(nn.Module):
     r"""Focal-R RMSE loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
 
     Args:
         beta (float): Focal Loss ``beta`` parameter in their implementation
@@ -691,9 +680,8 @@ class FocalR_RMSELoss(nn.Module):
 class HuberLoss(nn.Module):
     r"""Hubber Loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 
     def __init__(self, beta: float = 0.2):

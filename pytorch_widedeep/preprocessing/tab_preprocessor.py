@@ -75,8 +75,8 @@ class TabPreprocessor(BasePreprocessor):
             being passed to the final MLP (if present).
         shared_embed (bool, default = False): Boolean indicating if the embeddings will be "shared" when using
             attention-based models. The idea behind ``shared_embed`` is
-            described in the Appendix A in the `TabTransformer paper
-            <https://arxiv.org/abs/2012.06678>`_: `'The goal of having column
+            described in the Appendix A in the [TabTransformer paper](https://arxiv.org/abs/2012.06678):
+            `'The goal of having column
             embedding is to enable the model to distinguish the classes in one
             column from those in the other columns'`. In other words, the idea is
             to let the model learn which column is embedded at the time. See:

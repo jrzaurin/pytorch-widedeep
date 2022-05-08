@@ -46,10 +46,11 @@ class ImagePreprocessor(BasePreprocessor):
         >>> resized_images = img_preprocessor.fit_transform(df_train)
         >>> new_resized_images = img_preprocessor.transform(df_train)
 
-        .. note:: Normalising metrics will only be computed when the
-            ``fit_transform`` method is run. Running ``transform`` only will not
-            change the computed metrics and running ``fit`` only simply
-            instantiates the resizing functions.
+    Note:
+        Normalising metrics will only be computed when the
+        ``fit_transform`` method is run. Running ``transform`` only will not
+        change the computed metrics and running ``fit`` only simply
+        instantiates the resizing functions.
     """
 
     def __init__(
@@ -70,12 +71,12 @@ class ImagePreprocessor(BasePreprocessor):
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         r"""Instantiates the Preprocessors
-        :obj:`AspectAwarePreprocessor`` and :obj:`SimplePreprocessor` for image
+        `AspectAwarePreprocessor` and `SimplePreprocessor` for image
         resizing.
 
         See:
-            :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
-            and :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`.
+            `pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
+            and `pytorch_widedeep.utils.image_utils.SimplePreprocessor`.
 
         """
         self.aap = AspectAwarePreprocessor(self.width, self.height)
