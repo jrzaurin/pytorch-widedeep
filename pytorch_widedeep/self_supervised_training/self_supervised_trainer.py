@@ -18,6 +18,7 @@ class SelfSupervisedTrainer(BaseSelfSupervisedTrainer):
     def __init__(
         self,
         model,
+        preprocessor,
         optimizer: Optional[Optimizer] = None,
         lr_scheduler: Optional[LRScheduler] = None,
         callbacks: Optional[List[Callback]] = None,
@@ -34,6 +35,7 @@ class SelfSupervisedTrainer(BaseSelfSupervisedTrainer):
     ):
         super().__init__(
             model=model,
+            preprocessor=preprocessor,
             loss_type=loss_type,
             optimizer=optimizer,
             lr_scheduler=lr_scheduler,

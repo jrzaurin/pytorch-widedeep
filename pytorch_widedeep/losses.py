@@ -857,22 +857,47 @@ class DenoisingLoss(nn.Module):
 
     def forward(
         self,
-        x_cat_and_cat_: Optional[Tuple[Tensor, Tensor]],
-        x_cont_and_cont_: Optional[Tuple[Tensor, Tensor]],
+        x_cat_and_cat_: Optional[
+            Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
+        ],
+        x_cont_and_cont_: Optional[
+            Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
+        ],
     ) -> Tensor:
 
-        if x_cat_and_cat_ is not None:
-            loss_cat = torch.tensor(0.0)
-            for x, x_ in x_cat_and_cat_:
-                loss_cat += F.cross_entropy(x_, x, reduction=self.reduction)
-        else:
-            loss_cat = torch.tensor(0.0)
-
-        if x_cont_and_cont_ is not None:
-            loss_cont = torch.tensor(0.0)
-            for x, x_ in x_cont_and_cont_:
-                loss_cont += F.mse_loss(x_, x, reduction=self.reduction)
-        else:
-            loss_cat = torch.tensor(0.0)
+        loss_cat = (
+            self._compute_cat_loss(x_cat_and_cat_)
+            if x_cat_and_cat_ is not None
+            else torch.tensor(0.0)
+        )
+        loss_cont = (
+            self._compute_cont_loss(x_cont_and_cont_)
+            if x_cont_and_cont_ is not None
+            else torch.tensor(0.0)
+        )
 
         return self.lambda_cat * loss_cat + self.lambda_cont * loss_cont
+
+    def _compute_cat_loss(self, x_cat_and_cat_):
+
+        loss_cat = torch.tensor(0.0)
+        if isinstance(x_cat_and_cat_, list):
+            for x, x_ in x_cat_and_cat_:
+                loss_cat += F.cross_entropy(x_, x, reduction=self.reduction)
+        elif isinstance(x_cat_and_cat_, tuple):
+            x, x_ = x_cat_and_cat_
+            loss_cat += F.cross_entropy(x_, x, reduction=self.reduction)
+
+        return loss_cat
+
+    def _compute_cont_loss(self, x_cont_and_cont_):
+
+        loss_cont = torch.tensor(0.0)
+        if isinstance(x_cont_and_cont_, list):
+            for x, x_ in x_cont_and_cont_:
+                loss_cont += F.mse_loss(x_, x, reduction=self.reduction)
+        elif isinstance(x_cont_and_cont_, tuple):
+            x, x_ = x_cont_and_cont_
+            loss_cont += F.mse_loss(x_, x, reduction=self.reduction)
+
+        return loss_cont

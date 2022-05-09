@@ -6,23 +6,18 @@ from pytorch_widedeep.models.tabular.mlp._layers import MLP
 
 
 class CatSingleMlp(nn.Module):
-    def __init__(self, model, activation):
+    def __init__(self, input_dim, cat_embed_input, column_idx, activation):
         super(CatSingleMlp, self).__init__()
 
-        self.column_idx = model.column_idx
-        self.cat_embed_input = model.cat_embed_input
-        self.num_class = model.cat_and_cont_embed.cat_embed.n_tokens
-
+        self.input_dim = input_dim
+        self.column_idx = column_idx
+        self.cat_embed_input = cat_embed_input
         self.activation = activation
 
-        mlp_hidden_dims = [
-            model.input_dim,
-            self.num_class * 4,
-            self.num_class,
-        ]
+        self.num_class = sum([ei[1] for ei in cat_embed_input])
 
         self.mlp = MLP(
-            d_hidden=mlp_hidden_dims,
+            d_hidden=[input_dim, self.num_class * 4, self.num_class],
             activation=activation,
             dropout=0.0,
             batchnorm=False,
@@ -32,30 +27,26 @@ class CatSingleMlp(nn.Module):
 
     def forward(self, X: Tensor, r_: Tensor) -> Tuple[Tensor, Tensor]:
 
-        # '-1' because the Label Encoder is designed to leave 0 for unseen
-        #   categories (or padding) during the supervised training. Here we
-        #   are predicting directly the categories, and a categorical target
-        #   has to start from 0
-        x = torch.stack(
-            [
-                X[:, self.column_idx[col]].long() - 1
-                for col, _, _ in self.cat_embed_input
-            ],
-            dim=1,
+        x = torch.cat(
+            [X[:, self.column_idx[col]].long() for col, _ in self.cat_embed_input]
         )
 
-        x_ = self.mlp(r_)
+        cat_r_ = torch.cat(
+            [r_[:, self.column_idx[col], :] for col, _ in self.cat_embed_input]
+        )
+
+        x_ = self.mlp(cat_r_)
 
         return x, x_
 
 
 class CatFeaturesMlp(nn.Module):
-    def __init__(self, model, activation):
+    def __init__(self, input_dim, cat_embed_input, column_idx, activation):
         super(CatFeaturesMlp, self).__init__()
 
-        self.column_idx = model.column_idx
-        self.cat_embed_input = model.cat_embed_input
-
+        self.input_dim = input_dim
+        self.column_idx = column_idx
+        self.cat_embed_input = cat_embed_input
         self.activation = activation
 
         self.mlp = nn.ModuleDict(
@@ -63,7 +54,7 @@ class CatFeaturesMlp(nn.Module):
                 "mlp_"
                 + col: MLP(
                     d_hidden=[
-                        model.input_dim,
+                        input_dim,
                         val * 4,
                         val,
                     ],
@@ -73,43 +64,33 @@ class CatFeaturesMlp(nn.Module):
                     batchnorm_last=False,
                     linear_first=False,
                 )
-                for col, val, _ in model.cat_embed_input
+                for col, val in self.cat_embed_input
             }
         )
 
     def forward(self, X: Tensor, r_: Tensor) -> List[Tuple[Tensor, Tensor]]:
 
-        # '-1' because the Label Encoder is designed to leave 0 for unseen
-        #   categories (or padding) during the supervised training. Here we
-        #   are predicting directly the categories, and a categorical target
-        #   has to start from 0
-        x = [
-            X[:, self.column_idx[col]].long() - 1 for col, _, _ in self.cat_embed_input
-        ]
+        x = [X[:, self.column_idx[col]].long() for col, _ in self.cat_embed_input]
 
         x_ = [
             self.mlp["mlp_" + col](r_[:, self.column_idx[col], :])
-            for col, _, _ in self.cat_embed_input
+            for col, _ in self.cat_embed_input
         ]
 
         return list(zip(x, x_))
 
 
 class ContSingleMlp(nn.Module):
-    def __init__(self, model, activation):
+    def __init__(self, input_dim, continuous_cols, column_idx, activation):
         super(ContSingleMlp, self).__init__()
 
-        self.column_idx = model.column_idx
-        self.continuous_cols = model.continuous_cols
-
+        self.input_dim = input_dim
+        self.column_idx = column_idx
+        self.continuous_cols = continuous_cols
         self.activation = activation
 
         self.mlp = MLP(
-            d_hidden=[
-                model.input_dim,
-                model.input_dim * 2,
-                1,
-            ],
+            d_hidden=[input_dim, input_dim * 2, 1],
             activation=activation,
             dropout=0.0,
             batchnorm=False,
@@ -119,23 +100,26 @@ class ContSingleMlp(nn.Module):
 
     def forward(self, X: Tensor, r_: Tensor) -> Tuple[Tensor, Tensor]:
 
-        x = torch.stack(
-            [X[:, self.column_idx[col]] for col in self.continuous_cols],
-            dim=1,
+        x = torch.cat(
+            [X[:, self.column_idx[col]].float() for col in self.continuous_cols]
+        ).unsqueeze(1)
+
+        cont_r_ = torch.cat(
+            [r_[:, self.column_idx[col], :] for col in self.continuous_cols]
         )
 
-        x_ = self.mlp(r_)
+        x_ = self.mlp(cont_r_)
 
         return x, x_
 
 
 class ContFeaturesMlp(nn.Module):
-    def __init__(self, model, activation):
+    def __init__(self, input_dim, continuous_cols, column_idx, activation):
         super(ContFeaturesMlp, self).__init__()
 
-        self.column_idx = model.column_idx
-        self.continuous_cols = model.continuous_cols
-
+        self.input_dim = input_dim
+        self.column_idx = column_idx
+        self.continuous_cols = continuous_cols
         self.activation = activation
 
         self.mlp = nn.ModuleDict(
@@ -143,8 +127,8 @@ class ContFeaturesMlp(nn.Module):
                 "mlp_"
                 + col: MLP(
                     d_hidden=[
-                        model.input_dim,
-                        model.input_dim * 2,
+                        input_dim,
+                        input_dim * 2,
                         1,
                     ],
                     activation=activation,
@@ -153,7 +137,7 @@ class ContFeaturesMlp(nn.Module):
                     batchnorm_last=False,
                     linear_first=False,
                 )
-                for col in model.continuous_cols
+                for col in self.continuous_cols
             }
         )
 

@@ -12,6 +12,7 @@ from pytorch_widedeep.callbacks import (
     CallbackContainer,
     LRShedulerCallback,
 )
+from pytorch_widedeep.preprocessing.tab_preprocessor import TabPreprocessor
 from pytorch_widedeep.self_supervised_training.self_supervised_model import (
     SelfSupervisedModel,
 )
@@ -21,6 +22,7 @@ class BaseSelfSupervisedTrainer(ABC):
     def __init__(
         self,
         model,
+        preprocessor: TabPreprocessor,
         optimizer: Optional[Optimizer],
         lr_scheduler: Optional[LRScheduler],
         callbacks: Optional[List[Callback]],
@@ -38,6 +40,7 @@ class BaseSelfSupervisedTrainer(ABC):
 
         self.ss_model = SelfSupervisedModel(
             model,
+            preprocessor.label_encoder.encoding_dict,
             loss_type,
             projection_head1_dims,
             projection_head2_dims,

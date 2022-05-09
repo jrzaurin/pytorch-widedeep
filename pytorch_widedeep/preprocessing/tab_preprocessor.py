@@ -292,6 +292,14 @@ class TabPreprocessor(BasePreprocessor):
         return df.copy()[self.continuous_cols]
 
     def _check_inputs(self):
+
+        if self.with_cls_token and not self.with_attention:
+            warnings.warn(
+                "If 'with_cls_token' is set to 'True', 'with_attention' will be automatically ",
+                "to 'True' if is 'False'",
+            )
+            self.with_attention = True
+
         if (self.cat_embed_cols is None) and (self.continuous_cols is None):
             raise ValueError(
                 "'cat_embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."

@@ -50,7 +50,10 @@ if __name__ == "__main__":
     target = df[target].values
 
     tab_preprocessor = TabPreprocessor(
-        cat_embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        with_attention=True,
+        with_cls_token=True,
     )
     X_tab = tab_preprocessor.fit_transform(df)
 
@@ -63,5 +66,10 @@ if __name__ == "__main__":
         mlp_dropout=0.2,
     )
 
-    ss_trainer = SelfSupervisedTrainer(tab_mlp)
+    ss_trainer = SelfSupervisedTrainer(
+        model=tab_mlp,
+        preprocessor=tab_preprocessor,
+        cat_mlp_type="single",
+        cont_mlp_type="single",
+    )
     ss_trainer.pretrain(X_tab, n_epochs=1, batch_size=256)
