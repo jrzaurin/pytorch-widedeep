@@ -14,7 +14,7 @@ class CatSingleMlp(nn.Module):
         self.cat_embed_input = cat_embed_input
         self.activation = activation
 
-        self.num_class = sum([ei[1] for ei in cat_embed_input])
+        self.num_class = sum([ei[1] for ei in cat_embed_input if e[0] != "cls_token"])
 
         self.mlp = MLP(
             d_hidden=[input_dim, self.num_class * 4, self.num_class],
@@ -28,11 +28,19 @@ class CatSingleMlp(nn.Module):
     def forward(self, X: Tensor, r_: Tensor) -> Tuple[Tensor, Tensor]:
 
         x = torch.cat(
-            [X[:, self.column_idx[col]].long() for col, _ in self.cat_embed_input]
+            [
+                X[:, self.column_idx[col]].long()
+                for col, _ in self.cat_embed_input
+                if col != "cls_token"
+            ]
         )
 
         cat_r_ = torch.cat(
-            [r_[:, self.column_idx[col], :] for col, _ in self.cat_embed_input]
+            [
+                r_[:, self.column_idx[col], :]
+                for col, _ in self.cat_embed_input
+                if col != "cls_token"
+            ]
         )
 
         x_ = self.mlp(cat_r_)
@@ -65,16 +73,22 @@ class CatFeaturesMlp(nn.Module):
                     linear_first=False,
                 )
                 for col, val in self.cat_embed_input
+                if col != "cls_token"
             }
         )
 
     def forward(self, X: Tensor, r_: Tensor) -> List[Tuple[Tensor, Tensor]]:
 
-        x = [X[:, self.column_idx[col]].long() for col, _ in self.cat_embed_input]
+        x = [
+            X[:, self.column_idx[col]].long()
+            for col, _ in self.cat_embed_input
+            if col != "cls_token"
+        ]
 
         x_ = [
             self.mlp["mlp_" + col](r_[:, self.column_idx[col], :])
             for col, _ in self.cat_embed_input
+            if col != "cls_token"
         ]
 
         return list(zip(x, x_))
@@ -101,11 +115,19 @@ class ContSingleMlp(nn.Module):
     def forward(self, X: Tensor, r_: Tensor) -> Tuple[Tensor, Tensor]:
 
         x = torch.cat(
-            [X[:, self.column_idx[col]].float() for col in self.continuous_cols]
+            [
+                X[:, self.column_idx[col]].float()
+                for col in self.continuous_cols
+                if col != "cls_token"
+            ]
         ).unsqueeze(1)
 
         cont_r_ = torch.cat(
-            [r_[:, self.column_idx[col], :] for col in self.continuous_cols]
+            [
+                r_[:, self.column_idx[col], :]
+                for col in self.continuous_cols
+                if col != "cls_token"
+            ]
         )
 
         x_ = self.mlp(cont_r_)
@@ -138,6 +160,7 @@ class ContFeaturesMlp(nn.Module):
                     linear_first=False,
                 )
                 for col in self.continuous_cols
+                if col != "cls_token"
             }
         )
 
@@ -146,11 +169,13 @@ class ContFeaturesMlp(nn.Module):
         x = [
             X[:, self.column_idx[col]].unsqueeze(1).float()
             for col in self.continuous_cols
+            if col != "cls_token"
         ]
 
         x_ = [
             self.mlp["mlp_" + col](r_[:, self.column_idx[col]])
             for col in self.continuous_cols
+            if col != "cls_token"
         ]
 
         return list(zip(x, x_))

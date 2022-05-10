@@ -2,7 +2,13 @@ import numpy as np
 import torch
 import pandas as pd
 
-from pytorch_widedeep.models import TabTransformer
+from pytorch_widedeep.models import (
+    SAINT,
+    TabPerceiver,
+    FTTransformer,
+    TabFastFormer,
+    TabTransformer,
+)
 from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.self_supervised_training.self_supervised_trainer import (
@@ -57,19 +63,45 @@ if __name__ == "__main__":
     )
     X_tab = tab_preprocessor.fit_transform(df)
 
-    tab_mlp = TabTransformer(
+    tab_transformer = TabTransformer(
         column_idx=tab_preprocessor.column_idx,
         cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=continuous_cols,
         embed_continuous=True,
-        mlp_hidden_dims=[200, 100],
-        mlp_dropout=0.2,
+        n_blocks=4,
     )
 
-    ss_trainer = SelfSupervisedTrainer(
-        model=tab_mlp,
-        preprocessor=tab_preprocessor,
-        cat_mlp_type="single",
-        cont_mlp_type="single",
+    saint = SAINT(
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
+        continuous_cols=continuous_cols,
+        cont_norm_layer="batchnorm",
+        n_blocks=4,
     )
-    ss_trainer.pretrain(X_tab, n_epochs=1, batch_size=256)
+
+    tab_fastformer = TabFastFormer(
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
+        continuous_cols=continuous_cols,
+        n_blocks=4,
+        n_heads=4,
+        share_qv_weights=False,
+        share_weights=False,
+    )
+
+    ft_transformer = FTTransformer(
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
+        continuous_cols=continuous_cols,
+        input_dim=32,
+        kv_compression_factor=0.5,
+        n_blocks=3,
+        n_heads=4,
+    )
+
+    for transformer_model in [tab_transformer, saint, tab_fastformer, ft_transformer]:
+        ss_trainer = SelfSupervisedTrainer(
+            model=transformer_model,
+            preprocessor=tab_preprocessor,
+        )
+        ss_trainer.pretrain(X_tab, n_epochs=1, batch_size=256)
