@@ -2,10 +2,12 @@ import os
 import sys
 from abc import ABC, abstractmethod
 
+import numpy as np
 import torch
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.losses import InfoNCELoss, DenoisingLoss
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import *  # noqa: F403; noqa: F403
 from pytorch_widedeep.callbacks import (
     History,
     Callback,
@@ -13,15 +15,15 @@ from pytorch_widedeep.callbacks import (
     LRShedulerCallback,
 )
 from pytorch_widedeep.preprocessing.tab_preprocessor import TabPreprocessor
-from pytorch_widedeep.self_supervised_training.self_supervised_model import (
-    SelfSupervisedModel,
+from pytorch_widedeep.models.tabular.self_supervised.contrastive_denoising_model import (
+    ContrastiveDenoisingModel,
 )
 
 
-class BaseSelfSupervisedTrainer(ABC):
+class BaseContrastiveDenoisingTrainer(ABC):
     def __init__(
         self,
-        model,
+        base_model: ModelWithAttention,
         preprocessor: TabPreprocessor,
         optimizer: Optional[Optimizer],
         lr_scheduler: Optional[LRScheduler],
@@ -38,8 +40,15 @@ class BaseSelfSupervisedTrainer(ABC):
         **kwargs,
     ):
 
-        self.ss_model = SelfSupervisedModel(
-            model,
+        self._check_model_is_supported(base_model)
+        self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
+
+        self.early_stop = False
+        self.verbose = verbose
+        self.seed = seed
+
+        self.model = ContrastiveDenoisingModel(
+            base_model,
             preprocessor.label_encoder.encoding_dict,
             loss_type,
             projection_head1_dims,
@@ -49,31 +58,38 @@ class BaseSelfSupervisedTrainer(ABC):
             cont_mlp_type,
             denoise_mlps_activation,
         )
-
-        self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
-
-        self.early_stop = False
-        self.ss_model.to(self.device)
+        self.model.to(self.device)
 
         self.loss_type = loss_type
         self._set_loss_fn(**kwargs)
-
-        self.verbose = verbose
-        self.seed = seed
-
         self.optimizer = (
             optimizer
             if optimizer is not None
-            else torch.optim.AdamW(self.ss_model.parameters())
+            else torch.optim.AdamW(self.model.parameters())
         )
-        self.lr_scheduler = self._set_lr_scheduler_running_params(
-            lr_scheduler, **kwargs
-        )
+        self.lr_scheduler = self._set_lr_scheduler_running_params(lr_scheduler)
         self._set_callbacks(callbacks)
 
     @abstractmethod
-    def pretrain(self):
-        pass
+    def pretrain(
+        self,
+        X_tab: np.ndarray,
+        X_val: Optional[np.ndarray],
+        val_split: Optional[float],
+        validation_freq: int,
+        n_epochs: int,
+        batch_size: int,
+    ):
+        raise NotImplementedError("Trainer.pretrain method not implemented")
+
+    @abstractmethod
+    def save(
+        self,
+        path: str,
+        save_state_dict: bool,
+        model_filename: str,
+    ):
+        raise NotImplementedError("Trainer.save method not implemented")
 
     def _set_loss_fn(self, **kwargs):
 
@@ -102,7 +118,29 @@ class BaseSelfSupervisedTrainer(ABC):
 
         return contrastive_loss + denoising_loss
 
+    def _set_reduce_on_plateau_criterion(
+        self, lr_scheduler, reducelronplateau_criterion
+    ):
+
+        self.reducelronplateau = False
+
+        if isinstance(lr_scheduler, ReduceLROnPlateau):
+            self.reducelronplateau = True
+
+        if self.reducelronplateau and not reducelronplateau_criterion:
+            UserWarning(
+                "The learning rate scheduler is of type ReduceLROnPlateau. The step method in this"
+                " scheduler requires a 'metrics' param that can be either the validation loss or the"
+                " validation metric. Please, when instantiating the Trainer, specify which quantity"
+                " will be tracked using reducelronplateau_criterion = 'loss' (default) or"
+                " reducelronplateau_criterion = 'metric'"
+            )
+        else:
+            self.reducelronplateau_criterion = "loss"
+
     def _set_lr_scheduler_running_params(self, lr_scheduler, **kwargs):
+        reducelronplateau_criterion = kwargs.get("reducelronplateau_criterion", None)
+        self._set_reduce_on_plateau_criterion(lr_scheduler, reducelronplateau_criterion)
         if lr_scheduler is not None:
             self.cyclic_lr = "cycl" in lr_scheduler.__class__.__name__.lower()
         else:
@@ -116,7 +154,7 @@ class BaseSelfSupervisedTrainer(ABC):
                     callback = callback()
                 self.callbacks.append(callback)
         self.callback_container = CallbackContainer(self.callbacks)
-        self.callback_container.set_model(self.ss_model)
+        self.callback_container.set_model(self.model)
         self.callback_container.set_trainer(self)
 
     def _restore_best_weights(self):
@@ -139,7 +177,7 @@ class BaseSelfSupervisedTrainer(ABC):
                             print(
                                 f"Model weights restored to best epoch: {callback.best_epoch + 1}"
                             )
-                        self.ss_model.load_state_dict(callback.best_state_dict)
+                        self.model.load_state_dict(callback.best_state_dict)
                     else:
                         if self.verbose:
                             print(
@@ -160,3 +198,16 @@ class BaseSelfSupervisedTrainer(ABC):
         device = kwargs.get("device", default_device)
         num_workers = kwargs.get("num_workers", default_num_workers)
         return device, num_workers
+
+    @staticmethod
+    def _check_model_is_supported(model: ModelWithAttention):
+
+        if model.__class__.__name__ == "TabPerceiver":
+            raise ValueError(
+                "Self-Supervised pretraining is not supported for the 'TabPerceiver'"
+            )
+        if model.__class__.__name__ == "TabTransformer" and not model.embed_continuous:
+            raise ValueError(
+                "Self-Supervised pretraining is only supported if both categorical and "
+                "continuum columns are embedded. Please set 'embed_continuous = True'"
+            )

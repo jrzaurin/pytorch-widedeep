@@ -4,6 +4,7 @@ from torch import nn
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tabular.tabnet._layers import (
     TabNetEncoder,
+    FeatTransformer,
     initialize_non_glu,
 )
 from pytorch_widedeep.models.tabular._base_tabular_model import (
@@ -189,9 +190,11 @@ class TabNet(BaseTabularModelWithoutAttention):
             mask_type,
         )
 
-    def forward(self, X: Tensor) -> Tuple[Tensor, Tensor]:
+    def forward(
+        self, X: Tensor, prior: Optional[Tensor] = None
+    ) -> Tuple[Tensor, Tensor]:
         x = self._get_embeddings(X)
-        steps_output, M_loss = self.encoder(x)
+        steps_output, M_loss = self.encoder(x, prior)
         res = torch.sum(torch.stack(steps_output, dim=0), dim=0)
         return (res, M_loss)
 
@@ -223,3 +226,78 @@ class TabNetPredLayer(nn.Module):
     def forward(self, tabnet_tuple: Tuple[Tensor, Tensor]) -> Tuple[Tensor, Tensor]:
         res, M_loss = tabnet_tuple[0], tabnet_tuple[1]
         return self.pred_layer(res), M_loss
+
+
+class TabNetDecoder(nn.Module):
+    def __init__(
+        self,
+        embed_dim: int,
+        n_steps: int = 3,
+        step_dim: int = 8,
+        attn_dim: int = 8,
+        dropout: float = 0.0,
+        n_glu_step_dependent: int = 2,
+        n_glu_shared: int = 2,
+        ghost_bn: bool = True,
+        virtual_batch_size: int = 128,
+        momentum: float = 0.02,
+        gamma: float = 1.3,
+        epsilon: float = 1e-15,
+        mask_type: str = "sparsemax",
+    ):
+        super(TabNetDecoder, self).__init__()
+
+        self.n_steps = n_steps
+        self.step_dim = step_dim
+        self.attn_dim = attn_dim
+        self.dropout = dropout
+        self.n_glu_step_dependent = n_glu_step_dependent
+        self.n_glu_shared = n_glu_shared
+        self.ghost_bn = ghost_bn
+        self.virtual_batch_size = virtual_batch_size
+        self.momentum = momentum
+        self.gamma = gamma
+        self.epsilon = epsilon
+        self.mask_type = mask_type
+
+        shared_layers = nn.ModuleList()
+        for i in range(n_glu_shared):
+            if i == 0:
+                shared_layers.append(
+                    nn.Linear(embed_dim, 2 * (step_dim + attn_dim), bias=False)
+                )
+            else:
+                shared_layers.append(
+                    nn.Linear(
+                        step_dim + attn_dim, 2 * (step_dim + attn_dim), bias=False
+                    )
+                )
+
+        self.feat_transformers = nn.ModuleList()
+        for step in range(n_steps):
+            transformer = FeatTransformer(
+                embed_dim,
+                embed_dim,
+                dropout,
+                shared_layers,
+                n_glu_step_dependent,
+                ghost_bn,
+                virtual_batch_size,
+                momentum=momentum,
+            )
+            self.feat_transformers.append(transformer)
+
+        self.reconstruction_layer = nn.Linear(step_dim, embed_dim, bias=False)
+        initialize_non_glu(self.reconstruction_layer, step_dim, embed_dim)
+
+    def forward(self, X):
+        out = 0.0
+        for i, x in enumerate(X):
+            x = self.feat_transformers[step_nb](x)
+            out = torch.add(out, x)
+        out = self.reconstruction_layer(out)
+        return out
+
+    def forward_masks(self, X: Tensor) -> Tuple[Tensor, Dict[int, Tensor]]:
+        x = self._get_embeddings(X)
+        return self.encoder.forward_masks(x)

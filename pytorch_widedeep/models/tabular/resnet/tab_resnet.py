@@ -1,3 +1,5 @@
+from torch import nn
+
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.resnet._layers import DenseResnet
@@ -204,3 +206,65 @@ class TabResnet(BaseTabularModelWithoutAttention):
             if self.mlp_hidden_dims is not None
             else self.blocks_dims[-1]
         )
+
+
+class TabResnetDecoder(nn.Module):
+    def __init__(
+        self,
+        embed_dim: int,
+        blocks_dims: List[int] = [100, 100, 200],
+        blocks_dropout: float = 0.1,
+        simplify_blocks: bool = False,
+        mlp_hidden_dims: Optional[List[int]] = None,
+        mlp_activation: str = "relu",
+        mlp_dropout: float = 0.1,
+        mlp_batchnorm: bool = False,
+        mlp_batchnorm_last: bool = False,
+        mlp_linear_first: bool = False,
+    ):
+        super(TabResnetDecoder, self).__init__()
+
+        if len(blocks_dims) < 2:
+            raise ValueError(
+                "'blocks' must contain at least two elements, e.g. [256, 128]"
+            )
+
+        self.embed_dim = embed_dim
+
+        self.blocks_dims = blocks_dims
+        self.blocks_dropout = blocks_dropout
+        self.simplify_blocks = simplify_blocks
+
+        self.mlp_hidden_dims = mlp_hidden_dims
+        self.mlp_activation = mlp_activation
+        self.mlp_dropout = mlp_dropout
+        self.mlp_batchnorm = mlp_batchnorm
+        self.mlp_batchnorm_last = mlp_batchnorm_last
+        self.mlp_linear_first = mlp_linear_first
+
+        if self.mlp_hidden_dims is not None:
+            self.mlp = MLP(
+                mlp_hidden_dims,
+                mlp_activation,
+                mlp_dropout,
+                mlp_batchnorm,
+                mlp_batchnorm_last,
+                mlp_linear_first,
+            )
+        else:
+            self.mlp = None
+
+        if self.mlp is not None:
+            self.decoder = DenseResnet(
+                mlp_hidden_dims[-1], blocks_dims, blocks_dropout, self.simplify_blocks
+            )
+        else:
+            self.decoder = DenseResnet(
+                blocks_dims[0], blocks_dims, blocks_dropout, self.simplify_blocks
+            )
+
+        self.reconstruction_layer = nn.Linear(blocks_dims[-1], embed_dim, bias=False)
+
+    def forward(self, X: Tensor) -> Tensor:
+        x = self.mlp(X) if self.mlp is not None else X
+        return self.reconstruction_layer(self.decoder(x))

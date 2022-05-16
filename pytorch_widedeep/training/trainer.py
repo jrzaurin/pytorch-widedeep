@@ -21,7 +21,7 @@ from pytorch_widedeep.initializers import Initializer
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
-from pytorch_widedeep.training._base_trainers import BaseTrainer
+from pytorch_widedeep.training._base_trainer import BaseTrainer
 from pytorch_widedeep.training._trainer_utils import (
     save_epoch_logs,
     wd_train_val_split,

@@ -71,7 +71,7 @@ from torchvision.transforms import (
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.utils.data.dataloader import DataLoader
 
-from pytorch_widedeep.models import WideDeep
+from pytorch_widedeep.models import *
 from pytorch_widedeep.models.tabular.tabnet.sparsemax import (
     Entmax15,
     Sparsemax,
@@ -122,3 +122,15 @@ Transforms = Union[
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
 NormLayers = Union[torch.nn.Identity, torch.nn.LayerNorm, torch.nn.BatchNorm1d]
+
+ModelWithAttention = Union[
+    TabTransformer,
+    SAINT,
+    FTTransformer,
+    TabFastFormer,
+    TabPerceiver,
+    ContextAttentionMLP,
+    SelfAttentionMLP,
+]
+
+ModelWithoutAttention = Union[TabMlp, TabResnet, TabNet]

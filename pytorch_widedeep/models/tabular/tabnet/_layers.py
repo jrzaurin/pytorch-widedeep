@@ -294,11 +294,14 @@ class TabNetEncoder(nn.Module):
             self.feat_transformers.append(feat_transformer)
             self.attn_transformers.append(attn_transformer)
 
-    def forward(self, X: Tensor) -> Tuple[List[Tensor], Tensor]:
+    def forward(
+        self, X: Tensor, prior: Optional[Tensor] = None
+    ) -> Tuple[List[Tensor], Tensor]:
         x = self.initial_bn(X)
 
-        # P[n_step = 0] is initialized as all ones, 1^(B×D)
-        prior = torch.ones(x.shape).to(x.device)
+        if prior is None:
+            # P[n_step = 0] is initialized as all ones, 1^(B×D)
+            prior = torch.ones(x.shape).to(x.device)
 
         # sparsity regularization
         M_loss = torch.FloatTensor([0.0]).to(x.device)

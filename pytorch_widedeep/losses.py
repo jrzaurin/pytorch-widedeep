@@ -901,3 +901,29 @@ class DenoisingLoss(nn.Module):
             loss_cont += F.mse_loss(x_, x, reduction=self.reduction)
 
         return loss_cont
+
+
+class EncoderDecoderLoss(object):
+    def __init__(self, eps=1e-9):
+        super(EncoderDecoderLoss, self).__init__()
+        self.eps = eps
+
+    def forward(x_true, x_pred, mask):
+
+        errors = x_pred - x_true
+
+        reconstruction_errors = torch.mul(errors, mask) ** 2
+
+        x_true_means = torch.mean(x_true, dim=0)
+        x_true_means[x_true_means == 0] = 1
+
+        x_true_stds = torch.std(x_true, dim=0) ** 2
+        x_true_stds[x_true_stds == 0] = x_true_means[x_true_stds == 0]
+
+        features_loss = torch.matmul(reconstruction_errors, 1 / x_true_stds)
+        nb_reconstructed_variables = torch.sum(mask, dim=1)
+        features_loss_norm = features_loss / (nb_reconstructed_variables + eps)
+
+        loss = torch.mean(features_loss_norm)
+
+        return loss

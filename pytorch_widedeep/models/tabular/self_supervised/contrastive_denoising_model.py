@@ -2,22 +2,22 @@ from torch import Tensor, nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
-from pytorch_widedeep.self_supervised_training._denoise_mlps import (
+from pytorch_widedeep.models.tabular.self_supervised._denoise_mlps import (
     CatSingleMlp,
     ContSingleMlp,
     CatFeaturesMlp,
     ContFeaturesMlp,
 )
-from pytorch_widedeep.self_supervised_training._augmentations import (
+from pytorch_widedeep.models.tabular.self_supervised._augmentations import (
     mix_up,
     cut_mix,
 )
 
 
-class SelfSupervisedModel(nn.Module):
+class ContrastiveDenoisingModel(nn.Module):
     def __init__(
         self,
-        model: nn.Module,
+        model: ModelWithAttention,
         encoding_dict: Dict[str, Dict[str, int]],
         loss_type: Literal["contrastive", "denoising", "both"],
         projection_head1_dims: Optional[List],
@@ -27,7 +27,7 @@ class SelfSupervisedModel(nn.Module):
         cont_mlp_type: Literal["single", "multiple"],
         denoise_mlps_activation: str,
     ):
-        super(SelfSupervisedModel, self).__init__()
+        super(ContrastiveDenoisingModel, self).__init__()
 
         self.model = model
         self.loss_type = loss_type
@@ -55,19 +55,22 @@ class SelfSupervisedModel(nn.Module):
         Optional[Tuple[Tensor, Tensor]],
     ]:
 
-        # "uncorrupted branch"
+        # "uncorrupted" branch
         embed = self.model._get_embeddings(X)
         if self.model.with_cls_token:
             embed[:, 0, :] = 0.0
         encoded = self.model.encoder(embed)
 
-        # cut_mix and mix_up branch
-        cut_mixed = cut_mix(X)
-        cut_mixed_embed = self.model._get_embeddings(cut_mixed)
-        if self.model.with_cls_token:
-            cut_mixed_embed[:, 0, :] = 0.0
-        cut_mixed_embed_mixed_up = mix_up(cut_mixed_embed)
-        encoded_ = self.model.encoder(cut_mixed_embed_mixed_up)
+        # cut_mixed and mixed_up branch
+        if self.training:
+            cut_mixed = cut_mix(X)
+            cut_mixed_embed = self.model._get_embeddings(cut_mixed)
+            if self.model.with_cls_token:
+                cut_mixed_embed[:, 0, :] = 0.0
+            cut_mixed_embed_mixed_up = mix_up(cut_mixed_embed)
+            encoded_ = self.model.encoder(cut_mixed_embed_mixed_up)
+        else:
+            encoded_ = encoded.clone()
 
         # projections for constrastive loss
         if self.loss_type in ["contrastive", "both"]:

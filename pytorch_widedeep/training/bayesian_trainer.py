@@ -12,11 +12,13 @@ from pytorch_widedeep.metrics import Metric
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.utils.general_utils import Alias
-from pytorch_widedeep.training._base_trainers import BaseBayesianTrainer
 from pytorch_widedeep.training._trainer_utils import (
     save_epoch_logs,
     print_loss_and_metric,
     tabular_train_val_split,
+)
+from pytorch_widedeep.training._base_bayesian_trainer import (
+    BaseBayesianTrainer,
 )
 from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BaseBayesianModel,
@@ -128,7 +130,7 @@ class BayesianTrainer(BaseBayesianTrainer):
         target_val: Optional[np.ndarray] = None,
         val_split: Optional[float] = None,
         n_epochs: int = 1,
-        val_freq: int = 1,
+        validation_freq: int = 1,
         batch_size: int = 32,
         n_train_samples: int = 2,
         n_val_samples: int = 2,
@@ -202,7 +204,9 @@ class BayesianTrainer(BaseBayesianTrainer):
             epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
 
             on_epoch_end_metric = None
-            if eval_set is not None and epoch % val_freq == (val_freq - 1):
+            if eval_set is not None and epoch % validation_freq == (
+                validation_freq - 1
+            ):
                 self.callback_container.on_eval_begin()
                 self.valid_running_loss = 0.0
                 with trange(eval_steps, disable=self.verbose != 1) as v:

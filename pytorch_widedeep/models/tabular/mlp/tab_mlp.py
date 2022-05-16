@@ -1,3 +1,5 @@
+from torch import nn
+
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular._base_tabular_model import (
@@ -152,3 +154,45 @@ class TabMlp(BaseTabularModelWithoutAttention):
     @property
     def output_dim(self):
         return self.mlp_hidden_dims[-1]
+
+
+# This is a companion Decoder for the TabMlp. We prefer not to refer to the
+# 'TabMlp' model as 'TabMlpEncoder' (despite the fact that is indeed an
+#  encoder) for two reasons: 1. For convenience accross the library and 2.
+#  Because decoders are only going to be used in one of our implementations
+#  of Self Supervised pretraining, and we prefer to keep the names of
+#  the 'general' DL models as they are (e.g. TabMlp) as opposed as carry
+#  the 'Encoder' description (e.g. TabMlpEncoder) throughout the library
+class TabMlpDecoder(nn.Module):
+    def __init__(
+        self,
+        embed_dim: int,
+        mlp_hidden_dims: List[int] = [100, 200],
+        mlp_activation: str = "relu",
+        mlp_dropout: Union[float, List[float]] = 0.1,
+        mlp_batchnorm: bool = False,
+        mlp_batchnorm_last: bool = False,
+        mlp_linear_first: bool = False,
+    ):
+        super(TabMlpDecoder, self).__init__()
+
+        self.embed_dim = embed_dim
+
+        self.mlp_hidden_dims = mlp_hidden_dims
+        self.mlp_activation = mlp_activation
+        self.mlp_dropout = mlp_dropout
+        self.mlp_batchnorm = mlp_batchnorm
+        self.mlp_batchnorm_last = mlp_batchnorm_last
+        self.mlp_linear_first = mlp_linear_first
+
+        self.decoder = MLP(
+            mlp_hidden_dims + [self.embed_dim],
+            mlp_activation,
+            mlp_dropout,
+            mlp_batchnorm,
+            mlp_batchnorm_last,
+            mlp_linear_first,
+        )
+
+    def forward(self, X: Tensor) -> Tensor:
+        return self.decoder(X)
