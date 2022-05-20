@@ -4,8 +4,6 @@ from pathlib import Path
 import numpy as np
 import torch
 from tqdm import trange
-from torch import nn
-from scipy.sparse import csc_matrix
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
 
@@ -24,13 +22,13 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
     def __init__(
         self,
         encoder: ModelWithoutAttention,
-        decoder: nn.Module,
-        masked_prob: float,
-        optimizer: Optional[Optimizer],
-        lr_scheduler: Optional[LRScheduler],
-        callbacks: Optional[List[Callback]],
-        verbose: int,
-        seed: int,
+        decoder: Optional[DecoderWithoutAttention] = None,
+        masked_prob: float = 0.2,
+        optimizer: Optional[Optimizer] = None,
+        lr_scheduler: Optional[LRScheduler] = None,
+        callbacks: Optional[List[Callback]] = None,
+        verbose: int = 1,
+        seed: int = 1,
         **kwargs,
     ):
         super().__init__(
@@ -117,7 +115,7 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
 
         self.callback_container.on_train_end(epoch_logs)
         self._restore_best_weights()
-        self.model.train()
+        self.ed_model.train()
 
     def save(
         self,
@@ -142,57 +140,21 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
 
         model_path = save_dir / model_filename
         if save_state_dict:
-            torch.save(self.model.state_dict(), model_path)
+            torch.save(self.ed_model.state_dict(), model_path)
         else:
-            torch.save(self.model, model_path)
+            torch.save(self.ed_model, model_path)
 
     def explain(self, X_tab: np.ndarray, save_step_masks: bool = False):
-        # TO DO: Adjust this to Self Supervised (e.g. no need of data["deeptabular"])
-        loader = DataLoader(
-            dataset=self._train_eval_split(X_tab),
-            batch_size=self.batch_size,
-            num_workers=self.num_workers,
-            shuffle=False,
+        raise NotImplementedError(
+            "The 'explain' is currently not implemented for Self Supervised Pretraining"
         )
-
-        self.model.eval()
-        tabnet_backbone = list(self.encoder.children())[0]
-
-        m_explain_l = []
-        for batch_nb, data in enumerate(loader):
-            X = data["deeptabular"].to(self.device)
-            M_explain, masks = tabnet_backbone.forward_masks(X)
-            m_explain_l.append(
-                csc_matrix.dot(M_explain.cpu().detach().numpy(), self.reducing_matrix)
-            )
-            if save_step_masks:
-                for key, value in masks.items():
-                    masks[key] = csc_matrix.dot(
-                        value.cpu().detach().numpy(), self.reducing_matrix
-                    )
-                if batch_nb == 0:
-                    m_explain_step = masks
-                else:
-                    for key, value in masks.items():
-                        m_explain_step[key] = np.vstack([m_explain_step[key], value])
-
-        m_explain_agg = np.vstack(m_explain_l)
-        m_explain_agg_norm = m_explain_agg / m_explain_agg.sum(axis=1)[:, np.newaxis]
-
-        res = (
-            (m_explain_agg_norm, m_explain_step)
-            if save_step_masks
-            else np.vstack(m_explain_agg_norm)
-        )
-
-        return res
 
     def _train_step(self, X_tab: Tensor, batch_idx: int):
 
         X = X_tab.to(self.device)
 
         self.optimizer.zero_grad()
-        x_embed, x_embed_rec, mask = self.model(X)
+        x_embed, x_embed_rec, mask = self.ed_model(X)
         loss = self.loss_fn(x_embed, x_embed_rec, mask)
         loss.backward()
         self.optimizer.step()
@@ -204,12 +166,12 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
 
     def _eval_step(self, X_tab: Tensor, batch_idx: int):
 
-        self.model.eval()
+        self.ed_model.eval()
 
         with torch.no_grad():
             X = X_tab.to(self.device)
 
-            x_embed, x_embed_rec, mask = self.model(X)
+            x_embed, x_embed_rec, mask = self.ed_model(X)
             loss = self.loss_fn(x_embed, x_embed_rec, mask)
 
             self.valid_running_loss += loss.item()

@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import torch
-from torch import nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.losses import EncoderDecoderLoss
@@ -15,16 +14,14 @@ from pytorch_widedeep.callbacks import (
     CallbackContainer,
     LRShedulerCallback,
 )
-from pytorch_widedeep.self_supervised_training.self_supervised_models import (
-    EncoderDecoderModel,
-)
+from pytorch_widedeep.models.tabular.self_supervised import EncoderDecoderModel
 
 
 class BaseEncoderDecoderTrainer(ABC):
     def __init__(
         self,
         encoder: ModelWithoutAttention,
-        decoder: nn.Module,
+        decoder: DecoderWithoutAttention,
         masked_prob: float,
         optimizer: Optional[Optimizer],
         lr_scheduler: Optional[LRScheduler],
@@ -34,24 +31,24 @@ class BaseEncoderDecoderTrainer(ABC):
         **kwargs,
     ):
 
-        # self._check_model_is_supported(encoder)
         self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
 
         self.early_stop = False
         self.verbose = verbose
         self.seed = seed
 
-        self.model = EncoderDecoderModel(
+        self.ed_model = EncoderDecoderModel(
             encoder,
             decoder,
             masked_prob,
         )
-        self.model.to(self.device)
+        self.ed_model.to(self.device)
+
         self.loss_fn = EncoderDecoderLoss()
         self.optimizer = (
             optimizer
             if optimizer is not None
-            else torch.optim.AdamW(self.model.parameters())
+            else torch.optim.AdamW(self.ed_model.parameters())
         )
         self.lr_scheduler = self._set_lr_scheduler_running_params(lr_scheduler)
         self._set_callbacks(callbacks)
@@ -113,7 +110,7 @@ class BaseEncoderDecoderTrainer(ABC):
                     callback = callback()
                 self.callbacks.append(callback)
         self.callback_container = CallbackContainer(self.callbacks)
-        self.callback_container.set_model(self.model)
+        self.callback_container.set_model(self.ed_model)
         self.callback_container.set_trainer(self)
 
     def _restore_best_weights(self):
@@ -136,7 +133,7 @@ class BaseEncoderDecoderTrainer(ABC):
                             print(
                                 f"Model weights restored to best epoch: {callback.best_epoch + 1}"
                             )
-                        self.model.load_state_dict(callback.best_state_dict)
+                        self.ed_model.load_state_dict(callback.best_state_dict)
                     else:
                         if self.verbose:
                             print(

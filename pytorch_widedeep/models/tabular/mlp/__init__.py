@@ -1,4 +1,4 @@
-from pytorch_widedeep.models.tabular.mlp.tab_mlp import TabMlp
+from pytorch_widedeep.models.tabular.mlp.tab_mlp import TabMlp, TabMlpDecoder
 from pytorch_widedeep.models.tabular.mlp.self_attention_mlp import (
     SelfAttentionMLP,
 )

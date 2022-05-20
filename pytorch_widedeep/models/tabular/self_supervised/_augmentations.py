@@ -1,3 +1,10 @@
+"""
+The following two functions are based on those in the SAINT repo
+(https://github.com/somepago/saint) and code here:
+
+- CutMix: https://github.com/clovaai/CutMix-PyTorch
+- MixUp: https://github.com/facebookresearch/mixup-cifar10
+"""
 import numpy as np
 import torch
 
@@ -10,7 +17,7 @@ def mix_up(p: Tensor, lam: float = 0.8) -> Tensor:
 
     rand_idx = torch.randperm(batch_size).to(p.device)
 
-    p_ = lam * p + (1 - lam) * p[rand_idx, :]
+    p_ = lam * p + (1 - lam) * p[rand_idx, ...]
 
     return p_
 

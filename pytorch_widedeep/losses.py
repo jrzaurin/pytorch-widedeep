@@ -821,6 +821,23 @@ class HuberLoss(nn.Module):
 
 
 class InfoNCELoss(nn.Module):
+    r"""InfoNCE Loss
+
+    See `SAINT: Improved Neural Networks for Tabular Data via Row Attention
+    and Contrastive Pre-Training <https://arxiv.org/abs/2106.01342>`_ and
+    references therein
+
+    Partially inspired by the code in this `repo
+    <https://github.com/RElbers/info-nce-pytorch>`_
+
+    Parameters:
+    -----------
+    temperature: float, default = 0.1
+        The logits are divided by the temperature before computing the loss value
+    reduction: str, default = "mean"
+        Loss reduction method
+    """
+
     def __init__(self, temperature: float = 0.1, reduction: str = "mean"):
 
         super(InfoNCELoss, self).__init__()
@@ -829,7 +846,22 @@ class InfoNCELoss(nn.Module):
         self.reduction = reduction
 
     def forward(self, g_projs: Tuple[Tensor, Tensor]) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        g_projs: Tuple
+            Tuple with the two tensors corresponding to the output of the two
+            projection heads, as described 'SAINT: Improved Neural Networks
+            for Tabular Data via Row Attention and Contrastive Pre-Training'.
 
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import InfoNCELoss
+        >>> g_projs = (torch.rand(5, 5), torch.rand(5, 5))
+        >>> loss = InfoNCELoss()
+        >>> res = loss(g_projs)
+        """
         z, z_ = g_projs[0], g_projs[1]
 
         norm_z = F.normalize(z, dim=-1).flatten(1)
@@ -848,7 +880,27 @@ class InfoNCELoss(nn.Module):
 
 
 class DenoisingLoss(nn.Module):
-    def __init__(self, lambda_cat: float, lambda_cont: float, reduction: str = "mean"):
+    r"""Denoising Loss
+
+    See `SAINT: Improved Neural Networks for Tabular Data via Row Attention
+    and Contrastive Pre-Training <https://arxiv.org/abs/2106.01342>`_ and
+    references therein
+
+    Parameters:
+    -----------
+    lambda_cat: float, default = 1.
+        Multiplicative factor that will be applied to loss associated to the
+        categorical features
+    lambda_cont: float, default = 1.
+        Multiplicative factor that will be applied to loss associated to the
+        continuous features
+    reduction: str, default = "mean"
+        Loss reduction method
+    """
+
+    def __init__(
+        self, lambda_cat: float = 1.0, lambda_cont: float = 1.0, reduction: str = "mean"
+    ):
         super(DenoisingLoss, self).__init__()
 
         self.lambda_cat = lambda_cat
@@ -864,6 +916,27 @@ class DenoisingLoss(nn.Module):
             Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
         ],
     ) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        x_cat_and_cat_: tuple of Tensors or lists of tuples
+            Tuple of tensors containing the raw input features and their
+            encodings, referred in the SAINT paper as :math:x` and :math:x''`
+            respectively. If one denoising MLP is used per categorical
+            feature 'x_cat_and_cat_' will be a list of tuples, one per
+            categorical feature
+        x_cont_and_cont_: tuple of Tensors or lists of tuples
+            same as 'x_cat_and_cat_' but for continuous columns
+
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import DenoisingLoss
+        >>> x_cat_and_cat_ = (torch.randn(3, 3), torch.empty(3).random_(3).long())
+        >>> x_cont_and_cont_ = (torch.randn(3, 1), torch.randn(3, 1))
+        >>> loss = DenoisingLoss()
+        >>> res = loss(x_cat_and_cat_, x_cont_and_cont_)
+        """
 
         loss_cat = (
             self._compute_cat_loss(x_cat_and_cat_)
@@ -903,12 +976,46 @@ class DenoisingLoss(nn.Module):
         return loss_cont
 
 
-class EncoderDecoderLoss(object):
-    def __init__(self, eps=1e-9):
+class EncoderDecoderLoss(nn.Module):
+    r"""Loss applied for the Endoder-Decoder Self Supervised pretraining process
+
+    The implementation of this lost is based on that at the
+    https://github.com/dreamquark-ai/tabnet repo, which is in itself an
+    adaptation of that in the original TabNet paper: `TabNet: Attentive
+    Interpretable Tabular Learning <https://arxiv.org/abs/1908.07442>`_.
+
+    Parameters:
+    -----------
+    eps: float
+        Simply a small number to avoid dividing by zero
+    """
+
+    def __init__(self, eps: float = 1e-9):
         super(EncoderDecoderLoss, self).__init__()
         self.eps = eps
 
-    def forward(x_true, x_pred, mask):
+    def forward(self, x_true: Tensor, x_pred: Tensor, mask: Tensor) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        x_true: Tensor
+            Embeddings of the input data
+        x_pred: Tensor
+            Reconstructed embeddings
+        mask: Tensor
+            Mask with 1s indicated that the reconstruction, and therefore the
+            loss, is based on those features.
+
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import EncoderDecoderLoss
+        >>> x_true = torch.rand(3, 3)
+        >>> x_pred = torch.rand(3, 3)
+        >>> mask = torch.empty(3, 3).random_(2)
+        >>> loss = EncoderDecoderLoss()
+        >>> res = loss(x_true, x_pred, mask)
+        """
 
         errors = x_pred - x_true
 
@@ -922,7 +1029,7 @@ class EncoderDecoderLoss(object):
 
         features_loss = torch.matmul(reconstruction_errors, 1 / x_true_stds)
         nb_reconstructed_variables = torch.sum(mask, dim=1)
-        features_loss_norm = features_loss / (nb_reconstructed_variables + eps)
+        features_loss_norm = features_loss / (nb_reconstructed_variables + self.eps)
 
         loss = torch.mean(features_loss_norm)
 

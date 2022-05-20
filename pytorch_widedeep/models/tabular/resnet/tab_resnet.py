@@ -209,6 +209,72 @@ class TabResnet(BaseTabularModelWithoutAttention):
 
 
 class TabResnetDecoder(nn.Module):
+    r"""Companion decoder model for the ``TabResnet`` model (which can be
+    considered an encoder itself)
+
+    This class will receive the output from the ResNet blocks or the MLP
+    (if present) and 'reconstruct' the embeddings from the embeddings layer
+    in the ``TabResnet`` model.
+
+    Parameters
+    ----------
+    embed_dim: int
+        Size of the embeddings tensor to be reconstructed.
+    blocks_dims: List, default = [200, 100, 100]
+        List of integers that define the input and output units of each block.
+        For example: [200, 100, 100] will generate 2 blocks. The first will
+        receive a tensor of size 200 and output a tensor of size 100, and the
+        second will receive a tensor of size 100 and output a tensor of size
+        100. See :obj:`pytorch_widedeep.models.tab_resnet._layers` for
+        details on the structure of each block.
+    blocks_dropout: float, default =  0.1
+       Block's `"internal"` dropout.
+    simplify_blocks: bool, default = False,
+        Boolean indicating if the simplest possible residual blocks (``X -> [
+        [LIN, BN, ACT]  + X ]``) will be used instead of a standard one
+        (``X -> [ [LIN1, BN1, ACT1] -> [LIN2, BN2]  + X ]``).
+    mlp_hidden_dims: List, Optional, default = None
+        List with the number of neurons per dense layer in the MLP. e.g:
+        [64, 32]. If ``None`` the  output of the Resnet Blocks will be
+        connected directly to the output neuron(s), i.e. using a MLP is
+        optional.
+    mlp_activation: str, default = "relu"
+        Activation function for the dense layers of the MLP. Currently
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+    mlp_dropout: float, default = 0.1
+        float with the dropout between the dense layers of the MLP.
+    mlp_batchnorm: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the dense layers
+    mlp_batchnorm_last: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the last of the dense layers
+    mlp_linear_first: bool, default = False
+        Boolean indicating the order of the operations in the dense
+        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+        LIN -> ACT]``
+
+    Attributes
+    ----------
+    decoder: ``nn.Sequential``
+        deep dense Resnet model that will receive the output of the encoder IF
+        ``mlp_hidden_dims`` is None
+    mlp: ``nn.Sequential``
+        if ``mlp_hidden_dims`` is not None, the overall decoding will consist
+        in an MLP that will receive the output of the encoder followed by the
+        deep dense Resnet.
+
+    Example
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import TabResnetDecoder
+    >>> x_inp = torch.rand(3, 8)
+    >>> decoder = TabResnetDecoder(embed_dim=32, blocks_dims=[8, 16, 16])
+    >>> res = decoder(x_inp)
+    >>> res.shape
+    torch.Size([3, 32])
+    """
+
     def __init__(
         self,
         embed_dim: int,

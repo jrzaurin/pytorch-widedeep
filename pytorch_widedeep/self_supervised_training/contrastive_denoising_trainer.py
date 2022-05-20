@@ -20,9 +20,69 @@ from pytorch_widedeep.self_supervised_training._base_contrastive_denoising_train
 
 
 class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
+    r"""This Class trains a Contrastive, Denoising Self Supervised 'routine' that
+    is based on the one described in "SAINT: Improved Neural Networks for
+    Tabular Data via Row Attention and Contrastive Pre-Training", their
+    Figure 1.
+
+    Parameters:
+    -----------
+    model: ModelWithAttention,
+        ``ModelWithAttention`` object. Namely a model of class
+        ``TabTransformer``, ``SAINT``, ``FTTransformer``, ``TabFastFormer``,
+        ``TabPerceiver``, ``ContextAttentionMLP`` and ``SelfAttentionMLP``.
+    preprocessor: ``TabPreprocessor``
+        A fitted TabPreprocessor object. See
+        :obj:`pytorch_widedeep.preprocessing.tab_preprocessor.TabPreprocessor`
+    optimizer: ``Optimzer``, optional, default= None
+        An instance of Pytorch's ``Optimizer`` object
+        (e.g. :obj:`torch.optim.Adam()`). if no optimizer is passed it will
+        default to ``AdamW``.
+    lr_scheduler: ``LRScheduler``, optional, default=None
+        An instance of Pytorch's ``LRScheduler`` object (e.g
+        :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`)
+    callbacks: List, optional, default=None
+        List with :obj:`Callback` objects. The three callbacks available in
+        ``pytorch-widedeep`` are: ``LRHistory``, ``ModelCheckpoint`` and
+        ``EarlyStopping``. The ``History`` and the ``LRShedulerCallback``
+        callbacks are used by default. This can also be a custom callback as
+        long as the object of type ``Callback``. See
+        :obj:`pytorch_widedeep.callbacks.Callback` or the `Examples
+        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
+        folder in the repo
+    loss_type: str, default = "both"
+        One of "contrastive", "denoising" or "both". See "SAINT: Improved
+        Neural Networks for Tabular Data via Row Attention and Contrastive
+        Pre-Training", their figure (1) and their equation (5).
+    projection_head1_dims: list, Optional, default = None
+        The projection heads are simply MLPs. 'projection_head1_dims' is a
+        list of integers with the dimensions of the MLP hidden layers.
+        See "SAINT: Improved Neural Networks for Tabular Data via Row
+        Attention and Contrastive Pre-Training", their Figure 1
+    projection_head2_dims: list, Optional, default = None
+        Same as 'projection_head1_dims' for the second head
+    projection_heads_activation: str, default = "relu"
+        Activation function for the projection heads
+    cat_mlp_type: str, default = "multiple"
+        If 'denoising loss' is used, one can choose two types of 'stacked'
+        MLPs to process the output from the transformer-based encoder that
+        receives "corrupted" (cut-mixed and mixed-up) features. These
+        are "single" or "multiple". The former approach will apply a single
+        MLP to all the categorical features while the latter will use one MLP
+        per categorical feature
+    cont_mlp_type: str, default = "multiple"
+        Same as 'cat_mlp_type' but for the continuous features
+    denoise_mlps_activation: str, default = "relu"
+        activation function for the so called 'denoising mlps'.
+    verbose: int, default=1
+        Setting it to 0 will print nothing during training.
+    seed: int, default=1
+        Random seed to be used internally for train_test_split
+    """
+
     def __init__(
         self,
-        base_model: ModelWithAttention,
+        model: ModelWithAttention,
         preprocessor: TabPreprocessor,
         optimizer: Optional[Optimizer] = None,
         lr_scheduler: Optional[LRScheduler] = None,
@@ -39,7 +99,7 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         **kwargs,
     ):
         super().__init__(
-            base_model=base_model,
+            model=model,
             preprocessor=preprocessor,
             loss_type=loss_type,
             optimizer=optimizer,
@@ -128,7 +188,7 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
 
         self.callback_container.on_train_end(epoch_logs)
         self._restore_best_weights()
-        self.model.train()
+        self.cd_model.train()
 
     def save(
         self,
@@ -153,16 +213,16 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
 
         model_path = save_dir / model_filename
         if save_state_dict:
-            torch.save(self.model.state_dict(), model_path)
+            torch.save(self.cd_model.state_dict(), model_path)
         else:
-            torch.save(self.model, model_path)
+            torch.save(self.cd_model, model_path)
 
     def _train_step(self, X_tab: Tensor, batch_idx: int):
 
         X = X_tab.to(self.device)
 
         self.optimizer.zero_grad()
-        g_projs, cat_x_and_x_, cont_x_and_x_ = self.model(X)
+        g_projs, cat_x_and_x_, cont_x_and_x_ = self.cd_model(X)
         loss = self._compute_loss(g_projs, cat_x_and_x_, cont_x_and_x_)
         loss.backward()
         self.optimizer.step()
@@ -174,12 +234,12 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
 
     def _eval_step(self, X_tab: Tensor, batch_idx: int):
 
-        self.model.eval()
+        self.cd_model.eval()
 
         with torch.no_grad():
             X = X_tab.to(self.device)
 
-            g_projs, cat_x_and_x_, cont_x_and_x_ = self.model(X)
+            g_projs, cat_x_and_x_, cont_x_and_x_ = self.cd_model(X)
             loss = self._compute_loss(g_projs, cat_x_and_x_, cont_x_and_x_)
 
             self.valid_running_loss += loss.item()

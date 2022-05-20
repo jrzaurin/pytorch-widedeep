@@ -164,6 +164,52 @@ class TabMlp(BaseTabularModelWithoutAttention):
 #  the 'general' DL models as they are (e.g. TabMlp) as opposed as carry
 #  the 'Encoder' description (e.g. TabMlpEncoder) throughout the library
 class TabMlpDecoder(nn.Module):
+    r"""Companion decoder model for the ``TabMlp`` model (which can be considered
+    an encoder itself)
+
+    This class will receive the output from the MLP and 'reconstruct' the
+    embeddings from the embeddings layer in the ``TabMlp`` model
+
+
+    Parameters
+    ----------
+    embed_dim: int
+        Size of the embeddings tensor that needs to be reconstructed.
+    mlp_hidden_dims: List, default = [200, 100]
+        List with the number of neurons per dense layer in the mlp.
+    mlp_activation: str, default = "relu"
+        Activation function for the dense layers of the MLP. Currently
+        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+    mlp_dropout: float or List, default = 0.1
+        float or List of floats with the dropout between the dense layers.
+        e.g: [0.5,0.5]
+    mlp_batchnorm: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the dense layers
+    mlp_batchnorm_last: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the last of the dense layers
+    mlp_linear_first: bool, default = False
+        Boolean indicating the order of the operations in the dense
+        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
+        LIN -> ACT]``
+
+    Attributes
+    ----------
+    encoder: ``nn.Sequential``
+        mlp model that will receive the output of the encoder
+
+    Example
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import TabMlpDecoder
+    >>> x_inp = torch.rand(3, 8)
+    >>> decoder = TabMlpDecoder(embed_dim=32, mlp_hidden_dims=[8,16])
+    >>> res = decoder(x_inp)
+    >>> res.shape
+    torch.Size([3, 32])
+    """
+
     def __init__(
         self,
         embed_dim: int,

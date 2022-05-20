@@ -14,16 +14,16 @@ from pytorch_widedeep.callbacks import (
     CallbackContainer,
     LRShedulerCallback,
 )
-from pytorch_widedeep.preprocessing.tab_preprocessor import TabPreprocessor
-from pytorch_widedeep.models.tabular.self_supervised.contrastive_denoising_model import (
+from pytorch_widedeep.models.tabular.self_supervised import (
     ContrastiveDenoisingModel,
 )
+from pytorch_widedeep.preprocessing.tab_preprocessor import TabPreprocessor
 
 
 class BaseContrastiveDenoisingTrainer(ABC):
     def __init__(
         self,
-        base_model: ModelWithAttention,
+        model: ModelWithAttention,
         preprocessor: TabPreprocessor,
         optimizer: Optional[Optimizer],
         lr_scheduler: Optional[LRScheduler],
@@ -40,15 +40,15 @@ class BaseContrastiveDenoisingTrainer(ABC):
         **kwargs,
     ):
 
-        self._check_model_is_supported(base_model)
+        self._check_model_is_supported(model)
         self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
 
         self.early_stop = False
         self.verbose = verbose
         self.seed = seed
 
-        self.model = ContrastiveDenoisingModel(
-            base_model,
+        self.cd_model = ContrastiveDenoisingModel(
+            model,
             preprocessor.label_encoder.encoding_dict,
             loss_type,
             projection_head1_dims,
@@ -58,14 +58,14 @@ class BaseContrastiveDenoisingTrainer(ABC):
             cont_mlp_type,
             denoise_mlps_activation,
         )
-        self.model.to(self.device)
+        self.cd_model.to(self.device)
 
         self.loss_type = loss_type
         self._set_loss_fn(**kwargs)
         self.optimizer = (
             optimizer
             if optimizer is not None
-            else torch.optim.AdamW(self.model.parameters())
+            else torch.optim.AdamW(self.cd_model.parameters())
         )
         self.lr_scheduler = self._set_lr_scheduler_running_params(lr_scheduler)
         self._set_callbacks(callbacks)
@@ -154,7 +154,7 @@ class BaseContrastiveDenoisingTrainer(ABC):
                     callback = callback()
                 self.callbacks.append(callback)
         self.callback_container = CallbackContainer(self.callbacks)
-        self.callback_container.set_model(self.model)
+        self.callback_container.set_model(self.cd_model)
         self.callback_container.set_trainer(self)
 
     def _restore_best_weights(self):
@@ -177,7 +177,7 @@ class BaseContrastiveDenoisingTrainer(ABC):
                             print(
                                 f"Model weights restored to best epoch: {callback.best_epoch + 1}"
                             )
-                        self.model.load_state_dict(callback.best_state_dict)
+                        self.cd_model.load_state_dict(callback.best_state_dict)
                     else:
                         if self.verbose:
                             print(

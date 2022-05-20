@@ -229,55 +229,94 @@ class TabNetPredLayer(nn.Module):
 
 
 class TabNetDecoder(nn.Module):
+    r"""Companion decoder model for the ``TabNet`` model (which can be
+    considered an encoder itself)
+
+    This class will receive the output from the ``TabNet`` encoder (i.e. the
+    output from the so called 'steps') and 'reconstruct' the embeddings from
+    the embeddings layer in the ``TabNet`` encoder.
+
+    Parameters
+    ----------
+    embed_dim: int
+        Size of the embeddings tensor to be reconstructed.
+    n_steps: int, default = 3
+        number of decision steps
+    step_dim: int, default = 8
+        Step's output dimension. For a better understanding of the function of
+        this and the upcoming parameters, please see the `paper
+        <https://arxiv.org/abs/1908.07442>`_.
+    attn_dim: int, default = 8
+        Attention dimension
+    dropout: float, default = 0.0
+        GLU block's internal dropout
+    n_glu_step_dependent: int, default = 2
+        number of GLU Blocks [FC -> BN -> GLU] that are step dependent
+    n_glu_shared: int, default = 2
+        number of GLU Blocks [FC -> BN -> GLU] that will be shared
+        across decision steps
+    ghost_bn: bool, default=True
+        Boolean indicating if `Ghost Batch Normalization
+        <https://arxiv.org/abs/1705.08741>`_ will be used.
+    virtual_batch_size: int, default = 128
+        Batch size when using Ghost Batch Normalization
+    momentum: float, default = 0.02
+        Ghost Batch Normalization's momentum. The dreamquark-ai advises for
+        very low values. However high values are used in the original
+        publication. During our tests higher values lead to better results
+
+    Attributes
+    ----------
+    decoder: ``nn.ModuleList``
+        decoder that will receive the output from the encoder's steps and will
+        reconstruct the embeddings
+
+    Example
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import TabNetDecoder
+    >>> x_inp = [torch.rand(3, 8), torch.rand(3, 8), torch.rand(3, 8)]
+    >>> decoder = TabNetDecoder(embed_dim=32, ghost_bn=False)
+    >>> res = decoder(x_inp)
+    >>> res.shape
+    torch.Size([3, 32])
+    """
+
     def __init__(
         self,
         embed_dim: int,
         n_steps: int = 3,
         step_dim: int = 8,
-        attn_dim: int = 8,
         dropout: float = 0.0,
         n_glu_step_dependent: int = 2,
         n_glu_shared: int = 2,
         ghost_bn: bool = True,
         virtual_batch_size: int = 128,
         momentum: float = 0.02,
-        gamma: float = 1.3,
-        epsilon: float = 1e-15,
-        mask_type: str = "sparsemax",
     ):
         super(TabNetDecoder, self).__init__()
 
         self.n_steps = n_steps
         self.step_dim = step_dim
-        self.attn_dim = attn_dim
         self.dropout = dropout
         self.n_glu_step_dependent = n_glu_step_dependent
         self.n_glu_shared = n_glu_shared
         self.ghost_bn = ghost_bn
         self.virtual_batch_size = virtual_batch_size
         self.momentum = momentum
-        self.gamma = gamma
-        self.epsilon = epsilon
-        self.mask_type = mask_type
 
         shared_layers = nn.ModuleList()
         for i in range(n_glu_shared):
             if i == 0:
-                shared_layers.append(
-                    nn.Linear(embed_dim, 2 * (step_dim + attn_dim), bias=False)
-                )
+                shared_layers.append(nn.Linear(step_dim, 2 * step_dim, bias=False))
             else:
-                shared_layers.append(
-                    nn.Linear(
-                        step_dim + attn_dim, 2 * (step_dim + attn_dim), bias=False
-                    )
-                )
+                shared_layers.append(nn.Linear(step_dim, 2 * step_dim, bias=False))
 
-        self.feat_transformers = nn.ModuleList()
+        self.decoder = nn.ModuleList()
         for step in range(n_steps):
             transformer = FeatTransformer(
-                embed_dim,
-                embed_dim,
+                step_dim,
+                step_dim,
                 dropout,
                 shared_layers,
                 n_glu_step_dependent,
@@ -285,19 +324,15 @@ class TabNetDecoder(nn.Module):
                 virtual_batch_size,
                 momentum=momentum,
             )
-            self.feat_transformers.append(transformer)
+            self.decoder.append(transformer)
 
         self.reconstruction_layer = nn.Linear(step_dim, embed_dim, bias=False)
         initialize_non_glu(self.reconstruction_layer, step_dim, embed_dim)
 
-    def forward(self, X):
+    def forward(self, X: List[Tensor]) -> Tensor:
         out = 0.0
         for i, x in enumerate(X):
-            x = self.feat_transformers[step_nb](x)
+            x = self.decoder[i](x)
             out = torch.add(out, x)
         out = self.reconstruction_layer(out)
         return out
-
-    def forward_masks(self, X: Tensor) -> Tuple[Tensor, Dict[int, Tensor]]:
-        x = self._get_embeddings(X)
-        return self.encoder.forward_masks(x)

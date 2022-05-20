@@ -5,16 +5,28 @@ from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.self_supervised._denoise_mlps import (
     CatSingleMlp,
     ContSingleMlp,
-    CatFeaturesMlp,
-    ContFeaturesMlp,
+    CatMlpPerFeature,
+    ContMlpPerFeature,
 )
 from pytorch_widedeep.models.tabular.self_supervised._augmentations import (
     mix_up,
     cut_mix,
 )
 
+DenoiseMlp = Union[CatSingleMlp, ContSingleMlp, CatMlpPerFeature, ContMlpPerFeature]
+
 
 class ContrastiveDenoisingModel(nn.Module):
+    r"""This Class, which is referred as a 'Model', implements a Self
+    Supervised 'routine' based on the one described in "SAINT: Improved
+    Neural Networks for Tabular Data via Row Attention and Contrastive
+    Pre-Training", their Figure 1.
+
+    This class is in principle not exposed to the user and its documentation
+    is detailed in its corresponding Trainer:  see
+    ``pytorch_widedeep.self_supervised_training.ContrastiveDenoisingTrainer``
+    """
+
     def __init__(
         self,
         model: ModelWithAttention,
@@ -38,14 +50,13 @@ class ContrastiveDenoisingModel(nn.Module):
         self.cont_mlp_type = cont_mlp_type
         self.denoise_mlps_activation = denoise_mlps_activation
 
+        self.projection_head1, self.projection_head2 = self._set_projection_heads()
         if self.loss_type in ["denoising", "both"]:
             self._t = self._tensor_to_subtract(encoding_dict)
-
-        self.projection_head1, self.projection_head2 = self._set_projection_heads()
-        (
-            self.denoise_cat_mlp,
-            self.denoise_cont_mlp,
-        ) = self._set_cat_and_cont_denoise_mlps()
+            (
+                self.denoise_cat_mlp,
+                self.denoise_cont_mlp,
+            ) = self._set_cat_and_cont_denoise_mlps()
 
     def forward(
         self, X: Tensor
@@ -105,7 +116,9 @@ class ContrastiveDenoisingModel(nn.Module):
 
         return g_projs, cat_x_and_x_, cont_x_and_x_
 
-    def _set_projection_heads(self) -> Tuple[nn.Module, nn.Module]:
+    def _set_projection_heads(
+        self,
+    ) -> Tuple[Union[MLP, nn.Identity], Union[MLP, nn.Identity]]:
 
         if self.projection_head1_dims is not None:
             projection_head1 = MLP(
@@ -133,7 +146,7 @@ class ContrastiveDenoisingModel(nn.Module):
 
         return projection_head1, projection_head2
 
-    def _set_cat_and_cont_denoise_mlps(self) -> Tuple[nn.Module, nn.Module]:
+    def _set_cat_and_cont_denoise_mlps(self) -> Tuple[DenoiseMlp, DenoiseMlp]:
 
         if self.cat_mlp_type == "single":
             denoise_cat_mlp = CatSingleMlp(
@@ -143,7 +156,7 @@ class ContrastiveDenoisingModel(nn.Module):
                 self.denoise_mlps_activation,
             )
         elif self.cat_mlp_type == "multiple":
-            denoise_cat_mlp = CatFeaturesMlp(
+            denoise_cat_mlp = CatMlpPerFeature(
                 self.model.input_dim,
                 self.model.cat_embed_input,
                 self.model.column_idx,
@@ -158,7 +171,7 @@ class ContrastiveDenoisingModel(nn.Module):
                 self.denoise_mlps_activation,
             )
         elif self.cont_mlp_type == "multiple":
-            denoise_cont_mlp = ContFeaturesMlp(
+            denoise_cont_mlp = ContMlpPerFeature(
                 self.model.input_dim,
                 self.model.continuous_cols,
                 self.model.column_idx,

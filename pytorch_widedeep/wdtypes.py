@@ -14,6 +14,7 @@ from typing import (
     Generator,
     Collection,
 )
+from pathlib import PosixPath
 
 # isort: off
 if sys.version_info >= (3, 8):
@@ -24,8 +25,6 @@ else:
     except ModuleNotFoundError:
         pass
 # isort: on
-
-from pathlib import PosixPath
 
 import torch
 from torch import Tensor
@@ -123,6 +122,12 @@ LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
 NormLayers = Union[torch.nn.Identity, torch.nn.LayerNorm, torch.nn.BatchNorm1d]
 
+ModelWithoutAttention = Union[
+    TabMlp,
+    TabNet,
+    TabResnet,
+]
+
 ModelWithAttention = Union[
     TabTransformer,
     SAINT,
@@ -133,4 +138,8 @@ ModelWithAttention = Union[
     SelfAttentionMLP,
 ]
 
-ModelWithoutAttention = Union[TabMlp, TabResnet, TabNet]
+DecoderWithoutAttention = Union[
+    TabMlpDecoder,
+    TabNetDecoder,
+    TabResnetDecoder,
+]

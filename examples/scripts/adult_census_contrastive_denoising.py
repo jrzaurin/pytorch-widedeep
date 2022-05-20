@@ -14,7 +14,7 @@ from pytorch_widedeep.models import (
 )
 from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.preprocessing import TabPreprocessor
-from pytorch_widedeep.self_supervised_training.contrastive_denoising_trainer import (
+from pytorch_widedeep.self_supervised_training import (
     ContrastiveDenoisingTrainer,
 )
 
@@ -114,7 +114,7 @@ if __name__ == "__main__":
             )
 
         ss_trainer = ContrastiveDenoisingTrainer(
-            base_model=model,
+            model=model,
             preprocessor=processor,
         )
         ss_trainer.pretrain(X_tab, n_epochs=1, batch_size=256)
@@ -151,7 +151,7 @@ if __name__ == "__main__":
             )
 
         ss_trainer = ContrastiveDenoisingTrainer(
-            base_model=model,
+            model=model,
             preprocessor=processor,
         )
         ss_trainer.pretrain(X_tab, n_epochs=1, batch_size=256)
