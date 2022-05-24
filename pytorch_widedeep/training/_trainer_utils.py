@@ -129,7 +129,7 @@ def wd_train_val_split(  # noqa: C901
         X_val (Dict, Optional, default = None): Dict with the validation set, where the keys are the component names
             (e.g: 'wide') and the values the corresponding arrays
         val_split (float, Optional, default = None): Alternatively, the validation split can be specified via a float
-        target (np.ndarray, Optional, default = None): 
+        target (np.ndarray, Optional, default = None):
         transforms (List, Optional, default = None): List of Transforms to be applied to the image dataset
 
     Returns:

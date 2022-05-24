@@ -1,32 +1,26 @@
 # Quick Start
 
-This is an example of a binary classification with the `adult census
-<https://www.kaggle.com/wenruliu/adult-income-dataset?select=adult.csv>`__
+This is an example of a binary classification with the
+[adult census](https://www.kaggle.com/wenruliu/adult-income-dataset?select=adult.csv)
 dataset using a combination of a wide and deep model (in this case a so called
 ``deeptabular`` model) with defaults settings.
 
-
-## Read and split the dataset
-
-```
-import pandas as pd
+```python
 import numpy as np
+import torch
 from sklearn.model_selection import train_test_split
+
+from pytorch_widedeep import Trainer
+from pytorch_widedeep.preprocessing import WidePreprocessor, TabPreprocessor
+from pytorch_widedeep.models import Wide, TabMlp, WideDeep
+from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.datasets import load_adult
+
 
 df = load_adult(as_frame=True)
 df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
 df.drop("income", axis=1, inplace=True)
 df_train, df_test = train_test_split(df, test_size=0.2, stratify=df.income_label)
-```
-
-## Prepare the wide and deep columns
-
-```
-from pytorch_widedeep import Trainer
-from pytorch_widedeep.preprocessing import WidePreprocessor, TabPreprocessor
-from pytorch_widedeep.models import Wide, TabMlp, WideDeep
-from pytorch_widedeep.metrics import Accuracy
 
 # Define the 'column set up'
 wide_cols = [
@@ -54,11 +48,8 @@ cat_embed_cols = [
 continuous_cols = ["age", "hours-per-week"]
 target = "income_label"
 target = df_train[target].values
-```
 
-## Preprocessing and model components definition
-
-```
+# prepare the data
 wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
 X_wide = wide_preprocessor.fit_transform(df_train)
 
@@ -75,11 +66,7 @@ tab_mlp = TabMlp(
     continuous_cols=continuous_cols,
 )
 model = WideDeep(wide=wide, deeptabular=tab_mlp)
-```
 
-## Fit and predict
-
-```
 # train and validate
 trainer = Trainer(model, objective="binary", metrics=[Accuracy])
 trainer.fit(
@@ -94,11 +81,9 @@ trainer.fit(
 X_wide_te = wide_preprocessor.transform(df_test)
 X_tab_te = tab_preprocessor.transform(df_test)
 preds = trainer.predict(X_wide=X_wide_te, X_tab=X_tab_te)
-```
 
-## Save and load
+# Save and load
 
-```
 # Option 1: this will also save training history and lr history if the
 # LRHistory callback is used
 trainer.save(path="model_weights", save_state_dict=True)
@@ -118,7 +103,3 @@ trainer_new = Trainer(model_new, objective="binary")
 # 3. Either start the fit or directly predict
 preds = trainer_new.predict(X_wide=X_wide, X_tab=X_tab)
 ```
-
-Of course, one can do **much more**. See the Examples folder in the repo, this
-documentation or the companion posts for a better understanding of the content
-of the package and its functionalities.

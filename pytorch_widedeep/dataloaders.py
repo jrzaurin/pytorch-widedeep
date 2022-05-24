@@ -43,6 +43,7 @@ class DataLoaderImbalanced(DataLoader):
         batch_size (int): size of batch
         num_workers (int): number of workers
     """
+
     def __init__(
         self, dataset: WideDeepDataset, batch_size: int, num_workers: int, **kwargs
     ):

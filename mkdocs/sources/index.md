@@ -13,10 +13,11 @@
 [<img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="contributions welcome">](https://github.com/jrzaurin/pytorch-widedeep/issues)
 [<img src="https://img.shields.io/badge/slack-chat-green.svg?logo=slack" alt="Slack">](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
 
-# pytorch-widedeep
+# **pytorch-widedeep**
 
 A flexible package for multimodal-deep-learning to combine tabular data with
-text and images using Wide and Deep models in Pytorch
+text and images using Wide and Deep models (or just "Deep" models) in
+Pytorch
 
 **Documentation:** [https://pytorch-widedeep.readthedocs.io](https://pytorch-widedeep.readthedocs.io/en/latest/index.html)
 
@@ -28,12 +29,7 @@ The content of this document is organized as follows:
 
 - [pytorch-widedeep](#pytorch-widedeep)
     - [Introduction](#introduction)
-    - [The ``deeptabular`` component](#the-deeptabular-component)
-    - [Installation](#installation)
-      - [Developer Install](#developer-install)
-    - [Quick start](#quick-start)
-    - [Testing](#testing)
-    - [How to Contribute](#how-to-contribute)
+    - [The deeptabular component](#the-deeptabular-component)
     - [Acknowledgments](#acknowledgments)
 
 ### Introduction
@@ -62,12 +58,11 @@ on whether we are performing a binary classification or regression, or a
 multi-class classification) if the optional ``deephead`` is not present.
 Finally, the components within the faded-pink rectangle are concatenated.
 
+
 Note that it is not possible to illustrate the number of possible
 architectures and components available in ``pytorch-widedeep`` in one Figure.
-Therefore, for more details on possible architectures (and more) please, see
-the
-[documentation]((https://pytorch-widedeep.readthedocs.io/en/latest/index.html)),
-or the Examples folders and the notebooks there.
+Therefore, for more details on possible architectures (and more) please, read
+this documentation, or see the Examples folder in the repo.
 
 In math terms, and following the notation in the
 [paper](https://arxiv.org/abs/1606.07792), the expression for the architecture
@@ -122,26 +117,33 @@ passed through a series of ResNet blocks built with dense layers.
 3. **TabNet**: details on TabNet can be found in
 [TabNet: Attentive Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442)
 
+Two simpler attention based models that we call:
+
+4. **ContextAttentionMLP**: MLP with at attention mechanism "on top" that is based on
+    [Hierarchical Attention Networks for Document Classification](https://www.cs.cmu.edu/~./hovy/papers/16HLT-hierarchical-attention-networks.pd)
+5. **SelfAttentionMLP**: MLP with an attention mechanism that is a simplified
+    version of a transformer block that we refer as "query-key self-attention".
+
 The ``Tabformer`` family, i.e. Transformers for Tabular data:
 
-4. **TabTransformer**: details on the TabTransformer can be found in
+6. **TabTransformer**: details on the TabTransformer can be found in
 [TabTransformer: Tabular Data Modeling Using Contextual Embeddings](https://arxiv.org/pdf/2012.06678.pdf).
-5. **SAINT**: Details on SAINT can be found in
+7. **SAINT**: Details on SAINT can be found in
 [SAINT: Improved Neural Networks for Tabular Data via Row Attention and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342).
-6. **FT-Transformer**: details on the FT-Transformer can be found in
+8. **FT-Transformer**: details on the FT-Transformer can be found in
 [Revisiting Deep Learning Models for Tabular Data](https://arxiv.org/abs/2106.11959).
-7. **TabFastFormer**: adaptation of the FastFormer for tabular data. Details
+9. **TabFastFormer**: adaptation of the FastFormer for tabular data. Details
 on the Fasformer can be found in
 [FastFormers: Highly Efficient Transformer Models for Natural Language Understanding](https://arxiv.org/abs/2010.13382)
-8. **TabPerceiver**: adaptation of the Perceiver for tabular data. Details on
+10. **TabPerceiver**: adaptation of the Perceiver for tabular data. Details on
 the Perceiver can be found in
 [Perceiver: General Perception with Iterative Attention](https://arxiv.org/abs/2103.03206)
 
 And probabilistic DL models for tabular data based on
 [Weight Uncertainty in Neural Networks](https://arxiv.org/abs/1505.05424):
 
-9. **BayesianWide**: Probabilistic adaptation of the `Wide` model.
-10. **BayesianTabMlp**: Probabilistic adaptation of the `TabMlp` model
+11. **BayesianWide**: Probabilistic adaptation of the `Wide` model.
+12. **BayesianTabMlp**: Probabilistic adaptation of the `TabMlp` model
 
 Note that while there are scientific publications for the TabTransformer,
 SAINT and FT-Transformer, the TabFasfFormer and TabPerceiver are our own
@@ -151,7 +153,7 @@ For details on these models (and all the other models in the library for the
 different data modes) and their corresponding options please see the examples
 in the Examples folder and the documentation.
 
-###  Installation
+<!-- ###  Installation
 
 Install using pip:
 
@@ -185,7 +187,6 @@ using `Wide` and `DeepDense` and defaults settings.
 Building a wide (linear) and deep model with ``pytorch-widedeep``:
 
 ```python
-import pandas as pd
 import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
@@ -297,7 +298,7 @@ pytest tests
 ### How to Contribute
 
 Check [CONTRIBUTING](https://github.com/jrzaurin/pytorch-widedeep/CONTRIBUTING.MD) page.
-
+ -->
 ### Acknowledgments
 
 This library takes from a series of other libraries, so I think it is just

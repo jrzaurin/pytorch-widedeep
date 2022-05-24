@@ -59,7 +59,7 @@ class AttentiveRNN(BasicRNN):
         output_dim (int): The output dimension of the model. This is a required attribute
             neccesary to build the ``WideDeep`` class
 
-    Example: 
+    Example:
         >>> import torch
         >>> from pytorch_widedeep.models import AttentiveRNN
         >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)

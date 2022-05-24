@@ -6,8 +6,9 @@ import setuptools
 
 
 def requirements(fname):
-    return [line.strip()
-            for line in open(os.path.join(os.path.dirname(__file__), fname))]
+    return [
+        line.strip() for line in open(os.path.join(os.path.dirname(__file__), fname))
+    ]
 
 
 pwd = os.path.dirname(__file__)

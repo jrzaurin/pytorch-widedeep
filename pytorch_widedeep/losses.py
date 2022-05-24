@@ -11,7 +11,7 @@ class MSELoss(nn.Module):
     r"""Mean square error loss adjusted for the possibility of using Label Smooth
     Distribution (LDS)
 
-    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554),
     and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 
@@ -48,7 +48,7 @@ class MSLELoss(nn.Module):
     r"""Mean square log error loss adjusted for the possibility of using Label
     Smooth Distribution (LDS)
 
-    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554),
     and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 
@@ -92,7 +92,7 @@ class RMSELoss(nn.Module):
     r"""Root mean square error loss adjusted for the possibility of using Label
     Smooth Distribution (LDS)
 
-    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554),
     and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 
@@ -129,7 +129,7 @@ class RMSLELoss(nn.Module):
     r"""Root mean square log error loss adjusted for the possibility of using Label
     Smooth Distribution (LDS)
 
-    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554),
     and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 
@@ -174,7 +174,7 @@ class QuantileLoss(nn.Module):
 
         :math:`Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))`
 
-    All credits go to the implementation at 
+    All credits go to the implementation at
     [pytorch-forecasting](https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss).
 
     Args:
@@ -452,7 +452,7 @@ class L1Loss(nn.Module):
     r"""L1 loss adjusted for the possibility of using Label Smooth
     Distribution (LDS)
 
-    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554),
     and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 
@@ -488,7 +488,7 @@ class L1Loss(nn.Module):
 class FocalR_L1Loss(nn.Module):
     r"""Focal-R L1 loss
 
-    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554),
     and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
 
     Args:
@@ -552,7 +552,7 @@ class FocalR_L1Loss(nn.Module):
 class FocalR_MSELoss(nn.Module):
     r"""Focal-R MSE loss
 
-    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554),
     and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
 
     Args:
@@ -616,7 +616,7 @@ class FocalR_MSELoss(nn.Module):
 class FocalR_RMSELoss(nn.Module):
     r"""Focal-R RMSE loss
 
-    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554),
     and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
 
     Args:
@@ -680,7 +680,7 @@ class FocalR_RMSELoss(nn.Module):
 class HuberLoss(nn.Module):
     r"""Hubber Loss
 
-    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554), 
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554),
     and their [implementation](https://github.com/YyzHarry/imbalanced-regression).
     """
 

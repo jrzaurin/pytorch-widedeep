@@ -18,20 +18,21 @@ nav:
     - Installation: installation.md
     - Quick Start: quick_start.md
     - Pytorch-widedeep:
-        - Trainer: pytorch-widedeep/trainer.md
-        - Tab2Vec: pytorch-widedeep/tab2vec.md
-        - Preprocessing: pytorch-widedeep/preprocessing.md  
-        - Model Components: pytorch-widedeep/model_components.md
-        - Losses: pytorch-widedeep/losses.md
-        - Dataloaders: pytorch-widedeep/dataloaders.md
-        - Callbacks: pytorch-widedeep/callbacks.md
-        - Bayesian models: pytorch-widedeep/bayesian_models.md
         - Utils:
             - pytorch-widedeep/utils/index.md
             - Deeptabular utils: pytorch-widedeep/utils/deeptabular_utils.md
             - Fastai transforms: pytorch-widedeep/utils/fastai_transforms.md
             - Image utils: pytorch-widedeep/utils/image_utils.md
             - Text utils: pytorch-widedeep/utils/text_utils.md
+        - Preprocessing: pytorch-widedeep/preprocessing.md
+        - Model Components: pytorch-widedeep/model_components.md
+        - Bayesian models: pytorch-widedeep/bayesian_models.md
+        - Losses: pytorch-widedeep/losses.md
+        - Metrics: pytorch-widedeep/metrics.md
+        - Dataloaders: pytorch-widedeep/dataloaders.md
+        - Callbacks: pytorch-widedeep/callbacks.md
+        - Trainer: pytorch-widedeep/trainer.md
+        - Tab2Vec: pytorch-widedeep/tab2vec.md
     - Examples:
         - 01_Preprocessors_and_utils: examples/01_Preprocessors_and_utils.ipynb
         - 02_model_components: examples/02_model_components.ipynb
@@ -52,6 +53,7 @@ nav:
     - Contributing: contributing.md
 
 theme:
+    logo: assets/images/widedeep_logo.png
     name: material
     custom_dir: sources/overrides
 
@@ -64,8 +66,8 @@ theme:
     palette:
         # scheme: preference uses dark or light mode based on user (OS) preference
         scheme: preference
-        primary: deep-orange
-        accent: deep-purple
+        primary: red
+        accent: red
     icon:
         logo: fontawesome/solid/code
     favicon: 'assets/images/favicon.ico'
