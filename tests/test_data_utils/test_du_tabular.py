@@ -212,7 +212,6 @@ def test_tab_preprocessor_trasformer(
 @pytest.mark.parametrize(
     "embed_cols, continuous_cols, scale",
     [
-        (None, ["col3", "col4"], True),
         ([("col1", 5), ("col2", 5)], ["col3", "col4"], True),
     ],
 )
