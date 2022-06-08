@@ -160,7 +160,6 @@ class TabPreprocessor(BasePreprocessor):
     ):
         super(TabPreprocessor, self).__init__()
 
-        self.cat_embed_cols = cat_embed_cols
         self.continuous_cols = continuous_cols
         self.scale = scale
         self.auto_embed_dim = auto_embed_dim
@@ -172,13 +171,26 @@ class TabPreprocessor(BasePreprocessor):
         self.shared_embed = shared_embed
         self.verbose = verbose
 
-        self._check_inputs()
+        self._check_inputs(cat_embed_cols)
+
+        if with_cls_token:
+            self.cat_embed_cols = (
+                ["cls_token"] + cat_embed_cols  # type: ignore[operator]
+                if cat_embed_cols is not None
+                else ["cls_token"]
+            )
+        else:
+            self.cat_embed_cols = cat_embed_cols  # type: ignore[assignment]
+
         self.is_fitted = False
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Fits the Preprocessor and creates required attributes"""
+
+        df_adj = self._insert_cls_token(df) if self.with_cls_token else df.copy()
+
         if self.cat_embed_cols is not None:
-            df_emb = self._prepare_embed(df)
+            df_emb = self._prepare_embed(df_adj)
             self.label_encoder = LabelEncoder(
                 columns_to_encode=df_emb.columns.tolist(),
                 shared_embed=self.shared_embed,
@@ -192,7 +204,7 @@ class TabPreprocessor(BasePreprocessor):
                 else:
                     self.cat_embed_input.append((k, len(v), self.embed_dim[k]))
         if self.continuous_cols is not None:
-            df_cont = self._prepare_continuous(df)
+            df_cont = self._prepare_continuous(df_adj)
             if self.scale:
                 df_std = df_cont[self.standardize_cols]
                 self.scaler = StandardScaler().fit(df_std.values)
@@ -204,11 +216,14 @@ class TabPreprocessor(BasePreprocessor):
     def transform(self, df: pd.DataFrame) -> np.ndarray:
         """Returns the processed ``dataframe`` as a np.ndarray"""
         check_is_fitted(self, condition=self.is_fitted)
+
+        df_adj = self._insert_cls_token(df) if self.with_cls_token else df.copy()
+
         if self.cat_embed_cols is not None:
-            df_emb = self._prepare_embed(df)
+            df_emb = self._prepare_embed(df_adj)
             df_emb = self.label_encoder.transform(df_emb)
         if self.continuous_cols is not None:
-            df_cont = self._prepare_continuous(df)
+            df_cont = self._prepare_continuous(df_adj)
             if self.scale:
                 df_std = df_cont[self.standardize_cols]
                 df_cont[self.standardize_cols] = self.scaler.transform(df_std.values)
@@ -257,17 +272,17 @@ class TabPreprocessor(BasePreprocessor):
         """Combines ``fit`` and ``transform``"""
         return self.fit(df).transform(df)
 
+    def _insert_cls_token(self, df: pd.DataFrame) -> pd.DataFrame:
+        df_cls = df.copy()
+        df_cls.insert(loc=0, column="cls_token", value="[CLS]")
+        return df_cls
+
     def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.with_attention:
-            if self.with_cls_token:
-                df_cls = df.copy()[self.cat_embed_cols]
-                df_cls.insert(loc=0, column="cls_token", value="[CLS]")
-                return df_cls
-            else:
-                return df.copy()[self.cat_embed_cols]
+            return df[self.cat_embed_cols]
         else:
             if isinstance(self.cat_embed_cols[0], tuple):
-                self.embed_dim = dict(self.cat_embed_cols)  # type: ignore
+                self.embed_dim: Dict = dict(self.cat_embed_cols)  # type: ignore
                 embed_colname = [emb[0] for emb in self.cat_embed_cols]
             elif self.auto_embed_dim:
                 n_cats = {col: df[col].nunique() for col in self.cat_embed_cols}
@@ -279,7 +294,7 @@ class TabPreprocessor(BasePreprocessor):
             else:
                 self.embed_dim = {e: self.default_embed_dim for e in self.cat_embed_cols}  # type: ignore
                 embed_colname = self.cat_embed_cols  # type: ignore
-            return df.copy()[embed_colname]
+            return df[embed_colname]
 
     def _prepare_continuous(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.scale:
@@ -289,9 +304,9 @@ class TabPreprocessor(BasePreprocessor):
                 ]
             else:
                 self.standardize_cols = self.continuous_cols
-        return df.copy()[self.continuous_cols]
+        return df[self.continuous_cols]
 
-    def _check_inputs(self):
+    def _check_inputs(self, cat_embed_cols):
 
         if self.with_cls_token and not self.with_attention:
             warnings.warn(
@@ -300,18 +315,18 @@ class TabPreprocessor(BasePreprocessor):
             )
             self.with_attention = True
 
-        if (self.cat_embed_cols is None) and (self.continuous_cols is None):
+        if (cat_embed_cols is None) and (self.continuous_cols is None):
             raise ValueError(
                 "'cat_embed_cols' and 'continuous_cols' are 'None'. Please, define at least one of the two."
             )
 
         if (
-            self.cat_embed_cols is not None
+            cat_embed_cols is not None
             and self.continuous_cols is not None
-            and len(np.intersect1d(self.cat_embed_cols, self.continuous_cols)) > 0
+            and len(np.intersect1d(cat_embed_cols, self.continuous_cols)) > 0
         ):
             overlapping_cols = list(
-                np.intersect1d(self.cat_embed_cols, self.continuous_cols)
+                np.intersect1d(cat_embed_cols, self.continuous_cols)
             )
             raise ValueError(
                 "Currently passing columns as both categorical and continuum is not supported."
@@ -323,7 +338,9 @@ class TabPreprocessor(BasePreprocessor):
             "If with_attention is 'True' cat_embed_cols must be a list "
             " of strings with the columns to be encoded as embeddings."
         )
-        if self.with_attention and self.cat_embed_cols is None:
-            raise ValueError(transformer_error_message)
-        if self.with_attention and isinstance(self.cat_embed_cols[0], tuple):  # type: ignore[index]
+        if (
+            self.with_attention
+            and cat_embed_cols is not None
+            and isinstance(cat_embed_cols[0], tuple)
+        ):
             raise ValueError(transformer_error_message)

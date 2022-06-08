@@ -2,6 +2,7 @@ from torch import Tensor, nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
+from pytorch_widedeep.preprocessing.tab_preprocessor import TabPreprocessor
 from pytorch_widedeep.models.tabular.self_supervised._denoise_mlps import (
     CatSingleMlp,
     ContSingleMlp,
@@ -30,7 +31,7 @@ class ContrastiveDenoisingModel(nn.Module):
     def __init__(
         self,
         model: ModelWithAttention,
-        encoding_dict: Dict[str, Dict[str, int]],
+        preprocessor: TabPreprocessor,
         loss_type: Literal["contrastive", "denoising", "both"],
         projection_head1_dims: Optional[List],
         projection_head2_dims: Optional[List],
@@ -42,6 +43,8 @@ class ContrastiveDenoisingModel(nn.Module):
         super(ContrastiveDenoisingModel, self).__init__()
 
         self.model = model
+        self.use_cat_mlp = self._use_cat_mlp(model)
+
         self.loss_type = loss_type
         self.projection_head1_dims = projection_head1_dims
         self.projection_head2_dims = projection_head2_dims
@@ -52,7 +55,7 @@ class ContrastiveDenoisingModel(nn.Module):
 
         self.projection_head1, self.projection_head2 = self._set_projection_heads()
         if self.loss_type in ["denoising", "both"]:
-            self._t = self._tensor_to_subtract(encoding_dict)
+            self._t = self._tensor_to_subtract_from_cats(preprocessor)
             (
                 self.denoise_cat_mlp,
                 self.denoise_cont_mlp,
@@ -101,15 +104,15 @@ class ContrastiveDenoisingModel(nn.Module):
         # mlps for denoising loss
         if self.loss_type in ["denoising", "both"]:
 
-            _X = X - self._t.repeat(X.size(0), 1)
+            _X = X - self._t.repeat(X.size(0), 1) if self._t is not None else X
             if self.model.with_cls_token:
                 _X[:, 0] = 0.0
 
-            if self.model.cat_embed_input is not None:
+            if self.denoise_cat_mlp is not None:
                 cat_x_and_x_ = self.denoise_cat_mlp(_X, encoded_)
             else:
                 cat_x_and_x_ = None
-            if self.model.continuous_cols is not None:
+            if self.denoise_cont_mlp is not None:
                 cont_x_and_x_ = self.denoise_cont_mlp(_X, encoded_)
             else:
                 cont_x_and_x_ = None
@@ -146,41 +149,51 @@ class ContrastiveDenoisingModel(nn.Module):
 
         return projection_head1, projection_head2
 
-    def _set_cat_and_cont_denoise_mlps(self) -> Tuple[DenoiseMlp, DenoiseMlp]:
+    def _set_cat_and_cont_denoise_mlps(
+        self,
+    ) -> Tuple[Optional[DenoiseMlp], Optional[DenoiseMlp]]:
 
-        if self.cat_mlp_type == "single":
-            denoise_cat_mlp = CatSingleMlp(
-                self.model.input_dim,
-                self.model.cat_embed_input,
-                self.model.column_idx,
-                self.denoise_mlps_activation,
-            )
-        elif self.cat_mlp_type == "multiple":
-            denoise_cat_mlp = CatMlpPerFeature(
-                self.model.input_dim,
-                self.model.cat_embed_input,
-                self.model.column_idx,
-                self.denoise_mlps_activation,
-            )
+        if self.use_cat_mlp:
+            if self.cat_mlp_type == "single":
+                denoise_cat_mlp = CatSingleMlp(
+                    self.model.input_dim,
+                    self.model.cat_embed_input,
+                    self.model.column_idx,
+                    self.denoise_mlps_activation,
+                )
+            elif self.cat_mlp_type == "multiple":
+                denoise_cat_mlp = CatMlpPerFeature(
+                    self.model.input_dim,
+                    self.model.cat_embed_input,
+                    self.model.column_idx,
+                    self.denoise_mlps_activation,
+                )
+        else:
+            denoise_cat_mlp = None
 
-        if self.cont_mlp_type == "single":
-            denoise_cont_mlp = ContSingleMlp(
-                self.model.input_dim,
-                self.model.continuous_cols,
-                self.model.column_idx,
-                self.denoise_mlps_activation,
-            )
-        elif self.cont_mlp_type == "multiple":
-            denoise_cont_mlp = ContMlpPerFeature(
-                self.model.input_dim,
-                self.model.continuous_cols,
-                self.model.column_idx,
-                self.denoise_mlps_activation,
-            )
+        if self.model.continuous_cols is not None:
+            if self.cont_mlp_type == "single":
+                denoise_cont_mlp = ContSingleMlp(
+                    self.model.input_dim,
+                    self.model.continuous_cols,
+                    self.model.column_idx,
+                    self.denoise_mlps_activation,
+                )
+            elif self.cont_mlp_type == "multiple":
+                denoise_cont_mlp = ContMlpPerFeature(
+                    self.model.input_dim,
+                    self.model.continuous_cols,
+                    self.model.column_idx,
+                    self.denoise_mlps_activation,
+                )
+        else:
+            denoise_cont_mlp = None
 
         return denoise_cat_mlp, denoise_cont_mlp
 
-    def _set_idx_to_substract(self, encoding_dict) -> Tensor:
+    def _set_idx_to_substract(
+        self, encoding_dict
+    ) -> Optional[Dict[str, Dict[str, int]]]:
 
         if self.cat_mlp_type == "multiple":
             idx_to_substract: Optional[Dict[str, Dict[str, int]]] = {
@@ -192,19 +205,37 @@ class ContrastiveDenoisingModel(nn.Module):
 
         return idx_to_substract
 
-    def _tensor_to_subtract(self, encoding_dict) -> Tensor:
+    def _tensor_to_subtract_from_cats(self, preprocessor) -> Optional[Tensor]:
 
-        self.idx_to_substract = self._set_idx_to_substract(encoding_dict)
+        if hasattr(preprocessor, "label_encoder"):
 
-        _t = torch.zeros(len(self.model.column_idx))
+            encoding_dict = preprocessor.label_encoder.encoding_dict
+            self.idx_to_substract = self._set_idx_to_substract(encoding_dict)
 
-        if self.idx_to_substract is not None:
-            for colname, idx in self.idx_to_substract.items():
-                _t[self.model.column_idx[colname]] = idx
+            _t = torch.zeros(len(self.model.column_idx))
+
+            if self.idx_to_substract is not None:
+                for colname, idx in self.idx_to_substract.items():
+                    _t[self.model.column_idx[colname]] = idx
+            else:
+                for colname, _ in self.model.cat_embed_input:
+                    # 0 is reserved for padding, 1 for the '[CLS]' token, if present
+                    _t[self.model.column_idx[colname]] = (
+                        2 if self.model.with_cls_token else 1
+                    )
         else:
-            for colname, _ in self.cat_embed_input:
-                # 0 is reserved for padding, 1 for the '[CLS]' token, if present
-                _t[self.model.column_idx[colname]] = (
-                    2 if self.model.with_cls_token else 1
-                )
+            _t = None
+
         return _t
+
+    def _use_cat_mlp(self, model):
+        if model.cat_embed_input is not None:
+            if (
+                len(model.cat_embed_input) == 1
+                and model.cat_embed_input[0][0] == "cls_token"
+            ):
+                return False
+            else:
+                return True
+        else:
+            return False

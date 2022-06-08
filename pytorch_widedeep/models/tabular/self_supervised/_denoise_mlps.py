@@ -139,19 +139,11 @@ class ContSingleMlp(nn.Module):
     def forward(self, X: Tensor, r_: Tensor) -> Tuple[Tensor, Tensor]:
 
         x = torch.cat(
-            [
-                X[:, self.column_idx[col]].float()
-                for col in self.continuous_cols
-                if col != "cls_token"
-            ]
+            [X[:, self.column_idx[col]].float() for col in self.continuous_cols]
         ).unsqueeze(1)
 
         cont_r_ = torch.cat(
-            [
-                r_[:, self.column_idx[col], :]
-                for col in self.continuous_cols
-                if col != "cls_token"
-            ]
+            [r_[:, self.column_idx[col], :] for col in self.continuous_cols]
         )
 
         x_ = self.mlp(cont_r_)
@@ -192,7 +184,6 @@ class ContMlpPerFeature(nn.Module):
                     linear_first=False,
                 )
                 for col in self.continuous_cols
-                if col != "cls_token"
             }
         )
 
@@ -201,13 +192,11 @@ class ContMlpPerFeature(nn.Module):
         x = [
             X[:, self.column_idx[col]].unsqueeze(1).float()
             for col in self.continuous_cols
-            if col != "cls_token"
         ]
 
         x_ = [
             self.mlp["mlp_" + col](r_[:, self.column_idx[col]])
             for col in self.continuous_cols
-            if col != "cls_token"
         ]
 
         return list(zip(x, x_))

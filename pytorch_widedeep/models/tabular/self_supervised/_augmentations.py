@@ -11,17 +11,6 @@ import torch
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
-def mix_up(p: Tensor, lam: float = 0.8) -> Tensor:
-
-    batch_size = p.size()[0]
-
-    rand_idx = torch.randperm(batch_size).to(p.device)
-
-    p_ = lam * p + (1 - lam) * p[rand_idx, ...]
-
-    return p_
-
-
 def cut_mix(x: Tensor, lam: float = 0.8) -> Tensor:
 
     batch_size = x.size()[0]
@@ -37,3 +26,14 @@ def cut_mix(x: Tensor, lam: float = 0.8) -> Tensor:
     x_[mask == 0] = x[mask == 0]
 
     return x_
+
+
+def mix_up(p: Tensor, lam: float = 0.8) -> Tensor:
+
+    batch_size = p.size()[0]
+
+    rand_idx = torch.randperm(batch_size).to(p.device)
+
+    p_ = lam * p + (1 - lam) * p[rand_idx, ...]
+
+    return p_

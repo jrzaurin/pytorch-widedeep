@@ -49,7 +49,7 @@ class BaseContrastiveDenoisingTrainer(ABC):
 
         self.cd_model = ContrastiveDenoisingModel(
             model,
-            preprocessor.label_encoder.encoding_dict,
+            preprocessor,
             loss_type,
             projection_head1_dims,
             projection_head2_dims,
