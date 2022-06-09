@@ -330,7 +330,7 @@ class TabNetDecoder(nn.Module):
         initialize_non_glu(self.reconstruction_layer, step_dim, embed_dim)
 
     def forward(self, X: List[Tensor]) -> Tensor:
-        out = 0.0
+        out = torch.tensor(0.0)
         for i, x in enumerate(X):
             x = self.decoder[i](x)
             out = torch.add(out, x)

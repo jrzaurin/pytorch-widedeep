@@ -124,7 +124,7 @@ class ContrastiveDenoisingModel(nn.Module):
     ) -> Tuple[Union[MLP, nn.Identity], Union[MLP, nn.Identity]]:
 
         if self.projection_head1_dims is not None:
-            projection_head1 = MLP(
+            projection_head1: Union[MLP, nn.Identity] = MLP(
                 d_hidden=self.projection_head1_dims,
                 activation=self.projection_heads_activation,
                 dropout=0.0,
@@ -133,7 +133,7 @@ class ContrastiveDenoisingModel(nn.Module):
                 linear_first=False,
             )
             if self.projection_head2_dims is not None:
-                projection_head2 = MLP(
+                projection_head2: Union[MLP, nn.Identity] = MLP(
                     d_hidden=self.projection_head2_dims,
                     activation=self.projection_heads_activation,
                     dropout=0.0,
@@ -155,7 +155,7 @@ class ContrastiveDenoisingModel(nn.Module):
 
         if self.use_cat_mlp:
             if self.cat_mlp_type == "single":
-                denoise_cat_mlp = CatSingleMlp(
+                denoise_cat_mlp: Union[CatSingleMlp, CatMlpPerFeature] = CatSingleMlp(
                     self.model.input_dim,
                     self.model.cat_embed_input,
                     self.model.column_idx,
@@ -173,7 +173,9 @@ class ContrastiveDenoisingModel(nn.Module):
 
         if self.model.continuous_cols is not None:
             if self.cont_mlp_type == "single":
-                denoise_cont_mlp = ContSingleMlp(
+                denoise_cont_mlp: Union[
+                    ContSingleMlp, ContMlpPerFeature
+                ] = ContSingleMlp(
                     self.model.input_dim,
                     self.model.continuous_cols,
                     self.model.column_idx,
@@ -191,12 +193,10 @@ class ContrastiveDenoisingModel(nn.Module):
 
         return denoise_cat_mlp, denoise_cont_mlp
 
-    def _set_idx_to_substract(
-        self, encoding_dict
-    ) -> Optional[Dict[str, Dict[str, int]]]:
+    def _set_idx_to_substract(self, encoding_dict) -> Optional[Dict[str, int]]:
 
         if self.cat_mlp_type == "multiple":
-            idx_to_substract: Optional[Dict[str, Dict[str, int]]] = {
+            idx_to_substract: Optional[Dict[str, int]] = {
                 k: min(sorted(list(v.values()))) for k, v in encoding_dict.items()
             }
 

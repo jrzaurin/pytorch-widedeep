@@ -125,7 +125,7 @@ test_df = pd.DataFrame(
     "with_cls_token",
     [True, False],
 )
-def test_cont_den_different_setups(  # noqa: C901
+def test_cont_den_multiple_mlps_different_setups(
     transf_model, cat_or_cont, with_cls_token
 ):
 
@@ -146,6 +146,65 @@ def test_cont_den_different_setups(  # noqa: C901
         if hasattr(preprocessor, "cat_embed_input")
         else None
     )
+
+    tr_model = _build_transf_model(
+        transf_model, preprocessor, cat_embed_input, continuous_cols
+    )
+    cd_model = ContrastiveDenoisingModel(
+        tr_model,
+        preprocessor,
+        loss_type="both",
+        projection_head1_dims=None,
+        projection_head2_dims=None,
+        projection_heads_activation="relu",
+        cat_mlp_type="multiple",
+        cont_mlp_type="multiple",
+        denoise_mlps_activation="relu",
+    )
+
+    if cat_or_cont in ["cat", "both"]:
+        out_dim = []
+        for name, param in cd_model.denoise_cat_mlp.named_parameters():
+            if ("dense_layer_1.0" in name) and ("weight" in name):
+                out_dim.append(param.shape[0])
+
+    g_projs, cat_x_and_x_, cont_x_and_x_ = cd_model(X)
+
+    checks = []
+    if g_projs is not None:
+
+        projs_check = _check_g_projs(X, g_projs, tr_model, with_cls_token)
+
+        checks.extend([projs_check])
+
+    if cat_x_and_x_ is not None:
+
+        cat_checks = _check_cat_multiple_denoise_mlps(
+            X, cat_x_and_x_, with_cls_token, out_dim
+        )
+
+        checks.extend([cat_checks])
+
+    if cat_or_cont == "both":
+
+        cont_if_cat_check = _check_cont_if_cat_multiple_denoise_mlps(
+            X, cont_x_and_x_, with_cls_token
+        )
+
+        checks.extend([cont_if_cat_check])
+
+    elif cat_or_cont == "cont":
+
+        cont_only_check = _check_cont_only_multiple_denoise_mlps(
+            X, cont_x_and_x_, with_cls_token
+        )
+
+        checks.extend([cont_only_check])
+
+    assert all(checks)
+
+
+def _build_transf_model(transf_model, preprocessor, cat_embed_input, continuous_cols):
 
     if transf_model == "tabtransformer":
         model = TabTransformer(
@@ -181,70 +240,70 @@ def test_cont_den_different_setups(  # noqa: C901
             n_heads=2,
         )
 
-    cd_model = ContrastiveDenoisingModel(
-        model,
-        preprocessor,
-        loss_type="both",
-        projection_head1_dims=None,
-        projection_head2_dims=None,
-        projection_heads_activation="relu",
-        cat_mlp_type="multiple",
-        cont_mlp_type="multiple",
-        denoise_mlps_activation="relu",
-    )
+    return model
 
-    if cat_or_cont in ["cat", "both"]:
-        out_dim = []
-        for name, param in cd_model.denoise_cat_mlp.named_parameters():
-            if ("dense_layer_1.0" in name) and ("weight" in name):
-                out_dim.append(param.shape[0])
 
-    g_projs, cat_x_and_x_, cont_x_and_x_ = cd_model(X)
+def _check_g_projs(X, g_projs, model, with_cls_token):
 
     assertions = []
-    if g_projs is not None:
-        asrt1 = g_projs[0].shape[1] == X.shape[1] - 1 if with_cls_token else X.shape[1]
-        asrt2 = g_projs[1].shape[1] == X.shape[1] - 1 if with_cls_token else X.shape[1]
-        asrt3 = g_projs[0].shape[2] == model.input_dim
-        asrt4 = g_projs[1].shape[2] == model.input_dim
 
-        assertions.extend([asrt1, asrt2, asrt3, asrt4])
+    asrt1 = g_projs[0].shape[1] == X.shape[1] - 1 if with_cls_token else X.shape[1]
+    asrt2 = g_projs[1].shape[1] == X.shape[1] - 1 if with_cls_token else X.shape[1]
+    asrt3 = g_projs[0].shape[2] == model.input_dim
+    asrt4 = g_projs[1].shape[2] == model.input_dim
 
-    if cat_x_and_x_ is not None:
+    assertions.extend([asrt1, asrt2, asrt3, asrt4])
 
-        targ1 = (X[:, 1] - 2).long() if with_cls_token else (X[:, 0] - 1).long()
-        idx_to_substract_col2 = min(X[:, 2]) if with_cls_token else min(X[:, 1])
-        targ2 = (
-            (X[:, 2] - idx_to_substract_col2).long()
-            if with_cls_token
-            else (X[:, 1] - idx_to_substract_col2).long()
-        )
+    return all(assertions)
 
-        assrt5 = all(cat_x_and_x_[0][0] == targ1)
-        assrt6 = all(cat_x_and_x_[1][0] == targ2)
-        assrt7 = cat_x_and_x_[0][1].shape[1] == out_dim[0]
-        assrt8 = cat_x_and_x_[1][1].shape[1] == out_dim[1]
 
-        assertions.extend([assrt5, assrt6, assrt7, assrt8])
+def _check_cat_multiple_denoise_mlps(X, cat_x_and_x_, with_cls_token, out_dim):
 
-    if cat_or_cont == "both":
+    assertions = []
 
-        targ1 = X[:, 3] if with_cls_token else X[:, 2]
-        targ2 = X[:, 4] if with_cls_token else X[:, 3]
+    targ1 = (X[:, 1] - 2).long() if with_cls_token else (X[:, 0] - 1).long()
+    idx_to_substract_col2 = min(X[:, 2]) if with_cls_token else min(X[:, 1])
+    targ2 = (
+        (X[:, 2] - idx_to_substract_col2).long()
+        if with_cls_token
+        else (X[:, 1] - idx_to_substract_col2).long()
+    )
 
-        assrt9 = all(torch.isclose(cont_x_and_x_[0][0].squeeze(1), targ1.float()))
-        assrt10 = all(torch.isclose(cont_x_and_x_[1][0].squeeze(1), targ2.float()))
+    assrt1 = all(cat_x_and_x_[0][0] == targ1)
+    assrt2 = all(cat_x_and_x_[1][0] == targ2)
+    assrt3 = cat_x_and_x_[0][1].shape[1] == out_dim[0]
+    assrt4 = cat_x_and_x_[1][1].shape[1] == out_dim[1]
 
-        assertions.extend([assrt9, assrt10])
+    assertions.extend([assrt1, assrt2, assrt3, assrt4])
 
-    elif cat_or_cont == "cont":
+    return assertions
 
-        targ1 = X[:, 1] if with_cls_token else X[:, 0]
-        targ2 = X[:, 2] if with_cls_token else X[:, 1]
 
-        assrt9 = all(torch.isclose(cont_x_and_x_[0][0].squeeze(1), targ1.float()))
-        assrt10 = all(torch.isclose(cont_x_and_x_[1][0].squeeze(1), targ2.float()))
+def _check_cont_if_cat_multiple_denoise_mlps(X, cont_x_and_x_, with_cls_token):
 
-        assertions.extend([assrt9, assrt10])
+    assertions = []
 
-    assert all(assertions)
+    targ1 = X[:, 3] if with_cls_token else X[:, 2]
+    targ2 = X[:, 4] if with_cls_token else X[:, 3]
+
+    assrt1 = all(torch.isclose(cont_x_and_x_[0][0].squeeze(1), targ1.float()))
+    assrt2 = all(torch.isclose(cont_x_and_x_[1][0].squeeze(1), targ2.float()))
+
+    assertions.extend([assrt1, assrt2])
+
+    return assertions
+
+
+def _check_cont_only_multiple_denoise_mlps(X, cont_x_and_x_, with_cls_token):
+
+    assertions = []
+
+    targ1 = X[:, 1] if with_cls_token else X[:, 0]
+    targ2 = X[:, 2] if with_cls_token else X[:, 1]
+
+    assrt1 = all(torch.isclose(cont_x_and_x_[0][0].squeeze(1), targ1.float()))
+    assrt2 = all(torch.isclose(cont_x_and_x_[1][0].squeeze(1), targ2.float()))
+
+    assertions.extend([assrt1, assrt2])
+
+    return assertions
