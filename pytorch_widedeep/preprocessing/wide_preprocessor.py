@@ -38,8 +38,8 @@ class WidePreprocessor(BasePreprocessor):
     wide_dim: int
         Dimension of the wide model (i.e. dim of the linear layer)
 
-    Example
-    -------
+    Examples
+    --------
     >>> import pandas as pd
     >>> from pytorch_widedeep.preprocessing import WidePreprocessor
     >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l']})

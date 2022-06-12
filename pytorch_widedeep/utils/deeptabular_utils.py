@@ -19,8 +19,9 @@ __all__ = ["LabelEncoder", "find_bin", "get_kernel_window"]
 class LabelEncoder:
     r"""Label Encode categorical values for multiple columns at once
 
-    .. note:: LabelEncoder reserves 0 for `unseen` new categories. This is convenient
-        when defining the embedding layers, since we can just set padding idx to 0.
+    :information_source: **NOTE**: 
+    LabelEncoder reserves 0 for `unseen` new categories. This is convenient
+    when defining the embedding layers, since we can just set padding idx to 0.
 
     Parameters
     ----------

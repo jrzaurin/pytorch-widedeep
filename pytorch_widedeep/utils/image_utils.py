@@ -28,8 +28,9 @@ class AspectAwarePreprocessor:
         ``opencv`` interpolation method. See ``opencv``
         :obj:`InterpolationFlags`.
 
-        .. note:: The value 3 that appears in the class parameters above is a Sphinx
-            formatting error.
+    :information_source: **NOTE**: 
+    The value 3 that appears in the class parameters above is a Sphinx
+    formatting error.
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
@@ -91,8 +92,9 @@ class SimplePreprocessor:
         ``opencv`` interpolation method. See ``opencv``
         :obj:`InterpolationFlags`.
 
-        .. note:: The value 3 that appears in the class parameters above is a Sphinx
-            formatting error.
+    :information_source: **NOTE**: 
+    The value 3 that appears in the class parameters above is a Sphinx
+    formatting error.
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):

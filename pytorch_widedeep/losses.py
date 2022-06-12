@@ -363,6 +363,7 @@ class BayesianSELoss(nn.Module):
             Input tensor with predictions (not probabilities)
         target: Tensor
             Target tensor with the actual classes
+
         Examples
         --------
         >>> import torch

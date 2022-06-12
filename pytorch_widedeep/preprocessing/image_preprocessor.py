@@ -57,9 +57,10 @@ class ImagePreprocessor(BasePreprocessor):
     >>> resized_images = img_preprocessor.fit_transform(df_train)
     >>> new_resized_images = img_preprocessor.transform(df_train)
 
-    .. note:: Normalising metrics will only be computed when the
-        ``fit_transform`` method is run. Running ``transform`` only will not
-        change the computed metrics and running ``fit`` only simply
+    :information_source: **NOTE**: 
+    Normalising metrics will only be computed when the
+    ``fit_transform`` method is run. Running ``transform`` only will not
+    change the computed metrics and running ``fit`` only simply
         instantiates the resizing functions.
     """
 

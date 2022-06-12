@@ -297,10 +297,11 @@ class Tokenizer:
         >>> tok.process_all(texts)
         [['xxmaj', 'machine', 'learning', 'is', 'great'], ['but', 'building', 'stuff', 'is', 'even', 'better']]
 
-        .. note:: Note the token ``TK_MAJ`` (`xxmaj`), used to indicate the
-            next word begins with a capital in the original text. For more
-            details of special tokens please see the ``fastai`` `docs
-            <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
+        :information_source: **NOTE**: 
+        Note the token ``TK_MAJ`` (`xxmaj`), used to indicate the
+        next word begins with a capital in the original text. For more
+        details of special tokens please see the ``fastai`` `docs
+        <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
         """
 
         if self.n_cpus <= 1:
@@ -377,10 +378,11 @@ class Vocab:
         >>> vocab.textify([10, 11, 9, 12])
         'machine learning is great'
 
-        .. note:: Note the many special tokens that ``fastai``'s' tokenizer
-            adds. These are particularly useful when building Language models and/or in
-            classification/Regression tasks. Please see the ``fastai``
-            `docs <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
+        :information_source: **NOTE**: 
+        Note the many special tokens that ``fastai``'s' tokenizer
+        adds. These are particularly useful when building Language models and/or in
+        classification/Regression tasks. Please see the ``fastai``
+        `docs <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
         """
         freq = Counter(p for o in tokens for p in o)
         itos = [o for o, c in freq.most_common(max_vocab) if c >= min_freq]

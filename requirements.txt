@@ -1,0 +1,17 @@
+pandas
+numpy>=1.20.0
+scipy
+scikit-learn
+gensim
+spacy
+opencv-contrib-python
+imutils
+tqdm
+torch
+torchvision
+einops
+wrapt
+torchmetrics
+ray[tune]
+pyarrow
+fastparquet

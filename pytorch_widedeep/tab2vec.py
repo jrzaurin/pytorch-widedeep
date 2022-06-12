@@ -20,10 +20,11 @@ class Tab2Vec:
     processing applied by the model to the categorical and continuous
     columns.
 
-    .. note:: Currently this class is only implemented for the deeptabular
-        component or the Bayesian model. Therefore, if the input dataframe has
-        a text column or a column with the path to images, these will be
-        ignored. We will be adding these functionalities in future versions
+    :information_source: **NOTE**: 
+    Currently this class is only implemented for the deeptabular
+    component or the Bayesian model. Therefore, if the input dataframe has
+    a text column or a column with the path to images, these will be
+    ignored. We will be adding these functionalities in future versions
 
     Parameters
     ----------

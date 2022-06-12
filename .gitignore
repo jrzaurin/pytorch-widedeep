@@ -46,6 +46,8 @@ sftp*-config.json
 
 # Documentation
 _build
+mkdocs/site
+mkdocs/_build
 
 # _static
 _templates

@@ -109,14 +109,15 @@ class WideDeep(nn.Module):
     >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
 
 
-    .. note:: It is possible to use custom components to build Wide & Deep models.
-        Simply, build them and pass them as the corresponding parameters. Note
-        that the custom models MUST return a last layer of activations
-        (i.e. not the final prediction) so that  these activations are
-        collected by ``WideDeep`` and combined accordingly. In addition, the
-        models MUST also contain an attribute ``output_dim`` with the size of
-        these last layers of activations. See for
-        example :class:`pytorch_widedeep.models.tab_mlp.TabMlp`
+    :information_source: **NOTE**: 
+    It is possible to use custom components to build Wide & Deep models.
+    Simply, build them and pass them as the corresponding parameters. Note
+    that the custom models MUST return a last layer of activations
+    (i.e. not the final prediction) so that  these activations are
+    collected by ``WideDeep`` and combined accordingly. In addition, the
+    models MUST also contain an attribute ``output_dim`` with the size of
+    these last layers of activations. See for
+    example :class:`pytorch_widedeep.models.tab_mlp.TabMlp`
     """
 
     def __init__(

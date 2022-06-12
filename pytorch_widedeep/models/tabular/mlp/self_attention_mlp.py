@@ -95,7 +95,7 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
         The output dimension of the model. This is a required attribute
         neccesary to build the ``WideDeep`` class
 
-    Example
+    Examples
     --------
     >>> import torch
     >>> from pytorch_widedeep.models import SelfAttentionMLP

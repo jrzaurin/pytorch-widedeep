@@ -71,12 +71,13 @@ def get_texts(texts: List[str]) -> List[List[str]]:
     >>> get_texts(texts)
     [['xxmaj', 'machine', 'learning', 'is', 'great'], ['but', 'building', 'stuff', 'is', 'even', 'better']]
 
-    .. note:: :obj:`get_texts` uses :class:`pytorch_widedeep.utils.fastai_transforms.Tokenizer`.
-        Such tokenizer uses a series of convenient processing steps, including
-        the  addition of some special tokens, such as ``TK_MAJ`` (`xxmaj`), used to
-        indicate the next word begins with a capital in the original text. For more
-        details of special tokens please see the ``fastai`` `docs
-        <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
+    :information_source: **NOTE**: 
+    :obj:`get_texts` uses :class:`pytorch_widedeep.utils.fastai_transforms.Tokenizer`.
+    Such tokenizer uses a series of convenient processing steps, including
+    the  addition of some special tokens, such as ``TK_MAJ`` (`xxmaj`), used to
+    indicate the next word begins with a capital in the original text. For more
+    details of special tokens please see the ``fastai`` `docs
+    <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
     """
     processed_textx = [" ".join(simple_preprocess(t)) for t in texts]
     tok = Tokenizer().process_all(processed_textx)

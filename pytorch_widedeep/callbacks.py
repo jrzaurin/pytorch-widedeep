@@ -381,11 +381,7 @@ class ModelCheckpoint(Callback):
         best epoch
     best_state_dict: dict
         best model state dictionary to restore model to its best state using
-
-        .. code-block:: python
-
-            Trainer.model.load_state_dict(model_checkpoint.best_state_dict)
-
+        ```>>> Trainer.model.load_state_dict(model_checkpoint.best_state_dict)```
         where ``model_checkpoint`` is an instance of the class ``ModelCheckpoint``
 
     Examples
@@ -715,9 +711,7 @@ class RayTuneReporter(Callback):
 
     For examples see the examples folder at:
 
-        .. code-block:: bash
-
-            /examples/12_HyperParameter_tuning_w_RayTune.ipynb
+    `/examples/12_HyperParameter_tuning_w_RayTune.ipynb`
     """
 
     def on_epoch_end(
