@@ -109,6 +109,7 @@ plugins:
                     # - import os
                     - sys.path.insert(0, "..")
                 rendering:
+                    members_order: source
                     show_source: True
                     show_submodules: True
                     merge_init_into_class: True

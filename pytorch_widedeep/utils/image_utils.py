@@ -26,11 +26,7 @@ class AspectAwarePreprocessor:
         output height
     inter: interpolation method,  default = ``cv2.INTER_AREA``
         ``opencv`` interpolation method. See ``opencv``
-        :obj:`InterpolationFlags`.
-
-    :information_source: **NOTE**: 
-    The value 3 that appears in the class parameters above is a Sphinx
-    formatting error.
+        `InterpolationFlags`.
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
@@ -57,6 +53,11 @@ class AspectAwarePreprocessor:
         >>> resized_img = app.preprocess(img)
         >>> resized_img.shape
         (224, 224, 3)
+
+        Returns
+        -------
+        np.ndarray
+            Resized image according to its original image aspect ratio
         """
         (h, w) = image.shape[:2]
         dW = 0
@@ -90,11 +91,7 @@ class SimplePreprocessor:
         output height
     inter: interpolation method, default = ``cv2.INTER_AREA``
         ``opencv`` interpolation method. See ``opencv``
-        :obj:`InterpolationFlags`.
-
-    :information_source: **NOTE**: 
-    The value 3 that appears in the class parameters above is a Sphinx
-    formatting error.
+        `InterpolationFlags`.
     """
 
     def __init__(self, width: int, height: int, inter=cv2.INTER_AREA):
@@ -109,6 +106,12 @@ class SimplePreprocessor:
         ----------
         image: np.ndarray
             Input image to be resized
+
+        Returns
+        -------
+        np.ndarray
+            Resized image
+
         """
         resized_image = cv2.resize(
             image, (self.width, self.height), interpolation=self.inter
