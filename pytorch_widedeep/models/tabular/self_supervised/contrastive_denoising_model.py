@@ -108,14 +108,20 @@ class ContrastiveDenoisingModel(nn.Module):
             if self.model.with_cls_token:
                 _X[:, 0] = 0.0
 
-            if self.denoise_cat_mlp is not None:
-                cat_x_and_x_ = self.denoise_cat_mlp(_X, encoded_)
-            else:
-                cat_x_and_x_ = None
-            if self.denoise_cont_mlp is not None:
-                cont_x_and_x_ = self.denoise_cont_mlp(_X, encoded_)
-            else:
-                cont_x_and_x_ = None
+            cat_x_and_x_ = (
+                self.denoise_cat_mlp(_X, encoded_)
+                if self.denoise_cat_mlp is not None
+                else None
+            )
+
+            cont_x_and_x_ = (
+                self.denoise_cont_mlp(_X, encoded_)
+                if self.denoise_cont_mlp is not None
+                else None
+            )
+
+        else:
+            cat_x_and_x_, cont_x_and_x_ = None, None
 
         return g_projs, cat_x_and_x_, cont_x_and_x_
 

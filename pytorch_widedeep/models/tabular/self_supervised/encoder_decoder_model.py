@@ -57,8 +57,7 @@ class EncoderDecoderModel(nn.Module):
 
         if self.training:
             masked_x, mask = self.masker(x_embed)
-            x_enc = self.encoder(X)
-            x_embed_rec = self.decoder(x_enc)
+            x_embed_rec = self.decoder(self.encoder(X))
         else:
             x_embed_rec = self.decoder(self.encoder(X))
             mask = torch.ones(x_embed.shape).to(X.device)

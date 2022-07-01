@@ -5,7 +5,20 @@ import torch
 import pandas as pd
 import pytest
 
-from pytorch_widedeep.models import *  # noqa: F403
+from pytorch_widedeep.models import (
+    SAINT,
+    TabMlp,
+    TabNet,
+    TabResnet,
+    FTTransformer,
+    TabFastFormer,
+    TabMlpDecoder,
+    TabNetDecoder,
+    TabTransformer,
+    TabResnetDecoder,
+    ContextAttentionMLP,
+    SelfAttentionMLP,
+)
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.models.tabular.self_supervised import (
     EncoderDecoderModel,
@@ -115,7 +128,14 @@ test_df = pd.DataFrame(
 
 @pytest.mark.parametrize(
     "transf_model",
-    ["tabtransformer", "saint", "fttransformer", "tabfastformer"],
+    [
+        "tabtransformer",
+        "saint",
+        "fttransformer",
+        "tabfastformer",
+        "contextattentionmlp",
+        "selfattentionmlp",
+    ],
 )
 @pytest.mark.parametrize(
     "cat_or_cont",
@@ -175,7 +195,7 @@ def test_cont_den_multiple_mlps_different_setups(
 
         projs_check = _check_g_projs(X, g_projs, tr_model, with_cls_token)
 
-        checks.extend([projs_check])
+        checks.extend(projs_check)
 
     if cat_x_and_x_ is not None:
 
@@ -183,7 +203,7 @@ def test_cont_den_multiple_mlps_different_setups(
             X, cat_x_and_x_, with_cls_token, out_dim
         )
 
-        checks.extend([cat_checks])
+        checks.extend(cat_checks)
 
     if cat_or_cont == "both":
 
@@ -191,7 +211,7 @@ def test_cont_den_multiple_mlps_different_setups(
             X, cont_x_and_x_, with_cls_token
         )
 
-        checks.extend([cont_if_cat_check])
+        checks.extend(cont_if_cat_check)
 
     elif cat_or_cont == "cont":
 
@@ -199,9 +219,163 @@ def test_cont_den_multiple_mlps_different_setups(
             X, cont_x_and_x_, with_cls_token
         )
 
-        checks.extend([cont_only_check])
+        checks.extend(cont_only_check)
 
     assert all(checks)
+
+
+@pytest.mark.parametrize(
+    "transf_model",
+    [
+        "tabtransformer",
+        "saint",
+        "fttransformer",
+        "tabfastformer",
+        "contextattentionmlp",
+        "selfattentionmlp",
+    ],
+)
+@pytest.mark.parametrize(
+    "cat_or_cont",
+    ["cat", "cont", "both"],
+)
+@pytest.mark.parametrize(
+    "with_cls_token",
+    [True, False],
+)
+def test_cont_den_single_mlp_different_setups(
+    transf_model, cat_or_cont, with_cls_token
+):
+
+    cat_embed_cols = ["col1", "col2"] if cat_or_cont in ["cat", "both"] else None
+    continuous_cols = ["col3", "col4"] if cat_or_cont in ["cont", "both"] else None
+
+    preprocessor = TabPreprocessor(
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        with_attention=True,
+        with_cls_token=with_cls_token,
+    )
+    X_tab = preprocessor.fit_transform(test_df)
+    X = torch.from_numpy(X_tab)
+
+    cat_embed_input = (
+        preprocessor.cat_embed_input
+        if hasattr(preprocessor, "cat_embed_input")
+        else None
+    )
+
+    tr_model = _build_transf_model(
+        transf_model, preprocessor, cat_embed_input, continuous_cols
+    )
+    cd_model = ContrastiveDenoisingModel(
+        tr_model,
+        preprocessor,
+        loss_type="both",
+        projection_head1_dims=None,
+        projection_head2_dims=None,
+        projection_heads_activation="relu",
+        cat_mlp_type="single",
+        cont_mlp_type="single",
+        denoise_mlps_activation="relu",
+    )
+
+    out_dim = _get_output_dim(cd_model) if cat_or_cont in ["cat", "both"] else None
+
+    g_projs, cat_x_and_x_, cont_x_and_x_ = cd_model(X)
+
+    checks = []
+    if g_projs is not None:
+
+        projs_check = _check_g_projs(X, g_projs, tr_model, with_cls_token)
+
+        checks.extend(projs_check)
+
+    if cat_x_and_x_ is not None:
+
+        cat_checks = _check_cat_single_denoise_mlps(
+            X, cat_x_and_x_, with_cls_token, out_dim
+        )
+
+        checks.extend(cat_checks)
+
+    if cat_or_cont == "both":
+
+        cont_if_cat_check = _check_cont_if_cat_single_denoise_mlps(
+            X, cont_x_and_x_, with_cls_token
+        )
+
+        checks.extend(cont_if_cat_check)
+
+    elif cat_or_cont == "cont":
+
+        cont_only_check = _check_cont_only_single_denoise_mlps(
+            X, cont_x_and_x_, with_cls_token
+        )
+
+        checks.extend(cont_only_check)
+
+    assert all(checks)
+
+
+def _get_output_dim(cd_model):
+    for name, param in cd_model.denoise_cat_mlp.named_parameters():
+        if ("dense_layer_1.0" in name) and ("weight" in name):
+            out_dim = param.shape[0]
+    return out_dim
+
+
+def _check_cat_single_denoise_mlps(X, cat_x_and_x_, with_cls_token, out_dim):
+
+    assertions = []
+
+    targ = (
+        torch.cat([X[:, 1], X[:, 2]]) - 2
+        if with_cls_token
+        else torch.cat([X[:, 0], X[:, 1]]) - 1
+    )
+
+    assrt1 = targ.shape[0] == X.shape[0] * 2
+    assrt2 = all(targ == cat_x_and_x_[0])
+    assrt3 = (targ.max() + 1).item() == out_dim
+
+    assertions.extend([assrt1, assrt2, assrt3])
+
+    return assertions
+
+
+def _check_cont_if_cat_single_denoise_mlps(X, cont_x_and_x_, with_cls_token):
+
+    assertions = []
+
+    targ = (
+        torch.cat([X[:, 3], X[:, 4]])
+        if with_cls_token
+        else torch.cat([X[:, 2], X[:, 3]])
+    )
+
+    assrt1 = all(torch.isclose(cont_x_and_x_[0].squeeze(1), targ.float()))
+
+    assertions.extend([assrt1])
+
+    return assertions
+
+
+def _check_cont_only_single_denoise_mlps(X, cont_x_and_x_, with_cls_token):
+
+    assertions = []
+
+    targ = (
+        torch.cat([X[:, 1], X[:, 2]])
+        if with_cls_token
+        else torch.cat([X[:, 0], X[:, 1]])
+    )
+
+    assrt1 = all(torch.isclose(cont_x_and_x_[0].squeeze(1), targ.float()))
+
+    assertions.extend([assrt1])
+
+    return assertions
 
 
 def _build_transf_model(transf_model, preprocessor, cat_embed_input, continuous_cols):
@@ -239,6 +413,18 @@ def _build_transf_model(transf_model, preprocessor, cat_embed_input, continuous_
             n_blocks=2,
             n_heads=2,
         )
+    if transf_model == "contextattentionmlp":
+        model = ContextAttentionMLP(
+            column_idx=preprocessor.column_idx,
+            cat_embed_input=cat_embed_input,
+            continuous_cols=continuous_cols,
+        )
+    if transf_model == "selfattentionmlp":
+        model = SelfAttentionMLP(
+            column_idx=preprocessor.column_idx,
+            cat_embed_input=cat_embed_input,
+            continuous_cols=continuous_cols,
+        )
 
     return model
 
@@ -254,7 +440,7 @@ def _check_g_projs(X, g_projs, model, with_cls_token):
 
     assertions.extend([asrt1, asrt2, asrt3, asrt4])
 
-    return all(assertions)
+    return assertions
 
 
 def _check_cat_multiple_denoise_mlps(X, cat_x_and_x_, with_cls_token, out_dim):

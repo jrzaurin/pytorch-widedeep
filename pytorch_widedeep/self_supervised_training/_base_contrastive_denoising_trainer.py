@@ -112,9 +112,15 @@ class BaseContrastiveDenoisingTrainer(ABC):
     ) -> Tensor:
 
         contrastive_loss = (
-            self.contrastive_loss(g_projs) if g_projs is not None else torch.tensor(0.0)
+            self.contrastive_loss(g_projs)
+            if self.loss_type in ["contrastive", "both"]
+            else torch.tensor(0.0)
         )
-        denoising_loss = self.denoising_loss(x_cat_and_cat_, x_cont_and_cont_)
+        denoising_loss = (
+            self.denoising_loss(x_cat_and_cat_, x_cont_and_cont_)
+            if self.loss_type in ["denoising", "both"]
+            else torch.tensor(0.0)
+        )
 
         return contrastive_loss + denoising_loss
 
