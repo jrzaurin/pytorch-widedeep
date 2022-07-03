@@ -17,7 +17,7 @@ def embed_sz_rule(
     n_cat: int,
     embedding_rule: Literal["google", "fastai_old", "fastai_new"] = "fastai_new",
 ) -> int:
-    r"""Rule of thumb to pick embedding size corresponding to ``n_cat``. Default rule is taken
+    r"""Rule of thumb to pick embedding size corresponding to `n_cat`. Default rule is taken
     from recent fastai's Tabular API. The function also includes previously used rule by fastai
     and rule included in the Google's Tensorflow documentation
 
@@ -37,56 +37,51 @@ def embed_sz_rule(
 
 
 class TabPreprocessor(BasePreprocessor):
-    r"""Preprocessor to prepare the ``deeptabular`` component input dataset
+    r"""Preprocessor to prepare the `deeptabular` component input dataset
 
     Parameters
     ----------
     cat_embed_cols: List, default = None
         List containing the name of the categorical columns that will be
-        represented by embeddings (e.g.['education', 'relationship', ...]) or
-        a Tuple with the name and the embedding dimension (e.g.:[
-        ('education',32),('relationship',16), ...])
+        represented by embeddings (e.g. _['education', 'relationship', ...]_) or
+        a Tuple with the name and the embedding dimension (e.g.: _[
+        ('education',32), ('relationship',16), ...]_)
     continuous_cols: List, default = None
         List with the name of the continuous cols
     scale: bool, default = True
         Bool indicating whether or not to scale/standarise continuous cols. It
         is important to emphasize that all the DL models for tabular data in
         the library also include the possibility of normalising the input
-        continuous features via a ``BatchNorm`` or a ``LayerNorm``.
-
-        Param alias: ``scale_cont_cols``
-
+        continuous features via a `BatchNorm` or a `LayerNorm`. <br/>
+        Param alias: `scale_cont_cols`.
     already_standard: List, default = None
         List with the name of the continuous cols that do not need to be
         scaled/standarised.
     auto_embed_dim: bool, default = True
         Boolean indicating whether the embedding dimensions will be
-        automatically defined via rule of thumb. See ``embedding_rule``
+        automatically defined via rule of thumb. See `embedding_rule`
         below.
     embedding_rule: str, default = 'fastai_new'
-        If ``auto_embed_dim=True``, this is the choice of embedding rule of
+        If `auto_embed_dim=True`, this is the choice of embedding rule of
         thumb. Choices are:
 
-        - `'fastai_new'` -- :math:`min(600, round(1.6 \times n_{cat}^{0.56}))`
+        - _fastai_new_: $min(600, round(1.6 \times n_{cat}^{0.56}))$
 
-        - `'fastai_old'` -- :math:`min(50, (n_{cat}//{2})+1)`
+        - _fastai_old_: $min(50, (n_{cat}//{2})+1)$
 
-        - `'google'` -- :math:`min(600, round(n_{cat}^{0.24}))`
-
+        - _google_: $min(600, round(n_{cat}^{0.24}))$
     default_embed_dim: int, default=16
         Dimension for the embeddings if the embed_dim is not provided in the
-        ``cat_embed_cols`` parameter and ``auto_embed_dim`` is set to
-        ``False``.
+        `cat_embed_cols` parameter and `auto_embed_dim` is set to
+        `False`.
     with_attention: bool, default = False
         Boolean indicating whether the preprocessed data will be passed to an
-        attention-based model. If ``True``, the param ``cat_embed_cols`` must
+        attention-based model. If `True`, the param `cat_embed_cols` must
         just be a list containing just the categorical column names: e.g.
-        ['education', 'relationship', ...]. This is because they will all be
+        _['education', 'relationship', ...]_. This is because they will all be
         encoded using embeddings of the same dim, which will be specified
-        later when the model is defined.
-
-        Param alias: ``for_transformer``
-
+        later when the model is defined. <br/>
+        Param alias: `for_transformer`
     with_cls_token: bool, default = False
         Boolean indicating if a `'[CLS]'` token will be added to the dataset
         when using attention-based models. The final hidden state
@@ -96,32 +91,32 @@ class TabPreprocessor(BasePreprocessor):
         being passed to the final MLP (if present).
     shared_embed: bool, default = False
         Boolean indicating if the embeddings will be "shared" when using
-        attention-based models. The idea behind ``shared_embed`` is
-        described in the Appendix A in the `TabTransformer paper
-        <https://arxiv.org/abs/2012.06678>`_: `'The goal of having column
-        embedding is to enable the model to distinguish the classes in one
-        column from those in the other columns'`. In other words, the idea is
-        to let the model learn which column is embedded at the time. See:
-        :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
+        attention-based models. The idea behind `shared_embed` is
+        described in the Appendix A in the [TabTransformer paper](https://arxiv.org/abs/2012.06678):
+        _'The goal of having column embedding is to enable the model to
+        distinguish the classes in one column from those in the other
+        columns'_. In other words, the idea is to let the model learn which
+        column is embedded at the time. See: `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
+
     verbose: int, default = 1
 
     Attributes
     ----------
     embed_dim: Dict
         Dictionary where keys are the embed cols and values are the embedding
-        dimensions. If ``with_attention`` is set to ``True`` this attribute
-        is not generated during the ``fit`` process
+        dimensions. If `with_attention` is set to `True` this attribute
+        is not generated during the `fit` process
     label_encoder: LabelEncoder
-        see :class:`pytorch_widedeep.utils.dense_utils.LabelEncder`
+        see `pytorch_widedeep.utils.dense_utils.LabelEncder`
     cat_embed_input: List
         List of Tuples with the column name, number of individual values for
-        that column and, If ``with_attention`` is set to ``False``, the
-        corresponding embeddings dim, e.g. [('education', 16, 10),
-        ('relationship', 6, 8), ...].
+        that column and, If `with_attention` is set to `False`, the
+        corresponding embeddings dim, e.g. _[('education', 16, 10),
+        ('relationship', 6, 8), ...]_.
     standardize_cols: List
         List of the columns that will be standarized
     scaler: StandardScaler
-        an instance of :class:`sklearn.preprocessing.StandardScaler`
+        an instance of `sklearn.preprocessing.StandardScaler`
     column_idx: Dict
         Dictionary where keys are column names and values are column indexes.
         This is neccesary to slice tensors
@@ -149,10 +144,10 @@ class TabPreprocessor(BasePreprocessor):
         cat_embed_cols: Union[List[str], List[Tuple[str, int]]] = None,
         continuous_cols: List[str] = None,
         scale: bool = True,
+        already_standard: List[str] = None,
         auto_embed_dim: bool = True,
         embedding_rule: Literal["google", "fastai_old", "fastai_new"] = "fastai_new",
         default_embed_dim: int = 16,
-        already_standard: List[str] = None,
         with_attention: bool = False,
         with_cls_token: bool = False,
         shared_embed: bool = False,
@@ -163,10 +158,10 @@ class TabPreprocessor(BasePreprocessor):
         self.cat_embed_cols = cat_embed_cols
         self.continuous_cols = continuous_cols
         self.scale = scale
+        self.already_standard = already_standard
         self.auto_embed_dim = auto_embed_dim
         self.embedding_rule = embedding_rule
         self.default_embed_dim = default_embed_dim
-        self.already_standard = already_standard
         self.with_attention = with_attention
         self.with_cls_token = with_cls_token
         self.shared_embed = shared_embed
@@ -176,7 +171,18 @@ class TabPreprocessor(BasePreprocessor):
         self.is_fitted = False
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        """Fits the Preprocessor and creates required attributes"""
+        """Fits the Preprocessor and creates required attributes
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        TabPreprocessor
+            `TabPreprocessor` fitted object
+        """
         if self.cat_embed_cols is not None:
             df_emb = self._prepare_embed(df)
             self.label_encoder = LabelEncoder(
@@ -202,7 +208,18 @@ class TabPreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Returns the processed ``dataframe`` as a np.ndarray"""
+        """Returns the processed `dataframe` as a np.ndarray
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        np.ndarray
+            transformed input dataframe
+        """
         check_is_fitted(self, condition=self.is_fitted)
         if self.cat_embed_cols is not None:
             df_emb = self._prepare_embed(df)
@@ -223,13 +240,18 @@ class TabPreprocessor(BasePreprocessor):
         return df_deep.values
 
     def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:
-        r"""Takes as input the output from the ``transform`` method and it will
+        r"""Takes as input the output from the `transform` method and it will
         return the original values.
 
         Parameters
         ----------
         encoded: np.ndarray
-            array with the output of the ``transform`` method
+            array with the output of the `transform` method
+
+        Returns
+        -------
+        pd.DataFrame
+            Pandas dataframe with the original values
         """
         decoded = pd.DataFrame(encoded, columns=self.column_idx.keys())
         # embeddings back to original category
@@ -254,7 +276,18 @@ class TabPreprocessor(BasePreprocessor):
         return decoded
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Combines ``fit`` and ``transform``"""
+        """Combines `fit` and `transform`
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        np.ndarray
+            transformed input dataframe
+        """
         return self.fit(df).transform(df)
 
     def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:

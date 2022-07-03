@@ -35,9 +35,9 @@ class ImagePreprocessor(BasePreprocessor):
     Attributes
     ----------
     aap: AspectAwarePreprocessor
-        an instance of :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
+        an instance of `pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
     spp: SimplePreprocessor
-        an instance of :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`
+        an instance of `pytorch_widedeep.utils.image_utils.SimplePreprocessor`
     normalise_metrics: Dict
         Dict containing the normalisation metrics of the image dataset, i.e.
         mean and std for the R, G and B channels
@@ -57,11 +57,11 @@ class ImagePreprocessor(BasePreprocessor):
     >>> resized_images = img_preprocessor.fit_transform(df_train)
     >>> new_resized_images = img_preprocessor.transform(df_train)
 
-    :information_source: **NOTE**: 
-    Normalising metrics will only be computed when the
-    ``fit_transform`` method is run. Running ``transform`` only will not
-    change the computed metrics and running ``fit`` only simply
-        instantiates the resizing functions.
+    :information_source: **NOTE**:
+    Normalising metrics will only be computed when the ``fit_transform``
+    method is run. Running ``transform`` only will not change the computed
+    metrics and running ``fit`` only simply instantiates the resizing
+    functions.
     """
 
     def __init__(
@@ -81,13 +81,21 @@ class ImagePreprocessor(BasePreprocessor):
         self.verbose = verbose
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        r"""Instantiates the Preprocessors
-        :obj:`AspectAwarePreprocessor`` and :obj:`SimplePreprocessor` for image
-        resizing.
+        r"""Instantiates the Preprocessors `AspectAwarePreprocessor` and
+        `SimplePreprocessor` for image resizing.
 
-        See
-        :class:`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor`
-        and :class:`pytorch_widedeep.utils.image_utils.SimplePreprocessor`.
+        See`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor` and
+        `pytorch_widedeep.utils.image_utils.SimplePreprocessor`.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        ImagePreprocessor
+            `ImagePreprocessor` fitted object
 
         """
         self.aap = AspectAwarePreprocessor(self.width, self.height)
@@ -96,7 +104,19 @@ class ImagePreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Resizes the images to the input height and width."""
+        """Resizes the images to the input height and width.
+
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe with the `img_col`
+
+        Returns
+        -------
+        np.ndarray
+            Resized images to the input height and width
+        """
         check_is_fitted(self, attributes=["aap"])
         image_list = df[self.img_col].tolist()
         if self.verbose:
@@ -151,7 +171,18 @@ class ImagePreprocessor(BasePreprocessor):
         return np.asarray(resized_imgs)
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Combines ``fit`` and ``transform``"""
+        """Combines `fit` and `transform`
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        np.ndarray
+            Resized images to the input height and width
+        """
         return self.fit(df).transform(df)
 
     def inverse_transform(self, transformed_image):

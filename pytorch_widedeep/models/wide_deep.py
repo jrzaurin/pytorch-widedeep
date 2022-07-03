@@ -109,7 +109,7 @@ class WideDeep(nn.Module):
     >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
 
 
-    :information_source: **NOTE**: 
+    :information_source: **NOTE**:
     It is possible to use custom components to build Wide & Deep models.
     Simply, build them and pass them as the corresponding parameters. Note
     that the custom models MUST return a last layer of activations

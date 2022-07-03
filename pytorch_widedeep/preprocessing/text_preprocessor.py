@@ -40,7 +40,7 @@ class TextPreprocessor(BasePreprocessor):
     Attributes
     ----------
     vocab: Vocab
-        an instance of :class:`pytorch_widedeep.utils.fastai_transforms.Vocab`
+        an instance of `pytorch_widedeep.utils.fastai_transforms.Vocab`
     embedding_matrix: np.ndarray
         Array with the pretrained embeddings
     tokens: List
@@ -85,7 +85,18 @@ class TextPreprocessor(BasePreprocessor):
         self.verbose = verbose
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        """Builds the vocabulary"""
+        """Builds the vocabulary
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        TextPreprocessor
+            `TextPreprocessor` fitted object
+        """
         texts = df[self.text_col].tolist()
         tokens = get_texts(texts)
         self.vocab = Vocab.create(
@@ -100,7 +111,18 @@ class TextPreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Returns the padded, `numericalised` sequences"""
+        """Returns the padded, _'numericalised'_ sequences
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        np.ndarray
+            Padded, _'numericalised'_ sequences
+        """
         check_is_fitted(self, attributes=["vocab"])
         texts = df[self.text_col].tolist()
         self.tokens = get_texts(texts)
@@ -118,11 +140,33 @@ class TextPreprocessor(BasePreprocessor):
         )
         return padded_seq
 
-    def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Combines ``fit`` and ``transform``"""
-        return self.fit(df).transform(df)
-
     def inverse_transform(self, padded_seq: np.ndarray) -> pd.DataFrame:
-        """Returns the original text plus the added 'special' tokens"""
+        """Returns the original text plus the added 'special' tokens
+
+        Parameters
+        ----------
+        encoded: np.ndarray
+            array with the output of the `transform` method
+
+        Returns
+        -------
+        pd.DataFrame
+            Pandas dataframe with the original text plus the added 'special' tokens
+        """
         texts = [self.vocab.textify(num) for num in padded_seq]
         return pd.DataFrame({self.text_col: texts})
+
+    def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
+        """Combines `fit` and `transform`
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        np.ndarray
+            Padded, _'numericalised'_ sequences
+        """
+        return self.fit(df).transform(df)

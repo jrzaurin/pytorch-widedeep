@@ -719,7 +719,7 @@ class Trainer:
         For a series of comprehensive examples please, see the `Examples
         <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
         folder in the repo.
-        
+
         For completion, here we include a `"fabricated"` example, i.e.
         assuming we have already trained the model, that we have the
         categorical encodings in a dictionary name ``encoding_dict``, and that

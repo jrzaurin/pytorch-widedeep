@@ -13,18 +13,18 @@ class WidePreprocessor(BasePreprocessor):
 
     This Preprocessor prepares the data for the wide, linear component.
     This linear model is implemented via an Embedding layer that is
-    connected to the output neuron. ``WidePreprocessor`` numerically
-    encodes all the unique values of all categorical columns ``wide_cols +
-    crossed_cols``. See the Example below.
+    connected to the output neuron. `WidePreprocessor` numerically
+    encodes all the unique values of all categorical columns `wide_cols +
+    crossed_cols`. See the Example below.
 
     Parameters
     ----------
     wide_cols: List
         List of strings with the name of the columns that will label
-        encoded and passed through the ``wide`` component
+        encoded and passed through the `wide` component
     crossed_cols: List, default = None
         List of Tuples with the name of the columns that will be `'crossed'`
-        and then label encoded. e.g. [('education', 'occupation'), ...]. For
+        and then label encoded. e.g. _[('education', 'occupation'), ...]_. For
         binary features, a cross-product transformation is 1 if and only if
         the constituent features are all 1, and 0 otherwise".
 
@@ -68,8 +68,19 @@ class WidePreprocessor(BasePreprocessor):
         self.wide_cols = wide_cols
         self.crossed_cols = crossed_cols
 
-    def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        r"""Fits the Preprocessor and creates required attributes"""
+    def fit(self, df: pd.DataFrame) -> "WidePreprocessor":
+        r"""Fits the Preprocessor and creates required attributes
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        WidePreprocessor
+            `WidePreprocessor` fitted object
+        """
         df_wide = self._prepare_wide(df)
         self.wide_crossed_cols = df_wide.columns.tolist()
         glob_feature_list = self._make_global_feature_list(
@@ -83,7 +94,17 @@ class WidePreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
-        r"""Returns the processed dataframe"""
+        r"""
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        np.ndarray
+            transformed input dataframe
+        """
         check_is_fitted(self, attributes=["encoding_dict"])
         df_wide = self._prepare_wide(df)
         encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)])
@@ -96,8 +117,19 @@ class WidePreprocessor(BasePreprocessor):
         return encoded.astype("int64")
 
     def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:
-        r"""Takes as input the output from the ``transform`` method and it will
+        r"""Takes as input the output from the `transform` method and it will
         return the original values.
+
+        Parameters
+        ----------
+        encoded: np.ndarray
+            numpy array with the encoded values that are the output from the
+            `transform` method
+
+        Returns
+        -------
+        pd.DataFrame
+            Pandas dataframe with the original values
         """
         decoded = pd.DataFrame(encoded, columns=self.wide_crossed_cols)
         decoded = decoded.applymap(lambda x: self.inverse_encoding_dict[x])
@@ -107,7 +139,18 @@ class WidePreprocessor(BasePreprocessor):
         return decoded
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Combines ``fit`` and ``transform``"""
+        """Combines `fit` and `transform`
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        np.ndarray
+            transformed input dataframe
+        """
         return self.fit(df).transform(df)
 
     def _make_global_feature_list(self, df: pd.DataFrame) -> List:

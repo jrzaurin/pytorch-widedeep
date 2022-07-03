@@ -151,7 +151,8 @@ markdown_extensions:
         baselevel: 1
         permalink: true
         toc_depth: 2
-    - pymdownx.arithmatex
+    - pymdownx.arithmatex:
+        generic: true
     - pymdownx.betterem:
         smart_enable: all
     - pymdownx.caret
