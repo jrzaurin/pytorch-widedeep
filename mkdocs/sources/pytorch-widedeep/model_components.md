@@ -5,22 +5,14 @@ that will comprise a Wide and Deep model (``wide``, ``deeptabular``,
 ``deeptext``, ``deepimage``), as well as the ``WideDeep`` "constructor"
 class. Note that each of the four components can be used independently.
 
+
 ::: pytorch_widedeep.models.tabular.linear.wide.Wide
     selection:
         filters:
             - "!^forward$"
+            - "!^_reset_parameters$"
 
 ::: pytorch_widedeep.models.tabular.mlp.tab_mlp.TabMlp
-    selection:
-        filters:
-            - "!^forward$"
-
-::: pytorch_widedeep.models.tabular.mlp.context_attention_mlp.ContextAttentionMLP
-    selection:
-        filters:
-            - "!^forward$"
-
-::: pytorch_widedeep.models.tabular.mlp.self_attention_mlp.SelfAttentionMLP
     selection:
         filters:
             - "!^forward$"
@@ -31,6 +23,16 @@ class. Note that each of the four components can be used independently.
             - "!^forward$"
 
 ::: pytorch_widedeep.models.tabular.tabnet.tab_net.TabNet
+    selection:
+        filters:
+            - "!^forward$"
+
+::: pytorch_widedeep.models.tabular.mlp.context_attention_mlp.ContextAttentionMLP
+    selection:
+        filters:
+            - "!^forward$"
+
+::: pytorch_widedeep.models.tabular.mlp.self_attention_mlp.SelfAttentionMLP
     selection:
         filters:
             - "!^forward$"
@@ -60,6 +62,22 @@ class. Note that each of the four components can be used independently.
         filters:
             - "!^forward$"
 
+<br/>
+
+:information_source: **NOTE**: when we started developing the library we
+ thought that combining Deep Learning architectures for tabular data, with
+ CNN-based architectures (pretrained or not) for images and Transformer-based
+ architectures for text would be an _'overkill'_(also, pretrained
+ transformer-based models were not as readily available as they are today).
+ Therefore, at that time we made the decision of including in the library
+ simple RNN-based architectures for the text dataset. A lot has passed since
+ then and it is our intention to integrate this library with the
+ [Hugginface's Transformers library]
+ (https://huggingface.co/docs/transformers/main/en/index) in the near future.
+ Nonetheless, note that it is still possible to use any custom model as the
+ `deeptext` component using this library. Please, see the example section in
+ this documentation for details
+
 ::: pytorch_widedeep.models.text.attentive_rnn.BasicRNN
     selection:
         filters:
@@ -85,6 +103,12 @@ class. Note that each of the four components can be used independently.
             - "!^forward$"
 
 ::: pytorch_widedeep.models.wide_deep.WideDeep
+    selection:
+        filters:
+            - "!^_"  # exclude all members starting with _
+            - "!^forward$"
+
+::: pytorch_widedeep.models.wide_deep.FDSLayer
     selection:
         filters:
             - "!^_"  # exclude all members starting with _

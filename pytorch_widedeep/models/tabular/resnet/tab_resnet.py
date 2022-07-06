@@ -7,13 +7,13 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 
 
 class TabResnet(BaseTabularModelWithoutAttention):
-    r"""Defines a ``TabResnet`` model that can be used as the ``deeptabular``
+    r"""Defines a `TabResnet` model that can be used as the `deeptabular`
     component of a Wide & Deep model or independently by itself.
 
     This class combines embedding representations of the categorical features
     with numerical (aka continuous) features, embedded or not. These are then
     passed through a series of Resnet blocks. See
-    :obj:`pytorch_widedeep.models.tab_resnet._layers` for details on the
+    `pytorch_widedeep.models.tab_resnet._layers` for details on the
     structure of each block.
 
     Parameters
@@ -21,22 +21,22 @@ class TabResnet(BaseTabularModelWithoutAttention):
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
         the model. Required to slice the tensors. e.g.
-        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
+        _{'education': 0, 'relationship': 1, 'workclass': 2, ...}_
     cat_embed_input: List
         List of Tuples with the column name, number of unique values and
-        embedding dimension. e.g. [(education, 11, 32), ...].
+        embedding dimension. e.g. _[(education, 11, 32), ...]_.
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     use_cat_bias: bool, default = False,
         Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings, if any. Currently
-        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        _'tanh'_, _'relu'_, _'leaky'_relu` and _'gelu'_ are supported
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
-        are: 'layernorm', 'batchnorm' or None.
+        are: _'layernorm'_, _'batchnorm'_ or `None`.
     embed_continuous: bool, default = False,
         Boolean indicating if the continuous columns will be embedded
         (i.e. passed each through a linear layer with or without activation)
@@ -48,28 +48,27 @@ class TabResnet(BaseTabularModelWithoutAttention):
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings, if any. Currently
-        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        _'tanh'_, _'relu'_, _'leaky'_relu` and _'gelu'_ are supported
     blocks_dims: List, default = [200, 100, 100]
         List of integers that define the input and output units of each block.
-        For example: [200, 100, 100] will generate 2 blocks. The first will
+        For example: _[200, 100, 100]_ will generate 2 blocks. The first will
         receive a tensor of size 200 and output a tensor of size 100, and the
         second will receive a tensor of size 100 and output a tensor of size
-        100. See :obj:`pytorch_widedeep.models.tab_resnet._layers` for
+        100. See `pytorch_widedeep.models.tab_resnet._layers` for
         details on the structure of each block.
     blocks_dropout: float, default =  0.1
-       Block's `"internal"` dropout.
+        Block's internal dropout.
     simplify_blocks: bool, default = False,
-        Boolean indicating if the simplest possible residual blocks (``X -> [
-        [LIN, BN, ACT]  + X ]``) will be used instead of a standard one
-        (``X -> [ [LIN1, BN1, ACT1] -> [LIN2, BN2]  + X ]``).
+        Boolean indicating if the simplest possible residual blocks (`X -> [
+        [LIN, BN, ACT]  + X ]`) will be used instead of a standard one
+        (`X -> [ [LIN1, BN1, ACT1] -> [LIN2, BN2]  + X ]`).
     mlp_hidden_dims: List, Optional, default = None
         List with the number of neurons per dense layer in the MLP. e.g:
-        [64, 32]. If ``None`` the  output of the Resnet Blocks will be
-        connected directly to the output neuron(s), i.e. using a MLP is
-        optional.
+        _[64, 32]_. If `None` the  output of the Resnet Blocks will be
+        connected directly to the output neuron(s).
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        _'tanh'_, _'relu'_, _'leaky'_relu` and _'gelu'_ are supported
     mlp_dropout: float, default = 0.1
         float with the dropout between the dense layers of the MLP.
     mlp_batchnorm: bool, default = False
@@ -80,23 +79,23 @@ class TabResnet(BaseTabularModelWithoutAttention):
         to the last of the dense layers
     mlp_linear_first: bool, default = False
         Boolean indicating the order of the operations in the dense
-        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-        LIN -> ACT]``
+        layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
+        LIN -> ACT]`
 
     Attributes
     ----------
-    cat_and_cont_embed: ``nn.Module``
+    cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    tab_resnet_blks: ``nn.Sequential``
+    tab_resnet_blks: nn.Sequential
         deep dense Resnet model that will receive the concatenation of the
         embeddings and the continuous columns
-    tab_resnet_mlp: ``nn.Sequential``
-        if ``mlp_hidden_dims`` is ``True``, this attribute will be an mlp
+    tab_resnet_mlp: nn.Sequential
+        if `mlp_hidden_dims` is `True`, this attribute will be an mlp
         model that will receive the results of the concatenation of the
         embeddings and the continuous columns -- if present --.
-    output_dim: `int`
+    output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the ``WideDeep`` class
+        neccesary to build the `WideDeep` class
 
     Examples
     --------

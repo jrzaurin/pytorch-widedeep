@@ -25,34 +25,34 @@ warnings.filterwarnings("default", category=UserWarning)
 
 
 class WideDeep(nn.Module):
-    r"""Main collector class that combines all ``wide``, ``deeptabular``
-    ``deeptext`` and ``deepimage`` models.
+    r"""Main collector class that combines all `wide`, `deeptabular`
+    `deeptext` and `deepimage` models.
 
     There are two options to combine these models that correspond to the
-    two main architectures that ``pytorch-widedeep`` can build.
+    two main architectures that `pytorch-widedeep` can build.
 
-        - Directly connecting the output of the model components to an ouput neuron(s).
+    - Directly connecting the output of the model components to an ouput neuron(s).
 
-        - Adding a `Fully-Connected Head` (FC-Head) on top of the deep models.
-          This FC-Head will combine the output form the ``deeptabular``, ``deeptext`` and
-          ``deepimage`` and will be then connected to the output neuron(s).
+    - Adding a `Fully-Connected Head` (FC-Head) on top of the deep models.
+      This FC-Head will combine the output form the `deeptabular`, `deeptext` and
+      `deepimage` and will be then connected to the output neuron(s).
 
     Parameters
     ----------
-    wide: ``nn.Module``, Optional, default = None
-        ``Wide`` model. This is a linear model where the non-linearities are
+    wide: nn.Module, Optional, default = None
+        `Wide` model. This is a linear model where the non-linearities are
         captured via crossed-columns.
-    deeptabular: ``nn.Module``, Optional, default = None
+    deeptabular: nn.Module, Optional, default = None
         Currently this library implements a number of possible architectures
-        for the ``deeptabular`` component. See the documenation of the
+        for the `deeptabular` component. See the documenation of the
         package.
-    deeptext: ``nn.Module``, Optional, default = None
+    deeptext: nn.Module, Optional, default = None
         Currently this library implements a number of possible architectures
-        for the ``deeptext`` component. See the documenation of the
+        for the `deeptext` component. See the documenation of the
         package.
-    deepimage: ``nn.Module``, Optional, default = None
-        Currently this library uses ``torchvision`` and implements a number of
-        possible architectures for the ``deepimage`` component. See the
+    deepimage: nn.Module, Optional, default = None
+        Currently this library uses `torchvision` and implements a number of
+        possible architectures for the `deepimage` component. See the
         documenation of the package.
     head_hidden_dims: List, Optional, default = None
         List with the sizes of the dense layers in the head e.g: [128, 64]
@@ -69,11 +69,11 @@ class WideDeep(nn.Module):
         last of the dense layers in the head
     head_linear_first: bool, default = False
         Boolean indicating whether the order of the operations in the dense
-        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-        LIN -> ACT]``
-    deephead: ``nn.Module``, Optional, default = None
+        layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
+        LIN -> ACT]`
+    deephead: nn.Module, Optional, default = None
         Alternatively, the user can pass a custom model that will receive the
-        output of the deep component. If ``deephead`` is not None all the
+        output of the deep component. If `deephead` is not None all the
         previous fc-head parameters will be ignored
     enforce_positive: bool, default = False
         Boolean indicating if the output from the final layer must be
@@ -88,13 +88,20 @@ class WideDeep(nn.Module):
         predictions. `1` for regression and binary classification or number
         of classes for multiclass classification.
     with_fds: bool, default = False
-        If feature distribution smoothing (FDS) should be applied before the
-        final prediction layer. Only available for regression problems. See
-        `Delving into Deep Imbalanced Regression <https://arxiv.org/abs/2102.09554>`_
-        for details.
-    fds_config: dict, default = None
-        Dictionary defining specific values for
-        ``FeatureDistributionSmoothing`` layer
+        Boolean indicating if Feature Distribution Smoothing (FDS) will be
+        applied before the final prediction layer. Only available for
+        regression problems.
+        See [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554) for details.
+
+    Other Parameters
+    ----------------
+    **fds_config: dict, default = None
+        Dictionary with the parameters to be used when using Feature
+        Distribution Smoothing. Please, see the docs for the `FDSLayer`.
+        <br/>
+        :information_source: **NOTE**: Feature Distribution Smoothing
+         is available when using ONLY a `deeptabular` component
+
 
     Examples
     --------
@@ -109,15 +116,14 @@ class WideDeep(nn.Module):
     >>> model = WideDeep(wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage)
 
 
-    :information_source: **NOTE**:
-    It is possible to use custom components to build Wide & Deep models.
-    Simply, build them and pass them as the corresponding parameters. Note
-    that the custom models MUST return a last layer of activations
-    (i.e. not the final prediction) so that  these activations are
-    collected by ``WideDeep`` and combined accordingly. In addition, the
-    models MUST also contain an attribute ``output_dim`` with the size of
-    these last layers of activations. See for
-    example :class:`pytorch_widedeep.models.tab_mlp.TabMlp`
+    :information_source: **NOTE**: It is possible to use custom components to
+     build Wide & Deep models. Simply, build them and pass them as the
+     corresponding parameters. Note that the custom models MUST return a last
+     layer of activations(i.e. not the final prediction) so that  these
+     activations are collected by `WideDeep` and combined accordingly. In
+     addition, the models MUST also contain an attribute `output_dim` with
+     the size of these last layers of activations. See for example
+     `pytorch_widedeep.models.tab_mlp.TabMlp`
     """
 
     def __init__(

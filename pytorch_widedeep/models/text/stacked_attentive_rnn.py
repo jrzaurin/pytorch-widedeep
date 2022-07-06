@@ -11,7 +11,7 @@ from pytorch_widedeep.models.tabular.mlp._layers import MLP
 
 class StackedAttentiveRNN(nn.Module):
     r"""Text classifier/regressor comprised by a stack of blocks:
-    ``[RNN + Attention]``. This can be used as the ``deeptext`` component of a
+    `[RNN + Attention]`. This can be used as the `deeptext` component of a
     Wide & Deep model or independently by itself.
 
     In addition, there is the option to add a Fully Connected (FC) set of
@@ -36,8 +36,8 @@ class StackedAttentiveRNN(nn.Module):
         Boolean indicating whether the staked RNNs are bidirectional
     padding_idx: int, default = 1
         index of the padding token in the padded-tokenised sequences. The
-        ``TextPreprocessor`` class within this library uses ``fastai``'s
-        tokenizer where the token index 0 is reserved for the `'unknown'`
+        `TextPreprocessor` class within this library uses fastai's
+        tokenizer where the token index 0 is reserved for the _'unknown'_
         word token. Therefore, the default value is set to 1.
     n_blocks: int, default = 3
         Number of attention blocks. Each block is comprised by an RNN and a
@@ -55,32 +55,32 @@ class StackedAttentiveRNN(nn.Module):
         List with the sizes of the dense layers in the head e.g: [128, 64]
     head_activation: str, default = "relu"
         Activation function for the dense layers in the head. Currently
-        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
     head_dropout: float, Optional, default = None
         Dropout of the dense layers in the head
     head_batchnorm: bool, default = False
         Boolean indicating whether or not to include batch normalization in
-        the dense layers that form the `'rnn_mlp'`
+        the dense layers that form the _'rnn_mlp'_
     head_batchnorm_last: bool, default = False
         Boolean indicating whether or not to apply batch normalization to the
         last of the dense layers in the head
     head_linear_first: bool, default = False
         Boolean indicating whether the order of the operations in the dense
-        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-        LIN -> ACT]``
+        layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
+        LIN -> ACT]`
 
     Attributes
     ----------
-    word_embed: ``nn.Module``
+    word_embed: nn.Module
         word embedding matrix
-    rnn: ``nn.Module``
+    rnn: nn.Module
         Stack of RNNs
-    rnn_mlp: ``nn.Sequential``
+    rnn_mlp: nn.Sequential
         Stack of dense layers on top of the RNN. This will only exists if
-        ``head_layers_dim`` is not ``None``
+        `head_layers_dim` is not `None`
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the ``WideDeep`` class
+        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -238,13 +238,10 @@ class StackedAttentiveRNN(nn.Module):
 
     @property
     def attention_weights(self) -> List:
-        r"""List with the attention weights
+        r"""List with the attention weights per block
 
-        The shape of the attention weights is:
-
-        :math:`(N, S)`
-
-        Where *N* is the batch size and *S* is the length of the sequence
+        The shape of the attention weights is $(N, S)$ Where $N$ is the batch
+        size and $S$ is the length of the sequence
         """
         return [blk.attn.attn_weights for blk in self.attention_blks]
 

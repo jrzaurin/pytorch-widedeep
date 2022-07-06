@@ -13,60 +13,65 @@ from pytorch_widedeep.models.tabular.transformers._encoders import (
 
 
 class TabPerceiver(BaseTabularModelWithAttention):
-    r"""Defines an adaptation of a `Perceiver model
-    <https://arxiv.org/abs/2103.03206>`_ that can be used as the
-    ``deeptabular`` component of a Wide & Deep model or independently by
-    itself.
+    r"""Defines an adaptation of a [Perceiver](https://arxiv.org/abs/2103.03206)
+     that can be used as the `deeptabular` component of a Wide & Deep model
+     or independently by itself.
+
+    :information_source: **NOTE**: while there are scientific publications for
+     the `TabTransformer`, `SAINT` and `FTTransformer`, the `TabPerceiver`
+     and the `TabFastFormer` are our own adaptations of the
+     [Perceiver](https://arxiv.org/abs/2103.03206) and the
+     [FastFormer](https://arxiv.org/abs/2108.09084) for tabular data.
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
         the model. Required to slice the tensors. e.g.
-        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
+        _{'education': 0, 'relationship': 1, 'workclass': 2, ...}_
     cat_embed_input: List, Optional, default = None
         List of Tuples with the column name and number of unique values for
-        each categorical component e.g. [(education, 11), ...]
+        each categorical component e.g. _[(education, 11), ...]_
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     use_cat_bias: bool, default = False,
         Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
-        Activation function for the categorical embeddings, if any. `'tanh'`,
-        `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
+        Activation function for the categorical embeddings, if any. _'tanh'_,
+        _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported.
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
-        :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
-        If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
+        `pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
+        If `full_embed_dropout = True`, `cat_embed_dropout` is ignored.
     shared_embed: bool, default = False
-        The idea behind ``shared_embed`` is described in the Appendix A in the
-        `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
+        The idea behind `shared_embed` is described in the Appendix A in the
+        [TabTransformer paper](https://arxiv.org/abs/2012.06678): the
         goal of having column embedding is to enable the model to distinguish
-        the classes in one column from those in the other columns'`. In other
+        the classes in one column from those in the other columns. In other
         words, the idea is to let the model learn which column is embedded
         at the time.
     add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings
         to the column embeddings or 2) to replace the first
-        ``frac_shared_embed`` with the shared embeddings.
-        See :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
+        `frac_shared_embed` with the shared embeddings.
+        See `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
     frac_shared_embed: float, default = 0.25
-        The fraction of embeddings that will be shared (if ``add_shared_embed
-        = False``) by all the different categories for one particular
+        The fraction of embeddings that will be shared (if `add_shared_embed
+        = False`) by all the different categories for one particular
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
-        are: 'layernorm', 'batchnorm' or None.
+        are: _'layernorm'_, _'batchnorm'_ or None.
     cont_embed_dropout: float, default = 0.1,
         Continuous embeddings dropout
     use_cont_bias: bool, default = True,
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: str, default = None
         Activation function to be applied to the continuous embeddings, if
-        any. `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
+        any. _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported.
     input_dim: int, default = 32
         The so-called *dimension of the model*. Is the number of embeddings
         used to encode the categorical and/or continuous columns.
@@ -77,14 +82,14 @@ class TabPerceiver(BaseTabularModelWithAttention):
         architectures (normally computer vision-related problems) where the
         Perceiver attends multiple times to the input array. Therefore, maybe
         multiple cross attention to the input array is also useful in some
-        cases for tabular data
+        cases for tabular data :shrug: .
     n_cross_attn_heads: int, default = 4
         Number of attention heads for the cross attention component
     n_latents: int, default = 16
-        Number of latents. This is the *N* parameter in the paper. As
+        Number of latents. This is the $N$ parameter in the paper. As
         indicated in the paper, this number should be significantly lower
-        than *M* (the number of columns in the dataset). Setting *N* closer
-        to *M* defies the main purpose of the Perceiver, which is to overcome
+        than $M$ (the number of columns in the dataset). Setting $N$ closer
+        to $M$ defies the main purpose of the Perceiver, which is to overcome
         the transformer quadratic bottleneck
     latent_dim: int, default = 128
         Latent dimension.
@@ -104,14 +109,14 @@ class TabPerceiver(BaseTabularModelWithAttention):
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
     transformer_activation: str, default = "gelu"
-        Transformer Encoder activation function. `'tanh'`, `'relu'`,
-        `'leaky_relu'`, `'gelu'`, `'geglu'` and `'reglu'` are supported
+        Transformer Encoder activation function. _'tanh'_, _'relu'_,
+        _'leaky_relu'_, _'gelu'_, _'geglu'_ and _'reglu'_ are supported
     mlp_hidden_dims: List, Optional, default = None
-        MLP hidden dimensions. If not provided it will default to ``[l, 4*l,
-        2*l]`` where ``l`` is the MLP's input dimension
+        MLP hidden dimensions. If not provided it will default to $[l, 4
+        \times l, 2 \times l]$ where $l$ is the MLP's input dimension
     mlp_activation: str, default = "relu"
-        MLP activation function. `'tanh'`, `'relu'`, `'leaky_relu'` and
-        `'gelu'` are supported
+        MLP activation function. _'tanh'_, _'relu'_, _'leaky_relu'_ and
+        _'gelu'_ are supported
     mlp_dropout: float, default = 0.1
         Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
@@ -122,22 +127,22 @@ class TabPerceiver(BaseTabularModelWithAttention):
         last of the dense layers
     mlp_linear_first: bool, default = False
         Boolean indicating whether the order of the operations in the dense
-        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-        LIN -> ACT]``
+        layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
+        LIN -> ACT]`
 
     Attributes
     ----------
-    cat_and_cont_embed: ``nn.Module``
+    cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    perceiver_blks: ``nn.ModuleDict``
+    perceiver_blks: nn.ModuleDict
         ModuleDict with the Perceiver blocks
-    latents: ``nn.Parameter``
+    latents: nn.Parameter
         Latents that will be used for prediction
-    perceiver_mlp: ``nn.Module``
+    perceiver_mlp: nn.Module
         MLP component in the model
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the ``WideDeep`` class
+        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -293,12 +298,13 @@ class TabPerceiver(BaseTabularModelWithAttention):
 
         The shape of the attention weights is:
 
-            - Cross Attention: :math:`(N, C, L, F)`
-            - Latent Attention: :math:`(N, T, L, L)`
+        - Cross Attention: $(N, C, L, F)$
 
-        WHere *N* is the batch size, *C* is the number of Cross Attention
-        heads, *L* is the number of Latents, *F* is the number of
-        features/columns in the dataset and *T* is the number of Latent
+        - Latent Attention: $(N, T, L, L)$
+
+        WHere $N$ is the batch size, $C$ is the number of Cross Attention
+        heads, $L$ is the number of Latents, $F$ is the number of
+        features/columns in the dataset and $T$ is the number of Latent
         Attention heads
         """
         if self.share_weights:

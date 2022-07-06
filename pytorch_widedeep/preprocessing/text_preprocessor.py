@@ -145,7 +145,7 @@ class TextPreprocessor(BasePreprocessor):
 
         Parameters
         ----------
-        encoded: np.ndarray
+        padded_seq: np.ndarray
             array with the output of the `transform` method
 
         Returns

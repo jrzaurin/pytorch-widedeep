@@ -349,28 +349,9 @@ class Trainer:
         Examples
         --------
 
-        For a series of comprehensive examples please, see the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
+        For a series of comprehensive examples please, see the
+        [Examples](https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples)
         folder in the repo
-
-        For completion, here we include some `"fabricated"` examples, i.e.
-        these assume you have already built a model and instantiated a
-        ``Trainer``, that is ready to fit
-
-        >>> # Ex 1. using train input arrays directly and no validation
-        >>> trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256)
-
-        >>> # Ex 2: using train input arrays directly and validation with val_split
-        >>> trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256, val_split=0.2)
-
-        >>> # Ex 3: using train dict and val_split
-        >>> X_train = {'X_wide': X_wide, 'X_tab': X_tab, 'target': y}
-        >>> trainer.fit(X_train, n_epochs=10, batch_size=256, val_split=0.2)
-
-        >>> # Ex 4: validation using training and validation dicts
-        >>> X_train = {'X_wide': X_wide_tr, 'X_tab': X_tab_tr, 'target': y_tr}
-        >>> X_val = {'X_wide': X_wide_val, 'X_tab': X_tab_val, 'target': y_val}
-        >>> trainer.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
         """
 
         lds_args, dataloader_args, finetune_args = self._extract_kwargs(kwargs)
@@ -716,15 +697,9 @@ class Trainer:
 
         Examples
         --------
-        For a series of comprehensive examples please, see the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
-        folder in the repo.
-
-        For completion, here we include a `"fabricated"` example, i.e.
-        assuming we have already trained the model, that we have the
-        categorical encodings in a dictionary name ``encoding_dict``, and that
-        there is a column called `'education'`:
-        >>> trainer.get_embeddings(col_name="education", cat_encoding_dict=encoding_dict)
+        For a series of comprehensive examples please, see the
+        [Examples](https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples)
+        folder in the repo
         """
         warnings.warn(
             "'get_embeddings' will be deprecated in the next release. "

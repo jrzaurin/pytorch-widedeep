@@ -25,50 +25,61 @@ class FDSLayer(nn.Module):
         clip_min: Optional[float] = None,
         clip_max: Optional[float] = None,
     ):
-        """Feature Distribution Smoothing layer. Layer keeps track of last epoch mean
-        and variance for each feature. The feautres are bucket-ed into bins based on
-        their target/label value. Target/label values are binned using histogram with
-        same width bins, their number is based on granularity parameter and start/end
-        edge on y_max/y_min values. Mean and variance are smoothed using convolution
-        with kernel function(gaussian by default). Output of the layer are features
-        values adjusted to their smoothed mean and variance. The layer is turned on
-        only during training, off during prediction/evaluation.
+        """
+        Feature Distribution Smoothing layer. Please, see
+        [Delving into Deep Imbalanced Regression](https:/arxiv.org/abs/2102.09554)
+        for details.
 
-        Adjusted code from `<https://github.com/YyzHarry/imbalanced-regression>`
-        For more infomation about please read the paper) :
+        :information_source: **NOTE**: this is NOT an available model per se,
+         but more a utility that can be used as we run a `WideDeep` model.
+         The parameters of this extra layers can be set as the class
+         `WideDeep` is instantiated via the keyword arguments `fds_config`.
 
-        `Yang, Y., Zha, K., Chen, Y. C., Wang, H., & Katabi, D. (2021).
-        Delving into Deep Imbalanced Regression. arXiv preprint arXiv:2102.09554.`
+        :information_source: **NOTE**: Feature Distribution Smoothing is
+         available when using ONLY a `deeptabular` component
+
+        The code here is based on the code at the
+        [official repo](https://github.com/YyzHarry/imbalanced-regression)
 
         Parameters
         ----------
         feature_dim: int,
-            input dimension size, i.e. output size of previous layer
+            input dimension size, i.e. output size of previous layer. This
+            will be the dimension of the output from the `deeptabular`
+            component
         granularity: int = 100,
-            number of bins in histogram used for storing feature mean and variance
-            values per label
+            number of bins that the target $y$ is divided into and that will
+            be used to compute the features' statistics (mean and variance)
         y_max: Optional[float] = None,
-            option to restrict the histogram bins by upper label limit
+            $y$ upper limit to be considered when binning
         y_min: Optional[float] = None,
-            option to restrict the histogram bins by lower label limit
+            $y$ lower limit to be considered when binning
         start_update: int = 0,
-            epoch after which FDS layer starts to update its statistics
+            number of _'waiting epochs' after which the FDS layer will start
+            to update its statistics
         start_smooth: int = 1,
-            epoch after which FDS layer starts to smooth feautture distributions
+            number of _'waiting epochs' after which the FDS layer will start
+            smoothing the feature distributions
         kernel: Literal["gaussian", "triang", "laplace", None] = "gaussian",
-            choice of kernel for Feature Distribution Smoothing
+            choice of smoothing kernel
         ks: int = 5,
-            LDS kernel window size
-        sigma: Union[int,float] = 2,
-            standard deviation of ['gaussian','laplace'] kernel for LDS
+            kernel window size
+        sigma: Union[int, float] = 2,
+            if a _'gaussian'_ or _'laplace'_ kernels are used, this is the
+            corresponding standard deviation
         momentum: float = 0.9,
-            factor parameter for running mean and variance
+            to train the layer the authors used a momentum update of the running
+            statistics across each epoch. Set to 0.9 in the paper.
         clip_min: Optional[float] = None,
-            original value = 0.1, author note: clipping is for numerical stability,
-            if some bins contain a very small number of samples, the variance
-            estimation may not be stable
+            this parameter is used to clip the ratio between the so called
+            running variance and the smoothed variance, and is introduced for
+            numerical stability. We leave it as optional as we did not find a
+            notable improvement in our experiments. The authors used a value
+            of 0.1
         clip_max: Optional[float] = None,
-            original value = 10, see note for clip_min
+            same as `clip_min` but for the upper limit.We leave it as optional
+            as we did not find a notable improvement in our experiments. The
+            authors used a value of 10.
         """
         super(FDSLayer, self).__init__()
         assert (
