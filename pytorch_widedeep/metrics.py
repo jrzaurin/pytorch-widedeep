@@ -239,7 +239,9 @@ class Recall(Metric):
 class FBetaScore(Metric):
     r"""Class to calculate the fbeta score for both binary and categorical problems
 
-    :math:`F_{\beta} = ((1 + {\beta}^2) * \frac{(precision * recall)}{({\beta}^2 * precision + recall)}`
+    $$
+    F_{\beta} = ((1 + {\beta}^2) * \frac{(precision * recall)}{({\beta}^2 * precision + recall)}
+    $$
 
     Parameters
     ----------
@@ -346,13 +348,15 @@ class F1Score(Metric):
 
 class R2Score(Metric):
     r"""
-    Calculates the R-Squared, the
-    `coefficient of determination <https://en.wikipedia.org/wiki/Coefficient_of_determination>`_:
+    Calculates R-Squared, the
+    [coefficient of determination](https://en.wikipedia.org/wiki/Coefficient_of_determination>):
 
-    :math:`R^2 = 1 - \frac{\sum_{j=1}^n(y_j - \hat{y_j})^2}{\sum_{j=1}^n(y_j - \bar{y})^2}`,
+    $$
+    R^2 = 1 - \frac{\sum_{j=1}^n(y_j - \hat{y_j})^2}{\sum_{j=1}^n(y_j - \bar{y})^2}
+    $$
 
-    where :math:`\hat{y_j}` is the ground truth, :math:`y_j` is the predicted value and
-    :math:`\bar{y}` is the mean of the ground truth.
+    where $\hat{y_j}$ is the ground truth, $y_j$ is the predicted value and
+    $\bar{y}$ is the mean of the ground truth.
 
     Examples
     --------

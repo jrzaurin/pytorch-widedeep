@@ -39,7 +39,7 @@ class WideDeepDataset(Dataset):
     lds_sigma: float = 2
         standard deviation of ['gaussian','laplace'] kernel for LDS
     lds_granularity: int = 100,
-        number of bins in histogram used in LDS to count occurence of sample values
+        number of bins in the histogram used in LDS to count occurence of sample values
     lds_reweight: bool
         option to reweight bin frequency counts in LDS
     lds_y_max: Optional[float] = None

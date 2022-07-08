@@ -8,13 +8,13 @@ from pytorch_widedeep.bayesian_models._base_bayesian_model import (
 
 
 class BayesianWide(BaseBayesianModel):
-    r"""Defines a ``Wide`` model. This is a linear model where the
+    r"""Defines a `Wide` model. This is a linear model where the
     non-linearlities are captured via crossed-columns
 
     Parameters
     ----------
     input_dim: int
-        size of the Embedding layer. ``input_dim`` is the summation of all the
+        size of the Embedding layer. `input_dim` is the summation of all the
         individual values for all the features that go through the wide
         component. For example, if the wide component receives 2 features with
         5 individual values each, `input_dim = 10`
@@ -30,7 +30,7 @@ class BayesianWide(BaseBayesianModel):
            \end{aligned}
         $$
 
-        This is the prior of the sigma parameter for the first of the two
+        `prior_sigma_1` is the prior of the sigma parameter for the first of the two
         Gaussians that will be mixed to produce the prior weight
         distribution.
     prior_sigma_2: float, default = 0.002
@@ -59,15 +59,15 @@ class BayesianWide(BaseBayesianModel):
         $$
 
         $\mu$ is initialised using a normal distributtion with mean
-        ``posterior_rho_init`` and std equal to 0.1.
+        `posterior_mu_init` and std equal to 0.1.
     posterior_rho_init: float = -7.0
         As in the case of $\mu$, $\rho$ is initialised using a
-        normal distributtion with mean ``posterior_rho_init`` and std equal to
+        normal distributtion with mean `posterior_rho_init` and std equal to
         0.1.
 
     Attributes
     -----------
-    bayesian_wide_linear: ``nn.Module``
+    bayesian_wide_linear: nn.Module
         the linear layer that comprises the wide branch of the model
 
     Examples

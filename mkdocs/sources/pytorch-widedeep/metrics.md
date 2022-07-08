@@ -1,12 +1,11 @@
 # Metrics
 
 ---
-:information_source: **NOTE**:
-Metrics in this module expect the predictions and ground truth to have the
-same dimensions for regression and binary classification problems: :math:`(N_
-{samples}, 1)`. In the case of multiclass classification problems the ground
-truth is expected to be a 1D tensor with the corresponding classes. See
-Examples below
+:information_source: **NOTE**: metrics in this module expect the predictions
+ and ground truth to have the same dimensions for regression and binary
+ classification problems: $(N_{samples}, 1)$. In the case of multiclass
+ classification problems the ground truth is expected to be a 1D tensor with
+ the corresponding classes. See Examples below
 ---
 
 We have added the possibility of using the metrics available at the
@@ -27,6 +26,9 @@ trainer = Trainer(model, objective="binary", metrics=[accuracy, precision])
 A functioning example for ``pytorch-widedeep`` using ``torchmetrics`` can be
 found in the [Examples folder](https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples)
 
+:information_source: **NOTE**: the forward method for all metrics in this
+ module takes two tensors, `y_pred` and `y_true` (in that order). Therefore,
+ we do not include the method in the documentation.
 
 ::: pytorch_widedeep.metrics.Accuracy
 

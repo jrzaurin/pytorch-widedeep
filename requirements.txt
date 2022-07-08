@@ -12,6 +12,5 @@ torchvision
 einops
 wrapt
 torchmetrics
-ray[tune]
 pyarrow
 fastparquet

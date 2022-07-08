@@ -1,23 +1,14 @@
 # Callbacks
 
-Here are the 5 callbacks available in ``pytorch-widedepp``: ``History``,
-``LRHistory``, ``ModelCheckpoint``, ``EarlyStopping`` and ``RayTuneReporter``.
+Here are the 4 callbacks available to the user in `pytorch-widedepp`:
+`LRHistory`, `ModelCheckpoint`, `EarlyStopping` and `RayTuneReporter`.
 
----
-:information_source: **NOTE**: 
-``History`` runs by default, so it should not be passed
----
-
-::: pytorch_widedeep.callbacks.History
-
-::: pytorch_widedeep.callbacks.LRShedulerCallback
-
-::: pytorch_widedeep.callbacks.MetricCallback
+:information_source:  **NOTE**: other callbacks , like `History`, run always
+ by default. In particular, the `History` callback saves the metrics in the
+ `history` attribute of the `Trainer`.
 
 ::: pytorch_widedeep.callbacks.LRHistory
 
 ::: pytorch_widedeep.callbacks.ModelCheckpoint
 
 ::: pytorch_widedeep.callbacks.EarlyStopping
-
-::: pytorch_widedeep.callbacks.RayTuneReporter

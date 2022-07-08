@@ -10,7 +10,7 @@ def get_class_weights(dataset: WideDeepDataset) -> Tuple[np.ndarray, int, int]:
 
     Parameters
     ----------
-    dataset: ``WideDeepDataset``
+    dataset: `WideDeepDataset`
         dataset containing target classes in dataset.Y
 
     Returns
@@ -21,6 +21,14 @@ def get_class_weights(dataset: WideDeepDataset) -> Tuple[np.ndarray, int, int]:
         count of samples in the smallest class for undersampling
     num_classes: int
         number of classes
+
+    Other Parameters
+    ----------------
+    **kwargs: Dict
+        This can include any parameter that can be passed to the _'standard'_
+        pytorch[DataLoader]
+        (https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)
+        and that is not already explicitely passed to the class.
     """
     weights = 1 / np.unique(dataset.Y, return_counts=True)[1]
     minor_class_count = min(np.unique(dataset.Y, return_counts=True)[1])
@@ -41,18 +49,33 @@ class DataLoaderDefault(DataLoader):
 class DataLoaderImbalanced(DataLoader):
     r"""Class to load and shuffle batches with adjusted weights for imbalanced
     datasets. If the classes do not begin from 0 remapping is necessary. See
-    `here
-    <https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab>`_
-    .
+    [here](https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab).
 
     Parameters
     ----------
-    dataset: ``WideDeepDataset``
-        see ``pytorch_widedeep.training._wd_dataset``
+    dataset: `WideDeepDataset`
+        see `pytorch_widedeep.training._wd_dataset`
     batch_size: int
         size of batch
     num_workers: int
         number of workers
+
+    Other Parameters
+    ----------------
+    **kwargs: Dict
+        This can include any parameter that can be passed to the _'standard'_
+        pytorch
+        [DataLoader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)
+        and that is not already explicitely passed to the class. In addition,
+        the dictionary can also include the extra parameter `oversample_mul` which
+        will multiply the number of samples of the minority class to be sampled by
+        the [`WeightedRandomSampler`](https://pytorch.org/docs/stable/data.html#torch.utils.data.WeightedRandomSampler).
+
+        In other words, the `num_samples` param in `WeightedRandomSampler` will be defined as:
+
+        $$
+        minority \space class \space count \times number \space of \space classes \times oversample\_mul
+        $$
     """
 
     def __init__(
@@ -67,4 +90,6 @@ class DataLoaderImbalanced(DataLoader):
         num_samples = int(minor_cls_cnt * num_clss * oversample_mul)
         samples_weight = list(np.array([weights[i] for i in dataset.Y]))
         sampler = WeightedRandomSampler(samples_weight, num_samples, replacement=True)
-        super().__init__(dataset, batch_size, num_workers=num_workers, sampler=sampler)
+        super().__init__(
+            dataset, batch_size, num_workers=num_workers, sampler=sampler, **kwargs
+        )

@@ -108,7 +108,7 @@ class. Note that each of the four components can be used independently.
             - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
-::: pytorch_widedeep.models.wide_deep.FDSLayer
+::: pytorch_widedeep.models.fds_layer.FDSLayer
     selection:
         filters:
             - "!^_"  # exclude all members starting with _

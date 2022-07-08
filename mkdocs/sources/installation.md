@@ -41,4 +41,3 @@ pip install -e .
 * einops
 * wrapt
 * torchmetrics
-* ray[tune]

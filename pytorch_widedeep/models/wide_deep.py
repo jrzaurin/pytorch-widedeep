@@ -101,6 +101,10 @@ class WideDeep(nn.Module):
         <br/>
         :information_source: **NOTE**: Feature Distribution Smoothing
          is available when using ONLY a `deeptabular` component
+        :information_source: **NOTE**: We consider this feature absolutely
+        experimental and we recommend the user to not use it unless the
+        corresponding [publication](https://arxiv.org/abs/2102.09554) is
+        well understood
 
 
     Examples

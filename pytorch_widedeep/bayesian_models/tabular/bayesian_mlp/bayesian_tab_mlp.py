@@ -14,26 +14,26 @@ from pytorch_widedeep.bayesian_models.tabular.bayesian_embeddings_layers import 
 
 
 class BayesianTabMlp(BaseBayesianModel):
-    r"""Defines a ``BayesianTabMlp`` model.
+    r"""Defines a `BayesianTabMlp` model.
 
     This class combines embedding representations of the categorical features
     with numerical (aka continuous) features, embedded or not. These are then
-    passed through a series of dense layers (i.e. a MLP).
+    passed through a series of probabilistic dense layers (i.e. a MLP).
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
-        the ``TabMlp`` model. Required to slice the tensors. e.g. {'education':
-        0, 'relationship': 1, 'workclass': 2, ...}
+        the `TabMlp` model. Required to slice the tensors. e.g. _{'education':
+        0, 'relationship': 1, 'workclass': 2, ...}_
     cat_embed_input: List, Optional, default = None
         List of Tuples with the column name, number of unique values and
-        embedding dimension. e.g. [(education, 11, 32), ...]
+        embedding dimension. e.g. _[(education, 11, 32), ...]_
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings, if any. Currently
-        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, default =  "batchnorm"
@@ -50,12 +50,12 @@ class BayesianTabMlp(BaseBayesianModel):
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings if any. Currently
-        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
     mlp_hidden_dims: List, default = [200, 100]
         List with the number of neurons per dense layer in the mlp.
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
     prior_sigma_1: float, default = 1.0
         The prior weight distribution is a scaled mixture of two Gaussian
         densities:
@@ -66,7 +66,7 @@ class BayesianTabMlp(BaseBayesianModel):
            \end{aligned}
         $$
 
-        This is the prior of the sigma parameter for the first of the two
+        `prior_sigma_1` is the prior of the sigma parameter for the first of the two
         Gaussians that will be mixed to produce the prior weight
         distribution.
     prior_sigma_2: float, default = 0.002
@@ -95,17 +95,17 @@ class BayesianTabMlp(BaseBayesianModel):
         $$
 
         $\mu$ is initialised using a normal distributtion with mean
-        ``posterior_rho_init`` and std equal to 0.1.
+        `posterior_mu_init` and std equal to 0.1.
     posterior_rho_init: float = -7.0
         As in the case of $\mu$, $\rho$ is initialised using a
-        normal distributtion with mean ``posterior_rho_init`` and std equal to
+        normal distributtion with mean `posterior_rho_init` and std equal to
         0.1.
 
     Attributes
     ----------
-    bayesian_cat_and_cont_embed: ``nn.Module``
+    bayesian_cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    bayesian_tab_mlp: ``nn.Sequential``
+    bayesian_tab_mlp: nn.Sequential
         mlp model that will receive the concatenation of the embeddings and
         the continuous columns
 

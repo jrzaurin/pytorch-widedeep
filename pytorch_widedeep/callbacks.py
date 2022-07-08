@@ -9,7 +9,6 @@ import warnings
 
 import numpy as np
 import torch
-from ray import tune
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.metrics import MultipleMetrics
@@ -144,10 +143,10 @@ class Callback(object):
 
 
 class History(Callback):
-    r"""Saves the metrics in the ``history`` attribute of the ``Trainer``.
+    r"""Saves the metrics in the `history` attribute of the `Trainer`.
 
-    This callback runs by default within ``Trainer``, therefore, should not
-    be passed to the ``Trainer``. It is included here just for completion.
+    This callback runs by default within `Trainer`, therefore, should not
+    be passed to the `Trainer`. It is included here just for completion.
     """
 
     def on_train_begin(self, logs: Optional[Dict] = None):
@@ -170,8 +169,8 @@ class History(Callback):
 class LRShedulerCallback(Callback):
     r"""Callback for the learning rate schedulers to take a step
 
-    This callback runs by default within ``Trainer``, therefore, should not
-    be passed to the ``Trainer``. It is included here just for completion.
+    This callback runs by default within `Trainer`, therefore, should not
+    be passed to the `Trainer`. It is included here just for completion.
     """
 
     def on_batch_end(self, batch: int, logs: Optional[Dict] = None):
@@ -225,8 +224,8 @@ class LRShedulerCallback(Callback):
 class MetricCallback(Callback):
     r"""Callback that resets the metrics (if any metric is used)
 
-    This callback runs by default within ``Trainer``, therefore, should not
-    be passed to the ``Trainer``. It is included here just for completion.
+    This callback runs by default within `Trainer`, therefore, should not
+    be passed to the `Trainer`. It is included here just for completion.
     """
 
     def __init__(self, container: MultipleMetrics):
@@ -240,11 +239,11 @@ class MetricCallback(Callback):
 
 
 class LRHistory(Callback):
-    r"""Saves the learning rates during training in the ``lr_history`` attribute
-    of the ``Trainer``.
+    r"""Saves the learning rates during training in the `lr_history` attribute
+    of the `Trainer`.
 
-    Callbacks are passed as input parameters to the ``Trainer`` class. See
-    :class:`pytorch_widedeep.trainer.Trainer`
+    Callbacks are passed as input parameters to the `Trainer` class. See
+    `pytorch_widedeep.trainer.Trainer`
 
     Parameters
     ----------
@@ -334,44 +333,37 @@ class ModelCheckpoint(Callback):
     This class is almost identical to the corresponding keras class.
     Therefore, **credit** to the Keras Team.
 
-    Callbacks are passed as input parameters to the ``Trainer`` class. See
-    :class:`pytorch_widedeep.trainer.Trainer`
+    Callbacks are passed as input parameters to the `Trainer` class. See
+    `pytorch_widedeep.trainer.Trainer`
 
     Parameters
     ----------
     filepath: str, default=None
         Full path to save the output weights. It must contain only the root of
-        the filenames. Epoch number and ``.pt`` extension (for pytorch) will
-        be added. e.g. ``filepath="path/to/output_weights/weights_out"`` And
-        the saved files in that directory will be named:
-        `'weights_out_1.pt',
-        'weights_out_2.pt', ...` If set to None the class just report best
-        metric and best_epoch.
+        the filenames. Epoch number and `.pt` extension (for pytorch) will be
+        added. e.g. `filepath="path/to/output_weights/weights_out"` And the
+        saved files in that directory will be named:
+        _'weights_out_1.pt', 'weights_out_2.pt', ..._. If set to `None` the
+        class just report best metric and best_epoch.
     monitor: str, default="loss"
-        quantity to monitor. Typically `'val_loss'` or metric name
-        (e.g. `'val_acc'`)
+        quantity to monitor. Typically _'val_loss'_ or metric name
+        (e.g. _'val_acc'_)
     verbose:int, default=0
         verbosity mode
     save_best_only: bool, default=False,
         the latest best model according to the quantity monitored will not be
         overwritten.
     mode: str, default="auto"
-        If ``save_best_only=True``, the decision to overwrite the current save
+        If `save_best_only=True`, the decision to overwrite the current save
         file is made based on either the maximization or the minimization of
-        the monitored quantity. For `'acc'`, this should be `'max'`, for
-        `'loss'` this should be `'min'`, etc. In `'auto'` mode, the
+        the monitored quantity. For _'acc'_, this should be _'max'_, for
+        _'loss'_ this should be _'min'_, etc. In '_auto'_ mode, the
         direction is automatically inferred from the name of the monitored
         quantity.
     period: int, default=1
         Interval (number of epochs) between checkpoints.
     max_save: int, default=-1
         Maximum number of outputs to save. If -1 will save all outputs
-    wb: obj, default=None
-        Weights&Biases API interface to report single best result usable for
-        comparisson of multiple paramater combinations by, for example,
-        `parallel coordinates
-        <https://docs.wandb.ai/ref/app/features/panels/parallel-coordinates>`_.
-        E.g W&B summary report `wandb.run.summary["best"]`.
 
     Attributes
     ----------
@@ -380,9 +372,11 @@ class ModelCheckpoint(Callback):
     best_epoch: int
         best epoch
     best_state_dict: dict
-        best model state dictionary to restore model to its best state using
-        ```>>> Trainer.model.load_state_dict(model_checkpoint.best_state_dict)```
-        where ``model_checkpoint`` is an instance of the class ``ModelCheckpoint``
+        best model state dictionary.<br/>
+        To restore model to its best state use `Trainer.model.load_state_dict
+        (model_checkpoint.best_state_dict)` where `model_checkpoint` is an
+        instance of the class `ModelCheckpoint`. See the Examples folder in
+        the repo or the Examples section in this documentation for details
 
     Examples
     --------
@@ -407,7 +401,6 @@ class ModelCheckpoint(Callback):
         mode: str = "auto",
         period: int = 1,
         max_save: int = -1,
-        wb: Optional[object] = None,
     ):
         super(ModelCheckpoint, self).__init__()
 
@@ -418,7 +411,6 @@ class ModelCheckpoint(Callback):
         self.mode = mode
         self.period = period
         self.max_save = max_save
-        self.wb = wb
 
         self.epochs_since_last_save = 0
 
@@ -499,8 +491,7 @@ class ModelCheckpoint(Callback):
                                         current,
                                     )
                                 )
-                        if self.wb is not None:
-                            self.wb.run.summary["best"] = current  # type: ignore[attr-defined]
+
                         self.best = current
                         self.best_epoch = epoch
                         self.best_state_dict = self.model.state_dict()
@@ -548,14 +539,14 @@ class EarlyStopping(Callback):
     This class is almost identical to the corresponding keras class.
     Therefore, **credit** to the Keras Team.
 
-    Callbacks are passed as input parameters to the ``Trainer`` class. See
-    :class:`pytorch_widedeep.trainer.Trainer`
+    Callbacks are passed as input parameters to the `Trainer` class. See
+    `pytorch_widedeep.trainer.Trainer`
 
     Parameters
     -----------
     monitor: str, default='val_loss'.
-        Quantity to monitor. Typically `'val_loss'` or metric name
-        (e.g. `'val_acc'`)
+        Quantity to monitor. Typically _'val_loss'_ or metric name
+        (e.g. _'val_acc'_)
     min_delta: float, default=0.
         minimum change in the monitored quantity to qualify as an
         improvement, i.e. an absolute change of less than min_delta, will
@@ -566,17 +557,17 @@ class EarlyStopping(Callback):
     verbose: int.
         verbosity mode.
     mode: str, default='auto'
-        one of {'`auto`', '`min`', '`max`'}. In `'min'` mode, training will
-        stop when the quantity monitored has stopped decreasing; in `'max'`
+        one of _{'auto', 'min', 'max'}_. In _'min'_ mode, training will
+        stop when the quantity monitored has stopped decreasing; in _'max'_
         mode it will stop when the quantity monitored has stopped increasing;
-        in `'auto'` mode, the direction is automatically inferred from the
+        in _'auto'_ mode, the direction is automatically inferred from the
         name of the monitored quantity.
     baseline: float, Optional. default=None.
         Baseline value for the monitored quantity to reach. Training will
         stop if the model does not show improvement over the baseline.
     restore_best_weights: bool, default=None
         Whether to restore model weights from the epoch with the best
-        value of the monitored quantity. If ``False``, the model weights
+        value of the monitored quantity. If `False`, the model weights
         obtained at the last step of training are used.
 
     Attributes
@@ -700,27 +691,3 @@ class EarlyStopping(Callback):
 
     def __setstate__(self, state):
         self.__dict__ = state
-
-
-class RayTuneReporter(Callback):
-    r"""Callback that allows reporting history and lr_history values to RayTune
-    during Hyperparameter tuning
-
-    Callbacks are passed as input parameters to the ``Trainer`` class. See
-    :class:`pytorch_widedeep.trainer.Trainer`
-
-    For examples see the examples folder at:
-
-    `/examples/12_HyperParameter_tuning_w_RayTune.ipynb`
-    """
-
-    def on_epoch_end(
-        self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
-    ):
-        report_dict = {}
-        for k, v in self.trainer.history.items():
-            report_dict.update({k: v[-1]})
-        if hasattr(self.trainer, "lr_history"):
-            for k, v in self.trainer.lr_history.items():
-                report_dict.update({k: v[-1]})
-        tune.report(report_dict)

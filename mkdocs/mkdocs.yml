@@ -33,6 +33,7 @@ nav:
         - Dataloaders: pytorch-widedeep/dataloaders.md
         - Callbacks: pytorch-widedeep/callbacks.md
         - Trainer: pytorch-widedeep/trainer.md
+        - Bayesian Trainer: pytorch-widedeep/bayesian_trainer.md
         - Tab2Vec: pytorch-widedeep/tab2vec.md
     - Examples:
         - 01_Preprocessors_and_utils: examples/01_Preprocessors_and_utils.ipynb
