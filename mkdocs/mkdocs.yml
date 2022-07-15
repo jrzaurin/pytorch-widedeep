@@ -50,7 +50,6 @@ nav:
         - 13_Model_Uncertainty_prediction: examples/13_Model_Uncertainty_prediction.ipynb
         - 14_bayesian_models: examples/14_bayesian_models.ipynb
         - 15_DIR-LDS_and_FDS: examples/15_DIR-LDS_and_FDS.ipynb
-        - airbnb_data_preprocessing: examples/airbnb_data_preprocessing.ipynb
     - Contributing: contributing.md
 
 theme:
