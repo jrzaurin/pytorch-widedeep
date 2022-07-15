@@ -45,7 +45,6 @@ nav:
         - 07_Custom_Components: examples/07_Custom_Components.ipynb
         - 08_custom_dataLoader_imbalanced_dataset: examples/08_custom_dataLoader_imbalanced_dataset.ipynb
         - 09_extracting_embeddings: examples/09_extracting_embeddings.ipynb
-        - 10_hyperParameter_tuning_w_raytune_n_wnb: examples/10_hyperParameter_tuning_w_raytune_n_wnb.ipynb
         - 11_auc_multiclass: examples/11_auc_multiclass.ipynb
         - 12_ZILNLoss_origkeras_vs_pytorch_multimodal: examples/12_ZILNLoss_origkeras_vs_pytorch_multimodal.ipynb
         - 13_Model_Uncertainty_prediction: examples/13_Model_Uncertainty_prediction.ipynb
