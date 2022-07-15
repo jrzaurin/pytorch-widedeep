@@ -72,6 +72,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 from torch.utils.data.dataloader import DataLoader
 
 from pytorch_widedeep.models import WideDeep
+from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
 from pytorch_widedeep.models.tabular.tabnet.sparsemax import (
     Entmax15,
     Sparsemax,
