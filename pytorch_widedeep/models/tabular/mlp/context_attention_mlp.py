@@ -10,16 +10,18 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 
 
 class ContextAttentionMLP(BaseTabularModelWithAttention):
-    r"""Defines a ``ContextAttentionMLP`` model that can be used as the
-    ``deeptabular`` component of a Wide & Deep model or independently by
+    r"""Defines a `ContextAttentionMLP` model that can be used as the
+    `deeptabular` component of a Wide & Deep model or independently by
     itself.
 
     This class combines embedding representations of the categorical features
     with numerical (aka continuous) features that are also embedded. These
     are then passed through a series of attention blocks. Each attention
-    block is comprised by a ``ContextAttentionEncoder``.
-    See :obj:`pytorch_widedeep.models.tabular.mlp._attention_layers` for
-    details
+    block is comprised by a `ContextAttentionEncoder`. Such encoder is in
+    part inspired by the attention mechanism described in
+    [Hierarchical Attention Networks for Document
+    Classification](https://www.cs.cmu.edu/~./hovy/papers/16HLT-hierarchical-attention-networks.pdf).
+    See `pytorch_widedeep.models.tabular.mlp._attention_layers` for details.
 
 
     Parameters
@@ -27,46 +29,46 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
         the model. Required to slice the tensors. e.g.
-        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
+        _{'education': 0, 'relationship': 1, 'workclass': 2, ...}_
     cat_embed_input: List
         List of Tuples with the column name and number of unique values per
-        categorical columns. e.g. [(education, 11), ...]
+        categorical columns. e.g. _[('education', 11), ...]_
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     use_cat_bias: bool, default = False,
         Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
-        Activation function for the categorical embeddings, if any. `'tanh'`,
-        `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
+        Activation function for the categorical embeddings, if any. _'tanh'_,
+        _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported.
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
-        :obj:`pytorch_widedeep.models.embeddings_layers.FullEmbeddingDropout`.
-        If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
+        `pytorch_widedeep.models.embeddings_layers.FullEmbeddingDropout`.
+        If `full_embed_dropout = True`, `cat_embed_dropout` is ignored.
     shared_embed: bool, default = False
         The idea behind sharing part of the embeddings per column is to let
         the model learn which column is embedded at the time.
     add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings
         to the column embeddings or 2) to replace the first
-        ``frac_shared_embed`` with the shared embeddings.
-        See :obj:`pytorch_widedeep.models.embeddings_layers.SharedEmbeddings`
+        `frac_shared_embed` with the shared embeddings.
+        See `pytorch_widedeep.models.embeddings_layers.SharedEmbeddings`
     frac_shared_embed: float, default = 0.25
-        The fraction of embeddings that will be shared (if ``add_shared_embed
-        = False``) by all the different categories for one particular
+        The fraction of embeddings that will be shared (if `add_shared_embed
+        = False`) by all the different categories for one particular
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
-        are: 'layernorm', 'batchnorm' or None.
+        are: _'layernorm'_, _'batchnorm'_ or None.
     cont_embed_dropout: float, default = 0.1,
         Continuous embeddings dropout
     use_cont_bias: bool, default = True,
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: str, default = None
         Activation function to be applied to the continuous embeddings, if
-        any. `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
+        any. _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported.
     input_dim: int, default = 32
         The so-called *dimension of the model*. Is the number of embeddings
         used to encode the categorical and/or continuous columns
@@ -77,22 +79,22 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
         attention blocks
     attn_activation: str, default = "leaky_relu"
         String indicating the activation function to be applied to the dense
-        layer in each attention encoder. `'tanh'`, `'relu'`, `'leaky_relu'`
-        and `'gelu'` are supported.
+        layer in each attention encoder. _'tanh'_, _'relu'_, _'leaky_relu'_
+        and _'gelu'_ are supported.
     n_blocks: int, default = 3
         Number of attention blocks
 
     Attributes
     ----------
-    cat_and_cont_embed: ``nn.Module``
+    cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    attention_blks: ``nn.Sequential``
+    attention_blks: nn.Sequential
         Sequence of attention encoders.
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the ``WideDeep`` class
+        neccesary to build the `WideDeep` class
 
-    Example
+    Examples
     --------
     >>> import torch
     >>> from pytorch_widedeep.models import ContextAttentionMLP
@@ -187,11 +189,7 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
     def attention_weights(self) -> List:
         r"""List with the attention weights per block
 
-        The shape of the attention weights is:
-
-        :math:`(N, F)`
-
-        Where *N* is the batch size and *F* is the number of features/columns
-        in the dataset
+        The shape of the attention weights is $(N, F)$, where $N$ is the batch
+        size and $F$ is the number of features/columns in the dataset
         """
         return [blk.attn.attn_weights for blk in self.attention_blks]

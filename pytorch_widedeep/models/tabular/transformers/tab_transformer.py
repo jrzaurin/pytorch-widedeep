@@ -12,55 +12,56 @@ from pytorch_widedeep.models.tabular.transformers._encoders import (
 
 
 class TabTransformer(BaseTabularModelWithAttention):
-    r"""Defines a `TabTransformer model <https://arxiv.org/abs/2012.06678>`_ that
-    can be used as the ``deeptabular`` component of a Wide & Deep model or
+    r"""Defines a [TabTransformer model](https://arxiv.org/abs/2012.06678) that
+    can be used as the `deeptabular` component of a Wide & Deep model or
     independently by itself.
 
-    Note that this is an enhanced adaptation of the model described in the
-    paper, containing a series of additional features.
+    :information_source: **NOTE**:
+    This is an enhanced adaptation of the model described in the paper,
+    containing a series of additional features.
 
     Parameters
     ----------
     column_idx: Dict
         Dict containing the index of the columns that will be passed through
         the model. Required to slice the tensors. e.g.
-        {'education': 0, 'relationship': 1, 'workclass': 2, ...}
+        _{'education': 0, 'relationship': 1, 'workclass': 2, ...}_
     cat_embed_input: List, Optional, default = None
         List of Tuples with the column name and number of unique values for
-        each categorical component e.g. [(education, 11), ...]
+        each categorical component e.g. _[(education, 11), ...]_
     cat_embed_dropout: float, default = 0.1
         Categorical embeddings dropout
     use_cat_bias: bool, default = False,
         Boolean indicating if bias will be used for the categorical embeddings
     cat_embed_activation: Optional, str, default = None,
-        Activation function for the categorical embeddings, if any. `'tanh'`,
-        `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
+        Activation function for the categorical embeddings, if any. _'tanh'_,
+        _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported.
     full_embed_dropout: bool, default = False
         Boolean indicating if an entire embedding (i.e. the representation of
         one column) will be dropped in the batch. See:
-        :obj:`pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
-        If ``full_embed_dropout = True``, ``cat_embed_dropout`` is ignored.
+        `pytorch_widedeep.models.transformers._layers.FullEmbeddingDropout`.
+        If `full_embed_dropout = True`, `cat_embed_dropout` is ignored.
     shared_embed: bool, default = False
-        The idea behind ``shared_embed`` is described in the Appendix A in the
-        `TabTransformer paper <https://arxiv.org/abs/2012.06678>`_: `'The
+        The idea behind `shared_embed` is described in the Appendix A in the
+        [TabTransformer paper](https://arxiv.org/abs/2012.06678): the
         goal of having column embedding is to enable the model to distinguish
-        the classes in one column from those in the other columns'`. In other
-        words, the idea is to let the model learn which column is embedded
-        at the time.
+        the classes in one column from those in the other columns. In other
+        words, the idea is to let the model learn which column is embedded at
+        the time.
     add_shared_embed: bool, default = False,
         The two embedding sharing strategies are: 1) add the shared embeddings
         to the column embeddings or 2) to replace the first
-        ``frac_shared_embed`` with the shared embeddings.
-        See :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
+        `frac_shared_embed` with the shared embeddings.
+        See `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`
     frac_shared_embed: float, default = 0.25
-        The fraction of embeddings that will be shared (if ``add_shared_embed
-        = False``) by all the different categories for one particular
+        The fraction of embeddings that will be shared (if `add_shared_embed
+        = False`) by all the different categories for one particular
         column.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, default =  "batchnorm"
         Type of normalization layer applied to the continuous features. Options
-        are: 'layernorm', 'batchnorm' or None.
+        are: _'layernorm'_, _'batchnorm'_ or None.
     embed_continuous: bool, default = False
         Boolean indicating if the continuous columns will be embedded
         (i.e. passed each through a linear layer with or without activation)
@@ -70,7 +71,7 @@ class TabTransformer(BaseTabularModelWithAttention):
         Boolean indicating if bias will be used for the continuous embeddings
     cont_embed_activation: str, default = None
         Activation function to be applied to the continuous embeddings, if
-        any. `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported.
+        any. _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported.
     input_dim: int, default = 32
         The so-called *dimension of the model*. Is the number of
         embeddings used to encode the categorical and/or continuous columns
@@ -86,14 +87,14 @@ class TabTransformer(BaseTabularModelWithAttention):
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
     transformer_activation: str, default = "gelu"
-        Transformer Encoder activation function. `'tanh'`, `'relu'`,
-        `'leaky_relu'`, `'gelu'`, `'geglu'` and `'reglu'` are supported
+        Transformer Encoder activation function. _'tanh'_, _'relu'_,
+        _'leaky_relu'_, _'gelu'_, _'geglu'_ and _'reglu'_ are supported
     mlp_hidden_dims: List, Optional, default = None
-        MLP hidden dimensions. If not provided it will default to ``[l, 4*l,
-        2*l]`` where ``l`` is the MLP's input dimension
+        MLP hidden dimensions. If not provided it will default to $[l,
+        4\times l, 2 \times l]$ where $l$ is the MLP's input dimension
     mlp_activation: str, default = "relu"
-        MLP activation function. `'tanh'`, `'relu'`, `'leaky_relu'` and
-        `'gelu'` are supported
+        MLP activation function. _'tanh'_, _'relu'_, _'leaky_relu'_ and
+        _'gelu'_ are supported
     mlp_dropout: float, default = 0.1
         Dropout that will be applied to the final MLP
     mlp_batchnorm: bool, default = False
@@ -104,22 +105,22 @@ class TabTransformer(BaseTabularModelWithAttention):
         last of the dense layers
     mlp_linear_first: bool, default = False
         Boolean indicating whether the order of the operations in the dense
-        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-        LIN -> ACT]``
+        layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
+        LIN -> ACT]`
 
     Attributes
     ----------
-    cat_and_cont_embed: ``nn.Module``
+    cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    transformer_blks: ``nn.Sequential``
+    transformer_blks: nn.Sequential
         Sequence of Transformer blocks
-    transformer_mlp: ``nn.Module``
+    transformer_mlp: nn.Module
         MLP component in the model
     output_dim: int
         The output dimension of the model. This is a required attribute
-        neccesary to build the ``WideDeep`` class
+        neccesary to build the `WideDeep` class
 
-    Example
+    Examples
     --------
     >>> import torch
     >>> from pytorch_widedeep.models import TabTransformer
@@ -273,12 +274,9 @@ class TabTransformer(BaseTabularModelWithAttention):
     def attention_weights(self) -> List:
         r"""List with the attention weights per block
 
-        The shape of the attention weights is:
-
-        :math:`(N, H, F, F)`
-
-        Where *N* is the batch size, *H* is the number of attention heads
-        and *F* is the number of features/columns in the dataset
+        The shape of the attention weights is $(N, H, F, F)$, where $N$ is the
+        batch size, $H$ is the number of attention heads and $F$ is the
+        number of features/columns in the dataset
         """
         return [blk.attn.attn_weights for blk in self.transformer_blks]
 

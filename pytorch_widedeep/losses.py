@@ -8,12 +8,11 @@ use_cuda = torch.cuda.is_available()
 
 
 class MSELoss(nn.Module):
-    r"""Mean square error loss adjusted for the possibility of using Label Smooth
+    r"""Mean square error loss with the option of using Label Smooth
     Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    LDS is based on
+    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self):
@@ -30,8 +29,7 @@ class MSELoss(nn.Module):
         target: Tensor
             Target tensor with the actual values
         lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -51,12 +49,11 @@ class MSELoss(nn.Module):
 
 
 class MSLELoss(nn.Module):
-    r"""Mean square log error loss adjusted for the possibility of using Label
-    Smooth Distribution (LDS)
+    r"""Mean square log error loss with the option of using Label Smooth
+    Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    LDS is based on
+    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self):
@@ -73,8 +70,7 @@ class MSLELoss(nn.Module):
         target: Tensor
             Target tensor with the actual classes
         lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -104,9 +100,8 @@ class RMSELoss(nn.Module):
     r"""Root mean square error loss adjusted for the possibility of using Label
     Smooth Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    LDS is based on
+    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self):
@@ -123,8 +118,7 @@ class RMSELoss(nn.Module):
         target: Tensor
             Target tensor with the actual classes
         lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -147,9 +141,8 @@ class RMSLELoss(nn.Module):
     r"""Root mean square log error loss adjusted for the possibility of using Label
     Smooth Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    LDS is based on
+    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self):
@@ -166,8 +159,7 @@ class RMSLELoss(nn.Module):
         target: Tensor
             Target tensor with the actual classes
         lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -196,10 +188,12 @@ class RMSLELoss(nn.Module):
 class QuantileLoss(nn.Module):
     r"""Quantile loss defined as:
 
-        :math:`Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))`
+    $$
+    Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))
+    $$
 
-    All credits go to the implementation at `pytorch-forecasting
-    <https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss>`_ .
+    All credits go to the implementation at
+    [pytorch-forecasting](https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss).
 
     Parameters
     ----------
@@ -254,22 +248,25 @@ class QuantileLoss(nn.Module):
 
 
 class FocalLoss(nn.Module):
-    r"""Implementation of the `focal loss
-    <https://arxiv.org/pdf/1708.02002.pdf>`_ for both binary and
-    multiclass classification
+    r"""Implementation of the [Focal loss](https://arxiv.org/pdf/1708.02002.pdf)
+    for both binary and multiclass classification:
 
-    :math:`FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)`
+    $$
+    FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)
+    $$
 
     where, for a case of a binary classification problem
 
-    :math:`\begin{equation} p_t= \begin{cases}p, & \text{if $y=1$}.\\1-p, & \text{otherwise}. \end{cases} \end{equation}`
+    $$
+    \begin{equation} p_t= \begin{cases}p, & \text{if $y=1$}.\\1-p, & \text{otherwise}. \end{cases} \end{equation}
+    $$
 
     Parameters
     ----------
     alpha: float
-        Focal Loss ``alpha`` parameter
+        Focal Loss `alpha` parameter
     gamma: float
-        Focal Loss ``gamma`` parameter
+        Focal Loss `gamma` parameter
     """
 
     def __init__(self, alpha: float = 0.25, gamma: float = 1.0):
@@ -330,7 +327,7 @@ class BayesianRegressionLoss(nn.Module):
     r"""log Gaussian loss as specified in the original publication 'Weight
     Uncertainty in Neural Networks'
     Currently we do not use this loss as is proportional to the
-    ``BayesianSELoss`` and the latter does not need a scale/noise_tolerance
+    `BayesianSELoss` and the latter does not need a scale/noise_tolerance
     param
     """
 
@@ -348,8 +345,8 @@ class BayesianRegressionLoss(nn.Module):
 
 class BayesianSELoss(nn.Module):
     r"""Squared Loss (log Gaussian) for the case of a regression as specified in
-    the original publication `Weight Uncertainty in Neural Networks
-    <https://arxiv.org/abs/1505.05424>`_
+    the original publication
+    [Weight Uncertainty in Neural Networks](https://arxiv.org/abs/1505.05424).
     """
 
     def __init__(self):
@@ -363,6 +360,7 @@ class BayesianSELoss(nn.Module):
             Input tensor with predictions (not probabilities)
         target: Tensor
             Target tensor with the actual classes
+
         Examples
         --------
         >>> import torch
@@ -379,9 +377,9 @@ class TweedieLoss(nn.Module):
     """
     Tweedie loss for extremely unbalanced zero-inflated data
 
-    All credits go to Wenbo Shi.
-    See `this post <https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f>`_
-    and the `original publication <https://arxiv.org/abs/1811.10192>`_ for details
+    All credits go to Wenbo Shi. See
+    [this post](https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f)
+    and the [original publication](https://arxiv.org/abs/1811.10192) for details.
     """
 
     def __init__(self):
@@ -438,9 +436,9 @@ class TweedieLoss(nn.Module):
 class ZILNLoss(nn.Module):
     r"""Adjusted implementation of the Zero Inflated LogNormal Loss
 
-    See the `paper <https://arxiv.org/pdf/1912.07753.pdf>`_ and
-    the corresponding `code
-    <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`_
+    See [A Deep Probabilistic Model for Customer Lifetime Value Prediction](https://arxiv.org/pdf/1912.07753.pdf)
+    and the corresponding
+    [code](https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py).
     """
 
     def __init__(self):
@@ -505,9 +503,8 @@ class L1Loss(nn.Module):
     r"""L1 loss adjusted for the possibility of using Label Smooth
     Distribution (LDS)
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    LDS is based on
+    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self):
@@ -547,19 +544,17 @@ class L1Loss(nn.Module):
 class FocalR_L1Loss(nn.Module):
     r"""Focal-R L1 loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
 
     Parameters
     ----------
     beta: float
-        Focal Loss ``beta`` parameter in their implementation
+        Focal Loss `beta` parameter in their implementation
     gamma: float
-        Focal Loss ``gamma`` parameter
+        Focal Loss `gamma` parameter
     activation_fn: str, default = "sigmoid"
         Activation function to be used during the computation of the loss.
-        Possible values are `'sigmoid'` and `'tanh'`. See the original
+        Possible values are _'sigmoid'_ and _'tanh'_. See the original
         publication for details.
     """
 
@@ -621,19 +616,17 @@ class FocalR_L1Loss(nn.Module):
 class FocalR_MSELoss(nn.Module):
     r"""Focal-R MSE loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
 
     Parameters
     ----------
     beta: float
-        Focal Loss ``beta`` parameter in their implementation
+        Focal Loss `beta` parameter in their implementation
     gamma: float
-        Focal Loss ``gamma`` parameter
+        Focal Loss `gamma` parameter
     activation_fn: str, default = "sigmoid"
         Activation function to be used during the computation of the loss.
-        Possible values are `'sigmoid'` and `'tanh'`. See the original
+        Possible values are _'sigmoid'_ and _'tanh'_. See the original
         publication for details.
     """
 
@@ -695,19 +688,17 @@ class FocalR_MSELoss(nn.Module):
 class FocalR_RMSELoss(nn.Module):
     r"""Focal-R RMSE loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
 
     Parameters
     ----------
     beta: float
-        Focal Loss ``beta`` parameter in their implementation
+        Focal Loss `beta` parameter in their implementation
     gamma: float
-        Focal Loss ``gamma`` parameter
+        Focal Loss `gamma` parameter
     activation_fn: str, default = "sigmoid"
         Activation function to be used during the computation of the loss.
-        Possible values are `'sigmoid'` and `'tanh'`. See the original
+        Possible values are _'sigmoid'_ and _'tanh'_. See the original
         publication for details.
     """
 
@@ -769,9 +760,7 @@ class FocalR_RMSELoss(nn.Module):
 class HuberLoss(nn.Module):
     r"""Hubbler Loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self, beta: float = 0.2):
@@ -794,10 +783,6 @@ class HuberLoss(nn.Module):
         lds_weight: Tensor, Optional
             If we choose to use LDS this is the tensor of weights that will
             multiply the loss value.
-        activation_fn: str, default = "sigmoid"
-            Activation function to be used during the computation of the loss.
-            Possible values are `'sigmoid'` and `'tanh'`. See the original
-            publication for details.
 
         Examples
         --------

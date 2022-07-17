@@ -19,40 +19,37 @@ __all__ = ["LabelEncoder", "find_bin", "get_kernel_window"]
 class LabelEncoder:
     r"""Label Encode categorical values for multiple columns at once
 
-    .. note:: LabelEncoder reserves 0 for `unseen` new categories. This is convenient
-        when defining the embedding layers, since we can just set padding idx to 0.
+    :information_source: **NOTE**:
+    LabelEncoder reserves 0 for `unseen` new categories. This is convenient
+    when defining the embedding layers, since we can just set padding idx to 0.
 
     Parameters
     ----------
     columns_to_encode: list, Optional, default = None
         List of strings containing the names of the columns to encode. If
-        ``None`` all columns of type ``object`` in the dataframe will be label
+        `None` all columns of type `object` in the dataframe will be label
         encoded.
     with_attention: bool, default = False
         Boolean indicating whether the preprocessed data will be passed to an
-        attention-based model.
-        Aliased as ``for_transformer``.
+        attention-based model. Aliased as `for_transformer`.
     shared_embed: bool, default = False
-        Boolean indicating if the embeddings will be "shared" when using
-        attention-based models. The idea behind ``shared_embed`` is described
-        in the Appendix A in the `TabTransformer paper
-        <https://arxiv.org/abs/2012.06678>`_: `'The goal of having column
-        embedding is to enable the model to distinguish the classes in one
-        column from those in the other columns'`. In other words, the idea is
-        to let the model learn which column is embedded at the time. See:
-        :obj:`pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
+        Boolean indicating if the embeddings will be "_shared_" when using
+        attention-based models. The idea behind `shared_embed` is described
+        in the Appendix A in the [TabTransformer paper](https://arxiv.org/abs/2012.06678):
+        '_The goal of having column embedding is to enable the model to
+        distinguish the classes in one column from those in the
+        other columns_'. In other words, the idea is to let the model learn
+        which column is embedded at the time. See: `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
 
     Attributes
-    -----------
-    encoding_dict: Dict
-        Dictionary containing the encoding mappings in the format, e.g.
-
+    ----------
+    encoding_dict : Dict
+        Dictionary containing the encoding mappings in the format, e.g. : <br/>
         `{'colname1': {'cat1': 1, 'cat2': 2, ...}, 'colname2': {'cat1': 1, 'cat2': 2, ...}, ...}`
-
-    inverse_encoding_dict: Dict
-        Dictionary containing the insverse encoding mappings in the format, e.g.
-
+    inverse_encoding_dict : Dict
+        Dictionary containing the inverse encoding mappings in the format, e.g. : <br/>
         `{'colname1': {1: 'cat1', 2: 'cat2', ...}, 'colname2': {1: 'cat1', 2: 'cat2', ...}, ...}`
+
     """
 
     @Alias("with_attention", "for_transformer")
@@ -70,7 +67,13 @@ class LabelEncoder:
         self.reset_embed_idx = not self.with_attention or self.shared_embed
 
     def fit(self, df: pd.DataFrame) -> "LabelEncoder":
-        """Creates encoding attributes"""
+        """Creates encoding attributes
+
+        Returns
+        -------
+        LabelEncoder
+            `LabelEncoder` fitted object
+        """
 
         df_inp = df.copy()
 
@@ -110,7 +113,13 @@ class LabelEncoder:
         return self
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Label Encoded the categories in ``columns_to_encode``"""
+        """Label Encoded the categories in `columns_to_encode`
+
+        Returns
+        -------
+        pd.DataFrame
+            label-encoded dataframe
+        """
         try:
             self.encoding_dict
         except AttributeError:
@@ -131,7 +140,7 @@ class LabelEncoder:
         return df_inp
 
     def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Combines ``fit`` and ``transform``
+        """Combines `fit` and `transform`
 
         Examples
         --------
@@ -148,6 +157,12 @@ class LabelEncoder:
         2     3     3
         >>> encoder.encoding_dict
         {'col2': {'me': 1, 'you': 2, 'him': 3}}
+
+        Returns
+        -------
+        List[List[str]]
+            List containing lists of tokens. One list per "_document_"
+
         """
         return self.fit(df).transform(df)
 
@@ -168,6 +183,12 @@ class LabelEncoder:
         0     1   me
         1     2  you
         2     3  him
+
+        Returns
+        -------
+        List[List[str]]
+            List containing lists of tokens. One list per "_document_"
+
         """
         for k, v in self.inverse_encoding_dict.items():
             df[k] = df[k].apply(lambda x: v[x])

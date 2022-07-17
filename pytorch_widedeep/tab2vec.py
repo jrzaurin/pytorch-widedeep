@@ -20,24 +20,24 @@ class Tab2Vec:
     processing applied by the model to the categorical and continuous
     columns.
 
-    .. note:: Currently this class is only implemented for the deeptabular
-        component or the Bayesian model. Therefore, if the input dataframe has
-        a text column or a column with the path to images, these will be
-        ignored. We will be adding these functionalities in future versions
+    :information_source: **NOTE**: Currently this class is only implemented
+     for the deeptabular component. Therefore, if the input dataframe has a
+     text column or a column with the path to images, these will be ignored.
+     We will be adding these functionalities in future versions
 
     Parameters
     ----------
-    model: ``WideDeep`` or ``BaseBayesianModel``
-        ``WideDeep`` ``BaseBayesianModel`` model. Must be trained.
-    tab_preprocessor: ``TabPreprocessor``
-        ``TabPreprocessor`` object. Must be fitted.
+    model: `WideDeep`, `BayesianWide` or `BayesianTabMlp`
+        `WideDeep`, `BayesianWide` or `BayesianTabMlp` model. Must be trained.
+    tab_preprocessor: `TabPreprocessor`
+        `TabPreprocessor` object. Must be fitted.
     return_dataframe: bool
         Boolean indicating of the returned object(s) will be array(s) or
         pandas dataframe(s)
 
     Attributes
     ----------
-    vectorizer: ``nn.Module``
+    vectorizer: nn.Module
         Torch module with the categorical and continuous encoding process
 
     Examples
@@ -84,7 +84,7 @@ class Tab2Vec:
 
     def __init__(
         self,
-        model: Union[WideDeep, BaseBayesianModel],
+        model: Union[WideDeep, BayesianWide, BayesianTabMlp],
         tab_preprocessor: TabPreprocessor,
         return_dataframe: bool = False,
         verbose: bool = False,
@@ -130,9 +130,25 @@ class Tab2Vec:
         self.vectorizer.to(device)
 
     def fit(self, df: pd.DataFrame, target_col: Optional[str] = None) -> "Tab2Vec":
-        r"""Empty method. Returns the object itself. Is only included for
-        consistency in case ``Tab2Vec`` is used as part of a Pipeline
+        r"""This is an empty method i.e. Returns the unchanged object itself. Is
+        only included for consistency in case `Tab2Vec` is used as part of a
+        Pipeline
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame to be vectorised, i.e. the categorical and continuous
+            columns will be encoded based on the processing applied within
+            the model
+        target_col: str, Optional
+            Column name of the target_col variable. If `None` only the array of
+            predictors will be returned
+
+        Returns
+        -------
+        Tab2Vec
         """
+
         return self
 
     def transform(
@@ -156,8 +172,16 @@ class Tab2Vec:
             columns will be encoded based on the processing applied within
             the model
         target_col: str, Optional
-            Column name of the target_col variable. If ``None`` only the array of
+            Column name of the target_col variable. If `None` only the array of
             predictors will be returned
+
+        Returns
+        -------
+        Union[np.ndarray, Tuple[np.ndarray, np.ndarray], pd.DataFrame, Tuple[pd.DataFrame, pd.Series]
+            Returns eiter a numpy array with the vectorised values, or a Tuple
+            of numpy arrays with the vectorised values and the target. The
+            same applies to dataframes in case we choose to set
+            `return_dataframe = True`
         """
 
         X_tab = self.tab_preprocessor.transform(df)
@@ -196,7 +220,7 @@ class Tab2Vec:
         pd.DataFrame,
         Tuple[pd.DataFrame, pd.Series],
     ]:
-        r"""Combines ``fit`` and ``transform``"""
+        r"""Combines `fit` and `transform`"""
         return self.fit(df, target_col).transform(df, target_col)
 
     def _new_colnames(self) -> List[str]:

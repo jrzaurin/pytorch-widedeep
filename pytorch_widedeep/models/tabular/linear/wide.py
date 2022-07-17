@@ -7,9 +7,9 @@ from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 class Wide(nn.Module):
-    r"""Defines a ``Wide`` (linear) model where the non-linearities are
+    r"""Defines a `Wide` (linear) model where the non-linearities are
     captured via the so-called crossed-columns. This can be used as the
-    ``wide`` component of a Wide & Deep model.
+    `wide` component of a Wide & Deep model.
 
     Parameters
     -----------
@@ -22,11 +22,11 @@ class Wide(nn.Module):
         size of the ouput tensor containing the predictions. Note that unlike
         all the other models, the wide model is connected directly to the
         output neuron(s) when used to build a Wide and Deep model. Therefore,
-        it requires the ``pred_dim`` parameter.
+        it requires the `pred_dim` parameter.
 
     Attributes
     -----------
-    wide_linear: ``nn.Module``
+    wide_linear: nn.Module
         the linear layer that comprises the wide branch of the model
 
     Examples
@@ -51,9 +51,8 @@ class Wide(nn.Module):
         self._reset_parameters()
 
     def _reset_parameters(self) -> None:
-        r"""initialize Embedding and bias like nn.Linear. See `original
-        implementation
-        <https://pytorch.org/docs/stable/_modules/torch/nn/modules/linear.html#Linear>`_.
+        r"""initialize Embedding and bias like nn.Linear. See [original
+        implementation](https://pytorch.org/docs/stable/_modules/torch/nn/modules/linear.html#Linear).
         """
         nn.init.kaiming_uniform_(self.wide_linear.weight, a=math.sqrt(5))
         fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.wide_linear.weight)

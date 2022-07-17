@@ -4,6 +4,13 @@ import os
 
 import setuptools
 
+
+def requirements(fname):
+    return [
+        line.strip() for line in open(os.path.join(os.path.dirname(__file__), fname))
+    ]
+
+
 pwd = os.path.dirname(__file__)
 
 dev_status = {
@@ -32,12 +39,14 @@ extras["docs"] = [
     "sphinx-copybutton",
     "sphinx-autodoc-typehints",
 ]
+extras["mkdocs"] = requirements("mkdocs/requirements.txt")
 extras["quality"] = [
     "black",
     "isort",
     "flake8",
 ]
-extras["all"] = extras["test"] + extras["docs"] + extras["quality"]
+extras["all"] = extras["test"] + extras["docs"] + extras["quality"] + extras["mkdocs"]
+reqs = requirements("requirements.txt")
 
 # main setup kw args
 setup_kwargs = {
@@ -51,25 +60,7 @@ setup_kwargs = {
     "author_email": "jrzaurin@gmail.com",
     "url": "https://github.com/jrzaurin/pytorch-widedeep",
     "license": "MIT",
-    "install_requires": [
-        "pandas",
-        "numpy>=1.20.0",
-        "scipy",
-        "scikit-learn",
-        "gensim",
-        "spacy",
-        "opencv-contrib-python",
-        "imutils",
-        "tqdm",
-        "torch",
-        "torchvision",
-        "einops",
-        "wrapt",
-        "torchmetrics",
-        "ray[tune]",
-        "pyarrow",
-        "fastparquet",
-    ],
+    "install_requires": reqs,
     "extras_require": extras,
     "python_requires": ">=3.7.0",
     "classifiers": [

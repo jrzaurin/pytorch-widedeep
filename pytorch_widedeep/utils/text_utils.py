@@ -17,12 +17,10 @@ def simple_preprocess(
     max_len: int = 15,
 ) -> List[str]:
     r"""
-    This is ``Gensim``'s :obj:`simple_preprocess` with a ``lower`` param to
+    This is `Gensim`'s `simple_preprocess` with a `lower` param to
     indicate wether or not to lower case all the token in the doc
 
-    For more information see: ``Gensim`` `utils module
-    <https://radimrehurek.com/gensim/utils.html>`_. Returns the list of tokens
-    for a given doc
+    For more information see: `Gensim` [utils module](https://radimrehurek.com/gensim/utils.html)
 
     Parameters
     ----------
@@ -31,7 +29,7 @@ def simple_preprocess(
     lower: bool, default = False
         Lower case tokens in the input doc
     deacc: bool, default = False
-        Remove accent marks from tokens using ``Gensim``'s :obj:`deaccent`
+        Remove accent marks from tokens using `Gensim`'s `deaccent`
     min_len: int, default = 2
         Minimum length of token (inclusive). Shorter tokens are discarded.
     max_len: int, default = 15
@@ -42,6 +40,11 @@ def simple_preprocess(
     >>> from pytorch_widedeep.utils import simple_preprocess
     >>> simple_preprocess('Machine learning is great')
     ['Machine', 'learning', 'is', 'great']
+
+    Returns
+    -------
+    List[str]
+        List with the processed tokens
     """
     tokens = [
         token
@@ -52,12 +55,10 @@ def simple_preprocess(
 
 
 def get_texts(texts: List[str]) -> List[List[str]]:
-    r"""Tokenization using ``Fastai``'s :obj:`Tokenizer` because it does a
+    r"""Tokenization using `Fastai`'s `Tokenizer` because it does a
     series of very convenients things during the tokenization process
 
-    See :class:`pytorch_widedeep.utils.fastai_utils.Tokenizer`
-
-    Returns a list containing the tokens per text or document
+    See `pytorch_widedeep.utils.fastai_utils.Tokenizer`
 
     Parameters
     ----------
@@ -71,12 +72,17 @@ def get_texts(texts: List[str]) -> List[List[str]]:
     >>> get_texts(texts)
     [['xxmaj', 'machine', 'learning', 'is', 'great'], ['but', 'building', 'stuff', 'is', 'even', 'better']]
 
-    .. note:: :obj:`get_texts` uses :class:`pytorch_widedeep.utils.fastai_transforms.Tokenizer`.
-        Such tokenizer uses a series of convenient processing steps, including
-        the  addition of some special tokens, such as ``TK_MAJ`` (`xxmaj`), used to
-        indicate the next word begins with a capital in the original text. For more
-        details of special tokens please see the ``fastai`` `docs
-        <https://docs.fast.ai/text.transform.html#Tokenizer>`_.
+    Returns
+    -------
+    List[List[str]]
+        List of lists, one list per '_document_' containing its corresponding tokens
+
+    :information_source: **NOTE**:
+    `get_texts` uses `pytorch_widedeep.utils.fastai_transforms.Tokenizer`.
+    Such tokenizer uses a series of convenient processing steps, including
+    the  addition of some special tokens, such as `TK_MAJ` (`xxmaj`), used to
+    indicate the next word begins with a capital in the original text. For more
+    details of special tokens please see the [`fastai` `docs](https://docs.fast.ai/text.core.html#Tokenizing)
     """
     processed_textx = [" ".join(simple_preprocess(t)) for t in texts]
     tok = Tokenizer().process_all(processed_textx)
@@ -108,6 +114,11 @@ def pad_sequences(
     >>> seq = [1,2,3]
     >>> pad_sequences(seq, maxlen=5, pad_idx=0)
     array([0, 0, 1, 2, 3], dtype=int32)
+
+    Returns
+    -------
+    np.ndarray
+        numpy array with the padded sequences
     """
     if len(seq) == 0:
         return np.zeros(maxlen, dtype="int32") + pad_idx
@@ -126,8 +137,7 @@ def pad_sequences(
 def build_embeddings_matrix(
     vocab: Vocab, word_vectors_path: str, min_freq: int, verbose: int = 1
 ) -> np.ndarray:  # pragma: no cover
-    r"""Build the embedding matrix using pretrained word vectors. Returns the
-    pretrained word embeddings
+    r"""Build the embedding matrix using pretrained word vectors.
 
     Returns pretrained word embeddings. If a word in our vocabulary is not
     among the pretrained embeddings it will be assigned the mean pretrained
@@ -136,13 +146,18 @@ def build_embeddings_matrix(
     Parameters
     ----------
     vocab: Vocab
-        see :class:`pytorch_widedeep.utils.fastai_utils.Vocab`
+        see `pytorch_widedeep.utils.fastai_utils.Vocab`
     word_vectors_path: str
         path to the pretrained word embeddings
     min_freq: int
         minimum frequency required for a word to be in the vocabulary
     verbose: int,  default=1
         level of verbosity. Set to 0 for no verbosity
+
+    Returns
+    -------
+    np.ndarray
+        Pretrained word embeddings
     """
     if not os.path.isfile(word_vectors_path):
         raise FileNotFoundError("{} not found".format(word_vectors_path))
