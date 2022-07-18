@@ -35,111 +35,129 @@ class Trainer(BaseTrainer):
 
     Parameters
     ----------
-    model: ``WideDeep``
-        An object of class ``WideDeep``
+    model: `WideDeep`
+        An object of class `WideDeep`
     objective: str
         Defines the objective, loss or cost function.
 
-        Param aliases: ``loss_function``, ``loss_fn``, ``loss``,
-        ``cost_function``, ``cost_fn``, ``cost``
+        Param aliases: `loss_function`, `loss_fn`, `loss`,
+        `cost_function`, `cost_fn`, `cost`
 
         Possible values are:
 
-        - ``binary``, aliases: ``logistic``, ``binary_logloss``, ``binary_cross_entropy``
+        - `binary`, aliases: `logistic`, `binary_logloss`, `binary_cross_entropy`
 
-        - ``binary_focal_loss``
+        - `binary_focal_loss`
 
-        - ``multiclass``, aliases: ``multi_logloss``, ``cross_entropy``, ``categorical_cross_entropy``,
+        - `multiclass`, aliases: `multi_logloss`, `cross_entropy`, `categorical_cross_entropy`,
 
-        - ``multiclass_focal_loss``
+        - `multiclass_focal_loss`
 
-        - ``regression``, aliases: ``mse``, ``l2``, ``mean_squared_error``
+        - `regression`, aliases: `mse`, `l2`, `mean_squared_error`
 
-        - ``mean_absolute_error``, aliases: ``mae``, ``l1``
+        - `mean_absolute_error`, aliases: `mae`, `l1`
 
-        - ``mean_squared_log_error``, aliases: ``msle``
+        - `mean_squared_log_error`, aliases: `msle`
 
-        - ``root_mean_squared_error``, aliases:  ``rmse``
+        - `root_mean_squared_error`, aliases:  `rmse`
 
-        - ``root_mean_squared_log_error``, aliases: ``rmsle``
+        - `root_mean_squared_log_error`, aliases: `rmsle`
 
-        - ``zero_inflated_lognormal``, aliases: ``ziln``
+        - `zero_inflated_lognormal`, aliases: `ziln`
 
-        - ``quantile``
+        - `quantile`
 
-        - ``tweedie``
-    custom_loss_function: ``nn.Module``. Optional, default = None
+        - `tweedie`
+    custom_loss_function: `nn.Module`. Optional, default = None
         It is possible to pass a custom loss function. See for example
-        :class:`pytorch_widedeep.losses.FocalLoss` for the required structure
-        of the object or the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
-        folder in the repo. Note that if ``custom_loss_function`` is not
-        None, ``objective`` must be 'binary', 'multiclass' or 'regression',
-        consistent with the loss function
-    optimizers: ``Optimzer`` or dict. Optional, default= None
-        - An instance of Pytorch's :obj:`Optimizer` object
-          (e.g. :obj:`torch.optim.Adam()`) or
+        `pytorch_widedeep.losses.FocalLoss` for the required structure of the
+        object or the Examples section in this documentation or in the repo.
+        Note that if `custom_loss_function` is not `None`, `objective` must
+        be _'binary'_, _'multiclass'_ or _'regression'_, consistent with the
+        loss function
+    optimizers: `Optimzer` or dict. Optional, default= None
+        - An instance of Pytorch's `Optimizer` object
+          (e.g. `torch.optim.Adam()`) or
         - a dictionary where there keys are the model components (i.e.
-          `'wide'`, `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)  and
+          _'wide'_, _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_)  and
           the values are the corresponding optimizers. If multiple optimizers are used
           the  dictionary **MUST** contain an optimizer per model component.
 
-        if no optimizers are passed it will default to :obj:`Adam` for all
+        if no optimizers are passed it will default to `Adam` for all
         model components
-    lr_schedulers: ``LRScheduler`` or dict. Optional, default=None
-        - An instance of Pytorch's :obj:`LRScheduler` object (e.g
-          :obj:`torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
-        - a dictionary where there keys are the model componenst (i.e. `'wide'`,
-          `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`) and the
+    lr_schedulers: `LRScheduler` or dict. Optional, default=None
+        - An instance of Pytorch's `LRScheduler` object (e.g
+          `torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
+        - a dictionary where there keys are the model componenst (i.e. _'wide'_,
+          _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_) and the
           values are the corresponding learning rate schedulers.
-    initializers: ``Initializer`` or dict. Optional, default=None
-        - An instance of an `Initializer`` object see :obj:`pytorch-widedeep.initializers` or
-        - a dictionary where there keys are the model components (i.e. `'wide'`,
-          `'deeptabular'`, `'deeptext'`, `'deepimage'` and/or `'deephead'`)
+    initializers: `Initializer` or dict. Optional, default=None
+        - An instance of an `Initializer` object see `pytorch-widedeep.initializers` or
+        - a dictionary where there keys are the model components (i.e. _'wide'_,
+          _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_)
           and the values are the corresponding initializers.
     transforms: List. Optional, default=None
-        List with :obj:`torchvision.transforms` to be applied to the image
-        component of the model (i.e. ``deepimage``) See `torchvision
-        transforms
-        <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
+        List with `torchvision.transforms` to be applied to the image
+        component of the model (i.e. `deepimage`) See
+        [torchvision transforms](https://pytorch.org/docs/stable/torchvision/transforms.html).
     callbacks: List. Optional, default=None
-        List with :obj:`Callback` objects. The three callbacks available in
-        :obj:`pytorch-widedeep` are: :obj:`LRHistory`, :obj:`ModelCheckpoint`
-        and :obj:`EarlyStopping`. The :obj:`History` and
-        the :obj:`LRShedulerCallback` callbacks are used by default. This
-        can also be a custom callback as long as the object of
-        type :obj:`Callback`. See
-        :obj:`pytorch_widedeep.callbacks.Callback` or the examples folder
-        in the repo
+        List with `Callback` objects. The three callbacks available in
+        `pytorch-widedeep` are: `LRHistory`, `ModelCheckpoint` and
+        `EarlyStopping`. The `History` and the `LRShedulerCallback` callbacks
+        are used by default. This can also be a custom callback as long as
+        the object of type `Callback`. See
+        `pytorch_widedeep.callbacks.Callback` or the examples folder in the
+        repo.
     metrics: List. Optional, default=None
-        - List of objects of type :obj:`Metric`. Metrics available are:
-          :obj:`Accuracy`, :obj:`Precision`, :obj:`Recall`, :obj:`FBetaScore`,
+        - List of objects of type `Metric`. Metrics available are:
+          `Accuracy`, `Precision`, `Recall`, `FBetaScore`,
           `F1Score` and `R2Score`. This can also be a custom metric as long
-          as it is an object of type :obj:`Metric`. See
-          :obj:`pytorch_widedeep.metrics.Metric` or the examples folder in the
+          as it is an object of type `Metric`. See
+          `pytorch_widedeep.metrics.Metric` or the examples folder in the
           repo
-        - List of objects of type :obj:`torchmetrics.Metric`. This can be any
-          metric from torchmetrics library `Examples
-          <https://torchmetrics.readthedocs.io/en/latest/references/modules.html#
-          classification-metrics>`_. This can also be a custom metric as long as
-          it is an object of type :obj:`Metric`. See `the instructions
-          <https://torchmetrics.readthedocs.io/en/latest/>`_.
+        - List of objects of type `torchmetrics.Metric`. This can be any
+          metric from torchmetrics library
+          [Examples](https://torchmetrics.readthedocs.io/en/latest/).
+          This can also be a custom metric as long as
+          it is an object of type `Metric`. See
+          [the instructions](https://torchmetrics.readthedocs.io/en/latest/).
     verbose: int, default=1
         Verbosity level. If set to 0 nothing will be printed during training
     seed: int, default=1
         Random seed to be used internally for train/test split
 
+    Other Parameters
+    ----------------
+    **kwargs: dict
+        Other infrequently used arguments that can also be passed as kwargs are:
+
+        - **device**: `str`<br/>
+            string indicating the device. One of _'cpu'_ or _'gpu'_
+
+        - **num_workers**: `int`<br/>
+            number of workers to be used internally by the data loaders
+
+        - **lambda_sparse**: `float`<br/>
+            lambda sparse parameter in case the `deeptabular` component is `TabNet`
+
+        - **class_weight**: `List[float]`<br/>
+            This is the `weight` or `pos_weight` parameter in
+            `CrossEntropyLoss` and `BCEWithLogitsLoss`, depending on whether
+        - **reducelronplateau_criterion**: `str`
+            This sets the criterion that will be used by the lr scheduler to
+            take a step: One of _'loss'_ or _'metric'_. The ReduceLROnPlateau
+            learning rate is a bit particular.
+
     Attributes
     ----------
     cyclic_lr: bool
         Attribute that indicates if any of the lr_schedulers is cyclic_lr
-        (i.e. :obj:`CyclicLR` or
-        :obj:`OneCycleLR`). See `Pytorch schedulers
-        <https://pytorch.org/docs/stable/optim.html>`_.
+        (i.e. `CyclicLR` or
+        `OneCycleLR`). See [Pytorch schedulers](https://pytorch.org/docs/stable/optim.html).
     feature_importance: dict
         dict where the keys are the column names and the values are the
         corresponding feature importances. This attribute will only exist
-        if the ``deeptabular`` component is a Tabnet model
+        if the `deeptabular` component is a Tabnet model.
 
     Examples
     --------
@@ -242,30 +260,30 @@ class Trainer(BaseTrainer):
         r"""Fit method.
 
         The input datasets can be passed either directly via numpy arrays
-        (``X_wide``, ``X_tab``, ``X_text`` or ``X_img``) or alternatively, in
-        dictionaries (``X_train`` or ``X_val``).
+        (`X_wide`, `X_tab`, `X_text` or `X_img`) or alternatively, in
+        dictionaries (`X_train` or `X_val`).
 
         Parameters
         ----------
         X_wide: np.ndarray, Optional. default=None
-            Input for the ``wide`` model component.
-            See :class:`pytorch_widedeep.preprocessing.WidePreprocessor`
+            Input for the `wide` model component.
+            See `pytorch_widedeep.preprocessing.WidePreprocessor`
         X_tab: np.ndarray, Optional. default=None
-            Input for the ``deeptabular`` model component.
-            See :class:`pytorch_widedeep.preprocessing.TabPreprocessor`
+            Input for the `deeptabular` model component.
+            See `pytorch_widedeep.preprocessing.TabPreprocessor`
         X_text: np.ndarray, Optional. default=None
-            Input for the ``deeptext`` model component.
-            See :class:`pytorch_widedeep.preprocessing.TextPreprocessor`
-        X_img : np.ndarray, Optional. default=None
-            Input for the ``deepimage`` model component.
-            See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
+            Input for the `deeptext` model component.
+            See `pytorch_widedeep.preprocessing.TextPreprocessor`
+        X_img: np.ndarray, Optional. default=None
+            Input for the `deepimage` model component.
+            See `pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_train: Dict, Optional. default=None
             The training dataset can also be passed in a dictionary. Keys are
-            `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
+            _'X_wide'_, _'X_tab'_, _'X_text'_, _'X_img'_ and _'target'_. Values
             are the corresponding matrices.
         X_val: Dict, Optional. default=None
             The validation dataset can also be passed in a dictionary. Keys
-            are `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`.
+            are _'X_wide'_, _'X_tab'_, _'X_text'_, _'X_img'_ and _'target'_.
             Values are the corresponding matrices.
         val_split: float, Optional. default=None
             train/val split fraction
@@ -277,79 +295,96 @@ class Trainer(BaseTrainer):
             epochs validation frequency
         batch_size: int, default=32
             batch size
-        custom_dataloader: ``DataLoader``, Optional, default=None
-            object of class ``torch.utils.data.DataLoader``. Available
-            predefined dataloaders are in ``pytorch-widedeep.dataloaders``.If
-            ``None``, a standard torch ``DataLoader`` is used.
+        custom_dataloader: `DataLoader`, Optional, default=None
+            object of class `torch.utils.data.DataLoader`. Available
+            predefined dataloaders are in `pytorch-widedeep.dataloaders`.If
+            `None`, a standard torch `DataLoader` is used.
         finetune: bool, default=False
-            param alias: ``warmup``
+            param alias: `warmup`
 
             fine-tune individual model components. This functionality can also
             be used to 'warm-up' individual components before the joined
             training starts, and hence its alias. See the Examples folder in
             the repo for more details
 
-            ``pytorch_widedeep`` implements 3 fine-tune routines.
+            `pytorch_widedeep` implements 3 fine-tune routines.
 
-            - fine-tune all trainable layers at once. This routine is is
+            - fine-tune all trainable layers at once. This routine is
               inspired by the work of Howard & Sebastian Ruder 2018 in their
-              `ULMfit paper <https://arxiv.org/abs/1801.06146>`_. Using a
-              Slanted Triangular learing (see `Leslie N. Smith paper
-              <https://arxiv.org/pdf/1506.01186.pdf>`_), the process is the
-              following: `i`) the learning rate will gradually increase for
-              10% of the training steps from max_lr/10 to max_lr. `ii`) It
-              will then gradually decrease to max_lr/10 for the remaining 90%
-              of the steps. The optimizer used in the process is ``Adam``.
+              [ULMfit paper](https://arxiv.org/abs/1801.06146). Using a
+              Slanted Triangular learing (see
+              [Leslie N. Smith paper](https://arxiv.org/pdf/1506.01186.pdf) ) ,
+              the process is the following: *i*) the learning rate will
+              gradually increase for 10% of the training steps from max_lr/10
+              to max_lr. *ii*) It will then gradually decrease to max_lr/10
+              for the remaining 90% of the steps. The optimizer used in the
+              process is `Adam`.
 
             and two gradual fine-tune routines, where only certain layers are
             trained at a time.
 
             - The so called `Felbo` gradual fine-tune rourine, based on the the
-              Felbo et al., 2017 `DeepEmoji paper <https://arxiv.org/abs/1708.00524>`_.
+              Felbo et al., 2017 [DeepEmoji paper](https://arxiv.org/abs/1708.00524).
             - The `Howard` routine based on the work of Howard & Sebastian Ruder 2018 in their
-              `ULMfit paper <https://arxiv.org/abs/1801.06146>`_.
+              [ULMfit paper](https://arxiv.org/abs/1801.06146>).
 
             For details on how these routines work, please see the Examples
-            section in this documentation and the `Examples
-            <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
-            folder in the repo.
+            section in this documentation and the Examples folder in the repo.
+
+        Other Parameters
+        ----------------
+        **kwargs : dict
+            Other keyword arguments are:
+
+            - **DataLoader related parameters**:<br/>
+                For example,  `sampler`, `batch_sampler`, `collate_fn`, etc.
+                Please, see the pytorch
+                [DataLoader docs](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)
+                for details.
+
+            - **Label Distribution Smoothing related parameters**:<br/>
+                see the source code at `pytorch_widedeep._wd_dataset` for some details
+
+                    >:information_source: **NOTE**: We consider this feature absolutely
+                    experimental and we recommend the user to not use it unless the
+                    corresponding [publication](https://arxiv.org/abs/2102.09554) is
+                    well understood
+
+            - **Finetune related parameters**:<br/>
+                see the source code at `pytorch_widedeep._finetune`. Namely, these are:
+
+                - `finetune_epochs` (`int`):
+                    number of epochs use for fine tuning
+                - `finetune_max_lr` (`float`):
+                   max lr during fine tuning
+                - `routine` (`str`):
+                   one of _'howard'_ or _'felbo'_
+                - `deeptabular_gradual` (`bool`):
+                   boolean indicating if the `deeptabular` component will be fine tuned gradually
+                - `deeptabular_layers` (`List[nn.Module]`):
+                   List of pytorch modules indicating the layers of the
+                   `deeptabular` that will be fine tuned
+                - `deeptabular_max_lr` (`float`):
+                   max lr for the `deeptabular` componet during fine tuning
+                - `deeptext_gradual` (`bool`):
+                   same as `deeptabular_gradual` but for the `deeptext` component
+                - `deeptext_layers` (`List[nn.Module]`):
+                   same as `deeptabular_gradual` but for the `deeptext` component
+                - `deeptext_max_lr` (`float`):
+                   same as `deeptabular_gradual` but for the `deeptext` component
+                - `deepimage_gradual` (`bool`):
+                   same as `deeptabular_gradual` but for the `deepimage` component
+                - `deepimage_layers` (`List[nn.Module]`):
+                   same as `deeptabular_gradual` but for the `deepimage` component
+                - `deepimage_max_lr` (`float`):
+                    same as `deeptabular_gradual` but for the `deepimage` component
 
         Examples
         --------
 
-        For a series of comprehensive examples please, see the `Examples
-        <https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples>`__
+        For a series of comprehensive examples on how to use the `fit` method, please see the
+        [Examples](https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples)
         folder in the repo
-
-        For completion, here we include some `"fabricated"` examples, i.e.
-        these assume you have already built a model and instantiated a
-        ``Trainer``, that is ready to fit
-
-        .. code-block:: python
-
-            # Ex 1. using train input arrays directly and no validation
-            trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256)
-
-
-        .. code-block:: python
-
-            # Ex 2: using train input arrays directly and validation with val_split
-            trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, n_epochs=10, batch_size=256, val_split=0.2)
-
-
-        .. code-block:: python
-
-            # Ex 3: using train dict and val_split
-            X_train = {'X_wide': X_wide, 'X_tab': X_tab, 'target': y}
-            trainer.fit(X_train, n_epochs=10, batch_size=256, val_split=0.2)
-
-
-        .. code-block:: python
-
-            # Ex 4: validation using training and validation dicts
-            X_train = {'X_wide': X_wide_tr, 'X_tab': X_tab_tr, 'target': y_tr}
-            X_val = {'X_wide': X_wide_val, 'X_tab': X_tab_val, 'target': y_val}
-            trainer.fit(X_train=X_train, X_val=X_val n_epochs=10, batch_size=256)
         """
 
         lds_args, dataloader_args, finetune_args = self._extract_kwargs(kwargs)
@@ -480,32 +515,37 @@ class Trainer(BaseTrainer):
         r"""Returns the predictions
 
         The input datasets can be passed either directly via numpy arrays
-        (``X_wide``, ``X_tab``, ``X_text`` or ``X_img``) or alternatively, in
-        a dictionary (``X_test``)
+        (`X_wide`, `X_tab`, `X_text` or `X_img`) or alternatively, in
+        a dictionary (`X_test`)
 
 
         Parameters
         ----------
         X_wide: np.ndarray, Optional. default=None
-            Input for the ``wide`` model component.
-            See :class:`pytorch_widedeep.preprocessing.WidePreprocessor`
+            Input for the `wide` model component.
+            See `pytorch_widedeep.preprocessing.WidePreprocessor`
         X_tab: np.ndarray, Optional. default=None
-            Input for the ``deeptabular`` model component.
-            See :class:`pytorch_widedeep.preprocessing.TabPreprocessor`
+            Input for the `deeptabular` model component.
+            See `pytorch_widedeep.preprocessing.TabPreprocessor`
         X_text: np.ndarray, Optional. default=None
-            Input for the ``deeptext`` model component.
-            See :class:`pytorch_widedeep.preprocessing.TextPreprocessor`
-        X_img : np.ndarray, Optional. default=None
-            Input for the ``deepimage`` model component.
-            See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
+            Input for the `deeptext` model component.
+            See `pytorch_widedeep.preprocessing.TextPreprocessor`
+        X_img: np.ndarray, Optional. default=None
+            Input for the `deepimage` model component.
+            See `pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_test: Dict, Optional. default=None
             The test dataset can also be passed in a dictionary. Keys are
-            `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
+            `X_wide`, _'X_tab'_, _'X_text'_, _'X_img'_ and _'target'_. Values
             are the corresponding matrices.
         batch_size: int, default = 256
             If a trainer is used to predict after having trained a model, the
-            ``batch_size`` needs to be defined as it will not be defined as
-            the :obj:`Trainer` is instantiated
+            `batch_size` needs to be defined as it will not be defined as
+            the `Trainer` is instantiated
+
+        Returns
+        -------
+        np.ndarray:
+            array with the predictions
         """
         preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size)
         if self.method == "regression":
@@ -532,46 +572,47 @@ class Trainer(BaseTrainer):
         r"""Returns the predicted ucnertainty of the model for the test dataset
         using a Monte Carlo method during which dropout layers are activated
         in the evaluation/prediction phase and each sample is predicted N
-        times (``uncertainty_granularity`` times).
+        times (`uncertainty_granularity` times).
 
-        This is based on `'Gal Y. & Ghahramani Z., 2016, Dropout as a Bayesian
-        Approximation: Representing Model Uncertainty in Deep Learning'`,
-        Proceedings of the 33rd International Conference on Machine Learning
+        This is based on
+        [Dropout as a Bayesian Approximation: Representing
+        Model Uncertainty in Deep Learning](https://arxiv.org/abs/1506.02142?context=stat).
 
         Parameters
         ----------
         X_wide: np.ndarray, Optional. default=None
-            Input for the ``wide`` model component.
-            See :class:`pytorch_widedeep.preprocessing.WidePreprocessor`
+            Input for the `wide` model component.
+            See `pytorch_widedeep.preprocessing.WidePreprocessor`
         X_tab: np.ndarray, Optional. default=None
-            Input for the ``deeptabular`` model component.
-            See :class:`pytorch_widedeep.preprocessing.TabPreprocessor`
+            Input for the `deeptabular` model component.
+            See `pytorch_widedeep.preprocessing.TabPreprocessor`
         X_text: np.ndarray, Optional. default=None
-            Input for the ``deeptext`` model component.
-            See :class:`pytorch_widedeep.preprocessing.TextPreprocessor`
-        X_img : np.ndarray, Optional. default=None
-            Input for the ``deepimage`` model component.
-            See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
+            Input for the `deeptext` model component.
+            See `pytorch_widedeep.preprocessing.TextPreprocessor`
+        X_img: np.ndarray, Optional. default=None
+            Input for the `deepimage` model component.
+            See `pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_test: Dict, Optional. default=None
             The test dataset can also be passed in a dictionary. Keys are
-            `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
+            _'X_wide'_, _'X_tab'_, _'X_text'_, _'X_img'_ and _'target'_. Values
             are the corresponding matrices.
         batch_size: int, default = 256
             If a trainer is used to predict after having trained a model, the
-            ``batch_size`` needs to be defined as it will not be defined as
-            the :obj:`Trainer` is instantiated
+            `batch_size` needs to be defined as it will not be defined as
+            the `Trainer` is instantiated
         uncertainty_granularity: int default = 1000
-            number of times the model does prediction for each sample if uncertainty
-            is set to True
+            number of times the model does prediction for each sample
 
         Returns
         -------
-            - if ``method == regression``, it will return an array with `{max, min, mean, stdev}`
+        np.ndarray:
+            - if `method = regression`, it will return an array with `(max, min, mean, stdev)`
               values for each sample.
-            - if ``method == binary`` it will return an array with
-              `{mean_cls_0_prob, mean_cls_1_prob, predicted_cls}` for each sample.
-            - if ``method == multiclass`` it will return an array with
-              `{mean_cls_0_prob, mean_cls_1_prob, mean_cls_2_prob, ... , predicted_cls}` values for each sample.
+            - if `method = binary` it will return an array with
+              `(mean_cls_0_prob, mean_cls_1_prob, predicted_cls)` for each sample.
+            - if `method = multiclass` it will return an array with
+              `(mean_cls_0_prob, mean_cls_1_prob, mean_cls_2_prob, ... , predicted_cls)`
+              values for each sample.
 
         """
         preds_l = self._predict(
@@ -628,31 +669,36 @@ class Trainer(BaseTrainer):
         and multiclass methods
 
         The input datasets can be passed either directly via numpy arrays
-        (``X_wide``, ``X_tab``, ``X_text`` or ``X_img``) or alternatively, in
-        a dictionary (``X_test``)
+        (`X_wide`, `X_tab`, `X_text` or `X_img`) or alternatively, in
+        a dictionary (`X_test`)
 
         Parameters
         ----------
         X_wide: np.ndarray, Optional. default=None
-            Input for the ``wide`` model component.
-            See :class:`pytorch_widedeep.preprocessing.WidePreprocessor`
+            Input for the `wide` model component.
+            See `pytorch_widedeep.preprocessing.WidePreprocessor`
         X_tab: np.ndarray, Optional. default=None
-            Input for the ``deeptabular`` model component.
-            See :class:`pytorch_widedeep.preprocessing.TabPreprocessor`
+            Input for the `deeptabular` model component.
+            See `pytorch_widedeep.preprocessing.TabPreprocessor`
         X_text: np.ndarray, Optional. default=None
-            Input for the ``deeptext`` model component.
-            See :class:`pytorch_widedeep.preprocessing.TextPreprocessor`
-        X_img : np.ndarray, Optional. default=None
-            Input for the ``deepimage`` model component.
-            See :class:`pytorch_widedeep.preprocessing.ImagePreprocessor`
+            Input for the `deeptext` model component.
+            See `pytorch_widedeep.preprocessing.TextPreprocessor`
+        X_img: np.ndarray, Optional. default=None
+            Input for the `deepimage` model component.
+            See `pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_test: Dict, Optional. default=None
             The test dataset can also be passed in a dictionary. Keys are
-            `X_wide`, `'X_tab'`, `'X_text'`, `'X_img'` and `'target'`. Values
+            `X_wide`, _'X_tab'_, _'X_text'_, _'X_img'_ and _'target'_. Values
             are the corresponding matrices.
         batch_size: int, default = 256
             If a trainer is used to predict after having trained a model, the
-            ``batch_size`` needs to be defined as it will not be defined as
-            the :obj:`Trainer` is instantiated
+            `batch_size` needs to be defined as it will not be defined as
+            the `Trainer` is instantiated
+
+        Returns
+        -------
+        np.ndarray
+            array with the probabilities per class
         """
 
         preds_l = self._predict(X_wide, X_tab, X_text, X_img, X_test, batch_size)
@@ -665,11 +711,13 @@ class Trainer(BaseTrainer):
         if self.method == "multiclass":
             return np.vstack(preds_l)
 
-    def explain(self, X_tab: np.ndarray, save_step_masks: bool = False):
+    def explain(
+        self, X_tab: np.ndarray, save_step_masks: bool = False
+    ) -> Union[Tuple, np.ndarray]:
         """
-        if the ``deeptabular`` component is a :obj:`Tabnet` model, returns the
+        if the `deeptabular` component is a `Tabnet` model, returns the
         aggregated feature importance for each instance (or observation) in
-        the ``X_tab`` array. If ``save_step_masks`` is set to ``True``, the
+        the `X_tab` array. If `save_step_masks` is set to `True`, the
         masks per step will also be returned.
 
         Parameters
@@ -681,10 +729,10 @@ class Trainer(BaseTrainer):
 
         Returns
         -------
-        res: np.ndarray, Tuple
+        Union[Tuple, np.ndarray]
             Array or Tuple of two arrays with the corresponding aggregated
-            feature importance and the masks per step if ``save_step_masks``
-            is set to ``True``
+            feature importance and the masks per step if `save_step_masks`
+            is set to `True`
         """
         loader = DataLoader(
             dataset=WideDeepDataset(X_tab=X_tab),
@@ -717,7 +765,7 @@ class Trainer(BaseTrainer):
         m_explain_agg = np.vstack(m_explain_l)
         m_explain_agg_norm = m_explain_agg / m_explain_agg.sum(axis=1)[:, np.newaxis]
 
-        res = (
+        res: Union[Tuple, np.ndarray] = (
             (m_explain_agg_norm, m_explain_step)
             if save_step_masks
             else np.vstack(m_explain_agg_norm)
@@ -732,21 +780,21 @@ class Trainer(BaseTrainer):
         model_filename: str = "wd_model.pt",
     ):
         r"""Saves the model, training and evaluation history, and the
-        ``feature_importance`` attribute (if the ``deeptabular`` component is a
+        `feature_importance` attribute (if the `deeptabular` component is a
         Tabnet model) to disk
 
-        The ``Trainer`` class is built so that it 'just' trains a model. With
+        The `Trainer` class is built so that it 'just' trains a model. With
         that in mind, all the torch related parameters (such as optimizers,
         learning rate schedulers, initializers, etc) have to be defined
-        externally and then passed to the ``Trainer``. As a result, the
-        ``Trainer`` does not generate any attribute or additional data
-        products that need to be saved other than the ``model`` object itself,
-        which can be saved as any other torch model (e.g. ``torch.save(model,
-        path)``).
+        externally and then passed to the `Trainer`. As a result, the
+        `Trainer` does not generate any attribute or additional data
+        products that need to be saved other than the `model` object itself,
+        which can be saved as any other torch model (e.g. `torch.save(model,
+        path)`).
 
-        The exception is Tabnet. If the ``deeptabular`` component is a Tabnet
-        model, an attribute (a dict) called ``feature_importance`` will be
-        created at the end of the training process. Therefore, a ``save``
+        The exception is Tabnet. If the `deeptabular` component is a Tabnet
+        model, an attribute (a dict) called `feature_importance` will be
+        created at the end of the training process. Therefore, a `save`
         method was created that will save the feature importance dictionary
         to a json file and, since we are here, the model weights, training
         history and learning rate history.

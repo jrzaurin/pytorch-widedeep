@@ -15,9 +15,9 @@ from pytorch_widedeep.models import (
     TabMlpDecoder,
     TabNetDecoder,
     TabTransformer,
+    SelfAttentionMLP,
     TabResnetDecoder,
     ContextAttentionMLP,
-    SelfAttentionMLP,
 )
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.models.tabular.self_supervised import (

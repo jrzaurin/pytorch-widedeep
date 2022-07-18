@@ -1,0 +1,96 @@
+/* Active tab bold & color */
+.md-tabs__link {
+    font-size: .75rem !important;
+}
+.md-tabs__link--active {
+    font-weight: bold !important;
+    color: var(--md-accent-fg-color);
+}
+.md-tabs__link:hover {
+    color: var(--md-accent-fg-color);
+}
+
+
+/* navigation bar active color*/
+.md-nav__item .md-nav__link--active {
+    font-weight: bold !important;
+    color: var(--md-accent-fg-color);
+}
+.md-nav__item .md-nav__link--active {
+    font-weight: bold !important;
+    font-size: .75rem !important;
+    color: var(--md-accent-fg-color);
+}
+
+
+/* frontpage elements */
+.tx-hero h1 {
+    font-size: 2.41rem !important;
+}
+a.md-button.md-button--primary {
+    background-color: var(--md-accent-fg-color);
+    border-color: var(--md-accent-fg-color);
+    color: #ffffff;
+}
+a.md-button.md-button--primary:hover {
+    color: #000000;
+}
+a.md-button.md-button:hover {
+    color: #000000;
+}
+
+
+/*Table styling*/
+table {
+  padding: 0; }
+  table tr {
+    border-top: 1px solid #cccccc;
+    background-color: white;
+    margin: 0;
+    padding: 0; }
+    table tr:nth-child(2n) {
+      background-color: #f8f8f8; }
+    table tr th {
+      font-weight: bold;
+      border: 0px solid #cccccc;
+      text-align: centre;
+      margin: 0;
+      padding: 6px 13px; }
+    table tr td {
+      border: 0px solid #cccccc;
+      text-align: centre;
+      margin: 0;
+      padding: 6px 13px; }
+    table tr th :first-child, table tr td :first-child {
+      margin-top: 0; }
+    table tr th :last-child, table tr td :last-child {
+      margin-bottom: 0; }
+
+
+
+/* Admonition settings option*/
+.md-typeset .admonition.settings, .md-typeset details.settings {
+    border-left: .22rem solid #448aff;
+}
+.md-typeset .admonition.settings>.admonition-title, .md-typeset details.settings>.admonition-title, .md-typeset details.settings>summary {
+    border-bottom: .1rem solid rgba(236, 243, 255), .1);
+    background-color: rgba(236, 243, 255), .1);
+}
+.md-typeset .admonition.settings>.admonition-title:before, .md-typeset details.settings>.admonition-title:before, .md-typeset details.settings>summary:before {
+    color: #448aff;
+    content: "settings"}
+
+
+/* Site width etc.*/
+.md-grid {
+    max-width: 64rem !important;
+}
+
+
+/* mkdocstrings styling
+/* Indentation. */
+div.doc-contents:not(.first) {
+  padding-left: 25px;
+  border-left: 4px solid rgba(230, 230, 230);
+  margin-bottom: 80px;
+}
