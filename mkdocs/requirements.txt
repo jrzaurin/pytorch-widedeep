@@ -1,0 +1,7 @@
+mkdocs
+mkdocs-material
+mkdocs-autolinks-plugin
+mkdocs-git-authors-plugin
+mkdocs-jupyter
+mkdocstrings
+mkdocstrings-python

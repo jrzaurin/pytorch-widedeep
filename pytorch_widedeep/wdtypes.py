@@ -70,7 +70,22 @@ from torchvision.transforms import (
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.utils.data.dataloader import DataLoader
 
-from pytorch_widedeep.models import *
+from pytorch_widedeep.models import (
+    SAINT,
+    TabMlp,
+    TabNet,
+    WideDeep,
+    TabResnet,
+    TabPerceiver,
+    FTTransformer,
+    TabFastFormer,
+    TabMlpDecoder,
+    TabNetDecoder,
+    TabTransformer,
+    SelfAttentionMLP,
+    TabResnetDecoder,
+    ContextAttentionMLP,
+)
 from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
 from pytorch_widedeep.models.tabular.tabnet.sparsemax import (
     Entmax15,
