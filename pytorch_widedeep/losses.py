@@ -8,12 +8,11 @@ use_cuda = torch.cuda.is_available()
 
 
 class MSELoss(nn.Module):
-    r"""Mean square error loss adjusted for the possibility of using Label Smooth
+    r"""Mean square error loss with the option of using Label Smooth
     Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    LDS is based on
+    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self):
@@ -30,8 +29,7 @@ class MSELoss(nn.Module):
         target: Tensor
             Target tensor with the actual values
         lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -41,8 +39,7 @@ class MSELoss(nn.Module):
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
         >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> MSELoss()(input, target, lds_weight)
-        tensor(0.1673)
+        >>> loss = MSELoss()(input, target, lds_weight)
         """
         loss = (input - target) ** 2
         if lds_weight is not None:
@@ -51,12 +48,11 @@ class MSELoss(nn.Module):
 
 
 class MSLELoss(nn.Module):
-    r"""Mean square log error loss adjusted for the possibility of using Label
-    Smooth Distribution (LDS)
+    r"""Mean square log error loss with the option of using Label Smooth
+    Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    LDS is based on
+    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self):
@@ -73,8 +69,7 @@ class MSLELoss(nn.Module):
         target: Tensor
             Target tensor with the actual classes
         lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -84,8 +79,7 @@ class MSLELoss(nn.Module):
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
         >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> MSLELoss()(input, target, lds_weight)
-        tensor(0.0358)
+        >>> loss = MSLELoss()(input, target, lds_weight)
         """
         assert (
             input.min() >= 0
@@ -104,9 +98,8 @@ class RMSELoss(nn.Module):
     r"""Root mean square error loss adjusted for the possibility of using Label
     Smooth Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    LDS is based on
+    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self):
@@ -123,8 +116,7 @@ class RMSELoss(nn.Module):
         target: Tensor
             Target tensor with the actual classes
         lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -134,8 +126,7 @@ class RMSELoss(nn.Module):
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
         >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> RMSELoss()(input, target, lds_weight)
-        tensor(0.4090)
+        >>> loss = RMSELoss()(input, target, lds_weight)
         """
         loss = (input - target) ** 2
         if lds_weight is not None:
@@ -147,9 +138,8 @@ class RMSLELoss(nn.Module):
     r"""Root mean square log error loss adjusted for the possibility of using Label
     Smooth Distribution (LDS)
 
-    LDS is based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    LDS is based on
+    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self):
@@ -166,8 +156,7 @@ class RMSLELoss(nn.Module):
         target: Tensor
             Target tensor with the actual classes
         lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
+            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -177,8 +166,7 @@ class RMSLELoss(nn.Module):
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
         >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> RMSELoss()(input, target, lds_weight)
-        tensor(0.4090)
+        >>> loss = RMSLELoss()(input, target, lds_weight)
         """
         assert (
             input.min() >= 0
@@ -196,10 +184,12 @@ class RMSLELoss(nn.Module):
 class QuantileLoss(nn.Module):
     r"""Quantile loss defined as:
 
-        :math:`Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))`
+    $$
+    Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))
+    $$
 
-    All credits go to the implementation at `pytorch-forecasting
-    <https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss>`_ .
+    All credits go to the implementation at
+    [pytorch-forecasting](https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss).
 
     Parameters
     ----------
@@ -233,8 +223,7 @@ class QuantileLoss(nn.Module):
         >>> target = torch.tensor([[0.6, 1.5]]).view(-1, 1)
         >>> input = torch.tensor([[.1, .2,], [.4, .5]])
         >>> qloss = QuantileLoss([0.25, 0.75])
-        >>> qloss(input, target)
-        tensor(0.3625)
+        >>> loss = qloss(input, target)
         """
 
         assert input.shape == torch.Size([target.shape[0], len(self.quantiles)]), (
@@ -254,22 +243,25 @@ class QuantileLoss(nn.Module):
 
 
 class FocalLoss(nn.Module):
-    r"""Implementation of the `focal loss
-    <https://arxiv.org/pdf/1708.02002.pdf>`_ for both binary and
-    multiclass classification
+    r"""Implementation of the [Focal loss](https://arxiv.org/pdf/1708.02002.pdf)
+    for both binary and multiclass classification:
 
-    :math:`FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)`
+    $$
+    FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)
+    $$
 
     where, for a case of a binary classification problem
 
-    :math:`\begin{equation} p_t= \begin{cases}p, & \text{if $y=1$}.\\1-p, & \text{otherwise}. \end{cases} \end{equation}`
+    $$
+    \begin{equation} p_t= \begin{cases}p, & \text{if $y=1$}.\\1-p, & \text{otherwise}. \end{cases} \end{equation}
+    $$
 
     Parameters
     ----------
     alpha: float
-        Focal Loss ``alpha`` parameter
+        Focal Loss `alpha` parameter
     gamma: float
-        Focal Loss ``gamma`` parameter
+        Focal Loss `gamma` parameter
     """
 
     def __init__(self, alpha: float = 0.25, gamma: float = 1.0):
@@ -300,14 +292,12 @@ class FocalLoss(nn.Module):
         >>> # BINARY
         >>> target = torch.tensor([0, 1, 0, 1]).view(-1, 1)
         >>> input = torch.tensor([[0.6, 0.7, 0.3, 0.8]]).t()
-        >>> FocalLoss()(input, target)
-        tensor(0.1762)
+        >>> loss = FocalLoss()(input, target)
         >>>
         >>> # MULTICLASS
         >>> target = torch.tensor([1, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([[0.2, 0.5, 0.3], [0.8, 0.1, 0.1], [0.7, 0.2, 0.1]])
-        >>> FocalLoss()(input, target)
-        tensor(0.2573)
+        >>> loss = FocalLoss()(input, target)
         """
         input_prob = torch.sigmoid(input)
         if input.size(1) == 1:
@@ -348,8 +338,8 @@ class BayesianRegressionLoss(nn.Module):
 
 class BayesianSELoss(nn.Module):
     r"""Squared Loss (log Gaussian) for the case of a regression as specified in
-    the original publication `Weight Uncertainty in Neural Networks
-    <https://arxiv.org/abs/1505.05424>`_
+    the original publication
+    [Weight Uncertainty in Neural Networks](https://arxiv.org/abs/1505.05424).
     """
 
     def __init__(self):
@@ -363,14 +353,14 @@ class BayesianSELoss(nn.Module):
             Input tensor with predictions (not probabilities)
         target: Tensor
             Target tensor with the actual classes
+
         Examples
         --------
         >>> import torch
         >>> from pytorch_widedeep.losses import BayesianSELoss
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> BayesianSELoss()(input, target)
-        tensor(0.9700)
+        >>> loss = BayesianSELoss()(input, target)
         """
         return (0.5 * (input - target) ** 2).sum()
 
@@ -379,9 +369,9 @@ class TweedieLoss(nn.Module):
     """
     Tweedie loss for extremely unbalanced zero-inflated data
 
-    All credits go to Wenbo Shi.
-    See `this post <https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f>`_
-    and the `original publication <https://arxiv.org/abs/1811.10192>`_ for details
+    All credits go to Wenbo Shi. See
+    [this post](https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f)
+    and the [original publication](https://arxiv.org/abs/1811.10192) for details.
     """
 
     def __init__(self):
@@ -416,8 +406,7 @@ class TweedieLoss(nn.Module):
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
         >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> TweedieLoss()(input, target, lds_weight)
-        tensor(1.0386)
+        >>> loss = TweedieLoss()(input, target, lds_weight)
         """
 
         assert (
@@ -438,9 +427,9 @@ class TweedieLoss(nn.Module):
 class ZILNLoss(nn.Module):
     r"""Adjusted implementation of the Zero Inflated LogNormal Loss
 
-    See the `paper <https://arxiv.org/pdf/1912.07753.pdf>`_ and
-    the corresponding `code
-    <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`_
+    See [A Deep Probabilistic Model for Customer Lifetime Value Prediction](https://arxiv.org/pdf/1912.07753.pdf)
+    and the corresponding
+    [code](https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py).
     """
 
     def __init__(self):
@@ -462,8 +451,7 @@ class ZILNLoss(nn.Module):
         >>>
         >>> target = torch.tensor([[0., 1.5]]).view(-1, 1)
         >>> input = torch.tensor([[.1, .2, .3], [.4, .5, .6]])
-        >>> ZILNLoss()(input, target)
-        tensor(1.3114)
+        >>> loss = ZILNLoss()(input, target)
         """
         positive = target > 0
         positive = positive.float()
@@ -505,9 +493,8 @@ class L1Loss(nn.Module):
     r"""L1 loss adjusted for the possibility of using Label Smooth
     Distribution (LDS)
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_. and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    LDS is based on
+    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self):
@@ -535,8 +522,7 @@ class L1Loss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> L1Loss()(input, target)
-        tensor(0.6000)
+        >>> loss = L1Loss()(input, target)
         """
         loss = F.l1_loss(input, target, reduction="none")
         if lds_weight is not None:
@@ -547,19 +533,17 @@ class L1Loss(nn.Module):
 class FocalR_L1Loss(nn.Module):
     r"""Focal-R L1 loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
 
     Parameters
     ----------
     beta: float
-        Focal Loss ``beta`` parameter in their implementation
+        Focal Loss `beta` parameter in their implementation
     gamma: float
-        Focal Loss ``gamma`` parameter
+        Focal Loss `gamma` parameter
     activation_fn: str, default = "sigmoid"
         Activation function to be used during the computation of the loss.
-        Possible values are `'sigmoid'` and `'tanh'`. See the original
+        Possible values are _'sigmoid'_ and _'tanh'_. See the original
         publication for details.
     """
 
@@ -599,8 +583,7 @@ class FocalR_L1Loss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> FocalR_L1Loss()(input, target)
-        tensor(0.0483)
+        >>> loss = FocalR_L1Loss()(input, target)
         """
         loss = F.l1_loss(input, target, reduction="none")
         if self.activation_fn == "tanh":
@@ -621,19 +604,17 @@ class FocalR_L1Loss(nn.Module):
 class FocalR_MSELoss(nn.Module):
     r"""Focal-R MSE loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
 
     Parameters
     ----------
     beta: float
-        Focal Loss ``beta`` parameter in their implementation
+        Focal Loss `beta` parameter in their implementation
     gamma: float
-        Focal Loss ``gamma`` parameter
+        Focal Loss `gamma` parameter
     activation_fn: str, default = "sigmoid"
         Activation function to be used during the computation of the loss.
-        Possible values are `'sigmoid'` and `'tanh'`. See the original
+        Possible values are _'sigmoid'_ and _'tanh'_. See the original
         publication for details.
     """
 
@@ -673,8 +654,7 @@ class FocalR_MSELoss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> FocalR_MSELoss()(input, target)
-        tensor(0.0539)
+        >>> loss = FocalR_MSELoss()(input, target)
         """
         loss = (input - target) ** 2
         if self.activation_fn == "tanh":
@@ -695,19 +675,17 @@ class FocalR_MSELoss(nn.Module):
 class FocalR_RMSELoss(nn.Module):
     r"""Focal-R RMSE loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
 
     Parameters
     ----------
     beta: float
-        Focal Loss ``beta`` parameter in their implementation
+        Focal Loss `beta` parameter in their implementation
     gamma: float
-        Focal Loss ``gamma`` parameter
+        Focal Loss `gamma` parameter
     activation_fn: str, default = "sigmoid"
         Activation function to be used during the computation of the loss.
-        Possible values are `'sigmoid'` and `'tanh'`. See the original
+        Possible values are _'sigmoid'_ and _'tanh'_. See the original
         publication for details.
     """
 
@@ -747,8 +725,7 @@ class FocalR_RMSELoss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> FocalR_RMSELoss()(input, target)
-        tensor(0.2321)
+        >>> loss = FocalR_RMSELoss()(input, target)
         """
         loss = (input - target) ** 2
         if self.activation_fn == "tanh":
@@ -769,9 +746,7 @@ class FocalR_RMSELoss(nn.Module):
 class HuberLoss(nn.Module):
     r"""Hubbler Loss
 
-    Based on `Delving into Deep Imbalanced Regression
-    <https://arxiv.org/abs/2102.09554>`_ and their `implementation
-    <https://github.com/YyzHarry/imbalanced-regression>`_
+    Based on [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
     """
 
     def __init__(self, beta: float = 0.2):
@@ -794,10 +769,6 @@ class HuberLoss(nn.Module):
         lds_weight: Tensor, Optional
             If we choose to use LDS this is the tensor of weights that will
             multiply the loss value.
-        activation_fn: str, default = "sigmoid"
-            Activation function to be used during the computation of the loss.
-            Possible values are `'sigmoid'` and `'tanh'`. See the original
-            publication for details.
 
         Examples
         --------
@@ -807,8 +778,7 @@ class HuberLoss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> HuberLoss()(input, target)
-        tensor(0.5000)
+        >>> loss = HuberLoss()(input, target)
         """
         l1_loss = torch.abs(input - target)
         cond = l1_loss < self.beta
@@ -932,7 +902,7 @@ class DenoisingLoss(nn.Module):
         --------
         >>> import torch
         >>> from pytorch_widedeep.losses import DenoisingLoss
-        >>> x_cat_and_cat_ = (torch.randn(3, 3), torch.empty(3).random_(3).long())
+        >>> x_cat_and_cat_ = (torch.empty(3).random_(3).long(), torch.randn(3, 3))
         >>> x_cont_and_cont_ = (torch.randn(3, 1), torch.randn(3, 1))
         >>> loss = DenoisingLoss()
         >>> res = loss(x_cat_and_cat_, x_cont_and_cont_)
