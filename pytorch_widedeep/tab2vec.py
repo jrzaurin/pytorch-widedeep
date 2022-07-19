@@ -84,7 +84,7 @@ class Tab2Vec:
 
     def __init__(
         self,
-        model: Union[WideDeep, BaseBayesianModel],
+        model: Union[WideDeep, BayesianWide, BayesianTabMlp],
         tab_preprocessor: TabPreprocessor,
         return_dataframe: bool = False,
         verbose: bool = False,
