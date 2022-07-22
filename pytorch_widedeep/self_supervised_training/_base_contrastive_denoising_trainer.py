@@ -67,7 +67,8 @@ class BaseContrastiveDenoisingTrainer(ABC):
             if optimizer is not None
             else torch.optim.AdamW(self.cd_model.parameters())
         )
-        self.lr_scheduler = self._set_lr_scheduler_running_params(lr_scheduler)
+        self.lr_scheduler = lr_scheduler
+        self._set_lr_scheduler_running_params(lr_scheduler, **kwargs)
         self._set_callbacks(callbacks)
 
     @abstractmethod
@@ -141,8 +142,9 @@ class BaseContrastiveDenoisingTrainer(ABC):
                 " will be tracked using reducelronplateau_criterion = 'loss' (default) or"
                 " reducelronplateau_criterion = 'metric'"
             )
-        else:
             self.reducelronplateau_criterion = "loss"
+        else:
+            self.reducelronplateau_criterion = reducelronplateau_criterion
 
     def _set_lr_scheduler_running_params(self, lr_scheduler, **kwargs):
         reducelronplateau_criterion = kwargs.get("reducelronplateau_criterion", None)

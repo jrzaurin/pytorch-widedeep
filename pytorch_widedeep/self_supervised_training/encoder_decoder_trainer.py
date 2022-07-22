@@ -90,6 +90,7 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
 
             epoch_logs = save_epoch_logs(epoch_logs, train_loss, None, "train")
 
+            on_epoch_end_metric = None
             if eval_set is not None and epoch % validation_freq == (
                 validation_freq - 1
             ):
@@ -101,13 +102,14 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
                         val_loss = self._eval_step(X[0], batch_idx)
                         print_loss_and_metric(v, val_loss)
                 epoch_logs = save_epoch_logs(epoch_logs, val_loss, None, "val")
+                on_epoch_end_metric = val_loss
             else:
                 if self.reducelronplateau:
                     raise NotImplementedError(
                         "ReduceLROnPlateau scheduler can be used only with validation data."
                     )
 
-            self.callback_container.on_epoch_end(epoch, epoch_logs)
+            self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
 
             if self.early_stop:
                 self.callback_container.on_train_end(epoch_logs)
