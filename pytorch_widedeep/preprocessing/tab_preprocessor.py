@@ -391,4 +391,6 @@ class TabPreprocessor(BasePreprocessor):
         if self.with_attention and isinstance(self.cat_embed_cols[0], tuple):  # type: ignore[index]
             raise ValueError(transformer_error_message)
         if self.scale and self.verbose:
-            warnings.warn("WARNING: Scaling will be applied to quantized continuous features!")
+            warnings.warn(
+                "WARNING: Scaling will be applied to quantized continuous features!"
+            )
