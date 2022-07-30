@@ -97,6 +97,11 @@ class TabPreprocessor(BasePreprocessor):
         distinguish the classes in one column from those in the other
         columns'_. In other words, the idea is to let the model learn which
         column is embedded at the time. See: `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
+    quantize_continuous: bool, default = False
+        Boolean indicating whether the continuous features will be quantized before scaling
+    quantile_list: Union[List[float], int], default = 10
+        List or integer indicating quantiles into which the continuous features will be transformed
+        when quantize_continuous == True.
 
     verbose: int, default = 1
 
@@ -120,6 +125,9 @@ class TabPreprocessor(BasePreprocessor):
     column_idx: Dict
         Dictionary where keys are column names and values are column indexes.
         This is neccesary to slice tensors
+    quantize_bin_dict: Dict
+        Dictionary defining ranges of the values for continuous feature transformation after the initial
+        fitting, ie. after quantiles were computed for fitting dataset.
 
     Examples
     --------
@@ -151,6 +159,8 @@ class TabPreprocessor(BasePreprocessor):
         with_attention: bool = False,
         with_cls_token: bool = False,
         shared_embed: bool = False,
+        quantize_continuous: bool = False,
+        quantile_list: Union[List[float], int] = 10,
         verbose: int = 1,
     ):
         super(TabPreprocessor, self).__init__()
@@ -165,6 +175,8 @@ class TabPreprocessor(BasePreprocessor):
         self.with_attention = with_attention
         self.with_cls_token = with_cls_token
         self.shared_embed = shared_embed
+        self.quantize_continuous = quantize_continuous
+        self.quantile_list = quantile_list
         self.verbose = verbose
 
         self._check_inputs()
@@ -314,7 +326,28 @@ class TabPreprocessor(BasePreprocessor):
                 embed_colname = self.cat_embed_cols  # type: ignore
             return df.copy()[embed_colname]
 
+    def _quantize_cols(self, df: pd.DataFrame) -> pd.DataFrame:
+        dfc = df.copy()
+        if self.is_fitted:
+            for col in self.continuous_cols:
+                dfc[col] = pd.cut(
+                    dfc[col],
+                    bins=self.quantize_bin_dict[col],
+                    include_lowest=True,
+                )
+        else:
+            for col in self.continuous_cols:
+                dfc[col], bins = pd.qcut(
+                    dfc[col],
+                    q=self.quantile_list,
+                    retbins=True,
+                )
+                self.quantize_bin_dict[col] = bins
+        return df
+
     def _prepare_continuous(self, df: pd.DataFrame) -> pd.DataFrame:
+        if self.quantize_continuous:
+            df = self._quantize_cols(df)
         if self.scale:
             if self.already_standard is not None:
                 self.standardize_cols = [
