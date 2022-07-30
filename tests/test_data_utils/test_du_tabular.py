@@ -118,6 +118,34 @@ def test_prepare_deep_without_embedding_columns():
 
 
 ################################################################################
+# Test the TabPreprocessor: quantize, quantile_list: int
+###############################################################################
+
+@pytest.mark.parametrize(
+    "quantile_list",
+    [
+        (10),
+        ([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]),
+    ],
+)
+def test_prepare_deep_without_embedding_columns(quantile_list):
+
+    df_train = pd.DataFrame({"col1": np.arange(100), "col2": np.arange(100, 200)})
+    df_test = pd.DataFrame({"col1": np.arange(-10,0), "col2": np.arange(200, 210)})
+    preprocessor = TabPreprocessor(continuous_cols=["col1", "col2"], scale=False, quantize_continuous=True, quantile_list=quantile_list)
+
+    X_train = preprocessor.fit_transform(df_train)
+    X_test = preprocessor.fit_transform(df_test)
+
+    X_train_result = [0]*20 + [1]*20 + [2]*20 + [3]*20 + [4]*20 + [5]*20 + [6]*20 + [7]*20 + [8]*20 + [9]*20
+    X_train_result = np.array(X_train_result).reshape(100, 2)
+
+    X_test_result = [0,9]*10
+    X_test_result = np.array(X_test_result).reshape(10, 2)
+    assert (X_train == X_train_result).all() and (X_test == X_test_result).all()
+
+
+################################################################################
 # Test TabPreprocessor inverse_transform
 ###############################################################################
 

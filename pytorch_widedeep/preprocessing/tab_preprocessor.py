@@ -176,7 +176,9 @@ class TabPreprocessor(BasePreprocessor):
         self.with_cls_token = with_cls_token
         self.shared_embed = shared_embed
         self.quantize_continuous = quantize_continuous
-        self.quantile_list = quantile_list
+        if self.quantize_continuous:
+            self.quantize_bin_dict = dict()
+            self.quantile_list = quantile_list
         self.verbose = verbose
 
         self._check_inputs()
@@ -214,7 +216,7 @@ class TabPreprocessor(BasePreprocessor):
             if self.scale:
                 df_std = df_cont[self.standardize_cols]
                 self.scaler = StandardScaler().fit(df_std.values)
-            elif self.verbose:
+            elif self.verbose and not self.quantize_continuous:
                 warnings.warn("Continuous columns will not be normalised")
         self.is_fitted = True
         return self
@@ -333,17 +335,20 @@ class TabPreprocessor(BasePreprocessor):
                 dfc[col] = pd.cut(
                     dfc[col],
                     bins=self.quantize_bin_dict[col],
-                    include_lowest=True,
+                    labels=False,
                 )
         else:
             for col in self.continuous_cols:
                 dfc[col], bins = pd.qcut(
                     dfc[col],
                     q=self.quantile_list,
+                    labels=False,
                     retbins=True,
                 )
                 self.quantize_bin_dict[col] = bins
-        return df
+                self.quantize_bin_dict[col][0] = -np.inf
+                self.quantize_bin_dict[col][-1] = np.inf
+        return dfc
 
     def _prepare_continuous(self, df: pd.DataFrame) -> pd.DataFrame:
         if self.quantize_continuous:
@@ -385,3 +390,5 @@ class TabPreprocessor(BasePreprocessor):
             raise ValueError(transformer_error_message)
         if self.with_attention and isinstance(self.cat_embed_cols[0], tuple):  # type: ignore[index]
             raise ValueError(transformer_error_message)
+        if self.scale and self.verbose:
+            warnings.warn("WARNING: Scaling will be applied to quantized continuous features!")
