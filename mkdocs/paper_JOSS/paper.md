@@ -7,16 +7,16 @@ tags:
 authors:
   - name: Javier Rodriguez Zaurin
     orcid: 0000-0000-0000-0000
-    equal-contrib: true
+    # equal-contrib: true
     affiliation: 1 # (Multiple affiliations must be quoted)
   - name: Pavol Mulinka
     orcid: 0000-0002-9394-8794
-    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
+    # equal-contrib: true
     affiliation: 2
 affiliations:
  - name: Independent Researcher, Spain
    index: 1
- - name: Centre Tecnologic de Telecomunicacions de Catalunya (CTTC/CERCA), Catalunya, Spain
+ - name: Centre Tecn\`ologic de Telecomunicacions de Catalunya (CTTC/CERCA), Catalunya, Spain
    index: 2
 date: 30 July 2022
 bibliography: paper.bib
@@ -41,7 +41,7 @@ in the Figure below:
 
 
 <p align="center">
-  <img width="750" src="...docs/figures/widedeep_arch.png">
+  <img width="750" src="/docs/figures/widedeep_arch.png">
 </p>
 
 The dashed boxes in the figure represent optional, overall components, and the
@@ -64,10 +64,7 @@ In math terms, and following the notation in the
 paper [@cheng2016wide], the expression for the architecture
 without a ``deephead`` component can be formulated as:
 
-<p align="center">
-  <img width="500" src="...docs/figures/architecture_1_math.png">
-</p>
-
+$pred = \sigma(W_{wide}^{T}[x,\phi(x)] + W_{deeptabular}^{T}a_{deeptabular}^{l_f} + W_{deeptext}^{T}a_{deeptext}^{l_f} + W_{deepimage}^{l_f} + b)$
 
 Where *'W'* are the weight matrices applied to the wide model and to the final
 activations of the deep models, *'a'* are these final activations, and
@@ -82,9 +79,7 @@ otherwise".*
 While if there is a ``deephead`` component, the previous expression turns
 into:
 
-<p align="center">
-  <img width="300" src="...docs/figures/architecture_2_math.png">
-</p>
+$pred = \sigma(W_{wide}^{T}[x,\phi(x)] + W_{deephead}^{T}a_{deephead}^{l_f} + b)$
 
 It is perfectly possible to use custom models (and not necessarily those in
 the library) as long as the the custom models have an attribute called
@@ -106,7 +101,7 @@ for that component:
 0. **Wide**: a simple linear model where the nonlinearities are captured via
 cross-product transformations, as explained before.
 1. **TabMlp**: a simple MLP that receives embeddings representing the
-categorical features, concatenated with the continuous features, which can
+categorical features, concatenated w the continuous features, which can
 also be embedded.
 2. **TabResnet**: similar to the previous model but the embeddings are
 passed through a series of ResNet blocks built with dense layers.
@@ -143,6 +138,7 @@ adaptation of those algorithms for tabular data.
 
 We acknowledge work of other researchers, engineers and programmers from following
 projects and libraries:
+
 * The `Callbacks` and `Initializers` structure and code is inspired by the
 [`torchsample`](https://github.com/ncullen93/torchsample) library, which in
 itself partially inspired by [`Keras`](https://keras.io/).
@@ -155,5 +151,6 @@ their `Tokenizer` is the best in class.
 Learning for Computer
 Vision](https://www.pyimagesearch.com/deep-learning-computer-vision-python-book/)
 (DL4CV) book by Adrian Rosebrock.
+* We adjusted and integrated ideas of Label and Feature Distribution Smoothing [@yang2021delving]
 
 # References

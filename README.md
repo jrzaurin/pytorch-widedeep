@@ -26,10 +26,15 @@ text and images using Wide and Deep models in Pytorch
 
 The content of this document is organized as follows:
 
-1. [introduction](#introduction)
-2. [The deeptabular component](#the-deeptabular-component)
-3. [installation](#installation)
-4. [quick start (tl;dr)](#quick-start)
+- [pytorch-widedeep](#pytorch-widedeep)
+    - [Introduction](#introduction)
+    - [The ``deeptabular`` component](#the-deeptabular-component)
+    - [Installation](#installation)
+      - [Developer Install](#developer-install)
+    - [Quick start](#quick-start)
+    - [Testing](#testing)
+    - [How to Contribute](#how-to-contribute)
+    - [Acknowledgments](#acknowledgments)
 
 ### Introduction
 
@@ -68,10 +73,7 @@ In math terms, and following the notation in the
 [paper](https://arxiv.org/abs/1606.07792), the expression for the architecture
 without a ``deephead`` component can be formulated as:
 
-<p align="center">
-  <img width="500" src="docs/figures/architecture_1_math.png">
-</p>
-
+$pred = \sigma(W_{wide}^{T}[x,\phi(x)] + W_{deeptabular}^{T}a_{deeptabular}^{l_f} + W_{deeptext}^{T}a_{deeptext}^{l_f} + W_{deepimage}^{l_f} + b)$
 
 Where *'W'* are the weight matrices applied to the wide model and to the final
 activations of the deep models, *'a'* are these final activations, and
@@ -86,9 +88,7 @@ otherwise".*
 While if there is a ``deephead`` component, the previous expression turns
 into:
 
-<p align="center">
-  <img width="300" src="docs/figures/architecture_2_math.png">
-</p>
+$pred = \sigma(W_{wide}^{T}[x,\phi(x)] + W_{deephead}^{T}a_{deephead}^{l_f} + b)$
 
 It is perfectly possible to use custom models (and not necessarily those in
 the library) as long as the the custom models have an attribute called
