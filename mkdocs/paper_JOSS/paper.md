@@ -16,7 +16,7 @@ authors:
 affiliations:
  - name: Independent Researcher, Spain
    index: 1
- - name: Centre Tecn\`ologic de Telecomunicacions de Catalunya (CTTC/CERCA), Catalunya, Spain
+ - name: Centre Tecnologic de Telecomunicacions de Catalunya (CTTC/CERCA), Catalunya, Spain
    index: 2
 date: 30 July 2022
 bibliography: paper.bib
@@ -37,12 +37,9 @@ tabular data. In particular, is intended to facilitate the combination of text
 and images with corresponding tabular data using wide and deep models. With
 that in mind there are a number of architectures that can be implemented with
 just a few lines of code. The main components of those architectures are shown
-in the Figure below:
+in the Fig.\ref{fig:widedeep_arch}:
 
-
-<p align="center">
-  <img width="750" src="/docs/figures/widedeep_arch.png">
-</p>
+![WideDeep architecture.\label{fig:widedeep_arch}](figures/widedeep_arch.png)
 
 The dashed boxes in the figure represent optional, overall components, and the
 dashed lines/arrows indicate the corresponding connections, depending on
