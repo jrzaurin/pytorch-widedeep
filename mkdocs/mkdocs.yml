@@ -42,7 +42,7 @@ nav:
         - 03_binary_classification_with_defaults: examples/03_binary_classification_with_defaults.ipynb
         - 04_regression_with_images_and_text: examples/04_regression_with_images_and_text.ipynb
         - 05_save_and_load_model_and_artifacts: examples/05_save_and_load_model_and_artifacts.ipynb
-        - 06_fineTune_and_warmup: examples/06_fineTune_and_warmup.ipynb
+        - 06_finetune_and_warmup: examples/06_finetune_and_warmup.ipynb
         - 07_custom_components: examples/07_custom_components.ipynb
         - 08_custom_dataLoader_imbalanced_dataset: examples/08_custom_dataLoader_imbalanced_dataset.ipynb
         - 09_extracting_embeddings: examples/09_extracting_embeddings.ipynb
