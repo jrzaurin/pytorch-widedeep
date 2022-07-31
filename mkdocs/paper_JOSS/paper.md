@@ -149,5 +149,6 @@ Learning for Computer
 Vision](https://www.pyimagesearch.com/deep-learning-computer-vision-python-book/)
 (DL4CV) book by Adrian Rosebrock.
 * We adjusted and integrated ideas of Label and Feature Distribution Smoothing [@yang2021delving]
+* We adjusted and integrated ZILNloss code written in Tensorflow/Keras [@wang2019deep]
 
 # References
