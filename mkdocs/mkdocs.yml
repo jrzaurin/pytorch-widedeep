@@ -36,18 +36,20 @@ nav:
         - Bayesian Trainer: pytorch-widedeep/bayesian_trainer.md
         - Tab2Vec: pytorch-widedeep/tab2vec.md
     - Examples:
-        - 01_Preprocessors_and_utils: examples/01_Preprocessors_and_utils.ipynb
+        - 00_airbnb_data_preprocessing: examples/00_airbnb_data_preprocessing.ipynb
+        - 01_preprocessors_and_utils: examples/01_preprocessors_and_utils.ipynb
         - 02_model_components: examples/02_model_components.ipynb
-        - 03_Binary_Classification_with_Defaults: examples/03_Binary_Classification_with_Defaults.ipynb
+        - 03_binary_classification_with_defaults: examples/03_binary_classification_with_defaults.ipynb
         - 04_regression_with_images_and_text: examples/04_regression_with_images_and_text.ipynb
         - 05_save_and_load_model_and_artifacts: examples/05_save_and_load_model_and_artifacts.ipynb
         - 06_fineTune_and_warmup: examples/06_fineTune_and_warmup.ipynb
-        - 07_Custom_Components: examples/07_Custom_Components.ipynb
+        - 07_custom_components: examples/07_custom_components.ipynb
         - 08_custom_dataLoader_imbalanced_dataset: examples/08_custom_dataLoader_imbalanced_dataset.ipynb
         - 09_extracting_embeddings: examples/09_extracting_embeddings.ipynb
+        - 10_3rd_party_integration-RayTune_WnB: examples/10_3rd_party_integration-RayTune_WnB.ipynb
         - 11_auc_multiclass: examples/11_auc_multiclass.ipynb
-        - 12_ZILNLoss_origkeras_vs_pytorch_multimodal: examples/12_ZILNLoss_origkeras_vs_pytorch_multimodal.ipynb
-        - 13_Model_Uncertainty_prediction: examples/13_Model_Uncertainty_prediction.ipynb
+        - 12_ZILNLoss_origkeras_vs_pytorch_widedeep: examples/12_ZILNLoss_origkeras_vs_pytorch_widedeep.ipynb
+        - 13_model_uncertainty_prediction: examples/13_model_uncertainty_prediction.ipynb
         - 14_bayesian_models: examples/14_bayesian_models.ipynb
         - 15_DIR-LDS_and_FDS: examples/15_DIR-LDS_and_FDS.ipynb
     - Contributing: contributing.md
