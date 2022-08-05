@@ -336,7 +336,7 @@ class BayesianTrainer(BaseBayesianTrainer):
         self,
         path: str,
         save_state_dict: bool = False,
-        model_filename: str = "wd_model.pt",
+        model_filename: str = "bayesian_model.pt",
     ):
         r"""Saves the model, training and evaluation history, and the
         `feature_importance` attribute (if the `deeptabular` component is a
