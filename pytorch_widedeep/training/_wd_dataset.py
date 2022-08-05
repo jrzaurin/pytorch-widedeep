@@ -153,7 +153,14 @@ class WideDeepDataset(Dataset):
             smoothed_values = convolve1d(
                 list(value_dict.values()), weights=lds_kernel_window, mode="constant"
             )
-            weigths = sum(smoothed_values) / (len(smoothed_values) * smoothed_values)
+
+            # to avoid 0 division
+            numerator = sum(smoothed_values)
+            denominator = (len(smoothed_values) * smoothed_values).astype("float")
+            denominator[denominator == 0] = np.inf
+
+            weigths = numerator / denominator
+            # weigths = sum(smoothed_values) / (len(smoothed_values) * smoothed_values)
         else:
             values = list(value_dict.values())
             weigths = sum(values) / (len(values) * values)  # type: ignore[operator]

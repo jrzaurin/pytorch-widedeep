@@ -67,6 +67,7 @@ from torchvision.transforms import (
     RandomHorizontalFlip,
     RandomAdjustSharpness,
 )
+from torchvision.models._api import WeightsEnum
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.utils.data.dataloader import DataLoader
 

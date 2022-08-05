@@ -90,7 +90,7 @@ tabnet = TabNet(
     ghost_bn=False,
 )
 deeptext = BasicRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
-deepimage = Vision(pretrained_model_name="resnet18", n_trainable=0)
+deepimage = Vision(pretrained_model_setup="resnet18", n_trainable=0)
 
 ###############################################################################
 # test consistecy between optimizers and lr_schedulers format
