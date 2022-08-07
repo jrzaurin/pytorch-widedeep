@@ -30,18 +30,6 @@ if __name__ == "__main__":
     df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
     df.drop("income", axis=1, inplace=True)
 
-    # Define wide, crossed and deep tabular columns
-    wide_cols = [
-        "age_buckets",
-        "education",
-        "relationship",
-        "workclass",
-        "occupation",
-        "native_country",
-        "gender",
-    ]
-    crossed_cols = [("education", "occupation"), ("native_country", "occupation")]
-
     cat_embed_cols = [
         "workclass",
         "education",
