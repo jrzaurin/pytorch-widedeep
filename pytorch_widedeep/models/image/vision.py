@@ -4,6 +4,7 @@ import torchvision
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.models.image._layers import conv_layer
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 
@@ -53,7 +54,7 @@ class Vision(nn.Module):
         models with different weigths. Therefore, `pretrained_model_setup` can
         also be dictionary with the name of the model and the weights (e.g.
         {'resnet50': ResNet50_Weights.DEFAULT} or
-        {'resnet50': "IMAGENET1K_V2"})
+        {'resnet50': "IMAGENET1K_V2"}). Aliased as `pretrained_model_name`.
     n_trainable: Optional, int, default = None
         Number of trainable layers starting from the layer closer to the
         output neuron(s). Note that this number DOES NOT take into account
@@ -111,6 +112,7 @@ class Vision(nn.Module):
     >>> out = model(X_img)
     """
 
+    @Alias("pretrained_model_setup", ["pretrained_model_name"])
     def __init__(
         self,
         pretrained_model_setup: Union[str, Dict[str, Union[str, WeightsEnum]]] = None,

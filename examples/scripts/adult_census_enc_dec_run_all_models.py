@@ -92,8 +92,8 @@ if __name__ == "__main__":
     for enc, dec in zip(encoders, decoders):
 
         ec_trainer = EncoderDecoderTrainer(
-            encoder=enc,
-            decoder=dec,
+            encoder=enc,  # type: ignore[arg-type]
+            decoder=dec,  # type: ignore[arg-type]
             masked_prob=0.2,
         )
         ec_trainer.pretrain(X_tab, n_epochs=1, batch_size=256)

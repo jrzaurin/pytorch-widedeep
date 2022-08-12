@@ -196,7 +196,8 @@ class BaseTrainer(ABC):
                 # should be optimized with the rest of deeptabular
                 # component/model
                 if self.model.with_fds:
-                    mod_names.remove("enf_pos")
+                    if "enf_pos" in mod_names:
+                        mod_names.remove("enf_pos")
                     mod_names.remove("fds_layer")
                     optimizers["deeptabular"].add_param_group(
                         {"params": self.model.fds_layer.pred_layer.parameters()}
