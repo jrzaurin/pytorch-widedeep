@@ -14,7 +14,19 @@ from torch.utils.data import DataLoader
 
 from pytorch_widedeep.losses import ZILNLoss
 from pytorch_widedeep.metrics import Metric
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Literal,
+    Optional,
+    WideDeep,
+    Optimizer,
+    Transforms,
+    LRScheduler,
+)
 from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.dataloaders import DataLoaderDefault
 from pytorch_widedeep.initializers import Initializer
@@ -212,7 +224,7 @@ class Trainer(BaseTrainer):
         self,
         model: WideDeep,
         objective: str,
-        custom_loss_function: Optional[Module] = None,
+        custom_loss_function: Optional[nn.Module] = None,
         optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
         lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]] = None,
         initializers: Optional[Union[Initializer, Dict[str, Initializer]]] = None,

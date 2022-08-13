@@ -7,7 +7,16 @@ import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.losses import InfoNCELoss, DenoisingLoss
-from pytorch_widedeep.wdtypes import *  # noqa: F403; noqa: F403
+from pytorch_widedeep.wdtypes import (
+    List,
+    Tuple,
+    Tensor,
+    Literal,
+    Optional,
+    Optimizer,
+    LRScheduler,
+    ModelWithAttention,
+)
 from pytorch_widedeep.callbacks import (
     History,
     Callback,

@@ -4,7 +4,15 @@ import torch
 import torchvision
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Optional,
+    WeightsEnum,
+)
 from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.models.image._layers import conv_layer
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
@@ -244,7 +252,7 @@ class Vision(nn.Module):
 
         if self.trainable_params is not None:
             for name, param in features.named_parameters():
-                for tl in trainable_params:
+                for tl in self.trainable_params:
                     param.requires_grad = tl in name
         elif self.n_trainable is not None:
             for i, (name, param) in enumerate(

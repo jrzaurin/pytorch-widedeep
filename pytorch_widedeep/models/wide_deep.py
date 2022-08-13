@@ -13,9 +13,9 @@ will introduce that fix when I do a major release. For now, we live with it.
 import warnings
 
 import torch
-import torch.nn as nn
+from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
 from pytorch_widedeep.models.fds_layer import FDSLayer
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.models.tabular.mlp._layers import MLP

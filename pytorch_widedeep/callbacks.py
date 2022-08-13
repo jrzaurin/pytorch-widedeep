@@ -12,7 +12,7 @@ import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.metrics import MultipleMetrics
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Any, Dict, List, Optional, Optimizer
 
 
 def _get_current_time():

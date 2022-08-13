@@ -7,7 +7,16 @@ from tqdm import trange
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tensor,
+    Optional,
+    Optimizer,
+    LRScheduler,
+    ModelWithoutAttention,
+    DecoderWithoutAttention,
+)
 from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.training._trainer_utils import (
     save_epoch_logs,

@@ -8,7 +8,17 @@ from torchmetrics import Metric as TorchMetric
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.metrics import Metric, MultipleMetrics
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Union,
+    Module,
+    Optional,
+    WideDeep,
+    Optimizer,
+    Transforms,
+    LRScheduler,
+)
 from pytorch_widedeep.callbacks import (
     History,
     Callback,

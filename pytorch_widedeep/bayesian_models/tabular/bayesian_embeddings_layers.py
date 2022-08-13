@@ -3,7 +3,15 @@ import torch
 import einops
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Any,
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Optional,
+)
 from pytorch_widedeep.bayesian_models import bayesian_nn as bnn
 from pytorch_widedeep.bayesian_models._weight_sampler import (
     GaussianPosterior,
@@ -12,6 +20,8 @@ from pytorch_widedeep.bayesian_models._weight_sampler import (
 from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BayesianModule,
 )
+
+NormLayers = Union[nn.Identity, nn.LayerNorm, nn.BatchNorm1d]
 
 
 class BayesianContEmbeddings(BayesianModule):

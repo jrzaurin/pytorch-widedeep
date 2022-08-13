@@ -27,7 +27,7 @@ else:
 # isort: on
 
 from torch import Tensor
-from torch.nn import Module, Identity, LayerNorm, BatchNorm1d
+from torch.nn import Module
 from torch.optim.optimizer import Optimizer
 from torchvision.transforms import (
     Pad,
@@ -86,14 +86,6 @@ from pytorch_widedeep.models import (
     TabResnetDecoder,
     ContextAttentionMLP,
 )
-from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
-from pytorch_widedeep.models.tabular.tabnet.sparsemax import (
-    Entmax15,
-    Sparsemax,
-)
-from pytorch_widedeep.bayesian_models._base_bayesian_model import (
-    BaseBayesianModel,
-)
 
 ListRules = Collection[Callable[[str], str]]
 Tokens = Collection[Collection[str]]
@@ -136,7 +128,6 @@ Transforms = Union[
 ]
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
-NormLayers = Union[Identity, LayerNorm, BatchNorm1d]
 
 ModelWithoutAttention = Union[
     TabMlp,

@@ -8,7 +8,7 @@ Therefore, ALL CREDIT to the dreamquark-ai's team
 from typing import Tuple
 
 import torch
-from torch import Tensor, nn
+from torch import nn
 
 
 class RandomObfuscator(nn.Module):
@@ -27,7 +27,7 @@ class RandomObfuscator(nn.Module):
         super(RandomObfuscator, self).__init__()
         self.p = p
 
-    def forward(self, x: Tensor) -> Tuple[Tensor, Tensor]:
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         mask = torch.bernoulli(self.p * torch.ones(x.shape)).to(x.device)
         masked_input = torch.mul(1 - mask, x)
         return masked_input, mask

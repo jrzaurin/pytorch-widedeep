@@ -1,1 +1,4 @@
-from .modules import *  # noqa: F401, F403
+from pytorch_widedeep.bayesian_models.bayesian_nn.modules import (
+    BayesianLinear,
+    BayesianEmbedding,
+)

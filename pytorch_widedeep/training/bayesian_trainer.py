@@ -9,7 +9,16 @@ from torchmetrics import Metric as TorchMetric
 from torch.utils.data import DataLoader, TensorDataset
 
 from pytorch_widedeep.metrics import Metric
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Union,
+    Module,
+    Tensor,
+    Optional,
+    Optimizer,
+    LRScheduler,
+)
 from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.training._trainer_utils import (

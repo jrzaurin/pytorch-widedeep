@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Tuple, Union, Tensor, Literal, Optional
 from pytorch_widedeep.utils.deeptabular_utils import (
     find_bin,
     get_kernel_window,

@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Any, List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.models.text._encoders import ContextAttentionEncoder
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 

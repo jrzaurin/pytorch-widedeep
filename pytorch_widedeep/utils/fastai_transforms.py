@@ -11,13 +11,24 @@ Credit for the code here to Jeremy Howard and the fastai team
 import os
 import re
 import html
+import pickle
 from collections import Counter, defaultdict
 from concurrent.futures.process import ProcessPoolExecutor
 
 import spacy
 from spacy.symbols import ORTH
 
-from ..wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Any,
+    List,
+    Match,
+    Tokens,
+    Callable,
+    Optional,
+    ListRules,
+    Collection,
+    SimpleNamespace,
+)
 
 
 def partition(a: Collection, sz: int) -> List[Collection]:

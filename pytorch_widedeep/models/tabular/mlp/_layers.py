@@ -1,6 +1,6 @@
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import List, Union, Tensor, Optional
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 
 

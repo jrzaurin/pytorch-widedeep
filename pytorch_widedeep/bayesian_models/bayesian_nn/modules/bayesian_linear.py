@@ -12,7 +12,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Union, Tensor
 from pytorch_widedeep.bayesian_models._weight_sampler import (
     GaussianPosterior,
     ScaleMixtureGaussianPrior,

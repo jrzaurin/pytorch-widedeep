@@ -6,8 +6,19 @@ import torch
 import einops
 import pandas as pd
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Any,
+    List,
+    Tuple,
+    Union,
+    Optional,
+    WideDeep,
+)
 from pytorch_widedeep.preprocessing import TabPreprocessor
+from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
+from pytorch_widedeep.bayesian_models._base_bayesian_model import (
+    BaseBayesianModel,
+)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

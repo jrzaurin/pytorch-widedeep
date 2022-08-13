@@ -1,7 +1,8 @@
+from typing import List, Tuple
+
 import numpy as np
 import pandas as pd
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.preprocessing.base_preprocessor import (
     BasePreprocessor,
     check_is_fitted,

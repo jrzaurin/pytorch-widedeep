@@ -15,7 +15,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.models.tabular.tabnet import sparsemax
 
 
@@ -207,7 +207,9 @@ class AttentiveTransformer(nn.Module):
             self.bn = nn.BatchNorm1d(output_dim, momentum=momentum)
 
         if mask_type == "sparsemax":
-            self.mask: Union[Sparsemax, Entmax15] = sparsemax.Sparsemax(dim=-1)
+            self.mask: Union[
+                sparsemax.Sparsemax, sparsemax.Entmax15
+            ] = sparsemax.Sparsemax(dim=-1)
         elif mask_type == "entmax":
             self.mask = sparsemax.Entmax15(dim=-1)
         else:

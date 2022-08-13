@@ -1,6 +1,6 @@
 from torchvision.transforms import Compose
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import List, Transforms
 
 
 class MultipleTransforms(object):

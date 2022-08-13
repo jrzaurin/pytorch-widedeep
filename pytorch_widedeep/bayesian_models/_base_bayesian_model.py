@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Tuple, Tensor
 
 
 class BayesianModule(nn.Module):

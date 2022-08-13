@@ -8,7 +8,7 @@ import math
 
 import torch
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Tensor
 
 
 class ScaleMixtureGaussianPrior(object):

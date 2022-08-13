@@ -1,9 +1,8 @@
 import re
 import warnings
+from typing import Dict
 
 from torch import nn
-
-from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 warnings.filterwarnings("default")
 

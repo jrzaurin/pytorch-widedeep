@@ -4,7 +4,7 @@ import torch
 import einops
 from torch import nn, einsum
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Tensor
 
 
 class ContextAttention(nn.Module):

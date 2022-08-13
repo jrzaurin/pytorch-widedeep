@@ -1,7 +1,7 @@
 import torch
-from torch import Tensor, nn
+from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 
 

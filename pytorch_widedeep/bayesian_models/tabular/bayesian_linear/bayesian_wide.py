@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Tensor
 from pytorch_widedeep.bayesian_models import bayesian_nn as bnn
 from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BaseBayesianModel,

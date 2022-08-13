@@ -1,7 +1,8 @@
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.utils.text_utils import (
     get_texts,
     pad_sequences,

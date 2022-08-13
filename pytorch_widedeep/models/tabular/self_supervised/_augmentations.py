@@ -8,7 +8,7 @@ The following two functions are based on those in the SAINT repo
 import numpy as np
 import torch
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Tensor
 
 
 def cut_mix(x: Tensor, lam: float = 0.8) -> Tensor:

@@ -4,7 +4,7 @@ from scipy.ndimage import convolve1d
 from sklearn.utils import Bunch
 from torch.utils.data import Dataset
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Any, Literal, Optional
 from pytorch_widedeep.utils.deeptabular_utils import (
     find_bin,
     get_kernel_window,

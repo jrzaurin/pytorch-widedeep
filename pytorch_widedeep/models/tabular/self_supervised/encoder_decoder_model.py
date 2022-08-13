@@ -11,7 +11,13 @@ from pytorch_widedeep.models import (
     TabNetDecoder,
     TabResnetDecoder,
 )
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Tuple,
+    Tensor,
+    Optional,
+    ModelWithoutAttention,
+    DecoderWithoutAttention,
+)
 from pytorch_widedeep.models.tabular.self_supervised._random_obfuscator import (
     RandomObfuscator,
 )
