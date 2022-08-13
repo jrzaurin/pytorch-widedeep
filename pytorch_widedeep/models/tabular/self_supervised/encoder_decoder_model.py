@@ -1,6 +1,7 @@
 import inspect
 
-from torch import Tensor, nn
+import torch
+from torch import nn
 
 from pytorch_widedeep.models import (
     TabMlp,

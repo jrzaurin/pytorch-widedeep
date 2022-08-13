@@ -8,6 +8,7 @@ Weight Uncertainty in Neural Networks post by Nitarshan Rajkumar: https://www.ni
 and references therein
 """
 
+import torch
 import torch.nn.functional as F
 from torch import nn
 

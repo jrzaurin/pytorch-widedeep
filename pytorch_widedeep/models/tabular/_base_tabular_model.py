@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import *  # noqa: F403

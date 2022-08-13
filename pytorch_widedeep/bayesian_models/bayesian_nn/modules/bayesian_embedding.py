@@ -4,6 +4,7 @@ The code here is greatly insipired by the code at the Blitz package:
 https://github.com/piEsposito/blitz-bayesian-deep-learning
 """
 
+import torch
 import torch.nn.functional as F
 from torch import nn
 

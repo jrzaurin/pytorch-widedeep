@@ -6,6 +6,8 @@ https://github.com/piEsposito/blitz-bayesian-deep-learning
 
 import math
 
+import torch
+
 from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 

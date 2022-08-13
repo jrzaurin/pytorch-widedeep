@@ -26,9 +26,8 @@ else:
         pass
 # isort: on
 
-import torch
 from torch import Tensor
-from torch.nn import Module
+from torch.nn import Module, Identity, LayerNorm, BatchNorm1d
 from torch.optim.optimizer import Optimizer
 from torchvision.transforms import (
     Pad,
@@ -137,7 +136,7 @@ Transforms = Union[
 ]
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
-NormLayers = Union[torch.nn.Identity, torch.nn.LayerNorm, torch.nn.BatchNorm1d]
+NormLayers = Union[Identity, LayerNorm, BatchNorm1d]
 
 ModelWithoutAttention = Union[
     TabMlp,
