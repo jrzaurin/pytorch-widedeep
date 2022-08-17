@@ -28,6 +28,56 @@ from pytorch_widedeep.self_supervised_training._base_encoder_decoder_trainer imp
 
 
 class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
+    r"""This class, which is referred as a 'Trainer', implements an Encoder-Decoder
+    Self Supervised 'routine' inspired by [TabNet: Attentive Interpretable
+    Tabular Learning](https://arxiv.org/abs/1908.07442). See Figure 1 above.
+
+    Parameters
+    ----------
+    encoder: ModelWithoutAttention,
+        An instance of a `TabMlp`, `TabResNet` or `TabNet` model
+    decoder: Optional[DecoderWithoutAttention] = None,
+        An instance of  a `TabMlpDecoder`, `TabResNetDecoder` or
+        `TabNetDecoder` model. if `None` the decoder will be automatically
+        build as a 'simetric' model to the Encoder
+    masked_prob: float = 0.2,
+        Indicates the fraction of elements in the embedding tensor that will
+        be masked and hence used for reconstruction
+    optimizer: Optional[Optimizer] = None,
+        An instance of Pytorch's `Optimizer` object(e.g. `torch.optim.Adam
+        ()`). if no optimizer is passed it will default to `AdamW`.
+    lr_scheduler: Optional[LRScheduler] = None,
+        An instance of Pytorch's `LRScheduler` object
+        (e.g `torch.optim.lr_scheduler.StepLR(opt, step_size=5)`).
+    callbacks: Optional[List[Callback]] = None,
+        List with `Callback` objects. The three callbacks available in
+        `pytorch-widedeep` are: `LRHistory`, `ModelCheckpoint` and
+        `EarlyStopping`. This can also be a custom callback. See
+        `pytorch_widedeep.callbacks.Callback` or the Examples folder in the
+        repo.
+    verbose: int, default=1
+        Setting it to 0 will print nothing during training.
+    seed: int, default=1
+        Random seed to be used internally for train_test_split
+
+    Other Parameters
+    ----------------
+    **kwargs: dict
+        Other infrequently used arguments that can also be passed as kwargs are:
+
+        - **device**: `str`<br/>
+            string indicating the device. One of _'cpu'_ or _'gpu'_
+
+        - **num_workers**: `int`<br/>
+            number of workers to be used internally by the data loaders
+
+        - **reducelronplateau_criterion**: `str`
+            This sets the criterion that will be used by the lr scheduler to
+            take a step: One of _'loss'_ or _'metric'_. The ReduceLROnPlateau
+            learning rate is a bit particular.
+
+    """
+
     def __init__(
         self,
         encoder: ModelWithoutAttention,
@@ -55,16 +105,34 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
     def pretrain(
         self,
         X_tab: np.ndarray,
-        X_val: Optional[np.ndarray] = None,
+        X_tab_val: Optional[np.ndarray] = None,
         val_split: Optional[float] = None,
         validation_freq: int = 1,
         n_epochs: int = 1,
         batch_size: int = 32,
     ):
+        r"""Pretrain method. Can also be called using `.fit(<same_args>)`
+
+        Parameters
+        ----------
+        X_tab: np.ndarray,
+            tabular dataset
+        X_tab_val: np.ndarray, Optional, default = None
+            validation data
+        val_split: float, Optional. default=None
+            An alterative to passing the validation set is to use a train/val
+            split fraction via `val_split`
+        validation_freq: int, default=1
+            epochs validation frequency
+        n_epochs: int, default=1
+            number of epochs
+        batch_size: int, default=32
+            batch size
+        """
 
         self.batch_size = batch_size
 
-        train_set, eval_set = self._train_eval_split(X_tab, X_val, val_split)
+        train_set, eval_set = self._train_eval_split(X_tab, X_tab_val, val_split)
         train_loader = DataLoader(
             dataset=train_set, batch_size=batch_size, num_workers=self.num_workers
         )
@@ -128,12 +196,39 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
         self._restore_best_weights()
         self.ed_model.train()
 
+    def fit(
+        self,
+        X_tab: np.ndarray,
+        X_tab_val: Optional[np.ndarray] = None,
+        val_split: Optional[float] = None,
+        validation_freq: int = 1,
+        n_epochs: int = 1,
+        batch_size: int = 32,
+    ):
+
+        return self.pretrain(
+            X_tab, X_tab_val, val_split, validation_freq, n_epochs, batch_size
+        )
+
     def save(
         self,
         path: str,
         save_state_dict: bool = False,
         model_filename: str = "ed_model.pt",
     ):
+        r"""Saves the model, training and evaluation history (if any) to disk
+
+        Parameters
+        ----------
+        path: str
+            path to the directory where the model and the feature importance
+            attribute will be saved.
+        save_state_dict: bool, default = False
+            Boolean indicating whether to save directly the model or the
+            model's state dictionary
+        model_filename: str, Optional, default = "ed_model.pt"
+            filename where the model weights will be store
+        """
         save_dir = Path(path)
         history_dir = save_dir / "history"
         history_dir.mkdir(exist_ok=True, parents=True)
@@ -193,19 +288,19 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
     def _train_eval_split(
         self,
         X: np.ndarray,
-        X_val: Optional[np.ndarray] = None,
+        X_tab_val: Optional[np.ndarray] = None,
         val_split: Optional[float] = None,
     ):
 
-        if X_val is not None:
+        if X_tab_val is not None:
             train_set = TensorDataset(torch.from_numpy(X))
-            eval_set = TensorDataset(torch.from_numpy(X_val))
+            eval_set = TensorDataset(torch.from_numpy(X_tab_val))
         elif val_split is not None:
-            X_tr, X_val = train_test_split(
+            X_tr, X_tab_val = train_test_split(
                 X, test_size=val_split, random_state=self.seed
             )
             train_set = TensorDataset(torch.from_numpy(X_tr))
-            eval_set = TensorDataset(torch.from_numpy(X_val))
+            eval_set = TensorDataset(torch.from_numpy(X_tab_val))
         else:
             train_set = TensorDataset(torch.from_numpy(X))
             eval_set = None

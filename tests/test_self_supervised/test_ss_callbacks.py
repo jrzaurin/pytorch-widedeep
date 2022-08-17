@@ -129,7 +129,7 @@ def test_lr_history(  # noqa: C901
         )
 
     if schedulers_type == "reducelronplateau":
-        trainer.pretrain(X, X_val=X_valid, n_epochs=5, batch_size=16)
+        trainer.pretrain(X, X_tab_val=X_valid, n_epochs=5, batch_size=16)
     else:
         trainer.pretrain(X, n_epochs=5, batch_size=16)
 
@@ -202,7 +202,7 @@ def test_early_stop(model_type):
         )
         X, X_valid = X_tab_transf, X_tab_valid_transf
 
-    trainer.pretrain(X_tab=X, X_val=X_valid, n_epochs=5, batch_size=16)
+    trainer.pretrain(X_tab=X, X_tab_val=X_valid, n_epochs=5, batch_size=16)
     # length of history = patience+1
     assert len(trainer.history["train_loss"]) == 3 + 1
 
@@ -270,7 +270,7 @@ def test_checkpoint(model_type, fpath, save_best_only, max_save, n_files):
         )
         X, X_valid = X_tab_transf, X_tab_valid_transf
 
-    trainer.pretrain(X_tab=X, X_val=X_valid, n_epochs=5, batch_size=16)
+    trainer.pretrain(X_tab=X, X_tab_val=X_valid, n_epochs=5, batch_size=16)
 
     if fpath:
         n_saved = len(os.listdir("tests/test_self_supervised/weights/"))

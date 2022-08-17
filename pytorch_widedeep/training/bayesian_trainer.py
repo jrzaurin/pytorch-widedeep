@@ -172,7 +172,7 @@ class BayesianTrainer(BaseBayesianTrainer):
             split fraction via `val_split`
         n_epochs: int, default=1
             number of epochs
-        val_freq: int, default=1
+        validation_freq: int, default=1
             epochs validation frequency
         batch_size: int, default=32
             batch size
@@ -347,9 +347,7 @@ class BayesianTrainer(BaseBayesianTrainer):
         save_state_dict: bool = False,
         model_filename: str = "bayesian_model.pt",
     ):
-        r"""Saves the model, training and evaluation history, and the
-        `feature_importance` attribute (if the `deeptabular` component is a
-        Tabnet model) to disk
+        r"""Saves the model, training and evaluation history to disk
 
         The `Trainer` class is built so that it 'just' trains a model. With
         that in mind, all the torch related parameters (such as optimizers or
