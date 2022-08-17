@@ -49,6 +49,9 @@ class BaseContrastiveDenoisingTrainer(ABC):
         **kwargs,
     ):
 
+        self._check_projection_head_dims(
+            model, projection_head1_dims, projection_head2_dims
+        )
         self._check_model_is_supported(model)
         self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
 
@@ -228,3 +231,27 @@ class BaseContrastiveDenoisingTrainer(ABC):
                 "Self-Supervised pretraining is only supported if both categorical and "
                 "continuum columns are embedded. Please set 'embed_continuous = True'"
             )
+
+    @staticmethod
+    def _check_projection_head_dims(
+        model: ModelWithAttention,
+        projection_head1_dims: Optional[List[int]],
+        projection_head2_dims: Optional[List[int]],
+    ):
+
+        error_msg = (
+            "The first dimension of the projection heads must be the same as "
+            f"the embeddings dimension or input dimension of the model: {model.input_dim}. "
+        )
+
+        if (
+            projection_head1_dims is not None
+            and model.input_dim != projection_head1_dims[0]
+        ):
+            raise ValueError(error_msg)
+
+        if (
+            projection_head2_dims is not None
+            and model.input_dim != projection_head2_dims[0]
+        ):
+            raise ValueError(error_msg)

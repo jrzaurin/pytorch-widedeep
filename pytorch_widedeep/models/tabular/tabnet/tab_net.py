@@ -208,14 +208,14 @@ class TabNet(BaseTabularModelWithoutAttention):
 class TabNetPredLayer(nn.Module):
     def __init__(self, inp, out):
         r"""This class is a 'hack' required because TabNet is a very particular
-        model within ``WideDeep``.
+        model within `WideDeep`.
 
-        TabNet's forward method within ``WideDeep`` outputs two tensors, one
+        TabNet's forward method within `WideDeep` outputs two tensors, one
         with the last layer's activations and the sparse regularization
-        factor. Since the output needs to be collected by ``WideDeep`` to then
+        factor. Since the output needs to be collected by `WideDeep` to then
         Sequentially build the output layer (connection to the output
         neuron(s)) I need to code a custom TabNetPredLayer that accepts two
-        inputs. This will be used by the ``WideDeep`` class.
+        inputs. This will be used by the `WideDeep` class.
         """
         super(TabNetPredLayer, self).__init__()
         self.pred_layer = nn.Linear(inp, out, bias=False)
@@ -227,35 +227,36 @@ class TabNetPredLayer(nn.Module):
 
 
 class TabNetDecoder(nn.Module):
-    r"""Companion decoder model for the ``TabNet`` model (which can be
+    r"""Companion decoder model for the `TabNet` model (which can be
     considered an encoder itself)
 
-    This class will receive the output from the ``TabNet`` encoder (i.e. the
-    output from the so called 'steps') and 'reconstruct' the embeddings from
-    the embeddings layer in the ``TabNet`` encoder.
+    This class is designed to be used with the `EncoderDecoderTrainer` when
+    using self-supervised pre-training (see the corresponding section in the
+    docs). This class will receive the output from the `TabNet` encoder
+    (i.e. the output from the so called 'steps') and '_reconstruct_' the
+    embeddings from the embeddings layer in the `TabNet` encoder.
 
     Parameters
     ----------
     embed_dim: int
         Size of the embeddings tensor to be reconstructed.
     n_steps: int, default = 3
-        number of decision steps
+        number of decision steps. For a better understanding of the function
+        of `n_steps` and the upcoming parameters, please see the
+        [paper](https://arxiv.org/abs/1908.07442).
     step_dim: int, default = 8
-        Step's output dimension. For a better understanding of the function of
-        this and the upcoming parameters, please see the `paper
-        <https://arxiv.org/abs/1908.07442>`_.
-    attn_dim: int, default = 8
-        Attention dimension
+        Step's output dimension. This is the output dimension that
+        `WideDeep` will collect and connect to the output neuron(s).
     dropout: float, default = 0.0
         GLU block's internal dropout
     n_glu_step_dependent: int, default = 2
-        number of GLU Blocks [FC -> BN -> GLU] that are step dependent
+        number of GLU Blocks (`[FC -> BN -> GLU]`) that are step dependent
     n_glu_shared: int, default = 2
-        number of GLU Blocks [FC -> BN -> GLU] that will be shared
+        number of GLU Blocks (`[FC -> BN -> GLU]`) that will be shared
         across decision steps
     ghost_bn: bool, default=True
-        Boolean indicating if `Ghost Batch Normalization
-        <https://arxiv.org/abs/1705.08741>`_ will be used.
+        Boolean indicating if [Ghost Batch Normalization](https://arxiv.org/abs/1705.08741)
+        will be used.
     virtual_batch_size: int, default = 128
         Batch size when using Ghost Batch Normalization
     momentum: float, default = 0.02
@@ -265,11 +266,11 @@ class TabNetDecoder(nn.Module):
 
     Attributes
     ----------
-    decoder: ``nn.ModuleList``
+    decoder: nn.Module
         decoder that will receive the output from the encoder's steps and will
         reconstruct the embeddings
 
-    Example
+    Examples
     --------
     >>> import torch
     >>> from pytorch_widedeep.models import TabNetDecoder

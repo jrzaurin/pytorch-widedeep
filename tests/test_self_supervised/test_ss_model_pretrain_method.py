@@ -141,6 +141,42 @@ def test_enc_dec_trainer(model_type, cat_or_cont, decoder_model):
     assert len(ec_trainer.history["train_loss"]) == 2
 
 
+@pytest.mark.parametrize(
+    "method_name",
+    ["pretrain", "fit"],
+)
+def test_enc_dec_trainer_method_name(method_name):
+
+    cat_embed_cols = ["col1", "col2"]
+    continuous_cols = ["col3", "col4"]
+
+    preprocessor = TabPreprocessor(
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+    )
+    X_tab = preprocessor.fit_transform(test_df)
+
+    encoder = _build_enc_models(
+        "mlp",
+        preprocessor.column_idx,
+        preprocessor.cat_embed_input,
+        preprocessor.continuous_cols,
+    )
+
+    ec_trainer = EncoderDecoderTrainer(
+        encoder=encoder,
+        masked_prob=0.2,
+        verbose=0,
+    )
+
+    if method_name == "pretrain":
+        ec_trainer.pretrain(X_tab, n_epochs=2, batch_size=16)
+    elif method_name == "fit":
+        ec_trainer.fit(X_tab, n_epochs=2, batch_size=16)
+
+    assert len(ec_trainer.history["train_loss"]) == 2
+
+
 ###############################################################################
 # Test simply that the ContrastiveDenoisingTrainer runs 'correctly'
 ###############################################################################
@@ -199,6 +235,46 @@ def test_cont_den_trainer_with_defaults(
     )
 
     cd_trainer.pretrain(X_tab, n_epochs=2, batch_size=16)
+
+    assert len(cd_trainer.history["train_loss"]) == 2
+
+
+@pytest.mark.parametrize(
+    "method_name",
+    ["pretrain", "fit"],
+)
+def test_cont_den_trainer_method_name(
+    method_name,
+):
+
+    cat_embed_cols = ["col1", "col2"]
+    continuous_cols = ["col3", "col4"]
+
+    preprocessor = TabPreprocessor(
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        with_attention=True,
+        with_cls_token=True,
+    )
+    X_tab = preprocessor.fit_transform(test_df)
+
+    tr_model = _build_transf_model(
+        "tabtransformer",
+        preprocessor,
+        preprocessor.cat_embed_input,
+        preprocessor.continuous_cols,
+    )
+
+    cd_trainer = ContrastiveDenoisingTrainer(
+        model=tr_model,
+        preprocessor=preprocessor,
+        verbose=0,
+    )
+
+    if method_name == "pretrain":
+        cd_trainer.pretrain(X_tab, n_epochs=2, batch_size=16)
+    elif method_name == "fit":
+        cd_trainer.fit(X_tab, n_epochs=2, batch_size=16)
 
     assert len(cd_trainer.history["train_loss"]) == 2
 
@@ -269,3 +345,37 @@ def test_cont_den_trainer_with_varying_params(
     cd_trainer.pretrain(X_tab, n_epochs=2, batch_size=16)
 
     assert len(cd_trainer.history["train_loss"]) == 2
+
+
+@pytest.mark.parametrize(
+    "proj_head_dims", [[None, [16, 8]], [[16, 8], None], [[16, 8], [16, 8]]]
+)
+def test_projection_head_value_error(
+    proj_head_dims,
+):
+
+    cat_embed_cols = ["col1", "col2"]
+    continuous_cols = ["col3", "col4"]
+    preprocessor = TabPreprocessor(
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        with_attention=True,
+        with_cls_token=True,
+    )
+    X_tab = preprocessor.fit_transform(test_df)  # noqa: F841
+
+    tr_model = _build_transf_model(
+        "saint",
+        preprocessor,
+        preprocessor.cat_embed_input,
+        preprocessor.continuous_cols,
+    )
+
+    with pytest.raises(ValueError):
+        cd_trainer = ContrastiveDenoisingTrainer(  # noqa: F841
+            model=tr_model,
+            preprocessor=preprocessor,
+            projection_head1_dims=proj_head_dims[0],
+            projection_head2_dims=proj_head_dims[1],
+            verbose=0,
+        )

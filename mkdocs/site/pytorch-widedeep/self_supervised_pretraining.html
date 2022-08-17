@@ -792,6 +792,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_5">
@@ -1002,6 +1006,34 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/16_Self_Supervised_Pretraning_pt1.html" class="md-nav__link">
+        16_Self-Supervised Pre-Training pt 1
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/16_Self_Supervised_Pretraning_pt2.html" class="md-nav__link">
+        16_Self-Supervised Pre-Training pt 2
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1043,17 +1075,20 @@
 
 <h1 id="self-supervised-pre-training-for-tabular-data">Self Supervised Pre-training for tabular data<a class="headerlink" href="#self-supervised-pre-training-for-tabular-data" title="Permanent link">&para;</a></h1>
 <p>In this library we have implemented two methods or routines that allow the
-user to pre-train all tabular models in the library with the exception of the
-<code>TabPerceiver</code> (this is a particular model and self-supervised pre-training
-requires some adjustments that will be implemented in future versions).</p>
-<p>The two routines implemented are illustrated in the figures below. The first is
-from <a href="https://arxiv.org/abs/1908.07442">TabNet: Attentive Interpretable Tabular Learning</a>.
+user to self-suerpvised pre-training for all tabular models in the library
+with the exception of the <code>TabPerceiver</code> (this is a particular model and
+self-supervised pre-training requires some adjustments that will be
+implemented in future versions).</p>
+<p>The two routines implemented are illustrated in the figures below. The first
+is from <a href="https://arxiv.org/abs/1908.07442">TabNet: Attentive Interpretable Tabular Learning</a>.
 It is a <em>'standard'</em> encoder-decoder architecture and and is designed here for
-models that do not use transformer-based architectures. The second is
-from <a href="https://arxiv.org/abs/2203.05556">SAINT: Improved Neural Networks for Tabular Data via Row Attention and
+models that do not use transformer-based architectures (or when the
+embeddings can all have different dimensions). The second is from
+<a href="https://arxiv.org/abs/2203.05556">SAINT: Improved Neural Networks for Tabular Data via Row Attention and
 Contrastive Pre-Training</a>, it is based on
 Contrastive and Denoising learning and is designed for models that use
-transformer-based architectures:</p>
+transformer-based architectures (or when the embeddings all need to have the
+same dimension):</p>
 <p align="center">
   <img width="750" src="../docs/figures/self_supervised_tabnet.png">
 </p>
@@ -1066,11 +1101,11 @@ caption of the original paper is included in case it is useful.</p>
 
 <p>Figure 2. Figure 1 in their <a href="https://arxiv.org/abs/2203.05556">paper</a>. The
 caption of the original paper is included in case it is useful.</p>
-<p>Note that the Self-Supervised Pre-Trainers described below focus on the
-self-supervised pre-training phase, i.e. the left side in Figure 1 and the
-upper part in Figure 2. When combined with the Trainer described earlier in
-the documenation, one can reproduce the full process illustrated in the
-figures.</p>
+<p>Note that the self-supervised pre-trainers described below focus, of course,
+on the self-supervised pre-training phase, i.e. the left side in Figure 1 and
+the upper part in Figure 2. When combined with the <code>Trainer</code> described
+earlier in the documenation, one can reproduce the full process illustrated
+in the figures above.</p>
 <p>Also Note that it is beyond the scope of this docs to explain in detail these
 routines. In addition, to fully utilise the self-supervised trainers
 implemented in this library a minimum understanding of the processes as
@@ -1105,9 +1140,10 @@ users to have a look to the papers.</p>
         Bases: <code><span title="pytorch_widedeep.self_supervised_training._base_encoder_decoder_trainer.BaseEncoderDecoderTrainer">BaseEncoderDecoderTrainer</span></code></p>
 
   
-      <p>This class, which is referred as a 'Trainer', implements an Encoder-Decoder
-Self Supervised 'routine' inspired by <a href="https://arxiv.org/abs/1908.07442">TabNet: Attentive Interpretable
-Tabular Learning</a>. See Figure 1 above.</p>
+      <p>This class implements an Encoder-Decoder self-supervised 'routine'
+inspired by
+<a href="https://arxiv.org/abs/1908.07442">TabNet: Attentive Interpretable Tabular Learning</a>.
+See Figure 1 above.</p>
 
   <p>Parameters:</p>
   <ul>
@@ -1121,7 +1157,7 @@ Tabular Learning</a>. See Figure 1 above.</p>
             (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.DecoderWithoutAttention">DecoderWithoutAttention</span>]</code>)
         – <p>An instance of  a <code>TabMlpDecoder</code>, <code>TabResNetDecoder</code> or
 <code>TabNetDecoder</code> model. if <code>None</code> the decoder will be automatically
-build as a 'simetric' model to the Encoder</p>
+build as a '<em>simetric</em>' model to the Encoder</p>
       </li>
       <li class="field-body">
         <b>masked_prob</b>
@@ -1132,7 +1168,7 @@ be masked and hence used for reconstruction</p>
       <li class="field-body">
         <b>optimizer</b>
             (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>]</code>)
-        – <p>An instance of Pytorch's <code>Optimizer</code> object(e.g. <code>torch.optim.Adam
+        – <p>An instance of Pytorch's <code>Optimizer</code> object (e.g. <code>torch.optim.Adam
 ()</code>). if no optimizer is passed it will default to <code>AdamW</code>.</p>
       </li>
       <li class="field-body">
@@ -1189,9 +1225,7 @@ learning rate is a bit particular.</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/self_supervised_training/encoder_decoder_trainer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 83</span>
 <span class="normal"> 84</span>
 <span class="normal"> 85</span>
 <span class="normal"> 86</span>
@@ -1211,7 +1245,9 @@ learning rate is a bit particular.</p>
 <span class="normal">100</span>
 <span class="normal">101</span>
 <span class="normal">102</span>
-<span class="normal">103</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">encoder</span><span class="p">:</span> <span class="n">ModelWithoutAttention</span><span class="p">,</span>
     <span class="n">decoder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DecoderWithoutAttention</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1309,9 +1345,7 @@ split fraction via <code>val_split</code></p>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/self_supervised_training/encoder_decoder_trainer.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">107</span>
 <span class="normal">108</span>
 <span class="normal">109</span>
 <span class="normal">110</span>
@@ -1401,7 +1435,9 @@ split fraction via <code>val_split</code></p>
 <span class="normal">194</span>
 <span class="normal">195</span>
 <span class="normal">196</span>
-<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1543,9 +1579,7 @@ model's state dictionary</p>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/self_supervised_training/encoder_decoder_trainer.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">215</span>
 <span class="normal">216</span>
 <span class="normal">217</span>
 <span class="normal">218</span>
@@ -1581,7 +1615,9 @@ model's state dictionary</p>
 <span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
-<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">save_state_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -1668,9 +1704,9 @@ model's state dictionary</p>
 
   
       <p>This class trains a Contrastive, Denoising Self Supervised 'routine' that
-is based on the one described in "SAINT: Improved Neural Networks for
-Tabular Data via Row Attention and Contrastive Pre-Training", their
-Figure 1.</p>
+is based on the one described in
+<a href="https://arxiv.org/abs/2203.05556">SAINT: Improved Neural Networks for Tabular Data via Row Attention and
+Contrastive Pre-Training</a>, their Figure 1.</p>
 
   <p>Parameters:</p>
   <ul>
@@ -1690,7 +1726,7 @@ Figure 1.</p>
       <li class="field-body">
         <b>optimizer</b>
             (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>]</code>)
-        – <p>An instance of Pytorch's <code>Optimizer</code> object(e.g. <code>torch.optim.Adam
+        – <p>An instance of Pytorch's <code>Optimizer</code> object (e.g. <code>torch.optim.Adam
 ()</code>). if no optimizer is passed it will default to <code>AdamW</code>.</p>
       </li>
       <li class="field-body">
@@ -1711,22 +1747,27 @@ repo.</p>
       <li class="field-body">
         <b>loss_type</b>
             (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[contrastive, denoising, both]</code>)
-        – <p>One of "contrastive", "denoising" or "both". See "SAINT: Improved
+        – <p>One of '<em>contrastive</em>', '<em>denoising</em>' or '<em>both</em>'. See <a href="https://arxiv.org/abs/2203.05556">SAINT: Improved
 Neural Networks for Tabular Data via Row Attention and Contrastive
-Pre-Training", their figure (1) and their equation (5).</p>
+Pre-Training</a>, their figure (1)
+and their equation (5).</p>
       </li>
       <li class="field-body">
         <b>projection_head1_dims</b>
             (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>)
-        – <p>The projection heads are simply MLPs. 'projection_head1_dims' is a
-list of integers with the dimensions of the MLP hidden layers.
-See "SAINT: Improved Neural Networks for Tabular Data via Row
-Attention and Contrastive Pre-Training", their Figure 1</p>
+        – <p>The projection heads are simply MLPs. This parameter is a list
+of integers with the dimensions of the MLP hidden layers. See the
+<a href="https://arxiv.org/abs/2203.05556">paper</a> for details. Note that
+setting up this parameter requires some knowledge of the architecture
+one is using. For example, if we are representing the features with
+embeddings of dim 32 (i.e. the so called dimension of the model is
+32), then the first dimension of the projection head must be 32 (e.g.
+[32, 16])</p>
       </li>
       <li class="field-body">
         <b>projection_head2_dims</b>
             (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>)
-        – <p>Same as 'projection_head1_dims' for the second head</p>
+        – <p>Same as '<em>projection_head1_dims</em>' for the second head</p>
       </li>
       <li class="field-body">
         <b>projection_heads_activation</b>
@@ -1736,10 +1777,10 @@ Attention and Contrastive Pre-Training", their Figure 1</p>
       <li class="field-body">
         <b>cat_mlp_type</b>
             (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[single, multiple]</code>)
-        – <p>If 'denoising loss' is used, one can choose two types of 'stacked'
+        – <p>If '<em>denoising</em>' loss is used, one can choose two types of 'stacked'
 MLPs to process the output from the transformer-based encoder that
-receives "corrupted" (cut-mixed and mixed-up) features. These
-are "single" or "multiple". The former approach will apply a single
+receives 'corrupted' (cut-mixed and mixed-up) features. These
+are '<em>single</em>' or '<em>multiple</em>'. The former approach will apply a single
 MLP to all the categorical features while the latter will use one MLP
 per categorical feature</p>
       </li>
@@ -1792,13 +1833,7 @@ learning rate is a bit particular.</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/self_supervised_training/contrastive_denoising_trainer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">111</span>
 <span class="normal">112</span>
 <span class="normal">113</span>
 <span class="normal">114</span>
@@ -1826,7 +1861,13 @@ learning rate is a bit particular.</p>
 <span class="normal">136</span>
 <span class="normal">137</span>
 <span class="normal">138</span>
-<span class="normal">139</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">ModelWithAttention</span><span class="p">,</span>
     <span class="n">preprocessor</span><span class="p">:</span> <span class="n">TabPreprocessor</span><span class="p">,</span>
@@ -1909,7 +1950,15 @@ learning rate is a bit particular.</p>
       <li class="field-body">
         <b>X_tab_val</b>
             (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy">np</span>.<span title="numpy.ndarray">ndarray</span>]</code>)
-        – <p>validation data</p>
+        – <p>validation data. Note that, although it is possible to use
+contrastive-denoising training with a validation set, such set
+must include feature values that are <em>all</em> seen in the training
+set in the case of the categorical columns. This is because the
+values of the columns themselves will be used as targets when
+computing the loss. Therefore, if a new category is present in
+the validation set that was not seen in training this will
+effectively be like trying to predict a new, never seen category
+(and Pytorch will throw an error)</p>
       </li>
       <li class="field-body">
         <b>val_split</b>
@@ -1936,13 +1985,7 @@ split fraction via <code>val_split</code></p>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/self_supervised_training/contrastive_denoising_trainer.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">147</span>
 <span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
@@ -2028,7 +2071,21 @@ split fraction via <code>val_split</code></p>
 <span class="normal">230</span>
 <span class="normal">231</span>
 <span class="normal">232</span>
-<span class="normal">233</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2044,7 +2101,15 @@ split fraction via <code>val_split</code></p>
 <span class="sd">    X_tab: np.ndarray,</span>
 <span class="sd">        tabular dataset</span>
 <span class="sd">    X_tab_val: np.ndarray, Optional, default = None</span>
-<span class="sd">        validation data</span>
+<span class="sd">        validation data. Note that, although it is possible to use</span>
+<span class="sd">        contrastive-denoising training with a validation set, such set</span>
+<span class="sd">        must include feature values that are _all_ seen in the training</span>
+<span class="sd">        set in the case of the categorical columns. This is because the</span>
+<span class="sd">        values of the columns themselves will be used as targets when</span>
+<span class="sd">        computing the loss. Therefore, if a new category is present in</span>
+<span class="sd">        the validation set that was not seen in training this will</span>
+<span class="sd">        effectively be like trying to predict a new, never seen category</span>
+<span class="sd">        (and Pytorch will throw an error)</span>
 <span class="sd">    val_split: float, Optional. default=None</span>
 <span class="sd">        An alterative to passing the validation set is to use a train/val</span>
 <span class="sd">        split fraction via `val_split`</span>
@@ -2170,21 +2235,7 @@ model's state dictionary</p>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/self_supervised_training/contrastive_denoising_trainer.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">263</span>
 <span class="normal">264</span>
 <span class="normal">265</span>
 <span class="normal">266</span>
@@ -2208,7 +2259,21 @@ model's state dictionary</p>
 <span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span>
-<span class="normal">287</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">save_state_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>

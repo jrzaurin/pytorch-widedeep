@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from pytorch_widedeep.wdtypes import (
     Dict,
     List,
+    Tuple,
     Tensor,
     Literal,
     Optional,
@@ -30,9 +31,9 @@ from pytorch_widedeep.self_supervised_training._base_contrastive_denoising_train
 
 class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
     r"""This class trains a Contrastive, Denoising Self Supervised 'routine' that
-    is based on the one described in "SAINT: Improved Neural Networks for
-    Tabular Data via Row Attention and Contrastive Pre-Training", their
-    Figure 1.
+    is based on the one described in
+    [SAINT: Improved Neural Networks for Tabular Data via Row Attention and
+    Contrastive Pre-Training](https://arxiv.org/abs/2203.05556), their Figure 1.
 
     Parameters
     ----------
@@ -44,7 +45,7 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         A fitted `TabPreprocessor` object. See
         `pytorch_widedeep.preprocessing.tab_preprocessor.TabPreprocessor`
     optimizer: Optional[Optimizer] = None,
-        An instance of Pytorch's `Optimizer` object(e.g. `torch.optim.Adam
+        An instance of Pytorch's `Optimizer` object (e.g. `torch.optim.Adam
         ()`). if no optimizer is passed it will default to `AdamW`.
     lr_scheduler: Optional[LRScheduler] = None,
         An instance of Pytorch's `LRScheduler` object
@@ -56,23 +57,28 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         `pytorch_widedeep.callbacks.Callback` or the Examples folder in the
         repo.
     loss_type: str, default = "both"
-        One of "contrastive", "denoising" or "both". See "SAINT: Improved
+        One of '_contrastive_', '_denoising_' or '_both_'. See [SAINT: Improved
         Neural Networks for Tabular Data via Row Attention and Contrastive
-        Pre-Training", their figure (1) and their equation (5).
+        Pre-Training](https://arxiv.org/abs/2203.05556), their figure (1)
+        and their equation (5).
     projection_head1_dims: list, Optional, default = None
-        The projection heads are simply MLPs. 'projection_head1_dims' is a
-        list of integers with the dimensions of the MLP hidden layers.
-        See "SAINT: Improved Neural Networks for Tabular Data via Row
-        Attention and Contrastive Pre-Training", their Figure 1
+        The projection heads are simply MLPs. This parameter is a list
+        of integers with the dimensions of the MLP hidden layers. See the
+        [paper](https://arxiv.org/abs/2203.05556) for details. Note that
+        setting up this parameter requires some knowledge of the architecture
+        one is using. For example, if we are representing the features with
+        embeddings of dim 32 (i.e. the so called dimension of the model is
+        32), then the first dimension of the projection head must be 32 (e.g.
+        [32, 16])
     projection_head2_dims: list, Optional, default = None
-        Same as 'projection_head1_dims' for the second head
+        Same as '_projection_head1_dims_' for the second head
     projection_heads_activation: str, default = "relu"
         Activation function for the projection heads
     cat_mlp_type: str, default = "multiple"
-        If 'denoising loss' is used, one can choose two types of 'stacked'
+        If '_denoising_' loss is used, one can choose two types of 'stacked'
         MLPs to process the output from the transformer-based encoder that
-        receives "corrupted" (cut-mixed and mixed-up) features. These
-        are "single" or "multiple". The former approach will apply a single
+        receives 'corrupted' (cut-mixed and mixed-up) features. These
+        are '_single_' or '_multiple_'. The former approach will apply a single
         MLP to all the categorical features while the latter will use one MLP
         per categorical feature
     cont_mlp_type: str, default = "multiple"
@@ -154,7 +160,15 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         X_tab: np.ndarray,
             tabular dataset
         X_tab_val: np.ndarray, Optional, default = None
-            validation data
+            validation data. Note that, although it is possible to use
+            contrastive-denoising training with a validation set, such set
+            must include feature values that are _all_ seen in the training
+            set in the case of the categorical columns. This is because the
+            values of the columns themselves will be used as targets when
+            computing the loss. Therefore, if a new category is present in
+            the validation set that was not seen in training this will
+            effectively be like trying to predict a new, never seen category
+            (and Pytorch will throw an error)
         val_split: float, Optional. default=None
             An alterative to passing the validation set is to use a train/val
             split fraction via `val_split`
@@ -286,7 +300,7 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         else:
             torch.save(self.cd_model, model_path)
 
-    def _train_step(self, X_tab: Tensor, batch_idx: int):
+    def _train_step(self, X_tab: Tensor, batch_idx: int) -> float:
 
         X = X_tab.to(self.device)
 
@@ -301,7 +315,7 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
 
         return avg_loss
 
-    def _eval_step(self, X_tab: Tensor, batch_idx: int):
+    def _eval_step(self, X_tab: Tensor, batch_idx: int) -> float:
 
         self.cd_model.eval()
 
@@ -321,7 +335,7 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         X: np.ndarray,
         X_tab_val: Optional[np.ndarray] = None,
         val_split: Optional[float] = None,
-    ):
+    ) -> Tuple[TensorDataset, Optional[TensorDataset]]:
 
         if X_tab_val is not None:
             train_set = TensorDataset(torch.from_numpy(X))

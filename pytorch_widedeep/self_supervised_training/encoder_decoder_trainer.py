@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from pytorch_widedeep.wdtypes import (
     Dict,
     List,
+    Tuple,
     Tensor,
     Optional,
     Optimizer,
@@ -28,9 +29,10 @@ from pytorch_widedeep.self_supervised_training._base_encoder_decoder_trainer imp
 
 
 class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
-    r"""This class, which is referred as a 'Trainer', implements an Encoder-Decoder
-    Self Supervised 'routine' inspired by [TabNet: Attentive Interpretable
-    Tabular Learning](https://arxiv.org/abs/1908.07442). See Figure 1 above.
+    r"""This class implements an Encoder-Decoder self-supervised 'routine'
+    inspired by
+    [TabNet: Attentive Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442).
+    See Figure 1 above.
 
     Parameters
     ----------
@@ -39,12 +41,12 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
     decoder: Optional[DecoderWithoutAttention] = None,
         An instance of  a `TabMlpDecoder`, `TabResNetDecoder` or
         `TabNetDecoder` model. if `None` the decoder will be automatically
-        build as a 'simetric' model to the Encoder
+        build as a '_simetric_' model to the Encoder
     masked_prob: float = 0.2,
         Indicates the fraction of elements in the embedding tensor that will
         be masked and hence used for reconstruction
     optimizer: Optional[Optimizer] = None,
-        An instance of Pytorch's `Optimizer` object(e.g. `torch.optim.Adam
+        An instance of Pytorch's `Optimizer` object (e.g. `torch.optim.Adam
         ()`). if no optimizer is passed it will default to `AdamW`.
     lr_scheduler: Optional[LRScheduler] = None,
         An instance of Pytorch's `LRScheduler` object
@@ -255,7 +257,7 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
             "The 'explain' is currently not implemented for Self Supervised Pretraining"
         )
 
-    def _train_step(self, X_tab: Tensor, batch_idx: int):
+    def _train_step(self, X_tab: Tensor, batch_idx: int) -> float:
 
         X = X_tab.to(self.device)
 
@@ -270,7 +272,7 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
 
         return avg_loss
 
-    def _eval_step(self, X_tab: Tensor, batch_idx: int):
+    def _eval_step(self, X_tab: Tensor, batch_idx: int) -> float:
 
         self.ed_model.eval()
 
@@ -290,7 +292,7 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
         X: np.ndarray,
         X_tab_val: Optional[np.ndarray] = None,
         val_split: Optional[float] = None,
-    ):
+    ) -> Tuple[TensorDataset, Optional[TensorDataset]]:
 
         if X_tab_val is not None:
             train_set = TensorDataset(torch.from_numpy(X))

@@ -164,12 +164,14 @@ class TabMlp(BaseTabularModelWithoutAttention):
 #  the 'general' DL models as they are (e.g. TabMlp) as opposed as carry
 #  the 'Encoder' description (e.g. TabMlpEncoder) throughout the library
 class TabMlpDecoder(nn.Module):
-    r"""Companion decoder model for the ``TabMlp`` model (which can be considered
-    an encoder itself)
+    r"""Companion decoder model for the `TabMlp` model (which can be considered
+    an encoder itself).
 
-    This class will receive the output from the MLP and 'reconstruct' the
-    embeddings from the embeddings layer in the ``TabMlp`` model
-
+    This class is designed to be used with the `EncoderDecoderTrainer` when
+    using self-supervised pre-training (see the corresponding section in the
+    docs). The `TabMlpDecoder` will receive the output from the MLP
+    and '_reconstruct_' the embeddings in the embeddings layer in the
+    `TabMlp` model.
 
     Parameters
     ----------
@@ -179,10 +181,10 @@ class TabMlpDecoder(nn.Module):
         List with the number of neurons per dense layer in the mlp.
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
     mlp_dropout: float or List, default = 0.1
         float or List of floats with the dropout between the dense layers.
-        e.g: [0.5,0.5]
+        e.g: _[0.5,0.5]_
     mlp_batchnorm: bool, default = False
         Boolean indicating whether or not batch normalization will be applied
         to the dense layers
@@ -191,15 +193,15 @@ class TabMlpDecoder(nn.Module):
         to the last of the dense layers
     mlp_linear_first: bool, default = False
         Boolean indicating the order of the operations in the dense
-        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-        LIN -> ACT]``
+        layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
+        LIN -> ACT]`
 
     Attributes
     ----------
-    encoder: ``nn.Sequential``
+    decoder: nn.Module
         mlp model that will receive the output of the encoder
 
-    Example
+    Examples
     --------
     >>> import torch
     >>> from pytorch_widedeep.models import TabMlpDecoder

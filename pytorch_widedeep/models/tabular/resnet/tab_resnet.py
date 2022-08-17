@@ -208,12 +208,14 @@ class TabResnet(BaseTabularModelWithoutAttention):
 
 
 class TabResnetDecoder(nn.Module):
-    r"""Companion decoder model for the ``TabResnet`` model (which can be
+    r"""Companion decoder model for the `TabResnet` model (which can be
     considered an encoder itself)
 
-    This class will receive the output from the ResNet blocks or the MLP
-    (if present) and 'reconstruct' the embeddings from the embeddings layer
-    in the ``TabResnet`` model.
+    This class is designed to be used with the `EncoderDecoderTrainer` when
+    using self-supervised pre-training (see the corresponding section in the
+    docs). This class will receive the output from the ResNet blocks or the
+    MLP(if present) and '_reconstruct_' the embeddings in the embeddings
+    layer in the `TabResnet` model.
 
     Parameters
     ----------
@@ -221,25 +223,24 @@ class TabResnetDecoder(nn.Module):
         Size of the embeddings tensor to be reconstructed.
     blocks_dims: List, default = [200, 100, 100]
         List of integers that define the input and output units of each block.
-        For example: [200, 100, 100] will generate 2 blocks. The first will
+        For example: _[200, 100, 100]_ will generate 2 blocks. The first will
         receive a tensor of size 200 and output a tensor of size 100, and the
         second will receive a tensor of size 100 and output a tensor of size
-        100. See :obj:`pytorch_widedeep.models.tab_resnet._layers` for
+        100. See `pytorch_widedeep.models.tab_resnet._layers` for
         details on the structure of each block.
     blocks_dropout: float, default =  0.1
-       Block's `"internal"` dropout.
+        Block's internal dropout.
     simplify_blocks: bool, default = False,
-        Boolean indicating if the simplest possible residual blocks (``X -> [
-        [LIN, BN, ACT]  + X ]``) will be used instead of a standard one
-        (``X -> [ [LIN1, BN1, ACT1] -> [LIN2, BN2]  + X ]``).
+        Boolean indicating if the simplest possible residual blocks (`X -> [
+        [LIN, BN, ACT]  + X ]`) will be used instead of a standard one
+        (`X -> [ [LIN1, BN1, ACT1] -> [LIN2, BN2]  + X ]`).
     mlp_hidden_dims: List, Optional, default = None
         List with the number of neurons per dense layer in the MLP. e.g:
-        [64, 32]. If ``None`` the  output of the Resnet Blocks will be
-        connected directly to the output neuron(s), i.e. using a MLP is
-        optional.
+        _[64, 32]_. If `None` the  output of the Resnet Blocks will be
+        connected directly to the output neuron(s).
     mlp_activation: str, default = "relu"
         Activation function for the dense layers of the MLP. Currently
-        `'tanh'`, `'relu'`, `'leaky_relu'` and `'gelu'` are supported
+        _'tanh'_, _'relu'_, _'leaky'_relu` and _'gelu'_ are supported
     mlp_dropout: float, default = 0.1
         float with the dropout between the dense layers of the MLP.
     mlp_batchnorm: bool, default = False
@@ -250,20 +251,20 @@ class TabResnetDecoder(nn.Module):
         to the last of the dense layers
     mlp_linear_first: bool, default = False
         Boolean indicating the order of the operations in the dense
-        layer. If ``True: [LIN -> ACT -> BN -> DP]``. If ``False: [BN -> DP ->
-        LIN -> ACT]``
+        layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
+        LIN -> ACT]`
 
     Attributes
     ----------
-    decoder: ``nn.Sequential``
+    decoder: nn.Module
         deep dense Resnet model that will receive the output of the encoder IF
-        ``mlp_hidden_dims`` is None
-    mlp: ``nn.Sequential``
-        if ``mlp_hidden_dims`` is not None, the overall decoding will consist
+        `mlp_hidden_dims` is None
+    mlp: nn.Module
+        if `mlp_hidden_dims` is not None, the overall decoder will consist
         in an MLP that will receive the output of the encoder followed by the
         deep dense Resnet.
 
-    Example
+    Examples
     --------
     >>> import torch
     >>> from pytorch_widedeep.models import TabResnetDecoder

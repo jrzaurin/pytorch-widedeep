@@ -17,12 +17,27 @@ class. Note that each of the four components can be used independently.
         filters:
             - "!^forward$"
 
+::: pytorch_widedeep.models.tabular.mlp.tab_mlp.TabMlpDecoder
+    selection:
+        filters:
+            - "!^forward$"
+
 ::: pytorch_widedeep.models.tabular.resnet.tab_resnet.TabResnet
     selection:
         filters:
             - "!^forward$"
 
+::: pytorch_widedeep.models.tabular.resnet.tab_resnet.TabResnetDecoder
+    selection:
+        filters:
+            - "!^forward$"
+
 ::: pytorch_widedeep.models.tabular.tabnet.tab_net.TabNet
+    selection:
+        filters:
+            - "!^forward$"
+
+::: pytorch_widedeep.models.tabular.tabnet.tab_net.TabNetDecoder
     selection:
         filters:
             - "!^forward$"
