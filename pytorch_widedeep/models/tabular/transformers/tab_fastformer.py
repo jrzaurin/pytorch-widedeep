@@ -119,13 +119,10 @@ class TabFastFormer(BaseTabularModelWithAttention):
     ----------
     cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    fastformer_blks: nn.Sequential
+    encoder: nn.Module
         Sequence of FasFormer blocks.
-    fastformer_mlp: nn.Module
+    mlp: nn.Module
         MLP component in the model
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -274,6 +271,9 @@ class TabFastFormer(BaseTabularModelWithAttention):
 
     @property
     def output_dim(self) -> int:
+        r"""The output dimension of the model. This is a required property
+        neccesary to build the `WideDeep` class
+        """
         return (
             self.mlp_hidden_dims[-1]
             if self.mlp_hidden_dims is not None

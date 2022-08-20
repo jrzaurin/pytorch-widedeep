@@ -27,7 +27,7 @@ class WidePreprocessor(BasePreprocessor):
         List of Tuples with the name of the columns that will be `'crossed'`
         and then label encoded. e.g. _[('education', 'occupation'), ...]_. For
         binary features, a cross-product transformation is 1 if and only if
-        the constituent features are all 1, and 0 otherwise".
+        the constituent features are all 1, and 0 otherwise.
 
     Attributes
     ----------
@@ -36,6 +36,8 @@ class WidePreprocessor(BasePreprocessor):
     encoding_dict: Dict
         Dictionary where the keys are the result of pasting `colname + '_' +
         column value` and the values are the corresponding mapped integer.
+    inverse_encoding_dict: Dict
+        the inverse encoding dictionary
     wide_dim: int
         Dimension of the wide model (i.e. dim of the linear layer)
 

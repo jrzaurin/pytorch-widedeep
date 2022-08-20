@@ -88,16 +88,13 @@ class TabResnet(BaseTabularModelWithoutAttention):
     ----------
     cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    tab_resnet_blks: nn.Sequential
+    encoder: nn.Module
         deep dense Resnet model that will receive the concatenation of the
         embeddings and the continuous columns
-    tab_resnet_mlp: nn.Sequential
+    mlp: nn.Module
         if `mlp_hidden_dims` is `True`, this attribute will be an mlp
         model that will receive the results of the concatenation of the
         embeddings and the continuous columns -- if present --.
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -200,6 +197,9 @@ class TabResnet(BaseTabularModelWithoutAttention):
 
     @property
     def output_dim(self) -> int:
+        r"""The output dimension of the model. This is a required property
+        neccesary to build the `WideDeep` class
+        """
         return (
             self.mlp_hidden_dims[-1]
             if self.mlp_hidden_dims is not None
@@ -214,8 +214,7 @@ class TabResnetDecoder(nn.Module):
     This class is designed to be used with the `EncoderDecoderTrainer` when
     using self-supervised pre-training (see the corresponding section in the
     docs). This class will receive the output from the ResNet blocks or the
-    MLP(if present) and '_reconstruct_' the embeddings in the embeddings
-    layer in the `TabResnet` model.
+    MLP(if present) and '_reconstruct_' the embeddings.
 
     Parameters
     ----------

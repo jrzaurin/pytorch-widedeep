@@ -62,8 +62,8 @@ class Vision(nn.Module):
         used. Alternatively, since Torchvision 0.13 one can use pretrained
         models with different weigths. Therefore, `pretrained_model_setup` can
         also be dictionary with the name of the model and the weights (e.g.
-        {'resnet50': ResNet50_Weights.DEFAULT} or
-        {'resnet50': "IMAGENET1K_V2"}). Aliased as `pretrained_model_name`.
+        `{'resnet50': ResNet50_Weights.DEFAULT}` or
+        `{'resnet50': "IMAGENET1K_V2"}`). <br/> Aliased as `pretrained_model_name`.
     n_trainable: Optional, int, default = None
         Number of trainable layers starting from the layer closer to the
         output neuron(s). Note that this number DOES NOT take into account
@@ -108,9 +108,6 @@ class Vision(nn.Module):
     ----------
     features: nn.Module
         The pretrained model or Standard CNN plus the optional head
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -188,6 +185,9 @@ class Vision(nn.Module):
 
     @property
     def output_dim(self) -> int:
+        r"""The output dimension of the model. This is a required property
+        neccesary to build the `WideDeep` class
+        """
         return (
             self.head_hidden_dims[-1]
             if self.head_hidden_dims is not None

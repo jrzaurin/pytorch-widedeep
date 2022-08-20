@@ -50,3 +50,9 @@ from pytorch_widedeep.losses import FocalLoss
 ::: pytorch_widedeep.losses.FocalR_RMSELoss
 
 ::: pytorch_widedeep.losses.HuberLoss
+
+::: pytorch_widedeep.losses.InfoNCELoss
+
+::: pytorch_widedeep.losses.DenoisingLoss
+
+::: pytorch_widedeep.losses.EncoderDecoderLoss

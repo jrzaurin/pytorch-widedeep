@@ -4,7 +4,10 @@ In this library we have implemented two methods or routines that allow the
 user to self-suerpvised pre-training for all tabular models in the library
 with the exception of the `TabPerceiver` (this is a particular model and
 self-supervised pre-training requires some adjustments that will be
-implemented in future versions).
+implemented in future versions). Please see the examples folder in the repo
+or the examples section in the docs for details on how to use self-supervised
+pre-training with this library.
+
 
 The two routines implemented are illustrated in the figures below. The first
 is from [TabNet: Attentive Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442).

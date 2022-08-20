@@ -28,6 +28,12 @@ class WideDeep(nn.Module):
     r"""Main collector class that combines all `wide`, `deeptabular`
     `deeptext` and `deepimage` models.
 
+    Note that all models described so far in this library must be passed to
+    the `WideDeep` class once constructed. This is because the models output
+    the last layer before the prediction layer. Such prediction layer is
+    added by the `WideDeep` class as it collects the components for every
+    data mode.
+
     There are two options to combine these models that correspond to the
     two main architectures that `pytorch-widedeep` can build.
 
@@ -100,7 +106,8 @@ class WideDeep(nn.Module):
         Distribution Smoothing. Please, see the docs for the `FDSLayer`.
         <br/>
         :information_source: **NOTE**: Feature Distribution Smoothing
-         is available when using ONLY a `deeptabular` component
+         is available when using **ONLY** a `deeptabular` component
+        <br/>
         :information_source: **NOTE**: We consider this feature absolutely
         experimental and we recommend the user to not use it unless the
         corresponding [publication](https://arxiv.org/abs/2102.09554) is

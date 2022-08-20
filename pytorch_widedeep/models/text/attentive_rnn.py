@@ -77,12 +77,9 @@ class AttentiveRNN(BasicRNN):
         word embedding matrix
     rnn: nn.Module
         Stack of RNNs
-    rnn_mlp: nn.Sequential
+    rnn_mlp: nn.Module
         Stack of dense layers on top of the RNN. This will only exists if
         `head_layers_dim` is not `None`
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------

@@ -3,7 +3,9 @@
 This module contains the models that can be used as the four main components
 that will comprise a Wide and Deep model (``wide``, ``deeptabular``,
 ``deeptext``, ``deepimage``), as well as the ``WideDeep`` "constructor"
-class. Note that each of the four components can be used independently.
+class. Note that each of the four components can be used independently. It
+also contains all the documentation for the models that can be used for
+self-supervised pre-training with tabular data.
 
 
 ::: pytorch_widedeep.models.tabular.linear.wide.Wide
@@ -82,16 +84,15 @@ class. Note that each of the four components can be used independently.
 :information_source: **NOTE**: when we started developing the library we
  thought that combining Deep Learning architectures for tabular data, with
  CNN-based architectures (pretrained or not) for images and Transformer-based
- architectures for text would be an _'overkill'_(also, pretrained
+ architectures for text would be an _'overkill'_  (also, pretrained
  transformer-based models were not as readily available as they are today).
  Therefore, at that time we made the decision of including in the library
  simple RNN-based architectures for the text dataset. A lot has passed since
  then and it is our intention to integrate this library with the
- [Hugginface's Transformers library]
- (https://huggingface.co/docs/transformers/main/en/index) in the near future.
- Nonetheless, note that it is still possible to use any custom model as the
- `deeptext` component using this library. Please, see the example section in
- this documentation for details
+ [Hugginface's Transformers library](https://huggingface.co/docs/transformers/main/en/index)
+ in the near future. Nonetheless, note that it is still possible to use any
+ custom model as the `deeptext` component using this library. Please, see the
+ example section in this documentation for details
 
 ::: pytorch_widedeep.models.text.attentive_rnn.BasicRNN
     selection:

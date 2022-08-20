@@ -95,11 +95,8 @@ class TabNet(BaseTabularModelWithoutAttention):
     ----------
     cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    tabnet_encoder: nn.Module
+    encoder: nn.Module
         the TabNet encoder. For details see the [original publication](https://arxiv.org/abs/1908.07442).
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -202,6 +199,9 @@ class TabNet(BaseTabularModelWithoutAttention):
 
     @property
     def output_dim(self) -> int:
+        r"""The output dimension of the model. This is a required property
+        neccesary to build the `WideDeep` class
+        """
         return self.step_dim
 
 
@@ -234,7 +234,7 @@ class TabNetDecoder(nn.Module):
     using self-supervised pre-training (see the corresponding section in the
     docs). This class will receive the output from the `TabNet` encoder
     (i.e. the output from the so called 'steps') and '_reconstruct_' the
-    embeddings from the embeddings layer in the `TabNet` encoder.
+    embeddings.
 
     Parameters
     ----------

@@ -76,12 +76,14 @@ class TabPreprocessor(BasePreprocessor):
         `False`.
     with_attention: bool, default = False
         Boolean indicating whether the preprocessed data will be passed to an
-        attention-based model. If `True`, the param `cat_embed_cols` must
-        just be a list containing just the categorical column names: e.g.
+        attention-based model (more precisely a model where all embeddings
+        must have the same dimensions). If `True`, the param `cat_embed_cols`
+        must just be a list containing just the categorical column names:
+        e.g.
         _['education', 'relationship', ...]_. This is because they will all be
-        encoded using embeddings of the same dim, which will be specified
-        later when the model is defined. <br/>
-        Param alias: `for_transformer`
+         encoded using embeddings of the same dim, which will be specified
+         later when the model is defined. <br/> Param alias:
+         `for_transformer`
     with_cls_token: bool, default = False
         Boolean indicating if a `'[CLS]'` token will be added to the dataset
         when using attention-based models. The final hidden state
@@ -144,10 +146,10 @@ class TabPreprocessor(BasePreprocessor):
         cat_embed_cols: Union[List[str], List[Tuple[str, int]]] = None,
         continuous_cols: List[str] = None,
         scale: bool = True,
+        already_standard: List[str] = None,
         auto_embed_dim: bool = True,
         embedding_rule: Literal["google", "fastai_old", "fastai_new"] = "fastai_new",
         default_embed_dim: int = 16,
-        already_standard: List[str] = None,
         with_attention: bool = False,
         with_cls_token: bool = False,
         shared_embed: bool = False,
@@ -157,10 +159,10 @@ class TabPreprocessor(BasePreprocessor):
 
         self.continuous_cols = continuous_cols
         self.scale = scale
+        self.already_standard = already_standard
         self.auto_embed_dim = auto_embed_dim
         self.embedding_rule = embedding_rule
         self.default_embed_dim = default_embed_dim
-        self.already_standard = already_standard
         self.with_attention = with_attention
         self.with_cls_token = with_cls_token
         self.shared_embed = shared_embed

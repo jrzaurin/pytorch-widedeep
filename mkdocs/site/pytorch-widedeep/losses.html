@@ -719,6 +719,27 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#pytorch_widedeep.losses.InfoNCELoss" class="md-nav__link">
+    InfoNCELoss
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pytorch_widedeep.losses.DenoisingLoss" class="md-nav__link">
+    DenoisingLoss
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pytorch_widedeep.losses.EncoderDecoderLoss" class="md-nav__link">
+    EncoderDecoderLoss
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3738,6 +3759,586 @@ multiply the loss value.</p>
     <span class="k">if</span> <span class="n">lds_weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">loss</span> <span class="o">*=</span> <span class="n">lds_weight</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="pytorch_widedeep.losses.InfoNCELoss" class="doc doc-heading">
+        <span class="doc doc-object-name doc-class-name">InfoNCELoss</span>
+
+
+<a href="#pytorch_widedeep.losses.InfoNCELoss" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">InfoNCELoss</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents first">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+
+  
+      <p>InfoNCE Loss. Loss applied during the Contrastive Denoising Self
+Supervised Pre-training routine available in this library</p>
+<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: This loss is in principle not exposed to
+ the user, as it is used internally in the library, but it is included
+ here for completion.</p>
+<p>See <a href="https://arxiv.org/abs/2106.01342">SAINT: Improved Neural Networks for Tabular Data via Row Attention
+and Contrastive Pre-Training</a> and
+references therein</p>
+<p>Partially inspired by the code in this <a href="https://github.com/RElbers/info-nce-pytorch">repo</a></p>
+<h4 id="pytorch_widedeep.losses.InfoNCELoss--parameters">Parameters:<a class="headerlink" href="#pytorch_widedeep.losses.InfoNCELoss--parameters" title="Permanent link">&para;</a></h4>
+<p>temperature: float, default = 0.1
+    The logits are divided by the temperature before computing the loss value
+reduction: str, default = "mean"
+    Loss reduction method</p>
+
+
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">):</span>
+
+    <span class="nb">super</span><span class="p">(</span><span class="n">InfoNCELoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.losses.InfoNCELoss.forward" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">forward</span>
+
+
+<a href="#pytorch_widedeep.losses.InfoNCELoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="n">g_projs</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b>g_projs</b>
+            (<code><span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>, <span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
+        – <p>Tuple with the two tensors corresponding to the output of the two
+projection heads, as described 'SAINT: Improved Neural Networks
+for Tabular Data via Row Attention and Contrastive Pre-Training'.</p>
+      </li>
+  </ul>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">InfoNCELoss</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g_projs</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">InfoNCELoss</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="n">g_projs</span><span class="p">)</span>
+</code></pre></div>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span>
+<span class="normal">860</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g_projs</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    g_projs: Tuple</span>
+<span class="sd">        Tuple with the two tensors corresponding to the output of the two</span>
+<span class="sd">        projection heads, as described &#39;SAINT: Improved Neural Networks</span>
+<span class="sd">        for Tabular Data via Row Attention and Contrastive Pre-Training&#39;.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import torch</span>
+<span class="sd">    &gt;&gt;&gt; from pytorch_widedeep.losses import InfoNCELoss</span>
+<span class="sd">    &gt;&gt;&gt; g_projs = (torch.rand(5, 5), torch.rand(5, 5))</span>
+<span class="sd">    &gt;&gt;&gt; loss = InfoNCELoss()</span>
+<span class="sd">    &gt;&gt;&gt; res = loss(g_projs)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">z</span><span class="p">,</span> <span class="n">z_</span> <span class="o">=</span> <span class="n">g_projs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">g_projs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">norm_z</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">norm_z_</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">z_</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">logits</span> <span class="o">=</span> <span class="p">(</span><span class="n">norm_z</span> <span class="o">@</span> <span class="n">norm_z_</span><span class="o">.</span><span class="n">t</span><span class="p">())</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span>
+    <span class="n">logits_</span> <span class="o">=</span> <span class="p">(</span><span class="n">norm_z_</span> <span class="o">@</span> <span class="n">norm_z</span><span class="o">.</span><span class="n">t</span><span class="p">())</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span>
+
+    <span class="c1"># the target/labels are the entries on the diagonal</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">norm_z</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">norm_z</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span>
+    <span class="n">loss_</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">logits_</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">loss</span> <span class="o">+</span> <span class="n">loss_</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="pytorch_widedeep.losses.DenoisingLoss" class="doc doc-heading">
+        <span class="doc doc-object-name doc-class-name">DenoisingLoss</span>
+
+
+<a href="#pytorch_widedeep.losses.DenoisingLoss" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">DenoisingLoss</span><span class="p">(</span>
+    <span class="n">lambda_cat</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lambda_cont</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span>
+<span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents first">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+
+  
+      <p>Denoising Loss. Loss applied during the Contrastive Denoising Self
+Supervised Pre-training routine available in this library</p>
+<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: This loss is in principle not exposed to
+ the user, as it is used internally in the library, but it is included
+ here for completion.</p>
+<p>See <a href="https://arxiv.org/abs/2106.01342">SAINT: Improved Neural Networks for Tabular Data via Row Attention
+and Contrastive Pre-Training</a> and
+references therein</p>
+<h4 id="pytorch_widedeep.losses.DenoisingLoss--parameters">Parameters:<a class="headerlink" href="#pytorch_widedeep.losses.DenoisingLoss--parameters" title="Permanent link">&para;</a></h4>
+<p>lambda_cat: float, default = 1.
+    Multiplicative factor that will be applied to loss associated to the
+    categorical features
+lambda_cont: float, default = 1.
+    Multiplicative factor that will be applied to loss associated to the
+    continuous features
+reduction: str, default = "mean"
+    Loss reduction method</p>
+
+
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">887</span>
+<span class="normal">888</span>
+<span class="normal">889</span>
+<span class="normal">890</span>
+<span class="normal">891</span>
+<span class="normal">892</span>
+<span class="normal">893</span>
+<span class="normal">894</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">lambda_cat</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">lambda_cont</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span>
+<span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">DenoisingLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">lambda_cat</span> <span class="o">=</span> <span class="n">lambda_cat</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">lambda_cont</span> <span class="o">=</span> <span class="n">lambda_cont</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.losses.DenoisingLoss.forward" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">forward</span>
+
+
+<a href="#pytorch_widedeep.losses.DenoisingLoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="n">x_cat_and_cat_</span><span class="p">,</span> <span class="n">x_cont_and_cont_</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b>x_cat_and_cat_</b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>, <span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]], <span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>, <span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]]]</code>)
+        – <p>Tuple of tensors containing the raw input features and their
+encodings, referred in the SAINT paper as <span class="arithmatex">\(x\)</span> and <span class="arithmatex">\(x''\)</span>
+respectively. If one denoising MLP is used per categorical
+feature <code>x_cat_and_cat_</code> will be a list of tuples, one per
+categorical feature</p>
+      </li>
+      <li class="field-body">
+        <b>x_cont_and_cont_</b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>, <span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]], <span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>, <span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]]]</code>)
+        – <p>same as <code>x_cat_and_cat_</code> but for continuous columns</p>
+      </li>
+  </ul>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">DenoisingLoss</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_cat_and_cat_</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">(),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_cont_and_cont_</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">DenoisingLoss</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="n">x_cat_and_cat_</span><span class="p">,</span> <span class="n">x_cont_and_cont_</span><span class="p">)</span>
+</code></pre></div>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">896</span>
+<span class="normal">897</span>
+<span class="normal">898</span>
+<span class="normal">899</span>
+<span class="normal">900</span>
+<span class="normal">901</span>
+<span class="normal">902</span>
+<span class="normal">903</span>
+<span class="normal">904</span>
+<span class="normal">905</span>
+<span class="normal">906</span>
+<span class="normal">907</span>
+<span class="normal">908</span>
+<span class="normal">909</span>
+<span class="normal">910</span>
+<span class="normal">911</span>
+<span class="normal">912</span>
+<span class="normal">913</span>
+<span class="normal">914</span>
+<span class="normal">915</span>
+<span class="normal">916</span>
+<span class="normal">917</span>
+<span class="normal">918</span>
+<span class="normal">919</span>
+<span class="normal">920</span>
+<span class="normal">921</span>
+<span class="normal">922</span>
+<span class="normal">923</span>
+<span class="normal">924</span>
+<span class="normal">925</span>
+<span class="normal">926</span>
+<span class="normal">927</span>
+<span class="normal">928</span>
+<span class="normal">929</span>
+<span class="normal">930</span>
+<span class="normal">931</span>
+<span class="normal">932</span>
+<span class="normal">933</span>
+<span class="normal">934</span>
+<span class="normal">935</span>
+<span class="normal">936</span>
+<span class="normal">937</span>
+<span class="normal">938</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">x_cat_and_cat_</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span>
+    <span class="p">],</span>
+    <span class="n">x_cont_and_cont_</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span>
+    <span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x_cat_and_cat_: tuple of Tensors or lists of tuples</span>
+<span class="sd">        Tuple of tensors containing the raw input features and their</span>
+<span class="sd">        encodings, referred in the SAINT paper as $x$ and $x&#39;&#39;$</span>
+<span class="sd">        respectively. If one denoising MLP is used per categorical</span>
+<span class="sd">        feature `x_cat_and_cat_` will be a list of tuples, one per</span>
+<span class="sd">        categorical feature</span>
+<span class="sd">    x_cont_and_cont_: tuple of Tensors or lists of tuples</span>
+<span class="sd">        same as `x_cat_and_cat_` but for continuous columns</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import torch</span>
+<span class="sd">    &gt;&gt;&gt; from pytorch_widedeep.losses import DenoisingLoss</span>
+<span class="sd">    &gt;&gt;&gt; x_cat_and_cat_ = (torch.empty(3).random_(3).long(), torch.randn(3, 3))</span>
+<span class="sd">    &gt;&gt;&gt; x_cont_and_cont_ = (torch.randn(3, 1), torch.randn(3, 1))</span>
+<span class="sd">    &gt;&gt;&gt; loss = DenoisingLoss()</span>
+<span class="sd">    &gt;&gt;&gt; res = loss(x_cat_and_cat_, x_cont_and_cont_)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">loss_cat</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cat_loss</span><span class="p">(</span><span class="n">x_cat_and_cat_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x_cat_and_cat_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">loss_cont</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_cont_loss</span><span class="p">(</span><span class="n">x_cont_and_cont_</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x_cont_and_cont_</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_cat</span> <span class="o">*</span> <span class="n">loss_cat</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_cont</span> <span class="o">*</span> <span class="n">loss_cont</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="pytorch_widedeep.losses.EncoderDecoderLoss" class="doc doc-heading">
+        <span class="doc doc-object-name doc-class-name">EncoderDecoderLoss</span>
+
+
+<a href="#pytorch_widedeep.losses.EncoderDecoderLoss" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">EncoderDecoderLoss</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mf">1e-09</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents first">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+
+  
+      <p>'<em>Standard</em>' Encoder Decoder Loss. Loss applied during the Endoder-Decoder
+ Self-Supervised Pre-Training routine available in this library</p>
+<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: This loss is in principle not exposed to
+ the user, as it is used internally in the library, but it is included
+ here for completion.</p>
+<p>The implementation of this lost is based on that at the
+<a href="https://github.com/dreamquark-ai/tabnet">tabnet repo</a>, which is in itself an
+adaptation of that in the original paper <a href="https://arxiv.org/abs/1908.07442">TabNet: Attentive
+Interpretable Tabular Learning</a>.</p>
+<h4 id="pytorch_widedeep.losses.EncoderDecoderLoss--parameters">Parameters:<a class="headerlink" href="#pytorch_widedeep.losses.EncoderDecoderLoss--parameters" title="Permanent link">&para;</a></h4>
+<p>eps: float
+    Simply a small number to avoid dividing by zero</p>
+
+
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">986</span>
+<span class="normal">987</span>
+<span class="normal">988</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-9</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">EncoderDecoderLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.losses.EncoderDecoderLoss.forward" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">forward</span>
+
+
+<a href="#pytorch_widedeep.losses.EncoderDecoderLoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="n">x_true</span><span class="p">,</span> <span class="n">x_pred</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b>x_true</b>
+            (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
+        – <p>Embeddings of the input data</p>
+      </li>
+      <li class="field-body">
+        <b>x_pred</b>
+            (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
+        – <p>Reconstructed embeddings</p>
+      </li>
+      <li class="field-body">
+        <b>mask</b>
+            (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
+        – <p>Mask with 1s indicated that the reconstruction, and therefore the
+loss, is based on those features.</p>
+      </li>
+  </ul>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">EncoderDecoderLoss</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_true</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_pred</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">EncoderDecoderLoss</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="n">x_true</span><span class="p">,</span> <span class="n">x_pred</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+</code></pre></div>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 990</span>
+<span class="normal"> 991</span>
+<span class="normal"> 992</span>
+<span class="normal"> 993</span>
+<span class="normal"> 994</span>
+<span class="normal"> 995</span>
+<span class="normal"> 996</span>
+<span class="normal"> 997</span>
+<span class="normal"> 998</span>
+<span class="normal"> 999</span>
+<span class="normal">1000</span>
+<span class="normal">1001</span>
+<span class="normal">1002</span>
+<span class="normal">1003</span>
+<span class="normal">1004</span>
+<span class="normal">1005</span>
+<span class="normal">1006</span>
+<span class="normal">1007</span>
+<span class="normal">1008</span>
+<span class="normal">1009</span>
+<span class="normal">1010</span>
+<span class="normal">1011</span>
+<span class="normal">1012</span>
+<span class="normal">1013</span>
+<span class="normal">1014</span>
+<span class="normal">1015</span>
+<span class="normal">1016</span>
+<span class="normal">1017</span>
+<span class="normal">1018</span>
+<span class="normal">1019</span>
+<span class="normal">1020</span>
+<span class="normal">1021</span>
+<span class="normal">1022</span>
+<span class="normal">1023</span>
+<span class="normal">1024</span>
+<span class="normal">1025</span>
+<span class="normal">1026</span>
+<span class="normal">1027</span>
+<span class="normal">1028</span>
+<span class="normal">1029</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_true</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">x_pred</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x_true: Tensor</span>
+<span class="sd">        Embeddings of the input data</span>
+<span class="sd">    x_pred: Tensor</span>
+<span class="sd">        Reconstructed embeddings</span>
+<span class="sd">    mask: Tensor</span>
+<span class="sd">        Mask with 1s indicated that the reconstruction, and therefore the</span>
+<span class="sd">        loss, is based on those features.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import torch</span>
+<span class="sd">    &gt;&gt;&gt; from pytorch_widedeep.losses import EncoderDecoderLoss</span>
+<span class="sd">    &gt;&gt;&gt; x_true = torch.rand(3, 3)</span>
+<span class="sd">    &gt;&gt;&gt; x_pred = torch.rand(3, 3)</span>
+<span class="sd">    &gt;&gt;&gt; mask = torch.empty(3, 3).random_(2)</span>
+<span class="sd">    &gt;&gt;&gt; loss = EncoderDecoderLoss()</span>
+<span class="sd">    &gt;&gt;&gt; res = loss(x_true, x_pred, mask)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">errors</span> <span class="o">=</span> <span class="n">x_pred</span> <span class="o">-</span> <span class="n">x_true</span>
+
+    <span class="n">reconstruction_errors</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">errors</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="n">x_true_means</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x_true</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">x_true_means</span><span class="p">[</span><span class="n">x_true_means</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">x_true_stds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">x_true</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">x_true_stds</span><span class="p">[</span><span class="n">x_true_stds</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_true_means</span><span class="p">[</span><span class="n">x_true_stds</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">features_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">reconstruction_errors</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">x_true_stds</span><span class="p">)</span>
+    <span class="n">nb_reconstructed_variables</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">features_loss_norm</span> <span class="o">=</span> <span class="n">features_loss</span> <span class="o">/</span> <span class="p">(</span><span class="n">nb_reconstructed_variables</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">features_loss_norm</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">loss</span>
 </code></pre></div></td></tr></table></div>
       </details>
   </div>

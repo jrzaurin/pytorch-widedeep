@@ -1119,9 +1119,9 @@ training process.</p>
       <li class="field-body">
         <b>objective</b>
             (<code>str</code>)
-        – <p>Defines the objective, loss or cost function.</p>
+        – <p>Defines the objective, loss or cost function. <br/></p>
 <p>Param aliases: <code>loss_function</code>, <code>loss_fn</code>, <code>loss</code>,
-<code>cost_function</code>, <code>cost_fn</code>, <code>cost</code></p>
+<code>cost_function</code>, <code>cost_fn</code>, <code>cost</code>. <br/></p>
 <p>Possible values are:</p>
 <ul>
 <li>
@@ -1541,11 +1541,10 @@ predefined dataloaders are in <code>pytorch-widedeep.dataloaders</code>.If
       <li class="field-body">
         <b>finetune</b>
             (<code>bool</code>)
-        – <p>param alias: <code>warmup</code></p>
-<p>fine-tune individual model components. This functionality can also
-be used to 'warm-up' individual components before the joined
-training starts, and hence its alias. See the Examples folder in
-the repo for more details</p>
+        – <p>fine-tune individual model components. This functionality can also
+be used to 'warm-up' (and hence the alias <code>warmup</code>) individual
+components before the joined training starts, and hence its
+alias. See the Examples folder in the repo for more details</p>
 <p><code>pytorch_widedeep</code> implements 3 fine-tune routines.</p>
 <ul>
 <li>fine-tune all trainable layers at once. This routine is
@@ -1568,7 +1567,17 @@ Felbo et al., 2017 <a href="https://arxiv.org/abs/1708.00524">DeepEmoji paper</a
 <a href="https://arxiv.org/abs/1801.06146&gt;">ULMfit paper</a>.</li>
 </ul>
 <p>For details on how these routines work, please see the Examples
-section in this documentation and the Examples folder in the repo.</p>
+section in this documentation and the Examples folder in the repo. <br/>
+Param Alias: <code>warmup</code></p>
+      </li>
+      <li class="field-body">
+        <b>with_lds</b>
+            (<code>bool</code>)
+        – <p>Boolean indicating if Label Distribution Smoothing will be used. <br/>
+information_source: <strong>NOTE</strong>: We consider this feature absolutely
+experimental and we recommend the user to not use it unless the
+corresponding <a href="https://arxiv.org/abs/2102.09554">publication</a> is
+well understood</p>
       </li>
   </ul>
 
@@ -1587,16 +1596,27 @@ Please, see the pytorch
 for details.</p>
 </li>
 <li>
-<p><strong>Label Distribution Smoothing related parameters</strong>:<br/>
-see the source code at <code>pytorch_widedeep._wd_dataset</code> for some details</p>
+<p><strong>Label Distribution Smoothing related parameters</strong>:<br/></p>
 </li>
+<li>
+<p>lds_kernel (<code>Literal['gaussian', 'triang', 'laplace']</code>):
+choice of kernel for Label Distribution Smoothing</p>
+</li>
+<li>lds_ks (<code>int</code>):
+LDS kernel window size</li>
+<li>lds_sigma (<code>float</code>):
+standard deviation of ['gaussian','laplace'] kernel for LDS</li>
+<li>lds_granularity (<code>int</code>):
+number of bins in histogram used in LDS to count occurence of sample values</li>
+<li>lds_reweight (<code>bool</code>):
+option to reweight bin frequency counts in LDS</li>
+<li>lds_y_max (<code>Optional[float]</code>):
+option to restrict LDS bins by upper label limit</li>
+<li>lds_y_min (<code>Optional[float]</code>):
+option to restrict LDS bins by lower label limit</li>
 </ul>
-<blockquote>
-<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: We consider this feature absolutely
-experimental and we recommend the user to not use it unless the
-corresponding <a href="https://arxiv.org/abs/2102.09554">publication</a> is
-well understood</p>
-</blockquote>
+<p>See <code>pytorch_widedeep.trainer._wd_dataset</code> for more details on
+the implications of these parameters</p>
 <ul>
 <li>
 <p><strong>Finetune related parameters</strong>:<br/>
@@ -1903,7 +1923,24 @@ folder in the repo</p>
 <span class="normal">513</span>
 <span class="normal">514</span>
 <span class="normal">515</span>
-<span class="normal">516</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Alias</span><span class="p">(</span><span class="s2">&quot;finetune&quot;</span><span class="p">,</span> <span class="s2">&quot;warmup&quot;</span><span class="p">)</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Alias</span><span class="p">(</span><span class="s2">&quot;finetune&quot;</span><span class="p">,</span> <span class="s2">&quot;warmup&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1965,12 +2002,10 @@ folder in the repo</p>
 <span class="sd">        predefined dataloaders are in `pytorch-widedeep.dataloaders`.If</span>
 <span class="sd">        `None`, a standard torch `DataLoader` is used.</span>
 <span class="sd">    finetune: bool, default=False</span>
-<span class="sd">        param alias: `warmup`</span>
-
 <span class="sd">        fine-tune individual model components. This functionality can also</span>
-<span class="sd">        be used to &#39;warm-up&#39; individual components before the joined</span>
-<span class="sd">        training starts, and hence its alias. See the Examples folder in</span>
-<span class="sd">        the repo for more details</span>
+<span class="sd">        be used to &#39;warm-up&#39; (and hence the alias `warmup`) individual</span>
+<span class="sd">        components before the joined training starts, and hence its</span>
+<span class="sd">        alias. See the Examples folder in the repo for more details</span>
 
 <span class="sd">        `pytorch_widedeep` implements 3 fine-tune routines.</span>
 
@@ -1994,7 +2029,14 @@ folder in the repo</p>
 <span class="sd">          [ULMfit paper](https://arxiv.org/abs/1801.06146&gt;).</span>
 
 <span class="sd">        For details on how these routines work, please see the Examples</span>
-<span class="sd">        section in this documentation and the Examples folder in the repo.</span>
+<span class="sd">        section in this documentation and the Examples folder in the repo. &lt;br/&gt;</span>
+<span class="sd">        Param Alias: `warmup`</span>
+<span class="sd">    with_lds: bool, default=False</span>
+<span class="sd">        Boolean indicating if Label Distribution Smoothing will be used. &lt;br/&gt;</span>
+<span class="sd">        information_source: **NOTE**: We consider this feature absolutely</span>
+<span class="sd">        experimental and we recommend the user to not use it unless the</span>
+<span class="sd">        corresponding [publication](https://arxiv.org/abs/2102.09554) is</span>
+<span class="sd">        well understood</span>
 
 <span class="sd">    Other Parameters</span>
 <span class="sd">    ----------------</span>
@@ -2008,12 +2050,24 @@ folder in the repo</p>
 <span class="sd">            for details.</span>
 
 <span class="sd">        - **Label Distribution Smoothing related parameters**:&lt;br/&gt;</span>
-<span class="sd">            see the source code at `pytorch_widedeep._wd_dataset` for some details</span>
 
-<span class="sd">                &gt;:information_source: **NOTE**: We consider this feature absolutely</span>
-<span class="sd">                experimental and we recommend the user to not use it unless the</span>
-<span class="sd">                corresponding [publication](https://arxiv.org/abs/2102.09554) is</span>
-<span class="sd">                well understood</span>
+<span class="sd">            - lds_kernel (`Literal[&#39;gaussian&#39;, &#39;triang&#39;, &#39;laplace&#39;]`):</span>
+<span class="sd">                choice of kernel for Label Distribution Smoothing</span>
+<span class="sd">            - lds_ks (`int`):</span>
+<span class="sd">                LDS kernel window size</span>
+<span class="sd">            - lds_sigma (`float`):</span>
+<span class="sd">                standard deviation of [&#39;gaussian&#39;,&#39;laplace&#39;] kernel for LDS</span>
+<span class="sd">            - lds_granularity (`int`):</span>
+<span class="sd">                number of bins in histogram used in LDS to count occurence of sample values</span>
+<span class="sd">            - lds_reweight (`bool`):</span>
+<span class="sd">                option to reweight bin frequency counts in LDS</span>
+<span class="sd">            - lds_y_max (`Optional[float]`):</span>
+<span class="sd">                option to restrict LDS bins by upper label limit</span>
+<span class="sd">            - lds_y_min (`Optional[float]`):</span>
+<span class="sd">                option to restrict LDS bins by lower label limit</span>
+
+<span class="sd">            See `pytorch_widedeep.trainer._wd_dataset` for more details on</span>
+<span class="sd">            the implications of these parameters</span>
 
 <span class="sd">        - **Finetune related parameters**:&lt;br/&gt;</span>
 <span class="sd">            see the source code at `pytorch_widedeep._finetune`. Namely, these are:</span>
@@ -2251,24 +2305,7 @@ the <code>Trainer</code> is instantiated</p>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span>
-<span class="normal">527</span>
-<span class="normal">528</span>
-<span class="normal">529</span>
-<span class="normal">530</span>
-<span class="normal">531</span>
-<span class="normal">532</span>
-<span class="normal">533</span>
-<span class="normal">534</span>
-<span class="normal">535</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">535</span>
 <span class="normal">536</span>
 <span class="normal">537</span>
 <span class="normal">538</span>
@@ -2305,7 +2342,24 @@ the <code>Trainer</code> is instantiated</p>
 <span class="normal">569</span>
 <span class="normal">570</span>
 <span class="normal">571</span>
-<span class="normal">572</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2460,24 +2514,7 @@ values for each sample.</li>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span>
-<span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span>
-<span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">591</span>
 <span class="normal">592</span>
 <span class="normal">593</span>
 <span class="normal">594</span>
@@ -2555,7 +2592,24 @@ values for each sample.</li>
 <span class="normal">666</span>
 <span class="normal">667</span>
 <span class="normal">668</span>
-<span class="normal">669</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_uncertainty</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_uncertainty</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2736,24 +2790,7 @@ the <code>Trainer</code> is instantiated</p>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
-<span class="normal">678</span>
-<span class="normal">679</span>
-<span class="normal">680</span>
-<span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
-<span class="normal">688</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">688</span>
 <span class="normal">689</span>
 <span class="normal">690</span>
 <span class="normal">691</span>
@@ -2789,7 +2826,24 @@ the <code>Trainer</code> is instantiated</p>
 <span class="normal">721</span>
 <span class="normal">722</span>
 <span class="normal">723</span>
-<span class="normal">724</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
+<span class="normal">724</span>
+<span class="normal">725</span>
+<span class="normal">726</span>
+<span class="normal">727</span>
+<span class="normal">728</span>
+<span class="normal">729</span>
+<span class="normal">730</span>
+<span class="normal">731</span>
+<span class="normal">732</span>
+<span class="normal">733</span>
+<span class="normal">734</span>
+<span class="normal">735</span>
+<span class="normal">736</span>
+<span class="normal">737</span>
+<span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2894,24 +2948,7 @@ is set to <code>True</code></p>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">726</span>
-<span class="normal">727</span>
-<span class="normal">728</span>
-<span class="normal">729</span>
-<span class="normal">730</span>
-<span class="normal">731</span>
-<span class="normal">732</span>
-<span class="normal">733</span>
-<span class="normal">734</span>
-<span class="normal">735</span>
-<span class="normal">736</span>
-<span class="normal">737</span>
-<span class="normal">738</span>
-<span class="normal">739</span>
-<span class="normal">740</span>
-<span class="normal">741</span>
-<span class="normal">742</span>
-<span class="normal">743</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">743</span>
 <span class="normal">744</span>
 <span class="normal">745</span>
 <span class="normal">746</span>
@@ -2954,7 +2991,24 @@ is set to <code>True</code></p>
 <span class="normal">783</span>
 <span class="normal">784</span>
 <span class="normal">785</span>
-<span class="normal">786</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">explain</span><span class="p">(</span>
+<span class="normal">786</span>
+<span class="normal">787</span>
+<span class="normal">788</span>
+<span class="normal">789</span>
+<span class="normal">790</span>
+<span class="normal">791</span>
+<span class="normal">792</span>
+<span class="normal">793</span>
+<span class="normal">794</span>
+<span class="normal">795</span>
+<span class="normal">796</span>
+<span class="normal">797</span>
+<span class="normal">798</span>
+<span class="normal">799</span>
+<span class="normal">800</span>
+<span class="normal">801</span>
+<span class="normal">802</span>
+<span class="normal">803</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">explain</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">save_step_masks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -3080,24 +3134,7 @@ model's state dictionary</p>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">788</span>
-<span class="normal">789</span>
-<span class="normal">790</span>
-<span class="normal">791</span>
-<span class="normal">792</span>
-<span class="normal">793</span>
-<span class="normal">794</span>
-<span class="normal">795</span>
-<span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span>
-<span class="normal">799</span>
-<span class="normal">800</span>
-<span class="normal">801</span>
-<span class="normal">802</span>
-<span class="normal">803</span>
-<span class="normal">804</span>
-<span class="normal">805</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">805</span>
 <span class="normal">806</span>
 <span class="normal">807</span>
 <span class="normal">808</span>
@@ -3141,7 +3178,24 @@ model's state dictionary</p>
 <span class="normal">846</span>
 <span class="normal">847</span>
 <span class="normal">848</span>
-<span class="normal">849</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span>
+<span class="normal">860</span>
+<span class="normal">861</span>
+<span class="normal">862</span>
+<span class="normal">863</span>
+<span class="normal">864</span>
+<span class="normal">865</span>
+<span class="normal">866</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">save_state_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>

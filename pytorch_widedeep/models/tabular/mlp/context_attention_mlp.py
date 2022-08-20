@@ -88,11 +88,8 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
     ----------
     cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    attention_blks: nn.Sequential
+    encoder: nn.Module
         Sequence of attention encoders.
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -181,6 +178,9 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
 
     @property
     def output_dim(self) -> int:
+        r"""The output dimension of the model. This is a required property
+        neccesary to build the `WideDeep` class
+        """
         return (
             self.input_dim
             if self.with_cls_token

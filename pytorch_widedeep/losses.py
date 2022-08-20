@@ -798,14 +798,18 @@ class HuberLoss(nn.Module):
 
 
 class InfoNCELoss(nn.Module):
-    r"""InfoNCE Loss
+    r"""InfoNCE Loss. Loss applied during the Contrastive Denoising Self
+    Supervised Pre-training routine available in this library
 
-    See `SAINT: Improved Neural Networks for Tabular Data via Row Attention
-    and Contrastive Pre-Training <https://arxiv.org/abs/2106.01342>`_ and
+    :information_source: **NOTE**: This loss is in principle not exposed to
+     the user, as it is used internally in the library, but it is included
+     here for completion.
+
+    See [SAINT: Improved Neural Networks for Tabular Data via Row Attention
+    and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342) and
     references therein
 
-    Partially inspired by the code in this `repo
-    <https://github.com/RElbers/info-nce-pytorch>`_
+    Partially inspired by the code in this [repo](https://github.com/RElbers/info-nce-pytorch)
 
     Parameters:
     -----------
@@ -857,10 +861,15 @@ class InfoNCELoss(nn.Module):
 
 
 class DenoisingLoss(nn.Module):
-    r"""Denoising Loss
+    r"""Denoising Loss. Loss applied during the Contrastive Denoising Self
+    Supervised Pre-training routine available in this library
 
-    See `SAINT: Improved Neural Networks for Tabular Data via Row Attention
-    and Contrastive Pre-Training <https://arxiv.org/abs/2106.01342>`_ and
+    :information_source: **NOTE**: This loss is in principle not exposed to
+     the user, as it is used internally in the library, but it is included
+     here for completion.
+
+    See [SAINT: Improved Neural Networks for Tabular Data via Row Attention
+    and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342) and
     references therein
 
     Parameters:
@@ -898,12 +907,12 @@ class DenoisingLoss(nn.Module):
         ----------
         x_cat_and_cat_: tuple of Tensors or lists of tuples
             Tuple of tensors containing the raw input features and their
-            encodings, referred in the SAINT paper as :math:x` and :math:x''`
+            encodings, referred in the SAINT paper as $x$ and $x''$
             respectively. If one denoising MLP is used per categorical
-            feature 'x_cat_and_cat_' will be a list of tuples, one per
+            feature `x_cat_and_cat_` will be a list of tuples, one per
             categorical feature
         x_cont_and_cont_: tuple of Tensors or lists of tuples
-            same as 'x_cat_and_cat_' but for continuous columns
+            same as `x_cat_and_cat_` but for continuous columns
 
         Examples
         --------
@@ -928,7 +937,9 @@ class DenoisingLoss(nn.Module):
 
         return self.lambda_cat * loss_cat + self.lambda_cont * loss_cont
 
-    def _compute_cat_loss(self, x_cat_and_cat_):
+    def _compute_cat_loss(
+        self, x_cat_and_cat_: Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
+    ) -> Tensor:
 
         loss_cat = torch.tensor(0.0)
         if isinstance(x_cat_and_cat_, list):
@@ -940,7 +951,7 @@ class DenoisingLoss(nn.Module):
 
         return loss_cat
 
-    def _compute_cont_loss(self, x_cont_and_cont_):
+    def _compute_cont_loss(self, x_cont_and_cont_) -> Tensor:
 
         loss_cont = torch.tensor(0.0)
         if isinstance(x_cont_and_cont_, list):
@@ -954,12 +965,17 @@ class DenoisingLoss(nn.Module):
 
 
 class EncoderDecoderLoss(nn.Module):
-    r"""Loss applied for the Endoder-Decoder Self Supervised pretraining process
+    r"""'_Standard_' Encoder Decoder Loss. Loss applied during the Endoder-Decoder
+     Self-Supervised Pre-Training routine available in this library
+
+    :information_source: **NOTE**: This loss is in principle not exposed to
+     the user, as it is used internally in the library, but it is included
+     here for completion.
 
     The implementation of this lost is based on that at the
-    https://github.com/dreamquark-ai/tabnet repo, which is in itself an
-    adaptation of that in the original TabNet paper: `TabNet: Attentive
-    Interpretable Tabular Learning <https://arxiv.org/abs/1908.07442>`_.
+    [tabnet repo](https://github.com/dreamquark-ai/tabnet), which is in itself an
+    adaptation of that in the original paper [TabNet: Attentive
+    Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442).
 
     Parameters:
     -----------

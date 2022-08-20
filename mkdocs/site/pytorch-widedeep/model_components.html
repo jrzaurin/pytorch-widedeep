@@ -1203,7 +1203,9 @@
 <p>This module contains the models that can be used as the four main components
 that will comprise a Wide and Deep model (<code>wide</code>, <code>deeptabular</code>,
 <code>deeptext</code>, <code>deepimage</code>), as well as the <code>WideDeep</code> "constructor"
-class. Note that each of the four components can be used independently.</p>
+class. Note that each of the four components can be used independently. It
+also contains all the documentation for the models that can be used for
+self-supervised pre-training with tabular data.</p>
 
 
 <div class="doc doc-object doc-class">
@@ -1468,16 +1470,10 @@ LIN -&gt; ACT]</code></p>
         – <p>This is the module that processes the categorical and continuous columns</p>
       </li>
       <li class="field-body">
-        <b>tab_mlp</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Sequential">Sequential</span></code>)
+        <b>encoder</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>mlp model that will receive the concatenation of the embeddings and
 the continuous columns</p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -1496,7 +1492,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/tab_mlp.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 94</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
 <span class="normal"> 95</span>
 <span class="normal"> 96</span>
 <span class="normal"> 97</span>
@@ -1547,10 +1546,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">145</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1620,6 +1616,44 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.models.tabular.mlp.tab_mlp.TabMlp.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.tabular.mlp.tab_mlp.TabMlp.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/tab_mlp.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
 
 
   </div>
@@ -1658,8 +1692,7 @@ an encoder itself).</p>
 <p>This class is designed to be used with the <code>EncoderDecoderTrainer</code> when
 using self-supervised pre-training (see the corresponding section in the
 docs). The <code>TabMlpDecoder</code> will receive the output from the MLP
-and '<em>reconstruct</em>' the embeddings in the embeddings layer in the
-<code>TabMlp</code> model.</p>
+and '<em>reconstruct</em>' the embeddings.</p>
 
   <p>Parameters:</p>
   <ul>
@@ -1728,7 +1761,9 @@ LIN -&gt; ACT]</code></p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/tab_mlp.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">215</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
 <span class="normal">216</span>
 <span class="normal">217</span>
 <span class="normal">218</span>
@@ -1754,9 +1789,7 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
@@ -1993,23 +2026,17 @@ LIN -&gt; ACT]</code></p>
         – <p>This is the module that processes the categorical and continuous columns</p>
       </li>
       <li class="field-body">
-        <b>tab_resnet_blks</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Sequential">Sequential</span></code>)
+        <b>encoder</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>deep dense Resnet model that will receive the concatenation of the
 embeddings and the continuous columns</p>
       </li>
       <li class="field-body">
-        <b>tab_resnet_mlp</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Sequential">Sequential</span></code>)
+        <b>mlp</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>if <code>mlp_hidden_dims</code> is <code>True</code>, this attribute will be an mlp
 model that will receive the results of the concatenation of the
 embeddings and the continuous columns -- if present --.</p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -2028,7 +2055,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/resnet/tab_resnet.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">115</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
@@ -2102,10 +2132,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">186</span>
 <span class="normal">187</span>
 <span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">189</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2198,6 +2225,54 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.models.tabular.resnet.tab_resnet.TabResnet.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.tabular.resnet.tab_resnet.TabResnet.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/tabular/resnet/tab_resnet.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
 
 
   </div>
@@ -2239,8 +2314,7 @@ considered an encoder itself)</p>
 <p>This class is designed to be used with the <code>EncoderDecoderTrainer</code> when
 using self-supervised pre-training (see the corresponding section in the
 docs). This class will receive the output from the ResNet blocks or the
-MLP(if present) and '<em>reconstruct</em>' the embeddings in the embeddings
-layer in the <code>TabResnet</code> model.</p>
+MLP(if present) and '<em>reconstruct</em>' the embeddings.</p>
 
   <p>Parameters:</p>
   <ul>
@@ -2340,7 +2414,8 @@ deep dense Resnet.</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/resnet/tab_resnet.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">278</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">277</span>
+<span class="normal">278</span>
 <span class="normal">279</span>
 <span class="normal">280</span>
 <span class="normal">281</span>
@@ -2393,8 +2468,7 @@ deep dense Resnet.</p>
 <span class="normal">328</span>
 <span class="normal">329</span>
 <span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">331</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">blocks_dims</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
@@ -2671,15 +2745,9 @@ steps</p>
         – <p>This is the module that processes the categorical and continuous columns</p>
       </li>
       <li class="field-body">
-        <b>tabnet_encoder</b>
+        <b>encoder</b>
             (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>the TabNet encoder. For details see the <a href="https://arxiv.org/abs/1908.07442">original publication</a>.</p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -2697,7 +2765,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/tabnet/tab_net.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">116</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
 <span class="normal">119</span>
@@ -2767,10 +2838,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">183</span>
 <span class="normal">184</span>
 <span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2859,6 +2927,46 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.models.tabular.tabnet.tab_net.TabNet.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.tabular.tabnet.tab_net.TabNet.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/tabular/tabnet/tab_net.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_dim</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
 
 
   </div>
@@ -2900,7 +3008,7 @@ considered an encoder itself)</p>
 using self-supervised pre-training (see the corresponding section in the
 docs). This class will receive the output from the <code>TabNet</code> encoder
 (i.e. the output from the so called 'steps') and '<em>reconstruct</em>' the
-embeddings from the embeddings layer in the <code>TabNet</code> encoder.</p>
+embeddings.</p>
 
   <p>Parameters:</p>
   <ul>
@@ -3270,15 +3378,9 @@ and <em>'gelu'</em> are supported.</p>
         – <p>This is the module that processes the categorical and continuous columns</p>
       </li>
       <li class="field-body">
-        <b>attention_blks</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Sequential">Sequential</span></code>)
+        <b>encoder</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>Sequence of attention encoders.</p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -3296,7 +3398,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/context_attention_mlp.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">109</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
 <span class="normal">110</span>
 <span class="normal">111</span>
 <span class="normal">112</span>
@@ -3355,10 +3460,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
-<span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3435,6 +3537,54 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.models.tabular.mlp.context_attention_mlp.ContextAttentionMLP.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.tabular.mlp.context_attention_mlp.ContextAttentionMLP.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/context_attention_mlp.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_cls_token</span>
+        <span class="k">else</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cat</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cont</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span><span class="p">)</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -3536,7 +3686,10 @@ with numerical (aka continuous) features that are also embedded. These
 are then passed through a series of attention blocks. Each attention
 block is comprised by what we would refer as a simplified
 <code>SelfAttentionEncoder</code>. See
-<code>pytorch_widedeep.models.tabular.mlp._attention_layers</code> for details.</p>
+<code>pytorch_widedeep.models.tabular.mlp._attention_layers</code> for details. The
+reason to use a simplified version of self attention is because we
+observed that the '<em>standard</em>' attention mechanism used in the
+TabTransformer has a notable tendency to overfit.</p>
 
   <p>Parameters:</p>
   <ul>
@@ -3676,15 +3829,9 @@ and <em>'gelu'</em> are supported.</p>
         – <p>This is the module that processes the categorical and continuous columns</p>
       </li>
       <li class="field-body">
-        <b>attention_blks</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Sequential">Sequential</span></code>)
+        <b>encoder</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>Sequence of attention encoders.</p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the WideDeep class</p>
       </li>
   </ul>
 
@@ -3858,6 +4005,54 @@ neccesary to build the WideDeep class</p>
 
 
 
+<h3 id="pytorch_widedeep.models.tabular.mlp.self_attention_mlp.SelfAttentionMLP.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.tabular.mlp.self_attention_mlp.SelfAttentionMLP.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the WideDeep class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/self_attention_mlp.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the WideDeep class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_cls_token</span>
+        <span class="k">else</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cat</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_cont</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span><span class="p">)</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
 <h3 id="pytorch_widedeep.models.tabular.mlp.self_attention_mlp.SelfAttentionMLP.attention_weights" class="doc doc-heading">
         <span class="doc doc-object-name doc-function-name">attention_weights</span>
 
@@ -3879,15 +4074,15 @@ number of features/columns in the dataset</p>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/self_attention_mlp.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
-<span class="normal">205</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
 <span class="k">def</span> <span class="nf">attention_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;List with the attention weights per block</span>
 
@@ -4144,20 +4339,14 @@ LIN -&gt; ACT]</code></p>
         – <p>This is the module that processes the categorical and continuous columns</p>
       </li>
       <li class="field-body">
-        <b>transformer_blks</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Sequential">Sequential</span></code>)
+        <b>encoder</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>Sequence of Transformer blocks</p>
       </li>
       <li class="field-body">
-        <b>transformer_mlp</b>
+        <b>mlp</b>
             (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>MLP component in the model</p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -4176,7 +4365,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_transformer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">136</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
 <span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
@@ -4274,10 +4466,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">231</span>
 <span class="normal">232</span>
 <span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4393,6 +4582,54 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.models.tabular.transformers.tab_transformer.TabTransformer.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.tabular.transformers.tab_transformer.TabTransformer.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_transformer.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -4677,20 +4914,14 @@ LIN -&gt; ACT]</code></p>
         – <p>This is the module that processes the categorical and continuous columns</p>
       </li>
       <li class="field-body">
-        <b>saint_blks</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Sequential">Sequential</span></code>)
+        <b>encoder</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>Sequence of SAINT-Transformer blocks</p>
       </li>
       <li class="field-body">
-        <b>saint_mlp</b>
+        <b>mlp</b>
             (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>MLP component in the model</p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -4709,7 +4940,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/saint.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
 <span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
@@ -4805,10 +5039,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">223</span>
 <span class="normal">224</span>
 <span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">226</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4922,6 +5153,54 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.models.tabular.transformers.saint.SAINT.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.tabular.transformers.saint.SAINT.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/saint.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -5264,20 +5543,14 @@ LIN -&gt; ACT]</code></p>
         – <p>This is the module that processes the categorical and continuous columns</p>
       </li>
       <li class="field-body">
-        <b>fttransformer_blks</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Sequential">Sequential</span></code>)
+        <b>encoder</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>Sequence of FTTransformer blocks</p>
       </li>
       <li class="field-body">
-        <b>fttransformer_mlp</b>
+        <b>mlp</b>
             (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>MLP component in the model</p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -5296,7 +5569,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/ft_transformer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">144</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
 <span class="normal">145</span>
 <span class="normal">146</span>
 <span class="normal">147</span>
@@ -5405,10 +5681,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">250</span>
 <span class="normal">251</span>
 <span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">253</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -5535,6 +5808,54 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.models.tabular.transformers.ft_transformer.FTTransformer.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.tabular.transformers.ft_transformer.FTTransformer.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/ft_transformer.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -5866,7 +6187,7 @@ LIN -&gt; ACT]</code></p>
         – <p>This is the module that processes the categorical and continuous columns</p>
       </li>
       <li class="field-body">
-        <b>perceiver_blks</b>
+        <b>encoder</b>
             (<code><span title="torch.nn">nn</span>.<span title="torch.nn.ModuleDict">ModuleDict</span></code>)
         – <p>ModuleDict with the Perceiver blocks</p>
       </li>
@@ -5876,15 +6197,9 @@ LIN -&gt; ACT]</code></p>
         – <p>Latents that will be used for prediction</p>
       </li>
       <li class="field-body">
-        <b>perceiver_mlp</b>
+        <b>mlp</b>
             (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>MLP component in the model</p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -5905,7 +6220,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_perceiver.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
 <span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span>
@@ -6005,10 +6323,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">259</span>
 <span class="normal">260</span>
 <span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -6126,6 +6441,54 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.models.tabular.transformers.tab_perceiver.TabPerceiver.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.tabular.transformers.tab_perceiver.TabPerceiver.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_perceiver.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -6494,20 +6857,14 @@ LIN -&gt; ACT]</code></p>
         – <p>This is the module that processes the categorical and continuous columns</p>
       </li>
       <li class="field-body">
-        <b>fastformer_blks</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Sequential">Sequential</span></code>)
+        <b>encoder</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>Sequence of FasFormer blocks.</p>
       </li>
       <li class="field-body">
-        <b>fastformer_mlp</b>
+        <b>mlp</b>
             (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>MLP component in the model</p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -6526,7 +6883,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_fastformer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
 <span class="normal">146</span>
@@ -6642,10 +7002,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">256</span>
 <span class="normal">257</span>
 <span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">259</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -6784,6 +7141,54 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+<h3 id="pytorch_widedeep.models.tabular.transformers.tab_fastformer.TabFastFormer.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.tabular.transformers.tab_fastformer.TabFastFormer.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_fastformer.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
 <h3 id="pytorch_widedeep.models.tabular.transformers.tab_fastformer.TabFastFormer.attention_weights" class="doc doc-heading">
         <span class="doc doc-object-name doc-function-name">attention_weights</span>
 
@@ -6852,16 +7257,15 @@ number of features/columns in the dataset</p>
 <p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: when we started developing the library we
  thought that combining Deep Learning architectures for tabular data, with
  CNN-based architectures (pretrained or not) for images and Transformer-based
- architectures for text would be an <em>'overkill'</em>(also, pretrained
+ architectures for text would be an <em>'overkill'</em>  (also, pretrained
  transformer-based models were not as readily available as they are today).
  Therefore, at that time we made the decision of including in the library
  simple RNN-based architectures for the text dataset. A lot has passed since
  then and it is our intention to integrate this library with the
- [Hugginface's Transformers library]
- (<a href="https://huggingface.co/docs/transformers/main/en/index">https://huggingface.co/docs/transformers/main/en/index</a>) in the near future.
- Nonetheless, note that it is still possible to use any custom model as the
- <code>deeptext</code> component using this library. Please, see the example section in
- this documentation for details</p>
+ <a href="https://huggingface.co/docs/transformers/main/en/index">Hugginface's Transformers library</a>
+ in the near future. Nonetheless, note that it is still possible to use any
+ custom model as the <code>deeptext</code> component using this library. Please, see the
+ example section in this documentation for details</p>
 
 
 <div class="doc doc-object doc-class">
@@ -7018,15 +7422,9 @@ LIN -&gt; ACT]</code></p>
       </li>
       <li class="field-body">
         <b>rnn_mlp</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Sequential">Sequential</span></code>)
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>Stack of dense layers on top of the RNN. This will only exists if
 <code>head_layers_dim</code> is not None</p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -7041,7 +7439,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/text/basic_rnn.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 88</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
 <span class="normal"> 89</span>
 <span class="normal"> 90</span>
 <span class="normal"> 91</span>
@@ -7130,10 +7531,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">174</span>
 <span class="normal">175</span>
 <span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">177</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -7240,6 +7638,54 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.models.text.basic_rnn.BasicRNN.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.text.basic_rnn.BasicRNN.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/text/basic_rnn.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">head_hidden_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnn_output_dim</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
 
 
 
@@ -7418,15 +7864,9 @@ LIN -&gt; ACT]</code></p>
       </li>
       <li class="field-body">
         <b>rnn_mlp</b>
-            (<code>nn.<span title="nn.Sequential">Sequential</span></code>)
+            (<code>nn.<span title="nn.Module">Module</span></code>)
         – <p>Stack of dense layers on top of the RNN. This will only exists if
 <code>head_layers_dim</code> is not <code>None</code></p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -7441,7 +7881,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/text/attentive_rnn.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 96</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
 <span class="normal"> 97</span>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
@@ -7506,10 +7949,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">158</span>
 <span class="normal">159</span>
 <span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">161</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -7617,14 +8057,14 @@ size and <span class="arithmatex">\(S\)</span> is the length of the sequence</p>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/models/text/attentive_rnn.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">182</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
 <span class="normal">183</span>
 <span class="normal">184</span>
 <span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
 <span class="k">def</span> <span class="nf">attention_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;List with the attention weights</span>
 
@@ -7809,15 +8249,9 @@ LIN -&gt; ACT]</code></p>
       </li>
       <li class="field-body">
         <b>rnn_mlp</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Sequential">Sequential</span></code>)
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>Stack of dense layers on top of the RNN. This will only exists if
 <code>head_layers_dim</code> is not <code>None</code></p>
-      </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
       </li>
   </ul>
 
@@ -7832,7 +8266,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/text/stacked_attentive_rnn.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 94</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
 <span class="normal"> 95</span>
 <span class="normal"> 96</span>
 <span class="normal"> 97</span>
@@ -7950,10 +8387,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">209</span>
 <span class="normal">210</span>
 <span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">212</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -8094,6 +8528,48 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+<h3 id="pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+
+<a href="#pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/text/stacked_attentive_rnn.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">head_hidden_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnn_output_dim</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
 <h3 id="pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN.attention_weights" class="doc doc-heading">
         <span class="doc doc-object-name doc-function-name">attention_weights</span>
 
@@ -8198,8 +8674,8 @@ architectures: <em>'resnet'</em>, <em>'shufflenet'</em>, <em>'resnext'</em>,
 used. Alternatively, since Torchvision 0.13 one can use pretrained
 models with different weigths. Therefore, <code>pretrained_model_setup</code> can
 also be dictionary with the name of the model and the weights (e.g.
-{'resnet50': ResNet50_Weights.DEFAULT} or
-{'resnet50': "IMAGENET1K_V2"}). Aliased as <code>pretrained_model_name</code>.</p>
+<code>{'resnet50': ResNet50_Weights.DEFAULT}</code> or
+<code>{'resnet50': "IMAGENET1K_V2"}</code>). <br/> Aliased as <code>pretrained_model_name</code>.</p>
       </li>
       <li class="field-body">
         <b>n_trainable</b>
@@ -8282,12 +8758,6 @@ LIN -&gt; ACT]</code></p>
             (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
         – <p>The pretrained model or Standard CNN plus the optional head</p>
       </li>
-      <li class="field-body">
-        <b>output_dim</b>
-            (<code>int</code>)
-        – <p>The output dimension of the model. This is a required attribute
-neccesary to build the <code>WideDeep</code> class</p>
-      </li>
   </ul>
 
 <p><strong>Examples:</strong></p>
@@ -8301,7 +8771,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/image/vision.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
 <span class="normal">127</span>
@@ -8347,10 +8820,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 <span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Alias</span><span class="p">(</span><span class="s2">&quot;pretrained_model_setup&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pretrained_model_name&quot;</span><span class="p">])</span>
+<span class="normal">170</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Alias</span><span class="p">(</span><span class="s2">&quot;pretrained_model_setup&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pretrained_model_name&quot;</span><span class="p">])</span>
 <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">pretrained_model_setup</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">WeightsEnum</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -8415,6 +8885,54 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.models.image.vision.Vision.output_dim" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.image.vision.Vision.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">output_dim</span><span class="p">()</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>The output dimension of the model. This is a required property
+neccesary to build the <code>WideDeep</code> class</p>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/models/image/vision.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;The output dimension of the model. This is a required property</span>
+<span class="sd">    neccesary to build the `WideDeep` class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">head_hidden_dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone_output_dim</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
 
 
   </div>
@@ -8459,6 +8977,11 @@ neccesary to build the <code>WideDeep</code> class</p>
   
       <p>Main collector class that combines all <code>wide</code>, <code>deeptabular</code>
 <code>deeptext</code> and <code>deepimage</code> models.</p>
+<p>Note that all models described so far in this library must be passed to
+the <code>WideDeep</code> class once constructed. This is because the models output
+the last layer before the prediction layer. Such prediction layer is
+added by the <code>WideDeep</code> class as it collects the components for every
+data mode.</p>
 <p>There are two options to combine these models that correspond to the
 two main architectures that <code>pytorch-widedeep</code> can build.</p>
 <ul>
@@ -8582,7 +9105,8 @@ See <a href="https://arxiv.org/abs/2102.09554">Delving into Deep Imbalanced Regr
 Distribution Smoothing. Please, see the docs for the <code>FDSLayer</code>.
 <br/>
 <img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: Feature Distribution Smoothing
-is available when using ONLY a <code>deeptabular</code> component
+is available when using <strong>ONLY</strong> a <code>deeptabular</code> component
+<br/>
 <img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: We consider this feature absolutely
 experimental and we recommend the user to not use it unless the
 corresponding <a href="https://arxiv.org/abs/2102.09554">publication</a> is
@@ -8612,14 +9136,7 @@ well understood</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/wide_deep.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">140</span>
 <span class="normal">141</span>
 <span class="normal">142</span>
 <span class="normal">143</span>
@@ -8683,7 +9200,14 @@ well understood</p>
 <span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
-<span class="normal">204</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">deeptabular</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -8818,6 +9342,10 @@ for details.</p>
  <code>WideDeep</code> is instantiated via the keyword arguments <code>fds_config</code>.</p>
 <p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: Feature Distribution Smoothing is
  available when using ONLY a <code>deeptabular</code> component</p>
+<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: We consider this feature absolutely
+experimental and we recommend the user to not use it unless the
+corresponding <a href="https://arxiv.org/abs/2102.09554">publication</a> is
+well understood</p>
 <p>The code here is based on the code at the
 <a href="https://github.com/YyzHarry/imbalanced-regression">official repo</a></p>
 
@@ -8992,7 +9520,12 @@ authors used a value of 10.</p>
 <span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
-<span class="normal">105</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">feature_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">granularity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
@@ -9019,6 +9552,11 @@ authors used a value of 10.</p>
 
 <span class="sd">    :information_source: **NOTE**: Feature Distribution Smoothing is</span>
 <span class="sd">     available when using ONLY a `deeptabular` component</span>
+
+<span class="sd">    :information_source: **NOTE**: We consider this feature absolutely</span>
+<span class="sd">    experimental and we recommend the user to not use it unless the</span>
+<span class="sd">    corresponding [publication](https://arxiv.org/abs/2102.09554) is</span>
+<span class="sd">    well understood</span>
 
 <span class="sd">    The code here is based on the code at the</span>
 <span class="sd">    [official repo](https://github.com/YyzHarry/imbalanced-regression)</span>

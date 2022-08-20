@@ -50,10 +50,10 @@ class Trainer(BaseTrainer):
     model: `WideDeep`
         An object of class `WideDeep`
     objective: str
-        Defines the objective, loss or cost function.
+        Defines the objective, loss or cost function. <br/>
 
         Param aliases: `loss_function`, `loss_fn`, `loss`,
-        `cost_function`, `cost_fn`, `cost`
+        `cost_function`, `cost_fn`, `cost`. <br/>
 
         Possible values are:
 
@@ -312,12 +312,10 @@ class Trainer(BaseTrainer):
             predefined dataloaders are in `pytorch-widedeep.dataloaders`.If
             `None`, a standard torch `DataLoader` is used.
         finetune: bool, default=False
-            param alias: `warmup`
-
             fine-tune individual model components. This functionality can also
-            be used to 'warm-up' individual components before the joined
-            training starts, and hence its alias. See the Examples folder in
-            the repo for more details
+            be used to 'warm-up' (and hence the alias `warmup`) individual
+            components before the joined training starts, and hence its
+            alias. See the Examples folder in the repo for more details
 
             `pytorch_widedeep` implements 3 fine-tune routines.
 
@@ -341,7 +339,14 @@ class Trainer(BaseTrainer):
               [ULMfit paper](https://arxiv.org/abs/1801.06146>).
 
             For details on how these routines work, please see the Examples
-            section in this documentation and the Examples folder in the repo.
+            section in this documentation and the Examples folder in the repo. <br/>
+            Param Alias: `warmup`
+        with_lds: bool, default=False
+            Boolean indicating if Label Distribution Smoothing will be used. <br/>
+            information_source: **NOTE**: We consider this feature absolutely
+            experimental and we recommend the user to not use it unless the
+            corresponding [publication](https://arxiv.org/abs/2102.09554) is
+            well understood
 
         Other Parameters
         ----------------
@@ -355,12 +360,24 @@ class Trainer(BaseTrainer):
                 for details.
 
             - **Label Distribution Smoothing related parameters**:<br/>
-                see the source code at `pytorch_widedeep._wd_dataset` for some details
 
-                    >:information_source: **NOTE**: We consider this feature absolutely
-                    experimental and we recommend the user to not use it unless the
-                    corresponding [publication](https://arxiv.org/abs/2102.09554) is
-                    well understood
+                - lds_kernel (`Literal['gaussian', 'triang', 'laplace']`):
+                    choice of kernel for Label Distribution Smoothing
+                - lds_ks (`int`):
+                    LDS kernel window size
+                - lds_sigma (`float`):
+                    standard deviation of ['gaussian','laplace'] kernel for LDS
+                - lds_granularity (`int`):
+                    number of bins in histogram used in LDS to count occurence of sample values
+                - lds_reweight (`bool`):
+                    option to reweight bin frequency counts in LDS
+                - lds_y_max (`Optional[float]`):
+                    option to restrict LDS bins by upper label limit
+                - lds_y_min (`Optional[float]`):
+                    option to restrict LDS bins by lower label limit
+
+                See `pytorch_widedeep.trainer._wd_dataset` for more details on
+                the implications of these parameters
 
             - **Finetune related parameters**:<br/>
                 see the source code at `pytorch_widedeep._finetune`. Namely, these are:

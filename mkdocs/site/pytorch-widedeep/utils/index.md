@@ -10,3 +10,6 @@ the classes and functions discussed here are available directly from the
 ```
 from pytorch_widedeep.utils import LabelEncoder
 ```
+
+These are classes and functions that are internally used in the library. We
+include them here in case the user finds them useful for other purposes.
