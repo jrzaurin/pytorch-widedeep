@@ -1,12 +1,12 @@
 
 <p align="center">
-  <img width="300" src="docs/figures/widedeep_logo.png">
+  <img width="300" src="docs/sources/figures/widedeep_logo.png">
 </p>
 
 [![PyPI version](https://badge.fury.io/py/pytorch-widedeep.svg)](https://pypi.org/project/pytorch-widedeep/)
 [![Python 3.7 3.8 3.9](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue.svg)](https://pypi.org/project/pytorch-widedeep/)
 [![Build Status](https://github.com/jrzaurin/pytorch-widedeep/actions/workflows/build.yml/badge.svg)](https://github.com/jrzaurin/pytorch-widedeep/actions)
-[![Documentation Status](https://readthedocs.org/projects/pytorch-widedeep/badge/?version=latest)](https://pytorch-widedeep.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthe.org/projects/pytorch-widedeep/badge/?version=latest)](https://pytorch-widedeep.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/master/graph/badge.svg)](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
@@ -45,7 +45,7 @@ in the Figure below:
 
 
 <p align="center">
-  <img width="750" src="docs/figures/widedeep_arch.png">
+  <img width="750" src="docs/sources/figures/widedeep_arch.png">
 </p>
 
 The dashed boxes in the figure represent optional, overall components, and the
@@ -69,7 +69,7 @@ In math terms, and following the notation in the
 without a ``deephead`` component can be formulated as:
 
 <p align="center">
-  <img width="500" src="docs/figures/architecture_1_math.png">
+  <img width="500" src=docs/sources/figures/architecture_1_math.png">
 </p>
 
 
@@ -87,7 +87,7 @@ While if there is a ``deephead`` component, the previous expression turns
 into:
 
 <p align="center">
-  <img width="300" src="docs/figures/architecture_2_math.png">
+  <img width="300" src="docs/sources/figures/architecture_2_math.png">
 </p>
 
 It is perfectly possible to use custom models (and not necessarily those in

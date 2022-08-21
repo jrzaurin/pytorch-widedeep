@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img width="300" src="docs/figures/widedeep_logo.png">
+  <img width="300" src="figures/widedeep_logo.png">
 </p>
 
 [<img src="https://badge.fury.io/py/pytorch-widedeep.svg" alt="PyPI version">](https://pypi.org/project/pytorch-widedeep/)
@@ -27,9 +27,9 @@ Pytorch
 
 The content of this document is organized as follows:
 
-- [pytorch-widedeep](#pytorch-widedeep)
+- [**pytorch-widedeep**](#pytorch-widedeep)
     - [Introduction](#introduction)
-    - [The deeptabular component](#the-deeptabular-component)
+    - [The ``deeptabular`` component](#the-deeptabular-component)
     - [Acknowledgments](#acknowledgments)
 
 ### Introduction
@@ -46,7 +46,7 @@ in the Figure below:
 
 
 <p align="center">
-  <img width="750" src="docs/figures/widedeep_arch.png">
+  <img width="750" src="figures/widedeep_arch.png">
 </p>
 
 The dashed boxes in the figure represent optional, overall components, and the
@@ -69,7 +69,7 @@ In math terms, and following the notation in the
 without a ``deephead`` component can be formulated as:
 
 <p align="center">
-  <img width="500" src="docs/figures/architecture_1_math.png">
+  <img width="500" src="figures/architecture_1_math.png">
 </p>
 
 
@@ -87,7 +87,7 @@ While if there is a ``deephead`` component, the previous expression turns
 into:
 
 <p align="center">
-  <img width="300" src="docs/figures/architecture_2_math.png">
+  <img width="300" src="figures/architecture_2_math.png">
 </p>
 
 It is perfectly possible to use custom models (and not necessarily those in
