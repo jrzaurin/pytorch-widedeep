@@ -114,7 +114,12 @@ class ContrastiveDenoisingModel(nn.Module):
         # mlps for denoising loss
         if self.loss_type in ["denoising", "both"]:
 
-            _X = X - self._t.repeat(X.size(0), 1) if self._t is not None else X
+            if self._t is not None:
+                self._t = self._t.to(X.device)
+                _X = X - self._t.repeat(X.size(0), 1)
+            else:
+                _X = X
+
             if self.model.with_cls_token:
                 _X[:, 0] = 0.0
 

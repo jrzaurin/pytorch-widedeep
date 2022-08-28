@@ -941,7 +941,7 @@ class DenoisingLoss(nn.Module):
         self, x_cat_and_cat_: Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
     ) -> Tensor:
 
-        loss_cat = torch.tensor(0.0)
+        loss_cat = torch.tensor(0.0, device=self._get_device(x_cat_and_cat_))
         if isinstance(x_cat_and_cat_, list):
             for x, x_ in x_cat_and_cat_:
                 loss_cat += F.cross_entropy(x_, x, reduction=self.reduction)
@@ -953,7 +953,7 @@ class DenoisingLoss(nn.Module):
 
     def _compute_cont_loss(self, x_cont_and_cont_) -> Tensor:
 
-        loss_cont = torch.tensor(0.0)
+        loss_cont = torch.tensor(0.0, device=self._get_device(x_cont_and_cont_))
         if isinstance(x_cont_and_cont_, list):
             for x, x_ in x_cont_and_cont_:
                 loss_cont += F.mse_loss(x_, x, reduction=self.reduction)
@@ -962,6 +962,16 @@ class DenoisingLoss(nn.Module):
             loss_cont += F.mse_loss(x_, x, reduction=self.reduction)
 
         return loss_cont
+
+    @staticmethod
+    def _get_device(
+        x_and_x_: Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
+    ):
+        if isinstance(x_and_x_, tuple):
+            device = x_and_x_[0].device
+        elif isinstance(x_and_x_, list):
+            device = x_and_x_[0][0].device
+        return device
 
 
 class EncoderDecoderLoss(nn.Module):
