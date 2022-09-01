@@ -1,7 +1,8 @@
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.utils.text_utils import (
     get_texts,
     pad_sequences,
@@ -140,6 +141,21 @@ class TextPreprocessor(BasePreprocessor):
         )
         return padded_seq
 
+    def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
+        """Combines `fit` and `transform`
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        np.ndarray
+            Padded, _'numericalised'_ sequences
+        """
+        return self.fit(df).transform(df)
+
     def inverse_transform(self, padded_seq: np.ndarray) -> pd.DataFrame:
         """Returns the original text plus the added 'special' tokens
 
@@ -155,18 +171,3 @@ class TextPreprocessor(BasePreprocessor):
         """
         texts = [self.vocab.textify(num) for num in padded_seq]
         return pd.DataFrame({self.text_col: texts})
-
-    def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Combines `fit` and `transform`
-
-        Parameters
-        ----------
-        df: pd.DataFrame
-            Input pandas dataframe
-
-        Returns
-        -------
-        np.ndarray
-            Padded, _'numericalised'_ sequences
-        """
-        return self.fit(df).transform(df)

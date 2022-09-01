@@ -17,9 +17,10 @@ Untitled*.ipynb
 
 # data related dirs
 tmp_data/
-model_weights/
 tmp_dir/
 weights/
+pretrained_weights/
+model_weights/
 
 # Unit Tests/Coverage
 .coverage

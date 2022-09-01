@@ -1,9 +1,10 @@
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
 from pytorch_widedeep.models.tabular.tabnet._layers import (
     TabNetEncoder,
+    FeatTransformer,
     initialize_non_glu,
 )
 from pytorch_widedeep.models.tabular._base_tabular_model import (
@@ -94,11 +95,8 @@ class TabNet(BaseTabularModelWithoutAttention):
     ----------
     cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    tabnet_encoder: nn.Module
+    encoder: nn.Module
         the TabNet encoder. For details see the [original publication](https://arxiv.org/abs/1908.07442).
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -171,7 +169,7 @@ class TabNet(BaseTabularModelWithoutAttention):
         self.embed_out_dim = self.cat_and_cont_embed.output_dim
 
         # TabNet
-        self.tabnet_encoder = TabNetEncoder(
+        self.encoder = TabNetEncoder(
             self.embed_out_dim,
             n_steps,
             step_dim,
@@ -186,17 +184,25 @@ class TabNet(BaseTabularModelWithoutAttention):
             epsilon,
             mask_type,
         )
-        self.output_dim: int = step_dim
 
-    def forward(self, X: Tensor) -> Tuple[Tensor, Tensor]:
+    def forward(
+        self, X: Tensor, prior: Optional[Tensor] = None
+    ) -> Tuple[Tensor, Tensor]:
         x = self._get_embeddings(X)
-        steps_output, M_loss = self.tabnet_encoder(x)
+        steps_output, M_loss = self.encoder(x, prior)
         res = torch.sum(torch.stack(steps_output, dim=0), dim=0)
         return (res, M_loss)
 
     def forward_masks(self, X: Tensor) -> Tuple[Tensor, Dict[int, Tensor]]:
         x = self._get_embeddings(X)
-        return self.tabnet_encoder.forward_masks(x)
+        return self.encoder.forward_masks(x)
+
+    @property
+    def output_dim(self) -> int:
+        r"""The output dimension of the model. This is a required property
+        neccesary to build the `WideDeep` class
+        """
+        return self.step_dim
 
 
 class TabNetPredLayer(nn.Module):
@@ -218,3 +224,114 @@ class TabNetPredLayer(nn.Module):
     def forward(self, tabnet_tuple: Tuple[Tensor, Tensor]) -> Tuple[Tensor, Tensor]:
         res, M_loss = tabnet_tuple[0], tabnet_tuple[1]
         return self.pred_layer(res), M_loss
+
+
+class TabNetDecoder(nn.Module):
+    r"""Companion decoder model for the `TabNet` model (which can be
+    considered an encoder itself)
+
+    This class is designed to be used with the `EncoderDecoderTrainer` when
+    using self-supervised pre-training (see the corresponding section in the
+    docs). This class will receive the output from the `TabNet` encoder
+    (i.e. the output from the so called 'steps') and '_reconstruct_' the
+    embeddings.
+
+    Parameters
+    ----------
+    embed_dim: int
+        Size of the embeddings tensor to be reconstructed.
+    n_steps: int, default = 3
+        number of decision steps. For a better understanding of the function
+        of `n_steps` and the upcoming parameters, please see the
+        [paper](https://arxiv.org/abs/1908.07442).
+    step_dim: int, default = 8
+        Step's output dimension. This is the output dimension that
+        `WideDeep` will collect and connect to the output neuron(s).
+    dropout: float, default = 0.0
+        GLU block's internal dropout
+    n_glu_step_dependent: int, default = 2
+        number of GLU Blocks (`[FC -> BN -> GLU]`) that are step dependent
+    n_glu_shared: int, default = 2
+        number of GLU Blocks (`[FC -> BN -> GLU]`) that will be shared
+        across decision steps
+    ghost_bn: bool, default=True
+        Boolean indicating if [Ghost Batch Normalization](https://arxiv.org/abs/1705.08741)
+        will be used.
+    virtual_batch_size: int, default = 128
+        Batch size when using Ghost Batch Normalization
+    momentum: float, default = 0.02
+        Ghost Batch Normalization's momentum. The dreamquark-ai advises for
+        very low values. However high values are used in the original
+        publication. During our tests higher values lead to better results
+
+    Attributes
+    ----------
+    decoder: nn.Module
+        decoder that will receive the output from the encoder's steps and will
+        reconstruct the embeddings
+
+    Examples
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import TabNetDecoder
+    >>> x_inp = [torch.rand(3, 8), torch.rand(3, 8), torch.rand(3, 8)]
+    >>> decoder = TabNetDecoder(embed_dim=32, ghost_bn=False)
+    >>> res = decoder(x_inp)
+    >>> res.shape
+    torch.Size([3, 32])
+    """
+
+    def __init__(
+        self,
+        embed_dim: int,
+        n_steps: int = 3,
+        step_dim: int = 8,
+        dropout: float = 0.0,
+        n_glu_step_dependent: int = 2,
+        n_glu_shared: int = 2,
+        ghost_bn: bool = True,
+        virtual_batch_size: int = 128,
+        momentum: float = 0.02,
+    ):
+        super(TabNetDecoder, self).__init__()
+
+        self.n_steps = n_steps
+        self.step_dim = step_dim
+        self.dropout = dropout
+        self.n_glu_step_dependent = n_glu_step_dependent
+        self.n_glu_shared = n_glu_shared
+        self.ghost_bn = ghost_bn
+        self.virtual_batch_size = virtual_batch_size
+        self.momentum = momentum
+
+        shared_layers = nn.ModuleList()
+        for i in range(n_glu_shared):
+            if i == 0:
+                shared_layers.append(nn.Linear(step_dim, 2 * step_dim, bias=False))
+            else:
+                shared_layers.append(nn.Linear(step_dim, 2 * step_dim, bias=False))
+
+        self.decoder = nn.ModuleList()
+        for step in range(n_steps):
+            transformer = FeatTransformer(
+                step_dim,
+                step_dim,
+                dropout,
+                shared_layers,
+                n_glu_step_dependent,
+                ghost_bn,
+                virtual_batch_size,
+                momentum=momentum,
+            )
+            self.decoder.append(transformer)
+
+        self.reconstruction_layer = nn.Linear(step_dim, embed_dim, bias=False)
+        initialize_non_glu(self.reconstruction_layer, step_dim, embed_dim)
+
+    def forward(self, X: List[Tensor]) -> Tensor:
+        out = torch.tensor(0.0)
+        for i, x in enumerate(X):
+            x = self.decoder[i](x)
+            out = torch.add(out, x)
+        out = self.reconstruction_layer(out)
+        return out

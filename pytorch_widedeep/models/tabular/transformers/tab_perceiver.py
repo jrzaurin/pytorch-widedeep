@@ -2,7 +2,7 @@ import torch
 import einops
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
@@ -134,15 +134,12 @@ class TabPerceiver(BaseTabularModelWithAttention):
     ----------
     cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    perceiver_blks: nn.ModuleDict
+    encoder: nn.ModuleDict
         ModuleDict with the Perceiver blocks
     latents: nn.Parameter
         Latents that will be used for prediction
-    perceiver_mlp: nn.Module
+    mlp: nn.Module
         MLP component in the model
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -238,36 +235,31 @@ class TabPerceiver(BaseTabularModelWithAttention):
             nn.Parameter(torch.empty(n_latents, latent_dim))
         )
 
-        self.perceiver_blks = nn.ModuleDict()
+        self.encoder = nn.ModuleDict()
         first_perceiver_block = self._build_perceiver_block()
-        self.perceiver_blks["perceiver_block0"] = first_perceiver_block
+        self.encoder["perceiver_block0"] = first_perceiver_block
 
         if share_weights:
             for n in range(1, n_perceiver_blocks):
-                self.perceiver_blks["perceiver_block" + str(n)] = first_perceiver_block
+                self.encoder["perceiver_block" + str(n)] = first_perceiver_block
         else:
             for n in range(1, n_perceiver_blocks):
-                self.perceiver_blks[
-                    "perceiver_block" + str(n)
-                ] = self._build_perceiver_block()
+                self.encoder["perceiver_block" + str(n)] = self._build_perceiver_block()
+
+        self.mlp_first_hidden_dim = self.latent_dim
 
         # Mlp
-        if not mlp_hidden_dims:
-            self.mlp_hidden_dims = [latent_dim, latent_dim * 4, latent_dim * 2]
+        if mlp_hidden_dims is not None:
+            self.mlp = MLP(
+                [self.mlp_first_hidden_dim] + mlp_hidden_dims,
+                mlp_activation,
+                mlp_dropout,
+                mlp_batchnorm,
+                mlp_batchnorm_last,
+                mlp_linear_first,
+            )
         else:
-            self.mlp_hidden_dims = [latent_dim] + mlp_hidden_dims
-
-        self.perceiver_mlp = MLP(
-            self.mlp_hidden_dims,
-            mlp_activation,
-            mlp_dropout,
-            mlp_batchnorm,
-            mlp_batchnorm_last,
-            mlp_linear_first,
-        )
-
-        # the output_dim attribute will be used as input_dim when "merging" the models
-        self.output_dim: int = self.mlp_hidden_dims[-1]
+            self.mlp = None
 
     def forward(self, X: Tensor) -> Tensor:
 
@@ -276,8 +268,8 @@ class TabPerceiver(BaseTabularModelWithAttention):
         x = einops.repeat(self.latents, "n d -> b n d", b=X.shape[0])
 
         for n in range(self.n_perceiver_blocks):
-            cross_attns = self.perceiver_blks["perceiver_block" + str(n)]["cross_attns"]
-            latent_transformer = self.perceiver_blks["perceiver_block" + str(n)][
+            cross_attns = self.encoder["perceiver_block" + str(n)]["cross_attns"]
+            latent_transformer = self.encoder["perceiver_block" + str(n)][
                 "latent_transformer"
             ]
             for cross_attn in cross_attns:
@@ -287,7 +279,21 @@ class TabPerceiver(BaseTabularModelWithAttention):
         # average along the latent index axis
         x = x.mean(dim=1)
 
-        return self.perceiver_mlp(x)
+        if self.mlp is not None:
+            x = self.mlp(x)
+
+        return x
+
+    @property
+    def output_dim(self) -> int:
+        r"""The output dimension of the model. This is a required property
+        neccesary to build the `WideDeep` class
+        """
+        return (
+            self.mlp_hidden_dims[-1]
+            if self.mlp_hidden_dims is not None
+            else self.mlp_first_hidden_dim
+        )
 
     @property
     def attention_weights(self) -> List:
@@ -308,20 +314,16 @@ class TabPerceiver(BaseTabularModelWithAttention):
         Attention heads
         """
         if self.share_weights:
-            cross_attns = self.perceiver_blks["perceiver_block0"]["cross_attns"]
-            latent_transformer = self.perceiver_blks["perceiver_block0"][
-                "latent_transformer"
-            ]
+            cross_attns = self.encoder["perceiver_block0"]["cross_attns"]
+            latent_transformer = self.encoder["perceiver_block0"]["latent_transformer"]
             attention_weights = self._extract_attn_weights(
                 cross_attns, latent_transformer
             )
         else:
             attention_weights = []
             for n in range(self.n_perceiver_blocks):
-                cross_attns = self.perceiver_blks["perceiver_block" + str(n)][
-                    "cross_attns"
-                ]
-                latent_transformer = self.perceiver_blks["perceiver_block" + str(n)][
+                cross_attns = self.encoder["perceiver_block" + str(n)]["cross_attns"]
+                latent_transformer = self.encoder["perceiver_block" + str(n)][
                     "latent_transformer"
                 ]
                 attention_weights.append(

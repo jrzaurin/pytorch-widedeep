@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torchmetrics import Metric as TorchMetric
 
-from .wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, Tensor
 
 
 class Metric(object):

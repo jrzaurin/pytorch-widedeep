@@ -1,6 +1,6 @@
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
 from pytorch_widedeep.models.tabular.mlp._encoders import SelfAttentionEncoder
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
@@ -17,7 +17,10 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
     are then passed through a series of attention blocks. Each attention
     block is comprised by what we would refer as a simplified
     `SelfAttentionEncoder`. See
-    `pytorch_widedeep.models.tabular.mlp._attention_layers` for details.
+    `pytorch_widedeep.models.tabular.mlp._attention_layers` for details. The
+    reason to use a simplified version of self attention is because we
+    observed that the '_standard_' attention mechanism used in the
+    TabTransformer has a notable tendency to overfit.
 
     Parameters
     ----------
@@ -89,11 +92,8 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
     ----------
     cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    attention_blks: nn.Sequential
+    encoder: nn.Module
         Sequence of attention encoders.
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the WideDeep class
 
     Examples
     --------
@@ -163,9 +163,9 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
 
         # Embeddings are instantiated at the base model
         # Attention Blocks
-        self.attention_blks = nn.Sequential()
+        self.encoder = nn.Sequential()
         for i in range(n_blocks):
-            self.attention_blks.add_module(
+            self.encoder.add_module(
                 "attention_block" + str(i),
                 SelfAttentionEncoder(
                     input_dim,
@@ -177,20 +177,25 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
                 ),
             )
 
-        self.output_dim: int = (
-            input_dim
-            if self.with_cls_token
-            else ((self.n_cat + self.n_cont) * input_dim)
-        )
-
     def forward(self, X: Tensor) -> Tensor:
         x = self._get_embeddings(X)
-        x = self.attention_blks(x)
+        x = self.encoder(x)
         if self.with_cls_token:
             out = x[:, 0, :]
         else:
             out = x.flatten(1)
         return out
+
+    @property
+    def output_dim(self) -> int:
+        r"""The output dimension of the model. This is a required property
+        neccesary to build the WideDeep class
+        """
+        return (
+            self.input_dim
+            if self.with_cls_token
+            else ((self.n_cat + self.n_cont) * self.input_dim)
+        )
 
     @property
     def attention_weights(self) -> List:
@@ -200,4 +205,4 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
         batch size, $H$ is the number of attention heads and $F$ is the
         number of features/columns in the dataset
         """
-        return [blk.attn.attn_weights for blk in self.attention_blks]
+        return [blk.attn.attn_weights for blk in self.encoder]

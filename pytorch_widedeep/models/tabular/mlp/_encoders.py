@@ -1,6 +1,6 @@
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Tensor
 from pytorch_widedeep.models.tabular.mlp._layers import SLP
 from pytorch_widedeep.models.tabular.mlp._attention_layers import (
     ContextAttention,

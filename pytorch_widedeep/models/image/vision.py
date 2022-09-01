@@ -1,11 +1,27 @@
 import warnings
 
+import torch
 import torchvision
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Optional,
+    WeightsEnum,
+)
+from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.models.image._layers import conv_layer
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
+
+# TO DO: Add support for:
+# alexnet
+# convnext
+# googlenet
+# inception
 
 allowed_pretrained_models = [
     "resnet",
@@ -37,13 +53,17 @@ class Vision(nn.Module):
 
     Parameters
     ----------
-    pretrained_model_name: Optional, str, default = None
+    pretrained_model_setup: Optional, str or dict, default = None
         Name of the pretrained model. Should be a variant of the following
         architectures: _'resnet'_, _'shufflenet'_, _'resnext'_,
         _'wide_resnet'_, _'regnet'_, _'densenet'_, _'mobilenetv3'_,
         _'mobilenetv2'_, _'mnasnet'_, _'efficientnet'_ and _'squeezenet'_. if
-        `pretrained_model_name = None` a basic, fully trainable CNN will be
-        used.
+        `pretrained_model_setup = None` a basic, fully trainable CNN will be
+        used. Alternatively, since Torchvision 0.13 one can use pretrained
+        models with different weigths. Therefore, `pretrained_model_setup` can
+        also be dictionary with the name of the model and the weights (e.g.
+        `{'resnet50': ResNet50_Weights.DEFAULT}` or
+        `{'resnet50': "IMAGENET1K_V2"}`). <br/> Aliased as `pretrained_model_name`.
     n_trainable: Optional, int, default = None
         Number of trainable layers starting from the layer closer to the
         output neuron(s). Note that this number DOES NOT take into account
@@ -88,9 +108,6 @@ class Vision(nn.Module):
     ----------
     features: nn.Module
         The pretrained model or Standard CNN plus the optional head
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -101,9 +118,10 @@ class Vision(nn.Module):
     >>> out = model(X_img)
     """
 
+    @Alias("pretrained_model_setup", ["pretrained_model_name"])
     def __init__(
         self,
-        pretrained_model_name: Optional[str] = None,
+        pretrained_model_setup: Union[str, Dict[str, Union[str, WeightsEnum]]] = None,
         n_trainable: Optional[int] = None,
         trainable_params: Optional[List[str]] = None,
         channel_sizes: List[int] = [64, 128, 256, 512],
@@ -118,7 +136,11 @@ class Vision(nn.Module):
     ):
         super(Vision, self).__init__()
 
-        self.pretrained_model_name = pretrained_model_name
+        self._check_pretrained_model_setup(
+            pretrained_model_setup, n_trainable, trainable_params
+        )
+
+        self.pretrained_model_setup = pretrained_model_setup
         self.n_trainable = n_trainable
         self.trainable_params = trainable_params
         self.channel_sizes = channel_sizes
@@ -131,27 +153,13 @@ class Vision(nn.Module):
         self.head_batchnorm_last = head_batchnorm_last
         self.head_linear_first = head_linear_first
 
-        if pretrained_model_name is not None:
-            valid_pretrained_model_name = any(
-                [name in pretrained_model_name for name in allowed_pretrained_models]
-            )
-            if not valid_pretrained_model_name:
-                raise ValueError(
-                    f"{pretrained_model_name} is not among the allowed pretrained models."
-                    f" These are {allowed_pretrained_models}. Please choose a variant of these architectures"
-                )
-            if n_trainable is not None and trainable_params is not None:
-                raise UserWarning(
-                    "Both 'n_trainable' and 'trainable_params' are not None. 'trainable_params' will be used"
-                )
+        self.features, self.backbone_output_dim = self._get_features()
 
-        self.features, output_dim = self._get_features()
-
-        if pretrained_model_name is not None:
+        if pretrained_model_setup is not None:
             self._freeze(self.features)
 
         if self.head_hidden_dims is not None:
-            head_hidden_dims = [output_dim] + self.head_hidden_dims
+            head_hidden_dims = [self.backbone_output_dim] + self.head_hidden_dims
             self.vision_mlp = MLP(
                 head_hidden_dims,
                 self.head_activation,
@@ -160,9 +168,6 @@ class Vision(nn.Module):
                 self.head_batchnorm_last,
                 self.head_linear_first,
             )
-            output_dim = self.head_hidden_dims[-1]  # type: ignore[assignment]
-
-        self.output_dim = output_dim
 
     def forward(self, X: Tensor) -> Tensor:
 
@@ -178,11 +183,34 @@ class Vision(nn.Module):
 
         return x
 
+    @property
+    def output_dim(self) -> int:
+        r"""The output dimension of the model. This is a required property
+        neccesary to build the `WideDeep` class
+        """
+        return (
+            self.head_hidden_dims[-1]
+            if self.head_hidden_dims is not None
+            else self.backbone_output_dim
+        )
+
     def _get_features(self) -> Tuple[nn.Module, int]:
-        if self.pretrained_model_name is not None:
-            pretrained_model = torchvision.models.__dict__[self.pretrained_model_name](
-                pretrained=True
-            )
+        if self.pretrained_model_setup is not None:
+            if isinstance(self.pretrained_model_setup, str):
+                try:
+                    pretrained_model = torchvision.models.__dict__[
+                        self.pretrained_model_setup
+                    ](weights="IMAGENET1K_V2")
+                except ValueError:
+                    pretrained_model = torchvision.models.__dict__[
+                        self.pretrained_model_setup
+                    ](weights="IMAGENET1K_V1")
+            elif isinstance(self.pretrained_model_setup, Dict):
+                model_name = list(self.pretrained_model_setup.keys())[0]
+                model_weights = self.pretrained_model_setup[model_name]
+                pretrained_model = torchvision.models.__dict__[model_name](
+                    weights=model_weights
+                )
             output_dim: int = self.get_backbone_output_dim(pretrained_model)
             features = nn.Sequential(*(list(pretrained_model.children())[:-1]))
         else:
@@ -224,7 +252,7 @@ class Vision(nn.Module):
 
         if self.trainable_params is not None:
             for name, param in features.named_parameters():
-                for tl in trainable_params:
+                for tl in self.trainable_params:
                     param.requires_grad = tl in name
         elif self.n_trainable is not None:
             for i, (name, param) in enumerate(
@@ -249,3 +277,29 @@ class Vision(nn.Module):
                     return features.classifier.__dict__["_modules"]["1"].in_features
                 except AttributeError:
                     return features.classifier.__dict__["_modules"]["1"].in_channels
+
+    @staticmethod
+    def _check_pretrained_model_setup(
+        pretrained_model_setup, n_trainable, trainable_params
+    ):
+        if pretrained_model_setup is not None:
+            if isinstance(pretrained_model_setup, str):
+                pretrained_model_name = pretrained_model_setup
+            elif isinstance(pretrained_model_setup, Dict):
+                pretrained_model_name = list(pretrained_model_setup.keys())[0]
+        else:
+            pretrained_model_name = None
+
+        if pretrained_model_name is not None:
+            valid_pretrained_model_name = any(
+                [name in pretrained_model_name for name in allowed_pretrained_models]
+            )
+            if not valid_pretrained_model_name:
+                raise ValueError(
+                    f"{pretrained_model_setup} is not among the allowed pretrained models."
+                    f" These are {allowed_pretrained_models}. Please choose a variant of these architectures"
+                )
+            if n_trainable is not None and trainable_params is not None:
+                raise UserWarning(
+                    "Both 'n_trainable' and 'trainable_params' are not None. 'trainable_params' will be used"
+                )

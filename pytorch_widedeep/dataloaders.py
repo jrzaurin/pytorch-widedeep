@@ -1,7 +1,8 @@
+from typing import Tuple
+
 import numpy as np
 from torch.utils.data import DataLoader, WeightedRandomSampler
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 
 

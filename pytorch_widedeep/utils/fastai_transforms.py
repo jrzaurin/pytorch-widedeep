@@ -11,13 +11,24 @@ Credit for the code here to Jeremy Howard and the fastai team
 import os
 import re
 import html
+import pickle
 from collections import Counter, defaultdict
 from concurrent.futures.process import ProcessPoolExecutor
 
 import spacy
 from spacy.symbols import ORTH
 
-from ..wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Any,
+    List,
+    Match,
+    Tokens,
+    Callable,
+    Optional,
+    ListRules,
+    Collection,
+    SimpleNamespace,
+)
 
 
 def partition(a: Collection, sz: int) -> List[Collection]:
@@ -92,7 +103,7 @@ class BaseTokenizer:
 
 class SpacyTokenizer(BaseTokenizer):
     def __init__(self, lang: str):
-        """Wrapper around a spacy tokenizer to make it a `BaseTokenizer`.
+        """Wrapper around a spacy tokenizer to make it a :obj:`BaseTokenizer`.
 
         Parameters
         ----------
@@ -216,6 +227,9 @@ class Tokenizer:
     r"""Class to combine a series of rules and a tokenizer function to tokenize
     text with multiprocessing.
 
+    Setting some of the parameters of this class require perhaps some
+    familiarity with the source code.
+
     Parameters
     ----------
     tok_func: Callable, default = ``SpacyTokenizer``
@@ -223,11 +237,13 @@ class Tokenizer:
     lang: str, default = "en"
         Text's Language
     pre_rules: ListRules, Optional, default = None
-        Custom type: ``Collection[Callable[[str], str]]``.
-        see  `pytorch_widedeep.wdtypes`. Preprocessing Rules
+        Custom type: ``Collection[Callable[[str], str]]``. These are
+        `Callable` objects that will be applied to the text (str) directly as
+        `rule(tok)` before being tokenized.
     post_rules: ListRules, Optional, default = None
-        Custom type: ``Collection[Callable[[str], str]]``.
-        see `pytorch_widedeep.wdtypes`. Postprocessing Rules
+        Custom type: ``Collection[Callable[[str], str]]``. These are
+        `Callable` objects that will be applied to the tokens as
+        `rule(tokens)` after the text has been tokenized.
     special_cases: Collection, Optional, default= None
         special cases to be added to the tokenizer via ``Spacy``'s
         ``add_special_case`` method
@@ -261,7 +277,7 @@ class Tokenizer:
         return res
 
     def process_text(self, t: str, tok: BaseTokenizer) -> List[str]:
-        """Process and tokenize one text ``t`` with tokenizer ``tok``.
+        r"""Process and tokenize one text ``t`` with tokenizer ``tok``.
 
         Parameters
         ----------
@@ -426,6 +442,6 @@ class Vocab:
 
     @classmethod
     def load(cls, path):
-        """Load an intance of `Vocab` contained in ``path``"""
+        """Load an intance of :obj:`Vocab` contained in ``path``"""
         itos = pickle.load(open(path, "rb"))
         return cls(itos)

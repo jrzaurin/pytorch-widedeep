@@ -57,7 +57,7 @@ deeptabular = TabMlp(
     mlp_dropout=[0.5, 0.5],
 )
 deeptext = BasicRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
-deepimage = Vision(pretrained_model_name="resnet18", n_trainable=0)
+deepimage = Vision(pretrained_model_setup="resnet18", n_trainable=0)
 
 # transforms
 mean = [0.406, 0.456, 0.485]  # BGR

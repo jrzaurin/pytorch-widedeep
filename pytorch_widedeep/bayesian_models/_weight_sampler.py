@@ -6,7 +6,9 @@ https://github.com/piEsposito/blitz-bayesian-deep-learning
 
 import math
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+import torch
+
+from pytorch_widedeep.wdtypes import Tensor
 
 
 class ScaleMixtureGaussianPrior(object):

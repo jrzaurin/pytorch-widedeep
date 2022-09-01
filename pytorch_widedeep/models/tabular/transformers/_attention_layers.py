@@ -9,7 +9,7 @@ import torch
 import einops
 from torch import nn, einsum
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Tensor, Optional
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 
 

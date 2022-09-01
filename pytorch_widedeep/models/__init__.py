@@ -13,8 +13,11 @@ from pytorch_widedeep.models.tabular import (
     TabPerceiver,
     FTTransformer,
     TabFastFormer,
+    TabMlpDecoder,
+    TabNetDecoder,
     TabTransformer,
     SelfAttentionMLP,
+    TabResnetDecoder,
     ContextAttentionMLP,
 )
 from pytorch_widedeep.models.wide_deep import WideDeep

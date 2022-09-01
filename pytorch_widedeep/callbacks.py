@@ -12,7 +12,7 @@ import torch
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.metrics import MultipleMetrics
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Any, Dict, List, Optional, Optimizer
 
 
 def _get_current_time():
@@ -491,7 +491,6 @@ class ModelCheckpoint(Callback):
                                         current,
                                     )
                                 )
-
                         self.best = current
                         self.best_epoch = epoch
                         self.best_state_dict = self.model.state_dict()

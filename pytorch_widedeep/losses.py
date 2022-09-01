@@ -2,7 +2,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Literal,
+    Optional,
+)
 
 use_cuda = torch.cuda.is_available()
 
@@ -39,8 +46,7 @@ class MSELoss(nn.Module):
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
         >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> MSELoss()(input, target, lds_weight)
-        tensor(0.1673)
+        >>> loss = MSELoss()(input, target, lds_weight)
         """
         loss = (input - target) ** 2
         if lds_weight is not None:
@@ -80,8 +86,7 @@ class MSLELoss(nn.Module):
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
         >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> MSLELoss()(input, target, lds_weight)
-        tensor(0.0358)
+        >>> loss = MSLELoss()(input, target, lds_weight)
         """
         assert (
             input.min() >= 0
@@ -128,8 +133,7 @@ class RMSELoss(nn.Module):
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
         >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> RMSELoss()(input, target, lds_weight)
-        tensor(0.4090)
+        >>> loss = RMSELoss()(input, target, lds_weight)
         """
         loss = (input - target) ** 2
         if lds_weight is not None:
@@ -169,8 +173,7 @@ class RMSLELoss(nn.Module):
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
         >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> RMSELoss()(input, target, lds_weight)
-        tensor(0.4090)
+        >>> loss = RMSLELoss()(input, target, lds_weight)
         """
         assert (
             input.min() >= 0
@@ -227,8 +230,7 @@ class QuantileLoss(nn.Module):
         >>> target = torch.tensor([[0.6, 1.5]]).view(-1, 1)
         >>> input = torch.tensor([[.1, .2,], [.4, .5]])
         >>> qloss = QuantileLoss([0.25, 0.75])
-        >>> qloss(input, target)
-        tensor(0.3625)
+        >>> loss = qloss(input, target)
         """
 
         assert input.shape == torch.Size([target.shape[0], len(self.quantiles)]), (
@@ -297,14 +299,12 @@ class FocalLoss(nn.Module):
         >>> # BINARY
         >>> target = torch.tensor([0, 1, 0, 1]).view(-1, 1)
         >>> input = torch.tensor([[0.6, 0.7, 0.3, 0.8]]).t()
-        >>> FocalLoss()(input, target)
-        tensor(0.1762)
+        >>> loss = FocalLoss()(input, target)
         >>>
         >>> # MULTICLASS
         >>> target = torch.tensor([1, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([[0.2, 0.5, 0.3], [0.8, 0.1, 0.1], [0.7, 0.2, 0.1]])
-        >>> FocalLoss()(input, target)
-        tensor(0.2573)
+        >>> loss = FocalLoss()(input, target)
         """
         input_prob = torch.sigmoid(input)
         if input.size(1) == 1:
@@ -367,8 +367,7 @@ class BayesianSELoss(nn.Module):
         >>> from pytorch_widedeep.losses import BayesianSELoss
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> BayesianSELoss()(input, target)
-        tensor(0.9700)
+        >>> loss = BayesianSELoss()(input, target)
         """
         return (0.5 * (input - target) ** 2).sum()
 
@@ -414,8 +413,7 @@ class TweedieLoss(nn.Module):
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
         >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> TweedieLoss()(input, target, lds_weight)
-        tensor(1.0386)
+        >>> loss = TweedieLoss()(input, target, lds_weight)
         """
 
         assert (
@@ -460,8 +458,7 @@ class ZILNLoss(nn.Module):
         >>>
         >>> target = torch.tensor([[0., 1.5]]).view(-1, 1)
         >>> input = torch.tensor([[.1, .2, .3], [.4, .5, .6]])
-        >>> ZILNLoss()(input, target)
-        tensor(1.3114)
+        >>> loss = ZILNLoss()(input, target)
         """
         positive = target > 0
         positive = positive.float()
@@ -532,8 +529,7 @@ class L1Loss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> L1Loss()(input, target)
-        tensor(0.6000)
+        >>> loss = L1Loss()(input, target)
         """
         loss = F.l1_loss(input, target, reduction="none")
         if lds_weight is not None:
@@ -594,8 +590,7 @@ class FocalR_L1Loss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> FocalR_L1Loss()(input, target)
-        tensor(0.0483)
+        >>> loss = FocalR_L1Loss()(input, target)
         """
         loss = F.l1_loss(input, target, reduction="none")
         if self.activation_fn == "tanh":
@@ -666,8 +661,7 @@ class FocalR_MSELoss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> FocalR_MSELoss()(input, target)
-        tensor(0.0539)
+        >>> loss = FocalR_MSELoss()(input, target)
         """
         loss = (input - target) ** 2
         if self.activation_fn == "tanh":
@@ -738,8 +732,7 @@ class FocalR_RMSELoss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> FocalR_RMSELoss()(input, target)
-        tensor(0.2321)
+        >>> loss = FocalR_RMSELoss()(input, target)
         """
         loss = (input - target) ** 2
         if self.activation_fn == "tanh":
@@ -792,8 +785,7 @@ class HuberLoss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> HuberLoss()(input, target)
-        tensor(0.5000)
+        >>> loss = HuberLoss()(input, target)
         """
         l1_loss = torch.abs(input - target)
         cond = l1_loss < self.beta
@@ -803,3 +795,245 @@ class HuberLoss(nn.Module):
         if lds_weight is not None:
             loss *= lds_weight
         return torch.mean(loss)
+
+
+class InfoNCELoss(nn.Module):
+    r"""InfoNCE Loss. Loss applied during the Contrastive Denoising Self
+    Supervised Pre-training routine available in this library
+
+    :information_source: **NOTE**: This loss is in principle not exposed to
+     the user, as it is used internally in the library, but it is included
+     here for completion.
+
+    See [SAINT: Improved Neural Networks for Tabular Data via Row Attention
+    and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342) and
+    references therein
+
+    Partially inspired by the code in this [repo](https://github.com/RElbers/info-nce-pytorch)
+
+    Parameters:
+    -----------
+    temperature: float, default = 0.1
+        The logits are divided by the temperature before computing the loss value
+    reduction: str, default = "mean"
+        Loss reduction method
+    """
+
+    def __init__(self, temperature: float = 0.1, reduction: str = "mean"):
+
+        super(InfoNCELoss, self).__init__()
+
+        self.temperature = temperature
+        self.reduction = reduction
+
+    def forward(self, g_projs: Tuple[Tensor, Tensor]) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        g_projs: Tuple
+            Tuple with the two tensors corresponding to the output of the two
+            projection heads, as described 'SAINT: Improved Neural Networks
+            for Tabular Data via Row Attention and Contrastive Pre-Training'.
+
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import InfoNCELoss
+        >>> g_projs = (torch.rand(5, 5), torch.rand(5, 5))
+        >>> loss = InfoNCELoss()
+        >>> res = loss(g_projs)
+        """
+        z, z_ = g_projs[0], g_projs[1]
+
+        norm_z = F.normalize(z, dim=-1).flatten(1)
+        norm_z_ = F.normalize(z_, dim=-1).flatten(1)
+
+        logits = (norm_z @ norm_z_.t()) / self.temperature
+        logits_ = (norm_z_ @ norm_z.t()) / self.temperature
+
+        # the target/labels are the entries on the diagonal
+        target = torch.arange(len(norm_z), device=norm_z.device)
+
+        loss = F.cross_entropy(logits, target, reduction=self.reduction)
+        loss_ = F.cross_entropy(logits_, target, reduction=self.reduction)
+
+        return (loss + loss_) / 2.0
+
+
+class DenoisingLoss(nn.Module):
+    r"""Denoising Loss. Loss applied during the Contrastive Denoising Self
+    Supervised Pre-training routine available in this library
+
+    :information_source: **NOTE**: This loss is in principle not exposed to
+     the user, as it is used internally in the library, but it is included
+     here for completion.
+
+    See [SAINT: Improved Neural Networks for Tabular Data via Row Attention
+    and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342) and
+    references therein
+
+    Parameters:
+    -----------
+    lambda_cat: float, default = 1.
+        Multiplicative factor that will be applied to loss associated to the
+        categorical features
+    lambda_cont: float, default = 1.
+        Multiplicative factor that will be applied to loss associated to the
+        continuous features
+    reduction: str, default = "mean"
+        Loss reduction method
+    """
+
+    def __init__(
+        self, lambda_cat: float = 1.0, lambda_cont: float = 1.0, reduction: str = "mean"
+    ):
+        super(DenoisingLoss, self).__init__()
+
+        self.lambda_cat = lambda_cat
+        self.lambda_cont = lambda_cont
+        self.reduction = reduction
+
+    def forward(
+        self,
+        x_cat_and_cat_: Optional[
+            Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
+        ],
+        x_cont_and_cont_: Optional[
+            Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
+        ],
+    ) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        x_cat_and_cat_: tuple of Tensors or lists of tuples
+            Tuple of tensors containing the raw input features and their
+            encodings, referred in the SAINT paper as $x$ and $x''$
+            respectively. If one denoising MLP is used per categorical
+            feature `x_cat_and_cat_` will be a list of tuples, one per
+            categorical feature
+        x_cont_and_cont_: tuple of Tensors or lists of tuples
+            same as `x_cat_and_cat_` but for continuous columns
+
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import DenoisingLoss
+        >>> x_cat_and_cat_ = (torch.empty(3).random_(3).long(), torch.randn(3, 3))
+        >>> x_cont_and_cont_ = (torch.randn(3, 1), torch.randn(3, 1))
+        >>> loss = DenoisingLoss()
+        >>> res = loss(x_cat_and_cat_, x_cont_and_cont_)
+        """
+
+        loss_cat = (
+            self._compute_cat_loss(x_cat_and_cat_)
+            if x_cat_and_cat_ is not None
+            else torch.tensor(0.0)
+        )
+        loss_cont = (
+            self._compute_cont_loss(x_cont_and_cont_)
+            if x_cont_and_cont_ is not None
+            else torch.tensor(0.0)
+        )
+
+        return self.lambda_cat * loss_cat + self.lambda_cont * loss_cont
+
+    def _compute_cat_loss(
+        self, x_cat_and_cat_: Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
+    ) -> Tensor:
+
+        loss_cat = torch.tensor(0.0, device=self._get_device(x_cat_and_cat_))
+        if isinstance(x_cat_and_cat_, list):
+            for x, x_ in x_cat_and_cat_:
+                loss_cat += F.cross_entropy(x_, x, reduction=self.reduction)
+        elif isinstance(x_cat_and_cat_, tuple):
+            x, x_ = x_cat_and_cat_
+            loss_cat += F.cross_entropy(x_, x, reduction=self.reduction)
+
+        return loss_cat
+
+    def _compute_cont_loss(self, x_cont_and_cont_) -> Tensor:
+
+        loss_cont = torch.tensor(0.0, device=self._get_device(x_cont_and_cont_))
+        if isinstance(x_cont_and_cont_, list):
+            for x, x_ in x_cont_and_cont_:
+                loss_cont += F.mse_loss(x_, x, reduction=self.reduction)
+        elif isinstance(x_cont_and_cont_, tuple):
+            x, x_ = x_cont_and_cont_
+            loss_cont += F.mse_loss(x_, x, reduction=self.reduction)
+
+        return loss_cont
+
+    @staticmethod
+    def _get_device(
+        x_and_x_: Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
+    ):
+        if isinstance(x_and_x_, tuple):
+            device = x_and_x_[0].device
+        elif isinstance(x_and_x_, list):
+            device = x_and_x_[0][0].device
+        return device
+
+
+class EncoderDecoderLoss(nn.Module):
+    r"""'_Standard_' Encoder Decoder Loss. Loss applied during the Endoder-Decoder
+     Self-Supervised Pre-Training routine available in this library
+
+    :information_source: **NOTE**: This loss is in principle not exposed to
+     the user, as it is used internally in the library, but it is included
+     here for completion.
+
+    The implementation of this lost is based on that at the
+    [tabnet repo](https://github.com/dreamquark-ai/tabnet), which is in itself an
+    adaptation of that in the original paper [TabNet: Attentive
+    Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442).
+
+    Parameters:
+    -----------
+    eps: float
+        Simply a small number to avoid dividing by zero
+    """
+
+    def __init__(self, eps: float = 1e-9):
+        super(EncoderDecoderLoss, self).__init__()
+        self.eps = eps
+
+    def forward(self, x_true: Tensor, x_pred: Tensor, mask: Tensor) -> Tensor:
+        r"""
+        Parameters
+        ----------
+        x_true: Tensor
+            Embeddings of the input data
+        x_pred: Tensor
+            Reconstructed embeddings
+        mask: Tensor
+            Mask with 1s indicated that the reconstruction, and therefore the
+            loss, is based on those features.
+
+        Examples
+        --------
+        >>> import torch
+        >>> from pytorch_widedeep.losses import EncoderDecoderLoss
+        >>> x_true = torch.rand(3, 3)
+        >>> x_pred = torch.rand(3, 3)
+        >>> mask = torch.empty(3, 3).random_(2)
+        >>> loss = EncoderDecoderLoss()
+        >>> res = loss(x_true, x_pred, mask)
+        """
+
+        errors = x_pred - x_true
+
+        reconstruction_errors = torch.mul(errors, mask) ** 2
+
+        x_true_means = torch.mean(x_true, dim=0)
+        x_true_means[x_true_means == 0] = 1
+
+        x_true_stds = torch.std(x_true, dim=0) ** 2
+        x_true_stds[x_true_stds == 0] = x_true_means[x_true_stds == 0]
+
+        features_loss = torch.matmul(reconstruction_errors, 1 / x_true_stds)
+        nb_reconstructed_variables = torch.sum(mask, dim=1)
+        features_loss_norm = features_loss / (nb_reconstructed_variables + self.eps)
+
+        loss = torch.mean(features_loss_norm)
+
+        return loss

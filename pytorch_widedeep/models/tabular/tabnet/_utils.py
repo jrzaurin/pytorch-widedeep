@@ -1,7 +1,8 @@
 import numpy as np
+from torch import nn
 from scipy.sparse import csc_matrix
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, WideDeep
 
 
 def create_explain_matrix(model: WideDeep) -> csc_matrix:
@@ -85,7 +86,7 @@ def create_explain_matrix(model: WideDeep) -> csc_matrix:
     return csc_matrix(reducing_matrix)
 
 
-def extract_cat_setup(backbone: Module) -> List:
+def extract_cat_setup(backbone: nn.Module) -> List:
     cat_cols: List = backbone.cat_embed_input  # type: ignore[assignment]
     if cat_cols is not None:
         return cat_cols
@@ -93,7 +94,7 @@ def extract_cat_setup(backbone: Module) -> List:
         return []
 
 
-def extract_cont_setup(backbone: Module) -> List:
+def extract_cont_setup(backbone: nn.Module) -> List:
 
     cont_cols: List = backbone.continuous_cols  # type: ignore[assignment]
     embed_continuous = backbone.embed_continuous

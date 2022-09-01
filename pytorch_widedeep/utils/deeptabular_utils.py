@@ -7,7 +7,7 @@ from scipy.ndimage import gaussian_filter1d
 from sklearn.exceptions import NotFittedError
 from scipy.signal.windows import triang
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import List, Union, Tensor, Literal, Optional
 from pytorch_widedeep.utils.general_utils import Alias
 
 warnings.filterwarnings("ignore")
@@ -160,9 +160,8 @@ class LabelEncoder:
 
         Returns
         -------
-        List[List[str]]
-            List containing lists of tokens. One list per "_document_"
-
+        pd.DataFrame
+            label-encoded dataframe
         """
         return self.fit(df).transform(df)
 
@@ -186,9 +185,8 @@ class LabelEncoder:
 
         Returns
         -------
-        List[List[str]]
-            List containing lists of tokens. One list per "_document_"
-
+        pd.DataFrame
+            DataFrame with original categories
         """
         for k, v in self.inverse_encoding_dict.items():
             df[k] = df[k].apply(lambda x: v[x])
@@ -240,7 +238,7 @@ def find_bin(
     return indices if not ret_value else bin_edges[indices]  # type: ignore[index]
 
 
-def _laplace(x):
+def _laplace(x, sigma: Union[int, float] = 2):
     return np.exp(-abs(x) / sigma) / (2.0 * sigma)
 
 

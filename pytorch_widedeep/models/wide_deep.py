@@ -13,9 +13,9 @@ will introduce that fix when I do a major release. For now, we live with it.
 import warnings
 
 import torch
-import torch.nn as nn
+from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
 from pytorch_widedeep.models.fds_layer import FDSLayer
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
@@ -27,6 +27,12 @@ warnings.filterwarnings("default", category=UserWarning)
 class WideDeep(nn.Module):
     r"""Main collector class that combines all `wide`, `deeptabular`
     `deeptext` and `deepimage` models.
+
+    Note that all models described so far in this library must be passed to
+    the `WideDeep` class once constructed. This is because the models output
+    the last layer before the prediction layer. Such prediction layer is
+    added by the `WideDeep` class as it collects the components for every
+    data mode.
 
     There are two options to combine these models that correspond to the
     two main architectures that `pytorch-widedeep` can build.
@@ -100,7 +106,8 @@ class WideDeep(nn.Module):
         Distribution Smoothing. Please, see the docs for the `FDSLayer`.
         <br/>
         :information_source: **NOTE**: Feature Distribution Smoothing
-         is available when using ONLY a `deeptabular` component
+         is available when using **ONLY** a `deeptabular` component
+        <br/>
         :information_source: **NOTE**: We consider this feature absolutely
         experimental and we recommend the user to not use it unless the
         corresponding [publication](https://arxiv.org/abs/2102.09554) is
@@ -366,7 +373,7 @@ class WideDeep(nn.Module):
             )
         if deeptabular is not None and not hasattr(deeptabular, "output_dim"):
             raise AttributeError(
-                "deeptabular model must have an 'output_dim' attribute. "
+                "deeptabular model must have an 'output_dim' attribute or property. "
                 "See pytorch-widedeep.models.deep_text.DeepText"
             )
         if deeptabular is not None:
@@ -388,12 +395,12 @@ class WideDeep(nn.Module):
                 )
         if deeptext is not None and not hasattr(deeptext, "output_dim"):
             raise AttributeError(
-                "deeptext model must have an 'output_dim' attribute. "
+                "deeptext model must have an 'output_dim' attribute or property. "
                 "See pytorch-widedeep.models.deep_text.DeepText"
             )
         if deepimage is not None and not hasattr(deepimage, "output_dim"):
             raise AttributeError(
-                "deepimage model must have an 'output_dim' attribute. "
+                "deepimage model must have an 'output_dim' attribute or property. "
                 "See pytorch-widedeep.models.deep_text.DeepText"
             )
         if deephead is not None and head_hidden_dims is not None:
@@ -435,6 +442,6 @@ class WideDeep(nn.Module):
             or pred_dim != 1
         ):
             raise ValueError(
-                """Feature Distribution Smoothing (FDS) is supported when using only a deeptabular component"
-                " and for regression problems."""
+                "Feature Distribution Smoothing (FDS) is supported when using only a deeptabular component"
+                " and for regression problems."
             )

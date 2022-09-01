@@ -1,6 +1,6 @@
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
@@ -119,13 +119,10 @@ class TabFastFormer(BaseTabularModelWithAttention):
     ----------
     cat_and_cont_embed: nn.Module
         This is the module that processes the categorical and continuous columns
-    fastformer_blks: nn.Sequential
+    encoder: nn.Module
         Sequence of FasFormer blocks.
-    fastformer_mlp: nn.Module
+    mlp: nn.Module
         MLP component in the model
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -214,7 +211,7 @@ class TabFastFormer(BaseTabularModelWithAttention):
 
         # Embeddings are instantiated at the base model
         # Transformer blocks
-        self.fastformer_blks = nn.Sequential()
+        self.encoder = nn.Sequential()
         first_fastformer_block = FastFormerEncoder(
             input_dim,
             n_heads,
@@ -224,14 +221,14 @@ class TabFastFormer(BaseTabularModelWithAttention):
             share_qv_weights,
             transformer_activation,
         )
-        self.fastformer_blks.add_module("fastformer_block0", first_fastformer_block)
+        self.encoder.add_module("fastformer_block0", first_fastformer_block)
         for i in range(1, n_blocks):
             if share_weights:
-                self.fastformer_blks.add_module(
+                self.encoder.add_module(
                     "fastformer_block" + str(i), first_fastformer_block
                 )
             else:
-                self.fastformer_blks.add_module(
+                self.encoder.add_module(
                     "fastformer_block" + str(i),
                     FastFormerEncoder(
                         input_dim,
@@ -244,42 +241,44 @@ class TabFastFormer(BaseTabularModelWithAttention):
                     ),
                 )
 
-        attn_output_dim = (
-            self.input_dim
-            if self.with_cls_token
-            else (self.n_cat + self.n_cont) * self.input_dim
+        self.mlp_first_hidden_dim = (
+            self.input_dim if self.with_cls_token else (self.n_feats * self.input_dim)
         )
 
         # Mlp
-        if not mlp_hidden_dims:
-            mlp_hidden_dims = [
-                attn_output_dim,
-                attn_output_dim * 4,
-                attn_output_dim * 2,
-            ]
+        if mlp_hidden_dims is not None:
+            self.mlp = MLP(
+                [self.mlp_first_hidden_dim] + mlp_hidden_dims,
+                mlp_activation,
+                mlp_dropout,
+                mlp_batchnorm,
+                mlp_batchnorm_last,
+                mlp_linear_first,
+            )
         else:
-            mlp_hidden_dims = [attn_output_dim] + mlp_hidden_dims
-
-        self.fastformer_mlp = MLP(
-            mlp_hidden_dims,
-            mlp_activation,
-            mlp_dropout,
-            mlp_batchnorm,
-            mlp_batchnorm_last,
-            mlp_linear_first,
-        )
-
-        # the output_dim attribute will be used as input_dim when "merging" the models
-        self.output_dim: int = mlp_hidden_dims[-1]
+            self.mlp = None
 
     def forward(self, X: Tensor) -> Tensor:
         x = self._get_embeddings(X)
-        x = self.fastformer_blks(x)
+        x = self.encoder(x)
         if self.with_cls_token:
             x = x[:, 0, :]
         else:
             x = x.flatten(1)
-        return self.fastformer_mlp(x)
+        if self.mlp is not None:
+            x = self.mlp(x)
+        return x
+
+    @property
+    def output_dim(self) -> int:
+        r"""The output dimension of the model. This is a required property
+        neccesary to build the `WideDeep` class
+        """
+        return (
+            self.mlp_hidden_dims[-1]
+            if self.mlp_hidden_dims is not None
+            else self.mlp_first_hidden_dim
+        )
 
     @property
     def attention_weights(self) -> List:
@@ -292,7 +291,7 @@ class TabFastFormer(BaseTabularModelWithAttention):
         number of features/columns in the dataset
         """
         if self.share_weights:
-            attention_weights = [self.fastformer_blks[0].attn.attn_weight]
+            attention_weights = [self.encoder[0].attn.attn_weight]
         else:
-            attention_weights = [blk.attn.attn_weights for blk in self.fastformer_blks]
+            attention_weights = [blk.attn.attn_weights for blk in self.encoder]
         return attention_weights

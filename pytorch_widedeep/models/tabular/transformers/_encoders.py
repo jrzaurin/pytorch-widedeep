@@ -1,7 +1,7 @@
 import einops
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Tensor, Optional
 from pytorch_widedeep.models.tabular.transformers._attention_layers import (
     AddNorm,
     NormAdd,
