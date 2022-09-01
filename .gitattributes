@@ -46,3 +46,6 @@
 *.PDF  diff=astextplain
 *.rtf  diff=astextplain
 *.RTF  diff=astextplain
+
+*.html linguist-detectable=false
+*.ipynb linguist-detectable=false
