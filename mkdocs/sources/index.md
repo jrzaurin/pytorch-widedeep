@@ -25,6 +25,8 @@ Pytorch
 
 **Experiments and comparison with `LightGBM`**: [TabularDL vs LightGBM](https://github.com/jrzaurin/tabulardl-benchmark)
 
+**Slack**: if you want to contribute or just want to chat with us, join [slack](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
+
 The content of this document is organized as follows:
 
 - [pytorch-widedeep](#pytorch-widedeep)
@@ -43,7 +45,6 @@ and images with corresponding tabular data using wide and deep models. With
 that in mind there are a number of architectures that can be implemented with
 just a few lines of code. The main components of those architectures are shown
 in the Figure below:
-
 
 <p align="center">
   <img width="750" src="docs/figures/widedeep_arch.png">
@@ -68,14 +69,15 @@ In math terms, and following the notation in the
 [paper](https://arxiv.org/abs/1606.07792), the expression for the architecture
 without a ``deephead`` component can be formulated as:
 
-<p align="center">
-  <img width="500" src="docs/figures/architecture_1_math.png">
-</p>
+$$
+pred = \sigma(W^{T}_{wide}[x,\phi(x)] + W^{T}_{deeptabular}a^{l_f}_{deeptabular} + W^{T}_{deeptext}a^{l_f}_{deeptext} + W^{T}_{deepimage}a^{l_f}_{deepimage} + b)
+$$
 
 
-Where *'W'* are the weight matrices applied to the wide model and to the final
-activations of the deep models, *'a'* are these final activations, and
-&phi;(x) are the cross product transformations of the original features *'x'*.
+
+Where $W$ are the weight matrices applied to the wide model and to the final
+activations of the deep models, $a$ are these final activations, and
+$\phi(x)$ are the cross product transformations of the original features $x$.
 In case you are wondering what are *"cross product transformations"*, here is
 a quote taken directly from the paper: *"For binary features, a cross-product
 transformation (e.g., “AND(gender=female, language=en)”) is 1 if and only if
@@ -86,9 +88,9 @@ otherwise".*
 While if there is a ``deephead`` component, the previous expression turns
 into:
 
-<p align="center">
-  <img width="300" src="docs/figures/architecture_2_math.png">
-</p>
+$$
+pred = \sigma(W^{T}_{wide}[x,\phi(x)] + W^{T}_{deephead}a^{l_f}_{deephead} + b)
+$$
 
 It is perfectly possible to use custom models (and not necessarily those in
 the library) as long as the the custom models have an attribute called
@@ -149,9 +151,12 @@ Note that while there are scientific publications for the TabTransformer,
 SAINT and FT-Transformer, the TabFasfFormer and TabPerceiver are our own
 adaptation of those algorithms for tabular data.
 
-For details on these models (and all the other models in the library for the
-different data modes) and their corresponding options please see the examples
-in the Examples folder and the documentation.
+In addition, Self-Supervised pre-training can be used for all `deeptabular`
+models, with the exception of the `TabPerceiver`. Self-Supervised
+pre-training can be used via two methods or routines which we refer as:
+encoder-decoder method and constrastive-denoising method. Please, see the
+documentation and the examples for details on this functionality, and all
+other options in the library.
 
 <!-- ###  Installation
 
