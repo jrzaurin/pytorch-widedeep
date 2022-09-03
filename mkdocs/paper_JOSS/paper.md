@@ -36,7 +36,7 @@ Variety of DL packages use different approaches to implement single or small gro
 
 In general terms, `pytorch-widedeep` is a package to use deep learning with tabular data. In particular, is intended to facilitate the combination of text and images with corresponding tabular data using wide and deep models. With that in mind there are a number of architectures that can be implemented with just a few lines of code. The main components of those architectures are shown in the Figure \autoref{fig:widedeep_arch}.
 
-![\label{fig:widedeep_arch}](mkdocs/sources/docs/figures/widedeep_arch.png)
+![\label{fig:widedeep_arch}](figures/widedeep_arch.png)
 
 The dashed boxes in the figure represent optional, overall components, and the dashed lines/arrows indicate the corresponding connections, depending on whether or not certain components are present. For example, the dashed, blue-lines indicate that the ``deeptabular``, ``deeptext`` and ``deepimage`` components are connected directly to the output neuron or neurons (depending on whether we are performing a binary classification or regression, or a multi-class classification) if the optional ``deephead`` is not present. Finally, the components within the faded-pink rectangle are concatenated.
 
@@ -137,9 +137,9 @@ We have implemented two methods or routines that allow the user to self-suerpvis
 
 The two routines implemented are illustrated in the Figures \autoref{fig:self_supervised_tabnet} \autoref{fig:self_supervised_saint}. The first is from TabNet [@arik2021tabnet]. It is a *'standard'* encoder-decoder architecture and and is designed here for models that do not use transformer-based architectures (or when the embeddings can all have different dimensions). The second is from SAINT [@somepalli2021saint], it is based on Contrastive and Denoising learning and is designed for models that use transformer-based architectures (or when the embeddings all need to have the same dimension):
 
-![The caption of the original paper[@arik2021tabnet] is included in case it is useful. \label{fig:self_supervised_tabnet}](mkdocs/sources/docs/figures/self_supervised_tabnet.png)
+![The caption of the original paper[@arik2021tabnet] is included in case it is useful. \label{fig:self_supervised_tabnet}](figures/self_supervised_tabnet.png)
 
-![The caption of the original paper[@somepalli2021saint] is included in case it is useful. \label{fig:self_supervised_saint}](mkdocs/sources/docs/figmkdocs/sources/docs/figuresmkdocs/sources/docs/figuresmkdocs/sources/docs/figuresself_supervised_saint.png)
+![The caption of the original paper[@somepalli2021saint] is included in case it is useful. \label{fig:self_supervised_saint}](figures/self_supervised_saint.png)
 
 
 To fully utilise the self-supervised trainers implemented in this library a minimum understanding of the processes as described in the papers is required. Therefore, we strongly encourage the users and reader to follow the related papers explanations.
