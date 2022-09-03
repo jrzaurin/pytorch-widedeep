@@ -2,12 +2,12 @@ import numpy as np
 import torch
 import pandas as pd
 
+from pytorch_widedeep import BayesianTrainer
 from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
-from pytorch_widedeep.training.bayesian_trainer import BayesianTrainer
 
 use_cuda = torch.cuda.is_available()
 

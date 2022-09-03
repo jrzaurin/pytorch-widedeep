@@ -1,9 +1,9 @@
 import os
+from typing import List
 
 import numpy as np
 from gensim.utils import tokenize
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
 from pytorch_widedeep.utils.fastai_transforms import Vocab, Tokenizer
 
 __all__ = ["simple_preprocess", "get_texts", "pad_sequences", "build_embeddings_matrix"]

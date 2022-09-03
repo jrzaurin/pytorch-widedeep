@@ -24,6 +24,8 @@ text and images using Wide and Deep models in Pytorch
 
 **Experiments and comparison with `LightGBM`**: [TabularDL vs LightGBM](https://github.com/jrzaurin/tabulardl-benchmark)
 
+**Slack**: if you want to contribute or just want to chat with us, join [slack](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
+
 The content of this document is organized as follows:
 
 - [pytorch-widedeep](#pytorch-widedeep)
@@ -142,9 +144,12 @@ Note that while there are scientific publications for the TabTransformer,
 SAINT and FT-Transformer, the TabFasfFormer and TabPerceiver are our own
 adaptation of those algorithms for tabular data.
 
-For details on these models (and all the other models in the library for the
-different data modes) and their corresponding options please see the examples
-in the Examples folder and the documentation.
+In addition, Self-Supervised pre-training can be used for all `deeptabular`
+models, with the exception of the `TabPerceiver`. Self-Supervised
+pre-training can be used via two methods or routines which we refer as:
+encoder-decoder method and constrastive-denoising method. Please, see the
+documentation and the examples for details on this functionality, and all
+other options in the library.
 
 ###  Installation
 

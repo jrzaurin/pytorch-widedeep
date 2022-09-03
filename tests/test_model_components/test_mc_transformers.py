@@ -12,8 +12,11 @@ from pytorch_widedeep.models import (
     TabFastFormer,
     TabTransformer,
 )
-from pytorch_widedeep.models.tabular.embeddings_layers import *  # noqa: F403
-from pytorch_widedeep.models.tabular.transformers._attention_layers import *  # noqa: F403
+from pytorch_widedeep.models.tabular.embeddings_layers import (
+    ContEmbeddings,
+    SharedEmbeddings,
+    FullEmbeddingDropout,
+)
 
 # I am going over test these models due to the number of components
 
@@ -57,7 +60,11 @@ def test_embeddings_have_padding():
 
 def test_tabtransformer_output():
     out = model1(X_tab)
-    assert out.size(0) == 10 and out.size(1) == (n_cols * 32 + len(cont_cols)) * 2
+    assert (
+        out.size(0) == 10
+        and out.size(1) == (n_cols * 32 + len(cont_cols))
+        and out.size(1) == model1.output_dim
+    )
 
 
 ###############################################################################
@@ -117,7 +124,11 @@ def test_shared_embeddings_have_padding():
 
 def test_tabtransformer_w_shared_emb_output():
     out = model2(X_tab)
-    assert out.size(0) == 10 and out.size(1) == (n_cols * 32 + len(cont_cols)) * 2
+    assert (
+        out.size(0) == 10
+        and out.size(1) == (n_cols * 32 + len(cont_cols))
+        and out.size(1) == model2.output_dim
+    )
 
 
 ###############################################################################
@@ -161,7 +172,11 @@ model3 = TabTransformer(
 
 def test_tabtransformer_output_no_cont():
     out = model3(X_tab)
-    assert out.size(0) == 10 and out.size(1) == (n_cols * 32) * 2
+    assert (
+        out.size(0) == 10
+        and out.size(1) == (n_cols * 32)
+        and out.size(1) == model3.output_dim
+    )
 
 
 ###############################################################################
@@ -288,15 +303,9 @@ def test_embed_continuous_and_with_cls_token_transformer_family(
     out = model(X)
     res = [out.size(0) == 10]
     if with_cls_token:
-        if model_name in ["saint", "tabfastformer"]:
-            res.append(out.shape[1] == model.input_dim * 2)
-        elif model_name == "fttransformer":
-            res.append(out.shape[1] == model.input_dim)
+        res.append(out.shape[1] == model.input_dim)
     else:
-        if model_name in ["saint", "tabfastformer"]:
-            res.append(out.shape[1] == (total_n_cols * model.input_dim) * 2)
-        elif model_name == "fttransformer":
-            res.append(out.shape[1] == (total_n_cols * model.input_dim))
+        res.append(out.shape[1] == (total_n_cols * model.input_dim))
 
     assert all(res)
 

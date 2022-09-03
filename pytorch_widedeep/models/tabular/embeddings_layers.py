@@ -12,7 +12,15 @@ import einops
 import torch.nn.functional as F
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Any,
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Optional,
+)
 
 
 class FullEmbeddingDropout(nn.Module):
@@ -37,6 +45,7 @@ class FullEmbeddingDropout(nn.Module):
 
 
 DropoutLayers = Union[nn.Dropout, FullEmbeddingDropout]
+NormLayers = Union[nn.Identity, nn.LayerNorm, nn.BatchNorm1d]
 
 
 class ContEmbeddings(nn.Module):

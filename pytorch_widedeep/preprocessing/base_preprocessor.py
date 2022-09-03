@@ -1,7 +1,7 @@
+from typing import List
+
 import pandas as pd
 from sklearn.exceptions import NotFittedError
-
-from pytorch_widedeep.wdtypes import *  # noqa: F403
 
 
 # This class does not represent any sctructural advantage, but I keep it to

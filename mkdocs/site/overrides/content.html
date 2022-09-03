@@ -1,0 +1,16 @@
+<!-- Overwrites content.html base mkdocs theme, taken from 
+https://github.com/mkdocs/mkdocs/blob/master/mkdocs/themes/mkdocs/content.html -->
+
+{% if page.meta.source %}
+    <div class="source-links">
+    {% for filename in page.meta.source %}
+        <span class="label label-primary">{{ filename }}</span>
+    {% endfor %}
+    </div>
+{% endif %}
+
+{{ page.content }}
+
+{% if git_page_authors %}
+  <p><small>Authors: {{ git_page_authors | default('enable mkdocs-git-authors-plugin') }}</small></p>
+{% endif %}

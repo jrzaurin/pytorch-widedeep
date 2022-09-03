@@ -1,4 +1,3 @@
-import os
 import json
 from pathlib import Path
 
@@ -8,30 +7,34 @@ import torch.nn.functional as F
 from tqdm import trange
 from torchmetrics import Metric as TorchMetric
 from torch.utils.data import DataLoader, TensorDataset
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from pytorch_widedeep.metrics import Metric, MultipleMetrics
-from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.callbacks import (
-    History,
-    Callback,
-    MetricCallback,
-    CallbackContainer,
-    LRShedulerCallback,
+from pytorch_widedeep.metrics import Metric
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Union,
+    Module,
+    Tensor,
+    Optional,
+    Optimizer,
+    LRScheduler,
 )
+from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.training._trainer_utils import (
     save_epoch_logs,
     print_loss_and_metric,
-    bayesian_alias_to_loss,
     tabular_train_val_split,
+)
+from pytorch_widedeep.training._base_bayesian_trainer import (
+    BaseBayesianTrainer,
 )
 from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BaseBayesianModel,
 )
 
 
-class BayesianTrainer:
+class BayesianTrainer(BaseBayesianTrainer):
     r"""Class to set the of attributes that will be used during the
     training process.
 
@@ -126,32 +129,18 @@ class BayesianTrainer:
         seed: int = 1,
         **kwargs,
     ):
-
-        if objective not in ["binary", "multiclass", "regression"]:
-            raise ValueError(
-                "If 'custom_loss_function' is not None, 'objective' must be 'binary' "
-                "'multiclass' or 'regression', consistent with the loss function"
-            )
-
-        self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
-
-        self.model = model
-        self.early_stop = False
-
-        self.verbose = verbose
-        self.seed = seed
-        self.objective = objective
-
-        self.loss_fn = self._set_loss_fn(objective, custom_loss_function, **kwargs)
-        self.optimizer = (
-            optimizer
-            if optimizer is not None
-            else torch.optim.AdamW(self.model.parameters())
+        super().__init__(
+            model=model,
+            objective=objective,
+            custom_loss_function=custom_loss_function,
+            optimizer=optimizer,
+            lr_scheduler=lr_scheduler,
+            callbacks=callbacks,
+            metrics=metrics,
+            verbose=verbose,
+            seed=seed,
+            **kwargs,
         )
-        self.lr_scheduler = lr_scheduler
-        self._set_lr_scheduler_running_params(lr_scheduler, **kwargs)
-        self._set_callbacks_and_metrics(callbacks, metrics)
-        self.model.to(self.device)
 
     def fit(  # noqa: C901
         self,
@@ -161,7 +150,7 @@ class BayesianTrainer:
         target_val: Optional[np.ndarray] = None,
         val_split: Optional[float] = None,
         n_epochs: int = 1,
-        val_freq: int = 1,
+        validation_freq: int = 1,
         batch_size: int = 32,
         n_train_samples: int = 2,
         n_val_samples: int = 2,
@@ -183,7 +172,7 @@ class BayesianTrainer:
             split fraction via `val_split`
         n_epochs: int, default=1
             number of epochs
-        val_freq: int, default=1
+        validation_freq: int, default=1
             epochs validation frequency
         batch_size: int, default=32
             batch size
@@ -237,7 +226,9 @@ class BayesianTrainer:
             epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
 
             on_epoch_end_metric = None
-            if eval_set is not None and epoch % val_freq == (val_freq - 1):
+            if eval_set is not None and epoch % validation_freq == (
+                validation_freq - 1
+            ):
                 self.callback_container.on_eval_begin()
                 self.valid_running_loss = 0.0
                 with trange(eval_steps, disable=self.verbose != 1) as v:
@@ -354,11 +345,9 @@ class BayesianTrainer:
         self,
         path: str,
         save_state_dict: bool = False,
-        model_filename: str = "wd_model.pt",
+        model_filename: str = "bayesian_model.pt",
     ):
-        r"""Saves the model, training and evaluation history, and the
-        `feature_importance` attribute (if the `deeptabular` component is a
-        Tabnet model) to disk
+        r"""Saves the model, training and evaluation history to disk
 
         The `Trainer` class is built so that it 'just' trains a model. With
         that in mind, all the torch related parameters (such as optimizers or
@@ -400,35 +389,6 @@ class BayesianTrainer:
             torch.save(self.model.state_dict(), model_path)
         else:
             torch.save(self.model, model_path)
-
-    def _restore_best_weights(self):
-        already_restored = any(
-            [
-                (
-                    callback.__class__.__name__ == "EarlyStopping"
-                    and callback.restore_best_weights
-                )
-                for callback in self.callback_container.callbacks
-            ]
-        )
-        if already_restored:
-            pass
-        else:
-            for callback in self.callback_container.callbacks:
-                if callback.__class__.__name__ == "ModelCheckpoint":
-                    if callback.save_best_only:
-                        if self.verbose:
-                            print(
-                                f"Model weights restored to best epoch: {callback.best_epoch + 1}"
-                            )
-                        self.model.load_state_dict(callback.best_state_dict)
-                    else:
-                        if self.verbose:
-                            print(
-                                "Model weights after training corresponds to the those of the "
-                                "final epoch which might not be the best performing weights. Use"
-                                "the 'ModelCheckpoint' Callback to restore the best epoch weights."
-                            )
 
     def _train_step(
         self,
@@ -549,81 +509,3 @@ class BayesianTrainer:
         self.model.train()
 
         return preds_l
-
-    def _set_loss_fn(self, objective, custom_loss_function, **kwargs):
-
-        if custom_loss_function is not None:
-            return custom_loss_function
-
-        class_weight = (
-            torch.tensor(kwargs["class_weight"]).to(self.device)
-            if "class_weight" in kwargs
-            else None
-        )
-
-        if self.objective != "regression":
-            return bayesian_alias_to_loss(objective, weight=class_weight)
-        else:
-            return bayesian_alias_to_loss(objective)
-
-    def _set_reduce_on_plateau_criterion(
-        self, lr_scheduler, reducelronplateau_criterion
-    ):
-
-        self.reducelronplateau = False
-
-        if isinstance(lr_scheduler, ReduceLROnPlateau):
-            self.reducelronplateau = True
-
-        if self.reducelronplateau and not reducelronplateau_criterion:
-            UserWarning(
-                "The learning rate scheduler is of type ReduceLROnPlateau. The step method in this"
-                " scheduler requires a 'metrics' param that can be either the validation loss or the"
-                " validation metric. Please, when instantiating the Trainer, specify which quantity"
-                " will be tracked using reducelronplateau_criterion = 'loss' (default) or"
-                " reducelronplateau_criterion = 'metric'"
-            )
-        else:
-            self.reducelronplateau_criterion = "loss"
-
-    def _set_lr_scheduler_running_params(self, lr_scheduler, **kwargs):
-        # ReduceLROnPlateau is special
-
-        reducelronplateau_criterion = kwargs.get("reducelronplateau_criterion", None)
-        self._set_reduce_on_plateau_criterion(lr_scheduler, reducelronplateau_criterion)
-        if lr_scheduler is not None:
-            self.cyclic_lr = "cycl" in lr_scheduler.__class__.__name__.lower()
-        else:
-            self.cyclic_lr = False
-
-    def _set_callbacks_and_metrics(self, callbacks, metrics):
-        self.callbacks: List = [History(), LRShedulerCallback()]
-        if callbacks is not None:
-            for callback in callbacks:
-                if isinstance(callback, type):
-                    callback = callback()
-                self.callbacks.append(callback)
-        if metrics is not None:
-            self.metric = MultipleMetrics(metrics)
-            self.callbacks += [MetricCallback(self.metric)]
-        else:
-            self.metric = None
-        self.callback_container = CallbackContainer(self.callbacks)
-        self.callback_container.set_model(self.model)
-        self.callback_container.set_trainer(self)
-
-    @staticmethod
-    def _set_device_and_num_workers(**kwargs):
-
-        # Important note for Mac users: Since python 3.8, the multiprocessing
-        # library start method changed from 'fork' to 'spawn'. This affects the
-        # data-loaders, which will not run in parallel.
-        default_num_workers = (
-            0
-            if sys.platform == "darwin" and sys.version_info.minor > 7
-            else os.cpu_count()
-        )
-        default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        device = kwargs.get("device", default_device)
-        num_workers = kwargs.get("num_workers", default_num_workers)
-        return device, num_workers

@@ -19,7 +19,8 @@ dev_status = {
     "0.3": "Development Status :: 3 - Alpha",  # v0.3 - most functionality
     "0.4": "Development Status :: 4 - Beta",  # v0.4 - most functionality + doc
     "1.0": "Development Status :: 5 - Production/Stable",  # v1.0 - most functionality + doc + test  # noqa
-    "1.1": "Development Status :: 5 - Production/Stable",
+    "1.1": "Development Status :: 5 - Production/Stable",  # v1.1 - new functionality
+    "1.2": "Development Status :: 5 - Production/Stable",  # v1.2 - new functionality
     "2.0": "Development Status :: 6 - Mature",  # v2.0 - new functionality?
 }
 

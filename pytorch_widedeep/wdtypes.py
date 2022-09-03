@@ -14,6 +14,7 @@ from typing import (
     Generator,
     Collection,
 )
+from pathlib import PosixPath
 
 # isort: off
 if sys.version_info >= (3, 8):
@@ -25,9 +26,6 @@ else:
         pass
 # isort: on
 
-from pathlib import PosixPath
-
-import torch
 from torch import Tensor
 from torch.nn import Module
 from torch.optim.optimizer import Optimizer
@@ -68,17 +66,25 @@ from torchvision.transforms import (
     RandomHorizontalFlip,
     RandomAdjustSharpness,
 )
+from torchvision.models._api import WeightsEnum
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.utils.data.dataloader import DataLoader
 
-from pytorch_widedeep.models import WideDeep
-from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
-from pytorch_widedeep.models.tabular.tabnet.sparsemax import (
-    Entmax15,
-    Sparsemax,
-)
-from pytorch_widedeep.bayesian_models._base_bayesian_model import (
-    BaseBayesianModel,
+from pytorch_widedeep.models import (
+    SAINT,
+    TabMlp,
+    TabNet,
+    WideDeep,
+    TabResnet,
+    TabPerceiver,
+    FTTransformer,
+    TabFastFormer,
+    TabMlpDecoder,
+    TabNetDecoder,
+    TabTransformer,
+    SelfAttentionMLP,
+    TabResnetDecoder,
+    ContextAttentionMLP,
 )
 
 ListRules = Collection[Callable[[str], str]]
@@ -122,4 +128,25 @@ Transforms = Union[
 ]
 LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
-NormLayers = Union[torch.nn.Identity, torch.nn.LayerNorm, torch.nn.BatchNorm1d]
+
+ModelWithoutAttention = Union[
+    TabMlp,
+    TabNet,
+    TabResnet,
+]
+
+ModelWithAttention = Union[
+    TabTransformer,
+    SAINT,
+    FTTransformer,
+    TabFastFormer,
+    TabPerceiver,
+    ContextAttentionMLP,
+    SelfAttentionMLP,
+]
+
+DecoderWithoutAttention = Union[
+    TabMlpDecoder,
+    TabNetDecoder,
+    TabResnetDecoder,
+]

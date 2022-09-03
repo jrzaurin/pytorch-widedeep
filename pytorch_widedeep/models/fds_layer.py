@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Tuple, Union, Tensor, Literal, Optional
 from pytorch_widedeep.utils.deeptabular_utils import (
     find_bin,
     get_kernel_window,
@@ -37,6 +37,11 @@ class FDSLayer(nn.Module):
 
         :information_source: **NOTE**: Feature Distribution Smoothing is
          available when using ONLY a `deeptabular` component
+
+        :information_source: **NOTE**: We consider this feature absolutely
+        experimental and we recommend the user to not use it unless the
+        corresponding [publication](https://arxiv.org/abs/2102.09554) is
+        well understood
 
         The code here is based on the code at the
         [official repo](https://github.com/YyzHarry/imbalanced-regression)

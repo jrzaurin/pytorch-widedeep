@@ -1,6 +1,6 @@
 import torch
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BaseBayesianModel,

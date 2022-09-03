@@ -15,7 +15,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.models.tabular.tabnet import sparsemax
 
 
@@ -207,7 +207,9 @@ class AttentiveTransformer(nn.Module):
             self.bn = nn.BatchNorm1d(output_dim, momentum=momentum)
 
         if mask_type == "sparsemax":
-            self.mask: Union[Sparsemax, Entmax15] = sparsemax.Sparsemax(dim=-1)
+            self.mask: Union[
+                sparsemax.Sparsemax, sparsemax.Entmax15
+            ] = sparsemax.Sparsemax(dim=-1)
         elif mask_type == "entmax":
             self.mask = sparsemax.Entmax15(dim=-1)
         else:
@@ -294,11 +296,14 @@ class TabNetEncoder(nn.Module):
             self.feat_transformers.append(feat_transformer)
             self.attn_transformers.append(attn_transformer)
 
-    def forward(self, X: Tensor) -> Tuple[List[Tensor], Tensor]:
+    def forward(
+        self, X: Tensor, prior: Optional[Tensor] = None
+    ) -> Tuple[List[Tensor], Tensor]:
         x = self.initial_bn(X)
 
-        # P[n_step = 0] is initialized as all ones, 1^(B×D)
-        prior = torch.ones(x.shape).to(x.device)
+        if prior is None:
+            # P[n_step = 0] is initialized as all ones, 1^(B×D)
+            prior = torch.ones(x.shape).to(x.device)
 
         # sparsity regularization
         M_loss = torch.FloatTensor([0.0]).to(x.device)

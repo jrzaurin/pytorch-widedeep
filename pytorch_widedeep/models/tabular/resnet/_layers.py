@@ -1,9 +1,8 @@
 from collections import OrderedDict
 
 from torch import nn
-from torch.nn import Module
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import List, Tensor
 
 
 class BasicBlock(nn.Module):
@@ -14,7 +13,7 @@ class BasicBlock(nn.Module):
         out: int,
         dropout: float = 0.0,
         simplify: bool = False,
-        resize: Module = None,
+        resize: nn.Module = None,
     ):
         super(BasicBlock, self).__init__()
 

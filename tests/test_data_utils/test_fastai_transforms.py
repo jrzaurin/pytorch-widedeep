@@ -6,7 +6,18 @@ from that library to ensure adequate coverage
 Credit for the code here to Jeremy Howard and the fastai team
 """
 
-from pytorch_widedeep.utils.fastai_transforms import *  # noqa: F403
+from pytorch_widedeep.utils.fastai_transforms import (
+    Vocab,
+    Tokenizer,
+    BaseTokenizer,
+    fix_html,
+    deal_caps,
+    replace_rep,
+    replace_wrep,
+    spec_add_spaces,
+    replace_all_caps,
+    rm_useless_spaces,
+)
 
 
 ###############################################################################

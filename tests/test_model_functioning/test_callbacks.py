@@ -465,8 +465,8 @@ def test_early_stopping_get_state():
         verbose=0,
     )
     trainer_tt.fit(
-        X_wide=X_wide,
-        X_tab=X_tab,
+        X_train={"X_wide": X_wide, "X_tab": X_tab, "target": target},
+        X_val={"X_wide": X_wide_val, "X_tab": X_tab_val, "target": target_val},
         target=target,
         n_epochs=1,
         batch_size=16,

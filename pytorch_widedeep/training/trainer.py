@@ -1,5 +1,3 @@
-import os
-import sys
 import json
 import warnings
 from inspect import signature
@@ -13,39 +11,37 @@ from torch import nn
 from scipy.sparse import csc_matrix
 from torchmetrics import Metric as TorchMetric
 from torch.utils.data import DataLoader
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.losses import ZILNLoss
-from pytorch_widedeep.metrics import Metric, MultipleMetrics
-from pytorch_widedeep.wdtypes import *  # noqa: F403
-from pytorch_widedeep.callbacks import (
-    History,
-    Callback,
-    MetricCallback,
-    CallbackContainer,
-    LRShedulerCallback,
+from pytorch_widedeep.metrics import Metric
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Literal,
+    Optional,
+    WideDeep,
+    Optimizer,
+    Transforms,
+    LRScheduler,
 )
+from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.dataloaders import DataLoaderDefault
-from pytorch_widedeep.initializers import Initializer, MultipleInitializer
+from pytorch_widedeep.initializers import Initializer
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
+from pytorch_widedeep.training._base_trainer import BaseTrainer
 from pytorch_widedeep.training._trainer_utils import (
-    alias_to_loss,
     save_epoch_logs,
     wd_train_val_split,
     print_loss_and_metric,
 )
-from pytorch_widedeep.models.tabular.tabnet._utils import create_explain_matrix
-from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
-from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
-from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
-from pytorch_widedeep.training._multiple_lr_scheduler import (
-    MultipleLRScheduler,
-)
 
 
-class Trainer:
+class Trainer(BaseTrainer):
     r"""Class to set the of attributes that will be used during the
     training process.
 
@@ -54,10 +50,10 @@ class Trainer:
     model: `WideDeep`
         An object of class `WideDeep`
     objective: str
-        Defines the objective, loss or cost function.
+        Defines the objective, loss or cost function. <br/>
 
         Param aliases: `loss_function`, `loss_fn`, `loss`,
-        `cost_function`, `cost_fn`, `cost`
+        `cost_function`, `cost_fn`, `cost`. <br/>
 
         Possible values are:
 
@@ -228,7 +224,7 @@ class Trainer:
         self,
         model: WideDeep,
         objective: str,
-        custom_loss_function: Optional[Module] = None,
+        custom_loss_function: Optional[nn.Module] = None,
         optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
         lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]] = None,
         initializers: Optional[Union[Initializer, Dict[str, Initializer]]] = None,
@@ -239,34 +235,20 @@ class Trainer:
         seed: int = 1,
         **kwargs,
     ):
-
-        self._check_inputs(
-            model, objective, optimizers, lr_schedulers, custom_loss_function
+        super().__init__(
+            model=model,
+            objective=objective,
+            custom_loss_function=custom_loss_function,
+            optimizers=optimizers,
+            lr_schedulers=lr_schedulers,
+            initializers=initializers,
+            transforms=transforms,
+            callbacks=callbacks,
+            metrics=metrics,
+            verbose=verbose,
+            seed=seed,
+            **kwargs,
         )
-        self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
-
-        # initialize early_stop. If EarlyStopping Callback is used it will
-        # take care of it
-        self.early_stop = False
-        self.verbose = verbose
-        self.seed = seed
-
-        self.model = model
-        if self.model.is_tabnet:
-            self.lambda_sparse = kwargs.get("lambda_sparse", 1e-3)
-            self.reducing_matrix = create_explain_matrix(self.model)
-        self.model.to(self.device)
-        self.model.wd_device = self.device
-
-        self.objective = objective
-        self.method = _ObjectiveToMethod.get(objective)
-
-        self._initialize(initializers)
-        self.loss_fn = self._set_loss_fn(objective, custom_loss_function, **kwargs)
-        self.optimizer = self._set_optimizer(optimizers)
-        self.lr_scheduler = self._set_lr_scheduler(lr_schedulers, **kwargs)
-        self.transforms = self._set_transforms(transforms)
-        self._set_callbacks_and_metrics(callbacks, metrics)
 
     @Alias("finetune", "warmup")
     def fit(  # noqa: C901
@@ -330,12 +312,10 @@ class Trainer:
             predefined dataloaders are in `pytorch-widedeep.dataloaders`.If
             `None`, a standard torch `DataLoader` is used.
         finetune: bool, default=False
-            param alias: `warmup`
-
             fine-tune individual model components. This functionality can also
-            be used to 'warm-up' individual components before the joined
-            training starts, and hence its alias. See the Examples folder in
-            the repo for more details
+            be used to 'warm-up' (and hence the alias `warmup`) individual
+            components before the joined training starts, and hence its
+            alias. See the Examples folder in the repo for more details
 
             `pytorch_widedeep` implements 3 fine-tune routines.
 
@@ -359,7 +339,14 @@ class Trainer:
               [ULMfit paper](https://arxiv.org/abs/1801.06146>).
 
             For details on how these routines work, please see the Examples
-            section in this documentation and the Examples folder in the repo.
+            section in this documentation and the Examples folder in the repo. <br/>
+            Param Alias: `warmup`
+        with_lds: bool, default=False
+            Boolean indicating if Label Distribution Smoothing will be used. <br/>
+            information_source: **NOTE**: We consider this feature absolutely
+            experimental and we recommend the user to not use it unless the
+            corresponding [publication](https://arxiv.org/abs/2102.09554) is
+            well understood
 
         Other Parameters
         ----------------
@@ -373,12 +360,24 @@ class Trainer:
                 for details.
 
             - **Label Distribution Smoothing related parameters**:<br/>
-                see the source code at `pytorch_widedeep._wd_dataset` for some details
 
-                    >:information_source: **NOTE**: We consider this feature absolutely
-                    experimental and we recommend the user to not use it unless the
-                    corresponding [publication](https://arxiv.org/abs/2102.09554) is
-                    well understood
+                - lds_kernel (`Literal['gaussian', 'triang', 'laplace']`):
+                    choice of kernel for Label Distribution Smoothing
+                - lds_ks (`int`):
+                    LDS kernel window size
+                - lds_sigma (`float`):
+                    standard deviation of ['gaussian','laplace'] kernel for LDS
+                - lds_granularity (`int`):
+                    number of bins in histogram used in LDS to count occurence of sample values
+                - lds_reweight (`bool`):
+                    option to reweight bin frequency counts in LDS
+                - lds_y_max (`Optional[float]`):
+                    option to restrict LDS bins by upper label limit
+                - lds_y_min (`Optional[float]`):
+                    option to restrict LDS bins by lower label limit
+
+                See `pytorch_widedeep.trainer._wd_dataset` for more details on
+                the implications of these parameters
 
             - **Finetune related parameters**:<br/>
                 see the source code at `pytorch_widedeep._finetune`. Namely, these are:
@@ -741,55 +740,6 @@ class Trainer:
         if self.method == "multiclass":
             return np.vstack(preds_l)
 
-    def get_embeddings(
-        self, col_name: str, cat_encoding_dict: Dict[str, Dict[str, int]]
-    ) -> Dict[str, np.ndarray]:  # pragma: no cover
-        r"""Returns the learned embeddings for the categorical features passed through
-        `deeptabular`.
-
-        This method is designed to take an encoding dictionary in the same
-        format as that of the `LabelEncoder` Attribute in the class
-        `TabPreprocessor`. See
-        `pytorch_widedeep.preprocessing.TabPreprocessor` and
-        `pytorch_widedeep.utils.dense_utils.LabelEncder`.
-
-        :information_source: **NOTE**:
-        This function will be deprecated in the next relase. Please consider
-        using `Tab2Vec` instead.
-
-        Parameters
-        ----------
-        col_name: str,
-            Column name of the feature we want to get the embeddings for
-        cat_encoding_dict: Dict
-            Dictionary where the keys are the name of the column for which we
-            want to retrieve the embeddings and the values are also of type
-            Dict. These Dict values have keys that are the categories for that
-            column and the values are the corresponding numberical encodings
-
-            e.g.: {'column': {'cat_0': 1, 'cat_1': 2, ...}}
-
-        Examples
-        --------
-        For a series of comprehensive examples please, see the
-        [Examples](https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples)
-        folder in the repo
-        """
-        warnings.warn(
-            "'get_embeddings' will be deprecated in the next release. "
-            "Please consider using 'Tab2vec' instead",
-            DeprecationWarning,
-        )
-        for n, p in self.model.named_parameters():
-            if "embed_layers" in n and col_name in n:
-                embed_mtx = p.cpu().data.numpy()
-        encoding_dict = cat_encoding_dict[col_name]
-        inv_encoding_dict = {v: k for k, v in encoding_dict.items()}
-        cat_embed_dict = {}
-        for idx, value in inv_encoding_dict.items():
-            cat_embed_dict[value] = embed_mtx[idx]
-        return cat_embed_dict
-
     def explain(
         self, X_tab: np.ndarray, save_step_masks: bool = False
     ) -> Union[Tuple, np.ndarray]:
@@ -914,35 +864,6 @@ class Trainer:
         if self.model.is_tabnet:
             with open(save_dir / "feature_importance.json", "w") as fi:
                 json.dump(self.feature_importance, fi)
-
-    def _restore_best_weights(self):
-        already_restored = any(
-            [
-                (
-                    callback.__class__.__name__ == "EarlyStopping"
-                    and callback.restore_best_weights
-                )
-                for callback in self.callback_container.callbacks
-            ]
-        )
-        if already_restored:
-            pass
-        else:
-            for callback in self.callback_container.callbacks:
-                if callback.__class__.__name__ == "ModelCheckpoint":
-                    if callback.save_best_only:
-                        if self.verbose:
-                            print(
-                                f"Model weights restored to best epoch: {callback.best_epoch + 1}"
-                            )
-                        self.model.load_state_dict(callback.best_state_dict)
-                    else:
-                        if self.verbose:
-                            print(
-                                "Model weights after training corresponds to the those of the "
-                                "final epoch which might not be the best performing weights. Use"
-                                "the 'ModelCheckpoint' Callback to restore the best epoch weights."
-                            )
 
     @Alias("n_epochs", ["finetune_epochs", "warmup_epochs"])
     @Alias("max_lr", ["finetune_max_lr", "warmup_max_lr"])
@@ -1326,196 +1247,3 @@ class Trainer:
                 finetune_args[k] = v
 
         return lds_args, dataloader_args, finetune_args
-
-    def _initialize(self, initializers):
-        if initializers is not None:
-            if isinstance(initializers, Dict):
-                self.initializer = MultipleInitializer(
-                    initializers, verbose=self.verbose
-                )
-                self.initializer.apply(self.model)
-            elif isinstance(initializers, type):
-                self.initializer = initializers()
-                self.initializer(self.model)
-            elif isinstance(initializers, Initializer):
-                self.initializer = initializers
-                self.initializer(self.model)
-
-    def _set_loss_fn(self, objective, custom_loss_function, **kwargs):
-
-        class_weight = (
-            torch.tensor(kwargs["class_weight"]).to(self.device)
-            if "class_weight" in kwargs
-            else None
-        )
-
-        if custom_loss_function is not None:
-            return custom_loss_function
-        elif (
-            self.method not in ["regression", "qregression"]
-            and "focal_loss" not in objective
-        ):
-            return alias_to_loss(objective, weight=class_weight)
-        elif "focal_loss" in objective:
-            alpha = kwargs.get("alpha", 0.25)
-            gamma = kwargs.get("gamma", 2.0)
-            return alias_to_loss(objective, alpha=alpha, gamma=gamma)
-        else:
-            return alias_to_loss(objective)
-
-    def _set_optimizer(self, optimizers):
-        if optimizers is not None:
-            if isinstance(optimizers, Optimizer):
-                optimizer: Union[Optimizer, MultipleOptimizer] = optimizers
-            elif isinstance(optimizers, Dict):
-                opt_names = list(optimizers.keys())
-                mod_names = [n for n, c in self.model.named_children()]
-                # if with_fds - the prediction layer is part of the model and
-                # should be optimized with the rest of deeptabular
-                # component/model
-                if self.model.with_fds:
-                    if "enf_pos" in mod_names:
-                        mod_names.remove("enf_pos")
-                    mod_names.remove("fds_layer")
-                    optimizers["deeptabular"].add_param_group(
-                        {"params": self.model.fds_layer.pred_layer.parameters()}
-                    )
-                for mn in mod_names:
-                    assert mn in opt_names, "No optimizer found for {}".format(mn)
-                optimizer = MultipleOptimizer(optimizers)
-        else:
-            optimizer = torch.optim.Adam(self.model.parameters())  # type: ignore
-        return optimizer
-
-    def _set_reduce_on_plateau_criterion(
-        self, lr_schedulers, reducelronplateau_criterion
-    ):
-
-        self.reducelronplateau = False
-
-        if isinstance(lr_schedulers, Dict):
-            for _, scheduler in lr_schedulers.items():
-                if isinstance(scheduler, ReduceLROnPlateau):
-                    self.reducelronplateau = True
-        elif isinstance(lr_schedulers, ReduceLROnPlateau):
-            self.reducelronplateau = True
-
-        if self.reducelronplateau and not reducelronplateau_criterion:
-            UserWarning(
-                "The learning rate scheduler of at least one of the model components is of type "
-                "ReduceLROnPlateau. The step method in this scheduler requires a 'metrics' param "
-                "that can be either the validation loss or the validation metric. Please, when "
-                "instantiating the Trainer, specify which quantity will be tracked using "
-                "reducelronplateau_criterion = 'loss' (default) or reducelronplateau_criterion = 'metric'"
-            )
-            self.reducelronplateau_criterion = "loss"
-        else:
-            self.reducelronplateau_criterion = reducelronplateau_criterion
-
-    def _set_lr_scheduler(self, lr_schedulers, **kwargs):
-
-        # ReduceLROnPlateau is special
-        reducelronplateau_criterion = kwargs.get("reducelronplateau_criterion", None)
-
-        self._set_reduce_on_plateau_criterion(
-            lr_schedulers, reducelronplateau_criterion
-        )
-
-        if lr_schedulers is not None:
-
-            if isinstance(lr_schedulers, LRScheduler) or isinstance(
-                lr_schedulers, ReduceLROnPlateau
-            ):
-                lr_scheduler = lr_schedulers
-                cyclic_lr = "cycl" in lr_scheduler.__class__.__name__.lower()
-            else:
-                lr_scheduler = MultipleLRScheduler(lr_schedulers)
-                scheduler_names = [
-                    sc.__class__.__name__.lower()
-                    for _, sc in lr_scheduler._schedulers.items()
-                ]
-                cyclic_lr = any(["cycl" in sn for sn in scheduler_names])
-        else:
-            lr_scheduler, cyclic_lr = None, False
-
-        self.cyclic_lr = cyclic_lr
-
-        return lr_scheduler
-
-    @staticmethod
-    def _set_transforms(transforms):
-        if transforms is not None:
-            return MultipleTransforms(transforms)()
-        else:
-            return None
-
-    def _set_callbacks_and_metrics(self, callbacks, metrics):
-        self.callbacks: List = [History(), LRShedulerCallback()]
-        if callbacks is not None:
-            for callback in callbacks:
-                if isinstance(callback, type):
-                    callback = callback()
-                self.callbacks.append(callback)
-        if metrics is not None:
-            self.metric = MultipleMetrics(metrics)
-            self.callbacks += [MetricCallback(self.metric)]
-        else:
-            self.metric = None
-        self.callback_container = CallbackContainer(self.callbacks)
-        self.callback_container.set_model(self.model)
-        self.callback_container.set_trainer(self)
-
-    @staticmethod
-    def _check_inputs(
-        model,
-        objective,
-        optimizers,
-        lr_schedulers,
-        custom_loss_function,
-    ):
-
-        if model.with_fds and _ObjectiveToMethod.get(objective) != "regression":
-            raise ValueError(
-                "Feature Distribution Smooting can be used only for regression"
-            )
-
-        if _ObjectiveToMethod.get(objective) == "multiclass" and model.pred_dim == 1:
-            raise ValueError(
-                "This is a multiclass classification problem but the size of the output layer"
-                " is set to 1. Please, set the 'pred_dim' param equal to the number of classes "
-                " when instantiating the 'WideDeep' class"
-            )
-
-        if isinstance(optimizers, Dict):
-            if lr_schedulers is not None and not isinstance(lr_schedulers, Dict):
-                raise ValueError(
-                    "''optimizers' and 'lr_schedulers' must have consistent type: "
-                    "(Optimizer and LRScheduler) or (Dict[str, Optimizer] and Dict[str, LRScheduler]) "
-                    "Please, read the documentation or see the examples for more details"
-                )
-
-        if custom_loss_function is not None and objective not in [
-            "binary",
-            "multiclass",
-            "regression",
-        ]:
-            raise ValueError(
-                "If 'custom_loss_function' is not None, 'objective' must be 'binary' "
-                "'multiclass' or 'regression', consistent with the loss function"
-            )
-
-    @staticmethod
-    def _set_device_and_num_workers(**kwargs) -> Tuple[str, int]:
-
-        # Important note for Mac users: Since python 3.8, the multiprocessing
-        # library start method changed from 'fork' to 'spawn'. This affects the
-        # data-loaders, which will not run in parallel.
-        default_num_workers = (
-            0
-            if sys.platform == "darwin" and sys.version_info.minor > 7
-            else os.cpu_count()
-        )
-        default_device = "cuda" if torch.cuda.is_available() else "cpu"
-        device = kwargs.get("device", default_device)
-        num_workers = kwargs.get("num_workers", default_num_workers)
-        return device, num_workers

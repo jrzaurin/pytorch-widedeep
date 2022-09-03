@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import List, Tensor, Optional
 from pytorch_widedeep.models.text.basic_rnn import BasicRNN
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.mlp._attention_layers import (
@@ -77,12 +77,9 @@ class AttentiveRNN(BasicRNN):
         word embedding matrix
     rnn: nn.Module
         Stack of RNNs
-    rnn_mlp: nn.Sequential
+    rnn_mlp: nn.Module
         Stack of dense layers on top of the RNN. This will only exists if
         `head_layers_dim` is not `None`
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -142,17 +139,18 @@ class AttentiveRNN(BasicRNN):
         self.attn_dropout = attn_dropout
 
         if bidirectional and attn_concatenate:
-            attn_input_dim = hidden_dim * 4
+            self.rnn_output_dim = hidden_dim * 4
         elif bidirectional or attn_concatenate:
-            attn_input_dim = hidden_dim * 2
+            self.rnn_output_dim = hidden_dim * 2
         else:
-            attn_input_dim = hidden_dim
-        self.attn = ContextAttention(attn_input_dim, attn_dropout, sum_along_seq=True)
-        self.output_dim = attn_input_dim
+            self.rnn_output_dim = hidden_dim
+        self.attn = ContextAttention(
+            self.rnn_output_dim, attn_dropout, sum_along_seq=True
+        )
 
         # FC-Head (Mlp)
         if self.head_hidden_dims is not None:
-            head_hidden_dims = [self.output_dim] + head_hidden_dims
+            head_hidden_dims = [self.rnn_output_dim] + head_hidden_dims
             self.rnn_mlp = MLP(
                 head_hidden_dims,
                 head_activation,
@@ -161,7 +159,6 @@ class AttentiveRNN(BasicRNN):
                 head_batchnorm_last,
                 head_linear_first,
             )
-            self.output_dim = head_hidden_dims[-1]
 
     def _process_rnn_outputs(self, output: Tensor, hidden: Tensor) -> Tensor:
         if self.attn_concatenate:

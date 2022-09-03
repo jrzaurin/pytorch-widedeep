@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import Any, List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.models.text._encoders import ContextAttentionEncoder
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 
@@ -75,12 +75,9 @@ class StackedAttentiveRNN(nn.Module):
         word embedding matrix
     rnn: nn.Module
         Stack of RNNs
-    rnn_mlp: nn.Sequential
+    rnn_mlp: nn.Module
         Stack of dense layers on top of the RNN. This will only exists if
         `head_layers_dim` is not `None`
-    output_dim: int
-        The output dimension of the model. This is a required attribute
-        neccesary to build the `WideDeep` class
 
     Examples
     --------
@@ -160,23 +157,22 @@ class StackedAttentiveRNN(nn.Module):
         # Linear Projection: if embed_dim is different that the input of the
         # attention blocks we add a linear projection
         if bidirectional and attn_concatenate:
-            attn_input_dim = hidden_dim * 4
+            self.rnn_output_dim = hidden_dim * 4
         elif bidirectional or attn_concatenate:
-            attn_input_dim = hidden_dim * 2
+            self.rnn_output_dim = hidden_dim * 2
         else:
-            attn_input_dim = hidden_dim
-        self.output_dim = attn_input_dim
+            self.rnn_output_dim = hidden_dim
 
-        if attn_input_dim != self.embed_dim:
+        if self.rnn_output_dim != self.embed_dim:
             self.embed_proj: Union[nn.Linear, nn.Identity] = nn.Linear(
-                self.embed_dim, attn_input_dim
+                self.embed_dim, self.rnn_output_dim
             )
         else:
             self.embed_proj = nn.Identity()
 
         # RNN
         rnn_params = {
-            "input_size": attn_input_dim,
+            "input_size": self.rnn_output_dim,
             "hidden_size": hidden_dim,
             "bidirectional": bidirectional,
             "batch_first": True,
@@ -192,7 +188,7 @@ class StackedAttentiveRNN(nn.Module):
             self.attention_blks.append(
                 ContextAttentionEncoder(
                     self.rnn,
-                    attn_input_dim,
+                    self.rnn_output_dim,
                     attn_dropout,
                     attn_concatenate,
                     with_addnorm=with_addnorm if i != n_blocks - 1 else False,
@@ -202,7 +198,7 @@ class StackedAttentiveRNN(nn.Module):
 
         # Mlp
         if self.head_hidden_dims is not None:
-            head_hidden_dims = [self.output_dim] + head_hidden_dims
+            head_hidden_dims = [self.rnn_output_dim] + head_hidden_dims
             self.rnn_mlp: Union[MLP, nn.Identity] = MLP(
                 head_hidden_dims,
                 head_activation,
@@ -211,7 +207,6 @@ class StackedAttentiveRNN(nn.Module):
                 head_batchnorm_last,
                 head_linear_first,
             )
-            self.output_dim = head_hidden_dims[-1]
         else:
             # simple hack to add readability in the forward pass
             self.rnn_mlp = nn.Identity()
@@ -235,6 +230,16 @@ class StackedAttentiveRNN(nn.Module):
             x, h, c = blk(x, h, c)
 
         return self.rnn_mlp(x)
+
+    def output_dim(self) -> int:
+        r"""The output dimension of the model. This is a required property
+        neccesary to build the `WideDeep` class
+        """
+        return (
+            self.head_hidden_dims[-1]
+            if self.head_hidden_dims is not None
+            else self.rnn_output_dim
+        )
 
     @property
     def attention_weights(self) -> List:

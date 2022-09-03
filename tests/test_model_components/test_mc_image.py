@@ -1,6 +1,14 @@
 import numpy as np
 import torch
 import pytest
+from torchvision.models import (
+    MNASNet1_0_Weights,
+    MobileNet_V2_Weights,
+    SqueezeNet1_0_Weights,
+    ResNeXt50_32X4D_Weights,
+    Wide_ResNet50_2_Weights,
+    ShuffleNet_V2_X0_5_Weights,
+)
 
 from pytorch_widedeep.models import Vision
 
@@ -22,7 +30,7 @@ def test_output_sizes():
 
 
 def test_n_trainable():
-    model = Vision(pretrained_model_name="resnet18", n_trainable=6)
+    model = Vision(pretrained_model_setup="resnet18", n_trainable=6)
     out = model(X_images)
     assert out.size(0) == 10 and out.size(1) == 512
 
@@ -41,10 +49,16 @@ def test_n_trainable():
         ("mobilenet_v2", 1280),
         ("mnasnet1_0", 1280),
         ("squeezenet1_0", 512),
+        ({"shufflenet_v2_x0_5": ShuffleNet_V2_X0_5_Weights.IMAGENET1K_V1}, 1024),
+        ({"resnext50_32x4d": ResNeXt50_32X4D_Weights.IMAGENET1K_V2}, 2048),
+        ({"wide_resnet50_2": Wide_ResNet50_2_Weights.IMAGENET1K_V2}, 2048),
+        ({"mobilenet_v2": MobileNet_V2_Weights.IMAGENET1K_V2}, 1280),
+        ({"mnasnet1_0": MNASNet1_0_Weights.IMAGENET1K_V1}, 1280),
+        ({"squeezenet1_0": SqueezeNet1_0_Weights.IMAGENET1K_V1}, 512),
     ],
 )
 def test_archiectures(arch, expected_out_shape):
-    model = Vision(pretrained_model_name=arch, n_trainable=0)
+    model = Vision(pretrained_model_setup=arch, n_trainable=0)
     out = model(X_images)
     assert out.size(0) == 10 and out.size(1) == expected_out_shape
 
@@ -66,7 +80,7 @@ def test_head():
 
 
 def test_all_frozen():
-    model = Vision(pretrained_model_name="resnet18", n_trainable=0)
+    model = Vision(pretrained_model_setup="resnet18", n_trainable=0)
     is_trainable = []
     for p in model.parameters():
         is_trainable.append(not p.requires_grad)

@@ -5,7 +5,16 @@ from tqdm import trange
 from torch import nn
 
 from pytorch_widedeep.metrics import Metric, MultipleMetrics
-from pytorch_widedeep.wdtypes import *  # noqa: F403
+from pytorch_widedeep.wdtypes import (
+    Any,
+    List,
+    Tuple,
+    Union,
+    Literal,
+    Optimizer,
+    DataLoader,
+    LRScheduler,
+)
 
 use_cuda = torch.cuda.is_available()
 
