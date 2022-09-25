@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img width="300" src="docs/figures/widedeep_logo.png">
+  <img width="300" src="mkdocs/sources/docs/figures/widedeep_logo.png">
 </p>
 
 [![PyPI version](https://badge.fury.io/py/pytorch-widedeep.svg)](https://pypi.org/project/pytorch-widedeep/)
@@ -52,17 +52,26 @@ in the Figure below:
 
 
 <p align="center">
-  <img width="750" src="docs/figures/widedeep_arch.png">
+  <img width="750" src="mkdocs/sources/docs/figures/widedeep_arch.png">
 </p>
 
-The dashed boxes in the figure represent optional, overall components, and the
-dashed lines/arrows indicate the corresponding connections, depending on
-whether or not certain components are present. For example, the dashed,
-blue-lines indicate that the ``deeptabular``, ``deeptext`` and ``deepimage``
-components are connected directly to the output neuron or neurons (depending
-on whether we are performing a binary classification or regression, or a
-multi-class classification) if the optional ``deephead`` is not present.
-Finally, the components within the faded-pink rectangle are concatenated.
+The blue and green boxes in the figure represent the main data modes and their
+corresponding model components, namely `wide`, `deeptabular`, `deeptext` and
+`deepimage`. The yellow boxes represent so-called fully-connected (FC) heads,
+simply MLPs that one can optionally add "on top" of the main components.
+These are referred in the figure as `TextHead` and `ImageHead`. The
+dashed-line rectangles indicate that the outputs from the components inside
+are concatenated if a final FC head (referred as `DeepHead` in the figure) is
+used. The faded-green `deeptabular` box aims to indicate that the output of
+the deeptabular component will be concatenated directly with the output of
+the `deeptext` or `deepimage` components or, alternatively, with the FC heads
+if these are used. Finally, the arrows indicate the connections, which of
+course depend on the final architecture that the user chooses to build. For
+example, if a model comprised by a `deeptabular` and a `deeptext` component
+with no FC heads is used, the outputs of those components will be
+directly "plugged" into the output neuron or neurons (depending on whether
+this is a regression, binary classification or multi-class classification
+problem).
 
 Note that it is not possible to illustrate the number of possible
 architectures and components available in ``pytorch-widedeep`` in one Figure.
@@ -150,6 +159,11 @@ pre-training can be used via two methods or routines which we refer as:
 encoder-decoder method and constrastive-denoising method. Please, see the
 documentation and the examples for details on this functionality, and all
 other options in the library.
+
+**Note**. We include the `wide` model (or component) under the
+`deeptabular` component. This is because it is designed for tabular data.
+However, the `wide` model (or component) must be passed as a parameter to the
+`WideDeep` class. See the example below for details.
 
 ###  Installation
 
