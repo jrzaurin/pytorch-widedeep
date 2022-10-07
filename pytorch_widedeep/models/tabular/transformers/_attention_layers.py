@@ -217,14 +217,14 @@ class AdditiveAttention(nn.Module):
         v = self.qv_proj(X) if self.share_qv_weights else self.v_proj(X)
         k = self.k_proj(X)
 
-        alphas = (self.W_q(q) / math.sqrt(self.head_dim)).softmax(dim=-1)
+        alphas = (self.W_q(q) / math.sqrt(self.head_dim)).softmax(dim=1)
         q_r = einops.rearrange(q, "b s (h d) -> b s h d", h=self.n_heads)
         global_query = einsum(" b s h, b s h d -> b h d", alphas, q_r)
         global_query = einops.rearrange(global_query, "b h d -> b () (h d)")
 
         p = k * global_query
 
-        betas = (self.W_k(p) / math.sqrt(self.head_dim)).softmax(dim=-1)
+        betas = (self.W_k(p) / math.sqrt(self.head_dim)).softmax(dim=1)
         p_r = einops.rearrange(p, "b s (h d) -> b s h d", h=self.n_heads)
         global_key = einsum(" b s h, b s h d -> b h d", betas, p_r)
         global_key = einops.rearrange(global_key, "b h d -> b () (h d)")
