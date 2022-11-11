@@ -25,24 +25,24 @@ bibliography: paper.bib
 # Summary
 
 In recent years datasets have grown both in size and diversity, combining different data types or modes. 
-Multi-modal machine learning projects involving tabular data, images and/or text are gaining popularity[@garg2022multimodality].
+Multi-modal machine learning projects involving tabular data, images and/or text are gaining popularity (e.g. [@garg2022multimodality]).
 Traditional approaches involved independent feature generation from every data mode and their combination in later stage, before passing them to an algorithm for classification or regression.
 
-However, with the advent of "_easy-to-use_" Deep Learning (DL) frames such as Tensorflow [@tensorflow2015-whitepaper] or Pytorch [@NEURIPS2019_9015], and the subsequent advances in the fields of Computer Vision, Natural Language Processing or Deep Learning for Tabular data, it is now possible to use SoTA DL models and combine all datasets early in the process. This has two main advantages: (i) we can partially, even entirely, skip feature engineering, (ii) the representations of each data mode, ie. tabular, text and images, is learned jointly to harbor information that not only relates to the target, in the supervised training, but to how the different data modes relates to each other.
+However, with the advent of "_easy-to-use_" Deep Learning (DL) frames such as Tensorflow [@tensorflow2015-whitepaper] or Pytorch [@NEURIPS2019_9015], and the subsequent advances in the fields of Computer Vision, Natural Language Processing or Deep Learning for Tabular data, it is now possible to use SoTA DL models and combine all datasets early in the process. This has two main advantages: (i) we can partially, or entirely skip the feature engineering step and (ii) the representations of each data mode are learned jointly. This means that such representations contain information that not only relates to the target, if the problem is supervised, but to how the different data modes relates to each other.
 
-Furthermore, the flexibility inherent to DL approaches allows the usage of techniques that are primarly designed only for the text and/or images, to tabular data, eg. by transfer learning or self-supervised pre-training.
+Furthermore, the flexibility inherent to DL approaches allows the usage of techniques that are primarly designed only for the text and/or images, to tabular data, eg. transfer learning or self-supervised pre-training.
 
 With that in mind, we introduce `pytorch-widedeep`, a flexible package for multimodal-deep-learning, designed to facilitate the combination of tabular data with text and images.
 
 # Statement of need
 
-There is a small number of packages available to use DL for tabular data alone (e.g pytorch-tabular [@joseph2021pytorch], pytorch-tabnet or autogluon-tabular [@erickson2020autogluon]) or that focus mainly in combining text and images (e.g. MMF [@singh2020mmf]). With that in mind, our goal is to provide a modular, flexible, "_easy-to-use_" frame that allows the combination of a wide variety of models for all data modes, tabular, text and images. Furthermore, our library offers also in-house developed models for tabular data, such as adaptations of the Perceiver [@jaegle2021perceiver] and the FastFormer [@chuhan2021fastformer] that, to the best of our knowledge, are not available in any other of the packages mentioned before.
+There is a small number of packages available to use DL for tabular data alone (e.g pytorch-tabular [@joseph2021pytorch], pytorch-tabnet or autogluon-tabular [@erickson2020autogluon]) or that focus mainly in combining text and images (e.g. MMF [@singh2020mmf]). With that in mind, our goal is to provide a modular, flexible, and "_easy-to-use_" frame that allows the combination of a wide variety of models for all data modes.
 
-`pytorch-widedeep` is based on Google's Wide and Deep Algorithm [@cheng2016wide], and hence its name. However, the library has evolved enormously since its origin and, while we prefer to preserve the name for a variety of reasons (the explanation of which is beyond the scope of this paper), the original algorithm is heavily adjusted for multi-modal datasets and intended to facilitate the combination of text and images with corresponding tabular data. With that in mind there are a number of architectures that can be implemented with just a few lines of code. The main components of those architectures are shown in the Figure \autoref{fig:widedeep_arch}.
+`pytorch-widedeep` is based on Google's Wide and Deep Algorithm [@cheng2016wide], and hence its name. However, the library has evolved enormously since its origins and, while we prefer to preserve the name for a variety of reasons (the explanation of which is beyond the scope of this paper), the original algorithm is heavily adjusted for multi-modal datasets and intended to facilitate the combination of text and images with corresponding tabular data. With that in mind there are a number of architectures that can be implemented with just a few lines of code. The main components of those architectures are shown in the Figure \autoref{fig:widedeep_arch}.
 
 ![\label{fig:widedeep_arch}](figures/widedeep_arch.png)
 
-The blue and green boxes in the figure represent the main data modes and their corresponding model components, namely `wide`, `deeptabular`, `deeptext` and `deepimage`. The yellow boxes represent _so-called_ fully-connected (FC) heads, simply MLPs that one can optionally add _"on top"_ of the main components. These are referred in the figure as `TextHead` and `ImageHead`. The dashed-line rectangles indicate that the outputs from the components inside are concatenated if a final FC head (referred as `DeepHead` in the figure) is used. The faded-green `deeptabular` box aims to indicate that the output of the deeptabular component will be concatenated directly with the output of the `deeptext` or `deepimage` components or, alternatively, with the FC heads if these are used. Finally, the arrows indicate the connections, which of course depend on the final architecture that the user chooses to build. For example, if a model comprised by a `deeptabular` and a `deeptext` component with no FC heads is used, the outputs of those components will be directly "plugged" into the output neuron or neurons (depending on whether this is a regression, binary classification or multi-class classification problem).
+The blue and green boxes in the figure represent the main data modes and their corresponding model components, namely `wide`, `deeptabular`, `deeptext` and `deepimage`. The yellow boxes represent _so-called_ fully-connected (FC) heads, simply MLPs that one can optionally add _"on top"_ of the main components. These are referred in the figure as `TextHead` and `ImageHead`. The dashed-line rectangles indicate that the outputs from the components inside are concatenated if a final FC head (referred as `DeepHead` in the figure) is used. The faded-green `deeptabular` box aims to indicate that the output of the deeptabular component will be concatenated directly with the output of the `deeptext` or `deepimage` components or, alternatively, with the FC heads if these are used. Finally, the arrows indicate the connections, which of course depend on the final architecture that the user chooses to build.
 
 In math terms, and following the notation in the original paper [@cheng2016wide], the expression for the architecture without a `deephead` component can be formulated as:
 
@@ -73,7 +73,7 @@ This is a linear model for tabular data where the non-linearities are captured v
 
 ## The `deeptabular` component
 
-Currently, `pytorch-widedeep` offers the following models for the so called `deeptabular` component:(i) TabMlp, (ii) TabResnet, (iii) TabNet[@arik2021tabnet], (iv) ContextAttentionMLP[@yang2016hierarchical], (v) SelfAttentionMLP[@huang2020tabtransformer], (vi) TabTransformer[@huang2020tabtransformer], (vii) SAINT[@somepalli2021saint], (viii) FT-Transformer[@gorishniy2021revisiting], (ix) TabFastFormer: our adaptation of the FastFormer [@wu2021fastformer], (x) TabPerceiver: our adaptation of the Perceiver [@jaegle2021perceiver], (xi) BayesianWide and (xii) BayesianTabMlp.
+Currently, `pytorch-widedeep` offers the following models for the so called `deeptabular` component:(i) TabMlp, (ii) TabResnet, (iii) TabNet [@arik2021tabnet], (iv) ContextAttentionMLP [@yang2016hierarchical], (v) SelfAttentionMLP [@huang2020tabtransformer], (vi) TabTransformer [@huang2020tabtransformer], (vii) SAINT [@somepalli2021saint], (viii) FT-Transformer [@gorishniy2021revisiting], (ix) TabFastFormer: our adaptation of the FastFormer [@wu2021fastformer], (x) TabPerceiver: our adaptation of the Perceiver [@jaegle2021perceiver], (xi) BayesianWide and (xii) BayesianTabMlp, which are both based on the publication Weight uncertainty in neural network [@blundell2015weight].
 
 ## The `deepimage` component
 
@@ -81,11 +81,11 @@ The image related component is fully integrated with the newest version torchvis
 
 ## The `deeptext` component
 
-Currently, `pytorch-widedeep` offers the following models for the `deeptext` component: (i) BasicRNN, (ii) AttentiveRNN and (iii) StackedAttentiveRNN.
+Currently, `pytorch-widedeep` offers the following models for the `deeptext` component: (i) BasicRNN, (ii) AttentiveRNN and (iii) StackedAttentiveRNN.  The library will be integrated with the Huggingface transformers library [olf2019huggingface] in the near future. However, it is worth mentioning that although transformer-based models are not natively supported by our library, these can be used easily with `pytorch-widedeep` as a custom model (please, see the documentation for details).
 
 # Forms of model training:
 
-Training single or multi-mode models in `pytorch-widedeep` is handled by the different training classes. Currently, `pytorch-widedeep` offers the following training options: (i) "_Standard_" Supervised, (ii) Supervised Bayesian and (iii) Self-supervised pre-training.
+Training single or multi-mode models in `pytorch-widedeep` is handled by the different training classes. Currently, `pytorch-widedeep` offers the following training options: (i) "_Standard_" Supervised training, (ii) Supervised Bayesian training and (iii) Self-supervised pre-training.
   
 # Contribution
 
