@@ -18,7 +18,7 @@ affiliations:
    index: 1
  - name: Centre Tecnologic de Telecomunicacions de Catalunya (CTTC/CERCA), Catalunya, Spain
    index: 2
-date: 01 October 2022
+date: 13 November 2022
 bibliography: paper.bib
 ---
 
