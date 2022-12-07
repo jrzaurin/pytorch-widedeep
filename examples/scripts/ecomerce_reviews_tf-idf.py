@@ -34,23 +34,32 @@ df["review_length"] = df.review_text.apply(lambda x: len(x.split(" ")))
 df = df[df.review_length >= 5]
 df = df.drop("review_length", axis=1).reset_index(drop=True)
 
-train, valid = train_test_split(df, train_size=0.8, random_state=1, stratify=df.rating)
-valid, test = train_test_split(
-    valid, train_size=0.5, random_state=1, stratify=valid.rating
-)
+# we are not going to carry any hyperparameter optimization so no need of
+# validation set
+train, test = train_test_split(df, train_size=0.8, random_state=1, stratify=df.rating)
 
+
+# ###############################################################################
+# most popular rating prediction
+most_common_pred = [train.rating.value_counts().index[0]] * len(test)
+
+most_common_acc = accuracy_score(test.rating, most_common_pred)
+most_common_f1 = f1_score(test.rating, most_common_pred, average="weighted")
+most_common_prec = precision_score(test.rating, most_common_pred, average="weighted")
+most_common_rec = recall_score(test.rating, most_common_pred, average="weighted")
+most_common_cm = confusion_matrix(test.rating, most_common_pred)
 
 ###############################################################################
 # The simplest thing: tokenization + tf-idf
 tok = Tokenizer()
 tok_reviews_tr = tok.process_all(train.review_text.tolist())
-tok_reviews_va = tok.process_all(valid.review_text.tolist())
+tok_reviews_te = tok.process_all(test.review_text.tolist())
 vectorizer = TfidfVectorizer(
     max_features=5000, preprocessor=lambda x: x, tokenizer=lambda x: x, min_df=5
 )
 
 X_text_tr = vectorizer.fit_transform(tok_reviews_tr)
-X_text_va = vectorizer.transform(tok_reviews_va)
+X_text_te = vectorizer.transform(tok_reviews_te)
 
 lgbtrain_text = lgbDataset(
     X_text_tr,
@@ -58,9 +67,9 @@ lgbtrain_text = lgbDataset(
     free_raw_data=False,
 )
 
-lgbvalid_text = lgbDataset(
-    X_text_va,
-    valid.rating.values,
+lgbtest_text = lgbDataset(
+    X_text_te,
+    test.rating.values,
     reference=lgbtrain_text,
     free_raw_data=False,
 )
@@ -68,19 +77,18 @@ lgbvalid_text = lgbDataset(
 model_text = lgb.train(
     {"objective": "multiclass", "num_classes": 4},
     lgbtrain_text,
-    valid_sets=[lgbvalid_text, lgbtrain_text],
+    valid_sets=[lgbtest_text, lgbtrain_text],
     valid_names=["test", "train"],
-    early_stopping_rounds=50,
 )
 
-preds_text = model_text.predict(X_text_va)
+preds_text = model_text.predict(X_text_te)
 pred_text_class = np.argmax(preds_text, 1)
 
-acc_text = accuracy_score(lgbvalid_text.label, pred_text_class)
-f1_text = f1_score(lgbvalid_text.label, pred_text_class, average="weighted")
-prec_text = precision_score(lgbvalid_text.label, pred_text_class, average="weighted")
-rec_text = recall_score(lgbvalid_text.label, pred_text_class, average="weighted")
-cm_text = confusion_matrix(lgbvalid_text.label, pred_text_class)
+acc_text = accuracy_score(lgbtest_text.label, pred_text_class)
+f1_text = f1_score(lgbtest_text.label, pred_text_class, average="weighted")
+prec_text = precision_score(lgbtest_text.label, pred_text_class, average="weighted")
+rec_text = recall_score(lgbtest_text.label, pred_text_class, average="weighted")
+cm_text = confusion_matrix(lgbtest_text.label, pred_text_class)
 
 
 ###############################################################################
@@ -88,24 +96,25 @@ cm_text = confusion_matrix(lgbvalid_text.label, pred_text_class)
 
 tab_cols = [
     "age",
+    "positive_feedback_count",
     "division_name",
     "department_name",
     "class_name",
 ]
 
-for tab_df in [train, valid]:
+for tab_df in [train, test]:
     for c in ["division_name", "department_name", "class_name"]:
         tab_df[c] = tab_df[c].str.lower()
 
 le = LabelEncoder(columns_to_encode=["division_name", "department_name", "class_name"])
 train_tab_le = le.fit_transform(train)
-valid_tab_le = le.transform(valid)
+test_tab_le = le.transform(test)
 
 X_tab_tr = csr_matrix(train_tab_le[tab_cols].values)
-X_tab_va = csr_matrix(valid_tab_le[tab_cols].values)
+X_tab_te = csr_matrix(test_tab_le[tab_cols].values)
 
 X_tab_text_tr = hstack((X_tab_tr, X_text_tr))
-X_tab_text_va = hstack((X_tab_va, X_text_va))
+X_tab_text_va = hstack((X_tab_te, X_text_te))
 
 lgbtrain_tab_text = lgbDataset(
     X_tab_text_tr,
@@ -114,9 +123,9 @@ lgbtrain_tab_text = lgbDataset(
     free_raw_data=False,
 )
 
-lgbvalid_tab_text = lgbDataset(
+lgbtest_tab_text = lgbDataset(
     X_tab_text_va,
-    valid.rating.values,
+    test.rating.values,
     reference=lgbtrain_tab_text,
     free_raw_data=False,
 )
@@ -124,46 +133,19 @@ lgbvalid_tab_text = lgbDataset(
 model_tab_text = lgb.train(
     {"objective": "multiclass", "num_classes": 4},
     lgbtrain_tab_text,
-    valid_sets=[lgbtrain_tab_text, lgbvalid_tab_text],
+    valid_sets=[lgbtrain_tab_text, lgbtest_tab_text],
     valid_names=["test", "train"],
-    early_stopping_rounds=50,
 )
 
 preds_tab_text = model_tab_text.predict(X_tab_text_va)
 preds_tab_text_class = np.argmax(preds_tab_text, 1)
 
-acc_tab_text = accuracy_score(lgbvalid_tab_text.label, preds_tab_text_class)
-f1_tab_text = f1_score(
-    lgbvalid_tab_text.label, preds_tab_text_class, average="weighted"
-)
+acc_tab_text = accuracy_score(lgbtest_tab_text.label, preds_tab_text_class)
+f1_tab_text = f1_score(lgbtest_tab_text.label, preds_tab_text_class, average="weighted")
 prec_tab_text = precision_score(
-    lgbvalid_tab_text.label, preds_tab_text_class, average="weighted"
+    lgbtest_tab_text.label, preds_tab_text_class, average="weighted"
 )
 rec_tab_text = recall_score(
-    lgbvalid_tab_text.label, preds_tab_text_class, average="weighted"
+    lgbtest_tab_text.label, preds_tab_text_class, average="weighted"
 )
-cm_tab_text = confusion_matrix(lgbvalid_tab_text.label, preds_tab_text_class)
-
-
-# ###############################################################################
-# #  randon and most popular pred (need to do this last one)
-# random_preds = np.random.choice(
-#     np.arange(4),
-#     size=len(valid),
-#     p=(valid.rating.value_counts() / len(valid)).values[::-1],
-# )
-
-# preds = model.predict(X_va)
-# pred_class = np.argmax(preds, 1)
-
-# rand_acc = accuracy_score(lgbvalid.label, random_preds)
-# rand_f1 = f1_score(lgbvalid.label, random_preds, average="weighted")
-# rand_prec = precision_score(lgbvalid.label, random_preds, average="weighted")
-# rand_rec = recall_score(lgbvalid.label, random_preds, average="weighted")
-# rand_cm = confusion_matrix(lgbvalid.label, random_preds)
-
-# acc = accuracy_score(lgbvalid.label, pred_class)
-# f1 = f1_score(lgbvalid.label, pred_class, average="weighted")
-# prec = precision_score(lgbvalid.label, pred_class, average="weighted")
-# rec = recall_score(lgbvalid.label, pred_class, average="weighted")
-# cm = confusion_matrix(lgbvalid.label, pred_class)
+cm_tab_text = confusion_matrix(lgbtest_tab_text.label, preds_tab_text_class)
