@@ -6,7 +6,7 @@ tags:
   - Deep learning
 authors:
   - name: Javier Rodriguez Zaurin
-    orcid: 0000-0000-0000-0000
+    orcid: 0000-0002-1082-1107
     # equal-contrib: true
     affiliation: 1 # (Multiple affiliations must be quoted)
   - name: Pavol Mulinka
