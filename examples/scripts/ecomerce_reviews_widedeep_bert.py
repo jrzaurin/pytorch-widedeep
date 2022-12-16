@@ -1,6 +1,5 @@
-from typing import List
-
 import numpy as np
+import torch
 from torch import Tensor, nn
 from transformers import DistilBertModel, DistilBertTokenizer
 from sklearn.metrics import (
@@ -21,7 +20,6 @@ from pytorch_widedeep.utils.fastai_transforms import (
     spec_add_spaces,
     rm_useless_spaces,
 )
-from pytorch_widedeep.models.tabular.mlp._layers import MLP
 
 
 class Tokenizer(object):
@@ -45,20 +43,16 @@ class Tokenizer(object):
 
     def transform(self, texts):
         input_ids = []
-        attention_masks = []
         for text in texts:
             encoded_sent = self.tokenizer.encode_plus(
                 text=self._pre_rules(text),
                 add_special_tokens=True,
                 max_length=self.max_length,
-                padding=True,
-                return_attention_mask=True,
+                pad_to_max_length=True,
             )
 
             input_ids.append(encoded_sent.get("input_ids"))
-            attention_masks.append(encoded_sent.get("attention_mask"))
-
-        return np.stack(input_ids), np.stack(attention_masks)
+        return np.stack(input_ids)
 
     def fit_transform(self, texts):
         return self.fit(texts).transform(texts)
@@ -68,42 +62,32 @@ class Tokenizer(object):
         return fix_html(rm_useless_spaces(spec_add_spaces(text)))
 
 
-class BertClassifier(nn.Module):
+class BertModel(nn.Module):
     def __init__(
         self,
-        head_hidden_dim: List[int],
         model_name: str = "distilbert-base-uncased",
         freeze_bert: bool = False,
-        head_dropout: float = 0.0,
-        num_class: int = 4,
     ):
-        super(BertClassifier, self).__init__()
+        super(BertModel, self).__init__()
 
-        self.bert = DistilBertModel.from_pretrained(model_name)
-
-        # need to edit this to add the output dim property
-        classifier_dims = [768] + head_hidden_dim + [num_class]
-        self.classifier = MLP(
-            d_hidden=classifier_dims,
-            activation="relu",
-            dropout=0.1,
-            batchnorm=False,
-            batchnorm_last=False,
-            linear_first=False,
+        self.bert = DistilBertModel.from_pretrained(
+            model_name,
         )
 
         if freeze_bert:
             for param in self.bert.parameters():
                 param.requires_grad = False
 
-    def forward(self, input_ids: Tensor, attention_mask: Tensor) -> Tensor:
+    def forward(self, X_inp: Tensor) -> Tensor:
 
-        # compute the mask here
+        attn_mask = (X_inp != 0).type(torch.int8)
+        outputs = self.bert(input_ids=X_inp, attention_mask=attn_mask)
 
-        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
-        last_hidden_state_cls = outputs[0][:, 0, :]
+        return outputs[0][:, 0, :]
 
-        return self.classifier(last_hidden_state_cls)
+    @property
+    def output_dim(self) -> int:
+        return 768
 
 
 df = load_womens_ecommerce(as_frame=True)
@@ -130,5 +114,36 @@ df = df.drop("review_length", axis=1).reset_index(drop=True)
 train, test = train_test_split(df, train_size=0.8, random_state=1, stratify=df.rating)
 
 tokenizer = Tokenizer()
-X_text_tr, X_masks_tr = tokenizer.fit_transform(train["review_text"].tolist())
-X_text_te, X_masks_te = tokenizer.transform(test["review_text"].tolist())
+X_text_tr = tokenizer.fit_transform(train["review_text"].tolist())
+X_text_te = tokenizer.transform(test["review_text"].tolist())
+
+bert_model = BertModel(freeze_bert=True)
+model = WideDeep(
+    deeptext=bert_model,
+    pred_dim=4,
+    head_hidden_dims=[256, 128],
+    head_activation="relu",
+    head_dropout=0.1,
+)
+
+trainer = Trainer(
+    model,
+    objective="multiclass",
+    metrics=[Accuracy, F1Score(average=True)],
+)
+
+trainer.fit(
+    X_text=X_text_tr,
+    target=train.rating.values,
+    n_epochs=2,
+    batch_size=16,
+)
+
+preds_text = trainer.predict_proba(X_text=X_text_te)
+pred_text_class = np.argmax(preds_text, 1)
+
+acc_text = accuracy_score(test.rating, pred_text_class)
+f1_text = f1_score(test.rating, pred_text_class, average="weighted")
+prec_text = precision_score(test.rating, pred_text_class, average="weighted")
+rec_text = recall_score(test.rating, pred_text_class, average="weighted")
+cm_text = confusion_matrix(test.rating, pred_text_class)
