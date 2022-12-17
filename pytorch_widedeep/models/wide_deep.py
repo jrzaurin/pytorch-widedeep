@@ -149,7 +149,7 @@ class WideDeep(nn.Module):
         head_dropout: float = 0.1,
         head_batchnorm: bool = False,
         head_batchnorm_last: bool = False,
-        head_linear_first: bool = False,
+        head_linear_first: bool = True,
         enforce_positive: bool = False,
         enforce_positive_activation: str = "softplus",
         pred_dim: int = 1,
@@ -200,7 +200,9 @@ class WideDeep(nn.Module):
                 head_linear_first,
             )
         elif self.deephead is not None:
-            pass
+            self.deephead = nn.Sequential(
+                self.deephead, nn.Linear(self.deephead.output_dim, self.pred_dim)
+            )
         else:
             self._add_pred_layer()
 
@@ -258,11 +260,15 @@ class WideDeep(nn.Module):
             head_linear_first,
         )
 
-        self.deephead.add_module(
-            "head_out", nn.Linear(head_hidden_dims[-1], self.pred_dim)
+        # prediction layer: incurring in the same  'misconduct' as with the
+        # other components (changing the nature of deephead). Fixing this in
+        # the future is a priority
+        self.deephead = nn.Sequential(
+            self.deephead, nn.Linear(head_hidden_dims[-1], self.pred_dim)
         )
 
     def _add_pred_layer(self):
+
         # if FDS the FDS Layer already includes the pred layer
         if self.deeptabular is not None and not self.with_fds:
             if self.is_tabnet:
@@ -307,13 +313,12 @@ class WideDeep(nn.Module):
         if self.deepimage is not None:
             deepside = torch.cat([deepside, self.deepimage(X["deepimage"])], axis=1)
 
-        deephead_out = self.deephead(deepside)
-        deepside_out = nn.Linear(deephead_out.size(1), self.pred_dim).to(self.wd_device)
+        deepside_out = self.deephead(deepside)
 
         if self.is_tabnet:
-            res = (wide_out.add_(deepside_out(deephead_out)), M_loss)
+            res = (wide_out.add_(deepside_out), M_loss)
         else:
-            res = wide_out.add_(deepside_out(deephead_out))
+            res = wide_out.add_(deepside_out)
 
         return res
 
@@ -417,6 +422,11 @@ class WideDeep(nn.Module):
                 "if 'head_hidden_dims' is not None, at least one deep component must be used"
             )
         if deephead is not None:
+            if not hasattr(deephead, "output_dim"):
+                raise AttributeError(
+                    "As any other custom model passed to 'WideDeep', 'deephead' must have an "
+                    "'output_dim' attribute or property. "
+                )
             deephead_inp_feat = next(deephead.parameters()).size(1)
             output_dim = 0
             if deeptabular is not None:

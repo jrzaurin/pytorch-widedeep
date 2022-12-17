@@ -66,8 +66,11 @@ transforms1 = [ToTensor, Normalize(mean=mean, std=std)]
 transforms2 = [Normalize(mean=mean, std=std)]
 
 deephead_ds = nn.Sequential(nn.Linear(16, 8), nn.Linear(8, 4))
+deephead_ds.output_dim = 4
 deephead_dt = nn.Sequential(nn.Linear(64, 8), nn.Linear(8, 4))
+deephead_dt.output_dim = 4
 deephead_di = nn.Sequential(nn.Linear(512, 8), nn.Linear(8, 4))
+deephead_di.output_dim = 4
 
 # #############################################################################
 # Test that runs many possible scenarios of data inputs I can think off.

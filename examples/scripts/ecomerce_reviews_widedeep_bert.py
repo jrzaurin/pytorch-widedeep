@@ -79,10 +79,8 @@ class BertModel(nn.Module):
                 param.requires_grad = False
 
     def forward(self, X_inp: Tensor) -> Tensor:
-
         attn_mask = (X_inp != 0).type(torch.int8)
         outputs = self.bert(input_ids=X_inp, attention_mask=attn_mask)
-
         return outputs[0][:, 0, :]
 
     @property
@@ -120,10 +118,8 @@ X_text_te = tokenizer.transform(test["review_text"].tolist())
 bert_model = BertModel(freeze_bert=True)
 model = WideDeep(
     deeptext=bert_model,
+    head_hidden_dims=[256, 128, 64],
     pred_dim=4,
-    head_hidden_dims=[256, 128],
-    head_activation="relu",
-    head_dropout=0.1,
 )
 
 trainer = Trainer(
@@ -135,8 +131,8 @@ trainer = Trainer(
 trainer.fit(
     X_text=X_text_tr,
     target=train.rating.values,
-    n_epochs=2,
-    batch_size=16,
+    n_epochs=5,
+    batch_size=64,
 )
 
 preds_text = trainer.predict_proba(X_text=X_text_te)
