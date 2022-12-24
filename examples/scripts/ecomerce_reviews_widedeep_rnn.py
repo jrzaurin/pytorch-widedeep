@@ -38,7 +38,7 @@ df = df.drop("review_length", axis=1).reset_index(drop=True)
 train, test = train_test_split(df, train_size=0.8, random_state=1, stratify=df.rating)
 
 text_preprocessor = TextPreprocessor(
-    text_col="review_text", max_vocab=5000, min_freq=5, maxlen=90
+    text_col="review_text", max_vocab=5000, min_freq=5, maxlen=90, n_cpus=1
 )
 
 X_text_tr = text_preprocessor.fit_transform(train)

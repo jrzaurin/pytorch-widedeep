@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 from gensim.utils import tokenize
@@ -54,7 +54,7 @@ def simple_preprocess(
     return tokens
 
 
-def get_texts(texts: List[str]) -> List[List[str]]:
+def get_texts(texts: List[str], n_cpus: Optional[int] = None) -> List[List[str]]:
     r"""Tokenization using `Fastai`'s `Tokenizer` because it does a
     series of very convenients things during the tokenization process
 
@@ -64,6 +64,8 @@ def get_texts(texts: List[str]) -> List[List[str]]:
     ----------
     texts: List
         List of str with the texts (or documents). One str per document
+    n_cpus: int, Optional, default = None
+        number of CPUs to used during the tokenization process
 
     Examples
     --------
@@ -84,8 +86,11 @@ def get_texts(texts: List[str]) -> List[List[str]]:
     indicate the next word begins with a capital in the original text. For more
     details of special tokens please see the [`fastai` `docs](https://docs.fast.ai/text.core.html#Tokenizing)
     """
+
+    num_cpus = n_cpus if n_cpus is not None else os.cpu_count()
+
     processed_textx = [" ".join(simple_preprocess(t)) for t in texts]
-    tok = Tokenizer().process_all(processed_textx)
+    tok = Tokenizer(n_cpus=num_cpus).process_all(processed_textx)
     return tok
 
 

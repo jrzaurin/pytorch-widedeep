@@ -48,7 +48,8 @@ class Tokenizer(object):
                 text=self._pre_rules(text),
                 add_special_tokens=True,
                 max_length=self.max_length,
-                pad_to_max_length=True,
+                padding="max_length",
+                truncation=True,
             )
 
             input_ids.append(encoded_sent.get("input_ids"))
