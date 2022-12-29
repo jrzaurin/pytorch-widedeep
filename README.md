@@ -28,10 +28,15 @@ text and images using Wide and Deep models in Pytorch
 
 The content of this document is organized as follows:
 
-1. [introduction](#introduction)
-2. [The deeptabular component](#the-deeptabular-component)
-3. [installation](#installation)
-4. [quick start (tl;dr)](#quick-start)
+- [pytorch-widedeep](#pytorch-widedeep)
+    - [Introduction](#introduction)
+    - [The ``deeptabular`` component](#the-deeptabular-component)
+    - [Installation](#installation)
+      - [Developer Install](#developer-install)
+    - [Quick start](#quick-start)
+    - [Testing](#testing)
+    - [How to Contribute](#how-to-contribute)
+    - [Acknowledgments](#acknowledgments)
 
 ### Introduction
 
@@ -75,9 +80,10 @@ without a ``deephead`` component can be formulated as:
 </p>
 
 
-Where *'W'* are the weight matrices applied to the wide model and to the final
-activations of the deep models, *'a'* are these final activations, and
-&phi;(x) are the cross product transformations of the original features *'x'*.
+Where &sigma; is the sigmoid function, *'W'* are the weight matrices applied to the wide model and to the final
+activations of the deep models, *'a'* are these final activations, 
+&phi;(x) are the cross product transformations of the original features *'x'*, and
+, and *'b'* is the bias term.
 In case you are wondering what are *"cross product transformations"*, here is
 a quote taken directly from the paper: *"For binary features, a cross-product
 transformation (e.g., “AND(gender=female, language=en)”) is 1 if and only if
@@ -296,7 +302,7 @@ pytest tests
 
 ### How to Contribute
 
-Check [CONTRIBUTING](https://github.com/jrzaurin/pytorch-widedeep/CONTRIBUTING.MD) page.
+Check [CONTRIBUTING](https://github.com/jrzaurin/pytorch-widedeep/blob/master/CONTRIBUTING.MD) page.
 
 ### Acknowledgments
 
