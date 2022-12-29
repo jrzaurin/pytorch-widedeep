@@ -310,7 +310,7 @@ pytest tests
 
 ### How to Contribute
 
-Check [CONTRIBUTING](https://github.com/jrzaurin/pytorch-widedeep/CONTRIBUTING.MD) page.
+Check [CONTRIBUTING](https://github.com/jrzaurin/pytorch-widedeep/blob/master/CONTRIBUTING.MD) page.
 
 ### Acknowledgments
 

@@ -50,7 +50,7 @@ In math terms, and following the notation in the original paper [@cheng2016wide]
 $pred = \sigma(W_{wide}^{T}[x,\phi(x)] + W_{deeptabular}^{T}a_{deeptabular}^{l_f} + W_{deeptext}^{T}a_{deeptext}^{l_f} + W_{deepimage}^{l_f} + b)$
 
 
-Where $W$ are the weight matrices applied to the wide model and to the final activations of the deep models, $a$ are these final activations, and $\phi(x)$ are the cross product transformations of the original features $x$. In case you are wondering what are _"cross product transformations"_, here is a quote taken directly from the paper: _"For binary features, a cross-product transformation (e.g., “AND(gender=female, language=en)”) is 1 if and only if the constituent features (“gender=female” and “language=en”) are all 1, and 0 otherwise"._
+Where $\sigma$ is the sigmoid function, $W$ are the weight matrices applied to the wide model and to the final activations of the deep models, $a$ are these final activations, $\phi(x)$ are the cross product transformations of the original features $x$, and $b$ is the bias term. In case you are wondering what are _"cross product transformations"_, here is a quote taken directly from the paper: _"For binary features, a cross-product transformation (e.g., “AND(gender=female, language=en)”) is 1 if and only if the constituent features (“gender=female” and “language=en”) are all 1, and 0 otherwise"._
 
 
 While if there is a `deephead` component, the previous expression turns into:
