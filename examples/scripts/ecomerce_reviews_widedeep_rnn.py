@@ -65,7 +65,8 @@ trainer = Trainer(
 trainer.fit(
     X_text=X_text_tr,
     target=train.rating.values,
-    n_epochs=5,
+    n_epochs=1,
+    # n_epochs=5,
     batch_size=256,
 )
 

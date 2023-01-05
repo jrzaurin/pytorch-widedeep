@@ -155,9 +155,9 @@ class Precision(Metric):
             y_pred = y_pred.round()
             y_true = y_true
         elif num_class > 1:
-            y_true = torch.eye(num_class)[y_true.squeeze().long()]
+            y_true = torch.eye(num_class)[y_true.squeeze().cpu().long()]
             y_pred = y_pred.topk(1, 1)[1].view(-1)
-            y_pred = torch.eye(num_class)[y_pred.long()]
+            y_pred = torch.eye(num_class)[y_pred.cpu().long()]
 
         self.true_positives += (y_true * y_pred).sum(dim=0)  # type:ignore
         self.all_positives += y_pred.sum(dim=0)  # type:ignore
@@ -221,9 +221,9 @@ class Recall(Metric):
             y_pred = y_pred.round()
             y_true = y_true
         elif num_class > 1:
-            y_true = torch.eye(num_class)[y_true.squeeze().long()]
+            y_true = torch.eye(num_class)[y_true.squeeze().cpu().long()]
             y_pred = y_pred.topk(1, 1)[1].view(-1)
-            y_pred = torch.eye(num_class)[y_pred.long()]
+            y_pred = torch.eye(num_class)[y_pred.cpu().long()]
 
         self.true_positives += (y_true * y_pred).sum(dim=0)  # type: ignore
         self.actual_positives += y_true.sum(dim=0)  # type: ignore

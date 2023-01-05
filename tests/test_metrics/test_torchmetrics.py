@@ -30,11 +30,11 @@ y_pred_bin_pt = torch.from_numpy(y_pred_bin_np)
 @pytest.mark.parametrize(
     "metric_name, sklearn_metric, torch_metric",
     [
-        ("Accuracy", accuracy_score, Accuracy()),
-        ("Precision", precision_score, Precision()),
-        ("Recall", recall_score, Recall()),
-        ("F1Score", f1_score, F1Score()),
-        ("FBetaScore", f2_score_bin, FBetaScore(beta=2)),
+        ("BinaryAccuracy", accuracy_score, Accuracy(task="binary")),
+        ("BinaryPrecision", precision_score, Precision(task="binary")),
+        ("BinaryRecall", recall_score, Recall(task="binary")),
+        ("BinaryF1Score", f1_score, F1Score(task="binary")),
+        ("BinaryFBetaScore", f2_score_bin, FBetaScore(task="binary", beta=2.0)),
     ],
 )
 def test_binary_metrics(metric_name, sklearn_metric, torch_metric):
@@ -47,7 +47,7 @@ def test_binary_metrics(metric_name, sklearn_metric, torch_metric):
     assert np.isclose(sk_res, wd_res)
 
 
-###############################################################################
+# ###############################################################################
 # Test multiclass metrics
 ###############################################################################
 y_true_multi_np = np.array([1, 0, 2, 1, 1, 2, 2, 0, 0, 0])
@@ -77,19 +77,35 @@ def f2_score_multi(y_true, y_pred, average):
 @pytest.mark.parametrize(
     "metric_name, sklearn_metric, torch_metric",
     [
-        ("Accuracy", accuracy_score, Accuracy(num_classes=3, average="micro")),
-        ("Precision", precision_score, Precision(num_classes=3, average="macro")),
-        ("Recall", recall_score, Recall(num_classes=3, average="macro")),
-        ("F1Score", f1_score, F1Score(num_classes=3, average="macro")),
         (
-            "FBetaScore",
+            "MulticlassAccuracy",
+            accuracy_score,
+            Accuracy(task="multiclass", num_classes=3, average="micro"),
+        ),
+        (
+            "MulticlassPrecision",
+            precision_score,
+            Precision(task="multiclass", num_classes=3, average="macro"),
+        ),
+        (
+            "MulticlassRecall",
+            recall_score,
+            Recall(task="multiclass", num_classes=3, average="macro"),
+        ),
+        (
+            "MulticlassF1Score",
+            f1_score,
+            F1Score(task="multiclass", num_classes=3, average="macro"),
+        ),
+        (
+            "MulticlassFBetaScore",
             f2_score_multi,
-            FBetaScore(beta=3, num_classes=3, average="macro"),
+            FBetaScore(beta=3.0, task="multiclass", num_classes=3, average="macro"),
         ),
     ],
 )
 def test_muticlass_metrics(metric_name, sklearn_metric, torch_metric):
-    if metric_name == "Accuracy":
+    if metric_name == "MulticlassAccuracy":
         sk_res = sklearn_metric(y_true_multi_np, y_pred_muli_np.argmax(axis=1))
     else:
         sk_res = sklearn_metric(
