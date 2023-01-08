@@ -30,11 +30,11 @@ y_pred_bin_pt = torch.from_numpy(y_pred_bin_np)
 @pytest.mark.parametrize(
     "metric_name, sklearn_metric, torch_metric",
     [
-        ("BinaryAccuracy", accuracy_score, Accuracy(task="binary")),
-        ("BinaryPrecision", precision_score, Precision(task="binary")),
-        ("BinaryRecall", recall_score, Recall(task="binary")),
-        ("BinaryF1Score", f1_score, F1Score(task="binary")),
-        ("BinaryFBetaScore", f2_score_bin, FBetaScore(task="binary", beta=2.0)),
+        ("Accuracy", accuracy_score, Accuracy(task="binary")),
+        ("Precision", precision_score, Precision(task="binary")),
+        ("Recall", recall_score, Recall(task="binary")),
+        ("F1Score", f1_score, F1Score(task="binary")),
+        ("FBetaScore", f2_score_bin, FBetaScore(beta=2)),
     ],
 )
 def test_binary_metrics(metric_name, sklearn_metric, torch_metric):
@@ -77,6 +77,10 @@ def f2_score_multi(y_true, y_pred, average):
 @pytest.mark.parametrize(
     "metric_name, sklearn_metric, torch_metric",
     [
+        ("Accuracy", accuracy_score, Accuracy(task="multiclass", num_classes=3, average="micro")),
+        ("Precision", precision_score, Precision(task="multiclass", num_classes=3, average="macro")),
+        ("Recall", recall_score, Recall(task="multiclass", num_classes=3, average="macro")),
+        ("F1Score", f1_score, F1Score(task="multiclass", num_classes=3, average="macro")),
         (
             "MulticlassAccuracy",
             accuracy_score,
