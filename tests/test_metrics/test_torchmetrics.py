@@ -34,7 +34,7 @@ y_pred_bin_pt = torch.from_numpy(y_pred_bin_np)
         ("Precision", precision_score, Precision(task="binary")),
         ("Recall", recall_score, Recall(task="binary")),
         ("F1Score", f1_score, F1Score(task="binary")),
-        ("FBetaScore", f2_score_bin, FBetaScore(task="binary", beta=2)),
+        ("FBetaScore", f2_score_bin, FBetaScore(task="binary", beta=2.0)),
     ],
 )
 def test_binary_metrics(metric_name, sklearn_metric, torch_metric):
@@ -140,7 +140,7 @@ def f2_score_multi(y_true, y_pred, average):
         (
             "MulticlassFBetaScore",
             f2_score_multi,
-            FBetaScore(task="multiclass", beta=3, num_classes=3, average="macro"),
+            FBetaScore(task="multiclass", beta=3.0, num_classes=3, average="macro"),
         ),
     ],
 )
