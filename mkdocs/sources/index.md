@@ -29,9 +29,9 @@ Pytorch
 
 The content of this document is organized as follows:
 
-- [pytorch-widedeep](#pytorch-widedeep)
+- [**pytorch-widedeep**](#pytorch-widedeep)
     - [Introduction](#introduction)
-    - [The deeptabular component](#the-deeptabular-component)
+    - [The ``deeptabular`` component](#the-deeptabular-component)
     - [Acknowledgments](#acknowledgments)
 
 ### Introduction
@@ -75,9 +75,10 @@ $$
 
 
 
-Where $W$ are the weight matrices applied to the wide model and to the final
-activations of the deep models, $a$ are these final activations, and
-$\phi(x)$ are the cross product transformations of the original features $x$.
+Where &sigma; is the sigmoid function, *'W'* are the weight matrices applied to the wide model and to the final
+activations of the deep models, *'a'* are these final activations, 
+&phi;(x) are the cross product transformations of the original features *'x'*, and
+, and *'b'* is the bias term.
 In case you are wondering what are *"cross product transformations"*, here is
 a quote taken directly from the paper: *"For binary features, a cross-product
 transformation (e.g., “AND(gender=female, language=en)”) is 1 if and only if
