@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 import numpy as np
@@ -35,6 +36,8 @@ class TextPreprocessor(BasePreprocessor):
         padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
     word_vectors_path: str, Optional
         Path to the pretrained word vectors
+    n_cpus: int, Optional, default = None
+        number of CPUs to used during the tokenization process
     verbose: int, default 1
         Enable verbose output.
 
@@ -72,6 +75,7 @@ class TextPreprocessor(BasePreprocessor):
         pad_first: bool = True,
         pad_idx: int = 1,
         word_vectors_path: Optional[str] = None,
+        n_cpus: Optional[int] = None,
         verbose: int = 1,
     ):
         super(TextPreprocessor, self).__init__()
@@ -84,6 +88,7 @@ class TextPreprocessor(BasePreprocessor):
         self.pad_idx = pad_idx
         self.word_vectors_path = word_vectors_path
         self.verbose = verbose
+        self.n_cpus = n_cpus if n_cpus is not None else os.cpu_count()
 
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Builds the vocabulary
@@ -99,7 +104,7 @@ class TextPreprocessor(BasePreprocessor):
             `TextPreprocessor` fitted object
         """
         texts = df[self.text_col].tolist()
-        tokens = get_texts(texts)
+        tokens = get_texts(texts, self.n_cpus)
         self.vocab = Vocab.create(
             tokens, max_vocab=self.max_vocab, min_freq=self.min_freq
         )
@@ -126,7 +131,7 @@ class TextPreprocessor(BasePreprocessor):
         """
         check_is_fitted(self, attributes=["vocab"])
         texts = df[self.text_col].tolist()
-        self.tokens = get_texts(texts)
+        self.tokens = get_texts(texts, self.n_cpus)
         sequences = [self.vocab.numericalize(t) for t in self.tokens]
         padded_seq = np.array(
             [

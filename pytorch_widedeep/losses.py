@@ -312,7 +312,7 @@ class FocalLoss(nn.Module):
             num_class = 2
         else:
             num_class = input_prob.size(1)
-        binary_target = torch.eye(num_class)[target.squeeze().long()]
+        binary_target = torch.eye(num_class)[target.squeeze().cpu().long()]
         if use_cuda:
             binary_target = binary_target.cuda()
         binary_target = binary_target.contiguous()

@@ -105,6 +105,7 @@ def test_fit_with_deephead():
         mlp_hidden_dims=[32, 16],
     )
     deephead = nn.Sequential(nn.Linear(16, 8), nn.Linear(8, 4))
+    deephead.output_dim = 4
     model = WideDeep(wide=wide, deeptabular=deeptabular, pred_dim=1, deephead=deephead)
     trainer = Trainer(model, objective="binary", verbose=0)
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target_binary, batch_size=16)
