@@ -98,6 +98,26 @@ def f2_score_multi(y_true, y_pred, average):
             F1Score(task="multiclass", num_classes=3, average="macro"),
         ),
         (
+            "Accuracy",
+            accuracy_score,
+            Accuracy(task="multiclass", num_classes=3, average="micro"),
+        ),
+        (
+            "Precision",
+            precision_score,
+            Precision(task="multiclass", num_classes=3, average="macro"),
+        ),
+        (
+            "Recall",
+            recall_score,
+            Recall(task="multiclass", num_classes=3, average="macro"),
+        ),
+        (
+            "F1Score",
+            f1_score,
+            F1Score(task="multiclass", num_classes=3, average="macro"),
+        ),
+        (
             "MulticlassAccuracy",
             accuracy_score,
             Accuracy(task="multiclass", num_classes=3, average="micro"),
