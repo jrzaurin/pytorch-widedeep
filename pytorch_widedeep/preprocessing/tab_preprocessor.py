@@ -4,7 +4,14 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Literal
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
 from pytorch_widedeep.preprocessing.base_preprocessor import (
@@ -34,6 +41,56 @@ def embed_sz_rule(
         return int(min(50, (n_cat // 2) + 1))
     else:
         return int(min(600, round(1.6 * n_cat**0.56)))
+
+
+class Quantizer:
+    def __init__(
+        self,
+        quantization_setup: Dict[str, Union[int, List[float]]],
+        **kwargs,
+    ):
+
+        self.quantization_setup = quantization_setup
+        self.quant_args = kwargs
+
+        self.is_fitted = False
+
+    def fit(self, df: pd.DataFrame) -> "Quantizer":
+
+        self.bins: Dict[str, List[float]] = {}
+        for col, bins in self.quantization_setup.items():
+            _, self.bins[col] = pd.cut(
+                df[col], bins, retbins=True, labels=False, **self.quant_args
+            )
+
+        self.inversed_bins: Dict[str, Dict[int, float]] = {}
+        for col, bins in self.bins.items():
+            self.inversed_bins[col] = {
+                k: v
+                for k, v in list(
+                    zip(
+                        range(len(bins)),
+                        [(a + b) / 2.0 for a, b in zip(bins, bins[1:])],
+                    )
+                )
+            }
+
+        self.is_fitted = True
+
+        return self
+
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+
+        check_is_fitted(self, condition=self.is_fitted)
+
+        dfc = df.copy()
+        for col, bins in self.bins.items():
+            dfc[col] = pd.cut(dfc[col], bins, labels=False, **self.quant_args)
+
+        return dfc
+
+    def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        return self.fit(df).transform(df)
 
 
 class TabPreprocessor(BasePreprocessor):
@@ -145,6 +202,10 @@ class TabPreprocessor(BasePreprocessor):
         self,
         cat_embed_cols: Union[List[str], List[Tuple[str, int]]] = None,
         continuous_cols: List[str] = None,
+        quantization_setup: Optional[
+            Union[int, Dict[str, Union[int, List[float]]]]
+        ] = None,
+        cols_to_scale: Optional[List[str]] = None,
         scale: bool = True,
         already_standard: List[str] = None,
         auto_embed_dim: bool = True,
@@ -154,10 +215,13 @@ class TabPreprocessor(BasePreprocessor):
         with_cls_token: bool = False,
         shared_embed: bool = False,
         verbose: int = 1,
+        **kwargs,
     ):
         super(TabPreprocessor, self).__init__()
 
         self.continuous_cols = continuous_cols
+        self.quantization_setup = quantization_setup
+        self.cols_to_scale = cols_to_scale
         self.scale = scale
         self.already_standard = already_standard
         self.auto_embed_dim = auto_embed_dim
@@ -167,6 +231,13 @@ class TabPreprocessor(BasePreprocessor):
         self.with_cls_token = with_cls_token
         self.shared_embed = shared_embed
         self.verbose = verbose
+
+        self.quant_args = {
+            k: v for k, v in kwargs.items() if k in pd.cut.__code__.co_varnames
+        }
+        self.scale_args = {
+            k: v for k, v in kwargs.items() if k in StandardScaler().get_params()
+        }
 
         self._check_inputs(cat_embed_cols)
 
@@ -213,9 +284,18 @@ class TabPreprocessor(BasePreprocessor):
                     self.cat_embed_input.append((k, len(v), self.embed_dim[k]))
         if self.continuous_cols is not None:
             df_cont = self._prepare_continuous(df_adj)
-            if self.scale:
-                df_std = df_cont[self.standardize_cols]
-                self.scaler = StandardScaler().fit(df_std.values)
+            # someone might be crazy enough to want standardization and
+            # quantization, in which case the 'StandardScaler' will run
+            # first
+            if self.standardize_cols is not None:
+                self.scaler = StandardScaler(**self.scale_args).fit(
+                    df_cont[self.standardize_cols].values
+                )
+            if self.cols_and_bins is not None:
+                # we do not run 'Quantizer.fit' here since in the wild case
+                # someone wants standardization and quantization, the
+                # Quantizer will run on the scaled data
+                self.quantizer = Quantizer(self.cols_and_bins, **self.quant_args)
             elif self.verbose:
                 warnings.warn("Continuous columns will not be normalised")
         self.is_fitted = True
@@ -243,9 +323,12 @@ class TabPreprocessor(BasePreprocessor):
             df_emb = self.label_encoder.transform(df_emb)
         if self.continuous_cols is not None:
             df_cont = self._prepare_continuous(df_adj)
-            if self.scale:
-                df_std = df_cont[self.standardize_cols]
-                df_cont[self.standardize_cols] = self.scaler.transform(df_std.values)
+            if self.standardize_cols:
+                df_cont[self.standardize_cols] = self.scaler.transform(
+                    df_cont[self.standardize_cols].values
+                )
+            if self.cols_and_bins is not None:
+                df_cont = self.quantizer.fit_transform(df_cont)
         try:
             df_deep = pd.concat([df_emb, df_cont], axis=1)
         except NameError:
@@ -279,6 +362,15 @@ class TabPreprocessor(BasePreprocessor):
                 emb_c = self.cat_embed_cols.copy()
             for c in emb_c:
                 decoded[c] = decoded[c].map(self.label_encoder.inverse_encoding_dict[c])
+        # quantized cols to the mid point
+        if self.quantization_setup is not None:
+            if self.verbose:
+                print(
+                    "Note that quantized cols will not be turned into the mid point of "
+                    "the corresponding bin"
+                )
+            for k, v in self.quantizer.inversed_bins.items():
+                decoded[k] = decoded[k].map(v)
         # continuous_cols back to non-standarised
         try:
             decoded[self.continuous_cols] = self.scaler.inverse_transform(
@@ -322,26 +414,84 @@ class TabPreprocessor(BasePreprocessor):
             elif self.auto_embed_dim:
                 n_cats = {col: df[col].nunique() for col in self.cat_embed_cols}
                 self.embed_dim = {
-                    col: embed_sz_rule(n_cat, self.embedding_rule)  # type: ignore[misc]
+                    # type: ignore[misc]
+                    col: embed_sz_rule(n_cat, self.embedding_rule)
                     for col, n_cat in n_cats.items()
                 }
                 embed_colname = self.cat_embed_cols  # type: ignore
             else:
-                self.embed_dim = {e: self.default_embed_dim for e in self.cat_embed_cols}  # type: ignore
+                self.embed_dim = {
+                    e: self.default_embed_dim for e in self.cat_embed_cols
+                }  # type: ignore
                 embed_colname = self.cat_embed_cols  # type: ignore
             return df[embed_colname]
 
     def _prepare_continuous(self, df: pd.DataFrame) -> pd.DataFrame:
+
+        if self.is_fitted:
+            return df[self.continuous_cols]
+        else:
+            if self.cols_to_scale is not None:
+                self.standardize_cols = (
+                    self.cols_to_scale
+                    if self.cols_to_scale != "all"
+                    else self.continuous_cols
+                )
+            elif self.scale:
+                if self.already_standard is not None:
+                    self.standardize_cols = [
+                        c
+                        for c in self.continuous_cols
+                        if c not in self.already_standard
+                    ]
+                else:
+                    self.standardize_cols = self.continuous_cols
+            else:
+                self.standardize_cols = None
+
+            if self.quantization_setup is not None:
+                if isinstance(self.quantization_setup, int):
+                    for col in self.continuous_cols:
+                        self.cols_and_bins: Dict[str, Union[int, List[float]]] = {
+                            col: self.quantization_setup
+                        }
+                else:
+                    self.cols_and_bins = self.quantization_setup.copy()
+            else:
+                self.cols_and_bins = None
+
+            return df[self.continuous_cols]
+
+    def _check_inputs(self, cat_embed_cols):  # noqa: C901
+
+        if self.scale or self.already_standard is not None:
+            warnings.warn(
+                "'scale' and 'already_standard' will be deprecated in the next release. "
+                "Please use 'cols_to_scale' instead",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         if self.scale:
             if self.already_standard is not None:
-                self.standardize_cols = [
+                standardize_cols = [
                     c for c in self.continuous_cols if c not in self.already_standard
                 ]
             else:
-                self.standardize_cols = self.continuous_cols
-        return df[self.continuous_cols]
-
-    def _check_inputs(self, cat_embed_cols):
+                standardize_cols = self.continuous_cols
+        elif self.cols_to_scale is not None:
+            standardize_cols = self.cols_to_scale
+        else:
+            standardize_cols = None
+        if standardize_cols is not None and self.quantization_setup is not None:
+            cols_to_quantize_and_standardize = [
+                c for c in standardize_cols if c in self.quantization_setup
+            ]
+            if cols_to_quantize_and_standardize:
+                warnings.warn(
+                    f"the following columns: {cols_to_quantize_and_standardize} will be first scaled"
+                    " using a StandardScaler and then quantized. Make sure this is what you really want"
+                )
 
         if self.with_cls_token and not self.with_attention:
             warnings.warn(
