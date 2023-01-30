@@ -8,6 +8,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.losses import InfoNCELoss, DenoisingLoss
 from pytorch_widedeep.wdtypes import (
+    Any,
     List,
     Tuple,
     Tensor,
@@ -166,7 +167,7 @@ class BaseContrastiveDenoisingTrainer(ABC):
         else:
             self.cyclic_lr = False
 
-    def _set_callbacks(self, callbacks):
+    def _set_callbacks(self, callbacks: Any):
         self.callbacks: List = [History(), LRShedulerCallback()]
         if callbacks is not None:
             for callback in callbacks:

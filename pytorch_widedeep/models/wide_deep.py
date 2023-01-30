@@ -201,7 +201,7 @@ class WideDeep(nn.Module):
             )
         elif self.deephead is not None:
             self.deephead = nn.Sequential(
-                self.deephead, nn.Linear(self.deephead.output_dim, self.pred_dim)
+                self.deephead, nn.Linear(self.deephead.output_dim, self.pred_dim)  # type: ignore[arg-type]
             )
         else:
             self._add_pred_layer()

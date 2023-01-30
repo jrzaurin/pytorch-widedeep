@@ -1,6 +1,6 @@
 import re
 import warnings
-from typing import Dict
+from typing import Dict, Union
 
 from torch import nn
 
@@ -8,12 +8,14 @@ warnings.filterwarnings("default")
 
 
 class Initializer(object):
-    def __call__(self, model: nn.Module):
+    def __call__(self, submodel: nn.Module):
         raise NotImplementedError("Initializer must implement this method")
 
 
 class MultipleInitializer(object):
-    def __init__(self, initializers: Dict[str, Initializer], verbose=True):
+    def __init__(
+        self, initializers: Dict[str, Union[Initializer, object]], verbose=True
+    ):
 
         self.verbose = verbose
         instantiated_initializers = {}
@@ -24,8 +26,8 @@ class MultipleInitializer(object):
                 instantiated_initializers[model_name] = initializer
         self._initializers = instantiated_initializers
 
-    def apply(self, model: nn.Module):
-        for name, child in model.named_children():
+    def apply(self, submodel: nn.Module):
+        for name, child in submodel.named_children():
             try:
                 self._initializers[name](child)
             except KeyError:
