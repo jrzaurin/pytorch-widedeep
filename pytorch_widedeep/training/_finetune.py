@@ -15,8 +15,13 @@ from pytorch_widedeep.wdtypes import (
     DataLoader,
     LRScheduler,
 )
+from pytorch_widedeep.models._base_wd_model_component import (
+    BaseWDModelComponent,
+)
 
 use_cuda = torch.cuda.is_available()
+
+WDModel = Union[nn.Module, nn.Sequential, BaseWDModelComponent]
 
 
 class FineTune:
@@ -65,7 +70,7 @@ class FineTune:
 
     def finetune_all(
         self,
-        model: nn.Module,
+        model: WDModel,
         model_name: str,
         loader: DataLoader,
         n_epochs: int,
@@ -120,7 +125,7 @@ class FineTune:
 
     def finetune_gradual(  # noqa: C901
         self,
-        model: nn.Module,
+        model: WDModel,
         model_name: str,
         loader: DataLoader,
         last_layer_max_lr: float,
@@ -245,7 +250,7 @@ class FineTune:
 
     def _finetune(
         self,
-        model: nn.Module,
+        model: WDModel,
         model_name: str,
         loader: DataLoader,
         optimizer: Optimizer,

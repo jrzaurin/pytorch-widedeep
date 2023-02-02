@@ -6,9 +6,12 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import Any, List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
+from pytorch_widedeep.models._base_wd_model_component import (
+    BaseWDModelComponent,
+)
 
 
-class BasicRNN(nn.Module):
+class BasicRNN(BaseWDModelComponent):
     r"""Standard text classifier/regressor comprised by a stack of RNNs
     (LSTMs or GRUs) that can be used as the `deeptext` component of a Wide &
     Deep model or independently by itself.

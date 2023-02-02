@@ -284,20 +284,20 @@ class TabPreprocessor(BasePreprocessor):
                     self.cat_embed_input.append((k, len(v), self.embed_dim[k]))
         if self.continuous_cols is not None:
             df_cont = self._prepare_continuous(df_adj)
-            # someone might be crazy enough to want standardization and
-            # quantization, in which case the 'StandardScaler' will run
-            # first
+
             if self.standardize_cols is not None:
                 self.scaler = StandardScaler(**self.scale_args).fit(
                     df_cont[self.standardize_cols].values
                 )
+            elif self.verbose:
+                warnings.warn("Continuous columns will not be normalised")
+
             if self.cols_and_bins is not None:
                 # we do not run 'Quantizer.fit' here since in the wild case
                 # someone wants standardization and quantization, the
                 # Quantizer will run on the scaled data
                 self.quantizer = Quantizer(self.cols_and_bins, **self.quant_args)
-            elif self.verbose:
-                warnings.warn("Continuous columns will not be normalised")
+
         self.is_fitted = True
         return self
 
