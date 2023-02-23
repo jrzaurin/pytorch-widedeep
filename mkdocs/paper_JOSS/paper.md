@@ -24,11 +24,11 @@ bibliography: paper.bib
 
 # Summary
 
-In recent years datasets have grown both in size and diversity, combining different data types or modes. 
+In recent years datasets have grown both in size and diversity, combining different data types. 
 Multi-modal machine learning projects involving tabular data, images and/or text are gaining popularity (e.g. [@garg2022multimodality]).
-Traditional approaches involved independent feature generation from every data mode and their combination in later stage, before passing them to an algorithm for classification or regression.
+Traditional approaches involved independent feature generation from every data type and their combination in later stage, before passing them to an algorithm for classification or regression.
 
-However, with the advent of "_easy-to-use_" Deep Learning (DL) frames such as Tensorflow [@tensorflow2015-whitepaper] or Pytorch [@NEURIPS2019_9015], and the subsequent advances in the fields of Computer Vision, Natural Language Processing or Deep Learning for Tabular data, it is now possible to use SoTA DL models and combine all datasets early in the process. This has two main advantages: (i) we can partially, or entirely skip the feature engineering step and (ii) the representations of each data mode are learned jointly. This means that such representations contain information that not only relates to the target, if the problem is supervised, but to how the different data modes relates to each other.
+However, with the advent of "_easy-to-use_" Deep Learning (DL) frames such as Tensorflow [@tensorflow2015-whitepaper] or Pytorch [@NEURIPS2019_9015], and the subsequent advances in the fields of Computer Vision, Natural Language Processing or Deep Learning for Tabular data, it is now possible to use SoTA DL models and combine all datasets early in the process. This has two main advantages: (i) we can partially, or entirely skip the feature engineering step and (ii) the representations of each data type are learned jointly. This means that such representations contain information that not only relates to the target, if the problem is supervised, but to how the different data types relates to each other.
 
 Furthermore, the flexibility inherent to DL approaches allows the usage of techniques that are primarly designed only for the text and/or images, to tabular data, eg. transfer learning or self-supervised pre-training.
 
@@ -36,13 +36,13 @@ With that in mind, we introduce `pytorch-widedeep`, a flexible package for multi
 
 # Statement of need
 
-There is a small number of packages available to use DL for tabular data alone (e.g pytorch-tabular [@joseph2021pytorch], pytorch-tabnet or autogluon-tabular [@erickson2020autogluon]) or that focus mainly in combining text and images (e.g. MMF [@singh2020mmf]). With that in mind, our goal is to provide a modular, flexible, and "_easy-to-use_" frame that allows the combination of a wide variety of models for all data modes.
+There is a small number of packages available to use DL for tabular data alone (e.g pytorch-tabular [@joseph2021pytorch], pytorch-tabnet or autogluon-tabular [@erickson2020autogluon]) or that focus mainly in combining text and images (e.g. MMF [@singh2020mmf]). With that in mind, our goal is to provide a modular, flexible, and "_easy-to-use_" frame that allows the combination of a wide variety of models for all data types.
 
 `pytorch-widedeep` is based on Google's Wide and Deep Algorithm [@cheng2016wide], and hence its name. However, the library has evolved enormously since its origins and, while we prefer to preserve the name for a variety of reasons (the explanation of which is beyond the scope of this paper). The original algorithm is heavily adjusted for multi-modal datasets and intended to facilitate the combination of text and images with corresponding tabular data. As opposed to Google's _"Wide and Deep"_ and _"Deep and Cross"_[@wang2017deep] architecture implementations in Keras/Tensorflow, we use the wide/cross and deep model design as an initial building blocks of pytorch deep learning models to provide basis for plethora of state-of-the-art models and architecture implementations that can be seamlessly assembled with just a few lines of code. Additionally, the individual components do not necessarly have to be a part of the final architecture. The main components of those architectures are shown in the Figure \autoref{fig:widedeep_arch}.
 
 ![\label{fig:widedeep_arch}](figures/widedeep_arch.png)
 
-The blue and green boxes in the figure represent the main data modes and their corresponding model components, namely `wide`, `deeptabular`, `deeptext` and `deepimage`. The yellow boxes represent _so-called_ fully-connected (FC) heads, simply MLPs that one can optionally add _"on top"_ of the main components. These are referred in the figure as `TextHead` and `ImageHead`. The dashed-line rectangles indicate that the outputs from the components inside are concatenated if a final FC head (referred as `DeepHead` in the figure) is used. The faded-green `deeptabular` box aims to indicate that the output of the deeptabular component will be concatenated directly with the output of the `deeptext` or `deepimage` components or, alternatively, with the FC heads if these are used. Finally, the arrows indicate the connections, which of course depend on the final architecture that the user chooses to build.
+The blue and green boxes in the figure represent the main data types and their corresponding model components, namely `wide`, `deeptabular`, `deeptext` and `deepimage`. The yellow boxes represent _so-called_ fully-connected (FC) heads, simply MLPs that one can optionally add _"on top"_ of the main components. These are referred in the figure as `TextHead` and `ImageHead`. The dashed-line rectangles indicate that the outputs from the components inside are concatenated if a final FC head (referred as `DeepHead` in the figure) is used. The faded-green `deeptabular` box aims to indicate that the output of the deeptabular component will be concatenated directly with the output of the `deeptext` or `deepimage` components or, alternatively, with the FC heads if these are used. Finally, the arrows indicate the connections, which of course depend on the final architecture that the user chooses to build.
 
 In math terms, and following the notation in the original paper [@cheng2016wide], the expression for the architecture without a `deephead` component can be formulated as:
 
@@ -59,12 +59,12 @@ While if there is a `deephead` component, the previous expression turns into:
 $pred = \sigma(W_{wide}^{T}[x,\phi(x)] + W_{deephead}^{T}a_{deephead}^{l_f} + b)$
 
 
-At this stage it is worth mentioning that the library has been built with an special emphasis on flexibility. That is, we want users to easily run as many different models as possible and/or use their custom components if they prefer. With that in mind, each and every data mode component in the figure above can be used independently and in isolation. For example, if the user wants to use a ResNet model to perform classification in an image-only dataset, that is perfectly possible using this library. In addition, following some minor adjustments described in the documentation, the user can use any custom model for each data mode -- mainly a custom model is a standard Pytorch model class that must have a property or attribute called `output_dim`. This way the `WideDeep` collector class knows the size of the incoming activations and is able to construct the multi-modal model --. Examples on how to use custom components can be found in the repository and documentation.
+At this stage it is worth mentioning that the library has been built with an special emphasis on flexibility. That is, we want users to easily run as many different models as possible and/or use their custom components if they prefer. With that in mind, each and every data type component in the figure above can be used independently and in isolation. For example, if the user wants to use a ResNet model to perform classification in an image-only dataset, that is perfectly possible using this library. In addition, following some minor adjustments described in the documentation, the user can use any custom model for each data type -- mainly a custom model is a standard Pytorch model class that must have a property or attribute called `output_dim`. This way the `WideDeep` collector class knows the size of the incoming activations and is able to construct the multi-modal model --. Examples on how to use custom components can be found in the repository and documentation.
 
 
 # The Model Hub
 
-In this section we will briefly introduce the current model components available for each data mode in the library. Bear in mind that the library is constantly under development and models are constantly added to the "model-hub".
+In this section we will briefly introduce the current model components available for each data type in the library. Bear in mind that the library is constantly under development and models are constantly added to the "model-hub".
 
 ## The `wide` component
 
