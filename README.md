@@ -37,6 +37,7 @@ The content of this document is organized as follows:
     - [Testing](#testing)
     - [How to Contribute](#how-to-contribute)
     - [Acknowledgments](#acknowledgments)
+    - [License](#license)
 
 ### Introduction
 
@@ -324,3 +325,10 @@ The `ImageProcessor` class in this library uses code from the fantastic [Deep
 Learning for Computer
 Vision](https://www.pyimagesearch.com/deep-learning-computer-vision-python-book/)
 (DL4CV) book by Adrian Rosebrock.
+
+### License
+
+This work is dual-licensed under Apache 2.0 and MIT (or any later version).
+You can choose between one of them if you use this work.
+
+`SPDX-License-Identifier: Apache-2.0 AND MIT`
