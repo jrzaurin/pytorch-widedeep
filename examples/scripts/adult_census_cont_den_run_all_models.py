@@ -59,6 +59,7 @@ if __name__ == "__main__":
         processor = TabPreprocessor(
             cat_embed_cols=cat_embed_cols,
             continuous_cols=continuous_cols,
+            scale=True,
             with_attention=True,
             with_cls_token=w_cls_tok,
         )
