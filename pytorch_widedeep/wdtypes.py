@@ -67,7 +67,7 @@ from torchvision.transforms import (
     RandomAdjustSharpness,
 )
 from torchvision.models._api import WeightsEnum
-from torch.optim.lr_scheduler import _LRScheduler
+from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data.dataloader import DataLoader
 
 from pytorch_widedeep.models import (
@@ -126,7 +126,6 @@ Transforms = Union[
     RandomHorizontalFlip,
     RandomAdjustSharpness,
 ]
-LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
 
 ModelWithoutAttention = Union[

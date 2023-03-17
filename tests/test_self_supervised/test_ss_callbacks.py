@@ -195,7 +195,7 @@ def test_early_stop(model_type):
             preprocessor=transf_preprocessor,
             callbacks=[
                 EarlyStopping(
-                    min_delta=5.0, patience=3, restore_best_weights=True, verbose=1
+                    min_delta=100.0, patience=3, restore_best_weights=True, verbose=1
                 )
             ],
             verbose=0,

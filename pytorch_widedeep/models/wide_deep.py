@@ -15,7 +15,7 @@ from pytorch_widedeep.models._base_wd_model_component import (
 warnings.filterwarnings("default", category=UserWarning)
 
 
-WDModel = Union[nn.Module, nn.Sequential, BaseWDModelComponent]
+WDModel = Union[nn.Module, BaseWDModelComponent]
 
 
 class WideDeep(nn.Module):
@@ -42,18 +42,22 @@ class WideDeep(nn.Module):
     wide: nn.Module, Optional, default = None
         `Wide` model. This is a linear model where the non-linearities are
         captured via crossed-columns.
-    deeptabular: nn.Module, Optional, default = None
+    deeptabular: BaseWDModelComponent, Optional, default = None
         Currently this library implements a number of possible architectures
         for the `deeptabular` component. See the documenation of the
         package.
-    deeptext: nn.Module, Optional, default = None
+    deeptext: BaseWDModelComponent, Optional, default = None
         Currently this library implements a number of possible architectures
         for the `deeptext` component. See the documenation of the
         package.
-    deepimage: nn.Module, Optional, default = None
+    deepimage: BaseWDModelComponent, Optional, default = None
         Currently this library uses `torchvision` and implements a number of
         possible architectures for the `deepimage` component. See the
         documenation of the package.
+    deephead: BaseWDModelComponent, Optional, default = None
+        Alternatively, the user can pass a custom model that will receive the
+        output of the deep component. If `deephead` is not None all the
+        previous fc-head parameters will be ignored
     head_hidden_dims: List, Optional, default = None
         List with the sizes of the dense layers in the head e.g: [128, 64]
     head_activation: str, default = "relu"
@@ -71,10 +75,6 @@ class WideDeep(nn.Module):
         Boolean indicating whether the order of the operations in the dense
         layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
         LIN -> ACT]`
-    deephead: nn.Module, Optional, default = None
-        Alternatively, the user can pass a custom model that will receive the
-        output of the deep component. If `deephead` is not None all the
-        previous fc-head parameters will be ignored
     enforce_positive: bool, default = False
         Boolean indicating if the output from the final layer must be
         positive. This is important if you are using loss functions with
@@ -173,7 +173,8 @@ class WideDeep(nn.Module):
         self.with_fds = with_fds
         self.enforce_positive = enforce_positive
 
-        # The main 5 components of the wide and deep assemble
+        # The main 5 components of the wide and deep assemble: wide,
+        # deeptabular, deeptext, deepimage and deephead
         self.with_deephead = deephead is not None or head_hidden_dims is not None
         if deephead is None and head_hidden_dims is not None:
             self.deephead = self._build_deephead(

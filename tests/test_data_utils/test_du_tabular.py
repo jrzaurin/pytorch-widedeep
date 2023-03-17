@@ -97,7 +97,9 @@ def test_prepare_deep_without_embedding_columns():
     errors = []
     df_randint = pd.DataFrame(np.random.choice(np.arange(100), (100, 2)))
     df_randint.columns = ["col1", "col2"]
-    preprocessor3 = TabPreprocessor(continuous_cols=["col1", "col2"])
+    preprocessor3 = TabPreprocessor(
+        continuous_cols=["col1", "col2"], cols_to_scale=["col1", "col2"]
+    )
 
     try:
         X_randint = preprocessor3.fit_transform(df_randint)
@@ -345,3 +347,44 @@ def test_find_bin(bin_edges, values):
             find_bin(bin_edges, values, ret_value=False),
             torch.tensor([0, 0, 0, 1, 3, 3]),
         )
+
+
+###############################################################################
+# Test quantization and new cols_to_scale_params
+###############################################################################
+
+
+df_for_quant = pd.DataFrame({"col1": np.random.rand(20), "col2": np.random.rand(20)})
+
+
+@pytest.mark.parametrize(
+    "quantization_setup, expected_bins_col1, expected_bins_col2",
+    [
+        (3, 3, 3),
+        ({"col1": 3}, 3, False),
+        ({"col2": 3}, False, 3),
+        ({"col1": [-np.inf, 0.3, 0.6, np.inf]}, 3, False),
+        ({"col2": [-np.inf, 0.3, 0.6, np.inf]}, False, 3),
+        ({"col1": 3, "col2": 4}, 3, 4),
+        (
+            {
+                "col1": [-np.inf, 0.3, 0.6, np.inf],
+                "col2": [-np.inf, 0.3, 0.6, np.inf],
+            },
+            3,
+            3,
+        ),
+    ],
+)
+def test_quantization(quantization_setup, expected_bins_col1, expected_bins_col2):
+    tab_preprocessor = TabPreprocessor(
+        continuous_cols=["col1", "col2"], quantization_setup=quantization_setup
+    )
+    X_quant = tab_preprocessor.fit_transform(df_for_quant)
+    assert (
+        len(set(X_quant[:, 0])) == expected_bins_col1
+        if expected_bins_col1
+        else 20 and len(set(X_quant[:, 1])) == expected_bins_col2
+        if expected_bins_col2
+        else 20
+    )

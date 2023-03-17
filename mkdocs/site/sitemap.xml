@@ -2,182 +2,197 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/index.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/contributing.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/installation.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/quick_start.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://pytorch-widedeep.readthedocs.io/examples/01_Preprocessors_and_utils.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <loc>https://pytorch-widedeep.readthedocs.io/examples/00_airbnb_data_preprocessing.html</loc>
+         <lastmod>2023-02-03</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://pytorch-widedeep.readthedocs.io/examples/01_preprocessors_and_utils.html</loc>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/examples/02_model_components.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://pytorch-widedeep.readthedocs.io/examples/03_Binary_Classification_with_Defaults.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <loc>https://pytorch-widedeep.readthedocs.io/examples/03_binary_classification_with_defaults.html</loc>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/examples/04_regression_with_images_and_text.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/examples/05_save_and_load_model_and_artifacts.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://pytorch-widedeep.readthedocs.io/examples/06_fineTune_and_warmup.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <loc>https://pytorch-widedeep.readthedocs.io/examples/06_finetune_and_warmup.html</loc>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://pytorch-widedeep.readthedocs.io/examples/07_Custom_Components.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <loc>https://pytorch-widedeep.readthedocs.io/examples/07_custom_components.html</loc>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/examples/08_custom_dataLoader_imbalanced_dataset.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/examples/09_extracting_embeddings.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://pytorch-widedeep.readthedocs.io/examples/10_3rd_party_integration-RayTune_WnB.html</loc>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/examples/11_auc_multiclass.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://pytorch-widedeep.readthedocs.io/examples/12_ZILNLoss_origkeras_vs_pytorch_multimodal.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <loc>https://pytorch-widedeep.readthedocs.io/examples/12_ZILNLoss_origkeras_vs_pytorch_widedeep.html</loc>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://pytorch-widedeep.readthedocs.io/examples/13_Model_Uncertainty_prediction.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <loc>https://pytorch-widedeep.readthedocs.io/examples/13_model_uncertainty_prediction.html</loc>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/examples/14_bayesian_models.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/examples/15_DIR-LDS_and_FDS.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/examples/16_Self_Supervised_Pretraning_pt1.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/examples/16_Self_Supervised_Pretraning_pt2.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://pytorch-widedeep.readthedocs.io/examples/17_Usign_a_hugging_face_model.html</loc>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/bayesian_models.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/bayesian_trainer.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/callbacks.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/dataloaders.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/losses.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/metrics.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/model_components.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/preprocessing.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/self_supervised_pretraining.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/tab2vec.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/trainer.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/utils/index.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/utils/deeptabular_utils.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/utils/fastai_transforms.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/utils/image_utils.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/utils/text_utils.html</loc>
-         <lastmod>2022-09-01</lastmod>
+         <lastmod>2023-02-03</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

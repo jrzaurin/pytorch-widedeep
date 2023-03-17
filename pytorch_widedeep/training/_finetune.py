@@ -21,7 +21,7 @@ from pytorch_widedeep.models._base_wd_model_component import (
 
 use_cuda = torch.cuda.is_available()
 
-WDModel = Union[nn.Module, nn.Sequential, BaseWDModelComponent]
+WDModel = Union[nn.Module, BaseWDModelComponent]
 
 
 class FineTune:

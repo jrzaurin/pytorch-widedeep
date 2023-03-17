@@ -204,7 +204,7 @@ class Vision(BaseWDModelComponent):
                     pretrained_model = torchvision.models.__dict__[
                         self.pretrained_model_setup
                     ](weights="IMAGENET1K_V2")
-                except ValueError:
+                except KeyError:
                     pretrained_model = torchvision.models.__dict__[
                         self.pretrained_model_setup
                     ](weights="IMAGENET1K_V1")

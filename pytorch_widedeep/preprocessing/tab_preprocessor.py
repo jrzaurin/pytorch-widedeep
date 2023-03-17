@@ -105,13 +105,27 @@ class TabPreprocessor(BasePreprocessor):
         ('education',32), ('relationship',16), ...]_)
     continuous_cols: List, default = None
         List with the name of the continuous cols
-    scale: bool, default = True
+    quantization_setup: int or Dict, default = None
+        Continuous columns can be turned into categorical via `pd.cut`. If
+        `quantization_setup` is an `int`, all continuous columns will be
+        quantized using this value as the number of bins. Alternatively, a
+        dictionary where the keys are the column names to quantize and the
+        values are the either integers indicating the number of bins or a
+        list of scalars indicating the bin edges.
+    cols_to_scale: List, default = None,
+        List with the names of the columns that will be standarised via
+        sklearn's `StandardScaler`
+    scale: bool, default = False
+        :information_source: **note**: this arg will be removed in the next
+         release. Please use `cols_to_scale` instead. <br/>
         Bool indicating whether or not to scale/standarise continuous cols. It
         is important to emphasize that all the DL models for tabular data in
         the library also include the possibility of normalising the input
         continuous features via a `BatchNorm` or a `LayerNorm`. <br/>
         Param alias: `scale_cont_cols`.
     already_standard: List, default = None
+        :information_source: **note**: this arg will be removed in the next
+         release. Please use `cols_to_scale` instead. <br/>
         List with the name of the continuous cols that do not need to be
         scaled/standarised.
     auto_embed_dim: bool, default = True
@@ -156,8 +170,12 @@ class TabPreprocessor(BasePreprocessor):
         distinguish the classes in one column from those in the other
         columns'_. In other words, the idea is to let the model learn which
         column is embedded at the time. See: `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
-
     verbose: int, default = 1
+
+    Other Parameters
+    ----------------
+    **kwargs: dict
+        `pd.cut` and `StandardScaler` related args
 
     Attributes
     ----------
@@ -200,14 +218,12 @@ class TabPreprocessor(BasePreprocessor):
     @Alias("scale", "scale_cont_cols")
     def __init__(
         self,
-        cat_embed_cols: Union[List[str], List[Tuple[str, int]]] = None,
-        continuous_cols: List[str] = None,
+        cat_embed_cols: Optional[Union[List[str], List[Tuple[str, int]]]] = None,
+        continuous_cols: Optional[List[str]] = None,
         quantization_setup: Optional[
             Union[int, Dict[str, Union[int, List[float]]]]
         ] = None,
         cols_to_scale: Optional[List[str]] = None,
-        scale: bool = True,
-        already_standard: List[str] = None,
         auto_embed_dim: bool = True,
         embedding_rule: Literal["google", "fastai_old", "fastai_new"] = "fastai_new",
         default_embed_dim: int = 16,
@@ -215,6 +231,9 @@ class TabPreprocessor(BasePreprocessor):
         with_cls_token: bool = False,
         shared_embed: bool = False,
         verbose: int = 1,
+        *,
+        scale: bool = False,
+        already_standard: List[str] = None,
         **kwargs,
     ):
         super(TabPreprocessor, self).__init__()
@@ -294,8 +313,8 @@ class TabPreprocessor(BasePreprocessor):
 
             if self.cols_and_bins is not None:
                 # we do not run 'Quantizer.fit' here since in the wild case
-                # someone wants standardization and quantization, the
-                # Quantizer will run on the scaled data
+                # someone wants standardization and quantization for the same
+                # columns, the Quantizer will run on the scaled data
                 self.quantizer = Quantizer(self.cols_and_bins, **self.quant_args)
 
         self.is_fitted = True
@@ -451,10 +470,9 @@ class TabPreprocessor(BasePreprocessor):
 
             if self.quantization_setup is not None:
                 if isinstance(self.quantization_setup, int):
+                    self.cols_and_bins: Dict[str, Union[int, List[float]]] = {}
                     for col in self.continuous_cols:
-                        self.cols_and_bins: Dict[str, Union[int, List[float]]] = {
-                            col: self.quantization_setup
-                        }
+                        self.cols_and_bins[col] = self.quantization_setup
                 else:
                     self.cols_and_bins = self.quantization_setup.copy()
             else:
@@ -483,11 +501,19 @@ class TabPreprocessor(BasePreprocessor):
             standardize_cols = self.cols_to_scale
         else:
             standardize_cols = None
-        if standardize_cols is not None and self.quantization_setup is not None:
-            cols_to_quantize_and_standardize = [
-                c for c in standardize_cols if c in self.quantization_setup
-            ]
-            if cols_to_quantize_and_standardize:
+
+        if standardize_cols is not None:
+            if isinstance(self.quantization_setup, int):
+                cols_to_quantize_and_standardize = [
+                    c for c in standardize_cols if c in self.continuous_cols
+                ]
+            elif isinstance(self.quantization_setup, dict):
+                cols_to_quantize_and_standardize = [
+                    c for c in standardize_cols if c in self.quantization_setup
+                ]
+            else:
+                cols_to_quantize_and_standardize = None
+            if cols_to_quantize_and_standardize is not None:
                 warnings.warn(
                     f"the following columns: {cols_to_quantize_and_standardize} will be first scaled"
                     " using a StandardScaler and then quantized. Make sure this is what you really want"
