@@ -49,7 +49,6 @@ class BaseBayesianTrainer(ABC):
         seed: int,
         **kwargs,
     ):
-
         if objective not in ["binary", "multiclass", "regression"]:
             raise ValueError(
                 "If 'custom_loss_function' is not None, 'objective' must be 'binary' "
@@ -151,7 +150,6 @@ class BaseBayesianTrainer(ABC):
                             )
 
     def _set_loss_fn(self, objective, custom_loss_function, **kwargs):
-
         if custom_loss_function is not None:
             return custom_loss_function
 
@@ -169,7 +167,6 @@ class BaseBayesianTrainer(ABC):
     def _set_reduce_on_plateau_criterion(
         self, lr_scheduler, reducelronplateau_criterion
     ):
-
         self.reducelronplateau = False
 
         if isinstance(lr_scheduler, ReduceLROnPlateau):
@@ -215,7 +212,6 @@ class BaseBayesianTrainer(ABC):
 
     @staticmethod
     def _set_device_and_num_workers(**kwargs):
-
         default_num_workers = (
             0
             if sys.platform == "darwin" and sys.version_info.minor > 7

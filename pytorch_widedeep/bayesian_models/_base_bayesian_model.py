@@ -34,7 +34,6 @@ class BaseBayesianModel(nn.Module):
         n_samples: int,
         n_batches: int,
     ) -> Tuple[Tensor, Tensor]:
-
         outputs_l = []
         kld = 0.0
         for _ in range(n_samples):

@@ -12,7 +12,6 @@ from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-
     df = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
@@ -24,7 +23,6 @@ if __name__ == "__main__":
 
     for model_name in ["linear", "mlp"]:
         for objective in ["binary", "multiclass", "regression"]:
-
             cat_cols = [
                 "workclass",
                 "education",

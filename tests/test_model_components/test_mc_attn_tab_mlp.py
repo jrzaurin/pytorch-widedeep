@@ -30,16 +30,13 @@ X_deep_with_class = torch.from_numpy(np.hstack([np.ones((10, 1)) * 6, X_deep]))
     ["context_attention", "self_attention"],
 )
 def test_only_cat_embed(attention_name):
-
     if attention_name == "context_attention":
-
         model = ContextAttentionMLP(
             column_idx={k: v for v, k in enumerate(colnames[:5])},
             cat_embed_input=embed_input,
         )
 
     elif attention_name == "self_attention":
-
         model = SelfAttentionMLP(
             column_idx={k: v for v, k in enumerate(colnames[:5])},
             cat_embed_input=embed_input,
@@ -60,16 +57,13 @@ def test_only_cat_embed(attention_name):
     ["context_attention", "self_attention"],
 )
 def test_only_cont_embed(attention_name):
-
     if attention_name == "context_attention":
-
         model = ContextAttentionMLP(
             column_idx={k: v for v, k in enumerate(colnames[5:])},
             continuous_cols=continuous_cols,
         )
 
     elif attention_name == "self_attention":
-
         model = SelfAttentionMLP(
             column_idx={k: v for v, k in enumerate(colnames[5:])},
             continuous_cols=continuous_cols,
@@ -114,7 +108,6 @@ df = pd.DataFrame(
 def test_shared_embed_and_cls(
     attention_name, shared_embed, with_addnorm, with_cls_token
 ):
-
     tab_preprocessor = TabPreprocessor(
         cat_embed_cols=["col1", "col2"],
         continuous_cols=["col3", "col4"],
@@ -127,7 +120,6 @@ def test_shared_embed_and_cls(
     X_inp = torch.from_numpy(X)
 
     if attention_name == "context_attention":
-
         model = ContextAttentionMLP(
             column_idx=tab_preprocessor.column_idx,
             cat_embed_input=tab_preprocessor.cat_embed_input,
@@ -138,7 +130,6 @@ def test_shared_embed_and_cls(
         )
 
     elif attention_name == "self_attention":
-
         model = SelfAttentionMLP(
             column_idx=tab_preprocessor.column_idx,
             cat_embed_input=tab_preprocessor.cat_embed_input,

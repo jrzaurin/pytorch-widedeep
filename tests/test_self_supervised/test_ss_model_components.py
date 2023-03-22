@@ -50,7 +50,6 @@ target = np.random.choice(2, 32)
     [True, False],
 )
 def test_enc_dec_different_setups(model_type, cat_or_cont, infer_decoder):
-
     if cat_or_cont == "cat":
         column_idx = {k: v for v, k in enumerate(colnames[:5])}
         cont_cols = None
@@ -148,7 +147,6 @@ test_df = pd.DataFrame(
 def test_cont_den_multiple_mlps_different_setups(
     transf_model, cat_or_cont, with_cls_token
 ):
-
     cat_embed_cols = ["col1", "col2"] if cat_or_cont in ["cat", "both"] else None
     continuous_cols = ["col3", "col4"] if cat_or_cont in ["cont", "both"] else None
 
@@ -192,13 +190,11 @@ def test_cont_den_multiple_mlps_different_setups(
 
     checks = []
     if g_projs is not None:
-
         projs_check = _check_g_projs(X, g_projs, tr_model, with_cls_token)
 
         checks.extend(projs_check)
 
     if cat_x_and_x_ is not None:
-
         cat_checks = _check_cat_multiple_denoise_mlps(
             X, cat_x_and_x_, with_cls_token, out_dim
         )
@@ -206,7 +202,6 @@ def test_cont_den_multiple_mlps_different_setups(
         checks.extend(cat_checks)
 
     if cat_or_cont == "both":
-
         cont_if_cat_check = _check_cont_if_cat_multiple_denoise_mlps(
             X, cont_x_and_x_, with_cls_token
         )
@@ -214,7 +209,6 @@ def test_cont_den_multiple_mlps_different_setups(
         checks.extend(cont_if_cat_check)
 
     elif cat_or_cont == "cont":
-
         cont_only_check = _check_cont_only_multiple_denoise_mlps(
             X, cont_x_and_x_, with_cls_token
         )
@@ -246,7 +240,6 @@ def test_cont_den_multiple_mlps_different_setups(
 def test_cont_den_single_mlp_different_setups(
     transf_model, cat_or_cont, with_cls_token
 ):
-
     cat_embed_cols = ["col1", "col2"] if cat_or_cont in ["cat", "both"] else None
     continuous_cols = ["col3", "col4"] if cat_or_cont in ["cont", "both"] else None
 
@@ -286,13 +279,11 @@ def test_cont_den_single_mlp_different_setups(
 
     checks = []
     if g_projs is not None:
-
         projs_check = _check_g_projs(X, g_projs, tr_model, with_cls_token)
 
         checks.extend(projs_check)
 
     if cat_x_and_x_ is not None:
-
         cat_checks = _check_cat_single_denoise_mlps(
             X, cat_x_and_x_, with_cls_token, out_dim
         )
@@ -300,7 +291,6 @@ def test_cont_den_single_mlp_different_setups(
         checks.extend(cat_checks)
 
     if cat_or_cont == "both":
-
         cont_if_cat_check = _check_cont_if_cat_single_denoise_mlps(
             X, cont_x_and_x_, with_cls_token
         )
@@ -308,7 +298,6 @@ def test_cont_den_single_mlp_different_setups(
         checks.extend(cont_if_cat_check)
 
     elif cat_or_cont == "cont":
-
         cont_only_check = _check_cont_only_single_denoise_mlps(
             X, cont_x_and_x_, with_cls_token
         )
@@ -326,7 +315,6 @@ def _get_output_dim(cd_model):
 
 
 def _check_cat_single_denoise_mlps(X, cat_x_and_x_, with_cls_token, out_dim):
-
     assertions = []
 
     targ = (
@@ -345,7 +333,6 @@ def _check_cat_single_denoise_mlps(X, cat_x_and_x_, with_cls_token, out_dim):
 
 
 def _check_cont_if_cat_single_denoise_mlps(X, cont_x_and_x_, with_cls_token):
-
     assertions = []
 
     targ = (
@@ -362,7 +349,6 @@ def _check_cont_if_cat_single_denoise_mlps(X, cont_x_and_x_, with_cls_token):
 
 
 def _check_cont_only_single_denoise_mlps(X, cont_x_and_x_, with_cls_token):
-
     assertions = []
 
     targ = (
@@ -379,7 +365,6 @@ def _check_cont_only_single_denoise_mlps(X, cont_x_and_x_, with_cls_token):
 
 
 def _build_transf_model(transf_model, preprocessor, cat_embed_input, continuous_cols):
-
     if transf_model == "tabtransformer":
         model = TabTransformer(
             column_idx=preprocessor.column_idx,
@@ -430,7 +415,6 @@ def _build_transf_model(transf_model, preprocessor, cat_embed_input, continuous_
 
 
 def _check_g_projs(X, g_projs, model, with_cls_token):
-
     assertions = []
 
     asrt1 = g_projs[0].shape[1] == X.shape[1] - 1 if with_cls_token else X.shape[1]
@@ -444,7 +428,6 @@ def _check_g_projs(X, g_projs, model, with_cls_token):
 
 
 def _check_cat_multiple_denoise_mlps(X, cat_x_and_x_, with_cls_token, out_dim):
-
     assertions = []
 
     targ1 = (X[:, 1] - 2).long() if with_cls_token else (X[:, 0] - 1).long()
@@ -466,7 +449,6 @@ def _check_cat_multiple_denoise_mlps(X, cat_x_and_x_, with_cls_token, out_dim):
 
 
 def _check_cont_if_cat_multiple_denoise_mlps(X, cont_x_and_x_, with_cls_token):
-
     assertions = []
 
     targ1 = X[:, 3] if with_cls_token else X[:, 2]
@@ -481,7 +463,6 @@ def _check_cont_if_cat_multiple_denoise_mlps(X, cont_x_and_x_, with_cls_token):
 
 
 def _check_cont_only_multiple_denoise_mlps(X, cont_x_and_x_, with_cls_token):
-
     assertions = []
 
     targ1 = X[:, 1] if with_cls_token else X[:, 0]

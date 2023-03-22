@@ -213,7 +213,6 @@ class WideDeep(nn.Module):
         y: Optional[Tensor] = None,
         epoch: Optional[int] = None,
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-
         if self.with_fds:
             return self._forward_deep_with_fds(X, y, epoch)
 
@@ -270,7 +269,6 @@ class WideDeep(nn.Module):
         deepimage: Optional[BaseWDModelComponent],
         with_deephead: bool,
     ) -> Tuple[Optional[WDModel], Optional[WDModel], Optional[WDModel]]:
-
         if deeptabular is not None:
             self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
         else:
@@ -410,7 +408,6 @@ class WideDeep(nn.Module):
         pred_dim,
         with_fds,
     ):
-
         if wide is not None:
             assert wide.wide_linear.weight.size(1) == pred_dim, (
                 "the 'pred_dim' of the wide component ({}) must be equal to the 'pred_dim' "

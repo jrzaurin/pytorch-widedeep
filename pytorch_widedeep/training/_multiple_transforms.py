@@ -5,7 +5,6 @@ from pytorch_widedeep.wdtypes import List, Transforms
 
 class MultipleTransforms(object):
     def __init__(self, transforms: List[Transforms]):
-
         instantiated_transforms = []
         for transform in transforms:
             if isinstance(transform, type):

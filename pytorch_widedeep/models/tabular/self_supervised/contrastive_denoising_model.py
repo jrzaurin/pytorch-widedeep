@@ -78,7 +78,6 @@ class ContrastiveDenoisingModel(nn.Module):
         Optional[Tuple[Tensor, Tensor]],
         Optional[Tuple[Tensor, Tensor]],
     ]:
-
         # "uncorrupted" branch
         embed = self.model._get_embeddings(X)
         if self.model.with_cls_token:
@@ -113,7 +112,6 @@ class ContrastiveDenoisingModel(nn.Module):
 
         # mlps for denoising loss
         if self.loss_type in ["denoising", "both"]:
-
             if self._t is not None:
                 self._t = self._t.to(X.device)
                 _X = X - self._t.repeat(X.size(0), 1)
@@ -143,7 +141,6 @@ class ContrastiveDenoisingModel(nn.Module):
     def _set_projection_heads(
         self,
     ) -> Tuple[Union[MLP, nn.Identity], Union[MLP, nn.Identity]]:
-
         if self.projection_head1_dims is not None:
             projection_head1: Union[MLP, nn.Identity] = MLP(
                 d_hidden=self.projection_head1_dims,
@@ -173,7 +170,6 @@ class ContrastiveDenoisingModel(nn.Module):
     def _set_cat_and_cont_denoise_mlps(
         self,
     ) -> Tuple[Optional[DenoiseMlp], Optional[DenoiseMlp]]:
-
         if self.use_cat_mlp:
             if self.cat_mlp_type == "single":
                 denoise_cat_mlp: Union[CatSingleMlp, CatMlpPerFeature] = CatSingleMlp(
@@ -215,7 +211,6 @@ class ContrastiveDenoisingModel(nn.Module):
         return denoise_cat_mlp, denoise_cont_mlp
 
     def _set_idx_to_substract(self, encoding_dict) -> Optional[Dict[str, int]]:
-
         if self.cat_mlp_type == "multiple":
             idx_to_substract: Optional[Dict[str, int]] = {
                 k: min(sorted(list(v.values()))) for k, v in encoding_dict.items()
@@ -227,9 +222,7 @@ class ContrastiveDenoisingModel(nn.Module):
         return idx_to_substract
 
     def _tensor_to_subtract_from_cats(self, preprocessor) -> Optional[Tensor]:
-
         if hasattr(preprocessor, "label_encoder"):
-
             encoding_dict = preprocessor.label_encoder.encoding_dict
             self.idx_to_substract = self._set_idx_to_substract(encoding_dict)
 

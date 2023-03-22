@@ -820,7 +820,6 @@ class InfoNCELoss(nn.Module):
     """
 
     def __init__(self, temperature: float = 0.1, reduction: str = "mean"):
-
         super(InfoNCELoss, self).__init__()
 
         self.temperature = temperature
@@ -940,7 +939,6 @@ class DenoisingLoss(nn.Module):
     def _compute_cat_loss(
         self, x_cat_and_cat_: Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
     ) -> Tensor:
-
         loss_cat = torch.tensor(0.0, device=self._get_device(x_cat_and_cat_))
         if isinstance(x_cat_and_cat_, list):
             for x, x_ in x_cat_and_cat_:
@@ -952,7 +950,6 @@ class DenoisingLoss(nn.Module):
         return loss_cat
 
     def _compute_cont_loss(self, x_cont_and_cont_) -> Tensor:
-
         loss_cont = torch.tensor(0.0, device=self._get_device(x_cont_and_cont_))
         if isinstance(x_cont_and_cont_, list):
             for x, x_ in x_cont_and_cont_:

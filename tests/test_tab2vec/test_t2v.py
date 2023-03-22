@@ -76,7 +76,6 @@ tabnet = TabNet(
     ],
 )
 def test_non_transformer_models(deeptabular, return_dataframe):
-
     model = WideDeep(deeptabular=deeptabular)
 
     # Let's assume the model is trained
@@ -127,7 +126,6 @@ def _build_model(model_name, params):
 def test_tab_transformer_models(
     model_name, with_cls_token, share_embeddings, embed_continuous
 ):
-
     embed_cols = ["a", "b"]
     cont_cols = ["c", "d"]
 
@@ -184,7 +182,6 @@ def test_attentive_mlp(
     share_embeddings,
     attention_name,
 ):
-
     embed_cols = ["a", "b"]
     cont_cols = ["c", "d"]
 
@@ -198,7 +195,6 @@ def test_attentive_mlp(
     X_tab = tab_preprocessor.fit_transform(df_init)  # noqa: F841
 
     if attention_name == "context_attention":
-
         deeptabular = ContextAttentionMLP(
             column_idx=tab_preprocessor.column_idx,
             cat_embed_input=tab_preprocessor.cat_embed_input,
@@ -206,7 +202,6 @@ def test_attentive_mlp(
         )
 
     elif attention_name == "self_attention":
-
         deeptabular = SelfAttentionMLP(
             column_idx=tab_preprocessor.column_idx,
             cat_embed_input=tab_preprocessor.cat_embed_input,
@@ -263,7 +258,6 @@ def test_attentive_mlp(
 def test_transformer_family_models(
     model_name, with_cls_token, share_embeddings, return_dataframe
 ):
-
     embed_cols = ["a", "b"]
     cont_cols = ["c", "d"]
 

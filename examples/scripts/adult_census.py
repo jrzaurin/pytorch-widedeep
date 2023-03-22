@@ -22,7 +22,6 @@ from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-
     df = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
@@ -98,7 +97,6 @@ if __name__ == "__main__":
     )
 
     for tab_model in [tab_mlp, tab_resnet]:
-
         model = WideDeep(wide=wide, deeptabular=tab_model)  # type: ignore[arg-type]
 
         wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)

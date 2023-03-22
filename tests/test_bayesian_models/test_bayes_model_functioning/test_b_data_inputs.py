@@ -56,7 +56,6 @@ tabmlp = BayesianTabMlp(
     ],
 )
 def test_data_input_options(model, X_tab, target, X_tab_val, target_val, val_split):
-
     trainer = BayesianTrainer(model, objective="binary", verbose=0)
 
     trainer.fit(

@@ -338,7 +338,6 @@ class DiffSizeCatAndContEmbeddings(nn.Module):
         self.output_dim = self.cat_out_dim + self.cont_out_dim
 
     def forward(self, X: Tensor) -> Tuple[Tensor, Any]:
-
         if self.cat_embed_input is not None:
             x_cat = self.cat_embed(X)
         else:
@@ -411,7 +410,6 @@ class SameSizeCatAndContEmbeddings(nn.Module):
                 )
 
     def forward(self, X: Tensor) -> Tuple[Tensor, Any]:
-
         if self.cat_embed_input is not None:
             x_cat = self.cat_embed(X)
         else:

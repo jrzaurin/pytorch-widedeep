@@ -128,7 +128,6 @@ class WideDeepDataset(Dataset):
         ks: int,
         sigma: float,
     ) -> np.ndarray:
-
         """Assign weight to each sample by following procedure:
         1.      creating histogram from label values with nuber of bins = granularity
         2[opt]. reweighting label frequencies by sqrt

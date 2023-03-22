@@ -39,7 +39,6 @@ test_df = pd.DataFrame(
 
 
 def _build_enc_models(model_type, column_idx, cat_embed_input, continuous_cols):
-
     if model_type == "mlp":
         encoder = TabMlpEncoder(
             column_idx=column_idx,
@@ -67,7 +66,6 @@ def _build_enc_models(model_type, column_idx, cat_embed_input, continuous_cols):
 
 
 def _build_dec_models(model_type, encoder):
-
     if model_type == "mlp":
         decoder = TabMlpDecoder(
             embed_dim=encoder.cat_and_cont_embed.output_dim,
@@ -105,7 +103,6 @@ def _build_dec_models(model_type, encoder):
     ["custom", "auto"],
 )
 def test_enc_dec_trainer(model_type, cat_or_cont, decoder_model):
-
     cat_embed_cols = ["col1", "col2"] if cat_or_cont in ["cat", "both"] else None
     continuous_cols = ["col3", "col4"] if cat_or_cont in ["cont", "both"] else None
 
@@ -146,7 +143,6 @@ def test_enc_dec_trainer(model_type, cat_or_cont, decoder_model):
     ["pretrain", "fit"],
 )
 def test_enc_dec_trainer_method_name(method_name):
-
     cat_embed_cols = ["col1", "col2"]
     continuous_cols = ["col3", "col4"]
 
@@ -206,7 +202,6 @@ def test_cont_den_trainer_with_defaults(
     cat_or_cont,
     with_cls_token,
 ):
-
     cat_embed_cols = ["col1", "col2"] if cat_or_cont in ["cat", "both"] else None
     continuous_cols = ["col3", "col4"] if cat_or_cont in ["cont", "both"] else None
 
@@ -246,7 +241,6 @@ def test_cont_den_trainer_with_defaults(
 def test_cont_den_trainer_method_name(
     method_name,
 ):
-
     cat_embed_cols = ["col1", "col2"]
     continuous_cols = ["col3", "col4"]
 
@@ -310,7 +304,6 @@ def test_cont_den_trainer_with_varying_params(
     mlp_type,
     with_cls_token,
 ):
-
     cat_embed_cols = ["col1", "col2"]
     continuous_cols = ["col3", "col4"]
     preprocessor = TabPreprocessor(
@@ -353,7 +346,6 @@ def test_cont_den_trainer_with_varying_params(
 def test_projection_head_value_error(
     proj_head_dims,
 ):
-
     cat_embed_cols = ["col1", "col2"]
     continuous_cols = ["col3", "col4"]
     preprocessor = TabPreprocessor(

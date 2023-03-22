@@ -79,7 +79,6 @@ test_layers = [
     ],
 )
 def test_initializers_1(initializers, test_layers):
-
     wide = Wide(np.unique(X_wide).shape[0], 1)
     deeptabular = TabMlp(
         column_idx=column_idx,
@@ -130,7 +129,6 @@ initializers_2 = {
 
 
 def test_initializers_with_pattern():
-
     wide = Wide(100, 1)
     deeptabular = TabMlp(
         column_idx=column_idx,
@@ -179,7 +177,6 @@ model2 = WideDeep(wide=wide, deeptabular=deeptabular)
     ],
 )
 def test_single_initializer(model, initializer):
-
     inp_weights = model.wide.wide_linear.weight.data.detach().cpu()
 
     n_model = c(model)
@@ -200,7 +197,6 @@ initializers_3 = {
 
 
 def test_warning_when_missing_initializer():
-
     wide = Wide(100, 1)
     deeptabular = TabMlp(
         column_idx=column_idx,

@@ -34,7 +34,6 @@ class CatSingleMlp(nn.Module):
         )
 
     def forward(self, X: Tensor, r_: Tensor) -> Tuple[Tensor, Tensor]:
-
         x = torch.cat(
             [
                 X[:, self.column_idx[col]].long()
@@ -94,7 +93,6 @@ class CatMlpPerFeature(nn.Module):
         )
 
     def forward(self, X: Tensor, r_: Tensor) -> List[Tuple[Tensor, Tensor]]:
-
         x = [
             X[:, self.column_idx[col]].long()
             for col, _ in self.cat_embed_input
@@ -137,7 +135,6 @@ class ContSingleMlp(nn.Module):
         )
 
     def forward(self, X: Tensor, r_: Tensor) -> Tuple[Tensor, Tensor]:
-
         x = torch.cat(
             [X[:, self.column_idx[col]].float() for col in self.continuous_cols]
         ).unsqueeze(1)
@@ -188,7 +185,6 @@ class ContMlpPerFeature(nn.Module):
         )
 
     def forward(self, X: Tensor, r_: Tensor) -> List[Tuple[Tensor, Tensor]]:
-
         x = [
             X[:, self.column_idx[col]].unsqueeze(1).float()
             for col in self.continuous_cols

@@ -398,7 +398,6 @@ class BayesianTrainer(BaseBayesianTrainer):
         n_batches: int,
         batch_idx: int,
     ):
-
         self.model.train()
 
         X = X_tab.to(self.device)
@@ -427,7 +426,6 @@ class BayesianTrainer(BaseBayesianTrainer):
         n_batches: int,
         batch_idx: int,
     ):
-
         self.model.eval()
         with torch.no_grad():
             X = X_tab.to(self.device)
@@ -468,7 +466,6 @@ class BayesianTrainer(BaseBayesianTrainer):
         return_samples: bool = False,
         batch_size: int = 256,
     ) -> List:
-
         self.batch_size = batch_size
 
         test_set = TensorDataset(torch.from_numpy(X_tab))

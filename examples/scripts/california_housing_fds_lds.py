@@ -9,7 +9,6 @@ from pytorch_widedeep.preprocessing import TabPreprocessor
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-
     df = load_california_housing(as_frame=True)
 
     target = df.MedHouseVal.values

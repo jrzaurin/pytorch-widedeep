@@ -9,7 +9,6 @@ from pytorch_widedeep.losses import BayesianSELoss, BayesianRegressionLoss
 # BayesianSELoss
 ##############################################################################
 def test_mse_based_losses():
-
     y_true = np.array([3, 5, 2.5, 7]).reshape(-1, 1)
     y_pred = np.array([2.5, 5, 4, 8]).reshape(-1, 1)
 

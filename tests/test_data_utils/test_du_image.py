@@ -23,7 +23,6 @@ X_imgs = processor.fit_transform(df)
 
 
 def test_aap_ssp():
-
     img = cv2.imread("/".join([imd_dir, "galaxy1.png"]))
 
     aap = AspectAwarePreprocessor(128, 128)

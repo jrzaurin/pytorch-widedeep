@@ -52,14 +52,12 @@ class EncoderDecoderModel(nn.Module):
         self.is_tabnet = isinstance(self.encoder, TabNet)
 
     def forward(self, X: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
-
         if self.is_tabnet:
             return self._forward_tabnet(X)
         else:
             return self._forward(X)
 
     def _forward(self, X: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
-
         x_embed = self.encoder._get_embeddings(X)
 
         if self.training:
@@ -72,7 +70,6 @@ class EncoderDecoderModel(nn.Module):
         return x_embed, x_embed_rec, mask
 
     def _forward_tabnet(self, X: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
-
         x_embed = self.encoder._get_embeddings(X)
 
         if self.training:
@@ -97,7 +94,6 @@ class EncoderDecoderModel(nn.Module):
         return decoder
 
     def _build_tabmlp_decoder(self) -> DecoderWithoutAttention:
-
         common_params = (
             inspect.signature(TabMlp).parameters.keys()
             & inspect.signature(TabMlpDecoder).parameters.keys()
@@ -113,7 +109,6 @@ class EncoderDecoderModel(nn.Module):
         return TabMlpDecoder(**decoder_param)
 
     def _build_tabresnet_decoder(self) -> DecoderWithoutAttention:
-
         common_params = (
             inspect.signature(TabResnet).parameters.keys()
             & inspect.signature(TabResnetDecoder).parameters.keys()
@@ -131,7 +126,6 @@ class EncoderDecoderModel(nn.Module):
         return TabResnetDecoder(**decoder_param)
 
     def _build_tabnet_decoder(self) -> DecoderWithoutAttention:
-
         common_params = (
             inspect.signature(TabNet).parameters.keys()
             & inspect.signature(TabNetDecoder).parameters.keys()

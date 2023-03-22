@@ -16,7 +16,6 @@ from pytorch_widedeep.preprocessing import TabPreprocessor
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-
     df = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(

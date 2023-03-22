@@ -165,7 +165,6 @@ def test_forward_masks():
     ],
 )
 def test_create_explain_matrix(w_cat, w_cont, embed_continuous):
-
     if w_cat and w_cont:
         cat_embed_input = [(u, i, 4) for u, i in zip(colnames[:2], [n_embed] * 2)]
         continuous_cols = colnames[2:]

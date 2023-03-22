@@ -49,14 +49,12 @@ class Quantizer:
         quantization_setup: Dict[str, Union[int, List[float]]],
         **kwargs,
     ):
-
         self.quantization_setup = quantization_setup
         self.quant_args = kwargs
 
         self.is_fitted = False
 
     def fit(self, df: pd.DataFrame) -> "Quantizer":
-
         self.bins: Dict[str, List[float]] = {}
         for col, bins in self.quantization_setup.items():
             _, self.bins[col] = pd.cut(
@@ -80,7 +78,6 @@ class Quantizer:
         return self
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
-
         check_is_fitted(self, condition=self.is_fitted)
 
         dfc = df.copy()
@@ -446,7 +443,6 @@ class TabPreprocessor(BasePreprocessor):
             return df[embed_colname]
 
     def _prepare_continuous(self, df: pd.DataFrame) -> pd.DataFrame:
-
         if self.is_fitted:
             return df[self.continuous_cols]
         else:
@@ -481,7 +477,6 @@ class TabPreprocessor(BasePreprocessor):
             return df[self.continuous_cols]
 
     def _check_inputs(self, cat_embed_cols):  # noqa: C901
-
         if self.scale or self.already_standard is not None:
             warnings.warn(
                 "'scale' and 'already_standard' will be deprecated in the next release. "

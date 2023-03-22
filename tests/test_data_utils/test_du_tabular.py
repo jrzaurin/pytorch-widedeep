@@ -93,7 +93,6 @@ def test_prepare_deep_without_continous_columns(input_df, X_deep, preprocessor):
 # Test the TabPreprocessor: only continouos columns
 ###############################################################################
 def test_prepare_deep_without_embedding_columns():
-
     errors = []
     df_randint = pd.DataFrame(np.random.choice(np.arange(100), (100, 2)))
     df_randint.columns = ["col1", "col2"]
@@ -232,7 +231,6 @@ def test_tab_preprocessor_trasformer_raise_error(embed_cols, continuous_cols, sc
     [True, False],
 )
 def test_with_and_without_shared_embeddings(shared_embed):
-
     tab_preprocessor = TabPreprocessor(
         cat_embed_cols=["col1", "col2"],
         continuous_cols=None,
@@ -284,7 +282,6 @@ def test_notfittederror():
     ],
 )
 def test_embed_sz_rule_of_thumb(rule):
-
     embed_cols = ["col1", "col2"]
     df = pd.DataFrame(
         {
@@ -308,7 +305,6 @@ def test_embed_sz_rule_of_thumb(rule):
 
 
 def test_overlapping_cols_valueerror():
-
     embed_cols = ["col1", "col2"]
     cont_cols = ["col1", "col2"]
 

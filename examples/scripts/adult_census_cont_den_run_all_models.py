@@ -21,7 +21,6 @@ from pytorch_widedeep.self_supervised_training import (
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-
     df = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
@@ -55,7 +54,6 @@ if __name__ == "__main__":
     with_cls_token = [True, False]
 
     for w_cls_tok, transf_model in product(with_cls_token, transformer_models):
-
         processor = TabPreprocessor(
             cat_embed_cols=cat_embed_cols,
             continuous_cols=continuous_cols,
@@ -111,7 +109,6 @@ if __name__ == "__main__":
     mlp_attn_model = ["context_attention", "self_attention"]
 
     for w_cls_tok, attn_model in product(with_cls_token, mlp_attn_model):
-
         processor = TabPreprocessor(
             cat_embed_cols=cat_embed_cols,
             continuous_cols=continuous_cols,

@@ -109,7 +109,6 @@ lr_schedulers_6 = ReduceLROnPlateau(optimizers_6)
 def test_history_callback(
     optimizers, schedulers, len_loss_output, len_lr_output, init_lr, schedulers_type
 ):
-
     trainer = Trainer(
         model=model,
         objective="binary",
@@ -335,7 +334,6 @@ def test_history_callback_w_tabtransformer(
 
 
 def test_modelcheckpoint_mode_warning():
-
     fpath = "tests/test_model_functioning/modelcheckpoint/weights_out"
 
     with pytest.warns(RuntimeWarning):
@@ -347,7 +345,6 @@ def test_modelcheckpoint_mode_warning():
 
 
 def test_modelcheckpoint_mode_options():
-
     fpath = "tests/test_model_functioning/modelcheckpoint/weights_out"
 
     model_checkpoint_1 = ModelCheckpoint(filepath=fpath, monitor="val_loss", mode="min")
@@ -384,7 +381,6 @@ def test_modelcheckpoint_mode_options():
 
 
 def test_modelcheckpoint_get_state():
-
     fpath = "tests/test_model_functioning/modelcheckpoint/"
 
     model_checkpoint = ModelCheckpoint(
@@ -422,7 +418,6 @@ def test_modelcheckpoint_get_state():
 
 
 def test_early_stop_mode_warning():
-
     with pytest.warns(RuntimeWarning):
         model_checkpoint = EarlyStopping(  # noqa: F841
             monitor="val_loss", mode="unknown"
@@ -430,7 +425,6 @@ def test_early_stop_mode_warning():
 
 
 def test_early_stop_mode_options():
-
     early_stopping_1 = EarlyStopping(monitor="val_loss", mode="min")
     early_stopping_2 = EarlyStopping(monitor="val_loss")
     early_stopping_3 = EarlyStopping(monitor="acc", mode="max")
@@ -452,7 +446,6 @@ def test_early_stop_mode_options():
 
 
 def test_early_stopping_get_state():
-
     early_stopping_path = Path("tests/test_model_functioning/early_stopping")
     early_stopping_path.mkdir()
 

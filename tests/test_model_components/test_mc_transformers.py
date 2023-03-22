@@ -71,9 +71,9 @@ def test_tabtransformer_output():
 # Test SharedEmbeddings
 ###############################################################################
 
+
 # all manually passed
 def test_tabtransformer_shared_embeddings():
-
     res = []
 
     shared_embeddings = SharedEmbeddings(
@@ -336,7 +336,6 @@ def test_embed_continuous_and_with_cls_token_transformer_family(
     ],
 )
 def test_transformer_activations(activation, model_name):
-
     params = {
         "column_idx": {k: v for v, k in enumerate(colnames)},
         "cat_embed_input": embed_input,
@@ -366,7 +365,6 @@ def test_transformer_activations(activation, model_name):
     ],
 )
 def test_transformers_keep_attn(model_name):
-
     params = {
         "column_idx": {k: v for v, k in enumerate(colnames)},
         "cat_embed_input": embed_input,

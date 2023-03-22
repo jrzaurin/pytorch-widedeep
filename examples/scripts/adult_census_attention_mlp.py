@@ -15,7 +15,6 @@ from pytorch_widedeep.preprocessing import TabPreprocessor
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-
     df = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
@@ -66,7 +65,6 @@ if __name__ == "__main__":
     X_tab = tab_preprocessor.fit_transform(df)
 
     for attention_name in ["context_attention", "self_attention"]:
-
         if attention_name == "context_attention":
             tab_mlp_attn = ContextAttentionMLP(
                 column_idx=tab_preprocessor.column_idx,

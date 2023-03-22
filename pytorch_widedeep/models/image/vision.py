@@ -173,7 +173,6 @@ class Vision(BaseWDModelComponent):
             )
 
     def forward(self, X: Tensor) -> Tensor:
-
         x = self.features(X)
 
         if len(x.shape) > 2:
@@ -223,7 +222,6 @@ class Vision(BaseWDModelComponent):
         return features, output_dim
 
     def _basic_cnn(self):
-
         channel_sizes = [3] + self.channel_sizes
         kernel_sizes = (
             [self.kernel_sizes] * len(self.channel_sizes)
@@ -252,7 +250,6 @@ class Vision(BaseWDModelComponent):
         return BasicCNN
 
     def _freeze(self, features):
-
         if self.trainable_params is not None:
             for name, param in features.named_parameters():
                 for tl in self.trainable_params:

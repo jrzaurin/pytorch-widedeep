@@ -16,7 +16,6 @@ class MultipleInitializer(object):
     def __init__(
         self, initializers: Dict[str, Union[Initializer, object]], verbose=True
     ):
-
         self.verbose = verbose
         instantiated_initializers = {}
         for model_name, initializer in initializers.items():
@@ -77,7 +76,6 @@ class Uniform(Initializer):
 
 class ConstantInitializer(Initializer):
     def __init__(self, value, bias=False, pattern="."):
-
         self.bias = bias
         self.value = value
         self.pattern = pattern

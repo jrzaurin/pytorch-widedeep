@@ -247,7 +247,6 @@ def get_kernel_window(
     ks: int = 5,
     sigma: Union[int, float] = 2,
 ) -> List[float]:
-
     """Procedure to prepare window of values from symetrical kernel function for smoothing of the distribution in
     Label and Feature Distribution Smoothing (LDS & FDS).
 

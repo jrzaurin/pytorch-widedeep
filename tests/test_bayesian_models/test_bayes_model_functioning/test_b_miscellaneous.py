@@ -39,7 +39,6 @@ btabmlp = BayesianTabMlp(
 
 @pytest.mark.parametrize("model", [bwide, btabmlp])
 def test_save_and_load(model):
-
     btrainer = BayesianTrainer(
         model=model,
         objective="binary",
@@ -94,7 +93,6 @@ def test_save_and_load(model):
 
 @pytest.mark.parametrize("model_name", ["wide", "tabmlp"])
 def test_save_and_load_dict(model_name):
-
     model1, btrainer1 = _build_model_and_trainer(model_name)
 
     X = X_wide if model_name == "wide" else X_tab
@@ -157,7 +155,6 @@ def test_save_and_load_dict(model_name):
 
 
 def _build_model_and_trainer(model_name):
-
     if model_name == "wide":
         model = BayesianWide(np.unique(X_wide).shape[0], 1)
     elif model_name == "tabmlp":

@@ -48,7 +48,6 @@ def test_pad_sequences():
 # Test inverse transform
 ###############################################################################
 def test_inverse_transform():
-
     df = pd.DataFrame(
         {
             "text_column": [

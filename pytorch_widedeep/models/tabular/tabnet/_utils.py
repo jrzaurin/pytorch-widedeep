@@ -95,7 +95,6 @@ def extract_cat_setup(backbone: nn.Module) -> List:
 
 
 def extract_cont_setup(backbone: nn.Module) -> List:
-
     cont_cols: List = backbone.continuous_cols  # type: ignore[assignment]
     embed_continuous = backbone.embed_continuous
 

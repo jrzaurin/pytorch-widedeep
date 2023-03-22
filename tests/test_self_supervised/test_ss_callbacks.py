@@ -78,7 +78,6 @@ X_tab_valid_transf = transf_preprocessor.transform(transf_df.sample(frac=1))
 def test_lr_history(  # noqa: C901
     model_type, schedulers_type, len_loss_output, len_lr_output, init_lr
 ):
-
     if model_type == "mlp":
         model = TabMlp(
             column_idx=non_transf_preprocessor.column_idx,
@@ -161,7 +160,6 @@ def test_lr_history(  # noqa: C901
     ["mlp", "transformer"],
 )
 def test_early_stop(model_type):
-
     if model_type == "mlp":
         model = TabMlp(
             column_idx=non_transf_preprocessor.column_idx,
@@ -224,7 +222,6 @@ def test_early_stop(model_type):
     ],
 )
 def test_checkpoint(model_type, fpath, save_best_only, max_save, n_files):
-
     if model_type == "mlp":
         model = TabMlp(
             column_idx=non_transf_preprocessor.column_idx,

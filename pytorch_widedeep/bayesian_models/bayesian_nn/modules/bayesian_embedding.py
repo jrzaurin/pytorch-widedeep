@@ -140,7 +140,6 @@ class BayesianEmbedding(BayesianModule):
         self.log_variational_posterior: Union[Tensor, float] = 0.0
 
     def forward(self, X: Tensor) -> Tensor:
-
         if not self.training:
             return F.embedding(
                 X,

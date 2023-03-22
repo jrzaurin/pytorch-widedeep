@@ -33,7 +33,7 @@ class Wide(nn.Module):
     --------
     >>> import torch
     >>> from pytorch_widedeep.models import Wide
-    >>> X = torch.empty(4, 4).random_(6)
+    >>> X = torch.empty(4, 4).random_(4)
     >>> wide = Wide(input_dim=X.unique().size(0), pred_dim=1)
     >>> out = wide(X)
     """

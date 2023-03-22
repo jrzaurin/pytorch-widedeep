@@ -27,7 +27,6 @@ def download_images(df, out_path, id_col, img_col):
 
 
 if __name__ == "__main__":
-
     DATA_PATH = Path("data/airbnb")
     HOST_PATH = DATA_PATH / "host_picture"
     PROP_PATH = DATA_PATH / "property_picture"

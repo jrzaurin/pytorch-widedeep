@@ -212,7 +212,6 @@ class FDSLayer(nn.Module):
                 ) * curr_var + factor * self.running_var[left_bin_edge_ind]
 
     def _smooth(self, features, labels, epoch):
-
         smoothed_features = features.detach()
 
         if epoch >= self.start_smooth:

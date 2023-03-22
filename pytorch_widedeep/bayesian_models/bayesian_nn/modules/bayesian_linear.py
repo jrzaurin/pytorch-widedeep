@@ -139,7 +139,6 @@ class BayesianLinear(BayesianModule):
         self.log_variational_posterior: Union[Tensor, float] = 0.0
 
     def forward(self, X: Tensor) -> Tensor:
-
         if not self.training:
             return F.linear(X, self.weight_mu, self.bias_mu)
 

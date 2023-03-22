@@ -234,7 +234,6 @@ class TabTransformer(BaseTabularModelWithAttention):
             self.mlp = None
 
     def forward(self, X: Tensor) -> Tensor:
-
         if not self.embed_continuous:
             x_cat, x_cont = self.cat_and_cont_embed(X)
             if x_cat is not None:
@@ -261,7 +260,6 @@ class TabTransformer(BaseTabularModelWithAttention):
         return x
 
     def _mlp_first_hidden_dim(self) -> int:
-
         if self.with_cls_token:
             if self.embed_continuous:
                 attn_output_dim = self.input_dim
@@ -296,7 +294,6 @@ class TabTransformer(BaseTabularModelWithAttention):
         return [blk.attn.attn_weights for blk in self.encoder]
 
     def _compute_attn_output_dim(self) -> int:
-
         if self.with_cls_token:
             if self.embed_continuous:
                 attn_output_dim = self.input_dim

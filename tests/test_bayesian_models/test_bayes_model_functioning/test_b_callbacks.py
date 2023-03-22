@@ -46,7 +46,6 @@ btabmlp = BayesianTabMlp(
 @pytest.mark.parametrize("model", [bwide, btabmlp])
 @pytest.mark.parametrize("scheduler_name", ["step", "cyclic"])
 def test_history_callback(model, scheduler_name):
-
     init_lr = 0.001
     optimizer = torch.optim.Adam(model.parameters(), lr=init_lr)
     if scheduler_name == "cyclic":
@@ -146,7 +145,6 @@ def test_early_stop(model):
     ],
 )
 def test_model_checkpoint(fpath, save_best_only, max_save, n_files):
-
     trainer = BayesianTrainer(
         model=btabmlp,
         objective="binary",

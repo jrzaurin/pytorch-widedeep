@@ -262,7 +262,6 @@ class TabPerceiver(BaseTabularModelWithAttention):
             self.mlp = None
 
     def forward(self, X: Tensor) -> Tensor:
-
         x_emb = self._get_embeddings(X)
 
         x = einops.repeat(self.latents, "n d -> b n d", b=X.shape[0])
@@ -332,7 +331,6 @@ class TabPerceiver(BaseTabularModelWithAttention):
         return attention_weights
 
     def _build_perceiver_block(self) -> nn.ModuleDict:
-
         perceiver_block = nn.ModuleDict()
 
         # Cross Attention

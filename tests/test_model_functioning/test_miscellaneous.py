@@ -216,7 +216,6 @@ def test_basic_run_with_metrics_multiclass():
 def test_predict_with_individual_component(
     wide, deeptabular, deeptext, deepimage, X_wide, X_tab, X_text, X_img, target
 ):
-
     model = WideDeep(
         wide=wide, deeptabular=deeptabular, deeptext=deeptext, deepimage=deepimage
     )
@@ -322,7 +321,6 @@ def test_explain_mtx_and_feat_imp():
 
 
 def test_save_load_and_predict():
-
     fpath = "tests/test_model_functioning/test_wd_model"
     if not os.path.exists(fpath):
         os.makedirs(fpath)
@@ -409,7 +407,6 @@ def test_handle_columns_with_dots():
 
 
 def test_lds_component_with_model():
-
     model = WideDeep(deeptabular=tabmlp)
     trainer = Trainer(model, objective="regression", verbose=0)
     trainer.fit(X_tab=X_tab, target=target, with_lds=True)
@@ -420,7 +417,6 @@ def test_lds_component_with_model():
 
 
 def test_lds_component_with_dataset():
-
     dataset_with_lds = WideDeepDataset(X_tab=X_tab, target=target, with_lds=True)
     # test if weights were created
     assert dataset_with_lds.weights.shape[0] == 32

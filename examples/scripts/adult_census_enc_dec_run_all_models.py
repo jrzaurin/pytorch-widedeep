@@ -17,7 +17,6 @@ from pytorch_widedeep.self_supervised_training import EncoderDecoderTrainer
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-
     df = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
@@ -91,7 +90,6 @@ if __name__ == "__main__":
     decoders = [mlp_decoder, resnet_decoder, tabnet_decoder, None, None, None]
 
     for enc, dec in zip(encoders, decoders):
-
         ec_trainer = EncoderDecoderTrainer(
             encoder=enc,  # type: ignore[arg-type]
             decoder=dec,  # type: ignore[arg-type]

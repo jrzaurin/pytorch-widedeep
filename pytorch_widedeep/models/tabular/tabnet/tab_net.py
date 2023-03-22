@@ -13,7 +13,6 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 
 
 class TabNet(BaseTabularModelWithoutAttention):
-
     r"""Defines a [TabNet model](https://arxiv.org/abs/1908.07442) that
     can be used as the `deeptabular` component of a Wide & Deep model or
     independently by itself.

@@ -52,7 +52,6 @@ X_tab_transf = transf_preprocessor.fit_transform(df)
     ["mlp", "transformer"],
 )
 def test_save_and_load(model_type):
-
     if model_type == "mlp":
         model = TabMlp(
             column_idx=non_transf_preprocessor.column_idx,
@@ -122,7 +121,6 @@ def test_save_and_load(model_type):
 
 
 def _build_model_and_trainer(model_type):
-
     if model_type == "mlp":
         model = TabMlp(
             column_idx=non_transf_preprocessor.column_idx,
@@ -158,7 +156,6 @@ def _build_model_and_trainer(model_type):
     ["mlp", "transformer"],
 )
 def test_save_and_load_dict(model_type):  # noqa: C901
-
     model1, trainer1 = _build_model_and_trainer(model_type)
     X = X_tab if model_type == "mlp" else X_tab_transf
 

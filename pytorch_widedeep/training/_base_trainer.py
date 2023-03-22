@@ -54,7 +54,6 @@ class BaseTrainer(ABC):
         seed: int,
         **kwargs,
     ):
-
         self._check_inputs(
             model, objective, optimizers, lr_schedulers, custom_loss_function
         )
@@ -175,7 +174,6 @@ class BaseTrainer(ABC):
                 self.initializer(self.model)
 
     def _set_loss_fn(self, objective, custom_loss_function, **kwargs):
-
         class_weight = (
             torch.tensor(kwargs["class_weight"]).to(self.device)
             if "class_weight" in kwargs
@@ -221,7 +219,6 @@ class BaseTrainer(ABC):
         return optimizer
 
     def _set_lr_scheduler(self, lr_schedulers, **kwargs):
-
         # ReduceLROnPlateau is special
         reducelronplateau_criterion = kwargs.get("reducelronplateau_criterion", None)
 
@@ -230,7 +227,6 @@ class BaseTrainer(ABC):
         )
 
         if lr_schedulers is not None:
-
             if isinstance(lr_schedulers, LRScheduler) or isinstance(
                 lr_schedulers, ReduceLROnPlateau
             ):
@@ -253,7 +249,6 @@ class BaseTrainer(ABC):
     def _set_reduce_on_plateau_criterion(
         self, lr_schedulers, reducelronplateau_criterion
     ):
-
         self.reducelronplateau = False
 
         if isinstance(lr_schedulers, Dict):
@@ -313,7 +308,6 @@ class BaseTrainer(ABC):
         lr_schedulers,
         custom_loss_function,
     ):
-
         if model.with_fds and _ObjectiveToMethod.get(objective) != "regression":
             raise ValueError(
                 "Feature Distribution Smooting can be used only for regression"
@@ -346,7 +340,6 @@ class BaseTrainer(ABC):
 
     @staticmethod
     def _set_device_and_num_workers(**kwargs):
-
         # Important note for Mac users: Since python 3.8, the multiprocessing
         # library start method changed from 'fork' to 'spawn'. This affects the
         # data-loaders, which will not run in parallel.

@@ -34,7 +34,6 @@ target_multic = np.random.choice(3, 32)
 @pytest.mark.parametrize("return_samples", [True, False])
 @pytest.mark.parametrize("embed_continuous", [True, False])
 def test_classification(model_name, objective, return_samples, embed_continuous):
-
     bsz = 32
     n_samples = 5
 
@@ -82,7 +81,6 @@ def test_classification(model_name, objective, return_samples, embed_continuous)
 @pytest.mark.parametrize("model_name", ["wide", "tabmlp"])
 @pytest.mark.parametrize("return_samples", [True, False])
 def test_regression(model_name, return_samples):
-
     bsz = 32
     n_samples = 5
 

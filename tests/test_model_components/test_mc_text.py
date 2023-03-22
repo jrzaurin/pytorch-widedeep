@@ -224,7 +224,6 @@ def test_gru_and_using_ouput(bidirectional):
 def test_stacked_attentive_rnn(
     rnn_type, bidirectional, attn_concatenate, with_addnorm, with_head
 ):
-
     model = StackedAttentiveRNN(
         vocab_size=vocab_size,
         embed_dim=32,

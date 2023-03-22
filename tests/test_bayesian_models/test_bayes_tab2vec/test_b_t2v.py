@@ -33,7 +33,6 @@ cont_cols = ["c", "d"]
 @pytest.mark.parametrize("return_dataframe", [True, False])
 @pytest.mark.parametrize("embed_continuous", [True, False])
 def test_bayesian_mlp_models(return_dataframe, embed_continuous):
-
     tab_preprocessor = TabPreprocessor(
         cat_embed_cols=embed_cols, continuous_cols=cont_cols
     )

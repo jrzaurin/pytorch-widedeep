@@ -38,7 +38,6 @@ class BaseEncoderDecoderTrainer(ABC):
         seed: int,
         **kwargs,
     ):
-
         self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
 
         self.early_stop = False
@@ -86,7 +85,6 @@ class BaseEncoderDecoderTrainer(ABC):
     def _set_reduce_on_plateau_criterion(
         self, lr_scheduler, reducelronplateau_criterion
     ):
-
         self.reducelronplateau = False
 
         if isinstance(lr_scheduler, ReduceLROnPlateau):
@@ -154,7 +152,6 @@ class BaseEncoderDecoderTrainer(ABC):
 
     @staticmethod
     def _set_device_and_num_workers(**kwargs):
-
         default_num_workers = (
             0
             if sys.platform == "darwin" and sys.version_info.minor > 7

@@ -18,7 +18,6 @@ class Metric(object):
 
 class MultipleMetrics(object):
     def __init__(self, metrics: List[Union[Metric, object]], prefix: str = ""):
-
         instantiated_metrics = []
         for metric in metrics:
             if isinstance(metric, type):
@@ -288,7 +287,6 @@ class FBetaScore(Metric):
         self.recall.reset()
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
-
         prec = self.precision(y_pred, y_true)
         rec = self.recall(y_pred, y_true)
         beta2 = self.beta**2
@@ -389,7 +387,6 @@ class R2Score(Metric):
         self.y_true_sum = 0
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
-
         self.numerator += ((y_pred - y_true) ** 2).sum().item()
 
         self.num_examples += y_true.shape[0]

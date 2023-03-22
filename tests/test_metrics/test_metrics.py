@@ -157,7 +157,6 @@ y_pred_reg_pt = torch.from_numpy(y_pred_reg_np)
     ],
 )
 def test_reset_methods(metric, metric_name):  # noqa: C901
-
     if metric_name == "r2":
         res = metric(y_pred_reg_np, y_true_reg_np)
     else:

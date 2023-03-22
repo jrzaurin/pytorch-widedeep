@@ -14,7 +14,6 @@ from pytorch_widedeep.self_supervised_training import (
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-
     df = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)

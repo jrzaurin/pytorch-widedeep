@@ -12,7 +12,6 @@ from pytorch_widedeep.wdtypes import Tensor
 
 
 def cut_mix(x: Tensor, lam: float = 0.8) -> Tensor:
-
     batch_size = x.size()[0]
 
     mask = torch.from_numpy(np.random.choice(2, (x.shape), p=[lam, 1 - lam])).to(
@@ -29,7 +28,6 @@ def cut_mix(x: Tensor, lam: float = 0.8) -> Tensor:
 
 
 def mix_up(p: Tensor, lam: float = 0.8) -> Tensor:
-
     batch_size = p.size()[0]
 
     rand_idx = torch.randperm(batch_size).to(p.device)

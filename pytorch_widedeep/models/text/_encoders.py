@@ -33,7 +33,6 @@ class ContextAttentionEncoder(nn.Module):
         self.attn = ContextAttention(input_dim, attn_dropout, sum_along_seq)
 
     def forward(self, X: Tensor, h: Tensor, c: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
-
         if isinstance(self.rnn, nn.LSTM):
             o, (h, c) = self.rnn(X, (h, c))
         elif isinstance(self.rnn, nn.GRU):
@@ -49,7 +48,6 @@ class ContextAttentionEncoder(nn.Module):
         return out, c, h
 
     def _process_rnn_outputs(self, output: Tensor, hidden: Tensor) -> Tensor:
-
         if self.attn_concatenate:
             if self.bidirectional:
                 bi_hidden = torch.cat((hidden[-2], hidden[-1]), dim=1)

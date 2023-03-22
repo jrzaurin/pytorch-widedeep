@@ -195,7 +195,6 @@ class AttentiveTransformer(nn.Module):
         virtual_batch_size=128,
         momentum=0.02,
     ):
-
         super(AttentiveTransformer, self).__init__()
         self.fc = nn.Linear(input_dim, output_dim, bias=False)
         initialize_non_glu(self.fc, input_dim, output_dim)

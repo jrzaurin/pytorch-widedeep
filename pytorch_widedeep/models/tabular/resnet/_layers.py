@@ -34,7 +34,6 @@ class BasicBlock(nn.Module):
             self.bn2 = nn.BatchNorm1d(out)
 
     def forward(self, X: Tensor) -> Tensor:
-
         identity = X
 
         out = self.lin1(X)

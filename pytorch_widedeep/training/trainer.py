@@ -948,7 +948,6 @@ class Trainer(BaseTrainer):
         epoch: int,
         lds_weightt: Tensor,
     ):
-
         lds_weight = (
             None
             if torch.all(lds_weightt == 0)
@@ -1002,7 +1001,6 @@ class Trainer(BaseTrainer):
         return score, avg_loss
 
     def _eval_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
-
         self.model.eval()
         with torch.no_grad():
             X = {k: v.to(self.device) for k, v in data.items()}
@@ -1154,7 +1152,6 @@ class Trainer(BaseTrainer):
                         test_steps, disable=self.verbose != 1 or uncertainty is True
                     ) as tt:
                         for j, data in zip(tt, test_loader):
-
                             tt.set_description("predict")
                             X = {k: v.to(self.device) for k, v in data.items()}
                             preds = (
@@ -1195,7 +1192,6 @@ class Trainer(BaseTrainer):
 
     @staticmethod
     def _extract_kwargs(kwargs):
-
         dataloader_params = [
             "sampler",
             "batch_sampler",

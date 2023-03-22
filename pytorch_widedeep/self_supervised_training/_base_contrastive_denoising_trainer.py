@@ -49,7 +49,6 @@ class BaseContrastiveDenoisingTrainer(ABC):
         seed: int,
         **kwargs,
     ):
-
         self._check_projection_head_dims(
             model, projection_head1_dims, projection_head2_dims
         )
@@ -106,7 +105,6 @@ class BaseContrastiveDenoisingTrainer(ABC):
         raise NotImplementedError("Trainer.save method not implemented")
 
     def _set_loss_fn(self, **kwargs):
-
         if self.loss_type in ["contrastive", "both"]:
             temperature = kwargs.get("temperature", 0.1)
             reductiom = kwargs.get("reductiom", "mean")
@@ -124,7 +122,6 @@ class BaseContrastiveDenoisingTrainer(ABC):
         x_cat_and_cat_: Optional[Tuple[Tensor, Tensor]],
         x_cont_and_cont_: Optional[Tuple[Tensor, Tensor]],
     ) -> Tensor:
-
         contrastive_loss = (
             self.contrastive_loss(g_projs)
             if self.loss_type in ["contrastive", "both"]
@@ -141,7 +138,6 @@ class BaseContrastiveDenoisingTrainer(ABC):
     def _set_reduce_on_plateau_criterion(
         self, lr_scheduler, reducelronplateau_criterion
     ):
-
         self.reducelronplateau = False
 
         if isinstance(lr_scheduler, ReduceLROnPlateau):
@@ -209,7 +205,6 @@ class BaseContrastiveDenoisingTrainer(ABC):
 
     @staticmethod
     def _set_device_and_num_workers(**kwargs):
-
         default_num_workers = (
             0
             if sys.platform == "darwin" and sys.version_info.minor > 7
@@ -222,7 +217,6 @@ class BaseContrastiveDenoisingTrainer(ABC):
 
     @staticmethod
     def _check_model_is_supported(model: ModelWithAttention):
-
         if model.__class__.__name__ == "TabPerceiver":
             raise ValueError(
                 "Self-Supervised pretraining is not supported for the 'TabPerceiver'"
@@ -239,7 +233,6 @@ class BaseContrastiveDenoisingTrainer(ABC):
         projection_head1_dims: Optional[List[int]],
         projection_head2_dims: Optional[List[int]],
     ):
-
         error_msg = (
             "The first dimension of the projection heads must be the same as "
             f"the embeddings dimension or input dimension of the model: {model.input_dim}. "

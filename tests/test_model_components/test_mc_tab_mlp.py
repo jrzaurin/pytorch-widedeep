@@ -146,7 +146,6 @@ def test_act_fn_ValueError():
 def test_embedddings_class(
     setup, column_idx, cat_embed_input, continuous_cols, embed_continuous
 ):
-
     if setup == "w_cat":
         X = X_deep_emb
     elif setup == "w_cont":

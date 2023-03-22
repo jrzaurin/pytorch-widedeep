@@ -255,7 +255,6 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         n_epochs: int = 1,
         batch_size: int = 32,
     ):
-
         return self.pretrain(
             X_tab, X_tab_val, val_split, validation_freq, n_epochs, batch_size
         )
@@ -301,7 +300,6 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
             torch.save(self.cd_model, model_path)
 
     def _train_step(self, X_tab: Tensor, batch_idx: int) -> float:
-
         X = X_tab.to(self.device)
 
         self.optimizer.zero_grad()
@@ -316,7 +314,6 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         return avg_loss
 
     def _eval_step(self, X_tab: Tensor, batch_idx: int) -> float:
-
         self.cd_model.eval()
 
         with torch.no_grad():
@@ -336,7 +333,6 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         X_tab_val: Optional[np.ndarray] = None,
         val_split: Optional[float] = None,
     ) -> Tuple[TensorDataset, Optional[TensorDataset]]:
-
         if X_tab_val is not None:
             train_set = TensorDataset(torch.from_numpy(X))
             eval_set = TensorDataset(torch.from_numpy(X_tab_val))

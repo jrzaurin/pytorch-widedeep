@@ -235,7 +235,6 @@ class Tab2Vec:
         return self.fit(df, target_col).transform(df, target_col)
 
     def _new_colnames(self) -> List[str]:
-
         if self.with_attention:
             return self._new_colnames_with_attn()
         else:

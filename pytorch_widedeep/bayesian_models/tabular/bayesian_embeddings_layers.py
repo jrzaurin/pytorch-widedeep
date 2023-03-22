@@ -78,7 +78,6 @@ class BayesianContEmbeddings(BayesianModule):
         self.log_variational_posterior: Union[Tensor, float] = 0.0
 
     def forward(self, X: Tensor) -> Tensor:
-
         if not self.training:
             x = self.weight_mu.unsqueeze(0) * X.unsqueeze(2)
             if self.bias_mu is not None:
@@ -222,7 +221,6 @@ class BayesianDiffSizeCatAndContEmbeddings(nn.Module):
         self.output_dim = self.cat_out_dim + self.cont_out_dim
 
     def forward(self, X: Tensor) -> Tuple[Tensor, Any]:
-
         if self.cat_embed_input is not None:
             x_cat = self.cat_embed(X)
         else:
