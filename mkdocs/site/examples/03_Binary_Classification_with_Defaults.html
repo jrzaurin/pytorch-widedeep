@@ -8,24 +8,25 @@
       
       
       
-        <link rel="canonical" href="https://pytorch-widedeep.readthedocs.io/examples/03_Binary_Classification_with_Defaults.html">
+        <link rel="canonical" href="https://pytorch-widedeep.readthedocs.io/examples/03_binary_classification_with_defaults.html">
       
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.2">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
     
     
       
-        <title>03_Binary_Classification_with_Defaults - pytorch_widedeep</title>
+        <title>03_binary_classification_with_defaults - pytorch_widedeep</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.69437709.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.975780f9.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.cbb835fc.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.2505c338.min.css">
         
       
       
+
     
     
     
@@ -46,6 +47,7 @@
     
       
 
+    
     
     
   </head>
@@ -104,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              03_Binary_Classification_with_Defaults
+              03_binary_classification_with_defaults
             
           </span>
         </div>
@@ -115,6 +117,7 @@
         
           
           
+          
           <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
           
             <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
@@ -122,6 +125,7 @@
             </label>
           
         
+          
           
           
           <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
@@ -149,7 +153,7 @@
       </label>
       <nav class="md-search__options" aria-label="Search">
         
-        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
         </button>
       </nav>
@@ -173,7 +177,7 @@
         <a href="https://github.com/jrzaurin/pytorch-widedeep" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     pytorch_widedeep
@@ -259,7 +263,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="01_Preprocessors_and_utils.html" class="md-tabs__link md-tabs__link--active">
+      <a href="01_preprocessors_and_utils.html" class="md-tabs__link md-tabs__link--active">
         Examples
       </a>
     </li>
@@ -319,7 +323,7 @@
       <a href="https://github.com/jrzaurin/pytorch-widedeep" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     pytorch_widedeep
@@ -749,6 +753,10 @@
         
           
         
+          
+        
+          
+        
       
       
         <label class="md-nav__link" for="__nav_5">
@@ -769,8 +777,8 @@
   
   
     <li class="md-nav__item">
-      <a href="01_Preprocessors_and_utils.html" class="md-nav__link">
-        01_Preprocessors_and_utils
+      <a href="01_preprocessors_and_utils.html" class="md-nav__link">
+        01_preprocessors_and_utils
       </a>
     </li>
   
@@ -803,14 +811,16 @@
       <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          03_Binary_Classification_with_Defaults
+          03_binary_classification_with_defaults
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="03_Binary_Classification_with_Defaults.html" class="md-nav__link md-nav__link--active">
-        03_Binary_Classification_with_Defaults
+      <a href="03_binary_classification_with_defaults.html" class="md-nav__link md-nav__link--active">
+        03_binary_classification_with_defaults
       </a>
       
         
@@ -818,6 +828,8 @@
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
@@ -827,29 +839,16 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#simple-binary-classification-with-defaults" class="md-nav__link">
-    Simple Binary Classification with defaults
-  </a>
-  
-    <nav class="md-nav" aria-label="Simple Binary Classification with defaults">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#preparing-the-data" class="md-nav__link">
     Preparing the data
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
+      
+        <li class="md-nav__item">
   <a href="#defining-the-model" class="md-nav__link">
     Defining the model
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -896,8 +895,8 @@
   
   
     <li class="md-nav__item">
-      <a href="06_fineTune_and_warmup.html" class="md-nav__link">
-        06_fineTune_and_warmup
+      <a href="06_finetune_and_warmup.html" class="md-nav__link">
+        06_finetune_and_warmup
       </a>
     </li>
   
@@ -910,8 +909,8 @@
   
   
     <li class="md-nav__item">
-      <a href="07_Custom_Components.html" class="md-nav__link">
-        07_Custom_Components
+      <a href="07_custom_components.html" class="md-nav__link">
+        07_custom_components
       </a>
     </li>
   
@@ -952,6 +951,20 @@
   
   
     <li class="md-nav__item">
+      <a href="10_3rd_party_integration-RayTune_WnB.html" class="md-nav__link">
+        10_3rd_party_integration-RayTune_WnB
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="11_auc_multiclass.html" class="md-nav__link">
         11_auc_multiclass
       </a>
@@ -966,8 +979,8 @@
   
   
     <li class="md-nav__item">
-      <a href="12_ZILNLoss_origkeras_vs_pytorch_multimodal.html" class="md-nav__link">
-        12_ZILNLoss_origkeras_vs_pytorch_multimodal
+      <a href="12_ZILNLoss_origkeras_vs_pytorch_widedeep.html" class="md-nav__link">
+        12_ZILNLoss_origkeras_vs_pytorch_widedeep
       </a>
     </li>
   
@@ -980,8 +993,8 @@
   
   
     <li class="md-nav__item">
-      <a href="13_Model_Uncertainty_prediction.html" class="md-nav__link">
-        13_Model_Uncertainty_prediction
+      <a href="13_model_uncertainty_prediction.html" class="md-nav__link">
+        13_model_uncertainty_prediction
       </a>
     </li>
   
@@ -1044,6 +1057,20 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="17_Usign_a_hugging_face_model.html" class="md-nav__link">
+        17_Using_a_huggingface_model
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1073,17 +1100,17 @@
             
             
           
-          <div class="md-content" data-md-component="content">
-            <article class="md-content__inner md-typeset">
-              
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
                 
-  <a href="https://github.com/jrzaurin/pytorch-widedeep/edit/master/mkdocs/sources/examples/03_Binary_Classification_with_Defaults.ipynb" title="Edit this page" class="md-content__button md-icon">
+                  
+
+  <a href="https://github.com/jrzaurin/pytorch-widedeep/edit/master/mkdocs/sources/examples/03_binary_classification_with_defaults.ipynb" title="Edit this page" class="md-content__button md-icon">
+    
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
-
-
-  <h1>03_Binary_Classification_with_Defaults</h1>
 
 <script>
 (function (global, factory) {
@@ -2122,7 +2149,7 @@ Licensed under the Apache License, Version 2.0.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="simple-binary-classification-with-defaults">Simple Binary Classification with defaults<a class="anchor-link" href="#simple-binary-classification-with-defaults">&#182;</a></h2><p>In this notebook we will train a Wide and Deep model and simply a "Deep" model using the well known adult dataset</p>
+<h1 id="simple-binary-classification-with-defaults">Simple Binary Classification with defaults<a class="anchor-link" href="#simple-binary-classification-with-defaults">&#182;</a></h1><p>In this notebook we will train a Wide and Deep model and simply a "Deep" model using the well known adult dataset</p>
 
 </div>
 </div>
@@ -3490,14 +3517,14 @@ tab_mlp = TabMlp(
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
-<pre>epoch 1: 100%|██████████████████████████████████| 306/306 [00:01&lt;00:00, 196.14it/s, loss=0.442, metrics={&#39;acc&#39;: 0.7876, &#39;prec&#39;: 0.5732}]
-valid: 100%|██████████████████████████████████████| 77/77 [00:00&lt;00:00, 234.71it/s, loss=0.365, metrics={&#39;acc&#39;: 0.8317, &#39;prec&#39;: 0.6874}]
-epoch 2: 100%|███████████████████████████████████| 306/306 [00:01&lt;00:00, 199.77it/s, loss=0.363, metrics={&#39;acc&#39;: 0.8312, &#39;prec&#39;: 0.697}]
-valid: 100%|███████████████████████████████████████| 77/77 [00:00&lt;00:00, 232.69it/s, loss=0.36, metrics={&#39;acc&#39;: 0.8354, &#39;prec&#39;: 0.7014}]
-epoch 3: 100%|█████████████████████████████████████| 306/306 [00:01&lt;00:00, 198.47it/s, loss=0.359, metrics={&#39;acc&#39;: 0.8326, &#39;prec&#39;: 0.7}]
-valid: 100%|███████████████████████████████████████| 77/77 [00:00&lt;00:00, 228.81it/s, loss=0.36, metrics={&#39;acc&#39;: 0.8353, &#39;prec&#39;: 0.6978}]
-epoch 4: 100%|██████████████████████████████████| 306/306 [00:01&lt;00:00, 199.25it/s, loss=0.357, metrics={&#39;acc&#39;: 0.8333, &#39;prec&#39;: 0.7008}]
-valid: 100%|███████████████████████████████████████| 77/77 [00:00&lt;00:00, 235.98it/s, loss=0.36, metrics={&#39;acc&#39;: 0.8353, &#39;prec&#39;: 0.6976}]
+<pre>epoch 1: 100%|███████████████████████████████████████████| 306/306 [00:01&lt;00:00, 196.80it/s, loss=0.41, metrics={&#39;acc&#39;: 0.8066, &#39;prec&#39;: 0.634}]
+valid: 100%|█████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 224.87it/s, loss=0.365, metrics={&#39;acc&#39;: 0.8321, &#39;prec&#39;: 0.7015}]
+epoch 2: 100%|█████████████████████████████████████████| 306/306 [00:01&lt;00:00, 204.49it/s, loss=0.362, metrics={&#39;acc&#39;: 0.8308, &#39;prec&#39;: 0.6967}]
+valid: 100%|██████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 228.29it/s, loss=0.36, metrics={&#39;acc&#39;: 0.8369, &#39;prec&#39;: 0.7094}]
+epoch 3: 100%|█████████████████████████████████████████| 306/306 [00:01&lt;00:00, 202.80it/s, loss=0.358, metrics={&#39;acc&#39;: 0.8322, &#39;prec&#39;: 0.6984}]
+valid: 100%|█████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 234.35it/s, loss=0.359, metrics={&#39;acc&#39;: 0.8373, &#39;prec&#39;: 0.7068}]
+epoch 4: 100%|██████████████████████████████████████████| 306/306 [00:01&lt;00:00, 191.98it/s, loss=0.357, metrics={&#39;acc&#39;: 0.8325, &#39;prec&#39;: 0.699}]
+valid: 100%|██████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 217.46it/s, loss=0.36, metrics={&#39;acc&#39;: 0.8372, &#39;prec&#39;: 0.7059}]
 </pre>
 </div>
 </div>
@@ -3620,7 +3647,7 @@ valid: 100%|██████████████████████�
         )
         (cont_norm): BatchNorm1d(2, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
       )
-      (tab_mlp): MLP(
+      (encoder): MLP(
         (mlp): Sequential(
           (dense_layer_0): Sequential(
             (0): Dropout(p=0.5, inplace=False)
@@ -3746,14 +3773,14 @@ valid: 100%|██████████████████████�
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
-<pre>epoch 1: 100%|███████████████████████████████████| 306/306 [00:03&lt;00:00, 96.66it/s, loss=0.418, metrics={&#39;acc&#39;: 0.8024, &#39;prec&#39;: 0.6664}]
-valid: 100%|██████████████████████████████████████| 77/77 [00:00&lt;00:00, 168.33it/s, loss=0.355, metrics={&#39;acc&#39;: 0.8317, &#39;prec&#39;: 0.8402}]
-epoch 2: 100%|███████████████████████████████████| 306/306 [00:03&lt;00:00, 98.26it/s, loss=0.376, metrics={&#39;acc&#39;: 0.8222, &#39;prec&#39;: 0.7253}]
-valid: 100%|██████████████████████████████████████| 77/77 [00:00&lt;00:00, 172.84it/s, loss=0.338, metrics={&#39;acc&#39;: 0.8546, &#39;prec&#39;: 0.7901}]
-epoch 3: 100%|███████████████████████████████████| 306/306 [00:03&lt;00:00, 99.54it/s, loss=0.362, metrics={&#39;acc&#39;: 0.8305, &#39;prec&#39;: 0.7402}]
-valid: 100%|████████████████████████████████████████| 77/77 [00:00&lt;00:00, 173.62it/s, loss=0.327, metrics={&#39;acc&#39;: 0.863, &#39;prec&#39;: 0.761}]
-epoch 4: 100%|███████████████████████████████████| 306/306 [00:03&lt;00:00, 97.46it/s, loss=0.351, metrics={&#39;acc&#39;: 0.8373, &#39;prec&#39;: 0.7478}]
-valid: 100%|██████████████████████████████████████| 77/77 [00:00&lt;00:00, 169.21it/s, loss=0.323, metrics={&#39;acc&#39;: 0.8651, &#39;prec&#39;: 0.7673}]
+<pre>epoch 1: 100%|██████████████████████████████████████████| 306/306 [00:02&lt;00:00, 115.30it/s, loss=0.41, metrics={&#39;acc&#39;: 0.8038, &#39;prec&#39;: 0.6557}]
+valid: 100%|█████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 153.30it/s, loss=0.359, metrics={&#39;acc&#39;: 0.8396, &#39;prec&#39;: 0.8043}]
+epoch 2: 100%|█████████████████████████████████████████| 306/306 [00:03&lt;00:00, 101.95it/s, loss=0.373, metrics={&#39;acc&#39;: 0.8246, &#39;prec&#39;: 0.7188}]
+valid: 100%|██████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 169.94it/s, loss=0.343, metrics={&#39;acc&#39;: 0.849, &#39;prec&#39;: 0.8049}]
+epoch 3: 100%|█████████████████████████████████████████| 306/306 [00:02&lt;00:00, 111.62it/s, loss=0.357, metrics={&#39;acc&#39;: 0.8336, &#39;prec&#39;: 0.7409}]
+valid: 100%|█████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 163.84it/s, loss=0.331, metrics={&#39;acc&#39;: 0.8601, &#39;prec&#39;: 0.7631}]
+epoch 4: 100%|█████████████████████████████████████████| 306/306 [00:02&lt;00:00, 107.04it/s, loss=0.349, metrics={&#39;acc&#39;: 0.8397, &#39;prec&#39;: 0.7459}]
+valid: 100%|█████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 157.55it/s, loss=0.316, metrics={&#39;acc&#39;: 0.8627, &#39;prec&#39;: 0.7614}]
 </pre>
 </div>
 </div>
@@ -3919,14 +3946,14 @@ wd_model = WideDeep(wide=wide, deeptabular=tab_mlp)</div>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
-<pre>epoch 1: 100%|███████████████████████████████████| 306/306 [00:03&lt;00:00, 87.74it/s, loss=0.511, metrics={&#39;acc&#39;: 0.7659, &#39;prec&#39;: 0.5139}]
-valid: 100%|███████████████████████████████████████| 77/77 [00:00&lt;00:00, 144.96it/s, loss=0.406, metrics={&#39;acc&#39;: 0.795, &#39;prec&#39;: 0.5659}]
-epoch 2: 100%|███████████████████████████████████| 306/306 [00:03&lt;00:00, 90.59it/s, loss=0.405, metrics={&#39;acc&#39;: 0.8114, &#39;prec&#39;: 0.6346}]
-valid: 100%|██████████████████████████████████████| 77/77 [00:00&lt;00:00, 148.66it/s, loss=0.371, metrics={&#39;acc&#39;: 0.8189, &#39;prec&#39;: 0.6099}]
-epoch 3: 100%|███████████████████████████████████| 306/306 [00:03&lt;00:00, 89.61it/s, loss=0.368, metrics={&#39;acc&#39;: 0.8298, &#39;prec&#39;: 0.6874}]
-valid: 100%|██████████████████████████████████████| 77/77 [00:00&lt;00:00, 150.18it/s, loss=0.353, metrics={&#39;acc&#39;: 0.8325, &#39;prec&#39;: 0.6342}]
-epoch 4: 100%|███████████████████████████████████| 306/306 [00:03&lt;00:00, 88.74it/s, loss=0.348, metrics={&#39;acc&#39;: 0.8407, &#39;prec&#39;: 0.7187}]
-valid: 100%|███████████████████████████████████████| 77/77 [00:00&lt;00:00, 150.39it/s, loss=0.339, metrics={&#39;acc&#39;: 0.8434, &#39;prec&#39;: 0.663}]
+<pre>epoch 1: 100%|██████████████████████████████████████████| 306/306 [00:03&lt;00:00, 97.42it/s, loss=0.463, metrics={&#39;acc&#39;: 0.7861, &#39;prec&#39;: 0.5656}]
+valid: 100%|█████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 138.80it/s, loss=0.424, metrics={&#39;acc&#39;: 0.7787, &#39;prec&#39;: 0.5253}]
+epoch 2: 100%|██████████████████████████████████████████| 306/306 [00:03&lt;00:00, 92.80it/s, loss=0.389, metrics={&#39;acc&#39;: 0.8218, &#39;prec&#39;: 0.6557}]
+valid: 100%|█████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 130.40it/s, loss=0.413, metrics={&#39;acc&#39;: 0.7868, &#39;prec&#39;: 0.5352}]
+epoch 3: 100%|██████████████████████████████████████████| 306/306 [00:03&lt;00:00, 89.25it/s, loss=0.363, metrics={&#39;acc&#39;: 0.8335, &#39;prec&#39;: 0.6903}]
+valid: 100%|██████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 130.79it/s, loss=0.379, metrics={&#39;acc&#39;: 0.809, &#39;prec&#39;: 0.5704}]
+epoch 4: 100%|███████████████████████████████████████████| 306/306 [00:03&lt;00:00, 90.75it/s, loss=0.344, metrics={&#39;acc&#39;: 0.844, &#39;prec&#39;: 0.7232}]
+valid: 100%|███████████████████████████████████████████████| 77/77 [00:00&lt;00:00, 129.90it/s, loss=0.37, metrics={&#39;acc&#39;: 0.811, &#39;prec&#39;: 0.5725}]
 </pre>
 </div>
 </div>
@@ -4172,7 +4199,7 @@ mlp_linear_first: bool = True,</code></pre>
         (cont_embed): ContEmbeddings(2, 32, embed_dropout=0.2, use_bias=True)
       )
       (cont_embed_act_fn): LeakyReLU(negative_slope=0.01, inplace=True)
-      (transformer_blks): Sequential(
+      (encoder): Sequential(
         (transformer_block0): TransformerEncoder(
           (attn): MultiHeadedAttention(
             (dropout): Dropout(p=0.2, inplace=False)
@@ -4184,7 +4211,7 @@ mlp_linear_first: bool = True,</code></pre>
             (w_1): Linear(in_features=32, out_features=128, bias=True)
             (w_2): Linear(in_features=128, out_features=32, bias=True)
             (dropout): Dropout(p=0.2, inplace=False)
-            (activation): GELU()
+            (activation): GELU(approximate=none)
           )
           (attn_addnorm): AddNorm(
             (dropout): Dropout(p=0.2, inplace=False)
@@ -4206,7 +4233,7 @@ mlp_linear_first: bool = True,</code></pre>
             (w_1): Linear(in_features=32, out_features=128, bias=True)
             (w_2): Linear(in_features=128, out_features=32, bias=True)
             (dropout): Dropout(p=0.2, inplace=False)
-            (activation): GELU()
+            (activation): GELU(approximate=none)
           )
           (attn_addnorm): AddNorm(
             (dropout): Dropout(p=0.2, inplace=False)
@@ -4228,7 +4255,7 @@ mlp_linear_first: bool = True,</code></pre>
             (w_1): Linear(in_features=32, out_features=128, bias=True)
             (w_2): Linear(in_features=128, out_features=32, bias=True)
             (dropout): Dropout(p=0.2, inplace=False)
-            (activation): GELU()
+            (activation): GELU(approximate=none)
           )
           (attn_addnorm): AddNorm(
             (dropout): Dropout(p=0.2, inplace=False)
@@ -4250,7 +4277,7 @@ mlp_linear_first: bool = True,</code></pre>
             (w_1): Linear(in_features=32, out_features=128, bias=True)
             (w_2): Linear(in_features=128, out_features=32, bias=True)
             (dropout): Dropout(p=0.2, inplace=False)
-            (activation): GELU()
+            (activation): GELU(approximate=none)
           )
           (attn_addnorm): AddNorm(
             (dropout): Dropout(p=0.2, inplace=False)
@@ -4262,22 +4289,8 @@ mlp_linear_first: bool = True,</code></pre>
           )
         )
       )
-      (transformer_mlp): MLP(
-        (mlp): Sequential(
-          (dense_layer_0): Sequential(
-            (0): Linear(in_features=384, out_features=1536, bias=True)
-            (1): LeakyReLU(negative_slope=0.01, inplace=True)
-            (2): Dropout(p=0.5, inplace=False)
-          )
-          (dense_layer_1): Sequential(
-            (0): Linear(in_features=1536, out_features=768, bias=True)
-            (1): LeakyReLU(negative_slope=0.01, inplace=True)
-            (2): Dropout(p=0.5, inplace=False)
-          )
-        )
-      )
     )
-    (1): Linear(in_features=768, out_features=1, bias=True)
+    (1): Linear(in_features=384, out_features=1, bias=True)
   )
 )</pre>
 </div>
@@ -4376,8 +4389,8 @@ mlp_linear_first: bool = True,</code></pre>
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
-<pre>epoch 1: 100%|█████████████████████████████████████| 306/306 [00:24&lt;00:00, 12.74it/s, loss=0.345, metrics={&#39;acc&#39;: 0.84, &#39;prec&#39;: 0.7167}]
-valid: 100%|█████████████████████████████████████████| 77/77 [00:01&lt;00:00, 44.97it/s, loss=0.302, metrics={&#39;acc&#39;: 0.8637, &#39;prec&#39;: 0.75}]
+<pre>epoch 1: 100%|██████████████████████████████████████████| 306/306 [00:09&lt;00:00, 31.35it/s, loss=0.349, metrics={&#39;acc&#39;: 0.8371, &#39;prec&#39;: 0.7102}]
+valid: 100%|██████████████████████████████████████████████| 77/77 [00:01&lt;00:00, 73.02it/s, loss=0.315, metrics={&#39;acc&#39;: 0.8571, &#39;prec&#39;: 0.7145}]
 </pre>
 </div>
 </div>
@@ -4395,10 +4408,12 @@ valid: 100%|██████████████████████�
 
 
 
-              
-            </article>
-            
-          </div>
+
+                
+              </article>
+            </div>
+          
+          
         </div>
         
       </main>
@@ -4465,7 +4480,7 @@ valid: 100%|██████████████████████�
       
     
     <a href="https://jrzaurin.medium.com/" target="_blank" rel="noopener" title="jrzaurin.medium.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M180.5 74.262C80.813 74.262 0 155.633 0 256s80.819 181.738 180.5 181.738S361 356.373 361 256 280.191 74.262 180.5 74.262Zm288.25 10.646c-49.845 0-90.245 76.619-90.245 171.095s40.406 171.1 90.251 171.1 90.251-76.619 90.251-171.1H559c0-94.503-40.4-171.095-90.248-171.095Zm139.506 17.821c-17.526 0-31.735 68.628-31.735 153.274s14.2 153.274 31.735 153.274S640 340.631 640 256c0-84.649-14.215-153.271-31.742-153.271Z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M180.5 74.262C80.813 74.262 0 155.633 0 256s80.819 181.738 180.5 181.738S361 356.373 361 256 280.191 74.262 180.5 74.262Zm288.25 10.646c-49.845 0-90.245 76.619-90.245 171.095s40.406 171.1 90.251 171.1 90.251-76.619 90.251-171.1H559c0-94.503-40.4-171.095-90.248-171.095Zm139.506 17.821c-17.526 0-31.735 68.628-31.735 153.274s14.2 153.274 31.735 153.274S640 340.631 640 256c0-84.649-14.215-153.271-31.742-153.271Z"/></svg>
     </a>
   
 </div>
@@ -4479,10 +4494,10 @@ valid: 100%|██████████████████████�
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.9c69f0bc.min.js"></script>
+      <script src="../assets/javascripts/bundle.5a2dcb6a.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       
@@ -4492,6 +4507,7 @@ valid: 100%|██████████████████████�
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
+    
     
   </body>
 </html>

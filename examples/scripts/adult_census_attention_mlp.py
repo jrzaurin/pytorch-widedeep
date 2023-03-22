@@ -61,6 +61,7 @@ if __name__ == "__main__":
         cat_embed_cols=cat_embed_cols,
         continuous_cols=continuous_cols,
         with_attention=True,
+        scale=True,
     )
     X_tab = tab_preprocessor.fit_transform(df)
 

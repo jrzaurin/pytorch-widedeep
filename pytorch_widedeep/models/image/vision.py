@@ -16,6 +16,9 @@ from pytorch_widedeep.wdtypes import (
 from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.models.image._layers import conv_layer
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
+from pytorch_widedeep.models._base_wd_model_component import (
+    BaseWDModelComponent,
+)
 
 # TO DO: Add support for:
 # alexnet
@@ -37,7 +40,7 @@ allowed_pretrained_models = [
 ]
 
 
-class Vision(nn.Module):
+class Vision(BaseWDModelComponent):
     r"""Defines a standard image classifier/regressor using a pretrained
     network or a sequence of convolution layers that can be used as the
     `deepimage` component of a Wide & Deep model or independently by
@@ -201,7 +204,7 @@ class Vision(nn.Module):
                     pretrained_model = torchvision.models.__dict__[
                         self.pretrained_model_setup
                     ](weights="IMAGENET1K_V2")
-                except ValueError:
+                except KeyError:
                     pretrained_model = torchvision.models.__dict__[
                         self.pretrained_model_setup
                     ](weights="IMAGENET1K_V1")

@@ -72,7 +72,9 @@ if __name__ == "__main__":
     X_wide = wide_preprocessor.fit_transform(df)
 
     tab_preprocessor = TabPreprocessor(
-        cat_embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        scale=True,  # type: ignore[arg-type]
     )
     X_tab = tab_preprocessor.fit_transform(df)
 
@@ -97,7 +99,7 @@ if __name__ == "__main__":
 
     for tab_model in [tab_mlp, tab_resnet]:
 
-        model = WideDeep(wide=wide, deeptabular=tab_model)
+        model = WideDeep(wide=wide, deeptabular=tab_model)  # type: ignore[arg-type]
 
         wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
         deep_opt = torch.optim.AdamW(model.deeptabular.parameters(), lr=0.01)
@@ -154,7 +156,7 @@ if __name__ == "__main__":
         # Few days have passed...I assume the user has prepared the data and
         # defined the components:
         # 1. Build the model
-        model_new = WideDeep(wide=wide, deeptabular=tab_model)
+        model_new = WideDeep(wide=wide, deeptabular=tab_model)  # type: ignore[arg-type]
         model_new.load_state_dict(torch.load("model_weights/wd_model.pt"))
 
         # 2. Instantiate the trainer

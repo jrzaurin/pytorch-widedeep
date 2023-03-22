@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torchmetrics import Metric as TorchMetric
 
-from pytorch_widedeep.wdtypes import Dict, List, Tensor
+from pytorch_widedeep.wdtypes import Dict, List, Union, Tensor
 
 
 class Metric(object):
@@ -17,7 +17,7 @@ class Metric(object):
 
 
 class MultipleMetrics(object):
-    def __init__(self, metrics: List[Metric], prefix: str = ""):
+    def __init__(self, metrics: List[Union[Metric, object]], prefix: str = ""):
 
         instantiated_metrics = []
         for metric in metrics:

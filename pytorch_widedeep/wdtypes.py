@@ -7,6 +7,7 @@ from typing import (
     Match,
     Tuple,
     Union,
+    Literal,
     Callable,
     Iterable,
     Iterator,
@@ -15,16 +16,6 @@ from typing import (
     Collection,
 )
 from pathlib import PosixPath
-
-# isort: off
-if sys.version_info >= (3, 8):
-    from typing import Literal
-else:
-    try:
-        from typing_extensions import Literal
-    except ModuleNotFoundError:
-        pass
-# isort: on
 
 from torch import Tensor
 from torch.nn import Module
@@ -67,7 +58,7 @@ from torchvision.transforms import (
     RandomAdjustSharpness,
 )
 from torchvision.models._api import WeightsEnum
-from torch.optim.lr_scheduler import _LRScheduler
+from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data.dataloader import DataLoader
 
 from pytorch_widedeep.models import (
@@ -126,7 +117,6 @@ Transforms = Union[
     RandomHorizontalFlip,
     RandomAdjustSharpness,
 ]
-LRScheduler = _LRScheduler
 ModelParams = Generator[Tensor, Tensor, Tensor]
 
 ModelWithoutAttention = Union[

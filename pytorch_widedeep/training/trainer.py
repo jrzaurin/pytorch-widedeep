@@ -436,7 +436,7 @@ class Trainer(BaseTrainer):
         )
         if isinstance(custom_dataloader, type):
             if issubclass(custom_dataloader, DataLoader):
-                train_loader = custom_dataloader(
+                train_loader = custom_dataloader(  # type: ignore[misc]
                     dataset=train_set,
                     batch_size=batch_size,
                     num_workers=self.num_workers,

@@ -8,6 +8,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.losses import InfoNCELoss, DenoisingLoss
 from pytorch_widedeep.wdtypes import (
+    Any,
     List,
     Tuple,
     Tensor,
@@ -107,14 +108,14 @@ class BaseContrastiveDenoisingTrainer(ABC):
     def _set_loss_fn(self, **kwargs):
 
         if self.loss_type in ["contrastive", "both"]:
-            temperature: float = kwargs.get("temperature", 0.1)
-            reductiom: str = kwargs.get("reductiom", "mean")
+            temperature = kwargs.get("temperature", 0.1)
+            reductiom = kwargs.get("reductiom", "mean")
             self.contrastive_loss = InfoNCELoss(temperature, reductiom)
 
         if self.loss_type in ["denoising", "both"]:
-            lambda_cat: float = kwargs.get("lambda_cat", 1.0)
-            lambda_cont: float = kwargs.get("lambda_cont", 1.0)
-            reductiom: str = kwargs.get("reductiom", "mean")
+            lambda_cat = kwargs.get("lambda_cat", 1.0)
+            lambda_cont = kwargs.get("lambda_cont", 1.0)
+            reductiom = kwargs.get("reductiom", "mean")
             self.denoising_loss = DenoisingLoss(lambda_cat, lambda_cont, reductiom)
 
     def _compute_loss(
@@ -166,7 +167,7 @@ class BaseContrastiveDenoisingTrainer(ABC):
         else:
             self.cyclic_lr = False
 
-    def _set_callbacks(self, callbacks):
+    def _set_callbacks(self, callbacks: Any):
         self.callbacks: List = [History(), LRShedulerCallback()]
         if callbacks is not None:
             for callback in callbacks:

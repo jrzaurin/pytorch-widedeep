@@ -1,27 +1,21 @@
-"""
-During the development of the package I realised that there is a typing
-inconsistency. The input components of a Wide and Deep model are of type
-nn.Module. These change type internally to nn.Sequential. While nn.Sequential
-is an instance of nn.Module the oppossite is, of course, not true. This does
-not affect any funcionality of the package, but it is something that needs
-fixing. However, while fixing is simple (simply define new attributes that
-are the nn.Sequential objects), its implications are quite wide within the
-package (involves changing a number of tests and tutorials). Therefore, I
-will introduce that fix when I do a major release. For now, we live with it.
-"""
-
 import warnings
 
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.models.fds_layer import FDSLayer
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.tabnet.tab_net import TabNetPredLayer
+from pytorch_widedeep.models._base_wd_model_component import (
+    BaseWDModelComponent,
+)
 
 warnings.filterwarnings("default", category=UserWarning)
+
+
+WDModel = Union[nn.Module, BaseWDModelComponent]
 
 
 class WideDeep(nn.Module):
@@ -48,18 +42,22 @@ class WideDeep(nn.Module):
     wide: nn.Module, Optional, default = None
         `Wide` model. This is a linear model where the non-linearities are
         captured via crossed-columns.
-    deeptabular: nn.Module, Optional, default = None
+    deeptabular: BaseWDModelComponent, Optional, default = None
         Currently this library implements a number of possible architectures
         for the `deeptabular` component. See the documenation of the
         package.
-    deeptext: nn.Module, Optional, default = None
+    deeptext: BaseWDModelComponent, Optional, default = None
         Currently this library implements a number of possible architectures
         for the `deeptext` component. See the documenation of the
         package.
-    deepimage: nn.Module, Optional, default = None
+    deepimage: BaseWDModelComponent, Optional, default = None
         Currently this library uses `torchvision` and implements a number of
         possible architectures for the `deepimage` component. See the
         documenation of the package.
+    deephead: BaseWDModelComponent, Optional, default = None
+        Alternatively, the user can pass a custom model that will receive the
+        output of the deep component. If `deephead` is not None all the
+        previous fc-head parameters will be ignored
     head_hidden_dims: List, Optional, default = None
         List with the sizes of the dense layers in the head e.g: [128, 64]
     head_activation: str, default = "relu"
@@ -77,10 +75,6 @@ class WideDeep(nn.Module):
         Boolean indicating whether the order of the operations in the dense
         layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
         LIN -> ACT]`
-    deephead: nn.Module, Optional, default = None
-        Alternatively, the user can pass a custom model that will receive the
-        output of the deep component. If `deephead` is not None all the
-        previous fc-head parameters will be ignored
     enforce_positive: bool, default = False
         Boolean indicating if the output from the final layer must be
         positive. This is important if you are using loss functions with
@@ -140,10 +134,10 @@ class WideDeep(nn.Module):
     def __init__(
         self,
         wide: Optional[nn.Module] = None,
-        deeptabular: Optional[nn.Module] = None,
-        deeptext: Optional[nn.Module] = None,
-        deepimage: Optional[nn.Module] = None,
-        deephead: Optional[nn.Module] = None,
+        deeptabular: Optional[BaseWDModelComponent] = None,
+        deeptext: Optional[BaseWDModelComponent] = None,
+        deepimage: Optional[BaseWDModelComponent] = None,
+        deephead: Optional[BaseWDModelComponent] = None,
         head_hidden_dims: Optional[List[int]] = None,
         head_activation: str = "relu",
         head_dropout: float = 0.1,
@@ -176,22 +170,17 @@ class WideDeep(nn.Module):
         # required as attribute just in case we pass a deephead
         self.pred_dim = pred_dim
 
-        # The main 5 components of the wide and deep assemble
-        self.wide = wide
-        self.deeptabular = deeptabular
-        self.deeptext = deeptext
-        self.deepimage = deepimage
-        self.deephead = deephead
-        self.enforce_positive = enforce_positive
         self.with_fds = with_fds
+        self.enforce_positive = enforce_positive
 
-        if self.deeptabular is not None:
-            self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
-        else:
-            self.is_tabnet = False
-
-        if self.deephead is None and head_hidden_dims is not None:
-            self._build_deephead(
+        # The main 5 components of the wide and deep assemble: wide,
+        # deeptabular, deeptext, deepimage and deephead
+        self.with_deephead = deephead is not None or head_hidden_dims is not None
+        if deephead is None and head_hidden_dims is not None:
+            self.deephead = self._build_deephead(
+                deeptabular,
+                deeptext,
+                deepimage,
                 head_hidden_dims,
                 head_activation,
                 head_dropout,
@@ -199,12 +188,18 @@ class WideDeep(nn.Module):
                 head_batchnorm_last,
                 head_linear_first,
             )
-        elif self.deephead is not None:
+        elif deephead is not None:
             self.deephead = nn.Sequential(
-                self.deephead, nn.Linear(self.deephead.output_dim, self.pred_dim)
+                deephead, nn.Linear(deephead.output_dim, self.pred_dim)
             )
         else:
-            self._add_pred_layer()
+            # for consistency with other components we default to None
+            self.deephead = None
+
+        self.wide = wide
+        self.deeptabular, self.deeptext, self.deepimage = self._set_model_components(
+            deeptabular, deeptext, deepimage, self.with_deephead
+        )
 
         if self.with_fds:
             self.fds_layer = FDSLayer(feature_dim=self.deeptabular.output_dim, **fds_config)  # type: ignore[arg-type]
@@ -217,13 +212,13 @@ class WideDeep(nn.Module):
         X: Dict[str, Tensor],
         y: Optional[Tensor] = None,
         epoch: Optional[int] = None,
-    ):
+    ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
 
         if self.with_fds:
             return self._forward_deep_with_fds(X, y, epoch)
 
         wide_out = self._forward_wide(X)
-        if self.deephead:
+        if self.with_deephead:
             deep = self._forward_deephead(X, wide_out)
         else:
             deep = self._forward_deep(X, wide_out)
@@ -235,62 +230,99 @@ class WideDeep(nn.Module):
 
     def _build_deephead(
         self,
-        head_hidden_dims,
-        head_activation,
-        head_dropout,
-        head_batchnorm,
-        head_batchnorm_last,
-        head_linear_first,
-    ):
+        deeptabular: Optional[BaseWDModelComponent],
+        deeptext: Optional[BaseWDModelComponent],
+        deepimage: Optional[BaseWDModelComponent],
+        head_hidden_dims: Optional[List[int]],
+        head_activation: str,
+        head_dropout: float,
+        head_batchnorm: bool,
+        head_batchnorm_last: bool,
+        head_linear_first: bool,
+    ) -> nn.Sequential:
         deep_dim = 0
-        if self.deeptabular is not None:
-            deep_dim += self.deeptabular.output_dim
-        if self.deeptext is not None:
-            deep_dim += self.deeptext.output_dim
-        if self.deepimage is not None:
-            deep_dim += self.deepimage.output_dim
+        if deeptabular is not None:
+            deep_dim += deeptabular.output_dim
+        if deeptext is not None:
+            deep_dim += deeptext.output_dim
+        if deepimage is not None:
+            deep_dim += deepimage.output_dim
 
         head_hidden_dims = [deep_dim] + head_hidden_dims
-        self.deephead = MLP(
-            head_hidden_dims,
-            head_activation,
-            head_dropout,
-            head_batchnorm,
-            head_batchnorm_last,
-            head_linear_first,
+        deephead = nn.Sequential(
+            MLP(
+                head_hidden_dims,
+                head_activation,
+                head_dropout,
+                head_batchnorm,
+                head_batchnorm_last,
+                head_linear_first,
+            ),
+            nn.Linear(head_hidden_dims[-1], self.pred_dim),
         )
 
-        # prediction layer: incurring in the same  'misconduct' as with the
-        # other components (changing the nature of deephead). Fixing this in
-        # the future is a priority
-        self.deephead = nn.Sequential(
-            self.deephead, nn.Linear(head_hidden_dims[-1], self.pred_dim)
-        )
+        return deephead
 
-    def _add_pred_layer(self):
+    def _set_model_components(
+        self,
+        deeptabular: Optional[BaseWDModelComponent],
+        deeptext: Optional[BaseWDModelComponent],
+        deepimage: Optional[BaseWDModelComponent],
+        with_deephead: bool,
+    ) -> Tuple[Optional[WDModel], Optional[WDModel], Optional[WDModel]]:
 
-        # if FDS the FDS Layer already includes the pred layer
-        if self.deeptabular is not None and not self.with_fds:
-            if self.is_tabnet:
-                self.deeptabular = nn.Sequential(
-                    self.deeptabular,
-                    TabNetPredLayer(self.deeptabular.output_dim, self.pred_dim),
-                )
+        if deeptabular is not None:
+            self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
+        else:
+            self.is_tabnet = False
+
+        if deeptabular is not None:
+            # if FDS the FDS Layer already includes the pred layer
+            if not self.with_fds:
+                if self.is_tabnet:
+                    deeptabular_ = (
+                        nn.Sequential(
+                            deeptabular,
+                            TabNetPredLayer(deeptabular.output_dim, self.pred_dim),
+                        )
+                        if not with_deephead
+                        else deeptabular
+                    )
+                else:
+                    deeptabular_ = (
+                        nn.Sequential(
+                            deeptabular,
+                            nn.Linear(deeptabular.output_dim, self.pred_dim),
+                        )
+                        if not with_deephead
+                        else deeptabular
+                    )
             else:
-                self.deeptabular = nn.Sequential(
-                    self.deeptabular,
-                    nn.Linear(self.deeptabular.output_dim, self.pred_dim),
-                )
-        if self.deeptext is not None:
-            self.deeptext = nn.Sequential(
-                self.deeptext, nn.Linear(self.deeptext.output_dim, self.pred_dim)
-            )
-        if self.deepimage is not None:
-            self.deepimage = nn.Sequential(
-                self.deepimage, nn.Linear(self.deepimage.output_dim, self.pred_dim)
-            )
+                deeptabular_ = deeptabular
+        else:
+            deeptabular_ = None
 
-    def _forward_wide(self, X):
+        if deeptext is not None:
+            deeptext_ = (
+                nn.Sequential(deeptext, nn.Linear(deeptext.output_dim, self.pred_dim))
+                if not with_deephead
+                else deeptext
+            )
+        else:
+            deeptext_ = None
+
+        if deepimage is not None:
+            deepimage_ = (
+                nn.Sequential(deepimage, nn.Linear(deepimage.output_dim, self.pred_dim))
+                if not with_deephead
+                else deepimage
+            )
+        else:
+            deepimage_ = None
+
+        return deeptabular_, deeptext_, deepimage_
+
+    def _forward_wide(self, X: Dict[str, Tensor]) -> Tensor:
         if self.wide is not None:
             out = self.wide(X["wide"])
         else:
@@ -299,7 +331,9 @@ class WideDeep(nn.Module):
 
         return out
 
-    def _forward_deephead(self, X, wide_out):
+    def _forward_deephead(
+        self, X: Dict[str, Tensor], wide_out: Tensor
+    ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         if self.deeptabular is not None:
             if self.is_tabnet:
                 tab_out = self.deeptabular(X["deeptabular"])
@@ -309,20 +343,25 @@ class WideDeep(nn.Module):
         else:
             deepside = torch.FloatTensor().to(self.wd_device)
         if self.deeptext is not None:
-            deepside = torch.cat([deepside, self.deeptext(X["deeptext"])], axis=1)
+            deepside = torch.cat([deepside, self.deeptext(X["deeptext"])], axis=1)  # type: ignore[call-overload]
         if self.deepimage is not None:
-            deepside = torch.cat([deepside, self.deepimage(X["deepimage"])], axis=1)
+            deepside = torch.cat([deepside, self.deepimage(X["deepimage"])], axis=1)  # type: ignore[call-overload]
 
         deepside_out = self.deephead(deepside)
 
         if self.is_tabnet:
-            res = (wide_out.add_(deepside_out), M_loss)
+            res: Union[Tensor, Tuple[Tensor, Tensor]] = (
+                wide_out.add_(deepside_out),
+                M_loss,
+            )
         else:
             res = wide_out.add_(deepside_out)
 
         return res
 
-    def _forward_deep(self, X, wide_out):
+    def _forward_deep(
+        self, X: Dict[str, Tensor], wide_out: Tensor
+    ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         if self.deeptabular is not None:
             if self.is_tabnet:
                 tab_out, M_loss = self.deeptabular(X["deeptabular"])
@@ -335,7 +374,7 @@ class WideDeep(nn.Module):
             wide_out.add_(self.deepimage(X["deepimage"]))
 
         if self.is_tabnet:
-            res = (wide_out, M_loss)
+            res: Union[Tensor, Tuple[Tensor, Tensor]] = (wide_out, M_loss)
         else:
             res = wide_out
 
@@ -346,11 +385,14 @@ class WideDeep(nn.Module):
         X: Dict[str, Tensor],
         y: Optional[Tensor] = None,
         epoch: Optional[int] = None,
-    ):
+    ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         res = self.fds_layer(self.deeptabular(X["deeptabular"]), y, epoch)
         if self.enforce_positive:
             if isinstance(res, Tuple):  # type: ignore[arg-type]
-                out = (res[0], self.enf_pos(res[1]))
+                out: Union[Tensor, Tuple[Tensor, Tensor]] = (
+                    res[0],
+                    self.enf_pos(res[1]),
+                )
             else:
                 out = self.enf_pos(res)
         else:

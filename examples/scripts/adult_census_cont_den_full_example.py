@@ -43,6 +43,7 @@ if __name__ == "__main__":
     tab_preprocessor = TabPreprocessor(
         cat_embed_cols=cat_embed_cols,
         continuous_cols=continuous_cols,
+        scale=True,
         with_attention=True,
         with_cls_token=True,  # this is optional
     )

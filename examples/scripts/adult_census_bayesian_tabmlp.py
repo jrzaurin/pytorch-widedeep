@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
             if model_name == "mlp":
                 prepare_tab = TabPreprocessor(
-                    cat_embed_cols=cat_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
+                    cat_embed_cols=cat_cols, continuous_cols=continuous_cols, scale=True  # type: ignore[arg-type]
                 )
                 X_tab = prepare_tab.fit_transform(df)
 

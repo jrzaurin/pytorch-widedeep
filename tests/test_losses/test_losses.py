@@ -143,7 +143,7 @@ def test_ziln_loss():
     zilnloss = ZILNLoss()
     loss = zilnloss.forward(torch.tensor(logits), torch.tensor(labels))
     assert_almost_equal(loss.numpy(), expected_loss, decimal=6)
-    return loss.numpy(), expected_loss
+    assert loss.numpy().round(3) == round(expected_loss, 3)
 
 
 ##############################################################################

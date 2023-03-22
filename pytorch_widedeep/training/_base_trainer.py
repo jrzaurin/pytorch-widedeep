@@ -9,6 +9,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.metrics import Metric, MultipleMetrics
 from pytorch_widedeep.wdtypes import (
+    Any,
     Dict,
     List,
     Union,
@@ -195,7 +196,7 @@ class BaseTrainer(ABC):
         else:
             return alias_to_loss(objective)
 
-    def _set_optimizer(self, optimizers):
+    def _set_optimizer(self, optimizers: Union[Optimizer, Dict[str, Optimizer]]):
         if optimizers is not None:
             if isinstance(optimizers, Optimizer):
                 optimizer: Union[Optimizer, MultipleOptimizer] = optimizers
@@ -281,7 +282,14 @@ class BaseTrainer(ABC):
         else:
             return None
 
-    def _set_callbacks_and_metrics(self, callbacks, metrics):
+    # this needs type fixing to adjust for the fact that the main class can
+    # take an 'object', a non-instastiated Class, so, should be something like:
+    # callbacks: Optional[List[Union[object, Callback]]] in all places
+    def _set_callbacks_and_metrics(
+        self,
+        callbacks: Any,
+        metrics: Any,
+    ):
         self.callbacks: List = [History(), LRShedulerCallback()]
         if callbacks is not None:
             for callback in callbacks:

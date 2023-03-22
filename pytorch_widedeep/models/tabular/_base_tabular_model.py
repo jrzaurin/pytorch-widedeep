@@ -1,15 +1,17 @@
 import torch
-from torch import nn
 
 from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
+from pytorch_widedeep.models._base_wd_model_component import (
+    BaseWDModelComponent,
+)
 from pytorch_widedeep.models.tabular.embeddings_layers import (
     DiffSizeCatAndContEmbeddings,
     SameSizeCatAndContEmbeddings,
 )
 
 
-class BaseTabularModelWithoutAttention(nn.Module):
+class BaseTabularModelWithoutAttention(BaseWDModelComponent):
     def __init__(
         self,
         column_idx: Dict[str, int],
@@ -78,12 +80,8 @@ class BaseTabularModelWithoutAttention(nn.Module):
             x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
         return x
 
-    @property
-    def output_dim(self) -> int:
-        raise NotImplementedError
 
-
-class BaseTabularModelWithAttention(nn.Module):
+class BaseTabularModelWithAttention(BaseWDModelComponent):
     def __init__(
         self,
         column_idx: Dict[str, int],
@@ -164,10 +162,6 @@ class BaseTabularModelWithAttention(nn.Module):
                 x_cont = self.cont_embed_act_fn(x_cont)
             x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
         return x
-
-    @property
-    def output_dim(self) -> int:
-        raise NotImplementedError
 
     @property
     def attention_weights(self):

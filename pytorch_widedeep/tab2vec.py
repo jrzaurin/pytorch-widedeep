@@ -196,7 +196,7 @@ class Tab2Vec:
         """
 
         X_tab = self.tab_preprocessor.transform(df)
-        X = torch.from_numpy(X_tab).to(device)
+        X = torch.from_numpy(X_tab.astype("float")).to(device)
 
         with torch.no_grad():
             x_cat, x_cont = self.vectorizer(X)  # type: ignore[operator]

@@ -7,9 +7,12 @@ from torch import nn
 from pytorch_widedeep.wdtypes import Any, List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.models.text._encoders import ContextAttentionEncoder
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
+from pytorch_widedeep.models._base_wd_model_component import (
+    BaseWDModelComponent,
+)
 
 
-class StackedAttentiveRNN(nn.Module):
+class StackedAttentiveRNN(BaseWDModelComponent):
     r"""Text classifier/regressor comprised by a stack of blocks:
     `[RNN + Attention]`. This can be used as the `deeptext` component of a
     Wide & Deep model or independently by itself.
@@ -231,6 +234,7 @@ class StackedAttentiveRNN(nn.Module):
 
         return self.rnn_mlp(x)
 
+    @property
     def output_dim(self) -> int:
         r"""The output dimension of the model. This is a required property
         neccesary to build the `WideDeep` class

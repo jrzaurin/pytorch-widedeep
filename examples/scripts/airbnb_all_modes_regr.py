@@ -70,6 +70,7 @@ if __name__ == "__main__":
     tab_preprocessor = TabPreprocessor(
         cat_embed_cols=cat_embed_cols,  # type: ignore[arg-type]
         continuous_cols=continuous_cols,
+        scale=True,
         already_standard=already_standard,
     )
     X_tab = tab_preprocessor.fit_transform(df)

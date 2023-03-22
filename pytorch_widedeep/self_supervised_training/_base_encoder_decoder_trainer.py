@@ -8,6 +8,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from pytorch_widedeep.losses import EncoderDecoderLoss
 from pytorch_widedeep.wdtypes import (
+    Any,
     List,
     Optional,
     Optimizer,
@@ -111,7 +112,7 @@ class BaseEncoderDecoderTrainer(ABC):
         else:
             self.cyclic_lr = False
 
-    def _set_callbacks(self, callbacks):
+    def _set_callbacks(self, callbacks: Any):
         self.callbacks: List = [History(), LRShedulerCallback()]
         if callbacks is not None:
             for callback in callbacks:
