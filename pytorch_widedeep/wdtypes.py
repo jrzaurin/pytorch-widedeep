@@ -7,6 +7,7 @@ from typing import (
     Match,
     Tuple,
     Union,
+    Literal,
     Callable,
     Iterable,
     Iterator,
@@ -15,16 +16,6 @@ from typing import (
     Collection,
 )
 from pathlib import PosixPath
-
-# isort: off
-if sys.version_info >= (3, 8):
-    from typing import Literal
-else:
-    try:
-        from typing_extensions import Literal
-    except ModuleNotFoundError:
-        pass
-# isort: on
 
 from torch import Tensor
 from torch.nn import Module
