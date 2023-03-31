@@ -39,7 +39,7 @@ tab_transformer = TabTransformer(
     cat_embed_input=tab_preprocessor.cat_embed_input,
     input_dim=8,
     n_heads=2,
-    n_blocks=1,
+    n_blocks=2,
 )
 
 saint = SAINT(
@@ -68,7 +68,7 @@ ft_transformer = FTTransformer(
 )
 
 
-model = WideDeep(deeptabular=ft_transformer)
+model = WideDeep(deeptabular=tab_transformer)
 
 trainer = Trainer(
     model,
@@ -85,18 +85,45 @@ trainer.fit(
 )
 
 
-def get_feature_importance_tab_transformer(trainer, X_tab_test):
+def feature_importance_tab_transformer(trainer, X_tab_test):
     _ = trainer.predict(X_tab=X_tab_test[:32])
 
-    attention_weights = torch.cat(trainer.model.deeptabular[0].attention_weights)
+    attention_weights = trainer.model.deeptabular[0].attention_weights
 
     if trainer.model.deeptabular[0].with_cls_token:
-        # I need to check whether the .mean(1).mean(1) is .mean(1).mean(0)
-        feat_imp = attention_weights.mean(1).mean(1).reshape(32, 2, 14).mean(1)[:, 1:]
+        feat_imp = torch.stack(
+            [aw.mean(1)[:, 0, 1:] for aw in attention_weights], dim=0
+        ).mean(0)
     else:
-        feat_imp = attention_weights.mean(1).mean(1).reshape(32, 2, 14).mean(1)
+        feat_imp = torch.stack([aw.mean(1).mean(1) for aw in attention_weights]).mean(0)
 
     return feat_imp
+
+
+feat_imp = feature_importance_tab_transformer(trainer, X_tab_test)
+
+assert feat_imp.shape[1] == len(cat_embed_cols)
+
+
+# also this is valid
+def _feature_importance_tab_transformer(trainer, X_tab_test):
+    _ = trainer.predict(X_tab=X_tab_test[:32])
+
+    attention_weights = torch.stack(
+        trainer.model.deeptabular[0].attention_weights, dim=0
+    )
+
+    if trainer.model.deeptabular[0].with_cls_token:
+        feat_imp = attention_weights.mean(0).mean(1)[:, 0, 1:]
+    else:
+        feat_imp = attention_weights.mean(0).mean(1).mean(1)
+
+    return feat_imp
+
+
+feat_imp = _feature_importance_tab_transformer(trainer, X_tab_test)
+
+assert feat_imp.shape[1] == len(cat_embed_cols)
 
 
 # THESE TWO ARE WRONG
@@ -132,20 +159,15 @@ def get_feature_importance_tab_transformer(trainer, X_tab_test):
 #     return feat_imp
 
 
-def get_feature_importance_ft_transformer(trainer, X_tab_test):
-    _ = trainer.predict(X_tab=X_tab_test[:32])
+# def get_feature_importance_ft_transformer(trainer, X_tab_test):
+#     _ = trainer.predict(X_tab=X_tab_test[:32])
 
-    attention_weights = torch.cat(trainer.model.deeptabular[0].attention_weights)
+#     attention_weights = torch.cat(trainer.model.deeptabular[0].attention_weights)
 
-    if trainer.model.deeptabular[0].with_cls_token:
-        # I need to check whether the .mean(1).mean(1) is .mean(1).mean(0)
-        feat_imp = attention_weights.mean(1).mean(1).reshape(32, 2, 14).mean(1)[:, 1:]
-    else:
-        feat_imp = attention_weights.mean(1).mean(1).reshape(32, 2, 13).mean(1)
+#     if trainer.model.deeptabular[0].with_cls_token:
+#         # I need to check whether the .mean(1).mean(1) is .mean(1).mean(0)
+#         feat_imp = attention_weights.mean(1).mean(1).reshape(32, 2, 14).mean(1)[:, 1:]
+#     else:
+#         feat_imp = attention_weights.mean(1).mean(1).reshape(32, 2, 13).mean(1)
 
-    return feat_imp
-
-
-feat_imp = get_feature_importance_ft_transformer(trainer, X_tab_test)
-
-assert feat_imp.shape[1] == len(cat_embed_cols)
+#     return feat_imp
