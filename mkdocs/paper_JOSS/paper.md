@@ -81,7 +81,7 @@ The image-related component is fully integrated with the newest version of torch
 
 ## The `deeptext` component
 
-Currently, `pytorch-widedeep` offers the following models for the `deeptext` component: (i) BasicRNN, (ii) AttentiveRNN and (iii) StackedAttentiveRNN. The library will be integrated with the Huggingface transformers library [@olf2019huggingface] in the near future. However, it is worth mentioning that although transformer-based models are not natively supported by our library, these can be used easily with `pytorch-widedeep` as a custom model (please, see the documentation for details).
+Currently, `pytorch-widedeep` offers the following models for the `deeptext` component: (i) BasicRNN, (ii) AttentiveRNN and (iii) StackedAttentiveRNN. The library will be integrated with the Huggingface transformers library [@wolf2019huggingface] in the near future. However, it is worth mentioning that although transformer-based models are not natively supported by our library, these can be used easily with `pytorch-widedeep` as a custom model (please, see the documentation for details).
 
 # Forms of model training:
 
