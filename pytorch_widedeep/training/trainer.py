@@ -1212,6 +1212,7 @@ class Trainer(BaseTrainer):
             "generator",
             "prefetch_factor",
             "persistent_workers",
+            "oversample_mul",
         ]
         lds_params = [
             "lds_kernel",
