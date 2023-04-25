@@ -38,22 +38,20 @@ With that in mind, we introduce `pytorch-widedeep`, a flexible package for multi
 
 There is a small number of packages available to use DL for tabular data alone (e.g., pytorch-tabular [@joseph2021pytorch], pytorch-tabnet or autogluon-tabular [@erickson2020autogluon]) or that focus mainly on combining text and images (e.g., MMF [@singh2020mmf]). With that in mind, our goal is to provide a modular, flexible, and "_easy-to-use_" framework that allows the combination of a wide variety of models for all data types.
 
-`pytorch-widedeep` is based on Google's Wide and Deep Algorithm [@cheng2016wide], hence its name. However, the library has evolved enormously since its origins, but we prefer to preserve the name for various reasons (the explanation is beyond this paper's scope). The original algorithm is heavily adjusted for multimodal datasets and intended to facilitate the combination of text and images with corresponding tabular data. As opposed to Google's _"Wide and Deep"_ and _"Deep and Cross"_[@wang2017deep] architecture implementations in Keras/Tensorflow, we use the wide/cross and deep model design as an initial building block of PyTorch deep learning models to provide the basis for a plethora of state-of-the-art models and architecture implementations that can be seamlessly assembled with just a few lines of code. Additionally, the individual components do not necessarily have to be a part of the final architecture. The main components of those architectures are shown in \autoref{fig:widedeep_arch}.
+`pytorch-widedeep` is based on Google's Wide and Deep Algorithm [@cheng2016wide], hence its name. The original algorithm is heavily adjusted for multimodal datasets and intended to facilitate the combination of text and images with corresponding tabular data. As opposed to Google's _"Wide and Deep"_ and _"Deep and Cross"_ [@wang2017deep] architecture implementations in Keras/Tensorflow, we use the wide/cross and deep model design as an initial building block of PyTorch deep learning models to provide the basis for a plethora of state-of-the-art models and architecture implementations that can be seamlessly assembled with just a few lines of code. Additionally, the individual components do not necessarily have to be a part of the final architecture. The main components of those architectures are shown in \autoref{fig:widedeep_arch}.
 
-![\label{fig:widedeep_arch}](figures/widedeep_arch.png)
+![Main components of the pytorch-widedeep architecture. The blue and green boxes in the figure represent the main data types and their corresponding model components, namely `wide`, `deeptabular`, `deeptext` and `deepimage`. The yellow boxes represent _so-called_ fully-connected (FC) heads, simply MLPs that one can optionally add on top of the main components. These are referred to in the figure as `TextHead` and `ImageHead`. The dashed-line rectangles indicate that the outputs from the components inside are concatenated if a final FC head (referred to as `DeepHead` in the figure) is used. The faded-green `deeptabular` box aims to indicate that the output of the deeptabular component will be concatenated directly with the output of the `deeptext` or `deepimage` components or with the FC heads if these are used. Finally, the arrows indicate the connections, which of course, depend on the final architecture that the user chooses to build. \label{fig:widedeep_arch}](figures/widedeep_arch.png)
 
-The blue and green boxes in the figure represent the main data types and their corresponding model components, namely `wide`, `deeptabular`, `deeptext` and `deepimage`. The yellow boxes represent _so-called_ fully-connected (FC) heads, simply MLPs that one can optionally add on top of the main components. These are referred to in the figure as `TextHead` and `ImageHead`. The dashed-line rectangles indicate that the outputs from the components inside are concatenated if a final FC head (referred to as `DeepHead` in the figure) is used. The faded-green `deeptabular` box aims to indicate that the output of the deeptabular component will be concatenated directly with the output of the `deeptext` or `deepimage` components or with the FC heads if these are used. Finally, the arrows indicate the connections, which of course, depend on the final architecture that the user chooses to build.
-
-In math terms, and following the notation in the original paper [@cheng2016wide], the expression for the architecture without a `deephead` component can be formulated as:
+Following the notation of [@cheng2016wide], the expression for the architecture without a `deephead` component can be formulated as:
 
 
-$$pred = \sigma(W_{wide}^{T}[x,\phi(x)] + W_{deeptabular}^{T}a_{deeptabular}^{l_f} + W_{deeptext}^{T}a_{deeptext}^{l_f} + W_{deepimage}^{T}a_{deepimage}^{l_f} + b)$$
+$$pred = \sigma(W_{wide}^{T}[x,\phi(x)] + \sum_{i \in \mathcal{I}} W_{i}^{T}a_{i}^{l_f} + b)$$
 
 
-Where $\sigma$ is the sigmoid function, $W$ are the weight matrices applied to the wide model and to the final activations of the deep models, $a$ are these final activations, $\phi(x)$ are the cross-product transformations of the original features $x$, and $b$ is the bias term.
+Where $\mathcal{I} = \{deeptabular, deeptext, deepimage \}$, $\sigma$ is the sigmoid function, $W$ are the weight matrices applied to the wide model and to the final activations of the deep models, $a$ are these final activations, $\phi(x)$ are the cross-product transformations of the original features $x$, and $b$ is the bias term.
 
 
-While if there is a `deephead` component, the previous expression turns into:
+If there is a `deephead` component, the previous expression turns into:
 
 
 $$pred = \sigma(W_{wide}^{T}[x,\phi(x)] + W_{deephead}^{T}a_{deephead}^{l_f} + b)$$
@@ -68,7 +66,7 @@ This section will briefly introduce the current model components available for e
 
 ## The `wide` component
 
-This is a linear model for tabular data where the non-linearities are captured via cross-product transformations (see the description in the previous section). This is the simplest of all components, and we consider it very useful as a benchmark when used on its own.
+This is a linear model for tabular data where the non-linearities are captured via cross-product transformations. This is the simplest of all components, and we consider it very useful as a benchmark when used on its own.
 
 
 ## The `deeptabular` component
@@ -77,7 +75,7 @@ Currently, `pytorch-widedeep` offers the following models for the so-called `dee
 
 ## The `deepimage` component
 
-The image-related component is fully integrated with the newest version of torchvision [@torchvision_models] (0.13 at the time of writing). This version has Multi-Weight Support [@torchvision_weight]. Therefore, a variety of model variants are available to use with pre-trained weights obtained with different datasets. Currently, the model variants supported by `pytorch-widedeep` are (i) Resnet [@he2016deep], (ii) Shufflenet [@zhang2018shufflenet], (iii) Resnext [@xie2017aggregated], (iv) Wide Resnet [@zagoruyko2016wide], (v) Regnet [@xu2022regnet], (vi) Densenet [@huang2017densely], (vii) Mobilenet [@howard2017mobilenets], (viii) MNasnet [@tan2019mnasnet], (ix) Efficientnet [@tan2019efficientnet] and (x) Squeezenet [@iandola2016squeezenet].
+The image-related component is fully integrated with the newest version of torchvision [@torchvision2016] (0.13 at the time of writing). This version has Multi-Weight Support. Therefore, a variety of model variants are available to use with pre-trained weights obtained with different datasets. Currently, the model variants supported by `pytorch-widedeep` are (i) Resnet [@he2016deep], (ii) Shufflenet [@zhang2018shufflenet], (iii) Resnext [@xie2017aggregated], (iv) Wide Resnet [@zagoruyko2016wide], (v) Regnet [@xu2022regnet], (vi) Densenet [@huang2017densely], (vii) Mobilenet [@howard2017mobilenets], (viii) MNasnet [@tan2019mnasnet], (ix) Efficientnet [@tan2019efficientnet] and (x) Squeezenet [@iandola2016squeezenet].
 
 ## The `deeptext` component
 
@@ -96,8 +94,8 @@ Training single or multi-mode models in `pytorch-widedeep` is handled by the dif
 We acknowledge the work of other researchers, engineers, and programmers from the following projects and libraries:
 
 * the `Callbacks` and `Initializers` structure and code is inspired by the torchsample library [@torch_sample], which in itself partially inspired by Keras [@chollet2015keras]
-* the `TextProcessor` class in this library uses the fastai [@fastai_tokenizer] `Tokenizer` and `Vocab`; the code at `utils.fastai_transforms` is a minor adaptation of their code, so it functions within this library; to our experience, their `Tokenizer` is the best in class
-* the `ImageProcessor` class in this library uses code from the fantastic Deep Learning for Computer Vision (DL4CV) [@dl4cv] book by Adrian Rosebrock
+* the `TextProcessor` class in this library uses the fastai [@info11020108] `Tokenizer` and `Vocab`; the code at `utils.fastai_transforms` is a minor adaptation of their code, so it functions within this library; to our experience, their `Tokenizer` is the best in class
+* the `ImageProcessor` class in this library uses code from the fantastic Deep Learning for Computer Vision (DL4CV) [@adrian2017deep] book by Adrian Rosebrock
 * we adjusted and integrated ideas of Label and Feature Distribution Smoothing [@yang2021delving]
 * we adjusted and integrated ZILNloss code written in Tensorflow/Keras [@wang2019deep]
 
