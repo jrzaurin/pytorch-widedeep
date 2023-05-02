@@ -15,7 +15,7 @@ from pytorch_widedeep.models._base_wd_model_component import (
 warnings.filterwarnings("default", category=UserWarning)
 
 
-WDModel = Union[nn.Module, BaseWDModelComponent]
+WDModel = Union[nn.Module, nn.Sequential, BaseWDModelComponent]
 
 
 class WideDeep(nn.Module):
