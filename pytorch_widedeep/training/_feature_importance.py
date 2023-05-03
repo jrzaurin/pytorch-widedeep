@@ -40,8 +40,17 @@ TransformerBasedModels = (
 __all__ = ["FeatureImportance", "Explainer"]
 
 
-# TODO: review typing for the attention weights.
-# TODO: review typing for WideDeep (in particular the deeptabular part)
+# TODO: review typing for WideDeep (in particular the deeptabular part) The
+# issue with the typing of the deeptabular part is the following: the
+# deeptabular part is typed as Optional[BaseWDModelComponent]. While that is
+# correct, is not fully informative, and the most correct approach would
+# perhaps be [BaseWDModelComponent, BaseTabularModelWithAttention,
+# BaseTabularModelWithoutAttention]. Perhaps this way as we do
+# model.deeptabular._modules["0"] it would be understood that the type of
+# this value is such that has a property called `attention_weights` and I
+# would not have to use type ignores here and there. For the time being I am
+# going to leave it as it is (since it is not wrong), but this needs to be
+# revisited
 
 
 class FeatureImportance:
