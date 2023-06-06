@@ -750,9 +750,9 @@ class Trainer(BaseTrainer):
     def explain(self, X_tab: np.ndarray, save_step_masks: Optional[bool] = None):
         # TO DO: Add docs to this, to the feat imp parameter and the all
         # related classes
-        model_explainer = Explainer(self.device)
+        explainer = Explainer(self.device)
 
-        res = model_explainer.explain(
+        res = explainer.explain(
             self.model, X_tab, self.num_workers, self.batch_size, save_step_masks
         )
 

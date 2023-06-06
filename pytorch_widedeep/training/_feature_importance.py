@@ -350,6 +350,8 @@ class TransformerBasedExplainer(TransformerBasedFeatureImportance):
     ) -> np.ndarray:
         model.eval()
 
+        self.model_type = self._model_type(model)
+
         loader = DataLoader(
             dataset=WideDeepDataset(X_tab=X_tab),
             batch_size=batch_size,
