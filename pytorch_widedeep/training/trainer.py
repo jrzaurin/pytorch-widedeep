@@ -268,7 +268,7 @@ class Trainer(BaseTrainer):
         validation_freq: int = 1,
         batch_size: int = 32,
         custom_dataloader: Optional[DataLoader] = None,
-        feature_importance_sample_size: Optional[int] = 1000,
+        feature_importance_sample_size: Optional[int] = None,
         finetune: bool = False,
         with_lds: bool = False,
         **kwargs,

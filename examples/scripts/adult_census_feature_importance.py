@@ -41,6 +41,7 @@ X_tab_train = tab_preprocessor.fit_transform(train)
 X_tab_test = tab_preprocessor.transform(test)
 target = train[target_colname].values
 
+
 tab_transformer = TabTransformer(
     column_idx=tab_preprocessor.column_idx,
     cat_embed_input=tab_preprocessor.cat_embed_input,
@@ -74,7 +75,7 @@ ft_transformer = FTTransformer(
     kv_compression_factor=1.0,  # if this is diff than one, we cannot do this
 )
 
-context_attentio_mlp = ContextAttentionMLP(
+context_attention_mlp = ContextAttentionMLP(
     column_idx=tab_preprocessor.column_idx,
     cat_embed_input=tab_preprocessor.cat_embed_input,
     input_dim=16,
@@ -93,7 +94,7 @@ for attention_based_model in [
     saint,
     tab_fastformer,
     ft_transformer,
-    context_attentio_mlp,
+    context_attention_mlp,
     self_attention_mlp,
 ]:
     model = WideDeep(deeptabular=attention_based_model)  # type: ignore[arg-type]
@@ -110,6 +111,7 @@ for attention_based_model in [
         n_epochs=5,
         batch_size=128,
         val_split=0.2,
+        feature_importance_sample_size=1000,
     )
 
     assert (
@@ -147,6 +149,7 @@ trainer.fit(
     n_epochs=5,
     batch_size=128,
     val_split=0.2,
+    feature_importance_sample_size=1000,
 )
 
 assert len(trainer.feature_importance) == X_tab_train.shape[1]
