@@ -199,7 +199,6 @@ class Vision(BaseWDModelComponent):
 
     def _get_features(self) -> Tuple[nn.Module, int]:
         if self.pretrained_model_setup is not None:
-
             if isinstance(self.pretrained_model_setup, str):
                 if self.pretrained_model_setup in allowed_pretrained_models.keys():
                     model = allowed_pretrained_models[self.pretrained_model_setup]
