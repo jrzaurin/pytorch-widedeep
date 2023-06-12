@@ -91,6 +91,7 @@ def test_all_frozen():
 # Check defaulting for arch classes
 ###############################################################################
 
+
 @pytest.mark.parametrize(
     "arch, expected_out_shape",
     [
@@ -106,7 +107,7 @@ def test_all_frozen():
         ("squeezenet", 512),
         ({"shufflenet": ShuffleNet_V2_X0_5_Weights.IMAGENET1K_V1}, 1024),
         ({"resnext": ResNeXt50_32X4D_Weights.IMAGENET1K_V2}, 2048),
-    ]
+    ],
 )
 def test_pretrained_model_setup_defaults(arch, expected_out_shape):
     model = Vision(pretrained_model_setup=arch, n_trainable=0)

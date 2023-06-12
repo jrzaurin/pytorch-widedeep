@@ -37,7 +37,7 @@ allowed_pretrained_models = {
     "mobilenet": "mobilenet_v2",
     "mnasnet": "mnasnet1_0",
     "efficientnet": "efficientnet_b0",
-    "squeezenet": "squeezenet1_0"
+    "squeezenet": "squeezenet1_0",
 }
 
 
@@ -203,7 +203,9 @@ class Vision(BaseWDModelComponent):
             if isinstance(self.pretrained_model_setup, str):
                 if self.pretrained_model_setup in allowed_pretrained_models.keys():
                     model = allowed_pretrained_models[self.pretrained_model_setup]
-                    pretrained_model = torchvision.models.__dict__[model](weights=torchvision.models.get_model_weights(model).DEFAULT)
+                    pretrained_model = torchvision.models.__dict__[model](
+                        weights=torchvision.models.get_model_weights(model).DEFAULT
+                    )
                     warnings.warn(
                         f"{self.pretrained_model_setup} defaulting to {model}",
                         UserWarning,
@@ -212,7 +214,7 @@ class Vision(BaseWDModelComponent):
                     pretrained_model = torchvision.models.__dict__[
                         self.pretrained_model_setup
                     ](weights="IMAGENET1K_V1")
-            
+
             elif isinstance(self.pretrained_model_setup, Dict):
                 model_name = next(iter(self.pretrained_model_setup))
                 model_weights = self.pretrained_model_setup[model_name]
