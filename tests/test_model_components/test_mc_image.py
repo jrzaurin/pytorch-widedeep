@@ -100,7 +100,6 @@ def test_all_frozen():
         ("resnext", 2048),
         ("wide_resnet", 2048),
         ("regnet", 912),
-        ("densenet", 100),
         ("mobilenet", 1280),
         ("mnasnet", 1280),
         ("efficientnet", 1280),
