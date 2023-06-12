@@ -57,7 +57,7 @@ def test_n_trainable():
         ({"squeezenet1_0": SqueezeNet1_0_Weights.IMAGENET1K_V1}, 512),
     ],
 )
-def test_archiectures(arch, expected_out_shape):
+def test_architectures(arch, expected_out_shape):
     model = Vision(pretrained_model_setup=arch, n_trainable=0)
     out = model(X_images)
     assert out.size(0) == 10 and out.size(1) == expected_out_shape
@@ -85,3 +85,30 @@ def test_all_frozen():
     for p in model.parameters():
         is_trainable.append(not p.requires_grad)
     assert all(is_trainable)
+
+
+###############################################################################
+# Check defaulting for arch classes
+###############################################################################
+
+@pytest.mark.parametrize(
+    "arch, expected_out_shape",
+    [
+        ("resnet", 512),
+        ("shufflenet", 1024),
+        ("resnext", 2048),
+        ("wide_resnet", 2048),
+        ("regnet", 912),
+        ("densenet", 100),
+        ("mobilenet", 1280),
+        ("mnasnet", 1280),
+        ("efficientnet", 1280),
+        ("squeezenet", 512),
+        ({"shufflenet": ShuffleNet_V2_X0_5_Weights.IMAGENET1K_V1}, 1024),
+        ({"resnext": ResNeXt50_32X4D_Weights.IMAGENET1K_V2}, 2048),
+    ]
+)
+def test_pretrained_model_setup_defaults(arch, expected_out_shape):
+    model = Vision(pretrained_model_setup=arch, n_trainable=0)
+    out = model(X_images)
+    assert out.size(0) == 10 and out.size(1) == expected_out_shape
