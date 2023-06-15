@@ -114,11 +114,14 @@ for attention_based_model in [
         feature_importance_sample_size=1000,
     )
 
+    feat_imp_per_sample = trainer.explain(X_tab_test)
+
     assert (
         len(trainer.feature_importance) == X_tab_train.shape[1] - 1
         if with_cls_token
         else X_tab_train.shape[1]
-    )
+    ) and feat_imp_per_sample.shape == test[cat_embed_cols].shape
+
 
 train, test = train_test_split(
     df, test_size=0.1, random_state=1, stratify=df[[target_colname]]
@@ -151,86 +154,9 @@ trainer.fit(
     val_split=0.2,
     feature_importance_sample_size=1000,
 )
+feat_imp_per_sample = trainer.explain(X_tab_test, save_step_masks=False)
 
-assert len(trainer.feature_importance) == X_tab_train.shape[1]
-
-# def feature_importance_tab_transformer(trainer, X_tab_test):
-#     attention_weights_1 = trainer.model.deeptabular[0].attention_weights
-
-#     attention_weights_2 = torch.stack(
-#         trainer.model.deeptabular[0].attention_weights, dim=0
-#     )
-
-#     if trainer.model.deeptabular[0].with_cls_token:
-#         # mean through heads -> get the cls token attention weights -> get the
-#         # attention weights for all features BUT cls token. Then do this for
-#         # all attention blocks and compute the mean
-#         feat_imp_1 = torch.stack(
-#             [aw.mean(1)[:, 0, 1:] for aw in attention_weights_1], dim=0
-#         ).mean(0)
-#         # Also valid
-#         feat_imp_2 = attention_weights_2.mean(0).mean(1)[:, 0, 1:]
-
-#         assert torch.allclose(feat_imp_1, feat_imp_2)
-#     else:
-#         # mean through heads -> mean through dim 1 (ith element of each row)
-#         # as these weight represent how much a given feature is attented to.
-#         # Then do this for all attention blocks and compute the mean
-#         feat_imp_1 = torch.stack(
-#             [aw.mean(1).mean(1) for aw in attention_weights_1]
-#         ).mean(0)
-#         # Also valid
-#         feat_imp_2 = attention_weights_2.mean(0).mean(1).mean(1)
-
-#         assert torch.allclose(feat_imp_1, feat_imp_2)
-
-#     return feat_imp_1
-
-# def get_feature_importance_saint(trainer, X_tab_test):
-#     _ = trainer.predict(X_tab=X_tab_test[:32])
-
-#     attention_weights = torch.stack(
-#         [aw[0] for aw in trainer.model.deeptabular[0].attention_weights], dim=0
-#     )
-
-#     if trainer.model.deeptabular[0].with_cls_token:
-#         feat_imp = attention_weights.mean(0).mean(1)[:, 0, 1:]
-#     else:
-#         feat_imp = attention_weights.mean(0).mean(1).mean(1)
-
-#     return feat_imp
-
-
-# def get_feature_importance_fastformer(trainer, X_tab_test):
-#     _ = trainer.predict(X_tab=X_tab_test[:32])
-
-#     # To compute feature importance we could:
-#     # 1. Use only beta attention weights since one could say that they have implicit information about the alpha weights
-#     # 2. Use the mean of alpha and beta attention weights
-
-#     # Approach 2
-#     alpha_weights, beta_weights = zip(*trainer.model.deeptabular[0].attention_weights)
-#     attention_weights = torch.stack(alpha_weights + beta_weights, dim=0)
-
-#     if trainer.model.deeptabular[0].with_cls_token:
-#         # mean through blocks -> mean through heads -> all but cls token column
-#         feat_imp = attention_weights.mean(0).mean(1)[:, 1:]
-#     else:
-#         # mean through blocks -> mean through heads
-#         feat_imp = attention_weights.mean(0).mean(1)
-
-#     return feat_imp
-
-# def get_feature_importance_ft_transformer(trainer, X_tab_test):
-#     _ = trainer.predict(X_tab=X_tab_test[:32])
-
-#     attention_weights = torch.stack(
-#         trainer.model.deeptabular[0].attention_weights, dim=0
-#     )
-
-#     if trainer.model.deeptabular[0].with_cls_token:
-#         feat_imp = attention_weights.mean(0).mean(1)[:, 0, 1:]
-#     else:
-#         feat_imp = attention_weights.mean(0).mean(1).mean(1)
-
-#     return feat_imp
+assert (
+    len(trainer.feature_importance) == X_tab_train.shape[1]
+    and feat_imp_per_sample.shape == test[cat_embed_cols].shape
+)
