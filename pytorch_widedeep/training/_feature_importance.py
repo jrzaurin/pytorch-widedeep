@@ -89,8 +89,10 @@ class Explainer:
         batch_size: Optional[int] = None,
         save_step_masks: Optional[bool] = None,
     ) -> Union[Tuple, np.ndarray]:
-        if model == "tabnet":
-            assert save_step_masks is not None
+        if model.is_tabnet:
+            assert (
+                save_step_masks is not None
+            ), "If the model is TabNet, please set 'save_step_masks' to True/False"
             model_explainer: ModelExplainer = TabNetExplainer(self.device)
             res = model_explainer.explain(
                 model,

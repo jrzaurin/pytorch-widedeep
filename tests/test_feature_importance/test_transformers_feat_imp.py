@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
-import pytest
 
+import pytest
 from pytorch_widedeep import Trainer
 from pytorch_widedeep.models import (
     SAINT,
+    TabNet,
     WideDeep,
     FTTransformer,
     TabFastFormer,
@@ -102,7 +103,7 @@ def test_feature_importances(with_cls_token, model_name):
         target=target,
         n_epochs=1,
         batch_size=16,
-        feature_importance_sample_size=1000,
+        feature_importance_sample_size=32,
     )
 
     feat_imps = trainer.feature_importance
@@ -141,7 +142,7 @@ def test_fttransformer_valueerror():
             target=target,
             n_epochs=1,
             batch_size=16,
-            feature_importance_sample_size=1000,
+            feature_importance_sample_size=32,
         )
 
     assert (
@@ -150,4 +151,38 @@ def test_fttransformer_valueerror():
     )
 
 
-# TODO: Tabnet
+def test_feature_importances_tabnet():
+
+    tab_preprocessor = TabPreprocessor(
+        cat_embed_cols=cat_cols,
+        continuous_cols=cont_cols,
+    )
+    X_tr = tab_preprocessor.fit_transform(df_tr).astype(float)
+    X_te = tab_preprocessor.transform(df_te).astype(float)
+
+    tabnet = TabNet(
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
+        continuous_cols=tab_preprocessor.continuous_cols,
+        embed_continuous=True
+    )
+
+    model = WideDeep(deeptabular=tabnet)
+
+    trainer = Trainer(
+        model,
+        objective="binary",
+    )
+
+    trainer.fit(
+        X_tab=X_tr,
+        target=target,
+        n_epochs=1,
+        batch_size=16,
+        feature_importance_sample_size=32,
+    )
+
+    feat_imps = trainer.feature_importance
+    feat_imp_per_sample = trainer.explain(X_te, save_step_masks=False)
+
+    assert len(feat_imps) == df_tr.shape[1] and feat_imp_per_sample.shape == df_te.shape
