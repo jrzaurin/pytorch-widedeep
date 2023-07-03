@@ -39,6 +39,9 @@ The content of this document is organized as follows:
     - [How to Contribute](#how-to-contribute)
     - [Acknowledgments](#acknowledgments)
     - [License](#license)
+    - [Cite](#cite)
+      - [BibTex](#bibtex)
+      - [APA](#apa)
 
 ### Introduction
 
@@ -333,3 +336,27 @@ This work is dual-licensed under Apache 2.0 and MIT (or any later version).
 You can choose between one of them if you use this work.
 
 `SPDX-License-Identifier: Apache-2.0 AND MIT`
+
+### Cite
+
+#### BibTex
+
+```
+@article{Zaurin_pytorch-widedeep_A_flexible_2023,
+author = {Zaurin, Javier Rodriguez and Mulinka, Pavol},
+doi = {10.21105/joss.05027},
+journal = {Journal of Open Source Software},
+month = jun,
+number = {86},
+pages = {5027},
+title = {{pytorch-widedeep: A flexible package for multimodal deep learning}},
+url = {https://joss.theoj.org/papers/10.21105/joss.05027},
+volume = {8},
+year = {2023}
+}
+```
+
+#### APA
+```
+Zaurin, J. R., & Mulinka, P. (2023). pytorch-widedeep: A flexible package for multimodal deep learning. Journal of Open Source Software, 8(86), 5027. https://doi.org/10.21105/joss.05027
+```
