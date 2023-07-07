@@ -7,11 +7,7 @@ on:
   pull_request:
     branches:
       - master
-  workflow_run:
-    workflows:
-      - 'pytorch-widedeep'
-    types:
-      - requested
+  workflow_dispatch:
 
 jobs:
   codestyle:
