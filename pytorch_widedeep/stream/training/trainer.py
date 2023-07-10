@@ -47,23 +47,27 @@ from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.wdtypes import Dict, LRScheduler, List, Module, Optimizer, Optional, Transforms, Union, WideDeep
 
 from pytorch_widedeep.stream.preprocessing.text_preprocessor import StreamTextPreprocessor
-from pytorch_widedeep.stream._stream_ds import StreamTextDataset
+from pytorch_widedeep.stream.preprocessing.image_preprocessor import StreamImagePreprocessor
+from pytorch_widedeep.stream._stream_ds import StreamTextDataset, StreamWideDeepDataset, StreamImageDataset
 
 
 class StreamTrainer(Trainer):
-    def __init__(self, 
-                 model: WideDeep, 
-                 objective: str, 
+    def __init__(
+            self,
+            X_text_path: str,
+            X_img_path: str,
+            model: WideDeep, 
+            objective: str 
         ):
         super().__init__(model, objective)
-
+        self.X_text_path = X_text_path
+        self.X_img_path = X_img_path
         self.with_lds = False
 
     def fit(
             self, 
-            X_train_path: str,
-            preprocessor: StreamTextPreprocessor,
-            X_val_path: Optional[str] = None,
+            text_preprocessor: StreamTextPreprocessor,
+            img_preprocessor: StreamImagePreprocessor,
             target: np.ndarray = None,
             batch_size: int = 32,
             n_epochs: int = 1,
@@ -77,28 +81,31 @@ class StreamTrainer(Trainer):
         # We want to have a dataloader with a WideDeepDataset
         # This WideDeepDataset should wrap our streaming iterable datasets
         # Matching indices of yields is important here
+
+        # Move into a function that constructs this similar to _build_train_dict
+        # As we need to cater to different combos of each mode
+        imgs = StreamImageDataset(self.X_img_path, img_preprocessor)
+        txt = StreamTextDataset(self.X_text_path, text_preprocessor)
+        train_wd = StreamWideDeepDataset(txt, imgs)
+
         train_loader = DataLoader(
-            StreamTextDataset(
-                X_train_path, 
-                preprocessor=preprocessor, 
-                chunksize=chunksize
-            ), 
+            train_wd, 
             batch_size=batch_size,
             drop_last=True
         )
 
         # TODO: enable validation callbacks
-        eval_set = None
-        if eval_set is not None:
-            train_loader = DataLoader(
-                StreamTextDataset(
-                    X_val_path, 
-                    preprocessor=preprocessor, 
-                    chunksize=chunksize
-                ), 
-            batch_size=batch_size,
-            drop_last=True
-        )
+        # eval_set = None
+        # if eval_set is not None:
+        #     train_loader = DataLoader(
+        #         StreamTextDataset(
+        #             X_val_path, 
+        #             preprocessor=preprocessor, 
+        #             chunksize=chunksize
+        #         ), 
+        #     batch_size=batch_size,
+        #     drop_last=True
+        # )
         
         for epoch in range(n_epochs):
             epoch_logs: Dict[str, float] = {}
