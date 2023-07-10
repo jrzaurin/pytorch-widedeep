@@ -12,7 +12,7 @@ from pytorch_widedeep.utils.text_utils import get_texts, build_embeddings_matrix
 
 
 class VocabBuilder:
-    def __init__(self, max_vocab: int, min_freq: int) -> None:
+    def __init__(self, max_vocab: int = 30000, min_freq: int = 5) -> None:
         self.freq = Counter()
         self.itos = None 
         self.stoi = None
@@ -24,7 +24,7 @@ class VocabBuilder:
         for t in tokens:
             self.freq[t] += 1
         
-    def build(self) -> 'Vocab':
+    def build(self) -> Vocab:
         itos = [o for o, c in self.freq.most_common(self.max_vocab) if c >= self.min_freq]
         for o in reversed(defaults.text_spec_tok):
             if o in itos:
@@ -68,10 +68,10 @@ class StreamTextPreprocessor(BasePreprocessor):
         self.verbose = verbose
         self.n_cpus = n_cpus if n_cpus is not None else os.cpu_count()
 
-    def fit(self, path: str, chunksize: int) -> BasePreprocessor:
+    def fit(self, X_path: str, chunksize: int) -> BasePreprocessor:
         voc_builder = VocabBuilder(max_vocab=self.max_vocab, min_freq=self.min_freq)
-        
-        for chunk in pd.read_csv(path, chunksize=chunksize):
+
+        for chunk in pd.read_csv(X_path, chunksize=chunksize):
             tokens = get_texts(chunk[self.text_col].tolist())
             voc_builder.ingest(tokens)
         
@@ -79,29 +79,12 @@ class StreamTextPreprocessor(BasePreprocessor):
 
         if self.verbose:
             print("The vocabulary contains {} tokens".format(len(self.vocab.stoi)))
-        if self.word_vectors_path is not None:
-            # This might also need to move to after the vocab has been constructed via batches/stream
-            self.embedding_matrix = build_embeddings_matrix(
-                self.vocab, self.word_vectors_path, self.min_freq
-            )
+
         return self
     
-    def transform(self, df: pd.DataFrame) -> np.ndarray:
-        """Returns the padded, _'numericalised'_ sequences
-
-        Parameters
-        ----------
-        df: pd.DataFrame
-            Input pandas dataframe
-
-        Returns
-        -------
-        np.ndarray
-            Padded, _'numericalised'_ sequences
-        """
+    def transform(self, text: str) -> np.ndarray:
         check_is_fitted(self, attributes=["vocab"])
-        texts = df[self.text_col].tolist()
-        self.tokens = get_texts(texts, self.n_cpus)
+        self.tokens = get_texts(text, n_cpus=1)
         sequences = [self.vocab.numericalize(t) for t in self.tokens]
         padded_seq = np.array(
             [
@@ -115,18 +98,6 @@ class StreamTextPreprocessor(BasePreprocessor):
             ]
         )
         return padded_seq
-    
-    def fit_transform(self, df: pd.DataFrame, chunksize=16) -> np.ndarray:
-        """Combines `fit` and `transform`
-
-        Parameters
-        ----------
-        df: pd.DataFrame
-            Input pandas dataframe
-
-        Returns
-        -------
-        np.ndarray
-            Padded, _'numericalised'_ sequences
-        """
-        return self.fit(df, chunksize).transform(df)
+   
+    def fit_transform(self): # This doesn't work with streaming I think as an API
+        pass 

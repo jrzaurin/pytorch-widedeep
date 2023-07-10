@@ -1,0 +1,706 @@
+,text_col
+0,"From: lerxst@wam.umd.edu (where's my thing)
+Subject: WHAT car is this!?
+Nntp-Posting-Host: rac3.wam.umd.edu
+Organization: University of Maryland, College Park
+Lines: 15
+
+ I was wondering if anyone out there could enlighten me on this car I saw
+the other day. It was a 2-door sports car, looked to be from the late 60s/
+early 70s. It was called a Bricklin. The doors were really small. In addition,
+the front bumper was separate from the rest of the body. This is 
+all I know. If anyone can tellme a model name, engine specs, years
+of production, where this car is made, history, or whatever info you
+have on this funky looking car, please e-mail.
+
+Thanks,
+- IL
+   ---- brought to you by your neighborhood Lerxst ----
+
+
+
+
+"
+1,"From: guykuo@carson.u.washington.edu (Guy Kuo)
+Subject: SI Clock Poll - Final Call
+Summary: Final call for SI clock reports
+Keywords: SI,acceleration,clock,upgrade
+Article-I.D.: shelley.1qvfo9INNc3s
+Organization: University of Washington
+Lines: 11
+NNTP-Posting-Host: carson.u.washington.edu
+
+A fair number of brave souls who upgraded their SI clock oscillator have
+shared their experiences for this poll. Please send a brief message detailing
+your experiences with the procedure. Top speed attained, CPU rated speed,
+add on cards and adapters, heat sinks, hour of usage per day, floppy disk
+functionality with 800 and 1.4 m floppies are especially requested.
+
+I will be summarizing in the next two days, so please add to the network
+knowledge base if you have done the clock upgrade and haven't answered this
+poll. Thanks.
+
+Guy Kuo <guykuo@u.washington.edu>
+"
+2,"From: twillis@ec.ecn.purdue.edu (Thomas E Willis)
+Subject: PB questions...
+Organization: Purdue University Engineering Computer Network
+Distribution: usa
+Lines: 36
+
+well folks, my mac plus finally gave up the ghost this weekend after
+starting life as a 512k way back in 1985.  sooo, i'm in the market for a
+new machine a bit sooner than i intended to be...
+
+i'm looking into picking up a powerbook 160 or maybe 180 and have a bunch
+of questions that (hopefully) somebody can answer:
+
+* does anybody know any dirt on when the next round of powerbook
+introductions are expected?  i'd heard the 185c was supposed to make an
+appearence ""this summer"" but haven't heard anymore on it - and since i
+don't have access to macleak, i was wondering if anybody out there had
+more info...
+
+* has anybody heard rumors about price drops to the powerbook line like the
+ones the duo's just went through recently?
+
+* what's the impression of the display on the 180?  i could probably swing
+a 180 if i got the 80Mb disk rather than the 120, but i don't really have
+a feel for how much ""better"" the display is (yea, it looks great in the
+store, but is that all ""wow"" or is it really that good?).  could i solicit
+some opinions of people who use the 160 and 180 day-to-day on if its worth
+taking the disk size and money hit to get the active display?  (i realize
+this is a real subjective question, but i've only played around with the
+machines in a computer store breifly and figured the opinions of somebody
+who actually uses the machine daily might prove helpful).
+
+* how well does hellcats perform?  ;)
+
+thanks a bunch in advance for any info - if you could email, i'll post a
+summary (news reading time is at a premium with finals just around the
+corner... :( )
+--
+Tom Willis  \  twillis@ecn.purdue.edu    \    Purdue Electrical Engineering
+---------------------------------------------------------------------------
+""Convictions are more dangerous enemies of truth than lies.""  - F. W.
+Nietzsche
+"
+3,"From: jgreen@amber (Joe Green)
+Subject: Re: Weitek P9000 ?
+Organization: Harris Computer Systems Division
+Lines: 14
+Distribution: world
+NNTP-Posting-Host: amber.ssd.csd.harris.com
+X-Newsreader: TIN [version 1.1 PL9]
+
+Robert J.C. Kyanko (rob@rjck.UUCP) wrote:
+> abraxis@iastate.edu writes in article <abraxis.734340159@class1.iastate.edu>:
+> > Anyone know about the Weitek P9000 graphics chip?
+> As far as the low-level stuff goes, it looks pretty nice.  It's got this
+> quadrilateral fill command that requires just the four points.
+
+Do you have Weitek's address/phone number?  I'd like to get some information
+about this chip.
+
+--
+Joe Green				Harris Corporation
+jgreen@csd.harris.com			Computer Systems Division
+""The only thing that really scares me is a person with no sense of humor.""
+						-- Jonathan Winters
+"
+4,"From: jcm@head-cfa.harvard.edu (Jonathan McDowell)
+Subject: Re: Shuttle Launch Question
+Organization: Smithsonian Astrophysical Observatory, Cambridge, MA,  USA
+Distribution: sci
+Lines: 23
+
+From article <C5owCB.n3p@world.std.com>, by tombaker@world.std.com (Tom A Baker):
+>>In article <C5JLwx.4H9.1@cs.cmu.edu>, ETRAT@ttacs1.ttu.edu (Pack Rat) writes...
+>>>""Clear caution & warning memory.  Verify no unexpected
+>>>errors. ..."".  I am wondering what an ""expected error"" might
+>>>be.  Sorry if this is a really dumb question, but
+> 
+> Parity errors in memory or previously known conditions that were waivered.
+>    ""Yes that is an error, but we already knew about it""
+> I'd be curious as to what the real meaning of the quote is.
+> 
+> tom
+
+
+My understanding is that the 'expected errors' are basically
+known bugs in the warning system software - things are checked
+that don't have the right values in yet because they aren't
+set till after launch, and suchlike. Rather than fix the code
+and possibly introduce new bugs, they just tell the crew
+'ok, if you see a warning no. 213 before liftoff, ignore it'.
+
+ - Jonathan
+
+
+"
+5,"From: dfo@vttoulu.tko.vtt.fi (Foxvog Douglas)
+Subject: Re: Rewording the Second Amendment (ideas)
+Organization: VTT
+Lines: 58
+
+In article <1r1eu1$4t@transfer.stratus.com> cdt@sw.stratus.com (C. D. Tavares) writes:
+>In article <1993Apr20.083057.16899@ousrvr.oulu.fi>, dfo@vttoulu.tko.vtt.fi (Foxvog Douglas) writes:
+>> In article <1qv87v$4j3@transfer.stratus.com> cdt@sw.stratus.com (C. D. Tavares) writes:
+>> >In article <C5n3GI.F8F@ulowell.ulowell.edu>, jrutledg@cs.ulowell.edu (John Lawrence Rutledge) writes:
+>
+>> >> The massive destructive power of many modern weapons, makes the
+>> >> cost of an accidental or crimial usage of these weapons to great.
+>> >> The weapons of mass destruction need to be in the control of
+>> >> the government only.  Individual access would result in the
+>> >> needless deaths of millions.  This makes the right of the people
+>> >> to keep and bear many modern weapons non-existant.
+
+>> >Thanks for stating where you're coming from.  Needless to say, I
+>> >disagree on every count.
+
+>> You believe that individuals should have the right to own weapons of
+>> mass destruction?  I find it hard to believe that you would support a 
+>> neighbor's right to keep nuclear weapons, biological weapons, and nerve
+>> gas on his/her property.  
+
+>> If we cannot even agree on keeping weapons of mass destruction out of
+>> the hands of individuals, can there be any hope for us?
+
+>I don't sign any blank checks.
+
+Of course.  The term must be rigidly defined in any bill.
+
+>When Doug Foxvog says ""weapons of mass destruction,"" he means CBW and
+>nukes.  When Sarah Brady says ""weapons of mass destruction"" she means
+>Street Sweeper shotguns and semi-automatic SKS rifles.  
+
+I doubt she uses this term for that.  You are using a quote allegedly
+from her, can you back it up?
+
+>When John
+>Lawrence Rutledge says ""weapons of mass destruction,"" and then immediately
+>follows it with:
+
+>>> The US has thousands of people killed each year by handguns,
+>>> this number can easily be reduced by putting reasonable restrictions
+>>> on them.
+
+>...what does Rutledge mean by the term?
+
+I read the article as presenting first an argument about weapons of mass
+destruction (as commonly understood) and then switching to other topics.
+The first point evidently was to show that not all weapons should be
+allowed, and then the later analysis was, given this understanding, to
+consider another class.
+
+>cdt@rocket.sw.stratus.com   --If you believe that I speak for my company,
+>OR cdt@vos.stratus.com        write today for my special Investors' Packet...
+
+
+
+-- 
+doug foxvog
+douglas.foxvog@vtt.fi
+"
+6,"From: bmdelane@quads.uchicago.edu (brian manning delaney)
+Subject: Brain Tumor Treatment (thanks)
+Reply-To: bmdelane@midway.uchicago.edu
+Organization: University of Chicago
+Lines: 12
+
+There were a few people who responded to my request for info on
+treatment for astrocytomas through email, whom I couldn't thank
+directly because of mail-bouncing probs (Sean, Debra, and Sharon).  So
+I thought I'd publicly thank everyone.
+
+Thanks! 
+
+(I'm sure glad I accidentally hit ""rn"" instead of ""rm"" when I was
+trying to delete a file last September. ""Hmmm... 'News?' What's
+this?""....)
+
+-Brian
+"
+7,"From: bgrubb@dante.nmsu.edu (GRUBB)
+Subject: Re: IDE vs SCSI
+Organization: New Mexico State University, Las Cruces, NM
+Lines: 44
+Distribution: world
+NNTP-Posting-Host: dante.nmsu.edu
+
+DXB132@psuvm.psu.edu writes:
+>In article <1qlbrlINN7rk@dns1.NMSU.Edu>, bgrubb@dante.nmsu.edu (GRUBB) says:
+>>In PC Magazine April 27, 1993:29 ""Although SCSI is twice as fasst as ESDI,
+>>20% faster than IDE, and support up to 7 devices its acceptance ...has   
+>>long been stalled by incompatability problems and installation headaches.""
+                                                                      
+>I love it when magazine writers make stupid statements like that re:      
+>performance. Where do they get those numbers? I'll list the actual
+>performance ranges, which should convince anyone that such a               
+>statement is absurd:                                                     
+>SCSI-I ranges from 0-5MB/s.                                                
+>SCSI-II ranges from 0-40MB/s.            
+>IDE ranges from 0-8.3MB/s.                          
+>ESDI is always 1.25MB/s (although there are some non-standard versions)
+ALL this shows is that YOU don't know much about SCSI.
+
+SCSI-1 {with a SCSI-1 controler chip} range is indeed 0-5MB/s
+and that is ALL you have right about SCSI
+SCSI-1 {With a SCSI-2 controller chip}: 4-6MB/s with 10MB/s burst {8-bit}
+ Note the INCREASE in SPEED, the Mac Quadra uses this version of SCSI-1
+ so it DOES exist. Some PC use this set up too.
+SCSI-2 {8-bit/SCSI-1 mode}:          4-6MB/s with 10MB/s burst
+SCSI-2 {16-bit/wide or fast mode}:  8-12MB/s with 20MB/s burst
+SCSI-2 {32-bit/wide AND fast}:     15-20MB/s with 40MB/s burst
+ 
+By your OWN data the ""Although SCSI is twice as fast as ESDI"" is correct
+With a SCSI-2 controller chip SCSI-1 can reach 10MB/s which is indeed
+""20% faster than IDE"" {120% of 8.3 is 9.96}. ALL these SCSI facts have been
+posted to this newsgroup in my Mac & IBM info sheet {available by FTP on 
+sumex-aim.stanford.edu (36.44.0.6) in the info-mac/report as 
+mac-ibm-compare[version #].txt (It should be 173 but 161 may still be there)}
+
+Part of this problem is both Mac and IBM PC are inconsiant about what SCSI
+is which.  Though it is WELL documented that the Quadra has a SCSI-2 chip
+an Apple salesperson said ""it uses a fast SCSI-1 chip"" {Not at a 6MB/s,
+10MB/s burst it does not. SCSI-1 is 5MB/s maximum synchronous and Quadra
+uses ANsynchronous SCSI which is SLOWER}  It seems that Mac and IBM see
+SCSI-1 interface and think 'SCSI-1' when it maybe a SCSI-1 interface driven
+in the machine by a SCSi-2 controller chip in 8-bit mode {Which is MUCH
+FASTER then true SCSI-1 can go}.
+
+Don't slam an article because you don't understand what is going on.
+One reference for the Quadra's SCSI-2 controller chip is 
+(Digital Review, Oct 21, 1991 v8 n33 p8(1)).
+"
+8,"From: holmes7000@iscsvax.uni.edu
+Subject: WIn 3.0 ICON HELP PLEASE!
+Organization: University of Northern Iowa
+Lines: 10
+
+I have win 3.0 and downloaded several icons and BMP's but I can't figure out
+how to change the ""wallpaper"" or use the icons.  Any help would be appreciated.
+
+
+Thanx,
+
+-Brando
+
+PS Please E-mail me
+
+"
+9,"From: kerr@ux1.cso.uiuc.edu (Stan Kerr)
+Subject: Re: Sigma Designs Double up??
+Article-I.D.: ux1.C52u8x.B62
+Organization: University of Illinois at Urbana
+Lines: 29
+
+jap10@po.CWRU.Edu (Joseph A. Pellettiere) writes:
+
+
+>	I am looking for any information about the Sigma Designs
+>	double up board.  All I can figure out is that it is a
+>	hardware compression board that works with AutoDoubler, but
+>	I am not sure about this.  Also how much would one cost?
+
+I've had the board for over a year, and it does work with Diskdoubler,
+but not with Autodoubler, due to a licensing problem with Stac Technologies,
+the owners of the board's compression technology. (I'm writing this
+from memory; I've lost the reference. Please correct me if I'm wrong.)
+
+Using the board, I've had problems with file icons being lost, but it's
+hard to say whether it's the board's fault or something else; however,
+if I decompress the troubled file and recompress it without the board,
+the icon usually reappears. Because of the above mentioned licensing
+problem, the freeware expansion utility DD Expand will not decompress
+a board-compressed file unless you have the board installed.
+
+Since Stac has its own product now, it seems unlikely that the holes
+in Autodoubler/Diskdoubler related to the board will be fixed.
+Which is sad, and makes me very reluctant to buy Stac's product since
+they're being so stinky. (But hey, that's competition.)
+-- 
+
+Stan Kerr    
+Computing & Communications Services Office, U of Illinois/Urbana
+Phone: 217-333-5217  Email: stankerr@uiuc.edu   
+"
+10,"From: irwin@cmptrc.lonestar.org (Irwin Arnstein)
+Subject: Re: Recommendation on Duc
+Summary: What's it worth?
+Distribution: usa
+Expires: Sat, 1 May 1993 05:00:00 GMT
+Organization: CompuTrac Inc., Richardson TX
+Keywords: Ducati, GTS, How much? 
+Lines: 13
+
+I have a line on a Ducati 900GTS 1978 model with 17k on the clock.  Runs
+very well, paint is the bronze/brown/orange faded out, leaks a bit of oil
+and pops out of 1st with hard accel.  The shop will fix trans and oil 
+leak.  They sold the bike to the 1 and only owner.  They want $3495, and
+I am thinking more like $3K.  Any opinions out there?  Please email me.
+Thanks.  It would be a nice stable mate to the Beemer.  Then I'll get
+a jap bike and call myself Axis Motors!
+
+-- 
+-----------------------------------------------------------------------
+""Tuba"" (Irwin)      ""I honk therefore I am""     CompuTrac-Richardson,Tx
+irwin@cmptrc.lonestar.org    DoD #0826          (R75/6)
+-----------------------------------------------------------------------
+"
+11,"From: david@terminus.ericsson.se (David Bold)
+Subject: Re: Question for those with popular morality
+Reply-To: david@terminus.ericsson.se
+Distribution: world
+Organization: Camtec Electronics (Ericsson), Leicester, England
+Lines: 77
+Nntp-Posting-Host: bangkok
+
+In article 17570@freenet.carleton.ca, ad354@Freenet.carleton.ca (James Owens) writes:
+>
+>In a previous article, david@terminus.ericsson.se (David Bold) says:
+>
+>>
+>>I don't mean to be rude, but I think that you've got hold of the wrong
+>>end of a different stick...
+>>
+>>David
+>
+>I had a look at your posting again and I see what you mean!  I was so
+>intent on explaining how Jung thought we could be more moral than God that
+>I overlooked your main line of thought.
+>
+>You seem to be saying that, God being unknowable, His morality is unknowable.
+
+Yep, that's pretty much it. I'm not a Jew but I understand that this is the
+Jewish way of thinking. However, the Jews believe that the Covenant between
+YHWH and the Patriarchs (Abraham and Moses, in this case) establishes a Moral
+Code to follow for mankind. Even the Jews could not decide where the boundaries
+fall, though.
+
+As I understand it, the Sadducees believed that the Torah was all that was
+required, whereas the Pharisees (the ancestors of modern Judaism) believed that
+the Torah was available for interpretation to lead to an understanding of
+the required Morality in all its nuances (->Talmud).
+
+The essence of all of this is that Biblical Morality is an interface between
+Man and YHWH (for a Jew or Christian) and does not necessarily indicate
+anything about YHWH outside of that relationship (although one can speculate).
+
+>
+>The first thing that comes to mind is that man is supposed to be created
+>in His image, so there is an argument that we are committed to whatever
+>moral code He follows as part of trying to live up to that image.  If we
+>are supposed to live by Christ's example, you would be hard pressed to
+>argue that God is a ""do what I say, not what I do"" kind of guy.
+
+The trouble with all of this is that we don't really know what the ""created
+in His image"" means. I've heard a number of different opinions on this and
+have still not come to any conclusion. This rather upsets the Apple Cart if
+one wants to base a Life Script on this shaky foundation (to mix metaphors
+unashamedly!) As to living by Christ's example, we know very little about
+Jesus as a person. We only have his recorded utterances in a set of narratives
+by his followers, and some very small references from comtemporary historians.
+Revelation aside, one can only ""know"" Christ second-hand or worse.
+
+This is not an attempt to debunk Christianity (although it may seem that way
+initially), the point I`m trying to make is that we only really have the Bible
+to interpret, and that interpretation is by humanity. I guess this is where
+Faith or Relevation comes in with all its inherent subjectiveness.
+
+>
+>Metaphysically, if there are multiple moral codes then there is no
+>Absolute moral code, and I think this is theologically questionable.
+
+No. There may be an absolute moral code. There are undoubtably multiple
+moral codes. The multiple moral codes may be founded in the absolute moral
+code. As an example, a parent may tell a child never to swear, and the child
+may assume that the parent never swears simply because the parent has told
+the child that it is ""wrong"". Now, the parent may swear like a trooper in
+the pub or bar (where there are no children). The ""wrongness"" here is if
+the child disobeys the parent. The parent may feel that it is ""inappropriate""
+to swear in front of children but may be quite happy to swear in front of
+animals. The analogy does not quite hold water because the child knows that
+he is of the same type as the parent (and may be a parent later in life) but
+you get the gist of it? Incidentally, the young child considers the directive
+as absolute until he gets older (see Piaget) and learns a morality of his own.
+
+David.
+
+---
+On religion:
+
+""Oh, where is the sea?"", the fishes cried,
+As they swam its clearness through.
+
+"
+12,"From: rodc@fc.hp.com (Rod Cerkoney)
+Subject: *$G4qxF,fekVH6
+Nntp-Posting-Host: hpfcmrc.fc.hp.com
+Organization: Hewlett Packard, Fort Collins, CO
+X-Newsreader: TIN [version 1.1 PL8.5]
+Lines: 15
+
+
+
+--
+
+
+Regards,
+Rod Cerkoney
+                                                        /\
+______________________________________________         /~~\
+                                                      /    \
+  Rod Cerkoney MS 37     email:                      /      \ 
+  Hewlett Packard         rodc@fc.hp.com        /\  /        \  
+  3404 East Harmony Rd.  Hpdesk:               /  \/          \    /\
+  Fort Collins, CO 80525  HP4000/UX           /    \           \  /  \
+_____________________________________________/      \           \/    \__
+"
+13,"From: dbm0000@tm0006.lerc.nasa.gov (David B. Mckissock)
+Subject: Re: Space Station Redesign, JSC Alternative #4
+Organization: NASA Lewis Research Center / Cleveland, Ohio
+Lines: 102
+Distribution: world
+NNTP-Posting-Host: tm0006.lerc.nasa.gov
+News-Software: VAX/VMS VNEWS 1.41    
+
+In article <1993Apr23.184732.1105@aio.jsc.nasa.gov>, kjenks@gothamcity.jsc.nasa.gov writes...
+
+   {Description of ""External Tank"" option for SSF redesign deleted}
+
+>Mark proposed this design at Joe Shea's committee in Crystal City,
+>and he reports that he was warmly received.  However, the rumors
+>I hear say that a design based on a wingless Space Shuttle Orbiter
+>seems more likely.
+
+Yo Ken, let's keep on-top of things! Both the ""External Tank"" and
+""Wingless Orbiter"" options have been deleted from the SSF redesign
+options list. Today's (4/23) edition of the New York Times reports
+that O'Connor told the panel that some redesign proposals have
+been dropped, such as using the ""giant external fuel tanks used
+in launching space shuttles,"" and building a ""station around
+an existing space shuttle with its wings and tail removed.""
+
+Currently, there are three options being considered, as presented
+to the advisory panel meeting yesterday (and as reported in
+today's Times).
+
+Option ""A"" - Low Cost Modular Approach
+This option is being studied by a team from MSFC. {As an aside,
+there are SSF redesign teams at MSFC, JSC, and LaRC supporting
+the SRT (Station Redesign Team) in Crystal City. Both LeRC and
+Reston folks are also on-site at these locations, helping the respective
+teams with their redesign activities.} Key features of this
+option are:
+  -  Uses ""Bus-1"", a modular bus developed by Lockheed that's
+     qualified for STS and ELV's. The bus provides propulsion, GN&C
+     Communications, & Data Management. Lockheed developed this
+     for the Air Force.
+  -  A ""Power Station Capability"" is obtained in 3 Shuttle Flights.
+     SSF Solar arrays are used to provide 20 kW of power. The vehicle
+     flies in an ""arrow mode"" to optimize the microgravity environment.
+     Shuttle/Spacelab missions would utilize the vehilce as a power
+     source for 30 day missions.
+  -  Human tended capability (as opposed to the old SSF sexist term
+     of man-tended capability) is achieved by the addition of the
+     US Common module. This is a modified version of the existing
+     SSF Lab module (docking ports are added for the International
+     Partners' labs, taking the place of the nodes on SSF). The
+     Shuttle can be docked to the station for 60 day missions.
+     The Orbiter would provide crew habitability & EVA capability.
+  -  International Human Tended. Add the NASDA & ESA modules, and
+     add another 20 kW of power
+  -  Permanent Human Presence Capability. Add a 3rd power module,
+     the U.S. habitation module, and an ACRV (Assured Crew Return
+     Vehicle).
+
+Option ""B"" - Space Station Freedom Derived
+The Option ""B"" team is based at LaRC, and is lead by Mike Griffin.
+This option looks alot like the existing SSF design, which we
+have all come to know and love :)
+
+This option assumes a lightweight external tank is available for
+use on all SSF assembly flights (so does option ""A""). Also, the 
+number of flights is computed for a 51.6 inclination orbit,
+for both options ""A"" and ""B"".
+
+The build-up occurs in six phases:
+  -  Initial Research Capability reached after 3 flights. Power
+     is transferred from the vehicle to the Orbiter/Spacelab, when
+     it visits.
+  -  Man-Tended Capability (Griffin has not yet adopted non-sexist
+     language) is achieved after 8 flights. The U.S. Lab is
+     deployed, and 1 solar power module provides 20 kW of power.
+  -  Permanent Human Presence Capability occurs after 10 flights, by
+     keeping one Orbiter on-orbit to use as an ACRV (so sometimes
+     there would be two Orbiters on-orbit - the ACRV, and the
+     second one that comes up for Logistics & Re-supply).
+  -  A ""Two Fault Tolerance Capability"" is achieved after 14 flights,
+     with the addition of a 2nd power module, another thermal
+     control system radiator, and more propulsion modules.
+  -  After 20 flights, the Internationals are on-board. More power,
+     the Habitation module, and an ACRV are added to finish the
+     assembly in 24 flights.
+
+Most of the systems currently on SSF are used as-is in this option, 
+with the exception of the data management system, which has major
+changes.
+
+Option C - Single Core Launch Station.
+This is the JSC lead option. Basically, you take a 23 ft diameter
+cylinder that's 92 ft long, slap 3 Space Shuttle Main Engines on
+the backside, put a nose cone on the top, attached it to a 
+regular shuttle external tank and a regular set of solid rocket
+motors, and launch the can. Some key features are:
+  - Complete end-to-end ground integration and checkout
+  - 4 tangentially mounted fixed solar panels
+  - body mounted radiators (which adds protection against
+    micrometeroid & orbital debris)
+  - 2 centerline docking ports (one on each end)
+  - 7 berthing ports
+  - a single pressurized volume, approximately 26,000 cubic feet
+    (twice the volume of skylab).
+  - 7 floors, center passageway between floors
+  - 10 kW of housekeeping power
+  - graceful degradation with failures (8 power channels, 4 thermal
+    loops, dual environmental control & life support system)
+  - increased crew time for utilization
+  - 1 micro-g thru out the core module
+"
+14,"From: jllee@acsu.buffalo.edu (Johnny L Lee)
+Subject: RE:  == MOVING SALE ===
+Summary: RE:  === MOVING SALE ===
+Organization: UB
+Lines: 44
+Nntp-Posting-Host: lictor.acsu.buffalo.edu
+
+Reduced Prices! 
+I have a list of things forsale on behalf of my brother, who's moving (moved
+already)
+
+								Offer:
+1) Black and Decker Duster Plus (Portable Hand Vaccum)	
+ 	purchased for $32, 					  $12
+
+2) SR-1000 Dual Cassette Portable Player, AM/FM
+5-Band graphics Equalizer, high speed dubing, Duo 
+Tape.Tape deck A, seems to have lost treble sound. 
+But, I bet  it's fixable.
+	purchased for $80					  $25
+
+3)Monolux Zoom MicroScope, up to 1200X magnification
+Made in Japan, includes case and accessories
+	purchased for $50					  $20
+
+4)Sunbeam 1400 Hair Dryer, the dryer you put your 
+head under/into. You know, the ones you see in the salons.
+(Don't ask me why my bro had it)
+	purchased for $60				          $24
+
+5)Everylast Speed Bag, all leather. Brand new, never 
+used								  $10
+
+6)Osterizer Pusle Matic Blender, with 10 speeds 
+and a cookbook, 5 years old					  $10
+	purchased for $50
+
+8)Binolux Binoculars . 7x35, extra wide angle
+525ft. at 1000yds. with case. very new.		                  $20
+
+9)Proctor and Silex Spray,Steam and Dry Iron.
+very new.							  $10
+
+
+Any questions, contact me thru e-mail and I will reply expeditously
+And always, S+H are not included, so please consider this.
+
+And lastly, I'm a very reasonable.Very Reasonable.
+
+					Thanks,
+						John
+"
+15,"From: mathew <mathew@mantis.co.uk>
+Subject: Re: <Political Atheists?
+Organization: Mantis Consultants, Cambridge. UK.
+X-Newsreader: rusnews v1.01
+Lines: 22
+
+kmr4@po.CWRU.edu (Keith M. Ryan) writes:
+> ( I am almost sure that Zyklon-B is immediate and painless method of 
+> death. If not, insert soem other form. )
+> 
+>         And, ethnic and minority groups have been killed, mutilated and 
+> exterminated through out history, so I guess it was not unusual.
+> 
+>         So, you would agree that the holocost would be allowed under the US 
+> Constitution?  [ in so far, the punishment. I doubt they recieved what would 
+> be considered a ""fair"" trial by US standards.
+
+Don't be so sure.  Look what happened to Japanese citizens in the US during
+World War II.  If you're prepared to say ""Let's round these people up and
+stick them in a concentration camp without trial"", it's only a short step to
+gassing them without trial.  After all, it seems that the Nazis originally
+only intended to imprison the Jews; the Final Solution was dreamt up partly
+because they couldn't afford to run the camps because of the devastation
+caused by Goering's Total War.  Those who weren't gassed generally died of
+malnutrition or disease.
+
+
+mathew
+"
+16,"From: ab@nova.cc.purdue.edu (Allen B)
+Subject: Re: TIFF: philosophical significance of 42
+Organization: Purdue University
+Lines: 39
+
+In article <prestonm.735400848@cs.man.ac.uk> prestonm@cs.man.ac.uk (Martin  
+Preston) writes:
+> Why not use the PD C library for reading/writing TIFF files? It took me a
+> good 20 minutes to start using them in your own app.
+
+I certainly do use it whenever I have to do TIFF, and it usually works
+very well.  That's not my point.  I'm >philosophically< opposed to it
+because of its complexity.
+
+This complexity has led to some programs' poor TIFF writers making
+some very bizarre files, other programs' inability to load TIFF
+images (though they'll save them, of course), and a general
+inability to interchange images between different environments
+despite the fact they all think they understand TIFF.
+
+As the saying goes, ""It's not me I'm worried about- it's all the
+>other<  assholes out there!""  I've had big trouble with misuse and
+abuse of TIFF over the years, and I chalk it all up to the immense (and
+unnecessary) complexity of the format.
+
+In the words of the TIFF 5.0 spec, Appendix G, page G-1 (capitalized
+emphasis mine):
+
+""The only problem with this sort of success is that TIFF was designed
+to be powerful and flexible, at the expense of simplicity.  It takes a
+fair amount of effort to handle all the options currently defined in
+this specification (PROBABLY NO APPLICATION DOES A COMPLETE JOB),
+and that is currently the only way you can be >sure< that you will be
+able to import any TIFF image, since there are so many
+image-generating applications out there now.""
+
+
+If a program (or worse all applications) can't read >every< TIFF
+image, that means there are some it won't- some that I might have to
+deal with.  Why would I want my images to be trapped in that format?  I
+don't and neither should anyone who agrees with my reasoning- not
+that anyone does, of course! :-)
+
+ab
+"
+17,"From: CPKJP@vm.cc.latech.edu (Kevin Parker)
+Subject: Insurance Rates on Performance Cars SUMMARY
+Organization: Louisiana Tech University
+Lines: 244
+NNTP-Posting-Host: vm.cc.latech.edu
+X-Newsreader: NNR/VM S_1.3.2
+
+     I recently posted an article asking what kind of rates single, male
+drivers under 25 yrs old were paying on performance cars. Here's a summary of
+the replies I received.
