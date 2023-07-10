@@ -4,87 +4,69 @@ import pandas as pd
 from typing import Union, List
 import pytest
 
-from pytorch_widedeep.preprocessing import TextPreprocessor
+from pytorch_widedeep.preprocessing import TextPreprocessor, ImagePreprocessor
 from pytorch_widedeep.models import BasicRNN, WideDeep
 from pytorch_widedeep.training import Trainer
 
-from pytorch_widedeep.preprocessing.base_preprocessor import (
-    BasePreprocessor,
-    check_is_fitted,
-)
-
+from pytorch_widedeep.stream.preprocessing.image_preprocessor import StreamImagePreprocessor
 from pytorch_widedeep.stream.preprocessing.text_preprocessor import StreamTextPreprocessor, Vocab, VocabBuilder
 from pytorch_widedeep.stream.training.trainer import StreamTrainer
 
-from sklearn.datasets import fetch_20newsgroups
-
-'''
-Do experiments based on auto-regressive models - can generate samples to check if it works
-
-1. Train text / language model and perform entire pipeline through the original API
-2. Repeat same test for the stream API
-
-'''
-
-def batch_pipeline(X: pd.DataFrame, preprocessor: BasePreprocessor):
-    X = preprocessor.fit_transform(X)
-    basic_rnn = BasicRNN(vocab_size=len(preprocessor.vocab.itos), hidden_dim=20, n_layers=2, padding_idx=0, embed_dim=80)
-    wd = WideDeep(deeptext=basic_rnn, pred_dim=len(categories))
-    trainer = Trainer(model=wd, objective='multiclass')
-
-    trainer.fit(X_text=X, target=y, n_epochs=10)
-    pred = trainer.predict(X_text=X)
-    return (sum(pred == y) / len(y))
-
-def stream_pipeline(X_path: str, preprocessor: BasePreprocessor, chunksize: int):
-    spp = preprocessor.fit(X_path, chunksize=chunksize) 
-
-    basic_rnn = BasicRNN(vocab_size=len(preprocessor.vocab.itos), hidden_dim=20, n_layers=2, padding_idx=0, embed_dim=80)
-    wd = WideDeep(deeptext=basic_rnn, pred_dim=len(categories))
-    trainer = Trainer(model=wd, objective='multiclass')
-
-    import pdb; pdb.set_trace()
-    # trainer.fit(X_text=X, target=y, n_epochs=10)
-    # pred = trainer.predict(X_text=X)
-    # return (sum(pred == y) / len(y))
+from pathlib import Path
 
 
-# tpp = TextPreprocessor('text_col')
-# acc = pipeline(X=None, X_path='stream_mc_test.csv', preprocessor=stream_tpp, chunksize=4096)
+data_path = '~/airbnb/airbnb/airbnb_sample.csv'
+image_path = '/home/krish/airbnb/airbnb/property_picture'
 
-# Investigate IterableDataset in dataloaders 
-# We want this to be inside the trainer API
+df = next(pd.read_csv(data_path, chunksize=1000))
 
+crossed_cols = [("property_type", "room_type")]
+already_dummies = [c for c in df.columns if "amenity" in c] + ["has_house_rules"]
+wide_cols = [
+    "is_location_exact",
+    "property_type",
+    "room_type",
+    "host_gender",
+    "instant_bookable",
+] + already_dummies
+cat_embed_cols = [(c, 16) for c in df.columns if "catg" in c] + [
+    ("neighbourhood_cleansed", 64),
+    ("cancellation_policy", 16),
+]
+continuous_cols = ["latitude", "longitude", "security_deposit", "extra_people"]
+already_standard = ["latitude", "longitude"]
+text_col = "description"
+# word_vectors_path = str(DATA_PATH / "glove.6B/glove.6B.100d.txt")
+img_col = "id"
+# img_path = str(DATA_PATH / "airbnb/property_picture")
+target = "yield"
 
-# assert len(stream_tpp.vocab.itos) == 28474
+target = df[target].values
 
-#len(tpp.vocab.itos)
+image_processor = StreamImagePreprocessor(img_col=img_col, img_path=image_path)
+image_processor.fit()
 
-twenty_train = fetch_20newsgroups()
-# X = pd.DataFrame(twenty_train['data'], columns=['text_col'])
-# X.to_csv('stream_mc_test.csv')
-y = twenty_train.target
-categories = twenty_train.target_names
+import pdb; pdb.set_trace()
 
-# import pdb; pdb.set_trace()
-
-X_path = './stream_mc_test.csv'
+# deepimage = Vision(
+#     pretrained_model_name="resnet18", n_trainable=0, head_hidden_dims=[200, 100]
+# )
 
 # batch_pipeline(X, TextPreprocessor('text_col'))
 
-text_preproc = StreamTextPreprocessor('text_col')
-text_preproc.fit(X_path, 1024*100)
+# text_preproc = StreamTextPreprocessor('text_col')
+# text_preproc.fit(X_path, 1024*100)
 
-basic_rnn = BasicRNN(vocab_size=len(text_preproc.vocab.itos), hidden_dim=20, n_layers=2, padding_idx=0, embed_dim=80)
-wd = WideDeep(deeptext=basic_rnn, pred_dim=len(categories))
-trainer = StreamTrainer(model=wd, objective='multiclass')
-trainer.fit(
-    X_train_path=X_path, 
-    target=y, 
-    preprocessor=text_preproc, 
-    n_epochs=10,
-    chunksize=3000
-)
+# basic_rnn = BasicRNN(vocab_size=len(text_preproc.vocab.itos), hidden_dim=20, n_layers=2, padding_idx=0, embed_dim=80)
+# wd = WideDeep(deeptext=basic_rnn, pred_dim=len(categories))
+# trainer = StreamTrainer(model=wd, objective='multiclass')
+# trainer.fit(
+#     X_train_path=X_path, 
+#     target=y, 
+#     preprocessor=text_preproc, 
+#     n_epochs=10,
+#     chunksize=3000
+# )
 
 # from pytorch_widedeep.stream._stream_ds import StreamTextDataset
 # from torch.utils.data import DataLoader
