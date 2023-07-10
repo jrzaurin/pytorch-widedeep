@@ -7,6 +7,7 @@ import numpy as np
 
 from pytorch_widedeep.preprocessing.base_preprocessor import BasePreprocessor, check_is_fitted
 
+from pytorch_widedeep.preprocessing import TextPreprocessor
 from pytorch_widedeep.utils.fastai_transforms import Tokens, Vocab, defaults
 from pytorch_widedeep.utils.text_utils import get_texts, build_embeddings_matrix, pad_sequences
 
@@ -43,7 +44,7 @@ class VocabBuilder:
         return Vocab(self.itos)
 
 
-class StreamTextPreprocessor(BasePreprocessor):
+class StreamTextPreprocessor(TextPreprocessor):
     def __init__(
         self,
         text_col: str,
@@ -56,7 +57,7 @@ class StreamTextPreprocessor(BasePreprocessor):
         n_cpus: Optional[int] = None,
         verbose: int = 1,
     ):
-        super(StreamTextPreprocessor, self).__init__()
+        super(StreamTextPreprocessor, self).__init__(text_col)
 
         self.text_col = text_col
         self.max_vocab = max_vocab
@@ -81,23 +82,6 @@ class StreamTextPreprocessor(BasePreprocessor):
             print("The vocabulary contains {} tokens".format(len(self.vocab.stoi)))
 
         return self
-    
-    def transform(self, text: str) -> np.ndarray:
-        check_is_fitted(self, attributes=["vocab"])
-        self.tokens = get_texts(text, n_cpus=1)
-        sequences = [self.vocab.numericalize(t) for t in self.tokens]
-        padded_seq = np.array(
-            [
-                pad_sequences(
-                    s,
-                    maxlen=self.maxlen,
-                    pad_first=self.pad_first,
-                    pad_idx=self.pad_idx,
-                )
-                for s in sequences
-            ]
-        )
-        return padded_seq
-   
+
     def fit_transform(self): # This doesn't work with streaming I think as an API
         pass 

@@ -66,12 +66,18 @@ class StreamTrainer(Trainer):
             preprocessor: StreamTextPreprocessor,
             batch_size: int = 32,
             n_epochs: int = 1,
+            chunksize: int = 1000,
             lds_weightt: Tensor = Tensor(0)
         ):
         
         train_loader = DataLoader(
-            StreamTextDataset(X_train_path, preprocessor), 
-            batch_size=batch_size
+            StreamTextDataset(
+                X_train_path, 
+                preprocessor=preprocessor, 
+                chunksize=chunksize
+            ), 
+            batch_size=batch_size,
+            drop_last=True
         )
         eval_set = None
         
@@ -81,20 +87,19 @@ class StreamTrainer(Trainer):
 
             self.train_running_loss = 0.0
             for batch_idx, (ix, data) in enumerate(train_loader):
-                # import pdb; pdb.set_trace()
-                print(batch_idx)
                 targett = torch.tensor(target[ix])
                 data = {'deeptext': data}
                 train_score, train_loss = self._train_step(
                     data, targett, batch_idx, epoch, lds_weightt
                 )
+            print(f"{epoch} loss: ", train_loss)
                 # print_loss_and_metric(batch_idx, train_loss, train_score)
-                self.callback_container.on_batch_end(batch=batch_idx)
+                # self.callback_container.on_batch_end(batch=batch_idx)
 
-            epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
+            # epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
 
             on_epoch_end_metric = None
-            self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
+            # self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
 
-        self.callback_container.on_train_end(epoch_logs)
+        # self.callback_container.on_train_end(epoch_logs)
         self.model.train() 

@@ -61,10 +61,12 @@ def stream_pipeline(X_path: str, preprocessor: BasePreprocessor, chunksize: int)
 #len(tpp.vocab.itos)
 
 twenty_train = fetch_20newsgroups()
-X = pd.DataFrame(twenty_train['data'], columns=['text_col'])
+# X = pd.DataFrame(twenty_train['data'], columns=['text_col'])
 # X.to_csv('stream_mc_test.csv')
 y = twenty_train.target
 categories = twenty_train.target_names
+
+# import pdb; pdb.set_trace()
 
 X_path = './stream_mc_test.csv'
 
@@ -80,15 +82,16 @@ trainer.fit(
     X_train_path=X_path, 
     target=y, 
     preprocessor=text_preproc, 
-    n_epochs=1
+    n_epochs=10,
+    chunksize=3000
 )
 
 # from pytorch_widedeep.stream._stream_ds import StreamTextDataset
 # from torch.utils.data import DataLoader
 
 # l = DataLoader(
-#             StreamTextDataset(X_path, preprocessor=text_preproc), 
-#             batch_size=5,
+#             StreamTextDataset(X_path, preprocessor=text_preproc, chunksize=5), 
+#             batch_size=1,
 #             drop_last=True
 #         )
 
