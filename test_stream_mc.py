@@ -5,7 +5,7 @@ from typing import Union, List
 import pytest
 
 from pytorch_widedeep.preprocessing import TextPreprocessor, ImagePreprocessor
-from pytorch_widedeep.models import BasicRNN, WideDeep
+from pytorch_widedeep.models import BasicRNN, WideDeep, Vision
 from pytorch_widedeep.training import Trainer
 
 from pytorch_widedeep.stream.preprocessing.image_preprocessor import StreamImagePreprocessor
@@ -43,23 +43,36 @@ target = "yield"
 
 target = df[target].values
 
-# import pdb; pdb.set_trace()
 
-# deepimage = Vision(
-#     pretrained_model_name="resnet18", n_trainable=0, head_hidden_dims=[200, 100]
-# )
+# Fit preprocessors
+text_preproc = StreamTextPreprocessor(text_col)
+text_preproc.fit(data_path, 1024*100)
 
-# batch_pipeline(X, TextPreprocessor('text_col'))
-# basic_rnn = BasicRNN(vocab_size=len(text_preproc.vocab.itos), hidden_dim=20, n_layers=2, padding_idx=0, embed_dim=80)
-# wd = WideDeep(deeptext=basic_rnn, pred_dim=len(categories))
-# trainer = StreamTrainer(model=wd, objective='multiclass')
-# trainer.fit(
-#     X_train_path=X_path, 
-#     target=y, 
-#     preprocessor=text_preproc, 
-#     n_epochs=10,
-#     chunksize=3000
-# )
+image_processor = StreamImagePreprocessor(img_col=img_col, img_path=image_path)
+image_processor.fit()
+
+# Choose models
+deepimage = Vision(
+     pretrained_model_name="resnet18", n_trainable=0, head_hidden_dims=[200, 100]
+ )
+basic_rnn = BasicRNN(vocab_size=len(text_preproc.vocab.itos), hidden_dim=20, n_layers=2, padding_idx=0, embed_dim=80)
+wd = WideDeep(deeptext=basic_rnn)
+
+# Train
+trainer = StreamTrainer(
+    model=wd, 
+    objective='regression',
+    X_path=data_path,
+    img_col=img_col,
+    text_col=text_col,
+    target_col=target,
+    text_preprocessor=text_preproc,
+    img_preprocessor=image_processor
+)
+trainer.fit(
+     n_epochs=10,
+     batch_size=5
+ )
 
 from pytorch_widedeep.stream._stream_ds import StreamTextDataset, StreamWideDeepDataset
 # from torch.utils.data import DataLoader
@@ -70,21 +83,21 @@ from pytorch_widedeep.stream._stream_ds import StreamTextDataset, StreamWideDeep
 #             drop_last=True
 #         )
 
-text_preproc = StreamTextPreprocessor(text_col)
-text_preproc.fit(data_path, 1024*100)
+# text_preproc = StreamTextPreprocessor(text_col)
+# text_preproc.fit(data_path, 1024*100)
 
-image_processor = StreamImagePreprocessor(img_col=img_col, img_path=image_path)
-image_processor.fit()
+# image_processor = StreamImagePreprocessor(img_col=img_col, img_path=image_path)
+# image_processor.fit()
 
-wd = StreamWideDeepDataset(
-    data_path, 
-    img_col, 
-    text_col,
-    text_preproc,
-    image_processor
-)
+# wd = StreamWideDeepDataset(
+#     data_path, 
+#     img_col, 
+#     text_col,
+#     text_preproc,
+#     image_processor
+# )
 
-next(enumerate(wd))
+# next(enumerate(wd))
 
 # print(next(enumerate(l)))
 # print(next(enumerate(l)))

@@ -78,7 +78,7 @@ class StreamTrainer(Trainer):
             self, 
             batch_size: int = 32,
             n_epochs: int = 1,
-            lds_weightt: Tensor = Tensor(0),
+            lds_weightt: Tensor = Tensor(0), #TODO: Fix this
             with_lds: bool = False
         ):
         

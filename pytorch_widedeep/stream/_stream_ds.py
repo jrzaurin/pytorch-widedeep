@@ -1,7 +1,8 @@
 import glob
-from typing import Iterator
+import torch
 import cv2
 import pandas as pd
+from typing import Iterator
 from torch.utils.data import IterableDataset, Dataset
 
 from pytorch_widedeep.utils.fastai_transforms import Vocab
@@ -78,7 +79,35 @@ class StreamWideDeepDataset(IterableDataset):
 
     def __iter__(self):
         for chunk in pd.read_csv(self.X_path, chunksize=self.chunksize):
-            imgs = self.img_preprocessor.transform(chunk) 
+            imgs = self.img_preprocessor.transform(chunk)  # TODO: add prepare images
             texts = self.text_preprocessor.transform(chunk)
             target = chunk[self.target_col].values
             yield imgs, texts, target
+
+    def _prepare_images(self, idx):
+        # if an image dataset is used, make sure is in the right format to
+        # be ingested by the conv layers
+        xdi = self.X_img[idx]
+        # if int must be uint8
+        if "int" in str(xdi.dtype) and "uint8" != str(xdi.dtype):
+            xdi = xdi.astype("uint8")
+        # if int float must be float32
+        if "float" in str(xdi.dtype) and "float32" != str(xdi.dtype):
+            xdi = xdi.astype("float32")
+        # if there are no transforms, or these do not include ToTensor(),
+        # then we need to  replicate what Tensor() does -> transpose axis
+        # and normalize if necessary
+        if not self.transforms or "ToTensor" not in self.transforms_names:
+            if xdi.ndim == 2:
+                xdi = xdi[:, :, None]
+            xdi = xdi.transpose(2, 0, 1)
+            if "int" in str(xdi.dtype):
+                xdi = (xdi / xdi.max()).astype("float32")
+        # if ToTensor() is included, simply apply transforms
+        if "ToTensor" in self.transforms_names:
+            xdi = self.transforms(xdi)
+        # else apply transforms on the result of calling torch.tensor on
+        # xdi after all the previous manipulation
+        elif self.transforms:
+            xdi = self.transforms(torch.tensor(xdi))
+        return xdi
