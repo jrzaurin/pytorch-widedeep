@@ -74,8 +74,7 @@ class StreamImagePreprocessor(BasePreprocessor):
 
         return self
 
-    def transform(self, image_path: str) -> np.ndarray:
-        # Transform should happen in the StreamImageDataset when yielding the next batch
+    def transform(self, df: pd.DataFrame) -> np.ndarray:
         check_is_fitted(self, attributes=["aap"])
         image_list = df[self.img_col].tolist()
         if self.verbose:

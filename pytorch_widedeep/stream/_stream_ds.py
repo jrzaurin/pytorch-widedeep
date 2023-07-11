@@ -57,16 +57,28 @@ class StreamImageDataset(Dataset):
 
 
 class StreamWideDeepDataset(IterableDataset):
-    # Accepts Stream Datasets, synchronizes the yields.
     def __init__(
             self,
-            X_text: StreamTextDataset,
-            X_img: StreamImageDataset
+            X_path: str,
+            img_col: str,
+            text_col: str,
+            target_col: str,
+            text_preprocessor: StreamTextPreprocessor,
+            img_preprocessor: StreamImagePreprocessor,
+            chunksize: int = 3
         ):
         super(StreamWideDeepDataset).__init__()
-        self.X_text = X_text
-        self.X_img = X_img
+        self.X_path = X_path
+        self.img_col = img_col
+        self.text_col = text_col
+        self.target_col = target_col
+        self.text_preprocessor = text_preprocessor
+        self.img_preprocessor = img_preprocessor
+        self.chunksize = chunksize
 
     def __iter__(self):
-        
-       
+        for chunk in pd.read_csv(self.X_path, chunksize=self.chunksize):
+            imgs = self.img_preprocessor.transform(chunk) 
+            texts = self.text_preprocessor.transform(chunk)
+            target = chunk[self.target_col].values
+            yield imgs, texts, target

@@ -54,39 +54,47 @@ from pytorch_widedeep.stream._stream_ds import StreamTextDataset, StreamWideDeep
 class StreamTrainer(Trainer):
     def __init__(
             self,
-            X_text_path: str,
-            X_img_path: str,
             model: WideDeep, 
-            objective: str 
+            objective: str,
+            X_path: str,
+            img_col: str,
+            text_col: str,
+            target_col: str,
+            text_preprocessor: StreamTextPreprocessor,
+            img_preprocessor: StreamImagePreprocessor,
+            fetch_size: int = 5 # How many examples to load into memory at once.
         ):
         super().__init__(model, objective)
-        self.X_text_path = X_text_path
-        self.X_img_path = X_img_path
+        self.X_path = X_path
+        self.img_col = img_col
+        self.text_col = text_col
+        self.target_col = target_col
+        self.text_preprocessor = text_preprocessor
+        self.img_preprocessor = img_preprocessor
+        self.fetch_size = fetch_size
         self.with_lds = False
 
     def fit(
             self, 
-            text_preprocessor: StreamTextPreprocessor,
-            img_preprocessor: StreamImagePreprocessor,
-            target: np.ndarray = None,
             batch_size: int = 32,
             n_epochs: int = 1,
-            chunksize: int = 1000,
             lds_weightt: Tensor = Tensor(0),
             with_lds: bool = False
         ):
         
         self.with_lds = with_lds
 
-        # We want to have a dataloader with a WideDeepDataset
-        # This WideDeepDataset should wrap our streaming iterable datasets
-        # Matching indices of yields is important here
-
         # Move into a function that constructs this similar to _build_train_dict
         # As we need to cater to different combos of each mode
-        imgs = StreamImageDataset(self.X_img_path, img_preprocessor)
-        txt = StreamTextDataset(self.X_text_path, text_preprocessor)
-        train_wd = StreamWideDeepDataset(txt, imgs)
+        train_wd = StreamWideDeepDataset(
+            self.X_path,
+            self.img_col,
+            self.text_col,
+            self.target_col,
+            self.text_preprocessor,
+            self.img_preprocessor,
+            self.fetch_size
+        )
 
         train_loader = DataLoader(
             train_wd, 
