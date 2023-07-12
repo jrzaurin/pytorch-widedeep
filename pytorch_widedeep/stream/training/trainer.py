@@ -3,6 +3,7 @@ import warnings
 from inspect import signature
 from pathlib import Path
 
+import pandas as pd
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -56,19 +57,16 @@ class StreamTrainer(Trainer):
             self,
             model: WideDeep, 
             objective: str,
-            X_path: str,
-            target_col: str,
-            img_col: str = None,
-            text_col: str = None,
+            custom_loss_function: Optional[nn.Module] = None,
             text_preprocessor: StreamTextPreprocessor = None,
             img_preprocessor: StreamImagePreprocessor = None,
             fetch_size: int = 5 # How many examples to load into memory at once.
-        ):
-        super().__init__(model, objective)
-        self.X_path = X_path
-        self.img_col = img_col
-        self.text_col = text_col
-        self.target_col = target_col
+    ):
+        super().__init__(
+            model=model, 
+            objective=objective,
+            custom_loss_function=custom_loss_function
+        )
         self.text_preprocessor = text_preprocessor
         self.img_preprocessor = img_preprocessor
         self.fetch_size = fetch_size
@@ -76,6 +74,11 @@ class StreamTrainer(Trainer):
 
     def fit(
             self, 
+            X_train_path: Optional[str] = None,
+            X_val_path: Optional[str] = None,
+            target_col: str = None,
+            img_col: str = None,
+            text_col: str = None,
             batch_size: int = 32,
             n_epochs: int = 1,
             lds_weightt: Tensor = Tensor(0), #TODO: Fix this
@@ -84,45 +87,45 @@ class StreamTrainer(Trainer):
         
         self.with_lds = with_lds
 
-        # Move into a function that constructs this similar to _build_train_dict
-        # As we need to cater to different combos of each mode
-        train_wd = StreamWideDeepDataset(
-            X_path=self.X_path,
-            target_col=self.target_col,
-            img_col=self.img_col,
-            text_col=self.text_col,
+        train_set = StreamWideDeepDataset(
+            X_path=X_train_path,
+            target_col=target_col,
+            img_col=img_col,
+            text_col=text_col,
             text_preprocessor=self.text_preprocessor,
             img_preprocessor=self.img_preprocessor,
             fetch_size=self.fetch_size
         )
 
-        # Use _trainer_utils _build_train_dict!
         train_loader = DataLoader(
-            train_wd, 
+            train_set, 
             batch_size=batch_size,
             drop_last=True
         )
 
-        # TODO: enable validation callbacks
-        # eval_set = None
-        # if eval_set is not None:
-        #     train_loader = DataLoader(
-        #         StreamTextDataset(
-        #             X_val_path, 
-        #             preprocessor=preprocessor, 
-        #             chunksize=chunksize
-        #         ), 
-        #     batch_size=batch_size,
-        #     drop_last=True
-        # )
+        if X_val_path is not None:
+            val_set = StreamWideDeepDataset(
+                X_path=X_val_path,
+                target_col=target_col,
+                img_col=img_col,
+                text_col=text_col,
+                text_preprocessor=self.text_preprocessor,
+                img_preprocessor=self.img_preprocessor,
+                fetch_size=self.fetch_size
+            )
+            val_loader = DataLoader(
+                val_set, 
+                batch_size=batch_size,
+                drop_last=True
+            )
 
         for epoch in range(n_epochs):
             epoch_logs: Dict[str, float] = {}
-            self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
+            # self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
 
             self.train_running_loss = 0.0
             for batch_idx, (data, targett) in enumerate(train_loader):
-                breakpoint()
+                # breakpoint()
                 train_score, train_loss = self._train_step(
                     data, targett, batch_idx, epoch, lds_weightt
                 )

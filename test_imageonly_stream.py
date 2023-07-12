@@ -34,7 +34,7 @@ import shutil
 '''
 TODO:
 1. Enable shuffling inputs
-2. Get vision-only mnist training working
+2. Get vision-only mnist training working   DONE
 3. enable validation in training loop
 4. enable callbacks
 5. add unit tests
@@ -42,16 +42,20 @@ TODO:
 7. review with javier for next steps
 '''
 
+# X = pd.read_csv('mnist_samples.csv')
+# X.sample(frac=1).to_csv('mnist_shuffled.csv')
+
+#%%
 img_col = 'imgs'
 target_col = 'labels'
-data_path = 'mnist_samples.csv'
+data_path = 'mnist_shuffled.csv'
 img_path = '/home/krish/Downloads/MNIST Dataset JPG format/sample_imgs'
 
 image_processor = StreamImagePreprocessor(img_col=img_col, img_path=img_path)
 image_processor.fit()
 
 deepimage = Vision(
-     pretrained_model_name="resnet18", n_trainable=0, head_hidden_dims=[200, 100]
+     pretrained_model_name="efficientnet_b0", n_trainable=1, head_hidden_dims=[200, 100]
 )
 
 # %%
@@ -60,14 +64,15 @@ wd = WideDeep(deepimage=deepimage, pred_dim=10)
 trainer = StreamTrainer(
     model=wd, 
     objective='multiclass',
-    X_path=data_path,
-    img_col=img_col,
-    target_col=target_col,
     img_preprocessor=image_processor,
     fetch_size=250
 )
 trainer.fit(
-     n_epochs=5,
-     batch_size=32
+    X_train_path=data_path,
+    X_val_path=data_path,
+    img_col=img_col,
+    target_col=target_col,    
+    n_epochs=1,
+    batch_size=32
  )
 # %%

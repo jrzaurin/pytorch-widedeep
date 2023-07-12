@@ -36,14 +36,13 @@ class StreamWideDeepDataset(IterableDataset):
         img_preprocessor.verbose = False
 
     def __iter__(self):
-        # Make this also be able to yield rows from an in-memory X
         for chunk in pd.read_csv(self.X_path, chunksize=self.fetch_size):
             text = repeat(None, self.fetch_size)
             imgs = repeat(None, self.fetch_size)
             if self.text_col:
                 text = self.text_preprocessor.transform(chunk)
             if self.img_col:
-                imgs = self.img_preprocessor.transform(chunk)  # TODO: add prepare images
+                imgs = self.img_preprocessor.transform(chunk) 
 
             target = chunk[self.target_col].values
             for im, txt, tar in zip(imgs, text, target):
