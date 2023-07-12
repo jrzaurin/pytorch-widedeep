@@ -96,6 +96,7 @@ class StreamTrainer(Trainer):
             self.fetch_size
         )
 
+        # Use _trainer_utils _build_train_dict!
         train_loader = DataLoader(
             train_wd, 
             batch_size=batch_size,
@@ -114,23 +115,19 @@ class StreamTrainer(Trainer):
         #     batch_size=batch_size,
         #     drop_last=True
         # )
-        
+
         for epoch in range(n_epochs):
             epoch_logs: Dict[str, float] = {}
             self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
 
             self.train_running_loss = 0.0
-            for batch_idx, (ix, data) in enumerate(train_loader):
-                targett = torch.tensor(target[ix])
-
-                # TODO: should build WideDeepDataset here (if API works)
-                # Use _trainer_utils _build_train_dict!
-                data = {'deeptext': data}
-
+            for batch_idx, (data, targett) in enumerate(train_loader):
+                # breakpoint()
                 train_score, train_loss = self._train_step(
                     data, targett, batch_idx, epoch, lds_weightt
                 )
-                print_loss_and_metric(batch_idx, train_loss, train_score)
+                print(train_loss)
+                # print_loss_and_metric(batch_idx, train_loss, train_score)
                 # self.callback_container.on_batch_end(batch=batch_idx)
 
             # epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")

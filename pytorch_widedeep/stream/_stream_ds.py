@@ -2,6 +2,7 @@ import glob
 import torch
 import cv2
 import pandas as pd
+from sklearn.utils import Bunch
 from typing import Iterator
 from torch.utils.data import IterableDataset, Dataset
 
@@ -66,7 +67,7 @@ class StreamWideDeepDataset(IterableDataset):
             target_col: str,
             text_preprocessor: StreamTextPreprocessor,
             img_preprocessor: StreamImagePreprocessor,
-            chunksize: int = 3
+            fetch_size: int = 3
         ):
         super(StreamWideDeepDataset).__init__()
         self.X_path = X_path
@@ -75,14 +76,18 @@ class StreamWideDeepDataset(IterableDataset):
         self.target_col = target_col
         self.text_preprocessor = text_preprocessor
         self.img_preprocessor = img_preprocessor
-        self.chunksize = chunksize
+        self.fetch_size = fetch_size 
 
     def __iter__(self):
-        for chunk in pd.read_csv(self.X_path, chunksize=self.chunksize):
+        for chunk in pd.read_csv(self.X_path, chunksize=self.fetch_size):
             imgs = self.img_preprocessor.transform(chunk)  # TODO: add prepare images
-            texts = self.text_preprocessor.transform(chunk)
+            text = self.text_preprocessor.transform(chunk)
             target = chunk[self.target_col].values
-            yield imgs, texts, target
+            for im, txt, tar in zip(imgs, text, target):
+                x = Bunch()
+                x.deepimage = im
+                x.deeptext = txt
+                yield x, tar 
 
     def _prepare_images(self, idx):
         # if an image dataset is used, make sure is in the right format to

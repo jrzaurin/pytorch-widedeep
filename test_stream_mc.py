@@ -39,9 +39,9 @@ text_col = "description"
 # word_vectors_path = str(DATA_PATH / "glove.6B/glove.6B.100d.txt")
 img_col = "id"
 # img_path = str(DATA_PATH / "airbnb/property_picture")
-target = "yield"
+target_col = "yield"
 
-target = df[target].values
+# target = df[target].values
 
 
 # Fit preprocessors
@@ -65,13 +65,14 @@ trainer = StreamTrainer(
     X_path=data_path,
     img_col=img_col,
     text_col=text_col,
-    target_col=target,
+    target_col=target_col,
     text_preprocessor=text_preproc,
-    img_preprocessor=image_processor
+    img_preprocessor=image_processor,
+    fetch_size=1000
 )
 trainer.fit(
-     n_epochs=10,
-     batch_size=5
+     n_epochs=1,
+     batch_size=32
  )
 
 from pytorch_widedeep.stream._stream_ds import StreamTextDataset, StreamWideDeepDataset
