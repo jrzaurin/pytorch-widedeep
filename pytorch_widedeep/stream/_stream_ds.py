@@ -1,3 +1,4 @@
+from itertools import repeat
 import torch
 import pandas as pd
 from sklearn.utils import Bunch
@@ -35,7 +36,7 @@ class StreamWideDeepDataset(IterableDataset):
         img_preprocessor.verbose = False
 
     def __iter__(self):
-        from itertools import repeat
+        # Make this also be able to yield rows from an in-memory X
         for chunk in pd.read_csv(self.X_path, chunksize=self.fetch_size):
             text = repeat(None, self.fetch_size)
             imgs = repeat(None, self.fetch_size)

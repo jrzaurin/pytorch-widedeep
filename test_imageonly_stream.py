@@ -27,6 +27,21 @@ import shutil
 
 # %%
 
+# User is responsible for shuffling their inputs?
+# We should give an option to pass X as either a path or a dataframe
+# Images can be grabbed from disk as needed by the WDIterator
+
+'''
+TODO:
+1. Enable shuffling inputs
+2. Get vision-only mnist training working
+3. enable validation in training loop
+4. enable callbacks
+5. add unit tests
+6. add support for image transforms
+7. review with javier for next steps
+'''
+
 img_col = 'imgs'
 target_col = 'labels'
 data_path = 'mnist_samples.csv'
@@ -41,10 +56,10 @@ deepimage = Vision(
 
 # %%
 
-wd = WideDeep(deepimage=deepimage)
+wd = WideDeep(deepimage=deepimage, pred_dim=10)
 trainer = StreamTrainer(
     model=wd, 
-    objective='regression',
+    objective='multiclass',
     X_path=data_path,
     img_col=img_col,
     target_col=target_col,
@@ -52,7 +67,7 @@ trainer = StreamTrainer(
     fetch_size=250
 )
 trainer.fit(
-     n_epochs=20,
-     batch_size=64
+     n_epochs=5,
+     batch_size=32
  )
 # %%

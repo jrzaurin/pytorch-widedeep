@@ -122,7 +122,7 @@ class StreamTrainer(Trainer):
 
             self.train_running_loss = 0.0
             for batch_idx, (data, targett) in enumerate(train_loader):
-                # breakpoint()
+                breakpoint()
                 train_score, train_loss = self._train_step(
                     data, targett, batch_idx, epoch, lds_weightt
                 )
