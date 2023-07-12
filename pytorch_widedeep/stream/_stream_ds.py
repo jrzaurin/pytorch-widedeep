@@ -1,6 +1,7 @@
 from itertools import repeat
 import torch
 import pandas as pd
+from typing import Optional
 from sklearn.utils import Bunch
 from torch.utils.data import IterableDataset
 
@@ -13,10 +14,10 @@ class StreamWideDeepDataset(IterableDataset):
             self,
             X_path: str,
             target_col: str,
-            img_col: str = None,
-            text_col: str = None,
-            text_preprocessor: StreamTextPreprocessor = None,
-            img_preprocessor: StreamImagePreprocessor = None,
+            img_col: Optional[str] = None,
+            text_col: Optional[str] = None,
+            text_preprocessor: Optional[StreamTextPreprocessor] = None,
+            img_preprocessor: Optional[StreamImagePreprocessor] = None,
             transforms = None,
             fetch_size: int = 64
         ):

@@ -81,6 +81,7 @@ class StreamTrainer(Trainer):
             text_col: str = None,
             batch_size: int = 32,
             n_epochs: int = 1,
+            validation_freq: int = 1,
             lds_weightt: Tensor = Tensor(0), #TODO: Fix this
             with_lds: bool = False
         ):
@@ -100,11 +101,15 @@ class StreamTrainer(Trainer):
         train_loader = DataLoader(
             train_set, 
             batch_size=batch_size,
-            drop_last=True
+            drop_last=False
         )
 
+        train_steps = 0
+        for _, _ in enumerate(train_loader):
+            train_steps += 1 
+
         if X_val_path is not None:
-            val_set = StreamWideDeepDataset(
+            eval_set = StreamWideDeepDataset(
                 X_path=X_val_path,
                 target_col=target_col,
                 img_col=img_col,
@@ -113,30 +118,72 @@ class StreamTrainer(Trainer):
                 img_preprocessor=self.img_preprocessor,
                 fetch_size=self.fetch_size
             )
-            val_loader = DataLoader(
-                val_set, 
+            eval_loader = DataLoader(
+                eval_set, 
                 batch_size=batch_size,
                 drop_last=True
             )
-
+            
+            eval_steps = 0
+            for _, _ in enumerate(train_loader):
+                eval_steps += 1 
+        
+        self.callback_container.on_train_begin(
+            {"batch_size": batch_size, "train_steps": train_steps, "n_epochs": n_epochs}
+        )
+            
         for epoch in range(n_epochs):
             epoch_logs: Dict[str, float] = {}
-            # self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
+            self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
 
             self.train_running_loss = 0.0
-            for batch_idx, (data, targett) in enumerate(train_loader):
-                # breakpoint()
-                train_score, train_loss = self._train_step(
-                    data, targett, batch_idx, epoch, lds_weightt
-                )
-                print(train_loss)
-                # print_loss_and_metric(batch_idx, train_loss, train_score)
-                # self.callback_container.on_batch_end(batch=batch_idx)
 
-            # epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
+            with trange(train_steps, disable=self.verbose != 1) as t:
+                for batch_idx, (data, targett) in zip(t, train_loader):
+                    t.set_description("epoch %i" % (epoch + 1))
+                    train_score, train_loss = self._train_step(
+                        data, targett, batch_idx, epoch, lds_weightt
+                    )
+                    print_loss_and_metric(t, train_loss, train_score)
+                    self.callback_container.on_batch_end(batch=batch_idx)
+            epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
 
             on_epoch_end_metric = None
-            # self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
+            if eval_set is not None and epoch % validation_freq == (
+                validation_freq - 1
+            ):
+                self.callback_container.on_eval_begin()
+                self.valid_running_loss = 0.0
+                with trange(eval_steps, disable=self.verbose != 1) as v:
+                    for i, (data, targett) in zip(v, eval_loader):
+                        v.set_description("valid")
+                        val_score, val_loss = self._eval_step(data, targett, i)
+                        print_loss_and_metric(v, val_loss, val_score)
+                epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
 
-        # self.callback_container.on_train_end(epoch_logs)
-        self.model.train() 
+                if self.reducelronplateau:
+                    if self.reducelronplateau_criterion == "loss":
+                        on_epoch_end_metric = val_loss
+                    else:
+                        on_epoch_end_metric = val_score[
+                            self.reducelronplateau_criterion
+                        ]
+            else:
+                if self.reducelronplateau:
+                    raise NotImplementedError(
+                        "ReduceLROnPlateau scheduler can be used only with validation data."
+                    )
+            self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
+
+            if self.early_stop:
+                self.callback_container.on_train_end(epoch_logs)
+                break
+
+            if self.model.with_fds:
+                self._update_fds_stats(train_loader, epoch)
+
+        self.callback_container.on_train_end(epoch_logs)
+        if self.model.is_tabnet:
+            self._compute_feature_importance(train_loader)
+        self._restore_best_weights()
+        self.model.train()

@@ -83,5 +83,8 @@ class StreamTextPreprocessor(TextPreprocessor):
 
         return self
 
-    def fit_transform(self): # This doesn't work with streaming I think as an API
-        pass 
+    def fit_transform(self):
+        raise NotImplementedError('''
+            fit_transform is not applicable for a StreamTextPreprocessor.
+            Fit should be called prior to passing the processor into the StreamTrainer.
+        ''')
