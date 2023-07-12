@@ -48,7 +48,7 @@ from pytorch_widedeep.wdtypes import Dict, LRScheduler, List, Module, Optimizer,
 
 from pytorch_widedeep.stream.preprocessing.text_preprocessor import StreamTextPreprocessor
 from pytorch_widedeep.stream.preprocessing.image_preprocessor import StreamImagePreprocessor
-from pytorch_widedeep.stream._stream_ds import StreamTextDataset, StreamWideDeepDataset, StreamImageDataset
+from pytorch_widedeep.stream._stream_ds import StreamWideDeepDataset
 
 
 class StreamTrainer(Trainer):
@@ -57,11 +57,11 @@ class StreamTrainer(Trainer):
             model: WideDeep, 
             objective: str,
             X_path: str,
-            img_col: str,
-            text_col: str,
             target_col: str,
-            text_preprocessor: StreamTextPreprocessor,
-            img_preprocessor: StreamImagePreprocessor,
+            img_col: str = None,
+            text_col: str = None,
+            text_preprocessor: StreamTextPreprocessor = None,
+            img_preprocessor: StreamImagePreprocessor = None,
             fetch_size: int = 5 # How many examples to load into memory at once.
         ):
         super().__init__(model, objective)
@@ -87,13 +87,13 @@ class StreamTrainer(Trainer):
         # Move into a function that constructs this similar to _build_train_dict
         # As we need to cater to different combos of each mode
         train_wd = StreamWideDeepDataset(
-            self.X_path,
-            self.img_col,
-            self.text_col,
-            self.target_col,
-            self.text_preprocessor,
-            self.img_preprocessor,
-            self.fetch_size
+            X_path=self.X_path,
+            target_col=self.target_col,
+            img_col=self.img_col,
+            text_col=self.text_col,
+            text_preprocessor=self.text_preprocessor,
+            img_preprocessor=self.img_preprocessor,
+            fetch_size=self.fetch_size
         )
 
         # Use _trainer_utils _build_train_dict!

@@ -4,9 +4,7 @@ import pandas as pd
 from typing import Union, List
 import pytest
 
-from pytorch_widedeep.preprocessing import TextPreprocessor, ImagePreprocessor
 from pytorch_widedeep.models import BasicRNN, WideDeep, Vision
-from pytorch_widedeep.training import Trainer
 
 from pytorch_widedeep.stream.preprocessing.image_preprocessor import StreamImagePreprocessor
 from pytorch_widedeep.stream.preprocessing.text_preprocessor import StreamTextPreprocessor, Vocab, VocabBuilder
@@ -56,7 +54,7 @@ deepimage = Vision(
      pretrained_model_name="resnet18", n_trainable=0, head_hidden_dims=[200, 100]
  )
 basic_rnn = BasicRNN(vocab_size=len(text_preproc.vocab.itos), hidden_dim=20, n_layers=2, padding_idx=0, embed_dim=80)
-wd = WideDeep(deeptext=basic_rnn)
+wd = WideDeep(deeptext=basic_rnn, deepimage=deepimage)
 
 # Train
 trainer = StreamTrainer(
@@ -68,11 +66,11 @@ trainer = StreamTrainer(
     target_col=target_col,
     text_preprocessor=text_preproc,
     img_preprocessor=image_processor,
-    fetch_size=1000
+    fetch_size=250
 )
 trainer.fit(
-     n_epochs=1,
-     batch_size=32
+     n_epochs=20,
+     batch_size=64
  )
 
 from pytorch_widedeep.stream._stream_ds import StreamTextDataset, StreamWideDeepDataset
