@@ -86,7 +86,7 @@ trainer.fit(
     n_epochs=1,
     batch_size=32,
     custom_dataloader=DataLoaderImbalanced,
-    oversample_mul=5,
+    **{"oversample_mul": 5},
 )
 print(
     "Training time[s]: {}".format(

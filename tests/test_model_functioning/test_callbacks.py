@@ -575,6 +575,7 @@ def test_early_stopping_restore_weights_with_state():
     # we load the weights for the best epoch and these should match those of
     # the original model if early_stopping worked
     new_model.load_state_dict(torch.load(full_best_epoch_path))
+    new_model.to(next(model.parameters()).device)
 
     shutil.rmtree("tests/test_model_functioning/modelcheckpoint/")
 
@@ -628,6 +629,7 @@ def test_model_checkpoint_restore_weights():
     )
 
     new_model.load_state_dict(torch.load(full_best_epoch_path))
+    new_model.to(next(model.parameters()).device)
 
     shutil.rmtree("tests/test_model_functioning/modelcheckpoint/")
 
