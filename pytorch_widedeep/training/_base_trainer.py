@@ -1,5 +1,6 @@
 import os
 import sys
+import warnings
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -130,17 +131,34 @@ class BaseTrainer(ABC):
     ):
         raise NotImplementedError("Trainer.save method not implemented")
 
-    def _restore_best_weights(self):
-        already_restored = any(
-            [
-                (
-                    callback.__class__.__name__ == "EarlyStopping"
-                    and callback.restore_best_weights
-                )
-                for callback in self.callback_container.callbacks
-            ]
-        )
+    def _restore_best_weights(self):  # noqa: C901
+        early_stopping_min_delta = None
+        model_checkpoint_min_delta = None
+        already_restored = False
+
+        for callback in self.callback_container.callbacks:
+            if (
+                callback.__class__.__name__ == "EarlyStopping"
+                and callback.restore_best_weights
+            ):
+                early_stopping_min_delta = callback.min_delta
+                already_restored = True
+
+            if callback.__class__.__name__ == "ModelCheckpoint":
+                model_checkpoint_min_delta = callback.min_delta
+
+        if (
+            early_stopping_min_delta is not None
+            and model_checkpoint_min_delta is not None
+        ) and (early_stopping_min_delta != model_checkpoint_min_delta):
+            warnings.warn(
+                "'min_delta' is different in the 'EarlyStopping' and 'ModelCheckpoint' callbacks. "
+                "This implies a different definition of 'improvement' for these two callbacks",
+                UserWarning,
+            )
+
         if already_restored:
+            # already restored via EarlyStopping
             pass
         else:
             for callback in self.callback_container.callbacks:
