@@ -317,6 +317,7 @@ class FineTune:
         up, down: Tuple, int
             number of steps increasing/decreasing the learning rate during the cycle
         """
-        up = round((steps * n_epochs) * 0.1)
+        # up = round((steps * n_epochs) * 0.1)
+        up = max([round((steps * n_epochs) * 0.1), 1])
         down = (steps * n_epochs) - up
         return up, down

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-
 import pytest
+
 from pytorch_widedeep import Trainer
 from pytorch_widedeep.models import (
     SAINT,
@@ -152,7 +152,6 @@ def test_fttransformer_valueerror():
 
 
 def test_feature_importances_tabnet():
-
     tab_preprocessor = TabPreprocessor(
         cat_embed_cols=cat_cols,
         continuous_cols=cont_cols,
@@ -164,7 +163,7 @@ def test_feature_importances_tabnet():
         column_idx=tab_preprocessor.column_idx,
         cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=tab_preprocessor.continuous_cols,
-        embed_continuous=True
+        embed_continuous=True,
     )
 
     model = WideDeep(deeptabular=tabnet)
