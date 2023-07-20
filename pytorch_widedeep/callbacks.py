@@ -655,6 +655,7 @@ class EarlyStopping(Callback):
         if self.monitor_op(current - self.min_delta, self.best):
             self.best = current
             self.wait = 0
+            self.best_epoch = epoch
             if self.restore_best_weights:
                 self.state_dict = copy.deepcopy(self.model.state_dict())
         else:
@@ -665,7 +666,9 @@ class EarlyStopping(Callback):
 
     def on_train_end(self, logs: Optional[Dict] = None):
         if self.stopped_epoch > 0 and self.verbose > 0:
-            print("Epoch %05d: early stopping" % (self.stopped_epoch + 1))
+            print(
+                f"Best Epoch: {self.best_epoch + 1}. Best {self.monitor}: {self.best:.5f}"
+            )
         if self.restore_best_weights and self.state_dict is not None:
             if self.verbose > 0:
                 print("Restoring model weights from the end of the best epoch")

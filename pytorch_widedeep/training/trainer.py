@@ -524,7 +524,7 @@ class Trainer(BaseTrainer):
             self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
 
             if self.early_stop:
-                self.callback_container.on_train_end(epoch_logs)
+                # self.callback_container.on_train_end(epoch_logs)
                 break
 
             if self.model.with_fds:
