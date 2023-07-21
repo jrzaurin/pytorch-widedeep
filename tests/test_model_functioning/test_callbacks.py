@@ -481,18 +481,21 @@ def test_early_stopping_get_state():
     assert no_trainer and no_model
 
 
-def test_early_stopping_restore_state():
-    # min_delta is large, so the early stopping condition will never be met except for the first epoch.
+# ##############################################################################
+# Test the restore weights functionalities after bug fixed
+# ##############################################################################
+def test_early_stopping_restore_weights_with_metric():
+    # min_delta is large, so the early stopping condition will be met in the first epoch.
     early_stopping = EarlyStopping(
         restore_best_weights=True, min_delta=1000, patience=1000
     )
-    trainer_tt = Trainer(
+    trainer = Trainer(
         model,
         objective="regression",
         callbacks=[early_stopping],
         verbose=0,
     )
-    trainer_tt.fit(
+    trainer.fit(
         X_train={"X_wide": X_wide, "X_tab": X_tab, "target": target},
         X_val={"X_wide": X_wide_val, "X_tab": X_tab_val, "target": target_val},
         target=target,
@@ -501,8 +504,136 @@ def test_early_stopping_restore_state():
     )
     assert early_stopping.wait > 0
     # so early stopping is not triggered, but is over-fitting.
-    pred_val = trainer_tt.predict(X_test={"X_wide": X_wide_val, "X_tab": X_tab_val})
-    restored_metric = trainer_tt.loss_fn(
+    pred_val = trainer.predict(X_test={"X_wide": X_wide_val, "X_tab": X_tab_val})
+    restored_metric = trainer.loss_fn(
         torch.tensor(pred_val), torch.tensor(target_val)
     ).item()
     assert np.allclose(restored_metric, early_stopping.best)
+
+
+def test_early_stopping_restore_weights_with_state():
+    # Long, perhaps too long, test to check early_stopping restore weights
+    # functionality
+
+    # this is repetitive, but for now I want this unit test "self-contained"
+
+    # We first define a model and train it, with early stopping that should
+    # set the weights back to those after the 1st epoch. We also use
+    # ModelCheckpoint and save all iterations
+    wide = Wide(np.unique(X_wide).shape[0], 1)
+    deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+        mlp_hidden_dims=[16, 8],
+    )
+    model = WideDeep(wide=wide, deeptabular=deeptabular)
+
+    fpath = "tests/test_model_functioning/modelcheckpoint/weights_out"
+    model_checkpoint = ModelCheckpoint(
+        filepath=fpath,
+        save_best_only=False,
+        max_save=10,
+        min_delta=1000,  # irrelevant here
+    )
+    early_stopping = EarlyStopping(
+        patience=3, min_delta=1000, restore_best_weights=True
+    )
+
+    trainer = Trainer(
+        model,
+        objective="binary",
+        callbacks=[early_stopping, model_checkpoint],
+        verbose=0,
+    )
+    trainer.fit(
+        X_train={"X_wide": X_wide, "X_tab": X_tab, "target": target},
+        X_val={"X_wide": X_wide_val, "X_tab": X_tab_val, "target": target_val},
+        target=target,
+        n_epochs=5,
+        batch_size=16,
+    )
+
+    # We now define a brand new model
+    new_wide = Wide(np.unique(X_wide).shape[0], 1)
+    new_deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+        mlp_hidden_dims=[16, 8],
+    )
+    new_model = WideDeep(wide=new_wide, deeptabular=new_deeptabular)
+
+    # In general, the best epoch is equal to the (stopped_epoch - patience) + 1
+    full_best_epoch_path = "_".join(
+        [
+            model_checkpoint.filepath,
+            str((early_stopping.stopped_epoch - early_stopping.patience) + 1) + ".p",
+        ]
+    )
+
+    # we load the weights for the best epoch and these should match those of
+    # the original model if early_stopping worked
+    new_model.load_state_dict(torch.load(full_best_epoch_path))
+    new_model.to(next(model.parameters()).device)
+
+    shutil.rmtree("tests/test_model_functioning/modelcheckpoint/")
+
+    assert torch.allclose(
+        new_model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.1.weight"],
+        model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.1.weight"],
+    )
+
+
+def test_model_checkpoint_restore_weights():
+    wide = Wide(np.unique(X_wide).shape[0], 1)
+    deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+        mlp_hidden_dims=[16, 8],
+    )
+    model = WideDeep(wide=wide, deeptabular=deeptabular)
+
+    fpath = "tests/test_model_functioning/modelcheckpoint/weights_out"
+    model_checkpoint = ModelCheckpoint(
+        filepath=fpath,
+        save_best_only=True,
+        min_delta=1000,  # irrelevant here
+    )
+    trainer = Trainer(
+        model,
+        objective="binary",
+        callbacks=[model_checkpoint],
+        verbose=0,
+    )
+    trainer.fit(
+        X_train={"X_wide": X_wide, "X_tab": X_tab, "target": target},
+        X_val={"X_wide": X_wide_val, "X_tab": X_tab_val, "target": target_val},
+        target=target,
+        n_epochs=5,
+        batch_size=16,
+    )
+
+    new_wide = Wide(np.unique(X_wide).shape[0], 1)
+    new_deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+        mlp_hidden_dims=[16, 8],
+    )
+    new_model = WideDeep(wide=new_wide, deeptabular=new_deeptabular)
+
+    full_best_epoch_path = "_".join(
+        [model_checkpoint.filepath, str(model_checkpoint.best_epoch + 1) + ".p"]
+    )
+
+    new_model.load_state_dict(torch.load(full_best_epoch_path))
+    new_model.to(next(model.parameters()).device)
+
+    shutil.rmtree("tests/test_model_functioning/modelcheckpoint/")
+
+    assert torch.allclose(
+        new_model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.1.weight"],
+        model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.1.weight"],
+    )

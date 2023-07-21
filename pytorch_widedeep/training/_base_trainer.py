@@ -1,5 +1,6 @@
 import os
 import sys
+import warnings
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -29,7 +30,6 @@ from pytorch_widedeep.callbacks import (
 )
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
 from pytorch_widedeep.training._trainer_utils import alias_to_loss
-from pytorch_widedeep.models.tabular.tabnet._utils import create_explain_matrix
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
 from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
 from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
@@ -66,7 +66,6 @@ class BaseTrainer(ABC):
         self.model = model
         if self.model.is_tabnet:
             self.lambda_sparse = kwargs.get("lambda_sparse", 1e-3)
-            self.reducing_matrix = create_explain_matrix(self.model)
         self.model.to(self.device)
         self.model.wd_device = self.device
 
@@ -130,17 +129,34 @@ class BaseTrainer(ABC):
     ):
         raise NotImplementedError("Trainer.save method not implemented")
 
-    def _restore_best_weights(self):
-        already_restored = any(
-            [
-                (
-                    callback.__class__.__name__ == "EarlyStopping"
-                    and callback.restore_best_weights
-                )
-                for callback in self.callback_container.callbacks
-            ]
-        )
+    def _restore_best_weights(self):  # noqa: C901
+        early_stopping_min_delta = None
+        model_checkpoint_min_delta = None
+        already_restored = False
+
+        for callback in self.callback_container.callbacks:
+            if (
+                callback.__class__.__name__ == "EarlyStopping"
+                and callback.restore_best_weights
+            ):
+                early_stopping_min_delta = callback.min_delta
+                already_restored = True
+
+            if callback.__class__.__name__ == "ModelCheckpoint":
+                model_checkpoint_min_delta = callback.min_delta
+
+        if (
+            early_stopping_min_delta is not None
+            and model_checkpoint_min_delta is not None
+        ) and (early_stopping_min_delta != model_checkpoint_min_delta):
+            warnings.warn(
+                "'min_delta' is different in the 'EarlyStopping' and 'ModelCheckpoint' callbacks. "
+                "This implies a different definition of 'improvement' for these two callbacks",
+                UserWarning,
+            )
+
         if already_restored:
+            # already restored via EarlyStopping
             pass
         else:
             for callback in self.callback_container.callbacks:

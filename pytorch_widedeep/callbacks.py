@@ -4,9 +4,9 @@ Code here is mostly based on the code from the torchsample and Keras packages
 CREDIT TO THE TORCHSAMPLE AND KERAS TEAMS
 """
 import os
+import copy
 import datetime
 import warnings
-import copy
 
 import numpy as np
 import torch
@@ -349,6 +349,10 @@ class ModelCheckpoint(Callback):
     monitor: str, default="loss"
         quantity to monitor. Typically _'val_loss'_ or metric name
         (e.g. _'val_acc'_)
+    min_delta: float, default=0.
+        minimum change in the monitored quantity to qualify as an
+        improvement, i.e. an absolute change of less than min_delta, will
+        count as no improvement.
     verbose:int, default=0
         verbosity mode
     save_best_only: bool, default=False,
@@ -397,6 +401,7 @@ class ModelCheckpoint(Callback):
         self,
         filepath: Optional[str] = None,
         monitor: str = "val_loss",
+        min_delta: float = 0.0,
         verbose: int = 0,
         save_best_only: bool = False,
         mode: str = "auto",
@@ -407,6 +412,7 @@ class ModelCheckpoint(Callback):
 
         self.filepath = filepath
         self.monitor = monitor
+        self.min_delta = min_delta
         self.verbose = verbose
         self.save_best_only = save_best_only
         self.mode = mode
@@ -450,6 +456,11 @@ class ModelCheckpoint(Callback):
                 self.monitor_op = np.less
                 self.best = np.Inf
 
+        if self.monitor_op == np.greater:
+            self.min_delta *= 1
+        else:
+            self.min_delta *= -1
+
     def on_epoch_end(  # noqa: C901
         self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
     ):
@@ -468,33 +479,20 @@ class ModelCheckpoint(Callback):
                         RuntimeWarning,
                     )
                 else:
-                    if self.monitor_op(current, self.best):
+                    if self.monitor_op(current - self.min_delta, self.best):
                         if self.verbose > 0:
                             if self.filepath:
                                 print(
-                                    "\nEpoch %05d: %s improved from %0.5f to %0.5f,"
-                                    " saving model to %s"
-                                    % (
-                                        epoch + 1,
-                                        self.monitor,
-                                        self.best,
-                                        current,
-                                        filepath,
-                                    )
+                                    f"\nEpoch {epoch + 1}: {self.monitor} improved from {self.best:.5f} to {current:.5f} "
+                                    f"Saving model to {filepath}"
                                 )
                             else:
                                 print(
-                                    "\nEpoch %05d: %s improved from %0.5f to %0.5f"
-                                    % (
-                                        epoch + 1,
-                                        self.monitor,
-                                        self.best,
-                                        current,
-                                    )
+                                    f"\nEpoch {epoch + 1}: {self.monitor} improved from {self.best:.5f} to {current:.5f} "
                                 )
                         self.best = current
                         self.best_epoch = epoch
-                        self.best_state_dict = self.model.state_dict()
+                        self.best_state_dict = copy.deepcopy(self.model.state_dict())
                         if self.filepath:
                             torch.save(self.best_state_dict, filepath)
                             if self.max_save > 0:
@@ -508,8 +506,8 @@ class ModelCheckpoint(Callback):
                     else:
                         if self.verbose > 0:
                             print(
-                                "\nEpoch %05d: %s did not improve from %0.5f"
-                                % (epoch + 1, self.monitor, self.best)
+                                f"\nEpoch {epoch + 1}: {self.monitor} did not improve from {self.best:.5f} "
+                                f" considering a 'min_delta' improvement of {self.min_delta:.5f}"
                             )
             if not self.save_best_only and self.filepath:
                 if self.verbose > 0:
@@ -657,6 +655,7 @@ class EarlyStopping(Callback):
         if self.monitor_op(current - self.min_delta, self.best):
             self.best = current
             self.wait = 0
+            self.best_epoch = epoch
             if self.restore_best_weights:
                 self.state_dict = copy.deepcopy(self.model.state_dict())
         else:
@@ -667,7 +666,9 @@ class EarlyStopping(Callback):
 
     def on_train_end(self, logs: Optional[Dict] = None):
         if self.stopped_epoch > 0 and self.verbose > 0:
-            print("Epoch %05d: early stopping" % (self.stopped_epoch + 1))
+            print(
+                f"Best Epoch: {self.best_epoch + 1}. Best {self.monitor}: {self.best:.5f}"
+            )
         if self.restore_best_weights and self.state_dict is not None:
             if self.verbose > 0:
                 print("Restoring model weights from the end of the best epoch")

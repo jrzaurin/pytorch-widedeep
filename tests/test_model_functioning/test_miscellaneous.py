@@ -287,32 +287,32 @@ def test_save_and_load_dict():
     assert same_weights and history_saved
 
 
-###############################################################################
-# test explain matrices and feature importance for TabNet
-###############################################################################
+# ###############################################################################
+# # test explain matrices and feature importance for TabNet (Moved to 'test_feature_importance')
+# ###############################################################################
 
 
-def test_explain_mtx_and_feat_imp():
-    model = WideDeep(deeptabular=tabnet)
-    trainer = Trainer(model, objective="binary", verbose=0)
-    trainer.fit(
-        X_tab=X_tab,
-        target=target,
-        batch_size=16,
-    )
+# def test_explain_mtx_and_feat_imp():
+#     model = WideDeep(deeptabular=tabnet)
+#     trainer = Trainer(model, objective="binary", verbose=0)
+#     trainer.fit(
+#         X_tab=X_tab,
+#         target=target,
+#         batch_size=16,
+#     )
 
-    checks = []
-    checks.append(len(trainer.feature_importance) == len(tabnet.column_idx))
+#     checks = []
+#     checks.append(len(trainer.feature_importance) == len(tabnet.column_idx))
 
-    expl_mtx, step_masks = trainer.explain(X_tab[:6], save_step_masks=True)
-    checks.append(expl_mtx.shape[0] == 6)
-    checks.append(expl_mtx.shape[1] == 10)
+#     expl_mtx, step_masks = trainer.explain(X_tab[:6], save_step_masks=True)
+#     checks.append(expl_mtx.shape[0] == 6)
+#     checks.append(expl_mtx.shape[1] == 10)
 
-    for i in range(tabnet.n_steps):
-        checks.append(step_masks[i].shape[0] == 6)
-        checks.append(step_masks[i].shape[1] == 10)
+#     for i in range(tabnet.n_steps):
+#         checks.append(step_masks[i].shape[0] == 6)
+#         checks.append(step_masks[i].shape[1] == 10)
 
-    assert all(checks)
+#     assert all(checks)
 
 
 ###############################################################################

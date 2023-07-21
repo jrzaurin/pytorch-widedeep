@@ -8,7 +8,6 @@ import torch
 import torch.nn.functional as F
 from tqdm import trange
 from torch import nn
-from scipy.sparse import csc_matrix
 from torchmetrics import Metric as TorchMetric
 from torch.utils.data import DataLoader
 
@@ -38,6 +37,10 @@ from pytorch_widedeep.training._trainer_utils import (
     save_epoch_logs,
     wd_train_val_split,
     print_loss_and_metric,
+)
+from pytorch_widedeep.training._feature_importance import (
+    Explainer,
+    FeatureImportance,
 )
 
 
@@ -265,6 +268,7 @@ class Trainer(BaseTrainer):
         validation_freq: int = 1,
         batch_size: int = 32,
         custom_dataloader: Optional[DataLoader] = None,
+        feature_importance_sample_size: Optional[int] = None,
         finetune: bool = False,
         with_lds: bool = False,
         **kwargs,
@@ -520,15 +524,18 @@ class Trainer(BaseTrainer):
             self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
 
             if self.early_stop:
-                self.callback_container.on_train_end(epoch_logs)
+                # self.callback_container.on_train_end(epoch_logs)
                 break
 
             if self.model.with_fds:
                 self._update_fds_stats(train_loader, epoch)
 
         self.callback_container.on_train_end(epoch_logs)
-        if self.model.is_tabnet:
-            self._compute_feature_importance(train_loader)
+
+        if feature_importance_sample_size is not None:
+            self.feature_importance = FeatureImportance(
+                self.device, feature_importance_sample_size
+            ).feature_importance(train_loader, self.model)
         self._restore_best_weights()
         self.model.train()
 
@@ -740,64 +747,13 @@ class Trainer(BaseTrainer):
         if self.method == "multiclass":
             return np.vstack(preds_l)
 
-    def explain(
-        self, X_tab: np.ndarray, save_step_masks: bool = False
-    ) -> Union[Tuple, np.ndarray]:
-        """
-        if the `deeptabular` component is a `Tabnet` model, returns the
-        aggregated feature importance for each instance (or observation) in
-        the `X_tab` array. If `save_step_masks` is set to `True`, the
-        masks per step will also be returned.
+    def explain(self, X_tab: np.ndarray, save_step_masks: Optional[bool] = None):
+        # TO DO: Add docs to this, to the feat imp parameter and the all
+        # related classes
+        explainer = Explainer(self.device)
 
-        Parameters
-        ----------
-        X_tab: np.ndarray
-            Input array corresponding **only** to the deeptabular component
-        save_step_masks: bool
-            Boolean indicating if the masks per step will be returned
-
-        Returns
-        -------
-        Union[Tuple, np.ndarray]
-            Array or Tuple of two arrays with the corresponding aggregated
-            feature importance and the masks per step if `save_step_masks`
-            is set to `True`
-        """
-        loader = DataLoader(
-            dataset=WideDeepDataset(X_tab=X_tab),
-            batch_size=self.batch_size,
-            num_workers=self.num_workers,
-            shuffle=False,
-        )
-
-        self.model.eval()
-        tabnet_backbone = list(self.model.deeptabular.children())[0]
-
-        m_explain_l = []
-        for batch_nb, data in enumerate(loader):
-            X = data["deeptabular"].to(self.device)
-            M_explain, masks = tabnet_backbone.forward_masks(X)  # type: ignore[operator]
-            m_explain_l.append(
-                csc_matrix.dot(M_explain.cpu().detach().numpy(), self.reducing_matrix)
-            )
-            if save_step_masks:
-                for key, value in masks.items():
-                    masks[key] = csc_matrix.dot(
-                        value.cpu().detach().numpy(), self.reducing_matrix
-                    )
-                if batch_nb == 0:
-                    m_explain_step = masks
-                else:
-                    for key, value in masks.items():
-                        m_explain_step[key] = np.vstack([m_explain_step[key], value])
-
-        m_explain_agg = np.vstack(m_explain_l)
-        m_explain_agg_norm = m_explain_agg / m_explain_agg.sum(axis=1)[:, np.newaxis]
-
-        res: Union[Tuple, np.ndarray] = (
-            (m_explain_agg_norm, m_explain_step)
-            if save_step_masks
-            else np.vstack(m_explain_agg_norm)
+        res = explainer.explain(
+            self.model, X_tab, self.num_workers, self.batch_size, save_step_masks
         )
 
         return res
@@ -1068,28 +1024,6 @@ class Trainer(BaseTrainer):
         y_pred = torch.cat(y_pred_l)
         self.model.fds_layer.update_last_epoch_stats(epoch)
         self.model.fds_layer.update_running_stats(features, y_pred, epoch)
-
-    def _compute_feature_importance(self, loader: DataLoader):
-        self.model.eval()
-        tabnet_backbone = list(self.model.deeptabular.children())[0]
-        feat_imp = np.zeros((tabnet_backbone.embed_out_dim))  # type: ignore[arg-type]
-        for data, target, _ in loader:
-            X = data["deeptabular"].to(self.device)
-            y = (
-                target.view(-1, 1).float()
-                if self.method not in ["multiclass", "qregression"]
-                else target
-            )
-            y = y.to(self.device)
-            M_explain, masks = tabnet_backbone.forward_masks(X)  # type: ignore[operator]
-            feat_imp += M_explain.sum(dim=0).cpu().detach().numpy()
-
-        feat_imp = csc_matrix.dot(feat_imp, self.reducing_matrix)
-        feat_imp = feat_imp / np.sum(feat_imp)
-
-        self.feature_importance = {
-            k: v for k, v in zip(tabnet_backbone.column_idx.keys(), feat_imp)  # type: ignore[operator, union-attr]
-        }
 
     def _predict(  # noqa: C901
         self,

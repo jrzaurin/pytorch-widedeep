@@ -85,6 +85,7 @@ class DataLoaderImbalanced(DataLoader):
         self.with_lds = dataset.with_lds
         if "oversample_mul" in kwargs:
             oversample_mul = kwargs["oversample_mul"]
+            del kwargs["oversample_mul"]
         else:
             oversample_mul = 1
         weights, minor_cls_cnt, num_clss = get_class_weights(dataset)
