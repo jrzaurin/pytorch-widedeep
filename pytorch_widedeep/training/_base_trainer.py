@@ -30,7 +30,6 @@ from pytorch_widedeep.callbacks import (
 )
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
 from pytorch_widedeep.training._trainer_utils import alias_to_loss
-from pytorch_widedeep.models.tabular.tabnet._utils import create_explain_matrix
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
 from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
 from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
@@ -67,7 +66,6 @@ class BaseTrainer(ABC):
         self.model = model
         if self.model.is_tabnet:
             self.lambda_sparse = kwargs.get("lambda_sparse", 1e-3)
-            self.reducing_matrix = create_explain_matrix(self.model)
         self.model.to(self.device)
         self.model.wd_device = self.device
 

@@ -284,7 +284,7 @@ class TabTransformer(BaseTabularModelWithAttention):
         )
 
     @property
-    def attention_weights(self) -> List:
+    def attention_weights(self) -> List[Tensor]:
         r"""List with the attention weights per block
 
         The shape of the attention weights is $(N, H, F, F)$, where $N$ is the

@@ -281,7 +281,7 @@ class TabFastFormer(BaseTabularModelWithAttention):
         )
 
     @property
-    def attention_weights(self) -> List:
+    def attention_weights(self) -> List[Tuple[Tensor, Tensor]]:
         r"""List with the attention weights. Each element of the list is a
         tuple where the first and second elements are the $\alpha$
         and $\beta$ attention weights in the paper.

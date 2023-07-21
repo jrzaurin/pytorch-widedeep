@@ -248,7 +248,7 @@ class SAINT(BaseTabularModelWithAttention):
         )
 
     @property
-    def attention_weights(self) -> List:
+    def attention_weights(self) -> List[Tuple[Tensor, Tensor]]:
         r"""List with the attention weights. Each element of the list is a tuple
         where the first and the second elements are the column and row
         attention weights respectively
