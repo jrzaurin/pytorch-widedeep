@@ -338,6 +338,7 @@ class Tokenizer:
             )
 
 
+# TODO: Fix bug regarding token num 0
 class Vocab:
     r"""Contains the correspondence between numbers and tokens.
 

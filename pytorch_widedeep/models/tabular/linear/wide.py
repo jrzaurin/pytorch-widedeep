@@ -3,7 +3,7 @@ import math
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import Union, Tensor
+from pytorch_widedeep.wdtypes import Tensor
 
 
 class Wide(nn.Module):
@@ -38,25 +38,17 @@ class Wide(nn.Module):
     >>> out = wide(X)
     """
 
-    def __init__(
-        self, input_dim: int, already_one_hot: bool = False, pred_dim: int = 1
-    ):
+    def __init__(self, input_dim: int, pred_dim: int = 1):
         super(Wide, self).__init__()
 
         self.input_dim = input_dim
-        self.already_one_hot = already_one_hot
         self.pred_dim = pred_dim
 
-        if self.already_one_hot:
-            self.wide_linear: Union[nn.Linear, nn.Embedding] = nn.Linear(
-                input_dim, pred_dim
-            )
-        else:
-            # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
-            self.wide_linear = nn.Embedding(input_dim + 1, pred_dim, padding_idx=0)
-            # (Sum(Embedding) + bias) is equivalent to (OneHotVector + Linear)
-            self.bias = nn.Parameter(torch.zeros(pred_dim))
-            self._reset_parameters()
+        # Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.
+        self.wide_linear = nn.Embedding(input_dim + 1, pred_dim, padding_idx=0)
+        # (Sum(Embedding) + bias) is equivalent to (OneHotVector + Linear)
+        self.bias = nn.Parameter(torch.zeros(pred_dim))
+        self._reset_parameters()
 
     def _reset_parameters(self) -> None:
         r"""initialize Embedding and bias like nn.Linear. See [original
@@ -68,10 +60,7 @@ class Wide(nn.Module):
         nn.init.uniform_(self.bias, -bound, bound)
 
     def forward(self, X: Tensor) -> Tensor:
-        r"""Forward pass. Simply connecting the Embedding/Linear layer with the ouput
+        r"""Forward pass. Simply connecting the Embedding layer with the ouput
         neuron(s)"""
-        if self.already_one_hot:
-            out = self.wide_linear(X)
-        else:
-            out = self.wide_linear(X.long()).sum(dim=1) + self.bias
+        out = self.wide_linear(X.long()).sum(dim=1) + self.bias
         return out

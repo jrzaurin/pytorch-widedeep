@@ -54,7 +54,11 @@ def simple_preprocess(
     return tokens
 
 
-def get_texts(texts: List[str], n_cpus: Optional[int] = None) -> List[List[str]]:
+def get_texts(
+    texts: List[str],
+    already_processed: Optional[bool] = False,
+    n_cpus: Optional[int] = None,
+) -> List[List[str]]:
     r"""Tokenization using `Fastai`'s `Tokenizer` because it does a
     series of very convenients things during the tokenization process
 
@@ -64,6 +68,9 @@ def get_texts(texts: List[str], n_cpus: Optional[int] = None) -> List[List[str]]
     ----------
     texts: List
         List of str with the texts (or documents). One str per document
+    already_processed: bool, Optional, default = False
+        Boolean indicating if the text is already processed and we simply
+        want to tokenize it
     n_cpus: int, Optional, default = None
         number of CPUs to used during the tokenization process
 
@@ -89,8 +96,11 @@ def get_texts(texts: List[str], n_cpus: Optional[int] = None) -> List[List[str]]
 
     num_cpus = n_cpus if n_cpus is not None else os.cpu_count()
 
-    processed_textx = [" ".join(simple_preprocess(t)) for t in texts]
-    tok = Tokenizer(n_cpus=num_cpus).process_all(processed_textx)
+    if not already_processed:
+        processed_texts = [" ".join(simple_preprocess(t)) for t in texts]
+    else:
+        processed_texts = texts
+    tok = Tokenizer(n_cpus=num_cpus).process_all(processed_texts)
     return tok
 
 

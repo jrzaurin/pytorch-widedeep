@@ -1,7 +1,13 @@
+# This script is mostly a copy/paste from the Kaggle notebook
+# https://www.kaggle.com/code/matanivanov/wide-deep-learning-for-recsys-with-pytorch.
+# Is a response to the issue:
+# https://github.com/jrzaurin/pytorch-widedeep/issues/133 In this script we
+# simply prepare the data that will later be used for a custom Wide and Deep
+# model and for Wide and Deep models created using this library
+
 from pathlib import Path
 
 import pandas as pd
-
 from sklearn.model_selection import train_test_split
 
 raw_data_path = Path("~/ml_projects/wide_deep_learning_for_recsys/ml-100k")
@@ -103,7 +109,7 @@ train_data, _test_data = train_test_split(filtred_data, test_size=0.2, shuffle=F
 valid_data, test_data = train_test_split(_test_data, test_size=0.5, shuffle=False)
 
 cols_to_drop = [
-    "rating",
+    # "rating",
     "timestamp",
     "num_watched",
 ]

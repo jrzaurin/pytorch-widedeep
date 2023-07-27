@@ -18,16 +18,20 @@ class FeedForward(nn.Module):
         self,
         input_dim: int,
         dropout: float,
+        mult: float,
         activation: str,
-        mult: float = 4.0,
+        *,
+        ff_hidden_dim: Optional[int] = None,
     ):
         super(FeedForward, self).__init__()
-        ff_hidden_dim = int(input_dim * mult)
+        ff_hid_dim = (
+            ff_hidden_dim if ff_hidden_dim is not None else int(input_dim * mult)
+        )
         self.w_1 = nn.Linear(
             input_dim,
-            ff_hidden_dim * 2 if activation.endswith("glu") else ff_hidden_dim,
+            ff_hid_dim * 2 if activation.endswith("glu") else ff_hid_dim,
         )
-        self.w_2 = nn.Linear(ff_hidden_dim, input_dim)
+        self.w_2 = nn.Linear(ff_hid_dim, input_dim)
         self.dropout = nn.Dropout(dropout)
         self.activation = get_activation_fn(activation)
 

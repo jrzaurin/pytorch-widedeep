@@ -1,8 +1,14 @@
+# This script is mostly a copy/paste from the Kaggle notebook
+# https://www.kaggle.com/code/matanivanov/wide-deep-learning-for-recsys-with-pytorch.
+# Is a response to the issue:
+# https://github.com/jrzaurin/pytorch-widedeep/issues/133.
+# In this script we run the exact same model used in that Kaggle notebook
+
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import torch
+import pandas as pd
 from torch import nn, cat, mean
 from scipy.sparse import coo_matrix
 
