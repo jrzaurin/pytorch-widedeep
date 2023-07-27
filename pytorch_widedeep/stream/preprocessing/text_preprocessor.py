@@ -75,7 +75,8 @@ class StreamTextPreprocessor(TextPreprocessor):
         for chunk in pd.read_csv(X_path, chunksize=chunksize):
             tokens = get_texts(chunk[self.text_col].tolist())
             voc_builder.ingest(tokens)
-        
+
+        # BUG: padding is always being applied until max sequence length - error with mix-precision somewhere? 
         self.vocab = voc_builder.build()   
 
         if self.verbose:

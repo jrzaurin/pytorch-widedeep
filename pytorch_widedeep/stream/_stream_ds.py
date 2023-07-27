@@ -34,7 +34,8 @@ class StreamWideDeepDataset(IterableDataset):
         self.transforms = transforms
         self.transforms_names = [None]
 
-        img_preprocessor.verbose = False
+        if img_preprocessor:
+            img_preprocessor.verbose = False
 
     def __iter__(self):
         for chunk in pd.read_csv(self.X_path, chunksize=self.fetch_size):

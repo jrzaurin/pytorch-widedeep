@@ -35,8 +35,8 @@ import shutil
 TODO:
 1. Enable shuffling inputs
 2. Get vision-only mnist training working   DONE
-3. enable validation in training loop
-4. enable callbacks
+3. enable validation in training loop DONE
+4. enable callbacks DONE
 5. add unit tests
 6. add support for image transforms
 7. review with javier for next steps
@@ -75,4 +75,6 @@ trainer.fit(
     n_epochs=1,
     batch_size=32
  )
+
+
 # %%
