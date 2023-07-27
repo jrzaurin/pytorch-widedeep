@@ -31,6 +31,8 @@ class Transformer(nn.Module):
 
         Param aliases: `embed_dim`, `d_model`. <br/>
 
+    seq_length: int, Optional, default = None
+        Input sequence length
     n_heads: int, default = 8
         Number of attention heads per Transformer block
     n_blocks: int, default = 4
@@ -55,8 +57,6 @@ class Transformer(nn.Module):
         Boolean indicating if positional encoding will be used
     pos_encoding_dropout: float, default = 0.1
         Positional encoding dropout
-    seq_length: int, Optional, default = None
-        Input sequence length
     pos_encoder: nn.Module, Optional, default = None
         This model uses by default a standard positional encoding approach.
         However, any custom positional encoder can also be used and pass to
@@ -73,9 +73,11 @@ class Transformer(nn.Module):
     """
 
     @Alias("input_dim", ["embed_dim", "d_model"])
+    @Alias("seq_length", ["max_length", "maxlen"])
     def __init__(
         self,
         vocab_size: int,
+        seq_length: int,
         input_dim: int,
         n_heads: int,
         n_blocks: int,
@@ -87,21 +89,21 @@ class Transformer(nn.Module):
         *,  # from here on pos encoding args
         with_pos_encoding: bool = True,
         pos_encoding_dropout: float = 0.1,
-        seq_length: Optional[int] = None,
         pos_encoder: Optional[nn.Module] = None,
     ):
         super().__init__()
 
         self.input_dim = input_dim
+        self.seq_length = seq_length
         self.n_heads = n_heads
         self.n_blocks = n_blocks
         self.attn_dropout = attn_dropout
         self.ff_dropout = ff_dropout
         self.ff_factor = ff_factor
         self.activation = activation
+        self.with_cls_token = with_cls_token
         self.with_pos_encoding = with_pos_encoding
         self.pos_encoding_dropout = pos_encoding_dropout
-        self.seq_length = seq_length
 
         self.embedding = nn.Embedding(vocab_size, input_dim)
 
@@ -109,11 +111,8 @@ class Transformer(nn.Module):
             if pos_encoder is not None:
                 self.pos_encoder: Union[
                     nn.Module, nn.Identity, PositionalEncoding
-                ] = self.pos_encoder
+                ] = pos_encoder
             else:
-                assert (
-                    seq_length is not None
-                ), "If positional encoding is used 'seq_length' must be passed to the model"
                 self.pos_encoder = PositionalEncoding(
                     input_dim, pos_encoding_dropout, seq_length
                 )
@@ -147,7 +146,11 @@ class Transformer(nn.Module):
 
     @property
     def output_dim(self) -> int:
-        return self.input_dim * self.seq_length
+        if self.with_cls_token:
+            output_dim = self.input_dim
+        else:
+            output_dim = self.input_dim * self.seq_length
+        return output_dim
 
 
 class PositionalEncoding(nn.Module):
