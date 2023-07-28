@@ -4,10 +4,14 @@ https://github.com/lucidrains
 """
 
 import math
+import warnings
+from enum import Enum
+from typing import ContextManager,  List
 
 import torch
 import einops
 from torch import nn, einsum
+import torch.nn.functional as F
 
 from pytorch_widedeep.wdtypes import Tensor, Optional
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
@@ -59,6 +63,28 @@ class AddNorm(nn.Module):
         return self.ln(X + self.dropout(sublayer(X)))
 
 
+class SDPBackend(Enum):
+    FLASH: int = 0
+    MEM_EFFICIENT: int = 1
+
+def _flash_kernel_setup(enabled_flash_backends: List[SDPBackend]) -> ContextManager:
+    # Add some info here about using specific kernels
+    warnings.warn(
+        "FlashAttention is an experimental feature, please use with caution.",
+        RuntimeWarning
+    )
+    
+    # Setting backends as suggested at https://discuss.pytorch.org/t/flash-attention/174955
+    enable_flash = True if SDPBackend.FLASH in enabled_flash_backends else False
+    enable_mem_eff = True if SDPBackend.MEM_EFFICIENT in enabled_flash_backends else False
+
+    print(enable_flash, enable_mem_eff)
+    
+    return torch.backends.cuda.sdp_kernel(
+        enable_flash=enable_flash, enable_mem_efficient=enable_mem_eff, enable_math=False
+    )
+
+
 class MultiHeadedAttention(nn.Module):
     def __init__(
         self,
@@ -67,14 +93,21 @@ class MultiHeadedAttention(nn.Module):
         use_bias: bool,
         dropout: float,
         query_dim: Optional[int] = None,
+        use_flash: Optional[bool] = False,
+        enabled_flash_backends: Optional[List[SDPBackend]] = [SDPBackend.FLASH, SDPBackend.MEM_EFFICIENT] 
     ):
         super(MultiHeadedAttention, self).__init__()
 
         assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
 
+        self.use_flash = use_flash
+        if self.use_flash:
+            self.sdp_ctx = _flash_kernel_setup(enabled_flash_backends)
+
         self.head_dim = input_dim // n_heads
         self.n_heads = n_heads
 
+        self.dropout_p = dropout
         self.dropout = nn.Dropout(dropout)
 
         query_dim = query_dim if query_dim is not None else input_dim
@@ -98,12 +131,24 @@ class MultiHeadedAttention(nn.Module):
             lambda t: einops.rearrange(t, "b m (h d) -> b h m d", h=self.n_heads),
             (q, k, v),
         )
-        scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.head_dim)
-        attn_weights = scores.softmax(dim=-1)
-        self.attn_weights = attn_weights
-        attn_weights = self.dropout(attn_weights)
-        attn_output = einsum("b h s l, b h l d -> b h s d", attn_weights, v)
-        output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
+
+        if self.use_flash:
+            with self.sdp_ctx:
+                attn_output = F.scaled_dot_product_attention(
+                    q, k, v, 
+                    attn_mask=None, 
+                    dropout_p=self.dropout_p if self.training else 0, 
+                    is_causal=False
+                )
+            output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
+
+        else:
+            scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.head_dim)
+            attn_weights = scores.softmax(dim=-1)
+            self.attn_weights = attn_weights
+            attn_weights = self.dropout(attn_weights)
+            attn_output = einsum("b h s l, b h l d -> b h s d", attn_weights, v)
+            output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
 
         if self.out_proj is not None:
             output = self.out_proj(output)
