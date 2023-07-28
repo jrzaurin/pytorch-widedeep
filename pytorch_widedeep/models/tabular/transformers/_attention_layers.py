@@ -73,6 +73,9 @@ class MultiHeadedAttention(nn.Module):
         super(MultiHeadedAttention, self).__init__()
 
         self.flash = use_flash
+        if self.flash:
+            assert hasattr(F, 'scaled_dot_product_attention')
+    
         self.drop_pc = dropout
 
         assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
