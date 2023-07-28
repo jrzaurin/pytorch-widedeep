@@ -7,6 +7,7 @@ import math
 
 import torch
 import einops
+import torch.nn.functional as F
 from torch import nn, einsum
 
 from pytorch_widedeep.wdtypes import Tensor, Optional
@@ -67,8 +68,12 @@ class MultiHeadedAttention(nn.Module):
         use_bias: bool,
         dropout: float,
         query_dim: Optional[int] = None,
+        use_flash: bool = False
     ):
         super(MultiHeadedAttention, self).__init__()
+
+        self.flash = use_flash
+        self.drop_pc = dropout
 
         assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
 
@@ -98,12 +103,23 @@ class MultiHeadedAttention(nn.Module):
             lambda t: einops.rearrange(t, "b m (h d) -> b h m d", h=self.n_heads),
             (q, k, v),
         )
-        scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.head_dim)
-        attn_weights = scores.softmax(dim=-1)
-        self.attn_weights = attn_weights
-        attn_weights = self.dropout(attn_weights)
-        attn_output = einsum("b h s l, b h l d -> b h s d", attn_weights, v)
-        output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
+
+        if self.flash:
+            attn_output = F.scaled_dot_product_attention(
+                q, k, v, 
+                attn_mask=None, 
+                dropout_p=self.drop_pc if self.training else 0, 
+                is_causal=False
+            )
+            output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
+
+        else:
+            scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.head_dim)
+            attn_weights = scores.softmax(dim=-1)
+            self.attn_weights = attn_weights
+            attn_weights = self.dropout(attn_weights)
+            attn_output = einsum("b h s l, b h l d -> b h s d", attn_weights, v)
+            output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
 
         if self.out_proj is not None:
             output = self.out_proj(output)
