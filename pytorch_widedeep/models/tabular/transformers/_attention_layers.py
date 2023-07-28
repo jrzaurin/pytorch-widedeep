@@ -78,8 +78,6 @@ def _flash_kernel_setup(enabled_flash_backends: List[SDPBackend]) -> ContextMana
     enable_flash = True if SDPBackend.FLASH in enabled_flash_backends else False
     enable_mem_eff = True if SDPBackend.MEM_EFFICIENT in enabled_flash_backends else False
 
-    print(enable_flash, enable_mem_eff)
-    
     return torch.backends.cuda.sdp_kernel(
         enable_flash=enable_flash, enable_mem_efficient=enable_mem_eff, enable_math=False
     )
