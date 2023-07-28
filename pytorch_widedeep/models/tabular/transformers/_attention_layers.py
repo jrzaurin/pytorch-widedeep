@@ -68,7 +68,9 @@ class SDPBackend(Enum):
     MEM_EFFICIENT: int = 1
 
 def _flash_kernel_setup(enabled_flash_backends: List[SDPBackend]) -> ContextManager:
-    # Add some info here about using specific kernels
+
+    assert torch.cuda.is_available(), 'optimized kernels may only be called when using CUDA backend.'
+   
     warnings.warn(
         "FlashAttention is an experimental feature, please use with caution.",
         RuntimeWarning
@@ -99,8 +101,7 @@ class MultiHeadedAttention(nn.Module):
         assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
 
         self.use_flash = use_flash
-        if self.use_flash:
-            self.sdp_ctx = _flash_kernel_setup(enabled_flash_backends)
+        self.enabled_flash_backends = enabled_flash_backends
 
         self.head_dim = input_dim // n_heads
         self.n_heads = n_heads
@@ -131,7 +132,7 @@ class MultiHeadedAttention(nn.Module):
         )
 
         if self.use_flash:
-            with self.sdp_ctx:
+            with _flash_kernel_setup(self.enabled_flash_backends):
                 attn_output = F.scaled_dot_product_attention(
                     q, k, v, 
                     attn_mask=None, 

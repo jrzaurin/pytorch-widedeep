@@ -7,10 +7,12 @@ import torch.backends.cuda as tcud
 from pytorch_widedeep.models.tabular.transformers._attention_layers import MultiHeadedAttention, _flash_kernel_setup, SDPBackend
 
 
+torch.backends.cudnn.deterministic = True
+
 input_dim = 128
 n_heads = 4
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-device = 'cpu'
+# device = 'cpu'
 
 standard_net = MultiHeadedAttention(
     input_dim=input_dim,
@@ -24,14 +26,12 @@ flash_net = MultiHeadedAttention(
     n_heads=n_heads,
     use_bias=False,
     dropout=0,
-    use_flash=False
+    use_flash=True
 ).to(device).eval()
 
 # Set initialization weights equal for comparison
 for module in ['q_proj', 'kv_proj', 'out_proj']:
     getattr(flash_net, module).weight = copy.deepcopy(getattr(standard_net, module).weight)
-
-# breakpoint()
 
 X = torch.randn(128, 100, input_dim).to(device)
 
@@ -65,21 +65,12 @@ def test_flash_standard_shapes():
 
 def test_flash_standard_values():
     # Check output values match between both implementations
-    x1 = standard_net(X)
-    x2 = flash_net(X)
-    torch.backends.cudnn.deterministic = True
-    assert torch.allclose(standard_net(X), flash_net(X))
+    assert torch.allclose(standard_net(X), flash_net(X), atol=1e-7)
 
-# # def test_flash_context_manager():
+def test_speedup_flash():
+    # Check that iterations happen faster
+    standard_its = timeit.timeit(lambda: standard_net(X), number=500)
+    flash_its = timeit.timeit(lambda: flash_net(X), number=500)
 
-
-# def test_speedup_flash():
-#     # Check that iterations happen faster
-#     standard_its = timeit.timeit(lambda: m(X), number=3000)
-#     flash_its = timeit.timeit(lambda: mf(X), number=3000)
-
-#     print(standard_its, flash_its)
-#     print((standard_its - flash_its) / standard_its)
-#     assert 1 == 2
-#     assert standard_its > flash_its
-#     assert ((standard_its - flash_its) / standard_its) > 0.1
+    assert standard_its > flash_its
+    assert ((standard_its - flash_its) / standard_its) > 0.3
