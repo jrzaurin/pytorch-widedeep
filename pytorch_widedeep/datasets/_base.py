@@ -1,12 +1,14 @@
 # dataframes are saved as parquet, pyarrow, brotli
 # pd.to_parquet(path=None, engine="auto", compression="brotli", index=False)
 # see related post: https://python.plainenglish.io/storing-pandas-98-faster-disk-reads-and-72-less-space-208e2e2be8bb
+from typing import Tuple, Union
 from importlib import resources
 
+import numpy as np
 import pandas as pd
 
 
-def load_bio_kdd04(as_frame: bool = False):
+def load_bio_kdd04(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     """Load and return the higly imbalanced binary classification Protein Homology
     Dataset from [KDD cup 2004](https://www.kdd.org/kdd-cup/view/kdd-cup-2004/Data).
     This datasets include only bio_train.dat part of the dataset
@@ -39,7 +41,7 @@ def load_bio_kdd04(as_frame: bool = False):
         return df.to_numpy()
 
 
-def load_adult(as_frame: bool = False):
+def load_adult(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     """Load and return the higly imbalanced binary classification [adult income datatest](http://www.cs.toronto.edu/~delve/data/adult/desc.html).
     you may find detailed description [here](http://www.cs.toronto.edu/~delve/data/adult/adultDetail.html)
     """
@@ -55,7 +57,7 @@ def load_adult(as_frame: bool = False):
         return df.to_numpy()
 
 
-def load_ecoli(as_frame: bool = False):
+def load_ecoli(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     """Load and return the higly imbalanced multiclass classification e.coli dataset
     Dataset from [UCI Machine learning Repository](https://archive.ics.uci.edu/ml/datasets/ecoli).
 
@@ -142,7 +144,7 @@ def load_ecoli(as_frame: bool = False):
         return df.to_numpy()
 
 
-def load_california_housing(as_frame: bool = False):
+def load_california_housing(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     """Load and return the higly imbalanced regression California housing dataset.
 
     Characteristics:
@@ -190,7 +192,7 @@ def load_california_housing(as_frame: bool = False):
         return df.to_numpy()
 
 
-def load_birds(as_frame: bool = False):
+def load_birds(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     """Load and return the multi-label classification bird dataset.
 
     References
@@ -216,7 +218,7 @@ def load_birds(as_frame: bool = False):
         return df.to_numpy()
 
 
-def load_rf1(as_frame: bool = False):
+def load_rf1(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     """Load and return the multi-target regression River Flow(RF1) dataset.
 
         Characterisctics:
@@ -243,7 +245,7 @@ def load_rf1(as_frame: bool = False):
         return df.to_numpy()
 
 
-def load_womens_ecommerce(as_frame: bool = False):
+def load_womens_ecommerce(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     """
     Context
     This is a Women’s Clothing E-Commerce dataset revolving around the reviews written by customers.
@@ -279,3 +281,103 @@ def load_womens_ecommerce(as_frame: bool = False):
         return df
     else:
         return df.to_numpy()
+
+
+def load_movielens100k(
+    as_frame: bool = False,
+) -> Union[
+    Tuple[np.ndarray, np.ndarray, np.ndarray],
+    Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame],
+]:
+    """Load and return the MovieLens 100k dataset in 3 separate files.
+
+    SUMMARY & USAGE LICENSE:
+    =============================================
+    MovieLens data sets were collected by the GroupLens Research Project
+    at the University of Minnesota.
+
+    This data set consists of:
+        * 100,000 ratings (1-5) from 943 users on 1682 movies.
+        * Each user has rated at least 20 movies.
+            * Simple demographic info for the users (age, gender, occupation, zip)
+
+    The data was collected through the MovieLens web site
+    (movielens.umn.edu) during the seven-month period from September 19th,
+    1997 through April 22nd, 1998. This data has been cleaned up - users
+    who had less than 20 ratings or did not have complete demographic
+    information were removed from this data set. Detailed descriptions of
+    the data file can be found at the end of this file.
+
+    Neither the University of Minnesota nor any of the researchers
+    involved can guarantee the correctness of the data, its suitability
+    for any particular purpose, or the validity of results based on the
+    use of the data set.  The data set may be used for any research
+    purposes under the following conditions:
+
+        * The user may not state or imply any endorsement from the
+        University of Minnesota or the GroupLens Research Group.
+
+        * The user must acknowledge the use of the data set in
+        publications resulting from the use of the data set
+        (see below for citation information).
+
+        * The user may not redistribute the data without separate
+        permission.
+
+        * The user may not use this information for any commercial or
+        revenue-bearing purposes without first obtaining permission
+        from a faculty member of the GroupLens Research Project at the
+        University of Minnesota.
+
+    If you have any further questions or comments, please contact GroupLens
+    <grouplens-info@cs.umn.edu>.
+
+    CITATION:
+    =============================================
+    To acknowledge use of the dataset in publications, please cite the
+    following paper:
+
+    F. Maxwell Harper and Joseph A. Konstan. 2015. The MovieLens Datasets:
+    History and Context. ACM Transactions on Interactive Intelligent
+    Systems (TiiS) 5, 4, Article 19 (December 2015), 19 pages.
+    DOI=http://dx.doi.org/10.1145/2827872
+
+    Returns
+    -------
+    df_data: Union[np.ndarray, pd.DataFrame]
+        The full u data set, 100000 ratings by 943 users on 1682 items.
+        Each user has rated at least 20 movies. Users and items are
+        numbered consecutively from 1. The data is randomly
+        ordered. The time stamps are unix seconds since 1/1/1970 UTC
+    df_items: Union[np.ndarray, pd.DataFrame]
+        Information about the items (movies).
+        The last 19 fields are the genres, a 1 indicates the movie
+        is of that genre, a 0 indicates it is not; movies can be in
+        several genres at once.
+        The movie ids are the ones used in the df_data data set.
+    df_users: Union[np.ndarray, pd.DataFrame]
+        Demographic information about the users.
+        The user ids are the ones used in the df_data data set.
+    """
+    with resources.path(
+        "pytorch_widedeep.datasets.data",
+        "MovieLens100k_data.parquet.brotli",
+    ) as fpath:
+        df_data = pd.read_parquet(fpath)
+
+    with resources.path(
+        "pytorch_widedeep.datasets.data",
+        "MovieLens100k_items.parquet.brotli",
+    ) as fpath:
+        df_items = pd.read_parquet(fpath)
+
+    with resources.path(
+        "pytorch_widedeep.datasets.data",
+        "MovieLens100k_users.parquet.brotli",
+    ) as fpath:
+        df_users = pd.read_parquet(fpath)
+
+    if as_frame:
+        return df_data, df_items, df_users
+    else:
+        return df_data.to_numpy(), df_items.to_numpy(), df_users.to_numpy()
