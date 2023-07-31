@@ -378,6 +378,6 @@ def load_movielens100k(
         df_users = pd.read_parquet(fpath)
 
     if as_frame:
-        return df_data, df_items, df_users
+        return df_data, df_users, df_items
     else:
-        return df_data.to_numpy(), df_items.to_numpy(), df_users.to_numpy()
+        return df_data.to_numpy(), df_users.to_numpy(), df_items.to_numpy()

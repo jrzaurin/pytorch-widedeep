@@ -9,6 +9,7 @@ from pytorch_widedeep.utils.text_utils import (
     pad_sequences,
     build_embeddings_matrix,
 )
+from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.utils.fastai_transforms import Vocab
 from pytorch_widedeep.preprocessing.base_preprocessor import (
     BasePreprocessor,
@@ -16,7 +17,6 @@ from pytorch_widedeep.preprocessing.base_preprocessor import (
 )
 
 
-# TODO: Add alias to already_processed
 class TextPreprocessor(BasePreprocessor):
     r"""Preprocessor to prepare the ``deeptext`` input dataset
 
@@ -36,8 +36,12 @@ class TextPreprocessor(BasePreprocessor):
     pad_idx: int, default = 1
         padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
     already_processed: bool, Optional, default = False
-        Boolean indicating if the text is already processed and we simply
-        want to tokenize it
+        Boolean indicating if the sequence of elements is already processed or
+        prepared. If this is the case, this Preprocessor will simply tokenize
+        and pad the sequence.
+
+        Param aliases: `not_text`. <br/>
+
     word_vectors_path: str, Optional
         Path to the pretrained word vectors
     n_cpus: int, Optional, default = None
@@ -70,6 +74,7 @@ class TextPreprocessor(BasePreprocessor):
     array([[ 1,  1,  9, 16, 17, 18, 11,  0,  0, 13]], dtype=int32)
     """
 
+    @Alias("already_processed", "not_text")
     def __init__(
         self,
         text_col: str,
@@ -112,7 +117,10 @@ class TextPreprocessor(BasePreprocessor):
         texts = df[self.text_col].tolist()
         tokens = get_texts(texts, self.already_processed, self.n_cpus)
         self.vocab = Vocab.create(
-            tokens, max_vocab=self.max_vocab, min_freq=self.min_freq
+            tokens,
+            max_vocab=self.max_vocab,
+            min_freq=self.min_freq,
+            pad_idx=self.pad_idx,
         )
         if self.verbose:
             print("The vocabulary contains {} tokens".format(len(self.vocab.stoi)))

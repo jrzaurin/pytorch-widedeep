@@ -391,7 +391,13 @@ class Vocab:
         pickle.dump(self.itos, open(path, "wb"))
 
     @classmethod
-    def create(cls, tokens: Tokens, max_vocab: int, min_freq: int) -> "Vocab":
+    def create(
+        cls,
+        tokens: Tokens,
+        max_vocab: int,
+        min_freq: int,
+        pad_idx: Optional[int] = None,
+    ) -> "Vocab":
         r"""Create a vocabulary object from a set of tokens.
 
         Parameters
@@ -402,9 +408,9 @@ class Vocab:
             strings (e.g. list of tokenized sentences)
         max_vocab: int
             maximum vocabulary size
-        min_freq: int
-            minimum frequency that a token has to appear to be part of the
-            vocabulary
+        pad_idx: int, Optional, default = None
+            padding index. If None, Fastai's Tokenizer leaves 0 for
+            the 'unknown' token and defaults to 1.
 
         Examples
         --------
@@ -427,12 +433,18 @@ class Vocab:
         Vocab
             An instance of a `Vocab` object
         """
+
         freq = Counter(p for o in tokens for p in o)
         itos = [o for o, c in freq.most_common(max_vocab) if c >= min_freq]
         for o in reversed(defaults.text_spec_tok):
             if o in itos:
                 itos.remove(o)
             itos.insert(0, o)
+
+        if pad_idx is not None:
+            itos.remove(PAD)
+            itos.insert(pad_idx, PAD)
+
         itos = itos[:max_vocab]
         if (
             len(itos) < max_vocab

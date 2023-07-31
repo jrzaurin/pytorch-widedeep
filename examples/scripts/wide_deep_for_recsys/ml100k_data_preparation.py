@@ -4,34 +4,17 @@
 # https://github.com/jrzaurin/pytorch-widedeep/issues/133 In this script we
 # simply prepare the data that will later be used for a custom Wide and Deep
 # model and for Wide and Deep models created using this library
-
 from pathlib import Path
 
-import pandas as pd
 from sklearn.model_selection import train_test_split
 
-raw_data_path = Path("~/ml_projects/wide_deep_learning_for_recsys/ml-100k")
+from pytorch_widedeep.datasets import load_movielens100k
 
-save_path = Path("prepared_data")
-if not save_path.exists():
-    save_path.mkdir(parents=True, exist_ok=True)
+data, user, items = load_movielens100k(as_frame=True)
 
-# Load the Ratings/Interaction (triplets (user, item, rating) plus timestamp)
-data = pd.read_csv(raw_data_path / "u.data", sep="\t", header=None)
-data.columns = ["user_id", "movie_id", "rating", "timestamp"]
-
-# Load the User features
-users = pd.read_csv(raw_data_path / "u.user", sep="|", encoding="latin-1", header=None)
-users.columns = ["user_id", "age", "gender", "occupation", "zip_code"]
-
-# Load the Item features
-items = pd.read_csv(raw_data_path / "u.item", sep="|", encoding="latin-1", header=None)
-items.columns = [
-    "movie_id",
-    "movie_title",
-    "release_date",
-    "video_release_date",
-    "IMDb_URL",
+# Alternatively, as specified in the docs: 'The last 19 fields are the genres' so:
+# list_of_genres = items.columns.tolist()[-19:]
+list_of_genres = [
     "unknown",
     "Action",
     "Adventure",
@@ -53,10 +36,6 @@ items.columns = [
     "Western",
 ]
 
-list_of_genres = pd.read_csv(
-    raw_data_path / "u.genre", sep="|", header=None, usecols=[0]
-)[0].tolist()
-list_of_genres
 
 # adding a column with the number of movies watched per user
 dataset = data.sort_values(["user_id", "timestamp"]).reset_index(drop=True)
@@ -95,9 +74,6 @@ dataset[list_of_genres] = dataset[list_of_genres].apply(
     lambda x: x / dataset["num_watched"]
 )
 
-# Adding user features
-dataset = dataset.merge(users, on="user_id", how="left")
-
 # Again, we use the same settings as those in the Kaggle notebook,
 # but 'COLD_START_TRESH' is pretty aggressive
 COLD_START_TRESH = 5
@@ -117,6 +93,10 @@ cols_to_drop = [
 df_train = train_data.drop(cols_to_drop, axis=1)
 df_valid = valid_data.drop(cols_to_drop, axis=1)
 df_test = test_data.drop(cols_to_drop, axis=1)
+
+save_path = Path("prepared_data")
+if not save_path.exists():
+    save_path.mkdir(parents=True, exist_ok=True)
 
 df_train.to_pickle(save_path / "df_train.pkl")
 df_valid.to_pickle(save_path / "df_valid.pkl")

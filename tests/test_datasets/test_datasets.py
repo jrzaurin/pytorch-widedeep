@@ -8,9 +8,9 @@ from pytorch_widedeep.datasets import (
     load_birds,
     load_ecoli,
     load_bio_kdd04,
+    load_movielens100k,
     load_womens_ecommerce,
     load_california_housing,
-    load_movielens100k,
 )
 
 
@@ -127,19 +127,19 @@ def test_load_california_housing(as_frame):
     ],
 )
 def test_load_movielens100k(as_frame):
-    df_data, df_items, df_users = load_movielens100k(as_frame=as_frame)
+    df_data, df_users, df_items = load_movielens100k(as_frame=as_frame)
     if as_frame:
         assert (
             df_data.shape,
-            df_items.shape,
             df_users.shape,
+            df_items.shape,
             type(df_data),
-            type(df_items),
             type(df_users),
+            type(df_items),
         ) == (
             (100000, 4),
-            (1682, 24),
             (943, 5),
+            (1682, 24),
             pd.DataFrame,
             pd.DataFrame,
             pd.DataFrame,
@@ -147,15 +147,15 @@ def test_load_movielens100k(as_frame):
     else:
         assert (
             df_data.shape,
-            df_items.shape,
             df_users.shape,
+            df_items.shape,
             type(df_data),
-            type(df_items),
             type(df_users),
+            type(df_items),
         ) == (
             (100000, 4),
-            (1682, 24),
             (943, 5),
+            (1682, 24),
             np.ndarray,
             np.ndarray,
             np.ndarray,
