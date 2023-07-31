@@ -20,6 +20,7 @@ class TransformerEncoder(nn.Module):
         use_bias: bool,
         attn_dropout: float,
         ff_dropout: float,
+        ff_factor: int,
         activation: str,
     ):
         super(TransformerEncoder, self).__init__()
@@ -30,7 +31,7 @@ class TransformerEncoder(nn.Module):
             use_bias,
             attn_dropout,
         )
-        self.ff = FeedForward(input_dim, ff_dropout, activation)
+        self.ff = FeedForward(input_dim, ff_dropout, ff_factor, activation)
 
         self.attn_addnorm = AddNorm(input_dim, attn_dropout)
         self.ff_addnorm = AddNorm(input_dim, ff_dropout)
@@ -48,6 +49,7 @@ class SaintEncoder(nn.Module):
         use_bias: bool,
         attn_dropout: float,
         ff_dropout: float,
+        ff_factor: int,
         activation: str,
         n_feat: int,
     ):
@@ -61,7 +63,7 @@ class SaintEncoder(nn.Module):
             use_bias,
             attn_dropout,
         )
-        self.col_attn_ff = FeedForward(input_dim, ff_dropout, activation)
+        self.col_attn_ff = FeedForward(input_dim, ff_dropout, ff_factor, activation)
         self.col_attn_addnorm = AddNorm(input_dim, attn_dropout)
         self.col_attn_ff_addnorm = AddNorm(input_dim, ff_dropout)
 
@@ -71,7 +73,12 @@ class SaintEncoder(nn.Module):
             use_bias,
             attn_dropout,
         )
-        self.row_attn_ff = FeedForward(n_feat * input_dim, ff_dropout, activation)
+        self.row_attn_ff = FeedForward(
+            n_feat * input_dim,
+            ff_dropout,
+            ff_factor,
+            activation,
+        )
         self.row_attn_addnorm = AddNorm(n_feat * input_dim, attn_dropout)
         self.row_attn_ff_addnorm = AddNorm(n_feat * input_dim, ff_dropout)
 
@@ -94,10 +101,10 @@ class FTTransformerEncoder(nn.Module):
         use_bias: bool,
         attn_dropout: float,
         ff_dropout: float,
+        ff_factor: float,
         kv_compression_factor: float,
         kv_sharing: bool,
         activation: str,
-        ff_factor: float,
         first_block: bool,
     ):
         super(FTTransformerEncoder, self).__init__()
@@ -113,7 +120,7 @@ class FTTransformerEncoder(nn.Module):
             kv_compression_factor,
             kv_sharing,
         )
-        self.ff = FeedForward(input_dim, ff_dropout, activation, ff_factor)
+        self.ff = FeedForward(input_dim, ff_dropout, ff_factor, activation)
 
         self.attn_normadd = NormAdd(input_dim, attn_dropout)
         self.ff_normadd = NormAdd(input_dim, ff_dropout)
@@ -134,6 +141,7 @@ class PerceiverEncoder(nn.Module):
         use_bias: bool,
         attn_dropout: float,
         ff_dropout: float,
+        ff_factor: int,
         activation: str,
         query_dim: Optional[int] = None,
     ):
@@ -147,7 +155,7 @@ class PerceiverEncoder(nn.Module):
             query_dim,
         )
         attn_dim_out = query_dim if query_dim is not None else input_dim
-        self.ff = FeedForward(attn_dim_out, ff_dropout, activation)
+        self.ff = FeedForward(attn_dim_out, ff_dropout, ff_factor, activation)
 
         self.ln_q = nn.LayerNorm(attn_dim_out)
         self.ln_kv = nn.LayerNorm(input_dim)
@@ -171,6 +179,7 @@ class FastFormerEncoder(nn.Module):
         use_bias: bool,
         attn_dropout: float,
         ff_dropout: float,
+        ff_factor: int,
         share_qv_weights: bool,
         activation: str,
     ):
@@ -184,7 +193,7 @@ class FastFormerEncoder(nn.Module):
             share_qv_weights,
         )
 
-        self.ff = FeedForward(input_dim, ff_dropout, activation)
+        self.ff = FeedForward(input_dim, ff_dropout, ff_factor, activation)
         self.attn_addnorm = AddNorm(input_dim, attn_dropout)
         self.ff_addnorm = AddNorm(input_dim, ff_dropout)
 

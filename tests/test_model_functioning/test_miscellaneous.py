@@ -17,6 +17,7 @@ from pytorch_widedeep.models import (
     BasicRNN,
     WideDeep,
     TabResnet,
+    Transformer,
     TabTransformer,
 )
 from pytorch_widedeep.metrics import Accuracy, Precision
@@ -89,7 +90,16 @@ tabnet = TabNet(
     continuous_cols=colnames[5:],
     ghost_bn=False,
 )
-deeptext = BasicRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+basic_rnn = BasicRNN(vocab_size=vocab_size, embed_dim=32, padding_idx=0)
+
+basic_transformer = Transformer(
+    vocab_size=X_text.max() + 1,
+    maxlen=X_text.shape[1],
+    embed_dim=8,
+    n_heads=2,
+    n_blocks=2,
+)
+
 deepimage = Vision(pretrained_model_setup="resnet18", n_trainable=0)
 
 ###############################################################################
@@ -209,7 +219,8 @@ def test_basic_run_with_metrics_multiclass():
         (None, tabmlp, None, None, None, X_tab, None, None, target),
         (None, tabresnet, None, None, None, X_tab, None, None, target),
         (None, tabtransformer, None, None, None, X_tab, None, None, target),
-        (None, None, deeptext, None, None, None, X_text, None, target),
+        (None, None, basic_rnn, None, None, None, X_text, None, target),
+        (None, None, basic_transformer, None, None, None, X_text, None, target),
         (None, None, None, deepimage, None, None, None, X_img, target),
     ],
 )

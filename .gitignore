@@ -21,6 +21,7 @@ tmp_dir/
 weights/
 pretrained_weights/
 model_weights/
+prepared_data/
 
 # Unit Tests/Coverage
 .coverage

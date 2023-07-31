@@ -84,6 +84,9 @@ class TabFastFormer(BaseTabularModelWithAttention):
         Dropout that will be applied to the Additive Attention layers
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
+    ff_factor: float, default = 4
+        Multiplicative factor applied to the first layer of the FF network in
+        each Transformer block, This is normally set to 4.
     share_qv_weights: bool, default = False
         Following the paper, this is a boolean indicating if the Value ($V$) and
         the Query ($Q$) transformation parameters will be shared.
@@ -159,6 +162,7 @@ class TabFastFormer(BaseTabularModelWithAttention):
         n_blocks: int = 4,
         attn_dropout: float = 0.1,
         ff_dropout: float = 0.2,
+        ff_factor: int = 4,
         share_qv_weights: bool = False,
         share_weights: bool = False,
         transformer_activation: str = "relu",
@@ -193,6 +197,7 @@ class TabFastFormer(BaseTabularModelWithAttention):
         self.n_blocks = n_blocks
         self.attn_dropout = attn_dropout
         self.ff_dropout = ff_dropout
+        self.ff_factor = ff_factor
         self.share_qv_weights = share_qv_weights
         self.share_weights = share_weights
         self.transformer_activation = transformer_activation
@@ -218,6 +223,7 @@ class TabFastFormer(BaseTabularModelWithAttention):
             use_bias,
             attn_dropout,
             ff_dropout,
+            ff_factor,
             share_qv_weights,
             transformer_activation,
         )
@@ -236,6 +242,7 @@ class TabFastFormer(BaseTabularModelWithAttention):
                         use_bias,
                         attn_dropout,
                         ff_dropout,
+                        ff_factor,
                         share_qv_weights,
                         transformer_activation,
                     ),

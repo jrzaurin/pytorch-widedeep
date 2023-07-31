@@ -86,6 +86,9 @@ class TabTransformer(BaseTabularModelWithAttention):
         Dropout that will be applied to the Multi-Head Attention layers
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
+    ff_factor: float, default = 4
+        Multiplicative factor applied to the first layer of the FF network in
+        each Transformer block, This is normally set to 4.
     transformer_activation: str, default = "gelu"
         Transformer Encoder activation function. _'tanh'_, _'relu'_,
         _'leaky_relu'_, _'gelu'_, _'geglu'_ and _'reglu'_ are supported
@@ -153,6 +156,7 @@ class TabTransformer(BaseTabularModelWithAttention):
         n_blocks: int = 4,
         attn_dropout: float = 0.2,
         ff_dropout: float = 0.1,
+        ff_factor: int = 4,
         transformer_activation: str = "gelu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
@@ -186,6 +190,7 @@ class TabTransformer(BaseTabularModelWithAttention):
         self.attn_dropout = attn_dropout
         self.ff_dropout = ff_dropout
         self.transformer_activation = transformer_activation
+        self.ff_factor = ff_factor
 
         self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation
@@ -215,6 +220,7 @@ class TabTransformer(BaseTabularModelWithAttention):
                     use_qkv_bias,
                     attn_dropout,
                     ff_dropout,
+                    ff_factor,
                     transformer_activation,
                 ),
             )

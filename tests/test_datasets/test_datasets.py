@@ -8,6 +8,7 @@ from pytorch_widedeep.datasets import (
     load_birds,
     load_ecoli,
     load_bio_kdd04,
+    load_movielens100k,
     load_womens_ecommerce,
     load_california_housing,
 )
@@ -116,3 +117,46 @@ def test_load_california_housing(as_frame):
         assert (df.shape, type(df)) == ((20640, 9), pd.DataFrame)
     else:
         assert (df.shape, type(df)) == ((20640, 9), np.ndarray)
+
+
+@pytest.mark.parametrize(
+    "as_frame",
+    [
+        (True),
+        (False),
+    ],
+)
+def test_load_movielens100k(as_frame):
+    df_data, df_users, df_items = load_movielens100k(as_frame=as_frame)
+    if as_frame:
+        assert (
+            df_data.shape,
+            df_users.shape,
+            df_items.shape,
+            type(df_data),
+            type(df_users),
+            type(df_items),
+        ) == (
+            (100000, 4),
+            (943, 5),
+            (1682, 24),
+            pd.DataFrame,
+            pd.DataFrame,
+            pd.DataFrame,
+        )
+    else:
+        assert (
+            df_data.shape,
+            df_users.shape,
+            df_items.shape,
+            type(df_data),
+            type(df_users),
+            type(df_items),
+        ) == (
+            (100000, 4),
+            (943, 5),
+            (1682, 24),
+            np.ndarray,
+            np.ndarray,
+            np.ndarray,
+        )
