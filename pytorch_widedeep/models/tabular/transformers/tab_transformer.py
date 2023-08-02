@@ -169,7 +169,6 @@ class TabTransformer(BaseTabularModelWithAttention):
         use_linear_attention: bool = False,
         use_flash_attention: bool = False,
         mlp_hidden_dims: Optional[List[int]] = None,
-        # enabled_flash_backends,
         mlp_activation: str = "relu",
         mlp_dropout: float = 0.1,
         mlp_batchnorm: bool = False,

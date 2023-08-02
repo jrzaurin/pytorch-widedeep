@@ -24,7 +24,6 @@ class TransformerEncoder(nn.Module):
         activation: str,
         use_linear_attention: bool,
         use_flash_attention: bool,
-        # enabled_flash_backends,
     ):
         super(TransformerEncoder, self).__init__()
 

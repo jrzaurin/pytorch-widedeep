@@ -68,7 +68,7 @@ class AddNorm(nn.Module):
 
 
 def _standard_attention(
-    k: Tensor, q: Tensor, v: Tensor, head_dim: int, dropout: float
+    q: Tensor, k: Tensor, v: Tensor, head_dim: int, dropout: float
 ) -> Tuple[Tensor, Tensor]:
     """'Standard' multihead attention implemenation from [Attention Is All You
     Need](https://arxiv.org/abs/1706.03762)
@@ -80,10 +80,9 @@ def _standard_attention(
     # h: number of attention heads,
     # d and e: head_dim
 
-    # Normalised Query, Key dot product. Fraction term in their Eq 1
+    # Normalised Query, Key dot product + softmax. Fraction in brackets in
+    # their Eq 1
     scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(head_dim)
-
-    # Softmax
     attn_weights = scores.softmax(dim=-1)
 
     # Attention(Q, K, V ) (with dropout) in their Eq 1
@@ -94,7 +93,7 @@ def _standard_attention(
     return attn_weights, attn_output
 
 
-def _linear_attention(k: Tensor, q: Tensor, v: Tensor) -> Tensor:
+def _linear_attention(q: Tensor, k: Tensor, v: Tensor) -> Tensor:
     """Liner attention implemenation from [Transformers are RNNs: Fast
     Autoregressive Transformers with Linear Attention]
     (https://arxiv.org/abs/2006.16236)
@@ -159,11 +158,11 @@ class MultiHeadedAttention(nn.Module):
         dropout: float,
         query_dim: Optional[int] = None,
         use_linear_attention: bool = False,
-        use_flash_attention: Optional[bool] = False,
-        enabled_flash_backends: Optional[List[SDPBackend]] = [
+        use_flash_attention: bool = False,
+        enabled_flash_backends: List[SDPBackend] = [
             SDPBackend.FLASH,
             SDPBackend.MEM_EFFICIENT,
-        ],
+        ],  # in the next release we will offer the posibility of setting up the backend
     ):
         super(MultiHeadedAttention, self).__init__()
 
@@ -201,6 +200,9 @@ class MultiHeadedAttention(nn.Module):
         )
 
         if self.use_flash_attention:
+            # in the future we will offer the possibility of setting up the
+            # backend. For the time being this context manager
+            # is 'redundant'
             with _flash_kernel_setup(self.enabled_flash_backends):
                 attn_output = F.scaled_dot_product_attention(
                     q,
