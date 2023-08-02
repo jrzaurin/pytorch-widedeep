@@ -6,12 +6,12 @@ https://github.com/lucidrains
 import math
 import warnings
 from enum import Enum
-from typing import ContextManager,  List
+from typing import List, ContextManager
 
 import torch
 import einops
-from torch import nn, einsum
 import torch.nn.functional as F
+from torch import nn, einsum
 
 from pytorch_widedeep.wdtypes import Tensor, Optional
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
@@ -71,21 +71,27 @@ class SDPBackend(Enum):
     FLASH: int = 0
     MEM_EFFICIENT: int = 1
 
-def _flash_kernel_setup(enabled_flash_backends: List[SDPBackend]) -> ContextManager:
 
-    assert torch.cuda.is_available(), 'optimized kernels may only be called when using CUDA backend.'
-   
+def _flash_kernel_setup(enabled_flash_backends: List[SDPBackend]) -> ContextManager:
+    assert (
+        torch.cuda.is_available()
+    ), "optimized kernels can only be used if CUDA is available."
+
     warnings.warn(
-        "FlashAttention is an experimental feature, please use with caution.",
-        RuntimeWarning
+        "Note that FlashAttention This function is beta and subject to change",
+        RuntimeWarning,
     )
-    
+
     # Setting backends as suggested at https://discuss.pytorch.org/t/flash-attention/174955
     enable_flash = True if SDPBackend.FLASH in enabled_flash_backends else False
-    enable_mem_eff = True if SDPBackend.MEM_EFFICIENT in enabled_flash_backends else False
+    enable_mem_eff = (
+        True if SDPBackend.MEM_EFFICIENT in enabled_flash_backends else False
+    )
 
     return torch.backends.cuda.sdp_kernel(
-        enable_flash=enable_flash, enable_mem_efficient=enable_mem_eff, enable_math=False
+        enable_flash=enable_flash,
+        enable_mem_efficient=enable_mem_eff,
+        enable_math=False,
     )
 
 
@@ -98,7 +104,10 @@ class MultiHeadedAttention(nn.Module):
         dropout: float,
         query_dim: Optional[int] = None,
         use_flash: Optional[bool] = False,
-        enabled_flash_backends: Optional[List[SDPBackend]] = [SDPBackend.FLASH, SDPBackend.MEM_EFFICIENT] 
+        enabled_flash_backends: Optional[List[SDPBackend]] = [
+            SDPBackend.FLASH,
+            SDPBackend.MEM_EFFICIENT,
+        ],
     ):
         super(MultiHeadedAttention, self).__init__()
 
@@ -138,20 +147,28 @@ class MultiHeadedAttention(nn.Module):
         if self.use_flash:
             with _flash_kernel_setup(self.enabled_flash_backends):
                 attn_output = F.scaled_dot_product_attention(
-                    q, k, v, 
-                    attn_mask=None, 
-                    dropout_p=self.dropout_p if self.training else 0, 
-                    is_causal=False
+                    q,
+                    k,
+                    v,
+                    attn_mask=None,
+                    dropout_p=self.dropout_p if self.training else 0,
+                    is_causal=False,
                 )
-            output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
+            output = einops.rearrange(
+                attn_output, "b h s d -> b s (h d)", h=self.n_heads
+            )
 
         else:
-            scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.head_dim)
+            scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(
+                self.head_dim
+            )
             attn_weights = scores.softmax(dim=-1)
             self.attn_weights = attn_weights
             attn_weights = self.dropout(attn_weights)
             attn_output = einsum("b h s l, b h l d -> b h s d", attn_weights, v)
-            output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
+            output = einops.rearrange(
+                attn_output, "b h s d -> b s (h d)", h=self.n_heads
+            )
 
         if self.out_proj is not None:
             output = self.out_proj(output)
@@ -160,6 +177,83 @@ class MultiHeadedAttention(nn.Module):
 
 
 class LinearAttention(nn.Module):
+    """Linear Attention implementation from [Transformers are RNNs: Fast
+    Autoregressive Transformers with Linear Attention]
+    (https://arxiv.org/abs/2006.16236)
+    """
+
+    def __init__(
+        self,
+        input_dim: int,
+        n_heads: int,
+        use_bias: bool,
+        dropout: float,
+        query_dim: Optional[int] = None,
+    ):
+        super(LinearAttention, self).__init__()
+
+        assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
+
+        self.head_dim = input_dim // n_heads
+        self.n_heads = n_heads
+
+        self.dropout = nn.Dropout(dropout)
+
+        self.input_dim = input_dim
+        self.use_bias = use_bias
+        self.query_dim = query_dim
+
+        query_dim = query_dim if query_dim is not None else input_dim
+        self.q_proj = nn.Linear(query_dim, input_dim, bias=use_bias)
+        self.kv_proj = nn.Linear(input_dim, input_dim * 2, bias=use_bias)
+        self.out_proj = (
+            nn.Linear(input_dim, query_dim, bias=use_bias) if n_heads > 1 else None
+        )
+
+    def forward(self, X_Q: Tensor, X_KV: Optional[Tensor] = None) -> Tensor:
+        # b: batch size
+        # s: seq length
+        # l: target seq length
+        # m: used to refer indistinctively to s or l
+        # h: number of attention heads,
+        # d and e: head_dim
+        queries = self.q_proj(X_Q)
+        X_KV = X_KV if X_KV is not None else X_Q
+        keys, v = self.kv_proj(X_KV).chunk(2, dim=-1)
+
+        # Here we use the defaut used in the original implementation: elu() + 1
+        q, k = (
+            nn.functional.elu(queries) + 1,
+            nn.functional.elu(keys) + 1,
+        )
+
+        q, k, v = map(
+            lambda t: einops.rearrange(t, "b m (h d) -> b h m d", h=self.n_heads),
+            (q, k, v),
+        )
+
+        # The term within the summation in the numerator of their Eq 5
+        kv = einsum("b h s e, b h l d -> b h e d", k, v)
+
+        # The denomiator in their Eq 5
+        z = 1 / (torch.einsum("b h m d, b h d -> b h m", q, k.sum(dim=2)) + 1e-6)
+
+        # Their Eq 5
+        attn_output = torch.einsum("b h m d, b h e d, b h m -> b h m d", q, kv, z)
+
+        output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
+
+        if self.out_proj is not None:
+            output = self.out_proj(output)
+
+        return output
+
+
+class LinearAttentionLinformer(nn.Module):
+    """Linear Attention implementation from [Linformer: Self-Attention with
+    Linear Complexity](https://arxiv.org/abs/2006.04768)
+    """
+
     def __init__(
         self,
         input_dim: int,
@@ -170,7 +264,7 @@ class LinearAttention(nn.Module):
         kv_compression_factor: float,
         kv_sharing: bool,
     ):
-        super(LinearAttention, self).__init__()
+        super(LinearAttentionLinformer, self).__init__()
         assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
 
         self.n_feats = n_feats
@@ -224,6 +318,10 @@ class LinearAttention(nn.Module):
 
 
 class AdditiveAttention(nn.Module):
+    """Additive Attention Implementation from [FastFormer]
+    (https://arxiv.org/abs/2108.09084)
+    """
+
     def __init__(
         self,
         input_dim: int,
