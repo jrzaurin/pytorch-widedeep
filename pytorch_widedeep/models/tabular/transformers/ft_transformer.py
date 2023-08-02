@@ -90,13 +90,13 @@ class FTTransformer(BaseTabularModelWithAttention):
         Dropout that will be applied to the Linear-Attention layers
     ff_dropout: float, default = 0.1
         Dropout that will be applied to the FeedForward network
-    transformer_activation: str, default = "gelu"
-        Transformer Encoder activation function. _'tanh'_, _'relu'_,
-        _'leaky_relu'_, _'gelu'_, _'geglu'_ and _'reglu'_ are supported
     ff_factor: float, default = 4 / 3
         Multiplicative factor applied to the first layer of the FF network in
         each Transformer block, This is normally set to 4, but they use 4/3
         in the paper.
+    transformer_activation: str, default = "gelu"
+        Transformer Encoder activation function. _'tanh'_, _'relu'_,
+        _'leaky_relu'_, _'gelu'_, _'geglu'_ and _'reglu'_ are supported
     mlp_hidden_dims: List, Optional, default = None
         MLP hidden dimensions. If not provided no MLP on top of the final
         FTTransformer block will be used
@@ -162,8 +162,8 @@ class FTTransformer(BaseTabularModelWithAttention):
         n_blocks: int = 4,
         attn_dropout: float = 0.2,
         ff_dropout: float = 0.1,
-        transformer_activation: str = "reglu",
         ff_factor: float = 1.33,
+        transformer_activation: str = "reglu",
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: str = "relu",
         mlp_dropout: float = 0.1,
@@ -197,8 +197,8 @@ class FTTransformer(BaseTabularModelWithAttention):
         self.n_blocks = n_blocks
         self.attn_dropout = attn_dropout
         self.ff_dropout = ff_dropout
-        self.transformer_activation = transformer_activation
         self.ff_factor = ff_factor
+        self.transformer_activation = transformer_activation
 
         self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation
@@ -226,10 +226,10 @@ class FTTransformer(BaseTabularModelWithAttention):
                     use_qkv_bias,
                     attn_dropout,
                     ff_dropout,
+                    ff_factor,
                     kv_compression_factor,
                     kv_sharing,
                     transformer_activation,
-                    ff_factor,
                     is_first,
                 ),
             )

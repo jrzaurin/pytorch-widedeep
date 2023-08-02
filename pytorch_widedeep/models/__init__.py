@@ -1,5 +1,6 @@
 from pytorch_widedeep.models.text import (
     BasicRNN,
+    Transformer,
     AttentiveRNN,
     StackedAttentiveRNN,
 )

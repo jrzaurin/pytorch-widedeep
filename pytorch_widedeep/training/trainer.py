@@ -1127,6 +1127,7 @@ class Trainer(BaseTrainer):
     @staticmethod
     def _extract_kwargs(kwargs):
         dataloader_params = [
+            "shuffle",
             "sampler",
             "batch_sampler",
             "num_workers",

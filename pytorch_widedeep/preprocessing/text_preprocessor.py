@@ -9,6 +9,7 @@ from pytorch_widedeep.utils.text_utils import (
     pad_sequences,
     build_embeddings_matrix,
 )
+from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.utils.fastai_transforms import Vocab
 from pytorch_widedeep.preprocessing.base_preprocessor import (
     BasePreprocessor,
@@ -34,6 +35,13 @@ class TextPreprocessor(BasePreprocessor):
         end of the sequences
     pad_idx: int, default = 1
         padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
+    already_processed: bool, Optional, default = False
+        Boolean indicating if the sequence of elements is already processed or
+        prepared. If this is the case, this Preprocessor will simply tokenize
+        and pad the sequence.
+
+        Param aliases: `not_text`. <br/>
+
     word_vectors_path: str, Optional
         Path to the pretrained word vectors
     n_cpus: int, Optional, default = None
@@ -66,6 +74,7 @@ class TextPreprocessor(BasePreprocessor):
     array([[ 1,  1,  9, 16, 17, 18, 11,  0,  0, 13]], dtype=int32)
     """
 
+    @Alias("already_processed", "not_text")
     def __init__(
         self,
         text_col: str,
@@ -74,6 +83,7 @@ class TextPreprocessor(BasePreprocessor):
         maxlen: int = 80,
         pad_first: bool = True,
         pad_idx: int = 1,
+        already_processed: Optional[bool] = False,
         word_vectors_path: Optional[str] = None,
         n_cpus: Optional[int] = None,
         verbose: int = 1,
@@ -86,6 +96,7 @@ class TextPreprocessor(BasePreprocessor):
         self.maxlen = maxlen
         self.pad_first = pad_first
         self.pad_idx = pad_idx
+        self.already_processed = already_processed
         self.word_vectors_path = word_vectors_path
         self.verbose = verbose
         self.n_cpus = n_cpus if n_cpus is not None else os.cpu_count()
@@ -104,9 +115,12 @@ class TextPreprocessor(BasePreprocessor):
             `TextPreprocessor` fitted object
         """
         texts = df[self.text_col].tolist()
-        tokens = get_texts(texts, self.n_cpus)
+        tokens = get_texts(texts, self.already_processed, self.n_cpus)
         self.vocab = Vocab.create(
-            tokens, max_vocab=self.max_vocab, min_freq=self.min_freq
+            tokens,
+            max_vocab=self.max_vocab,
+            min_freq=self.min_freq,
+            pad_idx=self.pad_idx,
         )
         if self.verbose:
             print("The vocabulary contains {} tokens".format(len(self.vocab.stoi)))
@@ -131,7 +145,7 @@ class TextPreprocessor(BasePreprocessor):
         """
         check_is_fitted(self, attributes=["vocab"])
         texts = df[self.text_col].tolist()
-        self.tokens = get_texts(texts, self.n_cpus)
+        self.tokens = get_texts(texts, self.already_processed, self.n_cpus)
         sequences = [self.vocab.numericalize(t) for t in self.tokens]
         padded_seq = np.array(
             [

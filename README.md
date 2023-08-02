@@ -12,6 +12,7 @@
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/jrzaurin/pytorch-widedeep/issues)
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.05027/status.svg)](https://doi.org/10.21105/joss.05027)
 
 # pytorch-widedeep
 
@@ -38,6 +39,9 @@ The content of this document is organized as follows:
     - [How to Contribute](#how-to-contribute)
     - [Acknowledgments](#acknowledgments)
     - [License](#license)
+    - [Cite](#cite)
+      - [BibTex](#bibtex)
+      - [APA](#apa)
 
 ### Introduction
 
@@ -82,7 +86,7 @@ without a ``deephead`` component can be formulated as:
 
 
 Where &sigma; is the sigmoid function, *'W'* are the weight matrices applied to the wide model and to the final
-activations of the deep models, *'a'* are these final activations, 
+activations of the deep models, *'a'* are these final activations,
 &phi;(x) are the cross product transformations of the original features *'x'*, and
 , and *'b'* is the bias term.
 In case you are wondering what are *"cross product transformations"*, here is
@@ -332,3 +336,30 @@ This work is dual-licensed under Apache 2.0 and MIT (or any later version).
 You can choose between one of them if you use this work.
 
 `SPDX-License-Identifier: Apache-2.0 AND MIT`
+
+### Cite
+
+#### BibTex
+
+```
+@article{Zaurin_pytorch-widedeep_A_flexible_2023,
+author = {Zaurin, Javier Rodriguez and Mulinka, Pavol},
+doi = {10.21105/joss.05027},
+journal = {Journal of Open Source Software},
+month = jun,
+number = {86},
+pages = {5027},
+title = {{pytorch-widedeep: A flexible package for multimodal deep learning}},
+url = {https://joss.theoj.org/papers/10.21105/joss.05027},
+volume = {8},
+year = {2023}
+}
+```
+
+#### APA
+
+```
+Zaurin, J. R., & Mulinka, P. (2023). pytorch-widedeep: A flexible package for
+multimodal deep learning. Journal of Open Source Software, 8(86), 5027.
+https://doi.org/10.21105/joss.05027
+```
