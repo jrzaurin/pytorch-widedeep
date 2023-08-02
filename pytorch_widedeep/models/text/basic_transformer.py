@@ -85,6 +85,8 @@ class Transformer(nn.Module):
         ff_dropout: float = 0.1,
         ff_factor: int = 4,
         activation: str = "gelu",
+        use_linear_attention: bool = False,
+        use_flash_attention: bool = False,
         with_cls_token: bool = False,
         *,  # from here on pos encoding args
         with_pos_encoding: bool = True,
@@ -101,6 +103,8 @@ class Transformer(nn.Module):
         self.ff_dropout = ff_dropout
         self.ff_factor = ff_factor
         self.activation = activation
+        self.use_linear_attention = use_linear_attention
+        self.use_flash_attention = use_flash_attention
         self.with_cls_token = with_cls_token
         self.with_pos_encoding = with_pos_encoding
         self.pos_encoding_dropout = pos_encoding_dropout
@@ -131,6 +135,8 @@ class Transformer(nn.Module):
                     ff_dropout,
                     ff_factor,
                     activation,
+                    use_linear_attention,
+                    use_flash_attention,
                 ),
             )
 

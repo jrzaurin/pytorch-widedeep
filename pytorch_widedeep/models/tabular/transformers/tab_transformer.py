@@ -92,6 +92,14 @@ class TabTransformer(BaseTabularModelWithAttention):
     transformer_activation: str, default = "gelu"
         Transformer Encoder activation function. _'tanh'_, _'relu'_,
         _'leaky_relu'_, _'gelu'_, _'geglu'_ and _'reglu'_ are supported
+    use_linear_attention: Boolean, default = False,
+        Boolean indicating if Linear Attention from [Transformers are RNNs:
+        Fast Autoregressive Transformers with Linear Attention]
+        (https://arxiv.org/abs/2006.16236) will be used
+    use_flash_attention: Boolean, default = False,
+        Boolean indicating if [Flash Attention]
+        (https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html)
+        will be used
     mlp_hidden_dims: List, Optional, default = None
         MLP hidden dimensions. If not provided it will default to $[l,
         4\times l, 2 \times l]$ where $l$ is the MLP's input dimension
@@ -158,7 +166,10 @@ class TabTransformer(BaseTabularModelWithAttention):
         ff_dropout: float = 0.1,
         ff_factor: int = 4,
         transformer_activation: str = "gelu",
+        use_linear_attention: bool = False,
+        use_flash_attention: bool = False,
         mlp_hidden_dims: Optional[List[int]] = None,
+        # enabled_flash_backends,
         mlp_activation: str = "relu",
         mlp_dropout: float = 0.1,
         mlp_batchnorm: bool = False,
@@ -190,6 +201,8 @@ class TabTransformer(BaseTabularModelWithAttention):
         self.attn_dropout = attn_dropout
         self.ff_dropout = ff_dropout
         self.transformer_activation = transformer_activation
+        self.use_linear_attention = use_linear_attention
+        self.use_flash_attention = use_flash_attention
         self.ff_factor = ff_factor
 
         self.mlp_hidden_dims = mlp_hidden_dims
@@ -222,6 +235,8 @@ class TabTransformer(BaseTabularModelWithAttention):
                     ff_dropout,
                     ff_factor,
                     transformer_activation,
+                    use_linear_attention,
+                    use_flash_attention,
                 ),
             )
 
@@ -297,6 +312,12 @@ class TabTransformer(BaseTabularModelWithAttention):
         batch size, $H$ is the number of attention heads and $F$ is the
         number of features/columns in the dataset
         """
+        if self.use_flash_attention or self.use_linear_attention:
+            raise ValueError(
+                "Extraction of the attention weights is not supported for "
+                "linear or flash attention"
+            )
+
         return [blk.attn.attn_weights for blk in self.encoder]
 
     def _compute_attn_output_dim(self) -> int:
