@@ -3,21 +3,21 @@
   <img width="300" src="docs/figures/widedeep_logo.png">
 </p>
 
-[<img src="https://badge.fury.io/py/pytorch-widedeep.svg" alt="PyPI version">](https://pypi.org/project/pytorch-widedeep/)
-[<img src="https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue.svg" alt="Python 3.7 3.8 3.9">](https://pypi.org/project/pytorch-widedeep/)
-[<img src="https://github.com/jrzaurin/pytorch-widedeep/actions/workflows/build.yml/badge.svg" alt="Build Status">](https://github.com/jrzaurin/pytorch-widedeep/actions)
-[<img src="https://readthedocs.org/projects/pytorch-widedeep/badge/?version=latest" alt="Documentation Status">](https://pytorch-widedeep.readthedocs.io/en/latest/?badge=latest)
-[<img src="https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/master/graph/badge.svg" alt="codecov">](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
-[<img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black">](https://github.com/psf/black)
-[<img src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" alt="Maintenance">](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
-[<img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat" alt="contributions welcome">](https://github.com/jrzaurin/pytorch-widedeep/issues)
-[<img src="https://img.shields.io/badge/slack-chat-green.svg?logo=slack" alt="Slack">](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
+[![PyPI version](https://badge.fury.io/py/pytorch-widedeep.svg)](https://pypi.org/project/pytorch-widedeep/)
+[![Python 3.7 3.8 3.9 3.10](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10-blue.svg)](https://pypi.org/project/pytorch-widedeep/)
+[![Build Status](https://github.com/jrzaurin/pytorch-widedeep/actions/workflows/build.yml/badge.svg)](https://github.com/jrzaurin/pytorch-widedeep/actions)
+[![Documentation Status](https://readthedocs.org/projects/pytorch-widedeep/badge/?version=latest)](https://pytorch-widedeep.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/master/graph/badge.svg)](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/jrzaurin/pytorch-widedeep/graphs/commit-activity)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/jrzaurin/pytorch-widedeep/issues)
+[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://join.slack.com/t/pytorch-widedeep/shared_invite/zt-soss7stf-iXpVuLeKZz8lGTnxxtHtTw)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.05027/status.svg)](https://doi.org/10.21105/joss.05027)
 
 # **pytorch-widedeep**
 
 A flexible package for multimodal-deep-learning to combine tabular data with
-text and images using Wide and Deep models (or just "Deep" models) in
-Pytorch
+text and images using Wide and Deep models in Pytorch
 
 **Documentation:** [https://pytorch-widedeep.readthedocs.io](https://pytorch-widedeep.readthedocs.io/en/latest/index.html)
 
@@ -33,6 +33,11 @@ The content of this document is organized as follows:
     - [Introduction](#introduction)
     - [The ``deeptabular`` component](#the-deeptabular-component)
     - [Acknowledgments](#acknowledgments)
+    - [License](#license)
+    - [Cite](#cite)
+        - [BibTex](#bibtex)
+        - [APA](#apa)
+
 
 ### Introduction
 
@@ -131,6 +136,8 @@ The ``Tabformer`` family, i.e. Transformers for Tabular data:
 
 6. **TabTransformer**: details on the TabTransformer can be found in
 [TabTransformer: Tabular Data Modeling Using Contextual Embeddings](https://arxiv.org/pdf/2012.06678.pdf).
+Note that this is an 'enhanced' implementation that allows for many options that can be set up via
+the `TabTransformer` params.
 7. **SAINT**: Details on SAINT can be found in
 [SAINT: Improved Neural Networks for Tabular Data via Row Attention and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342).
 8. **FT-Transformer**: details on the FT-Transformer can be found in
@@ -159,152 +166,6 @@ encoder-decoder method and constrastive-denoising method. Please, see the
 documentation and the examples for details on this functionality, and all
 other options in the library.
 
-<!-- ###  Installation
-
-Install using pip:
-
-```bash
-pip install pytorch-widedeep
-```
-
-Or install directly from github
-
-```bash
-pip install git+https://github.com/jrzaurin/pytorch-widedeep.git
-```
-
-#### Developer Install
-
-```bash
-# Clone the repository
-git clone https://github.com/jrzaurin/pytorch-widedeep
-cd pytorch-widedeep
-
-# Install in dev mode
-pip install -e .
-```
-
-### Quick start
-
-Binary classification with the [adult
-dataset]([adult](https://www.kaggle.com/wenruliu/adult-income-dataset))
-using `Wide` and `DeepDense` and defaults settings.
-
-Building a wide (linear) and deep model with ``pytorch-widedeep``:
-
-```python
-import numpy as np
-import torch
-from sklearn.model_selection import train_test_split
-
-from pytorch_widedeep import Trainer
-from pytorch_widedeep.preprocessing import WidePreprocessor, TabPreprocessor
-from pytorch_widedeep.models import Wide, TabMlp, WideDeep
-from pytorch_widedeep.metrics import Accuracy
-from pytorch_widedeep.datasets import load_adult
-
-
-df = load_adult(as_frame=True)
-df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
-df.drop("income", axis=1, inplace=True)
-df_train, df_test = train_test_split(df, test_size=0.2, stratify=df.income_label)
-
-# Define the 'column set up'
-wide_cols = [
-    "education",
-    "relationship",
-    "workclass",
-    "occupation",
-    "native-country",
-    "gender",
-]
-crossed_cols = [("education", "occupation"), ("native-country", "occupation")]
-
-cat_embed_cols = [
-    "workclass",
-    "education",
-    "marital-status",
-    "occupation",
-    "relationship",
-    "race",
-    "gender",
-    "capital-gain",
-    "capital-loss",
-    "native-country",
-]
-continuous_cols = ["age", "hours-per-week"]
-target = "income_label"
-target = df_train[target].values
-
-# prepare the data
-wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
-X_wide = wide_preprocessor.fit_transform(df_train)
-
-tab_preprocessor = TabPreprocessor(
-    cat_embed_cols=cat_embed_cols, continuous_cols=continuous_cols  # type: ignore[arg-type]
-)
-X_tab = tab_preprocessor.fit_transform(df_train)
-
-# build the model
-wide = Wide(input_dim=np.unique(X_wide).shape[0], pred_dim=1)
-tab_mlp = TabMlp(
-    column_idx=tab_preprocessor.column_idx,
-    cat_embed_input=tab_preprocessor.cat_embed_input,
-    continuous_cols=continuous_cols,
-)
-model = WideDeep(wide=wide, deeptabular=tab_mlp)
-
-# train and validate
-trainer = Trainer(model, objective="binary", metrics=[Accuracy])
-trainer.fit(
-    X_wide=X_wide,
-    X_tab=X_tab,
-    target=target,
-    n_epochs=5,
-    batch_size=256,
-)
-
-# predict on test
-X_wide_te = wide_preprocessor.transform(df_test)
-X_tab_te = tab_preprocessor.transform(df_test)
-preds = trainer.predict(X_wide=X_wide_te, X_tab=X_tab_te)
-
-# Save and load
-
-# Option 1: this will also save training history and lr history if the
-# LRHistory callback is used
-trainer.save(path="model_weights", save_state_dict=True)
-
-# Option 2: save as any other torch model
-torch.save(model.state_dict(), "model_weights/wd_model.pt")
-
-# From here in advance, Option 1 or 2 are the same. I assume the user has
-# prepared the data and defined the new model components:
-# 1. Build the model
-model_new = WideDeep(wide=wide, deeptabular=tab_mlp)
-model_new.load_state_dict(torch.load("model_weights/wd_model.pt"))
-
-# 2. Instantiate the trainer
-trainer_new = Trainer(model_new, objective="binary")
-
-# 3. Either start the fit or directly predict
-preds = trainer_new.predict(X_wide=X_wide, X_tab=X_tab)
-```
-
-Of course, one can do **much more**. See the Examples folder, the
-documentation or the companion posts for a better understanding of the content
-of the package and its functionalities.
-
-### Testing
-
-```
-pytest tests
-```
-
-### How to Contribute
-
-Check [CONTRIBUTING](https://github.com/jrzaurin/pytorch-widedeep/CONTRIBUTING.MD) page.
- -->
 ### Acknowledgments
 
 This library takes from a series of other libraries, so I think it is just
@@ -325,3 +186,37 @@ The `ImageProcessor` class in this library uses code from the fantastic [Deep
 Learning for Computer
 Vision](https://www.pyimagesearch.com/deep-learning-computer-vision-python-book/)
 (DL4CV) book by Adrian Rosebrock.
+
+### License
+
+This work is dual-licensed under Apache 2.0 and MIT (or any later version).
+You can choose between one of them if you use this work.
+
+`SPDX-License-Identifier: Apache-2.0 AND MIT`
+
+### Cite
+
+#### BibTex
+
+```
+@article{Zaurin_pytorch-widedeep_A_flexible_2023,
+author = {Zaurin, Javier Rodriguez and Mulinka, Pavol},
+doi = {10.21105/joss.05027},
+journal = {Journal of Open Source Software},
+month = jun,
+number = {86},
+pages = {5027},
+title = {{pytorch-widedeep: A flexible package for multimodal deep learning}},
+url = {https://joss.theoj.org/papers/10.21105/joss.05027},
+volume = {8},
+year = {2023}
+}
+```
+
+#### APA
+
+```
+Zaurin, J. R., & Mulinka, P. (2023). pytorch-widedeep: A flexible package for
+multimodal deep learning. Journal of Open Source Software, 8(86), 5027.
+https://doi.org/10.21105/joss.05027
+```

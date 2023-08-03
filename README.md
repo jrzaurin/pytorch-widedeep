@@ -130,26 +130,33 @@ passed through a series of ResNet blocks built with dense layers.
 3. **TabNet**: details on TabNet can be found in
 [TabNet: Attentive Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442)
 
+Two simpler attention based models that we call:
+
+4. **ContextAttentionMLP**: MLP with at attention mechanism "on top" that is based on
+    [Hierarchical Attention Networks for Document Classification](https://www.cs.cmu.edu/~./hovy/papers/16HLT-hierarchical-attention-networks.pd)
+5. **SelfAttentionMLP**: MLP with an attention mechanism that is a simplified
+    version of a transformer block that we refer as "query-key self-attention".
+
 The ``Tabformer`` family, i.e. Transformers for Tabular data:
 
-4. **TabTransformer**: details on the TabTransformer can be found in
+6. **TabTransformer**: details on the TabTransformer can be found in
 [TabTransformer: Tabular Data Modeling Using Contextual Embeddings](https://arxiv.org/pdf/2012.06678.pdf).
-5. **SAINT**: Details on SAINT can be found in
+7. **SAINT**: Details on SAINT can be found in
 [SAINT: Improved Neural Networks for Tabular Data via Row Attention and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342).
-6. **FT-Transformer**: details on the FT-Transformer can be found in
+8. **FT-Transformer**: details on the FT-Transformer can be found in
 [Revisiting Deep Learning Models for Tabular Data](https://arxiv.org/abs/2106.11959).
-7. **TabFastFormer**: adaptation of the FastFormer for tabular data. Details
+9. **TabFastFormer**: adaptation of the FastFormer for tabular data. Details
 on the Fasformer can be found in
 [FastFormers: Highly Efficient Transformer Models for Natural Language Understanding](https://arxiv.org/abs/2010.13382)
-8. **TabPerceiver**: adaptation of the Perceiver for tabular data. Details on
+10. **TabPerceiver**: adaptation of the Perceiver for tabular data. Details on
 the Perceiver can be found in
 [Perceiver: General Perception with Iterative Attention](https://arxiv.org/abs/2103.03206)
 
 And probabilistic DL models for tabular data based on
 [Weight Uncertainty in Neural Networks](https://arxiv.org/abs/1505.05424):
 
-9. **BayesianWide**: Probabilistic adaptation of the `Wide` model.
-10. **BayesianTabMlp**: Probabilistic adaptation of the `TabMlp` model
+11. **BayesianWide**: Probabilistic adaptation of the `Wide` model.
+12. **BayesianTabMlp**: Probabilistic adaptation of the `TabMlp` model
 
 Note that while there are scientific publications for the TabTransformer,
 SAINT and FT-Transformer, the TabFasfFormer and TabPerceiver are our own
@@ -196,7 +203,6 @@ using `Wide` and `DeepDense` and defaults settings.
 Building a wide (linear) and deep model with ``pytorch-widedeep``:
 
 ```python
-import pandas as pd
 import numpy as np
 import torch
 from sklearn.model_selection import train_test_split

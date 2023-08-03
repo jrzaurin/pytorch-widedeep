@@ -112,6 +112,12 @@ self-supervised pre-training with tabular data.
             - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
+::: pytorch_widedeep.models.text.basic_transformer.Transformer
+    selection:
+        filters:
+            - "!^_"  # exclude all members starting with _
+            - "!^forward$"
+
 ::: pytorch_widedeep.models.image.vision.Vision
     selection:
         filters:

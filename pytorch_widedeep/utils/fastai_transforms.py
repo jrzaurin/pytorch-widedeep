@@ -409,8 +409,9 @@ class Vocab:
         max_vocab: int
             maximum vocabulary size
         pad_idx: int, Optional, default = None
-            padding index. If None, Fastai's Tokenizer leaves 0 for
-            the 'unknown' token and defaults to 1.
+            padding index. If `None`, Fastai's Tokenizer leaves the 0 index
+            for the unknown token (_'xxunk'_) and defaults to 1 for the padding
+            token (_'xxpad'_).
 
         Examples
         --------

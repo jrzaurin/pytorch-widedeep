@@ -718,6 +718,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pytorch_widedeep.models.text.basic_transformer.Transformer" class="md-nav__link">
+    Transformer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#pytorch_widedeep.models.image.vision.Vision" class="md-nav__link">
     Vision
   </a>
@@ -894,6 +901,12 @@
       
       
       
+        
+          
+        
+          
+        
+          
         
           
         
@@ -1197,6 +1210,48 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/18_feature_importance_via_attention_weights.html" class="md-nav__link">
+        18_feature_importance_via_attention_weights
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/19_wide_and_deep_for_recsys_pt1.html" class="md-nav__link">
+        19_wide_and_deep_for_recsys_pt1
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/19_wide_and_deep_for_recsys_pt2.html" class="md-nav__link">
+        19_wide_and_deep_for_recsys_pt2
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1300,7 +1355,7 @@ it requires the <code>pred_dim</code> parameter.</p>
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">Wide</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wide</span> <span class="o">=</span> <span class="n">Wide</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">wide</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 </code></pre></div>
@@ -2766,7 +2821,8 @@ steps</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/tabnet/tab_net.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">113</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">112</span>
+<span class="normal">113</span>
 <span class="normal">114</span>
 <span class="normal">115</span>
 <span class="normal">116</span>
@@ -2838,8 +2894,7 @@ steps</p>
 <span class="normal">182</span>
 <span class="normal">183</span>
 <span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">185</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3074,7 +3129,8 @@ reconstruct the embeddings</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/tabnet/tab_net.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">284</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">283</span>
+<span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span>
 <span class="normal">287</span>
@@ -3118,8 +3174,7 @@ reconstruct the embeddings</p>
 <span class="normal">325</span>
 <span class="normal">326</span>
 <span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">328</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
@@ -3558,7 +3613,7 @@ neccesary to build the <code>WideDeep</code> class</p>
   </span>
 
 <a href="#pytorch_widedeep.models.tabular.mlp.context_attention_mlp.ContextAttentionMLP.attention_weights" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span>
+<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
@@ -3977,7 +4032,7 @@ neccesary to build the WideDeep class</p>
   </span>
 
 <a href="#pytorch_widedeep.models.tabular.mlp.self_attention_mlp.SelfAttentionMLP.attention_weights" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span>
+<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
@@ -4031,7 +4086,10 @@ number of features/columns in the dataset</p>
     <span class="n">n_blocks</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
     <span class="n">attn_dropout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
     <span class="n">ff_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">ff_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
     <span class="n">transformer_activation</span><span class="o">=</span><span class="s2">&quot;gelu&quot;</span><span class="p">,</span>
+    <span class="n">use_linear_attention</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_flash_attention</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">mlp_activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
     <span class="n">mlp_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
@@ -4046,12 +4104,15 @@ number of features/columns in the dataset</p>
         Bases: <code><span title="pytorch_widedeep.models.tabular._base_tabular_model.BaseTabularModelWithAttention">BaseTabularModelWithAttention</span></code></p>
 
   
-      <p>Defines a <a href="https://arxiv.org/abs/2012.06678">TabTransformer model</a> that
-can be used as the <code>deeptabular</code> component of a Wide &amp; Deep model or
-independently by itself.</p>
+      <p>Defines our adptation of the
+<a href="https://arxiv.org/abs/2012.06678">TabTransformer model</a>
+that can be used as the <code>deeptabular</code> component of a
+Wide &amp; Deep model or independently by itself.</p>
 <p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>:
-This is an enhanced adaptation of the model described in the paper,
-containing a series of additional features.</p>
+This is an enhanced adaptation of the model described in the paper. It can
+be considered as the flagship of our transformer family of models for
+tabular data and offers mutiple, additional features relative to the
+original publication(and some other models in the library)</p>
 
   <p>Parameters:</p>
   <ul>
@@ -4183,10 +4244,35 @@ projection layers.</p>
         – <p>Dropout that will be applied to the FeedForward network</p>
       </li>
       <li class="field-body">
+        <b>ff_factor</b>
+            (<code>int</code>)
+        – <p>Multiplicative factor applied to the first layer of the FF network in
+each Transformer block, This is normally set to 4.</p>
+      </li>
+      <li class="field-body">
         <b>transformer_activation</b>
             (<code>str</code>)
         – <p>Transformer Encoder activation function. <em>'tanh'</em>, <em>'relu'</em>,
 <em>'leaky_relu'</em>, <em>'gelu'</em>, <em>'geglu'</em> and <em>'reglu'</em> are supported</p>
+      </li>
+      <li class="field-body">
+        <b>use_linear_attention</b>
+            (<code>bool</code>)
+        – <p>Boolean indicating if Linear Attention (from <a href="https://arxiv.org/abs/2006.16236">Transformers are RNNs:
+Fast Autoregressive Transformers with Linear Attention</a>)
+will be used. The inclusing of this mode of attention is inspired by
+<a href="https://www.uber.com/en-GB/blog/deepeta-how-uber-predicts-arrival-times/">this post</a>,
+where the Uber team finds that this attention mechanism leads to the
+best results for their tabular data.</p>
+      </li>
+      <li class="field-body">
+        <b>use_flash_attention</b>
+            (<code>bool</code>)
+        – <p>Boolean indicating if
+<a href="https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html">Flash Attention</a>
+will be used. <br/>
+<img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>
+Flash attention is beta in and subject to change</p>
       </li>
       <li class="field-body">
         <b>mlp_hidden_dims</b>
@@ -4260,26 +4346,7 @@ LIN -&gt; ACT]</code></p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_transformer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
@@ -4361,7 +4428,35 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">231</span>
 <span class="normal">232</span>
 <span class="normal">233</span>
-<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4384,7 +4479,10 @@ LIN -&gt; ACT]</code></p>
     <span class="n">n_blocks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
     <span class="n">attn_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
     <span class="n">ff_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">ff_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
     <span class="n">transformer_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gelu&quot;</span><span class="p">,</span>
+    <span class="n">use_linear_attention</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_flash_attention</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">mlp_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
     <span class="n">mlp_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
@@ -4417,6 +4515,9 @@ LIN -&gt; ACT]</code></p>
     <span class="bp">self</span><span class="o">.</span><span class="n">attn_dropout</span> <span class="o">=</span> <span class="n">attn_dropout</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">ff_dropout</span> <span class="o">=</span> <span class="n">ff_dropout</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">transformer_activation</span> <span class="o">=</span> <span class="n">transformer_activation</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">use_linear_attention</span> <span class="o">=</span> <span class="n">use_linear_attention</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">use_flash_attention</span> <span class="o">=</span> <span class="n">use_flash_attention</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ff_factor</span> <span class="o">=</span> <span class="n">ff_factor</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="o">=</span> <span class="n">mlp_hidden_dims</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="o">=</span> <span class="n">mlp_activation</span>
@@ -4446,7 +4547,10 @@ LIN -&gt; ACT]</code></p>
                 <span class="n">use_qkv_bias</span><span class="p">,</span>
                 <span class="n">attn_dropout</span><span class="p">,</span>
                 <span class="n">ff_dropout</span><span class="p">,</span>
+                <span class="n">ff_factor</span><span class="p">,</span>
                 <span class="n">transformer_activation</span><span class="p">,</span>
+                <span class="n">use_linear_attention</span><span class="p">,</span>
+                <span class="n">use_flash_attention</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
 
@@ -4513,7 +4617,7 @@ neccesary to build the <code>WideDeep</code> class</p>
   </span>
 
 <a href="#pytorch_widedeep.models.tabular.transformers.tab_transformer.TabTransformer.attention_weights" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span>
+<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
@@ -4522,6 +4626,10 @@ neccesary to build the <code>WideDeep</code> class</p>
 <p>The shape of the attention weights is <span class="arithmatex">\((N, H, F, F)\)</span>, where <span class="arithmatex">\(N\)</span> is the
 batch size, <span class="arithmatex">\(H\)</span> is the number of attention heads and <span class="arithmatex">\(F\)</span> is the
 number of features/columns in the dataset</p>
+<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>:
+if flash attention or linear attention
+are used, no attention weights are saved during the training process
+and calling this property will throw a ValueError</p>
   </div>
 
 </div>
@@ -4566,6 +4674,7 @@ number of features/columns in the dataset</p>
     <span class="n">n_blocks</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">attn_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
     <span class="n">ff_dropout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">ff_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
     <span class="n">transformer_activation</span><span class="o">=</span><span class="s2">&quot;gelu&quot;</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">mlp_activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
@@ -4712,6 +4821,12 @@ row layers</p>
         – <p>Dropout that will be applied to the FeedForward network</p>
       </li>
       <li class="field-body">
+        <b>ff_factor</b>
+            (<code>int</code>)
+        – <p>Multiplicative factor applied to the first layer of the FF network in
+each Transformer block, This is normally set to 4.</p>
+      </li>
+      <li class="field-body">
         <b>transformer_activation</b>
             (<code>str</code>)
         – <p>Transformer Encoder activation function. <em>'tanh'</em>, <em>'relu'</em>,
@@ -4789,10 +4904,7 @@ LIN -&gt; ACT]</code></p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/saint.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
 <span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
@@ -4888,7 +5000,13 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">223</span>
 <span class="normal">224</span>
 <span class="normal">225</span>
-<span class="normal">226</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4910,6 +5028,7 @@ LIN -&gt; ACT]</code></p>
     <span class="n">n_blocks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
     <span class="n">attn_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
     <span class="n">ff_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">ff_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
     <span class="n">transformer_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gelu&quot;</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">mlp_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
@@ -4942,6 +5061,7 @@ LIN -&gt; ACT]</code></p>
     <span class="bp">self</span><span class="o">.</span><span class="n">n_blocks</span> <span class="o">=</span> <span class="n">n_blocks</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">attn_dropout</span> <span class="o">=</span> <span class="n">attn_dropout</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">ff_dropout</span> <span class="o">=</span> <span class="n">ff_dropout</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ff_factor</span> <span class="o">=</span> <span class="n">ff_factor</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">transformer_activation</span> <span class="o">=</span> <span class="n">transformer_activation</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="o">=</span> <span class="n">mlp_hidden_dims</span>
@@ -4968,6 +5088,7 @@ LIN -&gt; ACT]</code></p>
                 <span class="n">use_qkv_bias</span><span class="p">,</span>
                 <span class="n">attn_dropout</span><span class="p">,</span>
                 <span class="n">ff_dropout</span><span class="p">,</span>
+                <span class="n">ff_factor</span><span class="p">,</span>
                 <span class="n">transformer_activation</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">n_feats</span><span class="p">,</span>
             <span class="p">),</span>
@@ -5038,7 +5159,7 @@ neccesary to build the <code>WideDeep</code> class</p>
   </span>
 
 <a href="#pytorch_widedeep.models.tabular.transformers.saint.SAINT.attention_weights" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span>
+<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
@@ -5103,8 +5224,8 @@ number of features/columns in the dataset</p>
     <span class="n">n_blocks</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
     <span class="n">attn_dropout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
     <span class="n">ff_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">transformer_activation</span><span class="o">=</span><span class="s2">&quot;reglu&quot;</span><span class="p">,</span>
     <span class="n">ff_factor</span><span class="o">=</span><span class="mf">1.33</span><span class="p">,</span>
+    <span class="n">transformer_activation</span><span class="o">=</span><span class="s2">&quot;reglu&quot;</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">mlp_activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
     <span class="n">mlp_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
@@ -5264,17 +5385,17 @@ projection layers</p>
         – <p>Dropout that will be applied to the FeedForward network</p>
       </li>
       <li class="field-body">
-        <b>transformer_activation</b>
-            (<code>str</code>)
-        – <p>Transformer Encoder activation function. <em>'tanh'</em>, <em>'relu'</em>,
-<em>'leaky_relu'</em>, <em>'gelu'</em>, <em>'geglu'</em> and <em>'reglu'</em> are supported</p>
-      </li>
-      <li class="field-body">
         <b>ff_factor</b>
             (<code>float</code>)
         – <p>Multiplicative factor applied to the first layer of the FF network in
 each Transformer block, This is normally set to 4, but they use 4/3
 in the paper.</p>
+      </li>
+      <li class="field-body">
+        <b>transformer_activation</b>
+            (<code>str</code>)
+        – <p>Transformer Encoder activation function. <em>'tanh'</em>, <em>'relu'</em>,
+<em>'leaky_relu'</em>, <em>'gelu'</em>, <em>'geglu'</em> and <em>'reglu'</em> are supported</p>
       </li>
       <li class="field-body">
         <b>mlp_hidden_dims</b>
@@ -5484,8 +5605,8 @@ LIN -&gt; ACT]</code></p>
     <span class="n">n_blocks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
     <span class="n">attn_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
     <span class="n">ff_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">transformer_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reglu&quot;</span><span class="p">,</span>
     <span class="n">ff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.33</span><span class="p">,</span>
+    <span class="n">transformer_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;reglu&quot;</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">mlp_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
     <span class="n">mlp_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
@@ -5519,8 +5640,8 @@ LIN -&gt; ACT]</code></p>
     <span class="bp">self</span><span class="o">.</span><span class="n">n_blocks</span> <span class="o">=</span> <span class="n">n_blocks</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">attn_dropout</span> <span class="o">=</span> <span class="n">attn_dropout</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">ff_dropout</span> <span class="o">=</span> <span class="n">ff_dropout</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">transformer_activation</span> <span class="o">=</span> <span class="n">transformer_activation</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">ff_factor</span> <span class="o">=</span> <span class="n">ff_factor</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">transformer_activation</span> <span class="o">=</span> <span class="n">transformer_activation</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="o">=</span> <span class="n">mlp_hidden_dims</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="o">=</span> <span class="n">mlp_activation</span>
@@ -5548,10 +5669,10 @@ LIN -&gt; ACT]</code></p>
                 <span class="n">use_qkv_bias</span><span class="p">,</span>
                 <span class="n">attn_dropout</span><span class="p">,</span>
                 <span class="n">ff_dropout</span><span class="p">,</span>
+                <span class="n">ff_factor</span><span class="p">,</span>
                 <span class="n">kv_compression_factor</span><span class="p">,</span>
                 <span class="n">kv_sharing</span><span class="p">,</span>
                 <span class="n">transformer_activation</span><span class="p">,</span>
-                <span class="n">ff_factor</span><span class="p">,</span>
                 <span class="n">is_first</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
@@ -5623,7 +5744,7 @@ neccesary to build the <code>WideDeep</code> class</p>
   </span>
 
 <a href="#pytorch_widedeep.models.tabular.transformers.ft_transformer.FTTransformer.attention_weights" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span>
+<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
@@ -5682,6 +5803,7 @@ dimension, i.e. <span class="arithmatex">\(k = int(kv_{compression \space factor
     <span class="n">share_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">attn_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
     <span class="n">ff_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">ff_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
     <span class="n">transformer_activation</span><span class="o">=</span><span class="s2">&quot;geglu&quot;</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">mlp_activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
@@ -5867,6 +5989,12 @@ blocks</p>
         – <p>Dropout that will be applied to the FeedForward network</p>
       </li>
       <li class="field-body">
+        <b>ff_factor</b>
+            (<code>int</code>)
+        – <p>Multiplicative factor applied to the first layer of the FF network in
+each Transformer block, This is normally set to 4.</p>
+      </li>
+      <li class="field-body">
         <b>transformer_activation</b>
             (<code>str</code>)
         – <p>Transformer Encoder activation function. <em>'tanh'</em>, <em>'relu'</em>,
@@ -5951,10 +6079,7 @@ LIN -&gt; ACT]</code></p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_perceiver.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">162</span>
 <span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span>
@@ -6054,7 +6179,12 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">259</span>
 <span class="normal">260</span>
 <span class="normal">261</span>
-<span class="normal">262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -6081,6 +6211,7 @@ LIN -&gt; ACT]</code></p>
     <span class="n">share_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">attn_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
     <span class="n">ff_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">ff_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
     <span class="n">transformer_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;geglu&quot;</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">mlp_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
@@ -6118,6 +6249,7 @@ LIN -&gt; ACT]</code></p>
     <span class="bp">self</span><span class="o">.</span><span class="n">share_weights</span> <span class="o">=</span> <span class="n">share_weights</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">attn_dropout</span> <span class="o">=</span> <span class="n">attn_dropout</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">ff_dropout</span> <span class="o">=</span> <span class="n">ff_dropout</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ff_factor</span> <span class="o">=</span> <span class="n">ff_factor</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">transformer_activation</span> <span class="o">=</span> <span class="n">transformer_activation</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="o">=</span> <span class="n">mlp_hidden_dims</span>
@@ -6274,6 +6406,7 @@ Attention heads</p>
     <span class="n">n_blocks</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
     <span class="n">attn_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
     <span class="n">ff_dropout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">ff_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
     <span class="n">share_qv_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">share_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">transformer_activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
@@ -6424,6 +6557,12 @@ projection layers</p>
         – <p>Dropout that will be applied to the FeedForward network</p>
       </li>
       <li class="field-body">
+        <b>ff_factor</b>
+            (<code>int</code>)
+        – <p>Multiplicative factor applied to the first layer of the FF network in
+each Transformer block, This is normally set to 4.</p>
+      </li>
+      <li class="field-body">
         <b>share_qv_weights</b>
             (<code>bool</code>)
         – <p>Following the paper, this is a boolean indicating if the Value (<span class="arithmatex">\(V\)</span>) and
@@ -6516,10 +6655,7 @@ LIN -&gt; ACT]</code></p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_fastformer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
 <span class="normal">144</span>
 <span class="normal">145</span>
 <span class="normal">146</span>
@@ -6635,7 +6771,14 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">256</span>
 <span class="normal">257</span>
 <span class="normal">258</span>
-<span class="normal">259</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -6657,6 +6800,7 @@ LIN -&gt; ACT]</code></p>
     <span class="n">n_blocks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
     <span class="n">attn_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
     <span class="n">ff_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">ff_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
     <span class="n">share_qv_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">share_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">transformer_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
@@ -6691,6 +6835,7 @@ LIN -&gt; ACT]</code></p>
     <span class="bp">self</span><span class="o">.</span><span class="n">n_blocks</span> <span class="o">=</span> <span class="n">n_blocks</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">attn_dropout</span> <span class="o">=</span> <span class="n">attn_dropout</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">ff_dropout</span> <span class="o">=</span> <span class="n">ff_dropout</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ff_factor</span> <span class="o">=</span> <span class="n">ff_factor</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">share_qv_weights</span> <span class="o">=</span> <span class="n">share_qv_weights</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">share_weights</span> <span class="o">=</span> <span class="n">share_weights</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">transformer_activation</span> <span class="o">=</span> <span class="n">transformer_activation</span>
@@ -6716,6 +6861,7 @@ LIN -&gt; ACT]</code></p>
         <span class="n">use_bias</span><span class="p">,</span>
         <span class="n">attn_dropout</span><span class="p">,</span>
         <span class="n">ff_dropout</span><span class="p">,</span>
+        <span class="n">ff_factor</span><span class="p">,</span>
         <span class="n">share_qv_weights</span><span class="p">,</span>
         <span class="n">transformer_activation</span><span class="p">,</span>
     <span class="p">)</span>
@@ -6734,6 +6880,7 @@ LIN -&gt; ACT]</code></p>
                     <span class="n">use_bias</span><span class="p">,</span>
                     <span class="n">attn_dropout</span><span class="p">,</span>
                     <span class="n">ff_dropout</span><span class="p">,</span>
+                    <span class="n">ff_factor</span><span class="p">,</span>
                     <span class="n">share_qv_weights</span><span class="p">,</span>
                     <span class="n">transformer_activation</span><span class="p">,</span>
                 <span class="p">),</span>
@@ -6805,7 +6952,7 @@ neccesary to build the <code>WideDeep</code> class</p>
   </span>
 
 <a href="#pytorch_widedeep.models.tabular.transformers.tab_fastformer.TabFastFormer.attention_weights" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span>
+<div class="highlight"><pre><span></span><code><span class="n">attention_weights</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
@@ -8116,6 +8263,261 @@ size and <span class="arithmatex">\(S\)</span> is the length of the sequence</p>
 
 
 
+<h2 id="pytorch_widedeep.models.text.basic_transformer.Transformer" class="doc doc-heading">
+        <span class="doc doc-object-name doc-class-name">Transformer</span>
+
+
+<a href="#pytorch_widedeep.models.text.basic_transformer.Transformer" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="n">Transformer</span><span class="p">(</span>
+    <span class="n">vocab_size</span><span class="p">,</span>
+    <span class="n">seq_length</span><span class="p">,</span>
+    <span class="n">input_dim</span><span class="p">,</span>
+    <span class="n">n_heads</span><span class="p">,</span>
+    <span class="n">n_blocks</span><span class="p">,</span>
+    <span class="n">attn_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">ff_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">ff_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;gelu&quot;</span><span class="p">,</span>
+    <span class="n">use_linear_attention</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_flash_attention</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">padding_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">with_cls_token</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">with_pos_encoding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">pos_encoding_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">pos_encoder</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents first">
+      <p class="doc doc-class-bases">
+        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+
+  
+      <p>Basic Encoder-Only Transformer Model for text classification/regression.
+As all other models in the library this model can be used as the
+<code>deeptext</code> component of a Wide &amp; Deep model or independently by itself.</p>
+<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>:
+This model is introduced in the context of recommendation systems and
+thought for sequences of any nature (e.g. items). It can, of course,
+still be used for text. However, at this stage, we have decided to not
+include the possibility of loading pretrained word vectors since we aim
+to integrate the library wit Huggingface in the (hopefully) near future</p>
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b>vocab_size</b>
+            (<code>int</code>)
+        – <p>Number of words in the vocabulary</p>
+      </li>
+      <li class="field-body">
+        <b>input_dim</b>
+            (<code>int</code>)
+        – <p>Dimension of the token embeddings</p>
+<p>Param aliases: <code>embed_dim</code>, <code>d_model</code>. <br/></p>
+      </li>
+  </ul>
+      
+
+  <p>Attributes:</p>
+  <ul>
+      <li class="field-body">
+        <b>embedding</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
+        – <p>Standard token embedding layer</p>
+      </li>
+      <li class="field-body">
+        <b>pos_encoder</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
+        – <p>Positional Encoder</p>
+      </li>
+      <li class="field-body">
+        <b>encoder</b>
+            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
+        – <p>Sequence of Transformer blocks</p>
+      </li>
+  </ul>
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">Transformer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X_text</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">vocab_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">seq_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">input_dim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">n_heads</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_blocks</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_text</span><span class="p">)</span>
+</code></pre></div>
+
+
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/models/text/basic_transformer.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Alias</span><span class="p">(</span><span class="s2">&quot;input_dim&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;embed_dim&quot;</span><span class="p">,</span> <span class="s2">&quot;d_model&quot;</span><span class="p">])</span>
+<span class="nd">@Alias</span><span class="p">(</span><span class="s2">&quot;seq_length&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;max_length&quot;</span><span class="p">,</span> <span class="s2">&quot;maxlen&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">seq_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">input_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_heads</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_blocks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">attn_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">ff_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">ff_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gelu&quot;</span><span class="p">,</span>
+    <span class="n">use_linear_attention</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_flash_attention</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">padding_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">with_cls_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>  <span class="c1"># from here on pos encoding args</span>
+    <span class="n">with_pos_encoding</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">pos_encoding_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">pos_encoder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span> <span class="o">=</span> <span class="n">input_dim</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">seq_length</span> <span class="o">=</span> <span class="n">seq_length</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">n_heads</span> <span class="o">=</span> <span class="n">n_heads</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">n_blocks</span> <span class="o">=</span> <span class="n">n_blocks</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">attn_dropout</span> <span class="o">=</span> <span class="n">attn_dropout</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ff_dropout</span> <span class="o">=</span> <span class="n">ff_dropout</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">ff_factor</span> <span class="o">=</span> <span class="n">ff_factor</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">=</span> <span class="n">activation</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">use_linear_attention</span> <span class="o">=</span> <span class="n">use_linear_attention</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">use_flash_attention</span> <span class="o">=</span> <span class="n">use_flash_attention</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span> <span class="o">=</span> <span class="n">padding_idx</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">with_cls_token</span> <span class="o">=</span> <span class="n">with_cls_token</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">with_pos_encoding</span> <span class="o">=</span> <span class="n">with_pos_encoding</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoding_dropout</span> <span class="o">=</span> <span class="n">pos_encoding_dropout</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span>
+        <span class="n">vocab_size</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">padding_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">with_pos_encoding</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pos_encoder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">,</span> <span class="n">PositionalEncoding</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">pos_encoder</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span> <span class="o">=</span> <span class="n">PositionalEncoding</span><span class="p">(</span>
+                <span class="n">input_dim</span><span class="p">,</span> <span class="n">pos_encoding_dropout</span><span class="p">,</span> <span class="n">seq_length</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_blocks</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span>
+            <span class="s2">&quot;transformer_block&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
+            <span class="n">TransformerEncoder</span><span class="p">(</span>
+                <span class="n">input_dim</span><span class="p">,</span>
+                <span class="n">n_heads</span><span class="p">,</span>
+                <span class="kc">False</span><span class="p">,</span>  <span class="c1"># use_qkv_bias</span>
+                <span class="n">attn_dropout</span><span class="p">,</span>
+                <span class="n">ff_dropout</span><span class="p">,</span>
+                <span class="n">ff_factor</span><span class="p">,</span>
+                <span class="n">activation</span><span class="p">,</span>
+                <span class="n">use_linear_attention</span><span class="p">,</span>
+                <span class="n">use_flash_attention</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h2 id="pytorch_widedeep.models.image.vision.Vision" class="doc doc-heading">
         <span class="doc doc-object-name doc-class-name">Vision</span>
 
@@ -8264,8 +8666,7 @@ LIN -&gt; ACT]</code></p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/image/vision.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
-<span class="normal">125</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">125</span>
 <span class="normal">126</span>
 <span class="normal">127</span>
 <span class="normal">128</span>
@@ -8313,7 +8714,8 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">170</span>
 <span class="normal">171</span>
 <span class="normal">172</span>
-<span class="normal">173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Alias</span><span class="p">(</span><span class="s2">&quot;pretrained_model_setup&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pretrained_model_name&quot;</span><span class="p">])</span>
+<span class="normal">173</span>
+<span class="normal">174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Alias</span><span class="p">(</span><span class="s2">&quot;pretrained_model_setup&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pretrained_model_name&quot;</span><span class="p">])</span>
 <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">pretrained_model_setup</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">WeightsEnum</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -8494,6 +8896,13 @@ possible architectures for the <code>deepimage</code> component. See the
 documenation of the package.</p>
       </li>
       <li class="field-body">
+        <b>deephead</b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]</code>)
+        – <p>Alternatively, the user can pass a custom model that will receive the
+output of the deep component. If <code>deephead</code> is not None all the
+previous fc-head parameters will be ignored</p>
+      </li>
+      <li class="field-body">
         <b>head_hidden_dims</b>
             (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>)
         – <p>List with the sizes of the dense layers in the head e.g: [128, 64]</p>
@@ -8527,13 +8936,6 @@ last of the dense layers in the head</p>
         – <p>Boolean indicating whether the order of the operations in the dense
 layer. If <code>True: [LIN -&gt; ACT -&gt; BN -&gt; DP]</code>. If <code>False: [BN -&gt; DP -&gt;
 LIN -&gt; ACT]</code></p>
-      </li>
-      <li class="field-body">
-        <b>deephead</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]</code>)
-        – <p>Alternatively, the user can pass a custom model that will receive the
-output of the deep component. If <code>deephead</code> is not None all the
-previous fc-head parameters will be ignored</p>
       </li>
       <li class="field-body">
         <b>enforce_positive</b>
@@ -8678,7 +9080,8 @@ well understood</p>
 <span class="normal">204</span>
 <span class="normal">205</span>
 <span class="normal">206</span>
-<span class="normal">207</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">207</span>
+<span class="normal">208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">deeptabular</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -8720,7 +9123,8 @@ well understood</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">with_fds</span> <span class="o">=</span> <span class="n">with_fds</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">enforce_positive</span> <span class="o">=</span> <span class="n">enforce_positive</span>
 
-    <span class="c1"># The main 5 components of the wide and deep assemble</span>
+    <span class="c1"># The main 5 components of the wide and deep assemble: wide,</span>
+    <span class="c1"># deeptabular, deeptext, deepimage and deephead</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">with_deephead</span> <span class="o">=</span> <span class="n">deephead</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">head_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">deephead</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">head_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">deephead</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_deephead</span><span class="p">(</span>

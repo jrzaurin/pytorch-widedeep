@@ -12,13 +12,16 @@ from pytorch_widedeep.models.tabular.transformers._encoders import (
 
 
 class TabTransformer(BaseTabularModelWithAttention):
-    r"""Defines a [TabTransformer model](https://arxiv.org/abs/2012.06678) that
-    can be used as the `deeptabular` component of a Wide & Deep model or
-    independently by itself.
+    r"""Defines our adptation of the
+    [TabTransformer model](https://arxiv.org/abs/2012.06678)
+    that can be used as the `deeptabular` component of a
+    Wide & Deep model or independently by itself.
 
     :information_source: **NOTE**:
-    This is an enhanced adaptation of the model described in the paper,
-    containing a series of additional features.
+    This is an enhanced adaptation of the model described in the paper. It can
+    be considered as the flagship of our transformer family of models for
+    tabular data and offers mutiple, additional features relative to the
+    original publication(and some other models in the library)
 
     Parameters
     ----------
@@ -93,13 +96,18 @@ class TabTransformer(BaseTabularModelWithAttention):
         Transformer Encoder activation function. _'tanh'_, _'relu'_,
         _'leaky_relu'_, _'gelu'_, _'geglu'_ and _'reglu'_ are supported
     use_linear_attention: Boolean, default = False,
-        Boolean indicating if Linear Attention from [Transformers are RNNs:
-        Fast Autoregressive Transformers with Linear Attention]
-        (https://arxiv.org/abs/2006.16236) will be used
+        Boolean indicating if Linear Attention (from [Transformers are RNNs:
+        Fast Autoregressive Transformers with Linear Attention](https://arxiv.org/abs/2006.16236))
+        will be used. The inclusing of this mode of attention is inspired by
+        [this post](https://www.uber.com/en-GB/blog/deepeta-how-uber-predicts-arrival-times/),
+        where the Uber team finds that this attention mechanism leads to the
+        best results for their tabular data.
     use_flash_attention: Boolean, default = False,
-        Boolean indicating if [Flash Attention]
-        (https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html)
-        will be used
+        Boolean indicating if
+        [Flash Attention](https://pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html)
+        will be used. <br/>
+        :information_source: **NOTE**
+        Flash attention is beta in and subject to change
     mlp_hidden_dims: List, Optional, default = None
         MLP hidden dimensions. If not provided it will default to $[l,
         4\times l, 2 \times l]$ where $l$ is the MLP's input dimension
@@ -310,6 +318,11 @@ class TabTransformer(BaseTabularModelWithAttention):
         The shape of the attention weights is $(N, H, F, F)$, where $N$ is the
         batch size, $H$ is the number of attention heads and $F$ is the
         number of features/columns in the dataset
+
+        :information_source: **NOTE**:
+        if flash attention or linear attention
+        are used, no attention weights are saved during the training process
+        and calling this property will throw a ValueError
         """
         if self.use_flash_attention or self.use_linear_attention:
             raise ValueError(

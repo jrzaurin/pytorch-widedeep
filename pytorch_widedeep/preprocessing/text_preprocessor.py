@@ -38,10 +38,12 @@ class TextPreprocessor(BasePreprocessor):
     already_processed: bool, Optional, default = False
         Boolean indicating if the sequence of elements is already processed or
         prepared. If this is the case, this Preprocessor will simply tokenize
-        and pad the sequence.
+        and pad the sequence. <br/>
 
-        Param aliases: `not_text`. <br/>
+            Param aliases: `not_text`. <br/>
 
+        This parameter is thought for those cases where the input sequences
+        are already fully processed or are directly not text (e.g. IDs)
     word_vectors_path: str, Optional
         Path to the pretrained word vectors
     n_cpus: int, Optional, default = None
