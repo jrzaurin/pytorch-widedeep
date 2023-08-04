@@ -7,9 +7,10 @@ import math
 
 import torch
 import einops
+import torch.nn.functional as F
 from torch import nn, einsum
 
-from pytorch_widedeep.wdtypes import Tensor, Optional
+from pytorch_widedeep.wdtypes import Tuple, Tensor, Optional
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 
 
@@ -71,15 +72,20 @@ class MultiHeadedAttention(nn.Module):
         use_bias: bool,
         dropout: float,
         query_dim: Optional[int] = None,
+        use_linear_attention: bool = False,
+        use_flash_attention: bool = False,
     ):
         super(MultiHeadedAttention, self).__init__()
 
         assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
 
+        self.use_linear_attention = use_linear_attention
+        self.use_flash_attention = use_flash_attention
+
         self.head_dim = input_dim // n_heads
         self.n_heads = n_heads
 
-        self.dropout = nn.Dropout(dropout)
+        self.dropout = dropout
 
         query_dim = query_dim if query_dim is not None else input_dim
         self.q_proj = nn.Linear(query_dim, input_dim, bias=use_bias)
@@ -94,7 +100,7 @@ class MultiHeadedAttention(nn.Module):
         # l: target sequence length
         # m: used to refer indistinctively to s or l
         # h: number of attention heads,
-        # d: head_dim
+        # d and e: head_dim
         q = self.q_proj(X_Q)
         X_KV = X_KV if X_KV is not None else X_Q
         k, v = self.kv_proj(X_KV).chunk(2, dim=-1)
@@ -102,11 +108,23 @@ class MultiHeadedAttention(nn.Module):
             lambda t: einops.rearrange(t, "b m (h d) -> b h m d", h=self.n_heads),
             (q, k, v),
         )
-        scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.head_dim)
-        attn_weights = scores.softmax(dim=-1)
-        self.attn_weights = attn_weights
-        attn_weights = self.dropout(attn_weights)
-        attn_output = einsum("b h s l, b h l d -> b h s d", attn_weights, v)
+
+        if self.use_flash_attention:
+            attn_output = F.scaled_dot_product_attention(
+                q,
+                k,
+                v,
+                attn_mask=None,
+                dropout_p=self.dropout if self.training else 0,
+                is_causal=False,
+            )
+            self.attn_weights: Optional[Tensor] = None
+        elif self.use_linear_attention:
+            attn_output = self._linear_attention(q, k, v)
+            self.attn_weights = None
+        else:
+            self.attn_weights, attn_output = self._standard_attention(q, k, v)
+
         output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
 
         if self.out_proj is not None:
@@ -114,8 +132,65 @@ class MultiHeadedAttention(nn.Module):
 
         return output
 
+    def _standard_attention(
+        self, q: Tensor, k: Tensor, v: Tensor
+    ) -> Tuple[Tensor, Tensor]:
+        """'Standard' multihead attention implemenation from [Attention Is All You
+        Need](https://arxiv.org/abs/1706.03762)
+        """
+        # b: batch size
+        # s: seq length
+        # l: target sequence length
+        # m: used to refer indistinctively to s or l
+        # h: number of attention heads,
+        # d and e: head_dim
 
-class LinearAttention(nn.Module):
+        # Normalised Query, Key dot product + softmax. Fraction in brackets in
+        # their Eq 1
+        scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.head_dim)
+        attn_weights = scores.softmax(dim=-1)
+
+        # Attention(Q, K, V ) (with dropout) in their Eq 1
+        attn_output = einsum(
+            "b h s l, b h l d -> b h s d", nn.Dropout(self.dropout)(attn_weights), v
+        )
+
+        return attn_weights, attn_output
+
+    @staticmethod
+    def _linear_attention(q: Tensor, k: Tensor, v: Tensor) -> Tensor:
+        """Liner attention implemenation from [Transformers are RNNs: Fast
+        Autoregressive Transformers with Linear Attention]
+        (https://arxiv.org/abs/2006.16236)
+        """
+        # b: batch size
+        # s: seq length
+        # l: target sequence length
+        # m: used to refer indistinctively to s or l
+        # h: number of attention heads,
+        # d and e: head_dim
+        q, k = (
+            nn.functional.elu(q) + 1,
+            nn.functional.elu(k) + 1,
+        )
+
+        # Term within the summation in the numerator of their Eq 5
+        scores = einsum("b h s e, b h l d -> b h e d", k, v)
+
+        # The denominator in their Eq 5
+        z = 1 / (torch.einsum("b h m d, b h d -> b h m", q, k.sum(dim=2)) + 1e-6)
+
+        # Their Eq 5
+        attn_output = torch.einsum("b h m d, b h e d, b h m -> b h m d", q, scores, z)
+
+        return attn_output
+
+
+class LinearAttentionLinformer(nn.Module):
+    """Linear Attention implementation from [Linformer: Self-Attention with
+    Linear Complexity](https://arxiv.org/abs/2006.04768)
+    """
+
     def __init__(
         self,
         input_dim: int,
@@ -126,7 +201,7 @@ class LinearAttention(nn.Module):
         kv_compression_factor: float,
         kv_sharing: bool,
     ):
-        super(LinearAttention, self).__init__()
+        super(LinearAttentionLinformer, self).__init__()
         assert input_dim % n_heads == 0, "'input_dim' must be divisible by 'n_heads'"
 
         self.n_feats = n_feats
@@ -169,8 +244,7 @@ class LinearAttention(nn.Module):
         scores = einsum("b h s d, b h k d -> b h s k", q, k) / math.sqrt(self.head_dim)
         attn_weights = scores.softmax(dim=-1)
         self.attn_weights = attn_weights
-        attn_weights = self.dropout(attn_weights)
-        output = einsum("b h s k, b h k d -> b h s d", attn_weights, v)
+        output = einsum("b h s k, b h k d -> b h s d", self.dropout(attn_weights), v)
         output = einops.rearrange(output, "b h s d -> b s (h d)")
 
         if self.out_proj is not None:
@@ -180,6 +254,10 @@ class LinearAttention(nn.Module):
 
 
 class AdditiveAttention(nn.Module):
+    """Additive Attention Implementation from [FastFormer]
+    (https://arxiv.org/abs/2108.09084)
+    """
+
     def __init__(
         self,
         input_dim: int,

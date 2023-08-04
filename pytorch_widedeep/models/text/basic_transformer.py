@@ -15,12 +15,12 @@ class Transformer(nn.Module):
     As all other models in the library this model can be used as the
     `deeptext` component of a Wide & Deep model or independently by itself.
 
-    **NOTE**: This model is introduced in the context of recommendation
-      systems and thought for sequences of any nature (e.g. items). It can,
-      of course, still be used for text. However, at this stage, we have
-      decided to not include the possibility of loading pretrained word
-      vectors since we aim to integrate the library wit Huggingface in the
-      (hopefully) near future
+    :information_source: **NOTE**:
+    This model is introduced in the context of recommendation systems and
+    thought for sequences of any nature (e.g. items). It can, of course,
+    still be used for text. However, at this stage, we have decided to not
+    include the possibility of loading pretrained word vectors since we aim
+    to integrate the library wit Huggingface in the (hopefully) near future
 
     Parameters
     ----------
@@ -47,6 +47,8 @@ class Transformer(nn.Module):
     activation: str, default = "gelu"
         Transformer Encoder activation function. _'tanh'_, _'relu'_,
         _'leaky_relu'_, _'gelu'_, _'geglu'_ and _'reglu'_ are supported
+    padding_idx: int, default = 0
+        index of the padding token in the padded-tokenised sequences.
     with_cls_token: bool, default = False
         Boolean indicating if a `'[CLS]'` token is included in the tokenized
         sequences. If present, the final hidden state corresponding to this
@@ -70,6 +72,14 @@ class Transformer(nn.Module):
         Positional Encoder
     encoder: nn.Module
         Sequence of Transformer blocks
+
+    Examples
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import Transformer
+    >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
+    >>> model = Transformer(vocab_size=4, seq_length=5, input_dim=8, n_heads=1, n_blocks=1)
+    >>> out = model(X_text)
     """
 
     @Alias("input_dim", ["embed_dim", "d_model"])
@@ -85,6 +95,9 @@ class Transformer(nn.Module):
         ff_dropout: float = 0.1,
         ff_factor: int = 4,
         activation: str = "gelu",
+        use_linear_attention: bool = False,
+        use_flash_attention: bool = False,
+        padding_idx: int = 0,
         with_cls_token: bool = False,
         *,  # from here on pos encoding args
         with_pos_encoding: bool = True,
@@ -101,11 +114,16 @@ class Transformer(nn.Module):
         self.ff_dropout = ff_dropout
         self.ff_factor = ff_factor
         self.activation = activation
+        self.use_linear_attention = use_linear_attention
+        self.use_flash_attention = use_flash_attention
+        self.padding_idx = padding_idx
         self.with_cls_token = with_cls_token
         self.with_pos_encoding = with_pos_encoding
         self.pos_encoding_dropout = pos_encoding_dropout
 
-        self.embedding = nn.Embedding(vocab_size, input_dim)
+        self.embedding = nn.Embedding(
+            vocab_size, input_dim, padding_idx=self.padding_idx
+        )
 
         if with_pos_encoding:
             if pos_encoder is not None:
@@ -131,11 +149,13 @@ class Transformer(nn.Module):
                     ff_dropout,
                     ff_factor,
                     activation,
+                    use_linear_attention,
+                    use_flash_attention,
                 ),
             )
 
     def forward(self, X: Tensor) -> Tensor:
-        x = self.embedding(X)
+        x = self.embedding(X.long())
         x = self.pos_encoder(x)
         x = self.encoder(x)
         if self.with_cls_token:

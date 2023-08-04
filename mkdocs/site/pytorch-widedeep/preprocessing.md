@@ -8,6 +8,8 @@ model component: ``wide``, ``deeptabular``, ``deepimage`` and ``deeptext``.
 
 ::: pytorch_widedeep.preprocessing.tab_preprocessor.TabPreprocessor
 
+::: pytorch_widedeep.preprocessing.tab_preprocessor.Quantizer
+
 ::: pytorch_widedeep.preprocessing.text_preprocessor.TextPreprocessor
 
 ::: pytorch_widedeep.preprocessing.image_preprocessor.ImagePreprocessor

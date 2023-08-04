@@ -27,10 +27,10 @@ pip install -e .
 
 ## Dependencies
 
-* pandas
-* numpy
-* scipy
-* scikit-learn
+* pandas>=1.3.5
+* numpy>=1.21.6
+* scipy>=1.7.3
+* scikit-learn>=1.0.2
 * gensim
 * spacy
 * opencv-contrib-python
@@ -41,3 +41,5 @@ pip install -e .
 * einops
 * wrapt
 * torchmetrics
+* pyarrow
+* fastparquet>=0.8.1

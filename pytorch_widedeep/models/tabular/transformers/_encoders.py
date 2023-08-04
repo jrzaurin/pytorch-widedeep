@@ -6,9 +6,9 @@ from pytorch_widedeep.models.tabular.transformers._attention_layers import (
     AddNorm,
     NormAdd,
     FeedForward,
-    LinearAttention,
     AdditiveAttention,
     MultiHeadedAttention,
+    LinearAttentionLinformer,
 )
 
 
@@ -22,6 +22,8 @@ class TransformerEncoder(nn.Module):
         ff_dropout: float,
         ff_factor: int,
         activation: str,
+        use_linear_attention: bool,
+        use_flash_attention: bool,
     ):
         super(TransformerEncoder, self).__init__()
 
@@ -30,6 +32,9 @@ class TransformerEncoder(nn.Module):
             n_heads,
             use_bias,
             attn_dropout,
+            None,  # query_dim
+            use_linear_attention,
+            use_flash_attention,
         )
         self.ff = FeedForward(input_dim, ff_dropout, ff_factor, activation)
 
@@ -111,7 +116,7 @@ class FTTransformerEncoder(nn.Module):
 
         self.first_block = first_block
 
-        self.attn = LinearAttention(
+        self.attn = LinearAttentionLinformer(
             input_dim,
             n_feats,
             n_heads,

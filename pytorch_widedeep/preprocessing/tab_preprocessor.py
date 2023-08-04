@@ -44,6 +44,20 @@ def embed_sz_rule(
 
 
 class Quantizer:
+    """Helper class to perform the quantization of continuous columns. It is
+    included in this docs for completion, since depending on the value of the
+    parameter `'quantization_setup'` of the `TabPreprocessor` class, that
+    class might have an attribute of type `Quantizer`. However, this class is
+    designed to always run internally within the `TabPreprocessor` class.
+
+    Parameters
+    ----------
+    quantization_setup: Dict, default = None
+        Dictionary where the keys are the column names to quantize and the
+        values are the either integers indicating the number of bins or a
+        list of scalars indicating the bin edges.
+    """
+
     def __init__(
         self,
         quantization_setup: Dict[str, Union[int, List[float]]],
@@ -194,10 +208,13 @@ class TabPreprocessor(BasePreprocessor):
     column_idx: Dict
         Dictionary where keys are column names and values are column indexes.
         This is neccesary to slice tensors
+    quantizer: Quantizer
+        an instance of `Quantizer`
 
     Examples
     --------
     >>> import pandas as pd
+    >>> import numpy as np
     >>> from pytorch_widedeep.preprocessing import TabPreprocessor
     >>> df = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l'], 'age': [25, 40, 55]})
     >>> cat_embed_cols = [('color',5), ('size',5)]
@@ -208,6 +225,14 @@ class TabPreprocessor(BasePreprocessor):
     {'color': 5, 'size': 5}
     >>> deep_preprocessor.column_idx
     {'color': 0, 'size': 1, 'age': 2}
+    >>> cont_df = pd.DataFrame({"col1": np.random.rand(10), "col2": np.random.rand(10) + 1})
+    >>> cont_cols = ["col1", "col2"]
+    >>> tab_preprocessor = TabPreprocessor(continuous_cols=cont_cols, quantization_setup=3)
+    >>> ft_cont_df = tab_preprocessor.fit_transform(cont_df)
+    >>> # or...
+    >>> quantization_setup = {'col1': [0., 0.4, 1.], 'col2': [1., 1.4, 2.]}
+    >>> tab_preprocessor2 = TabPreprocessor(continuous_cols=cont_cols, quantization_setup=quantization_setup)
+    >>> ft_cont_df2 = tab_preprocessor2.fit_transform(cont_df)
     """
 
     @Alias("with_attention", "for_transformer")

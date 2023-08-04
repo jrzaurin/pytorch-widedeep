@@ -69,8 +69,10 @@ def get_texts(
     texts: List
         List of str with the texts (or documents). One str per document
     already_processed: bool, Optional, default = False
-        Boolean indicating if the text is already processed and we simply
-        want to tokenize it
+        Boolean indicating if the text is already processed and we simply want
+        to tokenize it. This parameter is thought for those cases where the
+        input sequences might not be text (but IDs, or anything else) and we
+        just want to tokenize it
     n_cpus: int, Optional, default = None
         number of CPUs to used during the tokenization process
 
