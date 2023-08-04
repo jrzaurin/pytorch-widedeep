@@ -3,12 +3,9 @@ import timeit
 
 import torch
 import pytest
-import torch.backends.cuda as tcud
 
 from pytorch_widedeep.models.tabular.transformers._attention_layers import (
-    SDPBackend,
     MultiHeadedAttention,
-    _flash_kernel_setup,
 )
 
 torch.backends.cudnn.deterministic = True
@@ -57,42 +54,6 @@ for module in ["q_proj", "kv_proj", "out_proj"]:
     )
 
 X = torch.randn(128, 100, input_dim).to(device)
-
-
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="requires CUDA to run")
-@pytest.mark.parametrize(
-    "backends, active",
-    [
-        (
-            [SDPBackend.FLASH],
-            {
-                tcud.flash_sdp_enabled: True,
-                tcud.mem_efficient_sdp_enabled: False,
-                tcud.math_sdp_enabled: False,
-            },
-        ),
-        (
-            [SDPBackend.MEM_EFFICIENT],
-            {
-                tcud.flash_sdp_enabled: False,
-                tcud.mem_efficient_sdp_enabled: True,
-                tcud.math_sdp_enabled: False,
-            },
-        ),
-        (
-            [SDPBackend.FLASH, SDPBackend.MEM_EFFICIENT],
-            {
-                tcud.flash_sdp_enabled: True,
-                tcud.mem_efficient_sdp_enabled: True,
-                tcud.math_sdp_enabled: False,
-            },
-        ),
-    ],
-)
-def test_cdp_context_managment(backends, active):
-    ctx = _flash_kernel_setup(backends)
-    with ctx:
-        assert all([f() == v for f, v in active.items()])
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="requires CUDA to run")

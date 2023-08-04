@@ -47,7 +47,7 @@ train_movies_sequences = df_train.prev_movies.apply(
 ).to_list()
 y_train = df_train.target.values.astype(int)
 
-df_test_user_item = df_train[["user_id", "movie_id", "rating"]]
+df_test_user_item = df_test[["user_id", "movie_id", "rating"]]
 test_movies_sequences = df_test.prev_movies.apply(
     lambda x: [int(el) for el in x]
 ).to_list()
@@ -89,7 +89,7 @@ X_test_text = np.array(
 tab_mlp = TabMlp(
     column_idx=tab_preprocessor.column_idx,
     cat_embed_input=tab_preprocessor.cat_embed_input,
-    mlp_hidden_dims=[1024, 512, 256],
+    mlp_hidden_dims=[512, 256],
     mlp_activation="relu",
 )
 
@@ -124,7 +124,7 @@ trainer.fit(
         "X_text": X_test_text,
         "target": y_test,
     },
-    n_epochs=10,
-    batch_size=521,
+    n_epochs=2,
+    batch_size=32,
     shuffle=False,
 )

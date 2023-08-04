@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep.datasets import load_movielens100k
 
-data, user, items = load_movielens100k(as_frame=True)
+data, users, items = load_movielens100k(as_frame=True)
 
 # Alternatively, as specified in the docs: 'The last 19 fields are the genres' so:
 # list_of_genres = items.columns.tolist()[-19:]
@@ -37,7 +37,7 @@ list_of_genres = [
 ]
 
 
-# adding a column with the number of movies watched per user
+# adding a column with the number of movies watched per users
 dataset = data.sort_values(["user_id", "timestamp"]).reset_index(drop=True)
 dataset["one"] = 1
 dataset["num_watched"] = dataset.groupby("user_id")["one"].cumsum()
@@ -60,6 +60,9 @@ dataset["prev_movies"] = (
     .reset_index(drop=True)
 )
 dataset["prev_movies"] = dataset["prev_movies"].apply(lambda x: x.split())
+
+# Adding user feats
+dataset = dataset.merge(users, on="user_id", how="left")
 
 # Adding a genre_rate as the mean of all movies rated for a given genre per
 # user

@@ -4,16 +4,13 @@ https://github.com/lucidrains
 """
 
 import math
-import warnings
-from enum import Enum
-from typing import ContextManager
 
 import torch
 import einops
 import torch.nn.functional as F
 from torch import nn, einsum
 
-from pytorch_widedeep.wdtypes import List, Tuple, Tensor, Optional
+from pytorch_widedeep.wdtypes import Tuple, Tensor, Optional
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 
 
@@ -67,88 +64,6 @@ class AddNorm(nn.Module):
         return self.ln(X + self.dropout(sublayer(X)))
 
 
-def _standard_attention(
-    q: Tensor, k: Tensor, v: Tensor, head_dim: int, dropout: float
-) -> Tuple[Tensor, Tensor]:
-    """'Standard' multihead attention implemenation from [Attention Is All You
-    Need](https://arxiv.org/abs/1706.03762)
-    """
-    # b: batch size
-    # s: seq length
-    # l: target sequence length
-    # m: used to refer indistinctively to s or l
-    # h: number of attention heads,
-    # d and e: head_dim
-
-    # Normalised Query, Key dot product + softmax. Fraction in brackets in
-    # their Eq 1
-    scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(head_dim)
-    attn_weights = scores.softmax(dim=-1)
-
-    # Attention(Q, K, V ) (with dropout) in their Eq 1
-    attn_output = einsum(
-        "b h s l, b h l d -> b h s d", nn.Dropout(dropout)(attn_weights), v
-    )
-
-    return attn_weights, attn_output
-
-
-def _linear_attention(q: Tensor, k: Tensor, v: Tensor) -> Tensor:
-    """Liner attention implemenation from [Transformers are RNNs: Fast
-    Autoregressive Transformers with Linear Attention]
-    (https://arxiv.org/abs/2006.16236)
-    """
-    # b: batch size
-    # s: seq length
-    # l: target sequence length
-    # m: used to refer indistinctively to s or l
-    # h: number of attention heads,
-    # d and e: head_dim
-    q, k = (
-        nn.functional.elu(q) + 1,
-        nn.functional.elu(k) + 1,
-    )
-
-    # Term within the summation in the numerator of their Eq 5
-    scores = einsum("b h s e, b h l d -> b h e d", k, v)
-
-    # The denominator in their Eq 5
-    z = 1 / (torch.einsum("b h m d, b h d -> b h m", q, k.sum(dim=2)) + 1e-6)
-
-    # Their Eq 5
-    attn_output = torch.einsum("b h m d, b h e d, b h m -> b h m d", q, scores, z)
-
-    return attn_output
-
-
-class SDPBackend(Enum):
-    FLASH: int = 0
-    MEM_EFFICIENT: int = 1
-
-
-def _flash_kernel_setup(enabled_flash_backends: List[SDPBackend]) -> ContextManager:
-    assert (
-        torch.cuda.is_available()
-    ), "optimized kernels can only be used if CUDA is available."
-
-    warnings.warn(
-        "Note that FlashAttention is beta and subject to change",
-        RuntimeWarning,
-    )
-
-    # Setting backends as suggested at https://discuss.pytorch.org/t/flash-attention/174955
-    enable_flash = True if SDPBackend.FLASH in enabled_flash_backends else False
-    enable_mem_eff = (
-        True if SDPBackend.MEM_EFFICIENT in enabled_flash_backends else False
-    )
-
-    return torch.backends.cuda.sdp_kernel(
-        enable_flash=enable_flash,
-        enable_mem_efficient=enable_mem_eff,
-        enable_math=False,
-    )
-
-
 class MultiHeadedAttention(nn.Module):
     def __init__(
         self,
@@ -159,10 +74,6 @@ class MultiHeadedAttention(nn.Module):
         query_dim: Optional[int] = None,
         use_linear_attention: bool = False,
         use_flash_attention: bool = False,
-        enabled_flash_backends: List[SDPBackend] = [
-            SDPBackend.FLASH,
-            SDPBackend.MEM_EFFICIENT,
-        ],  # in the next release we will offer the posibility of setting up the backend
     ):
         super(MultiHeadedAttention, self).__init__()
 
@@ -170,7 +81,6 @@ class MultiHeadedAttention(nn.Module):
 
         self.use_linear_attention = use_linear_attention
         self.use_flash_attention = use_flash_attention
-        self.enabled_flash_backends = enabled_flash_backends
 
         self.head_dim = input_dim // n_heads
         self.n_heads = n_heads
@@ -200,26 +110,20 @@ class MultiHeadedAttention(nn.Module):
         )
 
         if self.use_flash_attention:
-            # in the future we will offer the possibility of setting up the
-            # backend. For the time being this context manager
-            # is 'redundant'
-            with _flash_kernel_setup(self.enabled_flash_backends):
-                attn_output = F.scaled_dot_product_attention(
-                    q,
-                    k,
-                    v,
-                    attn_mask=None,
-                    dropout_p=self.dropout if self.training else 0,
-                    is_causal=False,
-                )
+            attn_output = F.scaled_dot_product_attention(
+                q,
+                k,
+                v,
+                attn_mask=None,
+                dropout_p=self.dropout if self.training else 0,
+                is_causal=False,
+            )
             self.attn_weights: Optional[Tensor] = None
         elif self.use_linear_attention:
-            attn_output = _linear_attention(q, k, v)
+            attn_output = self._linear_attention(q, k, v)
             self.attn_weights = None
         else:
-            self.attn_weights, attn_output = _standard_attention(
-                q, k, v, self.head_dim, self.dropout
-            )
+            self.attn_weights, attn_output = self._standard_attention(q, k, v)
 
         output = einops.rearrange(attn_output, "b h s d -> b s (h d)", h=self.n_heads)
 
@@ -227,6 +131,59 @@ class MultiHeadedAttention(nn.Module):
             output = self.out_proj(output)
 
         return output
+
+    def _standard_attention(
+        self, q: Tensor, k: Tensor, v: Tensor
+    ) -> Tuple[Tensor, Tensor]:
+        """'Standard' multihead attention implemenation from [Attention Is All You
+        Need](https://arxiv.org/abs/1706.03762)
+        """
+        # b: batch size
+        # s: seq length
+        # l: target sequence length
+        # m: used to refer indistinctively to s or l
+        # h: number of attention heads,
+        # d and e: head_dim
+
+        # Normalised Query, Key dot product + softmax. Fraction in brackets in
+        # their Eq 1
+        scores = einsum("b h s d, b h l d -> b h s l", q, k) / math.sqrt(self.head_dim)
+        attn_weights = scores.softmax(dim=-1)
+
+        # Attention(Q, K, V ) (with dropout) in their Eq 1
+        attn_output = einsum(
+            "b h s l, b h l d -> b h s d", nn.Dropout(self.dropout)(attn_weights), v
+        )
+
+        return attn_weights, attn_output
+
+    @staticmethod
+    def _linear_attention(q: Tensor, k: Tensor, v: Tensor) -> Tensor:
+        """Liner attention implemenation from [Transformers are RNNs: Fast
+        Autoregressive Transformers with Linear Attention]
+        (https://arxiv.org/abs/2006.16236)
+        """
+        # b: batch size
+        # s: seq length
+        # l: target sequence length
+        # m: used to refer indistinctively to s or l
+        # h: number of attention heads,
+        # d and e: head_dim
+        q, k = (
+            nn.functional.elu(q) + 1,
+            nn.functional.elu(k) + 1,
+        )
+
+        # Term within the summation in the numerator of their Eq 5
+        scores = einsum("b h s e, b h l d -> b h e d", k, v)
+
+        # The denominator in their Eq 5
+        z = 1 / (torch.einsum("b h m d, b h d -> b h m", q, k.sum(dim=2)) + 1e-6)
+
+        # Their Eq 5
+        attn_output = torch.einsum("b h m d, b h e d, b h m -> b h m d", q, scores, z)
+
+        return attn_output
 
 
 class LinearAttentionLinformer(nn.Module):
