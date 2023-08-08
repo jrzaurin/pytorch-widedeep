@@ -11,9 +11,6 @@ class BatchTextPreprocessor:
     def transform(self) -> Tensor:
         pass
 
-    def fit_transform(self) -> Tensor:
-        pass
-
 
 class TextFolder:
     def __init__(

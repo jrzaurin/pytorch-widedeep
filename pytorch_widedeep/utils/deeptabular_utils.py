@@ -7,7 +7,14 @@ from scipy.ndimage import gaussian_filter1d
 from sklearn.exceptions import NotFittedError
 from scipy.signal.windows import triang
 
-from pytorch_widedeep.wdtypes import List, Union, Tensor, Literal, Optional
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Union,
+    Tensor,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.utils.general_utils import Alias
 
 warnings.filterwarnings("ignore")
@@ -66,49 +73,103 @@ class LabelEncoder:
 
         self.reset_embed_idx = not self.with_attention or self.shared_embed
 
-    def fit(self, df: pd.DataFrame) -> "LabelEncoder":
-        """Creates encoding attributes
+    def update(self, chunk: pd.DataFrame) -> "LabelEncoder":  # noqa: C901
+        """Main method. Creates encoding attributes.
 
         Returns
         -------
         LabelEncoder
             `LabelEncoder` fitted object
         """
-
-        df_inp = df.copy()
-
+        # this is meant to be run when the data is large and we pass a chunk
+        # at a time. Therefore, we do not copy the input chunk as mutating a
+        # chunk is ok
         if self.columns_to_encode is None:
             self.columns_to_encode = list(
-                df_inp.select_dtypes(include=["object"]).columns
+                chunk.select_dtypes(include=["object"]).columns
             )
         else:
             # sanity check to make sure all categorical columns are in an adequate
             # format
             for col in self.columns_to_encode:
-                df_inp[col] = df_inp[col].astype("O")
+                chunk[col] = chunk[col].astype("O")
 
-        unique_column_vals = dict()
+        unique_column_vals: Dict[str, List[str]] = {}
         for c in self.columns_to_encode:
-            unique_column_vals[c] = df_inp[c].unique()
+            unique_column_vals[c] = chunk[c].unique().tolist()
 
-        self.encoding_dict = dict()
-        if "cls_token" in unique_column_vals and self.shared_embed:
-            self.encoding_dict["cls_token"] = {"[CLS]": 0}
-            del unique_column_vals["cls_token"]
-        # leave 0 for padding/"unseen" categories
-        idx = 1
-        for k, v in unique_column_vals.items():
-            self.encoding_dict[k] = {
-                o: i + idx for i, o in enumerate(unique_column_vals[k])
-            }
-            idx = 1 if self.reset_embed_idx else idx + len(unique_column_vals[k])
+        if not hasattr(self, "encoding_dict"):
+            # we run the method 'update' for the 1st time
+            self.encoding_dict: Dict[str, Dict[str, int]] = {}
+            if "cls_token" in unique_column_vals and self.shared_embed:
+                self.encoding_dict["cls_token"] = {"[CLS]": 0}
+                del unique_column_vals["cls_token"]
 
-        self.inverse_encoding_dict = dict()
-        for c in self.encoding_dict:
-            self.inverse_encoding_dict[c] = {
-                v: k for k, v in self.encoding_dict[c].items()
-            }
-            self.inverse_encoding_dict[c][0] = "unseen"
+            # leave 0 for padding/"unseen" categories. Also we need an
+            # attribute to keep track of the encoding in case we use
+            # attention and we do not re-start the index/counter
+            self.cum_idx: int = 1
+            for k, v in unique_column_vals.items():
+                self.encoding_dict[k] = {
+                    o: i + self.cum_idx for i, o in enumerate(unique_column_vals[k])
+                }
+                self.cum_idx = (
+                    1
+                    if self.reset_embed_idx
+                    else self.cum_idx + len(unique_column_vals[k])
+                )
+        else:
+            # the 'update' method has already run.
+            # "cls_token" will have been added already
+            if "cls_token" in unique_column_vals and self.shared_embed:
+                del unique_column_vals["cls_token"]
+
+            # Classes in the new chunk of the dataset that have not been seen
+            # before
+            unseen_classes: Dict[str, List[str]] = {}
+            for c in self.columns_to_encode:
+                unseen_classes[c] = list(
+                    np.setdiff1d(
+                        unique_column_vals[c], list(self.encoding_dict[c].keys())
+                    )
+                )
+
+            # leave 0 for padding/"unseen" categories
+            for k, v in unique_column_vals.items():
+                # if we use attention we need to start encoding from the
+                # last 'overall' encoding index. Otherwise, we use the max
+                # encoding index per categorical col
+                _idx = (
+                    max(self.encoding_dict[k].values()) + 1
+                    if self.reset_embed_idx
+                    else self.cum_idx
+                )
+                if len(unseen_classes[k]) != 0:
+                    for i, o in enumerate(unseen_classes[k]):
+                        if o not in self.encoding_dict[k]:
+                            self.encoding_dict[k][o] = i + _idx
+                    # if self.reset_embed_idx is True it will be 1 anyway
+                    self.cum_idx = (
+                        1
+                        if self.reset_embed_idx
+                        else self.cum_idx + len(unseen_classes[k])
+                    )
+
+        return self
+
+    def fit(self, df: pd.DataFrame) -> "LabelEncoder":
+        """Runs update under the hood
+
+        Returns
+        -------
+        LabelEncoder
+            `LabelEncoder` fitted object
+        """
+        # this is meant to be run when the data fits in memory and therefore,
+        # we do not want to mutate the original df, so we copy it
+        self.update(df.copy())
+
+        self.inverse_encoding_dict = self.create_inverse_encoding_dict()
 
         return self
 
@@ -165,6 +226,13 @@ class LabelEncoder:
         """
         return self.fit(df).transform(df)
 
+    def create_inverse_encoding_dict(self) -> Dict[str, Dict[int, str]]:
+        inverse_encoding_dict = dict()
+        for c in self.encoding_dict:
+            inverse_encoding_dict[c] = {v: k for k, v in self.encoding_dict[c].items()}
+            inverse_encoding_dict[c][0] = "unseen"
+        return inverse_encoding_dict
+
     def inverse_transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """Returns the original categories
 
@@ -188,8 +256,13 @@ class LabelEncoder:
         pd.DataFrame
             DataFrame with original categories
         """
+
+        if not hasattr(self, "inverse_encoding_dict"):
+            self.inverse_encoding_dict = self.create_inverse_encoding_dict()
+
         for k, v in self.inverse_encoding_dict.items():
             df[k] = df[k].apply(lambda x: v[x])
+
         return df
 
 
@@ -198,9 +271,8 @@ def find_bin(
     values: Union[np.ndarray, Tensor],
     ret_value: bool = True,
 ) -> Union[np.ndarray, Tensor]:
-    """Returns histograms left bin edge value or array indices from monotonically
-    increasing array of bin edges for each value in values.
-    If ret_value
+    """Returns indices that are the results of applying the 'searchsorted' algo
+    to 'bin_edges' and 'values' or the left edge of the bins (i.e. bin_edges[indices])
 
     Parameters
     ----------
@@ -247,8 +319,9 @@ def get_kernel_window(
     ks: int = 5,
     sigma: Union[int, float] = 2,
 ) -> List[float]:
-    """Procedure to prepare window of values from symetrical kernel function for smoothing of the distribution in
-    Label and Feature Distribution Smoothing (LDS & FDS).
+    """Procedure to prepare the window of values from symetrical kernel function
+    for smoothing of the distribution in Label and Feature Distribution
+    Smoothing (LDS & FDS).
 
     Parameters
     ----------
@@ -276,3 +349,36 @@ def get_kernel_window(
         raise ValueError("Kernel can be only ['gaussian', 'triang', 'laplace'].")
 
     return kernel_window
+
+
+# if __name__ == "__main__":
+#     from pytorch_widedeep.datasets import load_adult
+
+#     df = load_adult(as_frame=True)
+#     df.columns = [c.replace("-", "_") for c in df.columns]
+
+#     df.to_csv("df.csv", index=False)
+
+#     fname = "df.csv"
+
+#     cat_embed_cols = [
+#         "workclass",
+#         "education",
+#         "marital_status",
+#         "occupation",
+#         "relationship",
+#         "race",
+#         "gender",
+#         "native_country",
+#     ]
+
+#     # le = LabelEncoder(cat_embed_cols, with_attention=True)
+#     le_batch = LabelEncoder(cat_embed_cols)
+#     le = LabelEncoder(cat_embed_cols)
+
+#     for i, chunk in enumerate(pd.read_csv(fname, chunksize=500)):
+#         print(i)
+#         le_batch.update(chunk)
+
+#     df = pd.read_csv(fname)
+#     le.fit(df)

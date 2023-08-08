@@ -18,9 +18,6 @@ class BatchTabPreprocessor:
     def transform(self) -> Tensor:
         pass
 
-    def fit_transform(self) -> Tensor:
-        pass
-
 
 class TabFolder:
     def __init__(

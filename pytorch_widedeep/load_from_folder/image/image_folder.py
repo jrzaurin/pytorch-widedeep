@@ -54,29 +54,16 @@ def default_loader(path: str) -> Any:
         return pil_loader(path)
 
 
-class BatchImagePreprocessor:
-    def fit(self) -> "BatchImagePreprocessor":
-        pass
-
-    def transform(self) -> Tensor:
-        pass
-
-    def fit_transform(self) -> Tensor:
-        pass
-
-
 class ImageFolder:
     def __init__(
         self,
         directory: str,
         loader: Callable[[str], Any] = default_loader,
-        image_processor: Optional[BatchImagePreprocessor] = None,
         extensions: Optional[Tuple[str, ...]] = None,
         transforms: Optional[Callable] = None,
     ) -> None:
         self.directory = directory
         self.loader = loader
-        self.image_processor = image_processor
         self.extensions = extensions
         self.transforms = transforms
 
@@ -85,8 +72,6 @@ class ImageFolder:
 
         path = os.path.join(self.directory, fname)
         sample = self.loader(path)
-        if self.image_processor is not None:
-            sample = self.image_processor.transform(sample)
         if self.transforms is not None:
             sample = self.transforms(sample)
         return sample
