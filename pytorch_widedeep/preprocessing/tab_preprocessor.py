@@ -342,7 +342,7 @@ class TabPreprocessor(BasePreprocessor):
         self.is_fitted = True
         return self
 
-    def transform(self, df: pd.DataFrame) -> np.ndarray:
+    def transform(self, df: pd.DataFrame) -> np.ndarray:  # noqa: C901
         """Returns the processed `dataframe` as a np.ndarray
 
         Parameters
@@ -369,7 +369,12 @@ class TabPreprocessor(BasePreprocessor):
                     df_cont[self.standardize_cols].values
                 )
             if self.cols_and_bins is not None:
-                df_cont = self.quantizer.fit_transform(df_cont)
+                # Adjustment so I don't have to override the method
+                # in 'ChunkTabPreprocessor'
+                if self.quantizer.is_fitted:
+                    df_cont = self.quantizer.transform(df_cont)
+                else:
+                    df_cont = self.quantizer.fit_transform(df_cont)
         try:
             df_deep = pd.concat([df_emb, df_cont], axis=1)
         except NameError:
@@ -377,10 +382,14 @@ class TabPreprocessor(BasePreprocessor):
                 df_deep = df_emb.copy()
             except NameError:
                 df_deep = df_cont.copy()
-        self.column_idx = {k: v for v, k in enumerate(df_deep.columns)}
+
+        if not hasattr(self, "column_idx"):
+            # Adjustment so I don't have to override the method
+            # in 'ChunkTabPreprocessor'
+            self.column_idx = {k: v for v, k in enumerate(df_deep.columns)}
         return df_deep.values
 
-    def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:
+    def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:  # noqa: C901
         r"""Takes as input the output from the `transform` method and it will
         return the original values.
 
@@ -397,17 +406,12 @@ class TabPreprocessor(BasePreprocessor):
         decoded = pd.DataFrame(encoded, columns=self.column_idx.keys())
         # embeddings back to original category
         if self.cat_embed_cols is not None:
-            if isinstance(self.cat_embed_cols[0], tuple):
-                emb_c: List = [c[0] for c in self.cat_embed_cols]
-            else:
-                emb_c = self.cat_embed_cols.copy()
-            for c in emb_c:
-                decoded[c] = decoded[c].map(self.label_encoder.inverse_encoding_dict[c])
+            decoded = self.label_encoder.inverse_transform(decoded)
         # quantized cols to the mid point
         if self.quantization_setup is not None:
             if self.verbose:
                 print(
-                    "Note that quantized cols will not be turned into the mid point of "
+                    "Note that quantized cols will be turned into the mid point of "
                     "the corresponding bin"
                 )
             for k, v in self.quantizer.inversed_bins.items():
@@ -575,3 +579,199 @@ class TabPreprocessor(BasePreprocessor):
             and isinstance(cat_embed_cols[0], tuple)
         ):
             raise ValueError(transformer_error_message)
+
+
+class ChunkTabPreprocessor(TabPreprocessor):
+    @Alias("with_attention", "for_transformer")
+    @Alias("cat_embed_cols", "embed_cols")
+    @Alias("scale", "scale_cont_cols")
+    @Alias("cols_and_bins", "quantization_setup")
+    def __init__(
+        self,
+        n_chunks: Optional[int] = None,
+        cat_embed_cols: Optional[Union[List[str], List[Tuple[str, int]]]] = None,
+        continuous_cols: Optional[List[str]] = None,
+        cols_and_bins: Optional[Dict[str, List[float]]] = None,
+        cols_to_scale: Optional[List[str]] = None,
+        default_embed_dim: int = 16,
+        with_attention: bool = False,
+        with_cls_token: bool = False,
+        shared_embed: bool = False,
+        verbose: int = 1,
+        *,
+        scale: bool = False,
+        already_standard: List[str] = None,
+        **kwargs,
+    ):
+        super(ChunkTabPreprocessor, self).__init__(
+            cat_embed_cols=cat_embed_cols,
+            continuous_cols=continuous_cols,
+            quantization_setup=None,
+            cols_to_scale=cols_to_scale,
+            auto_embed_dim=False,
+            embedding_rule="google",  # does not matter, irrelevant
+            default_embed_dim=default_embed_dim,
+            with_attention=with_attention,
+            with_cls_token=with_cls_token,
+            shared_embed=shared_embed,
+            verbose=verbose,
+            scale=scale,
+            already_standard=already_standard,
+            **kwargs,
+        )
+
+        if n_chunks is not None:
+            self.n_chunks = n_chunks
+            self.chunk_counter = 0
+        else:
+            raise UserWarning(
+                "No number of chunks specified. This processor will try to infer "
+                "the last chunk based on this having a smaller size. If "
+                "'n_chunks * chunksize = datasize' this approach will not work. "
+                "If that is the case, please provide the number of chunk 'n_chunks'"
+            )
+
+        self.cols_and_bins = cols_and_bins  # type: ignore[assignment]
+
+        if self.cols_and_bins is not None:
+            self.quantizer = Quantizer(self.cols_and_bins, **self.quant_args)
+
+        self.embed_prepared = False
+        self.continuous_prepared = False
+
+    def partial_fit(self, chunk: pd.DataFrame) -> "ChunkTabPreprocessor":  # noqa: C901
+        if not self.n_chunks and not hasattr(self, "chunk_size"):
+            self.chunz_size = chunk.shape[0]
+
+        chunk_adj = (
+            self._insert_cls_token(chunk) if self.with_cls_token else chunk.copy()
+        )
+
+        if self.cat_embed_cols is not None:
+            if not self.embed_prepared:
+                chunk_emb = self._prepare_embed(chunk_adj)
+                self.label_encoder = LabelEncoder(
+                    columns_to_encode=chunk_emb.columns.tolist(),
+                    shared_embed=self.shared_embed,
+                    with_attention=self.with_attention,
+                )
+                self.label_encoder.partial_fit(chunk_emb)
+            else:
+                chunk_emb = chunk_adj[self.cat_embed_cols]
+                self.label_encoder.partial_fit(chunk_emb)
+
+        if self.continuous_cols is not None:
+            if not self.continuous_prepared:
+                chunk_cont = self._prepare_continuous(chunk_adj)
+            else:
+                chunk_cont = chunk[self.continuous_cols]
+
+            self.scaler.partial_fit(chunk_cont[self.standardize_cols].values)
+
+        if self.n_chunks:
+            self.chunk_counter += 1
+            end_chunk_cond: bool = self.chunk_counter == self.n_chunks
+        else:
+            current_chunk_size = chunk.shape[0]
+            end_chunk_cond = current_chunk_size < self.chunz_size
+
+        if end_chunk_cond:
+            self.cat_embed_input: List[
+                Union[Tuple[str, int], Tuple[str, int, int]]
+            ] = []
+            for k, v in self.label_encoder.encoding_dict.items():
+                if self.with_attention:
+                    self.cat_embed_input.append((k, len(v)))
+                else:
+                    self.cat_embed_input.append((k, len(v), self.embed_dim[k]))
+            self.is_fitted = True
+
+        return self
+
+    def fit(self, chunk: pd.DataFrame) -> "ChunkTabPreprocessor":
+        # just to override the fit method in the base class. This class is not
+        # designed or thought to run fit
+        return self.partial_fit(chunk)
+
+    def _prepare_embed(self, chunk: pd.DataFrame) -> pd.DataFrame:
+        # When dealing with chunks we will not support the option of
+        # automatically define embeddings as this implies going through the
+        # entire dataset
+        if self.with_attention:
+            embed_colname = self.cat_embed_cols
+        else:
+            if isinstance(self.cat_embed_cols[0], tuple):
+                self.embed_dim: Dict = dict(self.cat_embed_cols)  # type: ignore
+                embed_colname = [emb[0] for emb in self.cat_embed_cols]
+            else:
+                self.embed_dim = {
+                    e: self.default_embed_dim for e in self.cat_embed_cols
+                }  # type: ignore
+                embed_colname = self.cat_embed_cols  # type: ignore
+
+        self.embed_prepared = True
+
+        return chunk[embed_colname]
+
+    def _prepare_continuous(self, chunk: pd.DataFrame) -> pd.DataFrame:
+        if self.cols_to_scale is not None:
+            self.standardize_cols = self.continuous_cols
+        elif self.scale:
+            if self.already_standard is not None:
+                self.standardize_cols = [
+                    c for c in self.continuous_cols if c not in self.already_standard
+                ]
+            else:
+                self.standardize_cols = self.continuous_cols
+        else:
+            self.standardize_cols = None
+
+        if self.standardize_cols is not None:
+            self.scaler = StandardScaler(**self.scale_args)
+        elif self.verbose:
+            warnings.warn("Continuous columns will not be normalised")
+
+        self.continuous_prepared = True
+
+        return chunk[self.continuous_cols]
+
+    # def __repr__(self):
+
+
+# if __name__ == "__main__":
+#     from pytorch_widedeep.datasets import load_adult
+
+#     df = load_adult(as_frame=True)
+#     df.columns = [c.replace("-", "_") for c in df.columns]
+
+#     df.to_csv("df.csv", index=False)
+
+#     fname = "df.csv"
+#     df = pd.read_csv(fname)
+
+#     cat_embed_cols = [
+#         "workclass",
+#         "education",
+#         "marital_status",
+#         "occupation",
+#         "relationship",
+#         "race",
+#         "gender",
+#         "native_country",
+#     ]
+
+#     tp = TabPreprocessor(cat_embed_cols)
+
+#     chunksize = 500
+#     tp_chunk = ChunkTabPreprocessor(
+#         n_chunks=df.shape[0] // chunksize + 1, embed_cols=cat_embed_cols
+#     )
+
+#     for i, chunk in enumerate(pd.read_csv(fname, chunksize=500)):
+#         print(f"chunk in loop: {i}")
+#         tp_chunk.partial_fit(chunk)
+
+#     encoded = tp_chunk.transform(df)
+#     org = tp_chunk.inverse_transform(encoded)
+
+#     tp.fit(df)

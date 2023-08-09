@@ -3,7 +3,10 @@ from typing import Optional
 
 import pandas as pd
 
-from pytorch_widedeep.wdtypes import List, Tensor, Literal
+from pytorch_widedeep.wdtypes import List, Literal
+from pytorch_widedeep.preprocessing.tab_preprocessor import (
+    ChunkTabPreprocessor,
+)
 
 TAB_EXTENSIONS = (
     ".parquet",
@@ -11,19 +14,11 @@ TAB_EXTENSIONS = (
 )
 
 
-class BatchTabPreprocessor:
-    def fit(self) -> "BatchTabPreprocessor":
-        pass
-
-    def transform(self) -> Tensor:
-        pass
-
-
 class TabFolder:
     def __init__(
         self,
         directory: str,
-        tab_preprocessor: BatchTabPreprocessor,
+        tab_preprocessor: ChunkTabPreprocessor,
         data_format: Literal[
             "csv",
             "parquet",

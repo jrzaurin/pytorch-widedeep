@@ -73,7 +73,7 @@ class LabelEncoder:
 
         self.reset_embed_idx = not self.with_attention or self.shared_embed
 
-    def update(self, chunk: pd.DataFrame) -> "LabelEncoder":  # noqa: C901
+    def partial_fit(self, chunk: pd.DataFrame) -> "LabelEncoder":  # noqa: C901
         """Main method. Creates encoding attributes.
 
         Returns
@@ -99,7 +99,7 @@ class LabelEncoder:
             unique_column_vals[c] = chunk[c].unique().tolist()
 
         if not hasattr(self, "encoding_dict"):
-            # we run the method 'update' for the 1st time
+            # we run the method 'partial_fit' for the 1st time
             self.encoding_dict: Dict[str, Dict[str, int]] = {}
             if "cls_token" in unique_column_vals and self.shared_embed:
                 self.encoding_dict["cls_token"] = {"[CLS]": 0}
@@ -119,7 +119,7 @@ class LabelEncoder:
                     else self.cum_idx + len(unique_column_vals[k])
                 )
         else:
-            # the 'update' method has already run.
+            # the 'partial_fit' method has already run.
             # "cls_token" will have been added already
             if "cls_token" in unique_column_vals and self.shared_embed:
                 del unique_column_vals["cls_token"]
@@ -167,7 +167,7 @@ class LabelEncoder:
         """
         # this is meant to be run when the data fits in memory and therefore,
         # we do not want to mutate the original df, so we copy it
-        self.update(df.copy())
+        self.partial_fit(df.copy())
 
         self.inverse_encoding_dict = self.create_inverse_encoding_dict()
 
@@ -378,7 +378,7 @@ def get_kernel_window(
 
 #     for i, chunk in enumerate(pd.read_csv(fname, chunksize=500)):
 #         print(i)
-#         le_batch.update(chunk)
+#         le_batch.partial_fit(chunk)
 
 #     df = pd.read_csv(fname)
 #     le.fit(df)
