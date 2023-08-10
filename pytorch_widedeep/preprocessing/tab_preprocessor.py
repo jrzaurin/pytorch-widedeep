@@ -580,6 +580,45 @@ class TabPreprocessor(BasePreprocessor):
         ):
             raise ValueError(transformer_error_message)
 
+    def __repr__(self) -> str:  # noqa: C901
+        list_of_params: List[str] = []
+        if self.cat_embed_cols is not None:
+            list_of_params.append("cat_embed_cols={cat_embed_cols}")
+        if self.continuous_cols is not None:
+            list_of_params.append("continuous_cols={continuous_cols}")
+        if self.quantization_setup is not None:
+            list_of_params.append("quantization_setup={quantization_setup}")
+        if self.cols_to_scale is not None:
+            list_of_params.append("cols_to_scale={cols_to_scale}")
+        if not self.auto_embed_dim:
+            list_of_params.append("auto_embed_dim={auto_embed_dim}")
+        if self.embedding_rule != "fastai_new":
+            list_of_params.append("embedding_rule={embedding_rule}")
+        if self.default_embed_dim != 16:
+            list_of_params.append("default_embed_dim={default_embed_dim}")
+        if self.with_attention:
+            list_of_params.append("with_attention={with_attention}")
+        if self.with_cls_token:
+            list_of_params.append("with_cls_token={with_cls_token}")
+        if self.shared_embed:
+            list_of_params.append("shared_embed={shared_embed}")
+        if self.verbose != 1:
+            list_of_params.append("verbose={verbose}")
+        if self.scale:
+            list_of_params.append("scale={scale}")
+        if self.already_standard is not None:
+            list_of_params.append("already_standard={already_standard}")
+        if len(self.quant_args) > 0:
+            list_of_params.append(
+                ", ".join([f"{k}" + "=" + f"{v}" for k, v in self.quant_args.items()])
+            )
+        if len(self.scale_args) > 0:
+            list_of_params.append(
+                ", ".join([f"{k}" + "=" + f"{v}" for k, v in self.scale_args.items()])
+            )
+        all_params = ", ".join(list_of_params)
+        return f"TabPreprocessor({all_params.format(**self.__dict__)})"
+
 
 class ChunkTabPreprocessor(TabPreprocessor):
     @Alias("with_attention", "for_transformer")
@@ -735,7 +774,42 @@ class ChunkTabPreprocessor(TabPreprocessor):
 
         return chunk[self.continuous_cols]
 
-    # def __repr__(self):
+    def __repr__(self) -> str:  # noqa: C901
+        list_of_params: List[str] = []
+        if self.n_chunks is not None:
+            list_of_params.append("n_chunks={n_chunks}")
+        if self.cat_embed_cols is not None:
+            list_of_params.append("cat_embed_cols={cat_embed_cols}")
+        if self.continuous_cols is not None:
+            list_of_params.append("continuous_cols={continuous_cols}")
+        if self.cols_and_bins is not None:
+            list_of_params.append("cols_and_bins={cols_and_bins}")
+        if self.cols_to_scale is not None:
+            list_of_params.append("cols_to_scale={cols_to_scale}")
+        if self.default_embed_dim != 16:
+            list_of_params.append("default_embed_dim={default_embed_dim}")
+        if self.with_attention:
+            list_of_params.append("with_attention={with_attention}")
+        if self.with_cls_token:
+            list_of_params.append("with_cls_token={with_cls_token}")
+        if self.shared_embed:
+            list_of_params.append("shared_embed={shared_embed}")
+        if self.verbose != 1:
+            list_of_params.append("verbose={verbose}")
+        if self.scale:
+            list_of_params.append("scale={scale}")
+        if self.already_standard is not None:
+            list_of_params.append("already_standard={already_standard}")
+        if len(self.quant_args) > 0:
+            list_of_params.append(
+                ", ".join([f"{k}" + "=" + f"{v}" for k, v in self.quant_args.items()])
+            )
+        if len(self.scale_args) > 0:
+            list_of_params.append(
+                ", ".join([f"{k}" + "=" + f"{v}" for k, v in self.scale_args.items()])
+            )
+        all_params = ", ".join(list_of_params)
+        return f"ChunkTabPreprocessor({all_params.format(**self.__dict__)})"
 
 
 # if __name__ == "__main__":

@@ -265,6 +265,17 @@ class LabelEncoder:
 
         return df
 
+    def __repr__(self) -> str:
+        list_of_params: List[str] = []
+        if self.columns_to_encode is not None:
+            list_of_params.append("columns_to_encode={columns_to_encode}")
+        if self.with_attention:
+            list_of_params.append("with_attention={with_attention}")
+        if self.shared_embed:
+            list_of_params.append("shared_embed={shared_embed}")
+        all_params = ", ".join(list_of_params)
+        return f"LabelEncoder({all_params.format(**self.__dict__)})"
+
 
 def find_bin(
     bin_edges: Union[np.ndarray, Tensor],
@@ -360,6 +371,7 @@ def get_kernel_window(
 #     df.to_csv("df.csv", index=False)
 
 #     fname = "df.csv"
+#     df = pd.read_csv(fname)
 
 #     cat_embed_cols = [
 #         "workclass",
@@ -380,5 +392,4 @@ def get_kernel_window(
 #         print(i)
 #         le_batch.partial_fit(chunk)
 
-#     df = pd.read_csv(fname)
 #     le.fit(df)
