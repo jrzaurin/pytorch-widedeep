@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import List, Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -10,11 +10,13 @@ from pytorch_widedeep.utils.text_utils import (
     build_embeddings_matrix,
 )
 from pytorch_widedeep.utils.general_utils import Alias
-from pytorch_widedeep.utils.fastai_transforms import Vocab
+from pytorch_widedeep.utils.fastai_transforms import Vocab, ChunkVocab
 from pytorch_widedeep.preprocessing.base_preprocessor import (
     BasePreprocessor,
     check_is_fitted,
 )
+
+TVocab = Union[Vocab, ChunkVocab]
 
 
 class TextPreprocessor(BasePreprocessor):
@@ -103,6 +105,24 @@ class TextPreprocessor(BasePreprocessor):
         self.verbose = verbose
         self.n_cpus = n_cpus if n_cpus is not None else os.cpu_count()
 
+    def read_texts(self, df: pd.DataFrame, root_dir: Optional[str] = None) -> List[str]:
+        # method mostly introduced for the ChunkTextPreprocessor so it can
+        # inherit from this class
+        if root_dir is not None:
+            if not os.path.exists(root_dir):
+                raise ValueError(
+                    "root_dir does not exist. Please create it before fitting the preprocessor"
+                )
+            texts_fnames = df[self.text_col].tolist()
+            texts: List[str] = []
+            for texts_fname in texts_fnames:
+                with open(os.path.join(root_dir, texts_fname), "r") as f:
+                    texts.append(f.read().replace("\n", ""))
+        else:
+            texts = df[self.text_col].tolist()
+
+        return texts
+
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Builds the vocabulary
 
@@ -116,14 +136,18 @@ class TextPreprocessor(BasePreprocessor):
         TextPreprocessor
             `TextPreprocessor` fitted object
         """
-        texts = df[self.text_col].tolist()
+        texts = self.read_texts(df)
+
         tokens = get_texts(texts, self.already_processed, self.n_cpus)
-        self.vocab = Vocab.create(
-            tokens,
+
+        self.vocab: TVocab = Vocab(
             max_vocab=self.max_vocab,
             min_freq=self.min_freq,
             pad_idx=self.pad_idx,
+        ).fit(
+            tokens,
         )
+
         if self.verbose:
             print("The vocabulary contains {} tokens".format(len(self.vocab.stoi)))
         if self.word_vectors_path is not None:
@@ -146,9 +170,9 @@ class TextPreprocessor(BasePreprocessor):
             Padded, _'numericalised'_ sequences
         """
         check_is_fitted(self, attributes=["vocab"])
-        texts = df[self.text_col].tolist()
+        texts = self.read_texts(df)
         self.tokens = get_texts(texts, self.already_processed, self.n_cpus)
-        sequences = [self.vocab.numericalize(t) for t in self.tokens]
+        sequences = [self.vocab.transform(t) for t in self.tokens]
         padded_seq = np.array(
             [
                 pad_sequences(
@@ -190,5 +214,158 @@ class TextPreprocessor(BasePreprocessor):
         pd.DataFrame
             Pandas dataframe with the original text plus the added 'special' tokens
         """
-        texts = [self.vocab.textify(num) for num in padded_seq]
+        texts = [self.vocab.inverse_transform(num) for num in padded_seq]
         return pd.DataFrame({self.text_col: texts})
+
+    def __repr__(self) -> str:  # noqa: C901
+        list_of_params: List[str] = ["text_col={text_col}"]
+        if self.max_vocab is not None:
+            list_of_params.append("max_vocab={max_vocab}")
+        if self.min_freq is not None:
+            list_of_params.append("min_freq={min_freq}")
+        if self.maxlen is not None:
+            list_of_params.append("maxlen={maxlen}")
+        if self.pad_first is not None:
+            list_of_params.append("pad_first={pad_first}")
+        if self.pad_idx is not None:
+            list_of_params.append("pad_idx={pad_idx}")
+        if self.already_processed is not None:
+            list_of_params.append("already_processed={already_processed}")
+        if self.word_vectors_path is not None:
+            list_of_params.append("word_vectors_path={word_vectors_path}")
+        if self.n_cpus is not None:
+            list_of_params.append("n_cpus={n_cpus}")
+        if self.verbose is not None:
+            list_of_params.append("verbose={verbose}")
+        all_params = ", ".join(list_of_params)
+        return f"TextPreprocessor({all_params.format(**self.__dict__)})"
+
+
+class ChunkTextPreprocessor(TextPreprocessor):
+    def __init__(
+        self,
+        text_col: str,
+        n_chunks: Optional[int] = None,
+        root_dir: Optional[str] = None,
+        max_vocab: int = 30000,
+        min_freq: int = 5,
+        maxlen: int = 80,
+        pad_first: bool = True,
+        pad_idx: int = 1,
+        word_vectors_path: Optional[str] = None,
+        n_cpus: Optional[int] = None,
+        verbose: int = 1,
+    ):
+        super(TextPreprocessor, self).__init__(
+            text_col=text_col,
+            max_vocab=max_vocab,
+            min_freq=min_freq,
+            maxlen=maxlen,
+            pad_first=pad_first,
+            pad_idx=pad_idx,
+            word_vectors_path=word_vectors_path,
+            n_cpus=n_cpus,
+            verbose=verbose,
+        )
+
+        self.n_chunks = n_chunks
+        self.root_dir = root_dir
+
+        if n_chunks is not None:
+            self.n_chunks = n_chunks
+            self.chunk_counter = 0
+        else:
+            raise UserWarning(
+                "No number of chunks specified. This processor will infer the "
+                "last chunk based on this having a smaller size. If "
+                "'n_chunks * chunksize = datasize' this approach will not work. "
+                "If that is the case, please provide the number of chunk 'n_chunks'"
+            )
+
+    def partial_fit(self, chunk: pd.DataFrame) -> "ChunkTextPreprocessor":
+        if not self.n_chunks and not hasattr(self, "chunk_size"):
+            self.chunz_size = chunk.shape[0]
+        self.chunk_counter += 1
+
+        texts = self.read_texts(chunk, self.root_dir)
+
+        tokens = get_texts(texts, self.already_processed, self.n_cpus)
+
+        self.vocab = ChunkVocab(
+            max_vocab=self.max_vocab,
+            min_freq=self.min_freq,
+            pad_idx=self.pad_idx,
+            n_chunks=self.n_chunks,
+        ).fit(tokens)
+
+        if self.n_chunks:
+            end_chunk_cond: bool = self.chunk_counter == self.n_chunks
+        else:
+            current_chunk_size = chunk.shape[0]
+            end_chunk_cond = current_chunk_size < self.chunz_size
+
+        if end_chunk_cond:
+            if self.verbose:
+                print("The vocabulary contains {} tokens".format(len(self.vocab.stoi)))
+            if self.word_vectors_path is not None:
+                self.embedding_matrix = build_embeddings_matrix(
+                    self.vocab, self.word_vectors_path, self.min_freq
+                )
+
+        return self
+
+    def fit(self, chunk: pd.DataFrame) -> "ChunkTextPreprocessor":
+        return self.partial_fit(chunk)
+
+    def __repr__(self) -> str:  # noqa: C901
+        list_of_params: List[str] = ["text_col={text_col}"]
+        if self.n_chunks is not None:
+            list_of_params.append("n_chunks={n_chunks}")
+        if self.root_dir is not None:
+            list_of_params.append("root_dir={root_dir}")
+        if self.max_vocab is not None:
+            list_of_params.append("max_vocab={max_vocab}")
+        if self.min_freq is not None:
+            list_of_params.append("min_freq={min_freq}")
+        if self.maxlen is not None:
+            list_of_params.append("maxlen={maxlen}")
+        if self.pad_first is not None:
+            list_of_params.append("pad_first={pad_first}")
+        if self.pad_idx is not None:
+            list_of_params.append("pad_idx={pad_idx}")
+        if self.word_vectors_path is not None:
+            list_of_params.append("word_vectors_path={word_vectors_path}")
+        if self.n_cpus is not None:
+            list_of_params.append("n_cpus={n_cpus}")
+        if self.verbose is not None:
+            list_of_params.append("verbose={verbose}")
+        all_params = ", ".join(list_of_params)
+        return f"ChunkTextPreprocessor({all_params.format(**self.__dict__)})"
+
+
+if __name__ == "__main__":
+    # from pytorch_widedeep.datasets import load_womens_ecommerce
+
+    # df = load_womens_ecommerce(as_frame=True)
+    # df.columns = [c.replace(" ", "_").lower() for c in df.columns]
+    # df.to_csv("womens_ecommerce.csv", index=False)
+
+    fname = "womens_ecommerce.csv"
+    df = pd.read_csv(fname)
+    df = df.dropna()
+
+    tp = TextPreprocessor("review_text")
+    encoded1 = tp.fit(df.head())
+    org1 = tp.inverse_transform(encoded1)
+
+    chunksize = 1000
+    tp_chunk = ChunkTextPreprocessor(
+        text_col="review_text", n_chunks=df.shape[0] // chunksize + 1
+    )
+
+    for i, chunk in enumerate(pd.read_csv(fname, chunksize=chunksize)):
+        print(f"chunk in loop: {i}")
+        tp_chunk.partial_fit(chunk)
+
+    encoded2 = tp_chunk.transform(df)
+    org2 = tp_chunk.inverse_transform(encoded2)

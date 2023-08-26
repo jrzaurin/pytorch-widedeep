@@ -621,6 +621,111 @@ class TabPreprocessor(BasePreprocessor):
 
 
 class ChunkTabPreprocessor(TabPreprocessor):
+    r"""Preprocessor to prepare the `deeptabular` component input dataset
+
+    Parameters
+    ----------
+    n_chunks: Optional, default = None
+        Number of chunks that the tabular dataset is divided by. If 'None',
+        the last chunk will be infered by simply  having a smaller size.
+        Therefore, if 'n_chunks * chunksize = datasize' this approach will
+        not work.  If that is the case, please provide the number of
+        chunk 'n_chunks'
+    cat_embed_cols: List, default = None
+        List containing the name of the categorical columns that will be
+        represented by embeddings (e.g. _['education', 'relationship', ...]_) or
+        a Tuple with the name and the embedding dimension (e.g.: _[
+        ('education',32), ('relationship',16), ...]_)
+    continuous_cols: List, default = None
+        List with the name of the continuous cols
+    cols_and_bins: Dict, default = None
+        Continuous columns can be turned into categorical via
+        `pd.cut`. 'cols_and_bins' is dictionary where the keys are the column
+        names to quantize and the values are a list of scalars indicating the
+        bin edges.
+    cols_to_scale: List, default = None,
+        List with the names of the columns that will be standarised via
+        sklearn's `StandardScaler`
+    default_embed_dim: int, default=16
+        Dimension for the embeddings if the embed_dim is not provided in the
+        `cat_embed_cols` parameter and `auto_embed_dim` is set to
+        `False`.
+    with_attention: bool, default = False
+        Boolean indicating whether the preprocessed data will be passed to an
+        attention-based model (more precisely a model where all embeddings
+        must have the same dimensions). If `True`, the param `cat_embed_cols`
+        must just be a list containing just the categorical column names:
+        e.g.
+        _['education', 'relationship', ...]_. This is because they will all be
+         encoded using embeddings of the same dim, which will be specified
+         later when the model is defined. <br/> Param alias:
+         `for_transformer`
+    with_cls_token: bool, default = False
+        Boolean indicating if a `'[CLS]'` token will be added to the dataset
+        when using attention-based models. The final hidden state
+        corresponding to this token is used as the aggregated representation
+        for classification and regression tasks. If not, the categorical
+        (and continuous embeddings if present) will be concatenated before
+        being passed to the final MLP (if present).
+    shared_embed: bool, default = False
+        Boolean indicating if the embeddings will be "shared" when using
+        attention-based models. The idea behind `shared_embed` is
+        described in the Appendix A in the [TabTransformer paper](https://arxiv.org/abs/2012.06678):
+        _'The goal of having column embedding is to enable the model to
+        distinguish the classes in one column from those in the other
+        columns'_. In other words, the idea is to let the model learn which
+        column is embedded at the time. See: `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
+    verbose: int, default = 1
+
+    Other Parameters
+    ----------------
+    **kwargs: dict
+        `pd.cut` and `StandardScaler` related args
+
+    Attributes
+    ----------
+    embed_dim: Dict
+        Dictionary where keys are the embed cols and values are the embedding
+        dimensions. If `with_attention` is set to `True` this attribute
+        is not generated during the `fit` process
+    label_encoder: LabelEncoder
+        see `pytorch_widedeep.utils.dense_utils.LabelEncder`
+    cat_embed_input: List
+        List of Tuples with the column name, number of individual values for
+        that column and, If `with_attention` is set to `False`, the
+        corresponding embeddings dim, e.g. _[('education', 16, 10),
+        ('relationship', 6, 8), ...]_.
+    standardize_cols: List
+        List of the columns that will be standarized
+    scaler: StandardScaler
+        an instance of `sklearn.preprocessing.StandardScaler`
+        if 'cols_to_scale' is not None or 'scale' is 'True'
+    column_idx: Dict
+        Dictionary where keys are column names and values are column indexes.
+        This is neccesary to slice tensors
+    quantizer: Quantizer
+        an instance of `Quantizer`
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from pytorch_widedeep.preprocessing import ChunkTabPreprocessor
+    >>> np.random.seed(42)
+    >>> chunk_df = pd.DataFrame({'cat_col': np.random.choice(['A', 'B', 'C'], size=8),
+    ... 'cont_col': np.random.uniform(1, 100, size=8)})
+    >>> cat_embed_cols = [('cat_col',4)]
+    >>> cont_cols = ['cont_col']
+    >>> tab_preprocessor = ChunkTabPreprocessor(
+    ... n_chunks=1, cat_embed_cols=cat_embed_cols, continuous_cols=cont_cols
+    ... )
+    >>> X_tab = tab_preprocessor.fit_transform(chunk_df)
+    >>> tab_preprocessor.embed_dim
+    {'cat_col': 4}
+    >>> tab_preprocessor.column_idx
+    {'cat_col': 0, 'cont_col': 1}
+    """
+
     @Alias("with_attention", "for_transformer")
     @Alias("cat_embed_cols", "embed_cols")
     @Alias("scale", "scale_cont_cols")
@@ -664,8 +769,8 @@ class ChunkTabPreprocessor(TabPreprocessor):
             self.chunk_counter = 0
         else:
             raise UserWarning(
-                "No number of chunks specified. This processor will try to infer "
-                "the last chunk based on this having a smaller size. If "
+                "No number of chunks specified. This processor will infer the "
+                "last chunk based on this having a smaller size. If "
                 "'n_chunks * chunksize = datasize' this approach will not work. "
                 "If that is the case, please provide the number of chunk 'n_chunks'"
             )
@@ -681,6 +786,7 @@ class ChunkTabPreprocessor(TabPreprocessor):
     def partial_fit(self, chunk: pd.DataFrame) -> "ChunkTabPreprocessor":  # noqa: C901
         if not self.n_chunks and not hasattr(self, "chunk_size"):
             self.chunz_size = chunk.shape[0]
+        self.chunk_counter += 1
 
         chunk_adj = (
             self._insert_cls_token(chunk) if self.with_cls_token else chunk.copy()
@@ -705,10 +811,10 @@ class ChunkTabPreprocessor(TabPreprocessor):
             else:
                 chunk_cont = chunk[self.continuous_cols]
 
-            self.scaler.partial_fit(chunk_cont[self.standardize_cols].values)
+            if self.standardize_cols is not None:
+                self.scaler.partial_fit(chunk_cont[self.standardize_cols].values)
 
         if self.n_chunks:
-            self.chunk_counter += 1
             end_chunk_cond: bool = self.chunk_counter == self.n_chunks
         else:
             current_chunk_size = chunk.shape[0]
@@ -838,7 +944,7 @@ class ChunkTabPreprocessor(TabPreprocessor):
 
 #     chunksize = 500
 #     tp_chunk = ChunkTabPreprocessor(
-#         n_chunks=df.shape[0] // chunksize + 1, embed_cols=cat_embed_cols
+#         n_chunks=df.shape[0] // chunksize + 1, cat_embed_cols=cat_embed_cols, continuous_cols=cont_cols
 #     )
 
 #     for i, chunk in enumerate(pd.read_csv(fname, chunksize=500)):
