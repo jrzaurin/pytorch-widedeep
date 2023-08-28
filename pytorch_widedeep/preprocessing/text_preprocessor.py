@@ -59,8 +59,6 @@ class TextPreprocessor(BasePreprocessor):
         an instance of `pytorch_widedeep.utils.fastai_transforms.Vocab`
     embedding_matrix: np.ndarray
         Array with the pretrained embeddings
-    tokens: List
-        List with Lists of str containing the tokenized texts
 
     Examples
     ---------
@@ -217,20 +215,14 @@ class TextPreprocessor(BasePreprocessor):
         texts = [self.vocab.inverse_transform(num) for num in padded_seq]
         return pd.DataFrame({self.text_col: texts})
 
-    def __repr__(self) -> str:  # noqa: C901
+    def __repr__(self) -> str:
         list_of_params: List[str] = ["text_col={text_col}"]
-        if self.max_vocab is not None:
-            list_of_params.append("max_vocab={max_vocab}")
-        if self.min_freq is not None:
-            list_of_params.append("min_freq={min_freq}")
-        if self.maxlen is not None:
-            list_of_params.append("maxlen={maxlen}")
-        if self.pad_first is not None:
-            list_of_params.append("pad_first={pad_first}")
-        if self.pad_idx is not None:
-            list_of_params.append("pad_idx={pad_idx}")
-        if self.already_processed is not None:
-            list_of_params.append("already_processed={already_processed}")
+        list_of_params.append("max_vocab={max_vocab}")
+        list_of_params.append("min_freq={min_freq}")
+        list_of_params.append("maxlen={maxlen}")
+        list_of_params.append("pad_first={pad_first}")
+        list_of_params.append("pad_idx={pad_idx}")
+        list_of_params.append("already_processed={already_processed}")
         if self.word_vectors_path is not None:
             list_of_params.append("word_vectors_path={word_vectors_path}")
         if self.n_cpus is not None:
@@ -242,10 +234,58 @@ class TextPreprocessor(BasePreprocessor):
 
 
 class ChunkTextPreprocessor(TextPreprocessor):
+    r"""Preprocessor to prepare the ``deeptext`` input dataset
+
+    Parameters
+    ----------
+    text_col: str
+        column in the input dataframe containing either the texts or the
+        filenames where the text documents are stored
+    n_chunks: int
+        Number of chunks that the text dataset is divided by.
+    root_dir: str, Optional, default = None
+        If 'text_col' contains the filenames with the text documents, this is
+        the path to the directory where those documents are stored.
+    max_vocab: int, default=30000
+        Maximum number of tokens in the vocabulary
+    min_freq: int, default=5
+        Minimum frequency for a token to be part of the vocabulary
+    maxlen: int, default=80
+        Maximum length of the tokenized sequences
+    pad_first: bool,  default = True
+        Indicates whether the padding index will be added at the beginning or the
+        end of the sequences
+    pad_idx: int, default = 1
+        padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.
+    word_vectors_path: str, Optional
+        Path to the pretrained word vectors
+    n_cpus: int, Optional, default = None
+        number of CPUs to used during the tokenization process
+    verbose: int, default 1
+        Enable verbose output.
+
+    Attributes
+    ----------
+    vocab: Vocab
+        an instance of `pytorch_widedeep.utils.fastai_transforms.ChunkVocab`
+    embedding_matrix: np.ndarray
+        Array with the pretrained embeddings if `word_vectors_path` is not None
+
+    Examples
+    ---------
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import ChunkTextPreprocessor
+    >>> chunk_df = pd.DataFrame({'text_column': ["life is like a box of chocolates",
+    ... "You never know what you're gonna get"]})
+    >>> chunk_text_preprocessor = ChunkTextPreprocessor(text_col='text_column', n_chunks=1,
+    ... max_vocab=25, min_freq=1, maxlen=10, verbose=0, n_cpus=1)
+    >>> processed_chunk = chunk_text_preprocessor.fit_transform(chunk_df)
+    """
+
     def __init__(
         self,
         text_col: str,
-        n_chunks: Optional[int] = None,
+        n_chunks: int,
         root_dir: Optional[str] = None,
         max_vocab: int = 30000,
         min_freq: int = 5,
@@ -256,7 +296,7 @@ class ChunkTextPreprocessor(TextPreprocessor):
         n_cpus: Optional[int] = None,
         verbose: int = 1,
     ):
-        super(TextPreprocessor, self).__init__(
+        super(ChunkTextPreprocessor, self).__init__(
             text_col=text_col,
             max_vocab=max_vocab,
             min_freq=min_freq,
@@ -271,40 +311,27 @@ class ChunkTextPreprocessor(TextPreprocessor):
         self.n_chunks = n_chunks
         self.root_dir = root_dir
 
-        if n_chunks is not None:
-            self.n_chunks = n_chunks
-            self.chunk_counter = 0
-        else:
-            raise UserWarning(
-                "No number of chunks specified. This processor will infer the "
-                "last chunk based on this having a smaller size. If "
-                "'n_chunks * chunksize = datasize' this approach will not work. "
-                "If that is the case, please provide the number of chunk 'n_chunks'"
-            )
+        self.n_chunks = n_chunks
+        self.chunk_counter = 0
 
     def partial_fit(self, chunk: pd.DataFrame) -> "ChunkTextPreprocessor":
-        if not self.n_chunks and not hasattr(self, "chunk_size"):
-            self.chunz_size = chunk.shape[0]
         self.chunk_counter += 1
 
         texts = self.read_texts(chunk, self.root_dir)
 
         tokens = get_texts(texts, self.already_processed, self.n_cpus)
 
-        self.vocab = ChunkVocab(
-            max_vocab=self.max_vocab,
-            min_freq=self.min_freq,
-            pad_idx=self.pad_idx,
-            n_chunks=self.n_chunks,
-        ).fit(tokens)
+        if not hasattr(self, "vocab"):
+            self.vocab = ChunkVocab(
+                max_vocab=self.max_vocab,
+                min_freq=self.min_freq,
+                pad_idx=self.pad_idx,
+                n_chunks=self.n_chunks,
+            )
 
-        if self.n_chunks:
-            end_chunk_cond: bool = self.chunk_counter == self.n_chunks
-        else:
-            current_chunk_size = chunk.shape[0]
-            end_chunk_cond = current_chunk_size < self.chunz_size
+        self.vocab.fit(tokens)
 
-        if end_chunk_cond:
+        if self.chunk_counter == self.n_chunks:
             if self.verbose:
                 print("The vocabulary contains {} tokens".format(len(self.vocab.stoi)))
             if self.word_vectors_path is not None:
@@ -317,55 +344,57 @@ class ChunkTextPreprocessor(TextPreprocessor):
     def fit(self, chunk: pd.DataFrame) -> "ChunkTextPreprocessor":
         return self.partial_fit(chunk)
 
-    def __repr__(self) -> str:  # noqa: C901
-        list_of_params: List[str] = ["text_col={text_col}"]
+    def __repr__(self) -> str:
+        list_of_params: List[str] = ["text_col='{text_col}'"]
         if self.n_chunks is not None:
             list_of_params.append("n_chunks={n_chunks}")
         if self.root_dir is not None:
             list_of_params.append("root_dir={root_dir}")
-        if self.max_vocab is not None:
-            list_of_params.append("max_vocab={max_vocab}")
-        if self.min_freq is not None:
-            list_of_params.append("min_freq={min_freq}")
-        if self.maxlen is not None:
-            list_of_params.append("maxlen={maxlen}")
-        if self.pad_first is not None:
-            list_of_params.append("pad_first={pad_first}")
-        if self.pad_idx is not None:
-            list_of_params.append("pad_idx={pad_idx}")
+        list_of_params.append("max_vocab={max_vocab}")
+        list_of_params.append("min_freq={min_freq}")
+        list_of_params.append("maxlen={maxlen}")
+        list_of_params.append("pad_first={pad_first}")
+        list_of_params.append("pad_idx={pad_idx}")
         if self.word_vectors_path is not None:
             list_of_params.append("word_vectors_path={word_vectors_path}")
         if self.n_cpus is not None:
             list_of_params.append("n_cpus={n_cpus}")
-        if self.verbose is not None:
-            list_of_params.append("verbose={verbose}")
+        list_of_params.append("verbose={verbose}")
         all_params = ", ".join(list_of_params)
         return f"ChunkTextPreprocessor({all_params.format(**self.__dict__)})"
 
 
-if __name__ == "__main__":
-    # from pytorch_widedeep.datasets import load_womens_ecommerce
+# if __name__ == "__main__":
+#     # from pytorch_widedeep.datasets import load_womens_ecommerce
 
-    # df = load_womens_ecommerce(as_frame=True)
-    # df.columns = [c.replace(" ", "_").lower() for c in df.columns]
-    # df.to_csv("womens_ecommerce.csv", index=False)
+#     # df = load_womens_ecommerce(as_frame=True)
+#     # df.columns = [c.replace(" ", "_").lower() for c in df.columns]
+#     # df.to_csv("womens_ecommerce.csv", index=False)
 
-    fname = "womens_ecommerce.csv"
-    df = pd.read_csv(fname)
-    df = df.dropna()
+#     fname = "womens_ecommerce.csv"
+#     df = pd.read_csv(fname)
+#     df = df.dropna()
 
-    tp = TextPreprocessor("review_text")
-    encoded1 = tp.fit(df.head())
-    org1 = tp.inverse_transform(encoded1)
+#     tp = TextPreprocessor("review_text")
+#     encoded1 = tp.fit_transform(df)
+#     org1 = tp.inverse_transform(encoded1)
 
-    chunksize = 1000
-    tp_chunk = ChunkTextPreprocessor(
-        text_col="review_text", n_chunks=df.shape[0] // chunksize + 1
-    )
+#     chunksize = 1000
+#     tp_chunk = ChunkTextPreprocessor(
+#         text_col="review_text", n_chunks=df.shape[0] // chunksize + 1, n_cpus=1
+#     )
 
-    for i, chunk in enumerate(pd.read_csv(fname, chunksize=chunksize)):
-        print(f"chunk in loop: {i}")
-        tp_chunk.partial_fit(chunk)
+#     for i, chunk in enumerate(pd.read_csv(fname, chunksize=chunksize)):
+#         print(f"chunk in loop: {i}")
+#         chunk = chunk.dropna()
+#         tp_chunk.partial_fit(chunk)
 
-    encoded2 = tp_chunk.transform(df)
-    org2 = tp_chunk.inverse_transform(encoded2)
+#     encoded2 = tp_chunk.transform(df)
+#     org2 = tp_chunk.inverse_transform(encoded2)
+
+#     from random import randint
+#     r_idx = [randint(0, df.shape[0] - 1) for _ in range(10)]
+
+#     for i in r_idx:
+#         print(f"i: {i}")
+#         assert org1.iloc[i].values[0] == org2.iloc[i].values[0]

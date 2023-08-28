@@ -593,7 +593,7 @@ class TabPreprocessor(BasePreprocessor):
         if not self.auto_embed_dim:
             list_of_params.append("auto_embed_dim={auto_embed_dim}")
         if self.embedding_rule != "fastai_new":
-            list_of_params.append("embedding_rule={embedding_rule}")
+            list_of_params.append("embedding_rule='{embedding_rule}'")
         if self.default_embed_dim != 16:
             list_of_params.append("default_embed_dim={default_embed_dim}")
         if self.with_attention:
@@ -625,12 +625,8 @@ class ChunkTabPreprocessor(TabPreprocessor):
 
     Parameters
     ----------
-    n_chunks: Optional, default = None
-        Number of chunks that the tabular dataset is divided by. If 'None',
-        the last chunk will be infered by simply  having a smaller size.
-        Therefore, if 'n_chunks * chunksize = datasize' this approach will
-        not work.  If that is the case, please provide the number of
-        chunk 'n_chunks'
+    n_chunks: int
+        Number of chunks that the tabular dataset is divided by.
     cat_embed_cols: List, default = None
         List containing the name of the categorical columns that will be
         represented by embeddings (e.g. _['education', 'relationship', ...]_) or
@@ -732,7 +728,7 @@ class ChunkTabPreprocessor(TabPreprocessor):
     @Alias("cols_and_bins", "quantization_setup")
     def __init__(
         self,
-        n_chunks: Optional[int] = None,
+        n_chunks: int,
         cat_embed_cols: Optional[Union[List[str], List[Tuple[str, int]]]] = None,
         continuous_cols: Optional[List[str]] = None,
         cols_and_bins: Optional[Dict[str, List[float]]] = None,
@@ -764,16 +760,8 @@ class ChunkTabPreprocessor(TabPreprocessor):
             **kwargs,
         )
 
-        if n_chunks is not None:
-            self.n_chunks = n_chunks
-            self.chunk_counter = 0
-        else:
-            raise UserWarning(
-                "No number of chunks specified. This processor will infer the "
-                "last chunk based on this having a smaller size. If "
-                "'n_chunks * chunksize = datasize' this approach will not work. "
-                "If that is the case, please provide the number of chunk 'n_chunks'"
-            )
+        self.n_chunks = n_chunks
+        self.chunk_counter = 0
 
         self.cols_and_bins = cols_and_bins  # type: ignore[assignment]
 
@@ -784,8 +772,6 @@ class ChunkTabPreprocessor(TabPreprocessor):
         self.continuous_prepared = False
 
     def partial_fit(self, chunk: pd.DataFrame) -> "ChunkTabPreprocessor":  # noqa: C901
-        if not self.n_chunks and not hasattr(self, "chunk_size"):
-            self.chunz_size = chunk.shape[0]
         self.chunk_counter += 1
 
         chunk_adj = (
@@ -814,13 +800,7 @@ class ChunkTabPreprocessor(TabPreprocessor):
             if self.standardize_cols is not None:
                 self.scaler.partial_fit(chunk_cont[self.standardize_cols].values)
 
-        if self.n_chunks:
-            end_chunk_cond: bool = self.chunk_counter == self.n_chunks
-        else:
-            current_chunk_size = chunk.shape[0]
-            end_chunk_cond = current_chunk_size < self.chunz_size
-
-        if end_chunk_cond:
+        if self.chunk_counter == self.n_chunks:
             self.cat_embed_input: List[
                 Union[Tuple[str, int], Tuple[str, int, int]]
             ] = []

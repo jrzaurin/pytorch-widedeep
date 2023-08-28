@@ -491,15 +491,13 @@ class ChunkVocab:
         self,
         max_vocab: int,
         min_freq: int,
+        n_chunks: int,
         pad_idx: Optional[int] = None,
-        n_chunks: Optional[int] = None,
     ):
         self.max_vocab = max_vocab
         self.min_freq = min_freq
+        self.n_chunks = n_chunks
         self.pad_idx = pad_idx
-
-        if n_chunks is not None:
-            self.n_chunks = n_chunks
 
         self.chunk_counter = 0
 
@@ -531,7 +529,7 @@ class ChunkVocab:
                 itos.insert(self.pad_idx, PAD)
 
             # get the new 'xxunk' index
-            xxunk_idx = np.where(itos == "xxunk")[0][0]
+            xxunk_idx = np.where([el == "xxunk" for el in itos])[0][0]
 
             itos = itos[: self.max_vocab]
             if (
