@@ -1,0 +1,3 @@
+from pytorch_widedeep.load_from_folder.text.text_folder import TextFolder
+from pytorch_widedeep.load_from_folder.image.image_folder import ImageFolder
+from pytorch_widedeep.load_from_folder.tabular.tabular_folder import TabFolder

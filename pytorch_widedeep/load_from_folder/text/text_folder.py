@@ -1,31 +1,37 @@
 import os
-from typing import Optional
+from typing import Callable, Optional
 
-from pytorch_widedeep.wdtypes import Tensor
+# from pytorch_widedeep.wdtypes import Tensor
+import numpy as np
 
-
-class BatchTextPreprocessor:
-    def fit(self) -> "BatchTextPreprocessor":
-        pass
-
-    def transform(self) -> Tensor:
-        pass
+from pytorch_widedeep.preprocessing.text_preprocessor import (
+    ChunkTextPreprocessor,
+)
 
 
 class TextFolder:
     def __init__(
-        self, directory: str, text_preprocessor: BatchTextPreprocessor
-    ) -> None:
-        self.directory = directory
-        self.text_preprocessor = text_preprocessor
+        self,
+        directory: str,
+        preprocessor: ChunkTextPreprocessor,
+        loader: Optional[Callable] = None,
+    ):
+        assert (
+            preprocessor.is_fitted
+        ), "The preprocessor must be fitted before using this class"
 
-    def get_item(self, fname: Optional[str] = None, text: Optional[str] = None):
+        self.directory = directory
+        self.preprocessor = preprocessor
+
+    def get_item(
+        self, fname: Optional[str] = None, text: Optional[str] = None
+    ) -> np.ndarray:
         if fname is not None:
             path = os.path.join(self.directory, fname)
 
             with open(path, "r") as f:
-                sample = f.read().replace("\n", "")
-        elif text is not None:
-            sample = self.text_preprocessor.transform(text)
+                text = f.read().replace("\n", "")
+
+        sample = self.preprocessor.transform(text)
 
         return sample

@@ -247,6 +247,8 @@ class ChunkWidePreprocessor(WidePreprocessor):
 
         self.chunk_counter = 0
 
+        self.is_fitted = False
+
     def partial_fit(self, chunk: pd.DataFrame) -> "ChunkWidePreprocessor":
         r"""Fits the Preprocessor and creates required attributes
 
@@ -279,6 +281,8 @@ class ChunkWidePreprocessor(WidePreprocessor):
             self.wide_dim = len(self.encoding_dict)
             self.inverse_encoding_dict = {k: v for v, k in self.encoding_dict.items()}
             self.inverse_encoding_dict[0] = "unseen"
+
+            self.is_fitted = True
 
         return self
 

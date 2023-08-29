@@ -2,9 +2,10 @@ import os
 import os.path
 from typing import Any, Tuple, Union, Callable, Optional
 
+import numpy as np
 from PIL import Image
 
-from pytorch_widedeep.wdtypes import Tensor
+# from pytorch_widedeep.wdtypes import Tensor
 
 IMG_EXTENSIONS = (
     ".jpg",
@@ -67,7 +68,7 @@ class ImageFolder:
         self.extensions = extensions
         self.transforms = transforms
 
-    def get_item(self, fname: str):
+    def get_item(self, fname: str) -> np.ndarray:
         assert has_file_allowed_extension(fname, self.extensions)
 
         path = os.path.join(self.directory, fname)

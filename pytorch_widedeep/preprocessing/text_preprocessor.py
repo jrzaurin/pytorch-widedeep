@@ -103,6 +103,8 @@ class TextPreprocessor(BasePreprocessor):
         self.verbose = verbose
         self.n_cpus = n_cpus if n_cpus is not None else os.cpu_count()
 
+        self.is_fitted = False
+
     def read_texts(self, df: pd.DataFrame, root_dir: Optional[str] = None) -> List[str]:
         # method mostly introduced for the ChunkTextPreprocessor so it can
         # inherit from this class
@@ -152,6 +154,9 @@ class TextPreprocessor(BasePreprocessor):
             self.embedding_matrix = build_embeddings_matrix(
                 self.vocab, self.word_vectors_path, self.min_freq
             )
+
+        self.is_fitted = True
+
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
@@ -314,6 +319,8 @@ class ChunkTextPreprocessor(TextPreprocessor):
         self.n_chunks = n_chunks
         self.chunk_counter = 0
 
+        self.is_fitted = False
+
     def partial_fit(self, chunk: pd.DataFrame) -> "ChunkTextPreprocessor":
         self.chunk_counter += 1
 
@@ -338,6 +345,8 @@ class ChunkTextPreprocessor(TextPreprocessor):
                 self.embedding_matrix = build_embeddings_matrix(
                     self.vocab, self.word_vectors_path, self.min_freq
                 )
+
+            self.is_fitted = True
 
         return self
 
