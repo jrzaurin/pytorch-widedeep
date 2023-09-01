@@ -7,10 +7,7 @@ from pytorch_widedeep.utils.image_utils import (
     SimplePreprocessor,
     AspectAwarePreprocessor,
 )
-from pytorch_widedeep.preprocessing.base_preprocessor import (
-    BasePreprocessor,
-    check_is_fitted,
-)
+from pytorch_widedeep.preprocessing.base_preprocessor import BasePreprocessor
 
 
 class ImagePreprocessor(BasePreprocessor):
@@ -80,28 +77,23 @@ class ImagePreprocessor(BasePreprocessor):
         self.height = height
         self.verbose = verbose
 
-    def fit(self, df: pd.DataFrame) -> BasePreprocessor:
-        r"""Instantiates the Preprocessors `AspectAwarePreprocessor` and
-        `SimplePreprocessor` for image resizing.
-
-        See`pytorch_widedeep.utils.image_utils.AspectAwarePreprocessor` and
-        `pytorch_widedeep.utils.image_utils.SimplePreprocessor`.
-
-        Parameters
-        ----------
-        df: pd.DataFrame
-            Input pandas dataframe
-
-        Returns
-        -------
-        ImagePreprocessor
-            `ImagePreprocessor` fitted object
-
-        """
         self.aap = AspectAwarePreprocessor(self.width, self.height)
         self.spp = SimplePreprocessor(self.width, self.height)
-        self._compute_normalising_metrics = True
+
+        self.compute_normalising_computed = False
+
+    def fit(self, df: pd.DataFrame) -> BasePreprocessor:
+        # simply include this method to comply with the BasePreprocessor and
+        # for consistency with the rest of the preprocessors
         return self
+
+    def transform_sample(self, img: np.ndarray) -> np.ndarray:
+        aspect_r = img.shape[0] / img.shape[1]
+        if aspect_r != 1.0:
+            resized_img = self.aap.preprocess(img)
+        else:
+            resized_img = self.spp.preprocess(img)
+        return resized_img
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
         """Resizes the images to the input height and width.
@@ -117,7 +109,6 @@ class ImagePreprocessor(BasePreprocessor):
         np.ndarray
             Resized images to the input height and width
         """
-        check_is_fitted(self, attributes=["aap"])
         image_list = df[self.img_col].tolist()
         if self.verbose:
             print("Reading Images from {}".format(self.img_path))
@@ -138,7 +129,7 @@ class ImagePreprocessor(BasePreprocessor):
                 # if aspect ratio is 1:1, no need for AspectAwarePreprocessor
                 resized_imgs.append(self.spp.preprocess(img))
 
-        if self._compute_normalising_metrics:
+        if not self.compute_normalising_computed:
             if self.verbose:
                 print("Computing normalisation metrics")
             # mean and std deviation will only be computed when the fit method
@@ -167,7 +158,7 @@ class ImagePreprocessor(BasePreprocessor):
                     "B": np.mean(std_B) / 255.0,
                 },
             )
-            self._compute_normalising_metrics = False
+            self.compute_normalising_computed = True
         return np.asarray(resized_imgs)
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:

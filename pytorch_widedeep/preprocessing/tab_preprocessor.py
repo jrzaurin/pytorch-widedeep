@@ -389,6 +389,9 @@ class TabPreprocessor(BasePreprocessor):
             self.column_idx = {k: v for v, k in enumerate(df_deep.columns)}
         return df_deep.values
 
+    def transform_sample(self, df: pd.DataFrame) -> pd.DataFrame:
+        return self.transform(df).astype("float")[0]
+
     def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:  # noqa: C901
         r"""Takes as input the output from the `transform` method and it will
         return the original values.

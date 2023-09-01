@@ -1,22 +1,28 @@
 import os
-from typing import List, Tuple, Union, Optional
+from typing import Tuple, Union, Optional
 
 import numpy as np
 import pandas as pd
 
 from pytorch_widedeep.preprocessing import (
+    TabPreprocessor,
+    WidePreprocessor,
     ChunkTabPreprocessor,
     ChunkWidePreprocessor,
 )
+
+TabularPreprocessor = Union[
+    TabPreprocessor, WidePreprocessor, ChunkTabPreprocessor, ChunkWidePreprocessor
+]
 
 
 class TabFolder:
     def __init__(
         self,
         directory: str,
+        fname: str,
         target_col: str,
-        preprocessor: Union[ChunkTabPreprocessor, ChunkWidePreprocessor],
-        colnames: List[str],
+        preprocessor: TabularPreprocessor,
         text_col: Optional[str] = None,
         img_col: Optional[str] = None,
     ):
@@ -25,20 +31,26 @@ class TabFolder:
         ), "The preprocessor must be fitted before using this class"
 
         self.directory = directory
+        self.fname = fname
         self.target_col = target_col
         self.preprocessor = preprocessor
-        self.colnames = colnames
         self.text_col = text_col
         self.img_col = img_col
 
-    def get_item(
-        self, fname: str, idx: str
-    ) -> Tuple[np.ndarray, str, str, Union[int, float]]:
-        path = os.path.join(self.directory, fname)
+    def get_item(self, idx: int) -> Tuple[np.ndarray, str, str, Union[int, float]]:
+        path = os.path.join(self.directory, self.fname)
 
         try:
-            _sample = pd.read_csv(path, skiprows=lambda x: x != idx, header=None).values
-            sample = pd.DataFrame(_sample, columns=self.colnames + [self.target_col])
+            if not hasattr(self, "colnames"):
+                self.colnames = pd.read_csv(path, nrows=0).columns.tolist()
+
+            # TO DO: we need to look into this as the treatment is different whether
+            # the csv contains headers or not
+
+            _sample = pd.read_csv(
+                path, skiprows=lambda x: x != idx + 1, header=None
+            ).values
+            sample = pd.DataFrame(_sample, columns=self.colnames)
         except Exception:
             raise ValueError("Currently only csv format is supported.")
 
@@ -49,7 +61,7 @@ class TabFolder:
             sample[self.img_col].to_list()[0] if self.img_col is not None else None
         )
 
-        processed_sample = self.preprocessor.transform(sample)
+        processed_sample = self.preprocessor.transform_sample(sample)
         target = sample[self.target_col].to_list()[0]
 
         return processed_sample, text_fname_or_text, img_fname, target

@@ -71,6 +71,8 @@ class WidePreprocessor(BasePreprocessor):
         self.wide_cols = wide_cols
         self.crossed_cols = crossed_cols
 
+        self.is_fitted = False
+
     def fit(self, df: pd.DataFrame) -> "WidePreprocessor":
         r"""Fits the Preprocessor and creates required attributes
 
@@ -94,6 +96,9 @@ class WidePreprocessor(BasePreprocessor):
         self.wide_dim = len(self.encoding_dict)
         self.inverse_encoding_dict = {k: v for v, k in self.encoding_dict.items()}
         self.inverse_encoding_dict[0] = "unseen"
+
+        self.is_fitted = True
+
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
@@ -118,6 +123,9 @@ class WidePreprocessor(BasePreprocessor):
                 else 0
             )
         return encoded.astype("int64")
+
+    def transform_sample(self, df: pd.DataFrame) -> np.ndarray:
+        return self.transform(df)
 
     def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:
         r"""Takes as input the output from the `transform` method and it will

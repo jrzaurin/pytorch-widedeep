@@ -105,24 +105,6 @@ class TextPreprocessor(BasePreprocessor):
 
         self.is_fitted = False
 
-    def read_texts(self, df: pd.DataFrame, root_dir: Optional[str] = None) -> List[str]:
-        # method mostly introduced for the ChunkTextPreprocessor so it can
-        # inherit from this class
-        if root_dir is not None:
-            if not os.path.exists(root_dir):
-                raise ValueError(
-                    "root_dir does not exist. Please create it before fitting the preprocessor"
-                )
-            texts_fnames = df[self.text_col].tolist()
-            texts: List[str] = []
-            for texts_fname in texts_fnames:
-                with open(os.path.join(root_dir, texts_fname), "r") as f:
-                    texts.append(f.read().replace("\n", ""))
-        else:
-            texts = df[self.text_col].tolist()
-
-        return texts
-
     def fit(self, df: pd.DataFrame) -> BasePreprocessor:
         """Builds the vocabulary
 
@@ -136,7 +118,7 @@ class TextPreprocessor(BasePreprocessor):
         TextPreprocessor
             `TextPreprocessor` fitted object
         """
-        texts = self.read_texts(df)
+        texts = self._read_texts(df)
 
         tokens = get_texts(texts, self.already_processed, self.n_cpus)
 
@@ -173,21 +155,26 @@ class TextPreprocessor(BasePreprocessor):
             Padded, _'numericalised'_ sequences
         """
         check_is_fitted(self, attributes=["vocab"])
-        texts = self.read_texts(df)
-        self.tokens = get_texts(texts, self.already_processed, self.n_cpus)
-        sequences = [self.vocab.transform(t) for t in self.tokens]
-        padded_seq = np.array(
-            [
-                pad_sequences(
-                    s,
-                    maxlen=self.maxlen,
-                    pad_first=self.pad_first,
-                    pad_idx=self.pad_idx,
-                )
-                for s in sequences
-            ]
-        )
-        return padded_seq
+        texts = self._read_texts(df)
+        tokens = get_texts(texts, self.already_processed, self.n_cpus)
+        return self._pad_sequences(tokens)
+
+    def transform_sample(self, text: str) -> np.ndarray:
+        """Returns the padded, _'numericalised'_ sequence
+
+        Parameters
+        ----------
+        text: str
+            text to be tokenized and padded
+
+        Returns
+        -------
+        np.ndarray
+            Padded, _'numericalised'_ sequence
+        """
+        check_is_fitted(self, attributes=["vocab"])
+        tokens = get_texts([text], self.already_processed, self.n_cpus)
+        return self._pad_sequences(tokens)[0]
 
     def fit_transform(self, df: pd.DataFrame) -> np.ndarray:
         """Combines `fit` and `transform`
@@ -219,6 +206,39 @@ class TextPreprocessor(BasePreprocessor):
         """
         texts = [self.vocab.inverse_transform(num) for num in padded_seq]
         return pd.DataFrame({self.text_col: texts})
+
+    def _pad_sequences(self, tokens: List[List[str]]) -> np.ndarray:
+        sequences = [self.vocab.transform(t) for t in tokens]
+        padded_seq = np.array(
+            [
+                pad_sequences(
+                    s,
+                    maxlen=self.maxlen,
+                    pad_first=self.pad_first,
+                    pad_idx=self.pad_idx,
+                )
+                for s in sequences
+            ]
+        )
+        return padded_seq
+
+    def _read_texts(
+        self, df: pd.DataFrame, root_dir: Optional[str] = None
+    ) -> List[str]:
+        if root_dir is not None:
+            if not os.path.exists(root_dir):
+                raise ValueError(
+                    "root_dir does not exist. Please create it before fitting the preprocessor"
+                )
+            texts_fnames = df[self.text_col].tolist()
+            texts: List[str] = []
+            for texts_fname in texts_fnames:
+                with open(os.path.join(root_dir, texts_fname), "r") as f:
+                    texts.append(f.read().replace("\n", ""))
+        else:
+            texts = df[self.text_col].tolist()
+
+        return texts
 
     def __repr__(self) -> str:
         list_of_params: List[str] = ["text_col={text_col}"]
@@ -297,6 +317,7 @@ class ChunkTextPreprocessor(TextPreprocessor):
         maxlen: int = 80,
         pad_first: bool = True,
         pad_idx: int = 1,
+        already_processed: Optional[bool] = False,
         word_vectors_path: Optional[str] = None,
         n_cpus: Optional[int] = None,
         verbose: int = 1,
@@ -308,6 +329,7 @@ class ChunkTextPreprocessor(TextPreprocessor):
             maxlen=maxlen,
             pad_first=pad_first,
             pad_idx=pad_idx,
+            already_processed=already_processed,
             word_vectors_path=word_vectors_path,
             n_cpus=n_cpus,
             verbose=verbose,
@@ -316,7 +338,6 @@ class ChunkTextPreprocessor(TextPreprocessor):
         self.n_chunks = n_chunks
         self.root_dir = root_dir
 
-        self.n_chunks = n_chunks
         self.chunk_counter = 0
 
         self.is_fitted = False
@@ -324,7 +345,7 @@ class ChunkTextPreprocessor(TextPreprocessor):
     def partial_fit(self, chunk: pd.DataFrame) -> "ChunkTextPreprocessor":
         self.chunk_counter += 1
 
-        texts = self.read_texts(chunk, self.root_dir)
+        texts = self._read_texts(chunk, self.root_dir)
 
         tokens = get_texts(texts, self.already_processed, self.n_cpus)
 
