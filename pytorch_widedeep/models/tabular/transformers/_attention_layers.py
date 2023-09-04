@@ -85,7 +85,8 @@ class MultiHeadedAttention(nn.Module):
         self.head_dim = input_dim // n_heads
         self.n_heads = n_heads
 
-        self.dropout = dropout
+        self.dropout_p = dropout
+        self.dropout = nn.Dropout(dropout)
 
         query_dim = query_dim if query_dim is not None else input_dim
         self.q_proj = nn.Linear(query_dim, input_dim, bias=use_bias)
@@ -115,7 +116,7 @@ class MultiHeadedAttention(nn.Module):
                 k,
                 v,
                 attn_mask=None,
-                dropout_p=self.dropout if self.training else 0,
+                dropout_p=self.dropout_p if self.training else 0,
                 is_causal=False,
             )
             self.attn_weights: Optional[Tensor] = None
@@ -152,7 +153,7 @@ class MultiHeadedAttention(nn.Module):
 
         # Attention(Q, K, V ) (with dropout) in their Eq 1
         attn_output = einsum(
-            "b h s l, b h l d -> b h s d", nn.Dropout(self.dropout)(attn_weights), v
+            "b h s l, b h l d -> b h s d", self.dropout(attn_weights), v
         )
 
         return attn_weights, attn_output
