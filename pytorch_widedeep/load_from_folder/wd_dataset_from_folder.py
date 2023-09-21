@@ -4,22 +4,22 @@ from sklearn.utils import Bunch
 from torch.utils.data import Dataset
 
 from pytorch_widedeep.load_from_folder import (
-    TabFolder,
-    TextFolder,
-    ImageFolder,
+    TabFromFolder,
+    TextFromFolder,
+    ImageFromFolder,
 )
 
 
-class WideDeepDatasetFolder(Dataset):
+class WideDeepDatasetFromFolder(Dataset):
     def __init__(
         self,
         n_samples: int,
-        tab_folder: Optional[TabFolder],
-        wide_folder: Optional[TabFolder] = None,
-        text_folder: Optional[TextFolder] = None,
-        img_folder: Optional[ImageFolder] = None,
+        tab_folder: Optional[TabFromFolder],
+        wide_folder: Optional[TabFromFolder] = None,
+        text_folder: Optional[TextFromFolder] = None,
+        img_folder: Optional[ImageFromFolder] = None,
     ):
-        super(WideDeepDatasetFolder, self).__init__()
+        super(WideDeepDatasetFromFolder, self).__init__()
 
         self.n_samples = n_samples
         self.tab_folder = tab_folder
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         tab_preprocessor.fit(chunk)
         text_preprocessor.fit(chunk)
 
-    tab_folder = TabFolder(
+    tab_folder = TabFromFolder(
         directory="",
         fname=fname,
         target_col=target_col,
@@ -134,11 +134,11 @@ if __name__ == "__main__":
         img_col=img_col,
     )
 
-    text_folder = TextFolder(
+    text_folder = TextFromFolder(
         preprocessor=text_preprocessor,
     )
 
-    img_folder = ImageFolder(preprocessor=img_preprocessor)
+    img_folder = ImageFromFolder(preprocessor=img_preprocessor)
 
     processed_sample, text_fname_or_text, img_fname, target = tab_folder.get_item(
         idx=10
@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
     img_sample = img_folder.get_item(img_fname)
 
-    dataset_folder = WideDeepDatasetFolder(
+    dataset_folder = WideDeepDatasetFromFolder(
         n_samples=1001,
         tab_folder=tab_folder,
         text_folder=text_folder,

@@ -55,7 +55,7 @@ def default_loader(path: str) -> Any:
         return pil_loader(path)
 
 
-class ImageFolder:
+class ImageFromFolder:
     def __init__(
         self,
         directory: Optional[str] = None,

@@ -9,7 +9,7 @@ from pytorch_widedeep.preprocessing.text_preprocessor import (
 )
 
 
-class TextFolder:
+class TextFromFolder:
     def __init__(
         self,
         preprocessor: Union[TextPreprocessor, ChunkTextPreprocessor],

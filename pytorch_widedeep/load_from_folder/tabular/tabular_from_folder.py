@@ -16,7 +16,7 @@ TabularPreprocessor = Union[
 ]
 
 
-class TabFolder:
+class TabFromFolder:
     def __init__(
         self,
         directory: str,

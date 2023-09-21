@@ -37,6 +37,11 @@ from pytorch_widedeep.training._multiple_lr_scheduler import (
     MultipleLRScheduler,
 )
 
+# I would like to be more specific with the abstract methods in 'BaseTrainer'
+# so they are more informative. However I also want to use this class to be
+# inherited by the 'TrainerFromFolder' and the signatures of the methods are
+# different.
+
 
 class BaseTrainer(ABC):
     def __init__(
@@ -80,45 +85,16 @@ class BaseTrainer(ABC):
         self._set_callbacks_and_metrics(callbacks, metrics)
 
     @abstractmethod
-    def fit(
-        self,
-        X_wide: Optional[np.ndarray],
-        X_tab: Optional[np.ndarray],
-        X_text: Optional[np.ndarray],
-        X_img: Optional[np.ndarray],
-        X_train: Optional[Dict[str, np.ndarray]],
-        X_val: Optional[Dict[str, np.ndarray]],
-        val_split: Optional[float],
-        target: Optional[np.ndarray],
-        n_epochs: int,
-        validation_freq: int,
-        batch_size: int,
-    ):
-        raise NotImplementedError("Trainer.fit method not implemented")
+    def fit(self, *args, **kwargs):
+        pass
 
     @abstractmethod
-    def predict(
-        self,
-        X_wide: Optional[np.ndarray],
-        X_tab: Optional[np.ndarray],
-        X_text: Optional[np.ndarray],
-        X_img: Optional[np.ndarray],
-        X_test: Optional[Dict[str, np.ndarray]],
-        batch_size: int,
-    ) -> np.ndarray:
-        raise NotImplementedError("Trainer.predict method not implemented")
+    def predict(self, *args, **kwargs) -> np.ndarray:
+        pass
 
     @abstractmethod
-    def predict_proba(
-        self,
-        X_wide: Optional[np.ndarray],
-        X_tab: Optional[np.ndarray],
-        X_text: Optional[np.ndarray],
-        X_img: Optional[np.ndarray],
-        X_test: Optional[Dict[str, np.ndarray]],
-        batch_size: int,
-    ) -> np.ndarray:
-        raise NotImplementedError("Trainer.predict_proba method not implemented")
+    def predict_proba(self, *args, **kwargs) -> np.ndarray:
+        pass
 
     @abstractmethod
     def save(
