@@ -264,8 +264,12 @@ class FineTune:
         for epoch in range(n_epochs):
             running_loss = 0.0
             with trange(steps, disable=self.verbose != 1) as t:
-                for batch_idx, (data, target, lds_weightt) in zip(t, loader):
+                for batch_idx, packed_data in zip(t, loader):
                     t.set_description("epoch %i" % (epoch + 1))
+                    try:
+                        data, target, lds_weightt = packed_data
+                    except ValueError:
+                        data, target = packed_data
                     X = data[model_name].cuda() if use_cuda else data[model_name]
                     y = (
                         target.view(-1, 1).float()

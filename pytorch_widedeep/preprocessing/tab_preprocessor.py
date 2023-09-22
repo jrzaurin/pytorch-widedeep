@@ -309,6 +309,7 @@ class TabPreprocessor(BasePreprocessor):
 
         df_adj = self._insert_cls_token(df) if self.with_cls_token else df.copy()
 
+        self.column_idx: Dict[str, int] = {}
         if self.cat_embed_cols is not None:
             df_emb = self._prepare_embed(df_adj)
             self.label_encoder = LabelEncoder(
@@ -323,6 +324,9 @@ class TabPreprocessor(BasePreprocessor):
                     self.cat_embed_input.append((k, len(v)))
                 else:
                     self.cat_embed_input.append((k, len(v), self.embed_dim[k]))
+
+            self.column_idx.update({k: v for v, k in enumerate(df_emb.columns)})
+
         if self.continuous_cols is not None:
             df_cont = self._prepare_continuous(df_adj)
 
@@ -333,6 +337,10 @@ class TabPreprocessor(BasePreprocessor):
             elif self.verbose:
                 warnings.warn("Continuous columns will not be normalised")
 
+            self.column_idx.update(
+                {k: v + len(self.column_idx) for v, k in enumerate(df_cont)}
+            )
+
             if self.cols_and_bins is not None:
                 # we do not run 'Quantizer.fit' here since in the wild case
                 # someone wants standardization and quantization for the same
@@ -340,6 +348,7 @@ class TabPreprocessor(BasePreprocessor):
                 self.quantizer = Quantizer(self.cols_and_bins, **self.quant_args)
 
         self.is_fitted = True
+
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:  # noqa: C901
@@ -383,10 +392,10 @@ class TabPreprocessor(BasePreprocessor):
             except NameError:
                 df_deep = df_cont.copy()
 
-        if not hasattr(self, "column_idx"):
-            # Adjustment so I don't have to override the method
-            # in 'ChunkTabPreprocessor'
-            self.column_idx = {k: v for v, k in enumerate(df_deep.columns)}
+        # remove this assertion before merge
+        _column_idx = {k: v for v, k in enumerate(df_deep.columns)}
+        assert _column_idx == self.column_idx
+
         return df_deep.values
 
     def transform_sample(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -781,6 +790,7 @@ class ChunkTabPreprocessor(TabPreprocessor):
             self._insert_cls_token(chunk) if self.with_cls_token else chunk.copy()
         )
 
+        self.column_idx: Dict[str, int] = {}
         if self.cat_embed_cols is not None:
             if not self.embed_prepared:
                 chunk_emb = self._prepare_embed(chunk_adj)
@@ -794,6 +804,8 @@ class ChunkTabPreprocessor(TabPreprocessor):
                 chunk_emb = chunk_adj[self.cat_embed_cols]
                 self.label_encoder.partial_fit(chunk_emb)
 
+            self.column_idx.update({k: v for v, k in enumerate(chunk_emb.columns)})
+
         if self.continuous_cols is not None:
             if not self.continuous_prepared:
                 chunk_cont = self._prepare_continuous(chunk_adj)
@@ -802,6 +814,10 @@ class ChunkTabPreprocessor(TabPreprocessor):
 
             if self.standardize_cols is not None:
                 self.scaler.partial_fit(chunk_cont[self.standardize_cols].values)
+
+            self.column_idx.update(
+                {k: v + len(self.column_idx) for v, k in enumerate(chunk_cont.columns)}
+            )
 
         if self.chunk_counter == self.n_chunks:
             self.cat_embed_input: List[

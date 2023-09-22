@@ -27,17 +27,24 @@ from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.initializers import Initializer
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._base_trainer import BaseTrainer
 from pytorch_widedeep.training._trainer_utils import (
     save_epoch_logs,
     print_loss_and_metric,
 )
 
-# I am a bit annoyed by sublime highlighting an override issue with the
-# abstractmethods. There is no override issue. The Signature of the 'predict'
-# method is compatible with supertype. Buy for whatever issue sublime
-# highlights this as an error (not vscode and is not returned as an error
-# when running mypy). I am ignoring it
+# Observation 1: I am a bit annoyed by sublime highlighting an override issue
+# with the abstractmethods. There is no override issue. The Signature of
+# the 'predict' method is compatible with supertype. Buy for whatever issue
+# sublime highlights this as an error (not vscode and is not returned as an
+# error when running mypy). I am ignoring it
+
+# There is a lot of code repetition between this class and the 'Trainer'
+# class. Maybe in the future I decided to merge the two of them and offer the
+# ability to laod from folder based on the input parameters. For now, I'll
+# leave it like this, separated, since it is the easiest and most manageable
+# (i.e. easier to debug) implementation
 
 
 class TrainerFromFolder(BaseTrainer):
@@ -82,14 +89,12 @@ class TrainerFromFolder(BaseTrainer):
         eval_loader: Optional[DataLoader] = None,
         n_epochs: int = 1,
         validation_freq: int = 1,
-        batch_size: int = 32,
         finetune: bool = False,
         **kwargs,
     ):
-        dataloader_args, finetune_args = self._extract_kwargs(kwargs)
+        finetune_args = self._extract_kwargs(kwargs)
 
         train_steps = len(train_loader)
-        eval_steps = len(eval_loader)
 
         if finetune:
             self._finetune(train_loader, **finetune_args)
@@ -100,7 +105,11 @@ class TrainerFromFolder(BaseTrainer):
                 )
 
         self.callback_container.on_train_begin(
-            {"batch_size": batch_size, "train_steps": train_steps, "n_epochs": n_epochs}
+            {
+                "batch_size": train_loader.batch_size,
+                "train_steps": train_steps,
+                "n_epochs": n_epochs,
+            }
         )
         for epoch in range(n_epochs):
             epoch_logs: Dict[str, float] = {}
@@ -121,6 +130,7 @@ class TrainerFromFolder(BaseTrainer):
             if eval_loader is not None and epoch % validation_freq == (
                 validation_freq - 1
             ):
+                eval_steps = len(eval_loader)
                 self.callback_container.on_eval_begin()
                 self.valid_running_loss = 0.0
                 with trange(eval_steps, disable=self.verbose != 1) as v:
@@ -154,10 +164,17 @@ class TrainerFromFolder(BaseTrainer):
 
     def predict(  # type: ignore[return]
         self,
-        test_loader: DataLoader,
-        batch_size: int = 256,
+        X_wide: Optional[np.ndarray] = None,
+        X_tab: Optional[np.ndarray] = None,
+        X_text: Optional[np.ndarray] = None,
+        X_img: Optional[np.ndarray] = None,
+        X_test: Optional[Dict[str, np.ndarray]] = None,
+        test_loader: Optional[DataLoader] = None,
+        batch_size: Optional[int] = None,
     ) -> np.ndarray:
-        preds_l = self._predict(test_loader, batch_size)
+        preds_l = self._predict(
+            X_wide, X_tab, X_text, X_img, X_test, test_loader, batch_size
+        )
         if self.method == "regression":
             return np.vstack(preds_l).squeeze(1)
         if self.method == "binary":
@@ -171,11 +188,21 @@ class TrainerFromFolder(BaseTrainer):
 
     def predict_uncertainty(  # type: ignore[return]
         self,
-        test_loader: DataLoader,
-        batch_size: int = 256,
+        X_wide: Optional[np.ndarray] = None,
+        X_tab: Optional[np.ndarray] = None,
+        X_text: Optional[np.ndarray] = None,
+        X_img: Optional[np.ndarray] = None,
+        X_test: Optional[Dict[str, np.ndarray]] = None,
+        batch_size: Optional[int] = None,
+        test_loader: Optional[DataLoader] = None,
         uncertainty_granularity=1000,
     ) -> np.ndarray:
         preds_l = self._predict(
+            X_wide,
+            X_tab,
+            X_text,
+            X_img,
+            X_test,
             test_loader,
             batch_size,
             uncertainty_granularity,
@@ -214,10 +241,17 @@ class TrainerFromFolder(BaseTrainer):
 
     def predict_proba(  # type: ignore[return]
         self,
-        test_loader: DataLoader,
-        batch_size: int = 256,
+        X_wide: Optional[np.ndarray] = None,
+        X_tab: Optional[np.ndarray] = None,
+        X_text: Optional[np.ndarray] = None,
+        X_img: Optional[np.ndarray] = None,
+        X_test: Optional[Dict[str, np.ndarray]] = None,
+        test_loader: Optional[DataLoader] = None,
+        batch_size: Optional[int] = None,
     ) -> np.ndarray:
-        preds_l = self._predict(test_loader, batch_size)
+        preds_l = self._predict(
+            X_wide, X_tab, X_text, X_img, X_test, test_loader, batch_size
+        )
         if self.method == "binary":
             preds = np.vstack(preds_l).squeeze(1)
             probs = np.zeros([preds.shape[0], 2])
@@ -347,10 +381,7 @@ class TrainerFromFolder(BaseTrainer):
 
         self.optimizer.zero_grad()
 
-        if self.model.with_fds:
-            _, y_pred = self.model(X, y, epoch)
-        else:
-            y_pred = self.model(X)
+        y_pred = self.model(X)
 
         if self.model.is_tabnet:
             loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
@@ -407,8 +438,13 @@ class TrainerFromFolder(BaseTrainer):
 
     def _predict(  # noqa: C901
         self,
-        test_loader: DataLoader,
-        batch_size: int = 256,
+        X_wide: Optional[np.ndarray] = None,
+        X_tab: Optional[np.ndarray] = None,
+        X_text: Optional[np.ndarray] = None,
+        X_img: Optional[np.ndarray] = None,
+        X_test: Optional[Dict[str, np.ndarray]] = None,
+        test_loader: Optional[DataLoader] = None,
+        batch_size: Optional[int] = None,
         uncertainty_granularity=1000,
         uncertainty: bool = False,
         quantiles: bool = False,
@@ -418,10 +454,37 @@ class TrainerFromFolder(BaseTrainer):
         method documentation
         """
 
-        if not hasattr(self, "batch_size"):
-            self.batch_size = batch_size
+        if test_loader is not None:
+            test_steps = len(test_loader)
+        else:
+            if X_test is not None:
+                test_set = WideDeepDataset(**X_test)  # type: ignore[arg-type]
+            else:
+                load_dict = {}
+                if X_wide is not None:
+                    load_dict = {"X_wide": X_wide}
+                if X_tab is not None:
+                    load_dict.update({"X_tab": X_tab})
+                if X_text is not None:
+                    load_dict.update({"X_text": X_text})
+                if X_img is not None:
+                    load_dict.update({"X_img": X_img})
+                test_set = WideDeepDataset(**load_dict)  # type: ignore[arg-type]
 
-        test_steps = len(test_loader)
+            if not hasattr(self, "batch_size"):
+                assert batch_size is not None, (
+                    "'batch_size' has not be previosly set in this Trainer and must be"
+                    " specified via the 'batch_size' argument in this predict call"
+                )
+                self.batch_size = batch_size
+
+            test_loader = DataLoader(
+                dataset=test_set,
+                batch_size=self.batch_size,
+                num_workers=self.num_workers,
+                shuffle=False,
+            )
+            test_steps = (len(test_loader.dataset) // test_loader.batch_size) + 1  # type: ignore[arg-type]
 
         self.model.eval()
         preds_l = []
@@ -483,21 +546,6 @@ class TrainerFromFolder(BaseTrainer):
 
     @staticmethod
     def _extract_kwargs(kwargs):
-        dataloader_params = [
-            "shuffle",
-            "sampler",
-            "batch_sampler",
-            "num_workers",
-            "collate_fn",
-            "pin_memory",
-            "drop_last",
-            "timeout",
-            "worker_init_fn",
-            "generator",
-            "prefetch_factor",
-            "persistent_workers",
-            "oversample_mul",
-        ]
         finetune_params = [
             "n_epochs",
             "finetune_epochs",
@@ -517,11 +565,9 @@ class TrainerFromFolder(BaseTrainer):
             "deepimage_max_lr",
         ]
 
-        dataloader_args, finetune_args = {}, {}
+        finetune_args = {}
         for k, v in kwargs.items():
-            if k in dataloader_params:
-                dataloader_args[k] = v
             if k in finetune_params:
                 finetune_args[k] = v
 
-        return dataloader_args, finetune_args
+        return finetune_args

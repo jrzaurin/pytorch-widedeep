@@ -179,7 +179,7 @@ class WideDeepDataset(Dataset):
         # if int must be uint8
         if "int" in str(xdi.dtype) and "uint8" != str(xdi.dtype):
             xdi = xdi.astype("uint8")
-        # if int float must be float32
+        # if float must be float32
         if "float" in str(xdi.dtype) and "float32" != str(xdi.dtype):
             xdi = xdi.astype("float32")
         # if there are no transforms, or these do not include ToTensor(),

@@ -1,5 +1,5 @@
 import os
-from typing import Tuple, Union, Optional
+from typing import Type, Tuple, Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -19,25 +19,47 @@ TabularPreprocessor = Union[
 class TabFromFolder:
     def __init__(
         self,
-        directory: str,
         fname: str,
-        target_col: str,
-        preprocessor: TabularPreprocessor,
+        directory: Optional[str] = None,
+        target_col: Optional[str] = None,
+        preprocessor: Optional[TabularPreprocessor] = None,
         text_col: Optional[str] = None,
         img_col: Optional[str] = None,
+        reference: Type["TabFromFolder"] = None,
+        ignore_target: bool = False,
     ):
+        self.fname = fname
+
+        if reference is not None:
+            (
+                self.directory,
+                self.target_col,
+                self.preprocessor,
+                self.text_col,
+                self.img_col,
+            ) = self._set_from_reference(reference)
+        else:
+            assert (
+                directory is not None
+                and target_col is not None
+                and preprocessor is not None
+            ), "if no reference is provided, 'directory', 'target_col' and 'preprocessor' must be provided"
+
+            self.directory = directory
+            self.target_col = target_col
+            self.preprocessor = preprocessor
+            self.text_col = text_col
+            self.img_col = img_col
+
         assert (
-            preprocessor.is_fitted
+            self.preprocessor.is_fitted
         ), "The preprocessor must be fitted before using this class"
 
-        self.directory = directory
-        self.fname = fname
-        self.target_col = target_col
-        self.preprocessor = preprocessor
-        self.text_col = text_col
-        self.img_col = img_col
+        self.ignore_target = ignore_target
 
-    def get_item(self, idx: int) -> Tuple[np.ndarray, str, str, Union[int, float]]:
+    def get_item(
+        self, idx: int
+    ) -> Tuple[np.ndarray, str, str, Optional[Union[int, float]]]:
         path = os.path.join(self.directory, self.fname)
 
         try:
@@ -62,6 +84,22 @@ class TabFromFolder:
         )
 
         processed_sample = self.preprocessor.transform_sample(sample)
-        target = sample[self.target_col].to_list()[0]
+
+        if not self.ignore_target:
+            target = sample[self.target_col].to_list()[0]
+        else:
+            target = None
 
         return processed_sample, text_fname_or_text, img_fname, target
+
+    @staticmethod
+    def _set_from_reference(
+        reference: Type["TabFromFolder"],
+    ) -> Tuple[str, str, TabularPreprocessor, Optional[str], Optional[str]]:
+        return (
+            reference.directory,
+            reference.target_col,
+            reference.preprocessor,
+            reference.text_col,
+            reference.img_col,
+        )

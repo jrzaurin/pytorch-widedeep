@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Type, Tuple, Optional
 
 from sklearn.utils import Bunch
 from torch.utils.data import Dataset
@@ -18,14 +18,22 @@ class WideDeepDatasetFromFolder(Dataset):
         wide_folder: Optional[TabFromFolder] = None,
         text_folder: Optional[TextFromFolder] = None,
         img_folder: Optional[ImageFromFolder] = None,
+        reference: Type["WideDeepDatasetFromFolder"] = None,
     ):
         super(WideDeepDatasetFromFolder, self).__init__()
+
+        if reference is not None:
+            assert (
+                img_folder is None and text_folder is None
+            ), "If reference is not None, 'img_folder' and 'text_folder' must be None"
+            self.text_folder, self.img_folder = self._set_from_reference(reference)
+        else:
+            self.text_folder = text_folder
+            self.img_folder = img_folder
 
         self.n_samples = n_samples
         self.tab_folder = tab_folder
         self.wide_folder = wide_folder
-        self.text_folder = text_folder
-        self.img_folder = img_folder
 
     def __getitem__(self, idx: int):  # noqa: C901
         x = Bunch()
@@ -54,6 +62,12 @@ class WideDeepDatasetFromFolder(Dataset):
     def __len__(self):
         return self.n_samples
 
+    @staticmethod
+    def _set_from_reference(
+        reference: Type["WideDeepDatasetFromFolder"],
+    ) -> Tuple[Optional[TextFromFolder], Optional[ImageFromFolder]]:
+        return reference.text_folder, reference.img_folder
+
 
 if __name__ == "__main__":
     import pandas as pd
@@ -65,8 +79,6 @@ if __name__ == "__main__":
         ChunkTabPreprocessor,
         ChunkTextPreprocessor,
     )
-
-    fname = "airbnb_sample.csv"
 
     fname = "airbnb_sample.csv"
     img_col = "id"
