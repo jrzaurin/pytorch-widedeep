@@ -392,7 +392,7 @@ class TabPreprocessor(BasePreprocessor):
             except NameError:
                 df_deep = df_cont.copy()
 
-        # remove this assertion before merge
+        # TO DO: remove this assertion before merge
         _column_idx = {k: v for v, k in enumerate(df_deep.columns)}
         assert _column_idx == self.column_idx
 
@@ -828,6 +828,7 @@ class ChunkTabPreprocessor(TabPreprocessor):
                     self.cat_embed_input.append((k, len(v)))
                 else:
                     self.cat_embed_input.append((k, len(v), self.embed_dim[k]))
+
             self.is_fitted = True
 
         return self
@@ -915,42 +916,3 @@ class ChunkTabPreprocessor(TabPreprocessor):
             )
         all_params = ", ".join(list_of_params)
         return f"ChunkTabPreprocessor({all_params.format(**self.__dict__)})"
-
-
-# if __name__ == "__main__":
-#     from pytorch_widedeep.datasets import load_adult
-
-#     df = load_adult(as_frame=True)
-#     df.columns = [c.replace("-", "_") for c in df.columns]
-
-#     df.to_csv("df.csv", index=False)
-
-#     fname = "df.csv"
-#     df = pd.read_csv(fname)
-
-#     cat_embed_cols = [
-#         "workclass",
-#         "education",
-#         "marital_status",
-#         "occupation",
-#         "relationship",
-#         "race",
-#         "gender",
-#         "native_country",
-#     ]
-
-#     tp = TabPreprocessor(cat_embed_cols)
-
-#     chunksize = 500
-#     tp_chunk = ChunkTabPreprocessor(
-#         n_chunks=df.shape[0] // chunksize + 1, cat_embed_cols=cat_embed_cols, continuous_cols=cont_cols
-#     )
-
-#     for i, chunk in enumerate(pd.read_csv(fname, chunksize=500)):
-#         print(f"chunk in loop: {i}")
-#         tp_chunk.partial_fit(chunk)
-
-#     encoded = tp_chunk.transform(df)
-#     org = tp_chunk.inverse_transform(encoded)
-
-#     tp.fit(df)
