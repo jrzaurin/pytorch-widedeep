@@ -103,6 +103,9 @@ class Quantizer:
     def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
         return self.fit(df).transform(df)
 
+    def __repr__(self) -> str:
+        return f"Quantizer(quantization_setup={self.quantization_setup})"
+
 
 class TabPreprocessor(BasePreprocessor):
     r"""Preprocessor to prepare the `deeptabular` component input dataset
@@ -123,9 +126,10 @@ class TabPreprocessor(BasePreprocessor):
         dictionary where the keys are the column names to quantize and the
         values are the either integers indicating the number of bins or a
         list of scalars indicating the bin edges.
-    cols_to_scale: List, default = None,
+    cols_to_scale: List or str, default = None,
         List with the names of the columns that will be standarised via
-        sklearn's `StandardScaler`
+        sklearn's `StandardScaler`. It can also be the string `'all'` in
+        which case all the continuous cols will be scaled.
     scale: bool, default = False
         :information_source: **note**: this arg will be removed in the next
          release. Please use `cols_to_scale` instead. <br/>
@@ -238,6 +242,7 @@ class TabPreprocessor(BasePreprocessor):
     @Alias("with_attention", "for_transformer")
     @Alias("cat_embed_cols", "embed_cols")
     @Alias("scale", "scale_cont_cols")
+    @Alias("quantization_setup", "cols_and_bins")
     def __init__(
         self,
         cat_embed_cols: Optional[Union[List[str], List[Tuple[str, int]]]] = None,
@@ -245,7 +250,7 @@ class TabPreprocessor(BasePreprocessor):
         quantization_setup: Optional[
             Union[int, Dict[str, Union[int, List[float]]]]
         ] = None,
-        cols_to_scale: Optional[List[str]] = None,
+        cols_to_scale: Optional[Union[List[str], str]] = None,
         auto_embed_dim: bool = True,
         embedding_rule: Literal["google", "fastai_old", "fastai_new"] = "fastai_new",
         default_embed_dim: int = 16,
@@ -420,7 +425,7 @@ class TabPreprocessor(BasePreprocessor):
         if self.cat_embed_cols is not None:
             decoded = self.label_encoder.inverse_transform(decoded)
         # quantized cols to the mid point
-        if self.quantization_setup is not None:
+        if self.cols_and_bins is not None:
             if self.verbose:
                 print(
                     "Note that quantized cols will be turned into the mid point of "
@@ -430,10 +435,10 @@ class TabPreprocessor(BasePreprocessor):
                 decoded[k] = decoded[k].map(v)
         # continuous_cols back to non-standarised
         try:
-            decoded[self.continuous_cols] = self.scaler.inverse_transform(
-                decoded[self.continuous_cols]
+            decoded[self.standardize_cols] = self.scaler.inverse_transform(
+                decoded[self.standardize_cols]
             )
-        except AttributeError:
+        except Exception:  # KeyError:
             pass
 
         if "cls_token" in decoded.columns:
@@ -744,7 +749,7 @@ class ChunkTabPreprocessor(TabPreprocessor):
         cat_embed_cols: Optional[Union[List[str], List[Tuple[str, int]]]] = None,
         continuous_cols: Optional[List[str]] = None,
         cols_and_bins: Optional[Dict[str, List[float]]] = None,
-        cols_to_scale: Optional[List[str]] = None,
+        cols_to_scale: Optional[Union[List[str], str]] = None,
         default_embed_dim: int = 16,
         with_attention: bool = False,
         with_cls_token: bool = False,
@@ -859,19 +864,26 @@ class ChunkTabPreprocessor(TabPreprocessor):
         return chunk[embed_colname]
 
     def _prepare_continuous(self, chunk: pd.DataFrame) -> pd.DataFrame:
-        if self.cols_to_scale is not None:
-            self.standardize_cols = self.continuous_cols
-        elif self.scale:
-            if self.already_standard is not None:
-                self.standardize_cols = [
-                    c for c in self.continuous_cols if c not in self.already_standard
-                ]
+        if not hasattr(self, "standardize_cols"):
+            if self.cols_to_scale is not None:
+                self.standardize_cols = (
+                    self.cols_to_scale
+                    if self.cols_to_scale != "all"
+                    else self.continuous_cols
+                )
+            elif self.scale:
+                if self.already_standard is not None:
+                    self.standardize_cols = [
+                        c
+                        for c in self.continuous_cols
+                        if c not in self.already_standard
+                    ]
+                else:
+                    self.standardize_cols = self.continuous_cols
             else:
-                self.standardize_cols = self.continuous_cols
-        else:
-            self.standardize_cols = None
+                self.standardize_cols = None
 
-        if self.standardize_cols is not None:
+        if not hasattr(self, "scaler"):
             self.scaler = StandardScaler(**self.scale_args)
         elif self.verbose:
             warnings.warn("Continuous columns will not be normalised")

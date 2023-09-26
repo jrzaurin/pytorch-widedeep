@@ -392,39 +392,3 @@ class ChunkTextPreprocessor(TextPreprocessor):
         list_of_params.append("verbose={verbose}")
         all_params = ", ".join(list_of_params)
         return f"ChunkTextPreprocessor({all_params.format(**self.__dict__)})"
-
-
-# if __name__ == "__main__":
-#     # from pytorch_widedeep.datasets import load_womens_ecommerce
-
-#     # df = load_womens_ecommerce(as_frame=True)
-#     # df.columns = [c.replace(" ", "_").lower() for c in df.columns]
-#     # df.to_csv("womens_ecommerce.csv", index=False)
-
-#     fname = "womens_ecommerce.csv"
-#     df = pd.read_csv(fname)
-#     df = df.dropna()
-
-#     tp = TextPreprocessor("review_text")
-#     encoded1 = tp.fit_transform(df)
-#     org1 = tp.inverse_transform(encoded1)
-
-#     chunksize = 1000
-#     tp_chunk = ChunkTextPreprocessor(
-#         text_col="review_text", n_chunks=df.shape[0] // chunksize + 1, n_cpus=1
-#     )
-
-#     for i, chunk in enumerate(pd.read_csv(fname, chunksize=chunksize)):
-#         print(f"chunk in loop: {i}")
-#         chunk = chunk.dropna()
-#         tp_chunk.partial_fit(chunk)
-
-#     encoded2 = tp_chunk.transform(df)
-#     org2 = tp_chunk.inverse_transform(encoded2)
-
-#     from random import randint
-#     r_idx = [randint(0, df.shape[0] - 1) for _ in range(10)]
-
-#     for i in r_idx:
-#         print(f"i: {i}")
-#         assert org1.iloc[i].values[0] == org2.iloc[i].values[0]

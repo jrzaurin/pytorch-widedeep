@@ -1,5 +1,5 @@
 import os
-from typing import Union, Optional
+from typing import Union
 
 import numpy as np
 
@@ -20,7 +20,7 @@ class TextFromFolder:
 
         self.preprocessor = preprocessor
 
-    def get_item(self, text: Optional[str] = None) -> np.ndarray:
+    def get_item(self, text: str) -> np.ndarray:
         if (
             isinstance(self.preprocessor, ChunkTextPreprocessor)
             and self.preprocessor.root_dir is not None

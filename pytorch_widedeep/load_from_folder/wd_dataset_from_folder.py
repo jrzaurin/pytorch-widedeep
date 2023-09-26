@@ -14,42 +14,46 @@ class WideDeepDatasetFromFolder(Dataset):
     def __init__(
         self,
         n_samples: int,
-        tab_folder: Optional[TabFromFolder],
-        wide_folder: Optional[TabFromFolder] = None,
-        text_folder: Optional[TextFromFolder] = None,
-        img_folder: Optional[ImageFromFolder] = None,
+        tab_from_folder: Optional[TabFromFolder],
+        wide_from_folder: Optional[TabFromFolder] = None,
+        text_from_folder: Optional[TextFromFolder] = None,
+        img_from_folder: Optional[ImageFromFolder] = None,
         reference: Type["WideDeepDatasetFromFolder"] = None,
     ):
         super(WideDeepDatasetFromFolder, self).__init__()
 
         if reference is not None:
             assert (
-                img_folder is None and text_folder is None
-            ), "If reference is not None, 'img_folder' and 'text_folder' must be None"
-            self.text_folder, self.img_folder = self._set_from_reference(reference)
+                img_from_folder is None and text_from_folder is None
+            ), "If reference is not None, 'img_from_folder' and 'text_from_folder' must be None"
+            self.text_from_folder, self.img_from_folder = self._set_from_reference(
+                reference
+            )
         else:
-            self.text_folder = text_folder
-            self.img_folder = img_folder
+            self.text_from_folder = text_from_folder
+            self.img_from_folder = img_from_folder
 
         self.n_samples = n_samples
-        self.tab_folder = tab_folder
-        self.wide_folder = wide_folder
+        self.tab_from_folder = tab_from_folder
+        self.wide_from_folder = wide_from_folder
 
     def __getitem__(self, idx: int):  # noqa: C901
-        x = Bunch()
-        X_tab, text_fname_or_text, img_fname, y = self.tab_folder.get_item(idx=idx)
+        x = (
+            Bunch()
+        )  # for consistency with WideDeepDataset, but this is just a Dict[str, Any]
+        X_tab, text_fname_or_text, img_fname, y = self.tab_from_folder.get_item(idx=idx)
         x.deeptabular = X_tab
 
-        if self.wide_folder is not None:
-            X_wide, _, _, _ = self.wide_folder.get_item(idx=idx)
+        if self.wide_from_folder is not None:
+            X_wide, _, _, _ = self.wide_from_folder.get_item(idx=idx)
             x.wide = X_wide
 
         if text_fname_or_text is not None:
-            X_text = self.text_folder.get_item(text_fname_or_text)
+            X_text = self.text_from_folder.get_item(text_fname_or_text)
             x.deeptext = X_text
 
         if img_fname is not None:
-            X_img = self.img_folder.get_item(img_fname)
+            X_img = self.img_from_folder.get_item(img_fname)
             x.deepimage = X_img
 
         # We are aware that returning sometimes X and sometimes X, y is not
@@ -66,7 +70,7 @@ class WideDeepDatasetFromFolder(Dataset):
     def _set_from_reference(
         reference: Type["WideDeepDatasetFromFolder"],
     ) -> Tuple[Optional[TextFromFolder], Optional[ImageFromFolder]]:
-        return reference.text_folder, reference.img_folder
+        return reference.text_from_folder, reference.img_from_folder
 
 
 if __name__ == "__main__":
@@ -137,7 +141,7 @@ if __name__ == "__main__":
         tab_preprocessor.fit(chunk)
         text_preprocessor.fit(chunk)
 
-    tab_folder = TabFromFolder(
+    tab_from_folder = TabFromFolder(
         directory="",
         fname=fname,
         target_col=target_col,
@@ -146,25 +150,25 @@ if __name__ == "__main__":
         img_col=img_col,
     )
 
-    text_folder = TextFromFolder(
+    text_from_folder = TextFromFolder(
         preprocessor=text_preprocessor,
     )
 
-    img_folder = ImageFromFolder(preprocessor=img_preprocessor)
+    img_from_folder = ImageFromFolder(preprocessor=img_preprocessor)
 
-    processed_sample, text_fname_or_text, img_fname, target = tab_folder.get_item(
+    processed_sample, text_fname_or_text, img_fname, target = tab_from_folder.get_item(
         idx=10
     )
 
-    text_sample = text_folder.get_item(text_fname_or_text)
+    text_sample = text_from_folder.get_item(text_fname_or_text)
 
-    img_sample = img_folder.get_item(img_fname)
+    img_sample = img_from_folder.get_item(img_fname)
 
     dataset_folder = WideDeepDatasetFromFolder(
         n_samples=1001,
-        tab_folder=tab_folder,
-        text_folder=text_folder,
-        img_folder=img_folder,
+        tab_from_folder=tab_from_folder,
+        text_from_folder=text_from_folder,
+        img_from_folder=img_from_folder,
     )
 
     data_folder_loader = DataLoader(dataset_folder, batch_size=32, num_workers=1)

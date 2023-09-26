@@ -1,5 +1,4 @@
 import os
-import inspect
 import os.path
 from typing import Any, Tuple, Union, Callable, Optional
 
@@ -121,37 +120,49 @@ class ImageFromFolder:
         # if an image dataset is used, make sure is in the right format to
         # be ingested by the conv layers
 
-        # if int must be uint8
-        if "int" in str(processed_sample.dtype) and "uint8" != str(
-            processed_sample.dtype
-        ):
-            processed_sample = processed_sample.astype("uint8")
-        # if float must be float32
-        if "float" in str(processed_sample.dtype) and "float32" != str(
-            processed_sample.dtype
-        ):
-            processed_sample = processed_sample.astype("float32")
-
-        # if there are no transforms, or these do not include ToTensor()
-        # (weird or unexpected case, not sure is even possible) then we need
-        # to  replicate what ToTensor() does -> transpose axis and normalize if
-        # necessary
-        if not self.transforms or "ToTensor" not in self.transforms_names:
-            if isinstance(processed_sample, Image.Image):
-                processed_sample = np.asarray(processed_sample)
-
-            if processed_sample.ndim == 2:
-                processed_sample = processed_sample[:, :, None]
-            processed_sample = processed_sample.transpose(2, 0, 1)
-            if "int" in str(processed_sample.dtype):
-                processed_sample = (processed_sample / processed_sample.max()).astype(
-                    "float32"
+        if isinstance(processed_sample, Image.Image):
+            if not self.transforms:
+                raise UserWarning(
+                    "The images are in PIL Image format, and not 'transforms' are passed. "
+                    "This loader will simply return the array representation of the PIL Image. "
                 )
-        # if ToTensor() is included, simply apply transforms
-        elif "ToTensor" in self.transforms_names:
-            processed_sample = self.transforms(processed_sample)
-        # else apply transforms on the result of calling torch.tensor on
-        # processed_sample after all the previous manipulation
+                processed_sample = np.asarray(processed_sample)
+            else:
+                processed_sample = self.transforms(processed_sample)
         else:
-            processed_sample = self.transforms(torch.tensor(processed_sample))
+            # if int must be uint8
+            if "int" in str(processed_sample.dtype) and "uint8" != str(
+                processed_sample.dtype
+            ):
+                processed_sample = processed_sample.astype("uint8")
+            # if float must be float32
+            if "float" in str(processed_sample.dtype) and "float32" != str(
+                processed_sample.dtype
+            ):
+                processed_sample = processed_sample.astype("float32")
+
+            if not self.transforms or "ToTensor" not in self.transforms_names:
+                # if there are no transforms, or these do not include ToTensor()
+                # (weird or unexpected case, not sure is even possible) then we need
+                # to  replicate what ToTensor() does -> transpose axis and normalize if
+                # necessary
+                if isinstance(processed_sample, Image.Image):
+                    processed_sample = np.asarray(processed_sample)
+
+                if processed_sample.ndim == 2:
+                    processed_sample = processed_sample[:, :, None]
+
+                processed_sample = processed_sample.transpose(2, 0, 1)
+
+                if "int" in str(processed_sample.dtype):
+                    processed_sample = (
+                        processed_sample / processed_sample.max()
+                    ).astype("float32")
+            elif "ToTensor" in self.transforms_names:
+                # if ToTensor() is included, simply apply transforms
+                processed_sample = self.transforms(processed_sample)
+            else:
+                # else apply transforms on the result of calling torch.tensor on
+                # processed_sample after all the previous manipulation
+                processed_sample = self.transforms(torch.tensor(processed_sample))
         return processed_sample
