@@ -36,9 +36,9 @@ from pytorch_widedeep.training._trainer_utils import (
 
 # Observation 1: I am a bit annoyed by sublime highlighting an override issue
 # with the abstractmethods. There is no override issue. The Signature of
-# the 'predict' method is compatible with supertype. Buy for whatever issue
-# sublime highlights this as an error (not vscode and is not returned as an
-# error when running mypy). I am ignoring it
+# the 'predict' method is compatible with the supertype. Buy for whatever
+# issue sublime highlights this as an error (not vscode and is not returned
+# as an error when running mypy). I am ignoring it
 
 # There is a lot of code repetition between this class and the 'Trainer'
 # class. Maybe in the future I decided to merge the two of them and offer the

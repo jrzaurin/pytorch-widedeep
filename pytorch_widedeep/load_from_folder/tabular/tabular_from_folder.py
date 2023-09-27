@@ -41,8 +41,8 @@ class TabFromFolder:
         else:
             assert (
                 directory is not None
-                and target_col is not None
-                and preprocessor is not None
+                or (target_col is not None and not ignore_target)
+                or preprocessor is not None
             ), "if no reference is provided, 'directory', 'target_col' and 'preprocessor' must be provided"
 
             self.directory = directory
@@ -102,4 +102,28 @@ class TabFromFolder:
             reference.preprocessor,
             reference.text_col,
             reference.img_col,
+        )
+
+
+class WideFromFolder(TabFromFolder):
+    def __init__(
+        self,
+        fname: str,
+        directory: Optional[str] = None,
+        target_col: Optional[str] = None,
+        preprocessor: Optional[TabularPreprocessor] = None,
+        text_col: Optional[str] = None,
+        img_col: Optional[str] = None,
+        reference: Type["WideFromFolder"] = None,
+        ignore_target: bool = False,
+    ):
+        super(WideFromFolder, self).__init__(
+            fname=fname,
+            directory=directory,
+            target_col=target_col,
+            preprocessor=preprocessor,
+            text_col=text_col,
+            img_col=img_col,
+            reference=reference,
+            ignore_target=ignore_target,
         )

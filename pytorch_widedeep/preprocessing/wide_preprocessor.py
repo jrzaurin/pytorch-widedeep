@@ -125,7 +125,7 @@ class WidePreprocessor(BasePreprocessor):
         return encoded.astype("int64")
 
     def transform_sample(self, df: pd.DataFrame) -> np.ndarray:
-        return self.transform(df)
+        return self.transform(df)[0]
 
     def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:
         r"""Takes as input the output from the `transform` method and it will

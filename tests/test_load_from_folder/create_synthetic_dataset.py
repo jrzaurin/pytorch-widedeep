@@ -59,7 +59,7 @@ columns = ["category1", "category2", "numeric1", "numeric2", "text"]
 df = pd.DataFrame(data, columns=columns)
 df["images"] = image_names
 
-df["target"] = np.random.randint(0, 2, 32)
+df["target"] = np.random.randint(0, 3, 32)
 
 # Save the DataFrame to a CSV file in the specified directory
 df.to_csv("load_from_folder_test_data/synthetic_dataset.csv", index=False)
