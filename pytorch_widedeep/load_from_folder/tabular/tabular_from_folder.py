@@ -25,10 +25,13 @@ class TabFromFolder:
         preprocessor: Optional[TabularPreprocessor] = None,
         text_col: Optional[str] = None,
         img_col: Optional[str] = None,
-        reference: Type["TabFromFolder"] = None,
         ignore_target: bool = False,
+        reference: Type["TabFromFolder"] = None,
+        verbose: Optional[int] = 1,
     ):
         self.fname = fname
+        self.ignore_target = ignore_target
+        self.verbose = verbose
 
         if reference is not None:
             (
@@ -37,13 +40,16 @@ class TabFromFolder:
                 self.preprocessor,
                 self.text_col,
                 self.img_col,
-            ) = self._set_from_reference(reference)
+            ) = self._set_from_reference(reference, preprocessor)
         else:
             assert (
                 directory is not None
-                or (target_col is not None and not ignore_target)
-                or preprocessor is not None
-            ), "if no reference is provided, 'directory', 'target_col' and 'preprocessor' must be provided"
+                and (target_col is not None and not ignore_target)
+                and preprocessor is not None
+            ), (
+                "if no reference is provided, 'directory', 'target_col' and 'preprocessor' "
+                "must be provided"
+            )
 
             self.directory = directory
             self.target_col = target_col
@@ -54,8 +60,6 @@ class TabFromFolder:
         assert (
             self.preprocessor.is_fitted
         ), "The preprocessor must be fitted before using this class"
-
-        self.ignore_target = ignore_target
 
     def get_item(
         self, idx: int
@@ -92,8 +96,33 @@ class TabFromFolder:
 
         return processed_sample, text_fname_or_text, img_fname, target
 
-    @staticmethod
     def _set_from_reference(
+        self,
+        reference: Type["TabFromFolder"],
+        preprocessor: Optional[TabularPreprocessor],
+    ) -> Tuple[str, str, TabularPreprocessor, Optional[str], Optional[str]]:
+        (
+            directory,
+            target_col,
+            _preprocessor,
+            text_col,
+            img_col,
+        ) = self._get_from_reference(reference)
+
+        if preprocessor is not None:
+            preprocessor = preprocessor
+            if self.verbose:
+                UserWarning(
+                    "The preprocessor from the reference object is overwritten "
+                    "by the provided preprocessor"
+                )
+        else:
+            preprocessor = _preprocessor
+
+        return directory, target_col, preprocessor, text_col, img_col
+
+    @staticmethod
+    def _get_from_reference(
         reference: Type["TabFromFolder"],
     ) -> Tuple[str, str, TabularPreprocessor, Optional[str], Optional[str]]:
         return (
@@ -103,6 +132,10 @@ class TabFromFolder:
             reference.text_col,
             reference.img_col,
         )
+
+    # def __repr__(self):
+    #     # TO DO: add repr
+    #     pass
 
 
 class WideFromFolder(TabFromFolder):
@@ -114,8 +147,9 @@ class WideFromFolder(TabFromFolder):
         preprocessor: Optional[TabularPreprocessor] = None,
         text_col: Optional[str] = None,
         img_col: Optional[str] = None,
-        reference: Type["WideFromFolder"] = None,
         ignore_target: bool = False,
+        reference: Type["WideFromFolder"] = None,
+        verbose: int = 1,
     ):
         super(WideFromFolder, self).__init__(
             fname=fname,
@@ -126,4 +160,5 @@ class WideFromFolder(TabFromFolder):
             img_col=img_col,
             reference=reference,
             ignore_target=ignore_target,
+            verbose=verbose,
         )

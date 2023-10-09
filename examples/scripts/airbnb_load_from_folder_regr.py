@@ -121,15 +121,19 @@ if __name__ == "__main__":
 
     train_dataset_folder = WideDeepDatasetFromFolder(
         n_samples=train_size,
-        tab_folder=train_tab_folder,
-        text_folder=text_folder,
-        img_folder=img_folder,
+        tab_from_folder=train_tab_folder,
+        text_from_folder=text_folder,
+        img_from_folder=img_folder,
     )
     eval_dataset_folder = WideDeepDatasetFromFolder(
-        n_samples=eval_size, tab_folder=eval_tab_folder, reference=train_dataset_folder
+        n_samples=eval_size,
+        tab_from_folder=eval_tab_folder,
+        reference=train_dataset_folder,
     )
     test_dataset_folder = WideDeepDatasetFromFolder(
-        n_samples=test_size, tab_folder=test_tab_folder, reference=train_dataset_folder
+        n_samples=test_size,
+        tab_from_folder=test_tab_folder,
+        reference=train_dataset_folder,
     )
     train_loader = DataLoader(train_dataset_folder, batch_size=16, num_workers=1)
     eval_loader = DataLoader(eval_dataset_folder, batch_size=16, num_workers=1)

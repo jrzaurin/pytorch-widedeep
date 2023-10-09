@@ -6,6 +6,7 @@ from torch.utils.data import Dataset
 from pytorch_widedeep.load_from_folder import (
     TabFromFolder,
     TextFromFolder,
+    WideFromFolder,
     ImageFromFolder,
 )
 
@@ -15,7 +16,7 @@ class WideDeepDatasetFromFolder(Dataset):
         self,
         n_samples: int,
         tab_from_folder: Optional[TabFromFolder],
-        wide_from_folder: Optional[TabFromFolder] = None,
+        wide_from_folder: Optional[WideFromFolder] = None,
         text_from_folder: Optional[TextFromFolder] = None,
         img_from_folder: Optional[ImageFromFolder] = None,
         reference: Type["WideDeepDatasetFromFolder"] = None,
@@ -26,7 +27,7 @@ class WideDeepDatasetFromFolder(Dataset):
             assert (
                 img_from_folder is None and text_from_folder is None
             ), "If reference is not None, 'img_from_folder' and 'text_from_folder' must be None"
-            self.text_from_folder, self.img_from_folder = self._set_from_reference(
+            self.text_from_folder, self.img_from_folder = self._get_from_reference(
                 reference
             )
         else:
@@ -67,7 +68,7 @@ class WideDeepDatasetFromFolder(Dataset):
         return self.n_samples
 
     @staticmethod
-    def _set_from_reference(
+    def _get_from_reference(
         reference: Type["WideDeepDatasetFromFolder"],
     ) -> Tuple[Optional[TextFromFolder], Optional[ImageFromFolder]]:
         return reference.text_from_folder, reference.img_from_folder

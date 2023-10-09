@@ -344,3 +344,7 @@ class BaseTrainer(ABC):
         device = kwargs.get("device", default_device)
         num_workers = kwargs.get("num_workers", default_num_workers)
         return device, num_workers
+
+    # def __repr__(self):
+    #     # TO DO: add repr
+    #     pass

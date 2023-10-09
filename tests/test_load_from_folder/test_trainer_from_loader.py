@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+import pytest
 from torch.utils.data import DataLoader
 
 from pytorch_widedeep.models import (
@@ -80,7 +81,7 @@ def _build_preprocessors(tab_params={}):
     return wide_preprocessor, tab_preprocessor, text_preprocessor, img_preprocessor
 
 
-def _build_loaders_from_folder(
+def _build_data_mode_from_folder(
     wide_preprocessor,
     tab_preprocessor,
     text_preprocessor,
@@ -99,7 +100,7 @@ def _build_loaders_from_folder(
         fname=fname,
         directory=data_folder,
         preprocessor=wide_preprocessor,
-        ignore_target=True,
+        reference=tab_from_folder,
     )
 
     text_from_folder = TextFromFolder(
@@ -111,39 +112,23 @@ def _build_loaders_from_folder(
     return wide_from_folder, tab_from_folder, text_from_folder, img_from_folder
 
 
-def _build_full_data_loader_from_folder(
-    wide_from_folder, tab_from_folder, text_from_folder, img_from_folder
-):
-    dataset_from_folder = WideDeepDatasetFromFolder(
-        n_samples=data_size,
-        wide_from_folder=wide_from_folder,
-        tab_from_folder=tab_from_folder,
-        text_from_folder=text_from_folder,
-        img_from_folder=img_from_folder,
-    )
-
-    dataloader_from_folder = DataLoader(dataset_from_folder, batch_size=4)
-
-    return dataloader_from_folder
-
-
-def _build_eval_and_test_loaders(
+def _build_eval_and_test_data_mode_from_folder(
     wide_from_folder, tab_from_folder, eval_fname, test_fname
 ):
     eval_wide_from_folder = TabFromFolder(fname=eval_fname, reference=wide_from_folder)
+    eval_tab_from_folder = TabFromFolder(fname=eval_fname, reference=tab_from_folder)
+
     test_wide_from_folder = TabFromFolder(
         fname=test_fname, reference=wide_from_folder, ignore_target=True
     )
-
-    eval_tab_from_folder = TabFromFolder(fname=eval_fname, reference=tab_from_folder)
     test_tab_from_folder = TabFromFolder(
         fname=test_fname, reference=tab_from_folder, ignore_target=True
     )
 
     return (
         eval_wide_from_folder,
-        test_wide_from_folder,
         eval_tab_from_folder,
+        test_wide_from_folder,
         test_tab_from_folder,
     )
 
@@ -201,13 +186,19 @@ def test_trainer_from_loader_basic_inputs():
         tab_from_folder,
         text_from_folder,
         img_from_folder,
-    ) = _build_loaders_from_folder(
+    ) = _build_data_mode_from_folder(
         wide_preprocessor, tab_preprocessor, text_preprocessor, img_preprocessor
     )
 
-    dataloader_from_folder = _build_full_data_loader_from_folder(
-        wide_from_folder, tab_from_folder, text_from_folder, img_from_folder
+    dataset_from_folder = WideDeepDatasetFromFolder(
+        n_samples=data_size,
+        wide_from_folder=wide_from_folder,
+        tab_from_folder=tab_from_folder,
+        text_from_folder=text_from_folder,
+        img_from_folder=img_from_folder,
     )
+
+    dataloader_from_folder = DataLoader(dataset_from_folder, batch_size=4)
 
     model = _buid_model(wide_preprocessor, tab_preprocessor, text_preprocessor)
 
@@ -221,5 +212,95 @@ def test_trainer_from_loader_basic_inputs():
         train_loader=dataloader_from_folder,
     )
 
-    # assertion here (TBD)
-    assert True
+    # simply assert that it has run and it has a history atttribute
+    assert len(trainer.history) > 0 and "train_loss" in trainer.history.keys()
+
+
+# TO DO: review the ignore target option in the WideFromFolder
+@pytest.mark.parametrize("pred_with_loaader", [True, False])
+def test_trainer_from_loader_with_valid_and_test(pred_with_loaader):
+    (
+        wide_preprocessor,
+        tab_preprocessor,
+        text_preprocessor,
+        img_preprocessor,
+    ) = _build_preprocessors()
+
+    (
+        wide_from_folder,
+        tab_from_folder,
+        text_from_folder,
+        img_from_folder,
+    ) = _build_data_mode_from_folder(
+        wide_preprocessor, tab_preprocessor, text_preprocessor, img_preprocessor
+    )
+
+    (
+        eval_wide_from_folder,
+        eval_tab_from_folder,
+        test_wide_from_folder,
+        test_tab_from_folder,
+    ) = _build_eval_and_test_data_mode_from_folder(
+        wide_from_folder, tab_from_folder, fname, fname
+    )
+
+    train_dataset_from_folder = WideDeepDatasetFromFolder(
+        n_samples=data_size,
+        wide_from_folder=wide_from_folder,
+        tab_from_folder=tab_from_folder,
+        text_from_folder=text_from_folder,
+        img_from_folder=img_from_folder,
+    )
+
+    eval_dataset_from_folder = WideDeepDatasetFromFolder(
+        n_samples=data_size,
+        wide_from_folder=eval_wide_from_folder,
+        tab_from_folder=eval_tab_from_folder,
+        reference=train_dataset_from_folder,
+    )
+
+    test_dataset_from_folder = WideDeepDatasetFromFolder(
+        n_samples=data_size,
+        wide_from_folder=test_wide_from_folder,
+        tab_from_folder=test_tab_from_folder,
+        reference=train_dataset_from_folder,
+    )
+
+    train_dataloader_from_folder = DataLoader(train_dataset_from_folder, batch_size=4)
+    eval_dataloader_from_folder = DataLoader(eval_dataset_from_folder, batch_size=4)
+    test_dataloader_from_folder = DataLoader(test_dataset_from_folder, batch_size=4)
+
+    model = _buid_model(wide_preprocessor, tab_preprocessor, text_preprocessor)
+
+    trainer = TrainerFromFolder(
+        model,
+        objective="regression",
+        verbose=1,
+    )
+
+    trainer.fit(
+        train_loader=train_dataloader_from_folder,
+        eval_loader=eval_dataloader_from_folder,
+    )
+
+    if pred_with_loaader:
+        preds = trainer.predict(test_loader=test_dataloader_from_folder)
+    else:
+        df = pd.read_csv("/".join([data_folder, fname]))
+        X_test_wide = wide_preprocessor.transform(df)
+        X_test_tab = tab_preprocessor.transform(df)
+        X_test_text = text_preprocessor.transform(df)
+        X_images = img_preprocessor.fit_transform(df)
+        preds = trainer.predict(
+            X_wide=X_test_wide,
+            X_tab=X_test_tab,
+            X_text=X_test_text,
+            X_img=X_images,
+            batch_size=4,
+        )
+
+    assert (
+        preds.shape[0] == data_size
+        and "train_loss" in trainer.history.keys()
+        and "val_loss" in trainer.history.keys()
+    )
