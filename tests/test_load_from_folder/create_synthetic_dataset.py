@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
+np.random.seed(42)
+
 # Sample sentences
 sample_sentences = [
     "The quick brown fox jumps over the lazy dog.",
@@ -59,7 +61,9 @@ columns = ["category1", "category2", "numeric1", "numeric2", "text"]
 df = pd.DataFrame(data, columns=columns)
 df["images"] = image_names
 
-df["target"] = np.random.randint(0, 3, 32)
+df["target_multiclass"] = np.random.randint(0, 3, 32)
+df["target_binary"] = np.random.randint(0, 2, 32)
+df["target_regression"] = np.random.rand(32)
 
 # Save the DataFrame to a CSV file in the specified directory
 df.to_csv("load_from_folder_test_data/synthetic_dataset.csv", index=False)

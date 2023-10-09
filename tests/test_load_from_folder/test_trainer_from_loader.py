@@ -1,3 +1,5 @@
+# The tests in this script are perhaps not the best I have written...I am
+# literally doing this in bursts of a few minutes...
 import os
 
 import pandas as pd
@@ -86,11 +88,12 @@ def _build_data_mode_from_folder(
     tab_preprocessor,
     text_preprocessor,
     img_preprocessor,
+    target_col="target_regression",
 ):
     tab_from_folder = TabFromFolder(
         fname=fname,
         directory=data_folder,
-        target_col="target",
+        target_col=target_col,
         preprocessor=tab_preprocessor,
         img_col=img_col,
         text_col=text_col,
@@ -134,9 +137,13 @@ def _build_eval_and_test_data_mode_from_folder(
 
 
 def _buid_model(
-    wide_preprocessor, tab_preprocessor, text_preprocessor, with_attention=False
+    wide_preprocessor,
+    tab_preprocessor,
+    text_preprocessor,
+    pred_dim=1,
+    with_attention=False,
 ):
-    wide = Wide(input_dim=wide_preprocessor.wide_dim)
+    wide = Wide(input_dim=wide_preprocessor.wide_dim, num_class=pred_dim)
 
     if with_attention:
         deeptabular = TabTransformer(
@@ -168,12 +175,14 @@ def _buid_model(
         deeptabular=deeptabular,
         deeptext=basic_rnn,
         deepimage=basic_cnn,
+        num_class=pred_dim,
     )
 
     return model
 
 
-def test_trainer_from_loader_basic_inputs():
+@pytest.mark.parametrize("objective", ["regression", "binary", "multiclass"])
+def test_trainer_from_loader_basic_inputs(objective):
     (
         wide_preprocessor,
         tab_preprocessor,
@@ -181,13 +190,23 @@ def test_trainer_from_loader_basic_inputs():
         img_preprocessor,
     ) = _build_preprocessors()
 
+    if objective == "regression":
+        target_col = "target_regression"
+    elif objective == "binary":
+        target_col = "target_binary"
+    else:
+        target_col = "target_multiclass"
     (
         wide_from_folder,
         tab_from_folder,
         text_from_folder,
         img_from_folder,
     ) = _build_data_mode_from_folder(
-        wide_preprocessor, tab_preprocessor, text_preprocessor, img_preprocessor
+        wide_preprocessor,
+        tab_preprocessor,
+        text_preprocessor,
+        img_preprocessor,
+        target_col,
     )
 
     dataset_from_folder = WideDeepDatasetFromFolder(
@@ -200,12 +219,15 @@ def test_trainer_from_loader_basic_inputs():
 
     dataloader_from_folder = DataLoader(dataset_from_folder, batch_size=4)
 
-    model = _buid_model(wide_preprocessor, tab_preprocessor, text_preprocessor)
+    pred_dim = 1 if objective == "regression" or objective == "binary" else 3
+    model = _buid_model(
+        wide_preprocessor, tab_preprocessor, text_preprocessor, pred_dim=pred_dim
+    )
 
     trainer = TrainerFromFolder(
         model,
-        objective="regression",
-        verbose=1,
+        objective=objective,
+        verbose=0,
     )
 
     trainer.fit(
@@ -216,9 +238,8 @@ def test_trainer_from_loader_basic_inputs():
     assert len(trainer.history) > 0 and "train_loss" in trainer.history.keys()
 
 
-# TO DO: review the ignore target option in the WideFromFolder
-@pytest.mark.parametrize("pred_with_loaader", [True, False])
-def test_trainer_from_loader_with_valid_and_test(pred_with_loaader):
+@pytest.mark.parametrize("pred_with_loader", [True, False])
+def test_trainer_from_loader_with_valid_and_test(pred_with_loader):
     (
         wide_preprocessor,
         tab_preprocessor,
@@ -275,7 +296,7 @@ def test_trainer_from_loader_with_valid_and_test(pred_with_loaader):
     trainer = TrainerFromFolder(
         model,
         objective="regression",
-        verbose=1,
+        verbose=0,
     )
 
     trainer.fit(
@@ -283,7 +304,7 @@ def test_trainer_from_loader_with_valid_and_test(pred_with_loaader):
         eval_loader=eval_dataloader_from_folder,
     )
 
-    if pred_with_loaader:
+    if pred_with_loader:
         preds = trainer.predict(test_loader=test_dataloader_from_folder)
     else:
         df = pd.read_csv("/".join([data_folder, fname]))
@@ -303,4 +324,94 @@ def test_trainer_from_loader_with_valid_and_test(pred_with_loaader):
         preds.shape[0] == data_size
         and "train_loss" in trainer.history.keys()
         and "val_loss" in trainer.history.keys()
+    )
+
+
+@pytest.mark.parametrize(
+    "tab_params",
+    [
+        {"with_attention": True, "with_cls_token": True},
+        {"with_attention": True, "with_cls_token": False},
+    ],
+)
+def test_trainer_from_loader_with_tab_params(tab_params):
+    (
+        wide_preprocessor,
+        tab_preprocessor,
+        text_preprocessor,
+        img_preprocessor,
+    ) = _build_preprocessors(tab_params=tab_params)
+
+    (
+        wide_from_folder,
+        tab_from_folder,
+        text_from_folder,
+        img_from_folder,
+    ) = _build_data_mode_from_folder(
+        wide_preprocessor, tab_preprocessor, text_preprocessor, img_preprocessor
+    )
+
+    (
+        eval_wide_from_folder,
+        eval_tab_from_folder,
+        test_wide_from_folder,
+        test_tab_from_folder,
+    ) = _build_eval_and_test_data_mode_from_folder(
+        wide_from_folder, tab_from_folder, fname, fname
+    )
+
+    train_dataset_from_folder = WideDeepDatasetFromFolder(
+        n_samples=data_size,
+        wide_from_folder=wide_from_folder,
+        tab_from_folder=tab_from_folder,
+        text_from_folder=text_from_folder,
+        img_from_folder=img_from_folder,
+    )
+
+    eval_dataset_from_folder = WideDeepDatasetFromFolder(
+        n_samples=data_size,
+        wide_from_folder=eval_wide_from_folder,
+        tab_from_folder=eval_tab_from_folder,
+        reference=train_dataset_from_folder,
+    )
+
+    test_dataset_from_folder = WideDeepDatasetFromFolder(
+        n_samples=data_size,
+        wide_from_folder=test_wide_from_folder,
+        tab_from_folder=test_tab_from_folder,
+        reference=train_dataset_from_folder,
+    )
+
+    train_dataloader_from_folder = DataLoader(train_dataset_from_folder, batch_size=4)
+    eval_dataloader_from_folder = DataLoader(eval_dataset_from_folder, batch_size=4)
+    test_dataloader_from_folder = DataLoader(test_dataset_from_folder, batch_size=4)
+
+    model = _buid_model(
+        wide_preprocessor,
+        tab_preprocessor,
+        text_preprocessor,
+        with_attention=tab_params["with_attention"],
+    )
+
+    trainer = TrainerFromFolder(
+        model,
+        objective="regression",
+        verbose=1,
+        finetune=True,
+        callbacks=[EarlyStopping(patience=10)],  # any number higher than 2
+    )
+
+    trainer.fit(
+        train_loader=train_dataloader_from_folder,
+        eval_loader=eval_dataloader_from_folder,
+        n_epochs=2,
+    )
+
+    preds = trainer.predict(test_loader=test_dataloader_from_folder)
+
+    assert (
+        preds.shape[0] == data_size
+        and "train_loss" in trainer.history.keys()
+        and "val_loss" in trainer.history.keys()
+        and len(trainer.history["train_loss"]) == 2
     )
