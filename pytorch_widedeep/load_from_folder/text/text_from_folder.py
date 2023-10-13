@@ -35,3 +35,6 @@ class TextFromFolder:
         processed_sample = self.preprocessor.transform_sample(sample)
 
         return processed_sample
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.preprocessor.__class__.__name__})"

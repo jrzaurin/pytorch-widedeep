@@ -111,6 +111,6 @@ def test_numericalize_and_textify():
         ["ok", "!", "xxmaj", "nice", "!", "anti", "-", "virus"],
         ["!", "xxmaj", "meg", "xxmaj", "nice", "meg"],
     ]
-    vocab = Vocab.create(toks, max_vocab=20, min_freq=2)
+    vocab = Vocab(max_vocab=20, min_freq=2).create(toks)
     assert vocab.numericalize(toks[0]) == [0, 9, 5, 10, 9, 0, 0, 0]
     assert vocab.textify([0, 3, 10, 11, 9]) == "xxunk xxeos nice meg !"

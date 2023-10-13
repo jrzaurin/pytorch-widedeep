@@ -1,4 +1,4 @@
-from typing import Type, Tuple, Optional
+from typing import List, Type, Tuple, Optional
 
 from sklearn.utils import Bunch
 from torch.utils.data import Dataset
@@ -15,7 +15,7 @@ class WideDeepDatasetFromFolder(Dataset):
     def __init__(
         self,
         n_samples: int,
-        tab_from_folder: Optional[TabFromFolder],
+        tab_from_folder: TabFromFolder,
         wide_from_folder: Optional[WideFromFolder] = None,
         text_from_folder: Optional[TextFromFolder] = None,
         img_from_folder: Optional[ImageFromFolder] = None,
@@ -73,106 +73,23 @@ class WideDeepDatasetFromFolder(Dataset):
     ) -> Tuple[Optional[TextFromFolder], Optional[ImageFromFolder]]:
         return reference.text_from_folder, reference.img_from_folder
 
-
-if __name__ == "__main__":
-    import pandas as pd
-    from tqdm import tqdm
-    from torch.utils.data import DataLoader
-
-    from pytorch_widedeep.preprocessing import (  # ChunkWidePreprocessor,
-        ImagePreprocessor,
-        ChunkTabPreprocessor,
-        ChunkTextPreprocessor,
-    )
-
-    fname = "airbnb_sample.csv"
-    img_col = "id"
-    text_col = "description"
-    target_col = "yield"
-    cat_embed_cols = [
-        "host_listings_count",
-        "neighbourhood_cleansed",
-        "is_location_exact",
-        "property_type",
-        "room_type",
-        "accommodates",
-        "bathrooms",
-        "bedrooms",
-        "beds",
-        "guests_included",
-        "minimum_nights",
-        "instant_bookable",
-        "cancellation_policy",
-        "has_house_rules",
-        "host_gender",
-        "accommodates_catg",
-        "guests_included_catg",
-        "minimum_nights_catg",
-        "host_listings_count_catg",
-        "bathrooms_catg",
-        "bedrooms_catg",
-        "beds_catg",
-        "security_deposit",
-        "extra_people",
-    ]
-    cont_cols = ["latitude", "longitude"]
-
-    tab_preprocessor = ChunkTabPreprocessor(
-        embed_cols=cat_embed_cols,
-        continuous_cols=cont_cols,
-        n_chunks=11,
-        default_embed_dim=8,
-        verbose=0,
-    )
-
-    text_preprocessor = ChunkTextPreprocessor(
-        n_chunks=11,
-        text_col=text_col,
-        n_cpus=1,
-    )
-
-    img_preprocessor = ImagePreprocessor(
-        img_col=img_col,
-        img_path="/Users/javierrodriguezzaurin/Projects/pytorch-widedeep/examples/tmp_data/airbnb/property_picture/",
-    )
-
-    chunksize = 100
-    for i, chunk in enumerate(pd.read_csv(fname, chunksize=chunksize)):
-        print(f"chunk in loop: {i}")
-        tab_preprocessor.fit(chunk)
-        text_preprocessor.fit(chunk)
-
-    tab_from_folder = TabFromFolder(
-        directory="",
-        fname=fname,
-        target_col=target_col,
-        preprocessor=tab_preprocessor,
-        text_col=text_col,
-        img_col=img_col,
-    )
-
-    text_from_folder = TextFromFolder(
-        preprocessor=text_preprocessor,
-    )
-
-    img_from_folder = ImageFromFolder(preprocessor=img_preprocessor)
-
-    processed_sample, text_fname_or_text, img_fname, target = tab_from_folder.get_item(
-        idx=10
-    )
-
-    text_sample = text_from_folder.get_item(text_fname_or_text)
-
-    img_sample = img_from_folder.get_item(img_fname)
-
-    dataset_folder = WideDeepDatasetFromFolder(
-        n_samples=1001,
-        tab_from_folder=tab_from_folder,
-        text_from_folder=text_from_folder,
-        img_from_folder=img_from_folder,
-    )
-
-    data_folder_loader = DataLoader(dataset_folder, batch_size=32, num_workers=1)
-
-    for i, data in tqdm(enumerate(data_folder_loader), total=len(data_folder_loader)):
-        X, y = data
+    def __repr__(self) -> str:
+        list_of_params: List[str] = []
+        list_of_params.append("n_samples={n_samples}")
+        list_of_params.append(
+            "tab_from_folder={self.tab_from_folder.__class__.__name__}"
+        )
+        if self.wide_from_folder is not None:
+            list_of_params.append(
+                "wide_from_folder={self.wide_from_folder.__class__.__name__}"
+            )
+        if self.text_from_folder is not None:
+            list_of_params.append(
+                "text_from_folder={self.text_from_folder.__class__.__name__}"
+            )
+        if self.img_from_folder is not None:
+            list_of_params.append(
+                "img_from_folder={iself.mg_from_folder.__class__.__name__}"
+            )
+        all_params = ", ".join(list_of_params)
+        return f"WideDeepDatasetFromFolder({all_params.format(**self.__dict__)})"

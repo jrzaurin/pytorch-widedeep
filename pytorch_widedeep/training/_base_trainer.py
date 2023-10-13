@@ -345,6 +345,23 @@ class BaseTrainer(ABC):
         num_workers = kwargs.get("num_workers", default_num_workers)
         return device, num_workers
 
-    # def __repr__(self):
-    #     # TO DO: add repr
-    #     pass
+    def __repr__(self) -> str:  # noqa: C901
+        list_of_params: List[str] = []
+        list_of_params.append("model={self.model.__class__.__name__}")
+        list_of_params.append("objective={objective}")
+        list_of_params.append("custom_loss_function={self.loss_fn.__class__.__name__}")
+        list_of_params.append("optimizers={self.optimizer.__class__.__name__}")
+        list_of_params.append("lr_schedulers={self.lr_scheduler.__class__.__name__}")
+        if self.callbacks is not None:
+            callbacks_str = ", ".join([c.__class__.__name__ for c in self.callbacks])
+            list_of_params.append(f"callbacks={callbacks_str}")
+        if self.verbose is not None:
+            list_of_params.append("verbose={verbose}")
+        if self.seed is not None:
+            list_of_params.append("seed={seed}")
+        if self.device is not None:
+            list_of_params.append("device={device}")
+        if self.num_workers is not None:
+            list_of_params.append("num_workers={num_workers}")
+        all_params = ", ".join(list_of_params)
+        return f"Trainer({all_params.format(**self.__dict__)})"

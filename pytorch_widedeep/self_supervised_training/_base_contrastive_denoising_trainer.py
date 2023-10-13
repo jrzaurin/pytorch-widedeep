@@ -267,3 +267,7 @@ class BaseContrastiveDenoisingTrainer(ABC):
             and model.input_dim != projection_head2_dims[0]
         ):
             raise ValueError(error_msg)
+
+    # # TO DO: add __repr__
+    # def __repr__(self):
+    #     pass

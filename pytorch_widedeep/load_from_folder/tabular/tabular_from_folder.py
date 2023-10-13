@@ -1,5 +1,5 @@
 import os
-from typing import Type, Tuple, Union, Optional
+from typing import List, Type, Tuple, Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -70,8 +70,9 @@ class TabFromFolder:
             if not hasattr(self, "colnames"):
                 self.colnames = pd.read_csv(path, nrows=0).columns.tolist()
 
-            # TO DO: we need to look into this as the treatment is different whether
-            # the csv contains headers or not
+            # TO DO: we need to look into this as the treatment is different
+            # whether the csv contains headers or not. For the time being we
+            # will require that the csv file has headers
 
             _sample = pd.read_csv(
                 path, skiprows=lambda x: x != idx + 1, header=None
@@ -133,9 +134,26 @@ class TabFromFolder:
             reference.img_col,
         )
 
-    # def __repr__(self):
-    #     # TO DO: add repr
-    #     pass
+    def __repr__(self) -> str:
+        list_of_params: List[str] = []
+        if self.fname is not None:
+            list_of_params.append("fname={self.fname}")
+        if self.directory is not None:
+            list_of_params.append("directory={directory}")
+        if self.target_col is not None:
+            list_of_params.append("target_col={target_col}")
+        if self.preprocessor is not None:
+            list_of_params.append("preprocessor={self.preprocessor.__class__.__name__}")
+        if self.text_col is not None:
+            list_of_params.append("text_col={text_col}")
+        if self.img_col is not None:
+            list_of_params.append("img_col={img_col}")
+        if self.ignore_target is not None:
+            list_of_params.append("ignore_target={ignore_target}")
+        if self.verbose is not None:
+            list_of_params.append("verbose={verbose}")
+        all_params = ", ".join(list_of_params)
+        return f"self.__class__.__name__({all_params.format(**self.__dict__)})"
 
 
 class WideFromFolder(TabFromFolder):

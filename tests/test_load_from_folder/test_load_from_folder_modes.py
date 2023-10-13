@@ -50,7 +50,7 @@ def test_tab_from_folder_alone():
     tab_from_folder = TabFromFolder(
         fname=fname,
         directory=data_folder,
-        target_col="target",
+        target_col="target_regression",
         preprocessor=tab_preprocessor,
     )
 
@@ -77,7 +77,7 @@ def test_tab_from_folder_with_reference():
     train_tab_from_folder = TabFromFolder(
         fname=fname,
         directory=data_folder,
-        target_col="target",
+        target_col="target_regression",
         preprocessor=tab_preprocessor,
     )
 
@@ -177,7 +177,7 @@ def test_full_wide_deep_dataset_from_folder():
     tab_from_folder = TabFromFolder(
         fname=fname,
         directory=data_folder,
-        target_col="target",
+        target_col="target_regression",
         preprocessor=tab_preprocessor,
         text_col=text_col,
         img_col=img_col,

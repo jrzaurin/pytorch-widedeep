@@ -1,3 +1,5 @@
+from typing import List
+
 import cv2
 import numpy as np
 import pandas as pd
@@ -180,3 +182,13 @@ class ImagePreprocessor(BasePreprocessor):
         raise NotImplementedError(
             "'inverse_transform' method is not implemented for 'ImagePreprocessor'"
         )
+
+    def __repr__(self) -> str:
+        list_of_params: List[str] = []
+        list_of_params.append("img_col={img_col}")
+        list_of_params.append("img_path={img_path}")
+        list_of_params.append("width={width}")
+        list_of_params.append("height={height}")
+        list_of_params.append("verbose={verbose}")
+        all_params = ", ".join(list_of_params)
+        return f"ImagePreprocessor({all_params.format(**self.__dict__)})"

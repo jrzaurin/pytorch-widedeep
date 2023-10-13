@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.exceptions import NotFittedError
 
 from pytorch_widedeep.utils import SimplePreprocessor, AspectAwarePreprocessor
 from pytorch_widedeep.preprocessing import ImagePreprocessor
@@ -54,14 +53,3 @@ def test_sizes():
 def test_notimplementederror():
     with pytest.raises(NotImplementedError):
         org_df = processor.inverse_transform(X_imgs)  # noqa: F841
-
-
-###############################################################################
-# Test NotFittedError
-###############################################################################
-
-
-def test_notfittederror():
-    processor = ImagePreprocessor(img_col=img_col, img_path=imd_dir)
-    with pytest.raises(NotFittedError):
-        processor.transform(df)

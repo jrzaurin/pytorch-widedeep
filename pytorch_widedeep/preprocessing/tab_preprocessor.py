@@ -424,22 +424,23 @@ class TabPreprocessor(BasePreprocessor):
         # embeddings back to original category
         if self.cat_embed_cols is not None:
             decoded = self.label_encoder.inverse_transform(decoded)
-        # quantized cols to the mid point
-        if self.cols_and_bins is not None:
-            if self.verbose:
-                print(
-                    "Note that quantized cols will be turned into the mid point of "
-                    "the corresponding bin"
+        if self.continuous_cols is not None:
+            # quantized cols to the mid point
+            if self.cols_and_bins is not None:
+                if self.verbose:
+                    print(
+                        "Note that quantized cols will be turned into the mid point of "
+                        "the corresponding bin"
+                    )
+                for k, v in self.quantizer.inversed_bins.items():
+                    decoded[k] = decoded[k].map(v)
+            # continuous_cols back to non-standarised
+            try:
+                decoded[self.standardize_cols] = self.scaler.inverse_transform(
+                    decoded[self.standardize_cols]
                 )
-            for k, v in self.quantizer.inversed_bins.items():
-                decoded[k] = decoded[k].map(v)
-        # continuous_cols back to non-standarised
-        try:
-            decoded[self.standardize_cols] = self.scaler.inverse_transform(
-                decoded[self.standardize_cols]
-            )
-        except Exception:  # KeyError:
-            pass
+            except Exception:  # KeyError:
+                pass
 
         if "cls_token" in decoded.columns:
             decoded.drop("cls_token", axis=1, inplace=True)
