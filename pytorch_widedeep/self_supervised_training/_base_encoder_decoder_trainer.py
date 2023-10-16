@@ -180,6 +180,21 @@ class BaseEncoderDecoderTrainer(ABC):
         num_workers = kwargs.get("num_workers", default_num_workers)
         return device, num_workers
 
-    # # TO DO: add __repr__
-    # def __repr__(self):
-    #     pass
+    def __repr__(self) -> str:
+        list_of_params: List[str] = []
+        list_of_params.append(f"encoder={self.ed_model.encoder.__class__.__name__}")
+        list_of_params.append(f"decoder={self.ed_model.decoder.__class__.__name__}")
+        list_of_params.append(f"masked_prob={self.ed_model.masker.p}")
+        if self.optimizer is not None:
+            list_of_params.append(f"optimizer={self.optimizer.__class__.__name__}")
+        if self.lr_scheduler is not None:
+            list_of_params.append(
+                f"lr_scheduler={self.lr_scheduler.__class__.__name__}"
+            )
+        if self.callbacks is not None:
+            callbacks = [c.__class__.__name__ for c in self.callbacks]
+            list_of_params.append(f"callbacks={callbacks}")
+        list_of_params.append("verbose={verbose}")
+        list_of_params.append("seed={seed}")
+        all_params = ", ".join(list_of_params)
+        return f"EncoderDecoderTrainer({all_params.format(**self.__dict__)})"

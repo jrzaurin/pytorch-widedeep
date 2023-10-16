@@ -268,6 +268,36 @@ class BaseContrastiveDenoisingTrainer(ABC):
         ):
             raise ValueError(error_msg)
 
-    # # TO DO: add __repr__
-    # def __repr__(self):
-    #     pass
+    def __repr__(self) -> str:
+        list_of_params: List[str] = []
+        list_of_params.append(f"model={self.cd_model.__class__.__name__}")
+        if self.optimizer is not None:
+            list_of_params.append(f"optimizer={self.optimizer.__class__.__name__}")
+        if self.lr_scheduler is not None:
+            list_of_params.append(
+                f"lr_scheduler={self.lr_scheduler.__class__.__name__}"
+            )
+        if self.callbacks is not None:
+            callbacks = [c.__class__.__name__ for c in self.callbacks]
+            list_of_params.append(f"callbacks={callbacks}")
+        list_of_params.append("loss_type={loss_type}")
+        if self.cd_model.projection_head1_dims is not None:
+            list_of_params.append(
+                f"projection_head1_dims={self.cd_model.projection_head1_dims}"
+            )
+        if self.cd_model.projection_head2_dims is not None:
+            list_of_params.append(
+                f"projection_head2_dims={self.cd_model.projection_head2_dims}"
+            )
+        list_of_params.append(
+            f"projection_heads_activation={self.cd_model.projection_heads_activation}"
+        )
+        list_of_params.append(f"cat_mlp_type={self.cd_model.cat_mlp_type}")
+        list_of_params.append(f"cont_mlp_type={self.cd_model.cont_mlp_type}")
+        list_of_params.append(
+            f"denoise_mlps_activation={self.cd_model.denoise_mlps_activation}"
+        )
+        list_of_params.append("verbose={verbose}")
+        list_of_params.append("seed={seed}")
+        all_params = ", ".join(list_of_params)
+        return f"ContrastiveDenoisingTrainer({all_params.format(**self.__dict__)})"

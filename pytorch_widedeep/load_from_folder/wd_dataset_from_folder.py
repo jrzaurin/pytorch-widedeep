@@ -77,19 +77,19 @@ class WideDeepDatasetFromFolder(Dataset):
         list_of_params: List[str] = []
         list_of_params.append("n_samples={n_samples}")
         list_of_params.append(
-            "tab_from_folder={self.tab_from_folder.__class__.__name__}"
+            f"tab_from_folder={self.tab_from_folder.__class__.__name__}"
         )
         if self.wide_from_folder is not None:
             list_of_params.append(
-                "wide_from_folder={self.wide_from_folder.__class__.__name__}"
+                f"wide_from_folder={self.wide_from_folder.__class__.__name__}"
             )
         if self.text_from_folder is not None:
             list_of_params.append(
-                "text_from_folder={self.text_from_folder.__class__.__name__}"
+                f"text_from_folder={self.text_from_folder.__class__.__name__}"
             )
         if self.img_from_folder is not None:
             list_of_params.append(
-                "img_from_folder={iself.mg_from_folder.__class__.__name__}"
+                f"img_from_folder={self.img_from_folder.__class__.__name__}"
             )
         all_params = ", ".join(list_of_params)
         return f"WideDeepDatasetFromFolder({all_params.format(**self.__dict__)})"

@@ -143,7 +143,9 @@ class TabFromFolder:
         if self.target_col is not None:
             list_of_params.append("target_col={target_col}")
         if self.preprocessor is not None:
-            list_of_params.append("preprocessor={self.preprocessor.__class__.__name__}")
+            list_of_params.append(
+                f"preprocessor={self.preprocessor.__class__.__name__}"
+            )
         if self.text_col is not None:
             list_of_params.append("text_col={text_col}")
         if self.img_col is not None:

@@ -347,13 +347,15 @@ class BaseTrainer(ABC):
 
     def __repr__(self) -> str:  # noqa: C901
         list_of_params: List[str] = []
-        list_of_params.append("model={self.model.__class__.__name__}")
+        list_of_params.append(f"model={self.model.__class__.__name__}")
         list_of_params.append("objective={objective}")
-        list_of_params.append("custom_loss_function={self.loss_fn.__class__.__name__}")
-        list_of_params.append("optimizers={self.optimizer.__class__.__name__}")
-        list_of_params.append("lr_schedulers={self.lr_scheduler.__class__.__name__}")
+        list_of_params.append(f"loss_function={self.loss_fn.__class__.__name__}")
+        list_of_params.append(f"optimizers={self.optimizer.__class__.__name__}")
+        list_of_params.append(f"lr_schedulers={self.lr_scheduler.__class__.__name__}")
         if self.callbacks is not None:
-            callbacks_str = ", ".join([c.__class__.__name__ for c in self.callbacks])
+            callbacks_str = (
+                "[" + ", ".join([c.__class__.__name__ for c in self.callbacks]) + "]"
+            )
             list_of_params.append(f"callbacks={callbacks_str}")
         if self.verbose is not None:
             list_of_params.append("verbose={verbose}")

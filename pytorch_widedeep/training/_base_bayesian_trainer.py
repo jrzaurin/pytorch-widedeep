@@ -242,14 +242,18 @@ class BaseBayesianTrainer(ABC):
 
     def __repr__(self) -> str:
         list_of_params: List[str] = []
-        list_of_params.append("fname={model.__class__.__name__}")
+        list_of_params.append(f"fname={self.model.__class__.__name__}")
         list_of_params.append("objective={objective}")
-        list_of_params.append("custom_loss_function={self.loss_fn.__class__.__name__}")
-        list_of_params.append("optimizer={self.optimizer.__class__.__name__}")
+        list_of_params.append(f"custom_loss_function={self.loss_fn.__class__.__name__}")
+        list_of_params.append(f"optimizer={self.optimizer.__class__.__name__}")
         if self.lr_scheduler is not None:
-            list_of_params.append("lr_scheduler={self.lr_scheduler.__class__.__name__}")
+            list_of_params.append(
+                f"lr_scheduler={self.lr_scheduler.__class__.__name__}"
+            )
         if self.callbacks is not None:
-            callbacks = ", ".join([c.__class__.__name__ for c in self.callbacks])
+            callbacks = (
+                "[" + ", ".join([c.__class__.__name__ for c in self.callbacks]) + "]"
+            )
             list_of_params.append(f"callbacks={callbacks}")
         if self.verbose is not None:
             list_of_params.append("verbose={verbose}")

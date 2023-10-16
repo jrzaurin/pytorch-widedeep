@@ -192,11 +192,11 @@ class WidePreprocessor(BasePreprocessor):
             return df.copy()[self.wide_cols]
 
     def __repr__(self) -> str:
-        list_of_params: List[str] = ["cat_embed_cols={cat_embed_cols}"]
+        list_of_params: List[str] = ["wide_cols={wide_cols}"]
         if self.crossed_cols is not None:
             list_of_params.append("crossed_cols={crossed_cols}")
         all_params = ", ".join(list_of_params)
-        return f"TabPreprocessor({all_params.format(**self.__dict__)})"
+        return f"WidePreprocessor({all_params.format(**self.__dict__)})"
 
 
 class ChunkWidePreprocessor(WidePreprocessor):
@@ -305,4 +305,4 @@ class ChunkWidePreprocessor(WidePreprocessor):
         if self.crossed_cols is not None:
             list_of_params.append("crossed_cols={crossed_cols}")
         all_params = ", ".join(list_of_params)
-        return f"TabPreprocessor({all_params.format(**self.__dict__)})"
+        return f"WidePreprocessor({all_params.format(**self.__dict__)})"

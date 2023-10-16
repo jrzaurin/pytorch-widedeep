@@ -172,12 +172,14 @@ class ImageFromFolder:
         if self.directory is not None:
             list_of_params.append("directory={directory}")
         if self.preprocessor is not None:
-            list_of_params.append("preprocessor={self.preprocessor.__class__.__name__}")
+            list_of_params.append(
+                f"preprocessor={self.preprocessor.__class__.__name__}"
+            )
         if self.loader is not None:
-            list_of_params.append("loader={self.loader.__name__}")
+            list_of_params.append(f"loader={self.loader.__name__}")
         if self.extensions is not None:
             list_of_params.append("extensions={extensions}")
         if self.transforms is not None:
-            list_of_params.append("transforms={self.transforms_names}")
+            list_of_params.append(f"transforms={self.transforms_names}")
         all_params = ", ".join(list_of_params)
         return f"TabFromFolder({all_params.format(**self.__dict__)})"
