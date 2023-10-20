@@ -10,6 +10,17 @@ from pytorch_widedeep.preprocessing.text_preprocessor import (
 
 
 class TextFromFolder:
+    """
+    This class is used to load text from a folder, or to retrieve the text given
+    a text column specified within the preprocessor.
+
+    Parameters:
+    ----------
+    preprocessor: Union[TextPreprocessor, ChunkTextPreprocessor]
+        The preprocessor used to process the text. It must be fitted before using
+        this class
+    """
+
     def __init__(
         self,
         preprocessor: Union[TextPreprocessor, ChunkTextPreprocessor],

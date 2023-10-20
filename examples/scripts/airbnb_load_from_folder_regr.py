@@ -7,7 +7,7 @@ from pytorch_widedeep.models import TabResnet  # noqa: F401
 from pytorch_widedeep.models import TabMlp, Vision, BasicRNN, WideDeep
 from pytorch_widedeep.training import TrainerFromFolder
 from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
-from pytorch_widedeep.preprocessing import (  # ChunkWidePreprocessor,
+from pytorch_widedeep.preprocessing import (
     ImagePreprocessor,
     ChunkTabPreprocessor,
     ChunkTextPreprocessor,
@@ -31,18 +31,26 @@ if __name__ == "__main__":
     # small sample to illustrate the use, so PLEASE ignore the results, just
     # focus on usage
 
+    # For this exercise, we use a small sample of the airbnb dataset,
+    # comprised of tabular data with a text column ('description') and an
+    # image column ('id') that point to the images of the properties listed
+    # in Airbnb. We know the size of the sample before hand (1001) so we set
+    # a series of parameters accordingly
     train_size = 800
     eval_size = 100
     test_size = 101
     chunksize = 100
     n_chunks = int(np.ceil(train_size / chunksize))
 
-    path = "/Users/javierrodriguezzaurin/Projects/pytorch-widedeep/examples/tmp_data/airbnb/"
+    data_path = "../tmp_data/airbnb/"
     train_fname = "airbnb_sample_train.csv"
     eval_fname = "airbnb_sample_eval.csv"
     test_fname = "airbnb_sample_test.csv"
 
-    img_path = "/Users/javierrodriguezzaurin/Projects/pytorch-widedeep/examples/tmp_data/airbnb/property_picture/"
+    # the images are stored in the 'property_picture' while the text is a
+    # column in the 'airbnb_sample' dataframe. Let's then define the dir and
+    # file variables
+    img_path = "../tmp_data/airbnb/property_picture/"
     img_col = "id"
     text_col = "description"
     target_col = "yield"
@@ -74,6 +82,27 @@ if __name__ == "__main__":
     ]
     cont_cols = ["latitude", "longitude"]
 
+    # Now, processing the data from here on can be done in two ways:
+    # 1. The tabular data itsel fits in memory as is only the images that do
+    # not: in this case you could use the 'standard' Preprocessors and off
+    # you go, move directly to the '[...]FromFolder' functionalities
+
+    # 2. The tabular data is also very large and does not fit in memory, so we
+    # have to process it in chuncks. For this second case I have created the
+    # Chunk Processors (Wide, Tab and Text). Note that at the moment ONLY csv
+    # format is allowed for the tabular file. More formats will be supported
+    # in the future.
+
+    # For the following I will assume (simply for illustration purposes) that
+    # we are in the second case. Nonetheless, the process, whether 1 or 2,
+    # can be summarised as follows:
+    # 1. Process the data
+    # 2. Define the loaders from folder
+    # 3. Define the datasets and dataloaders
+    # 4. Define the model and the Trainer
+    # 5. Fit the model and Predict
+
+    # Process the data in Chunks
     tab_preprocessor = ChunkTabPreprocessor(
         embed_cols=cat_embed_cols,
         continuous_cols=cont_cols,
@@ -88,21 +117,37 @@ if __name__ == "__main__":
         n_cpus=1,
     )
 
+    # Note that all the (pre)processing of the images will occur 'on the fly',
+    # as they are loaded from disk. Therefore, the flow for the image dataset
+    # and for the tabular and text data modes is not entirely the same.
+    # Tabular and text data uses Chunk processors while such processing
+    # approach is not needed for the images
     img_preprocessor = ImagePreprocessor(
         img_col=img_col,
         img_path=img_path,
     )
 
     for i, chunk in enumerate(
-        pd.read_csv("/".join([path, train_fname]), chunksize=chunksize)
+        pd.read_csv("/".join([data_path, train_fname]), chunksize=chunksize)
     ):
         print(f"chunk in loop: {i}")
         tab_preprocessor.fit(chunk)
         text_preprocessor.fit(chunk)
 
+    # Instantiate the loaders from folder: again here some explanation is
+    # required. As I mentioned earlier the "[...]FromFolder" functionalities
+    # are thought for the case when we have tabular and text and/or image
+    # datasets and the latter do not fit in memory, so they have to be loaded
+    # from disk. With this in mind, the tabular data is the reference, and
+    # must have columns that point to the image files and to the text files
+    # (in case these exists instead of a column with the texts). Since the
+    # tabular data is used as a reference, is the one that has to be splitted
+    # in train/validation/test. The test and image 'FromFolder' objects only
+    # point to the corresponding column or files, and therefore, we do not
+    # need to create a separate instance per train/validation/test dataset
     train_tab_folder = TabFromFolder(
         fname=train_fname,
-        directory=path,
+        directory=data_path,
         target_col=target_col,
         preprocessor=tab_preprocessor,
         text_col=text_col,
@@ -119,6 +164,8 @@ if __name__ == "__main__":
 
     img_folder = ImageFromFolder(preprocessor=img_preprocessor)
 
+    # Following 'standard' pytorch approaches, we define the datasets and then
+    # the dataloaders
     train_dataset_folder = WideDeepDatasetFromFolder(
         n_samples=train_size,
         tab_from_folder=train_tab_folder,
@@ -139,6 +186,7 @@ if __name__ == "__main__":
     eval_loader = DataLoader(eval_dataset_folder, batch_size=16, num_workers=1)
     test_loader = DataLoader(test_dataset_folder, batch_size=16, num_workers=1)
 
+    # And from here on, is all pretty standard within the library
     basic_rnn = BasicRNN(
         vocab_size=len(text_preprocessor.vocab.itos),
         embed_dim=32,

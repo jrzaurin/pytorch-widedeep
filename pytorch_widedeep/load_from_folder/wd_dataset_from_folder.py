@@ -12,6 +12,35 @@ from pytorch_widedeep.load_from_folder import (
 
 
 class WideDeepDatasetFromFolder(Dataset):
+    """
+    This class is the Dataset counterpart of the `WideDeepDataset` class.
+
+    Given a reference tabular dataset, with columns that indicate the path to
+    the images and to the text files or the texts themselves, it will use the
+    '[]FromFolder' classes to load the data consistently from disk per batch.
+
+    Parameters:
+    ----------
+    n_samples: int
+        Number of samples in the dataset
+    tab_from_folder: TabFromFolder
+        Instance of the TabFromFolder class
+    wide_from_folder: Optional[WideFromFolder], default = None
+        Instance of the WideFromFolder class
+    text_from_folder: Optional[TextFromFolder], default = None
+        Instance of the TextFromFolder class
+    img_from_folder: Optional[ImageFromFolder], default = None
+        Instance of the ImageFromFolder class
+    reference: Type["WideDeepDatasetFromFolder"], default = None
+        If not None, the 'text_from_folder' and 'img_from_folder' objects will
+        be retrieved from the reference class. This is useful when we want to
+        use a WideDeepDatasetFromFolder class used for a train dataset as a
+        reference for the validation and test datasets. In this case, the
+        'text_from_folder' and 'img_from_folder' objects will be the same for
+        all three datasets, so there is no need to create a new instance for
+        each dataset.
+    """
+
     def __init__(
         self,
         n_samples: int,

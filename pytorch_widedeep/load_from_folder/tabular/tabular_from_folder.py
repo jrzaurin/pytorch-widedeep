@@ -17,6 +17,45 @@ TabularPreprocessor = Union[
 
 
 class TabFromFolder:
+    """
+    This class is used to load tabular data from disk. The current constrains are:
+
+    1. The only file format supported right now is csv
+    2. The csv file must contain headers
+
+    Parameters:
+    ----------
+    fname: str
+        the name of the csv file
+    directory: str, Optional, default = None
+        the path to the directory where the csv file is located. If None,
+        a 'TabFromFolder' reference object must be provided
+    target_col: str, Optional, default = None
+        the name of the target column. If None, a 'TabFromFolder' reference
+        object must be provided
+    preprocessor: `TabularPreprocessor`, Optional, default = None
+        a fitted `TabularPreprocessor` object. If None, a 'TabFromFolder'
+        reference object must be provided
+    text_col: str, Optional, default = None
+        the name of the column with the texts themselves or the names of the
+        files that contain the text dataset. If None, either there is no text
+        column or a 'TabFromFolder' reference object must be provided=
+    img_col: str, Optional, default = None
+        the name of the column with the the names of the images. If None,
+        either there is no image column or a 'TabFromFolder' reference object
+        must be provided
+    ignore_target: bool, default = False
+        whether to ignore the target column. This is normally set to True when
+        this class is used for a test dataset.
+    reference: `TabFromFolder`, Optional, default = None
+        a reference `TabFromFolder` object. If provided, the `TabFromFolder`
+        object will be created using the attributes of the reference object.
+        This is useful to instantiate a `TabFromFolder` object for evaluation
+        or test purposes
+    verbose: int, default = 1
+        verbosity. If 0, no output will be printed during the process.
+    """
+
     def __init__(
         self,
         fname: str,
@@ -159,6 +198,45 @@ class TabFromFolder:
 
 
 class WideFromFolder(TabFromFolder):
+    """
+    This class is used to load tabular data from disk. The current constrains are:
+
+    1. The only file format supported right now is csv
+    2. The csv file must contain a header
+
+    Parameters:
+    ----------
+    fname: str
+        the name of the csv file
+    directory: str, Optional, default = None
+        the path to the directory where the csv file is located. If None,
+        a 'WideFromFolder' reference object must be provided
+    target_col: str, Optional, default = None
+        the name of the target column. If None, a 'WideFromFolder' reference
+        object must be provided
+    preprocessor: `TabularPreprocessor`, Optional, default = None
+        a fitted `TabularPreprocessor` object. If None, a 'WideFromFolder'
+        reference object must be provided
+    text_col: str, Optional, default = None
+        the name of the column with the texts themselves or the names of the
+        files that contain the text dataset. If None, either there is no text
+        column or a 'WideFromFolder' reference object must be provided=
+    img_col: str, Optional, default = None
+        the name of the column with the the names of the images. If None,
+        either there is no image column or a 'WideFromFolder' reference object
+        must be provided
+    ignore_target: bool, default = False
+        whether to ignore the target column. This is normally used when this
+        class is used for a test dataset.
+    reference: `WideFromFolder`, Optional, default = None
+        a reference `WideFromFolder` object. If provided, the `WideFromFolder`
+        object will be created using the attributes of the reference object.
+        This is useful to instantiate a `WideFromFolder` object for evaluation
+        or test purposes
+    verbose: int, default = 1
+        verbosity. If 0, no output will be printed during the process.
+    """
+
     def __init__(
         self,
         fname: str,
