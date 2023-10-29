@@ -420,6 +420,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_4">
@@ -553,6 +555,20 @@
     <li class="md-nav__item">
       <a href="preprocessing.html" class="md-nav__link">
         Preprocessing
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="load_from_folder.html" class="md-nav__link">
+        Load From Folder
       </a>
     </li>
   
@@ -2338,7 +2354,7 @@ folder in the repo</p>
     <span class="n">X_text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">X_img</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">X_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -2384,7 +2400,7 @@ are the corresponding matrices.</p>
       </li>
       <li class="field-body">
         <b>batch_size</b>
-            (<code>int</code>)
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>)
         – <p>If a trainer is used to predict after having trained a model, the
 <code>batch_size</code> needs to be defined as it will not be defined as
 the <code>Trainer</code> is instantiated</p>
@@ -2462,7 +2478,7 @@ the <code>Trainer</code> is instantiated</p>
     <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the predictions</span>
 
@@ -2531,7 +2547,7 @@ the <code>Trainer</code> is instantiated</p>
     <span class="n">X_text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">X_img</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">X_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">uncertainty_granularity</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
@@ -2581,7 +2597,7 @@ are the corresponding matrices.</p>
       </li>
       <li class="field-body">
         <b>batch_size</b>
-            (<code>int</code>)
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>)
         – <p>If a trainer is used to predict after having trained a model, the
 <code>batch_size</code> needs to be defined as it will not be defined as
 the <code>Trainer</code> is instantiated</p>
@@ -2712,7 +2728,7 @@ values for each sample.</li>
     <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">uncertainty_granularity</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the predicted ucnertainty of the model for the test dataset</span>
@@ -2822,7 +2838,7 @@ values for each sample.</li>
     <span class="n">X_text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">X_img</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">X_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 
@@ -2869,7 +2885,7 @@ are the corresponding matrices.</p>
       </li>
       <li class="field-body">
         <b>batch_size</b>
-            (<code>int</code>)
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>)
         – <p>If a trainer is used to predict after having trained a model, the
 <code>batch_size</code> needs to be defined as it will not be defined as
 the <code>Trainer</code> is instantiated</p>
@@ -2946,7 +2962,7 @@ the <code>Trainer</code> is instantiated</p>
     <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the predicted probabilities for the test dataset for  binary</span>
 <span class="sd">    and multiclass methods</span>

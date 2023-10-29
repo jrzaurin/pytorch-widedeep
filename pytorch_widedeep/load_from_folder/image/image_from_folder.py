@@ -62,7 +62,9 @@ class ImageFromFolder:
     the 'ImageFolder' class at the torchvision package. Simply adapted to
     work within the context of a Wide and Deep multi-modal model.
 
-    Parameters:
+    For examples, please, see the examples folder in the repo.
+
+    Parameters
     ----------
     directory: str, Optional, default = None
         the path to the directory where the images are located. If None, a

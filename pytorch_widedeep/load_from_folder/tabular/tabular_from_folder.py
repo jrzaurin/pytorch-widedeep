@@ -23,7 +23,9 @@ class TabFromFolder:
     1. The only file format supported right now is csv
     2. The csv file must contain headers
 
-    Parameters:
+    For examples, please, see the examples folder in the repo.
+
+    Parameters
     ----------
     fname: str
         the name of the csv file
@@ -204,7 +206,7 @@ class WideFromFolder(TabFromFolder):
     1. The only file format supported right now is csv
     2. The csv file must contain a header
 
-    Parameters:
+    Parameters
     ----------
     fname: str
         the name of the csv file

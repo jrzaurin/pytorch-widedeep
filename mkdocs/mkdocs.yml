@@ -26,6 +26,7 @@ nav:
             - Image utils: pytorch-widedeep/utils/image_utils.md
             - Text utils: pytorch-widedeep/utils/text_utils.md
         - Preprocessing: pytorch-widedeep/preprocessing.md
+        - Load From Folder: pytorch-widedeep/load_from_folder.md
         - Model Components: pytorch-widedeep/model_components.md
         - Bayesian models: pytorch-widedeep/bayesian_models.md
         - Losses: pytorch-widedeep/losses.md

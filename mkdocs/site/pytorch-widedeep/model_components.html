@@ -420,6 +420,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_4">
@@ -553,6 +555,20 @@
     <li class="md-nav__item">
       <a href="preprocessing.html" class="md-nav__link">
         Preprocessing
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="load_from_folder.html" class="md-nav__link">
+        Load From Folder
       </a>
     </li>
   
@@ -1363,8 +1379,7 @@ it requires the <code>pred_dim</code> parameter.</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/tabular/linear/wide.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">41</span>
-<span class="normal">42</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">42</span>
 <span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
@@ -1373,7 +1388,10 @@ it requires the <code>pred_dim</code> parameter.</p>
 <span class="normal">48</span>
 <span class="normal">49</span>
 <span class="normal">50</span>
-<span class="normal">51</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pred_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Alias</span><span class="p">(</span><span class="s2">&quot;pred_dim&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pred_size&quot;</span><span class="p">,</span> <span class="s2">&quot;num_class&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pred_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">Wide</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span> <span class="o">=</span> <span class="n">input_dim</span>
@@ -7253,7 +7271,18 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
-<span class="normal">180</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -7275,6 +7304,17 @@ LIN -&gt; ACT]</code></p>
 <span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">BasicRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
+    <span class="k">if</span> <span class="n">embed_dim</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">embed_matrix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;If no &#39;embed_matrix&#39; is passed, the embedding dimension must&quot;</span>
+            <span class="s2">&quot;be specified with &#39;embed_dim&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rnn_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span> <span class="s2">&quot;gru&quot;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;rnn_type&#39; must be &#39;lstm&#39; or &#39;gru&#39;, got </span><span class="si">{</span><span class="n">rnn_type</span><span class="si">}</span><span class="s2"> instead&quot;</span>
+        <span class="p">)</span>
+
     <span class="k">if</span> <span class="p">(</span>
         <span class="n">embed_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="ow">and</span> <span class="n">embed_matrix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -7287,11 +7327,6 @@ LIN -&gt; ACT]</code></p>
                 <span class="n">embed_dim</span><span class="p">,</span> <span class="n">embed_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">embed_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="p">),</span>
             <span class="ne">UserWarning</span><span class="p">,</span>
-        <span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">rnn_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span> <span class="s2">&quot;gru&quot;</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;&#39;rnn_type&#39; must be &#39;lstm&#39; or &#39;gru&#39;, got </span><span class="si">{</span><span class="n">rnn_type</span><span class="si">}</span><span class="s2"> instead&quot;</span>
         <span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">vocab_size</span> <span class="o">=</span> <span class="n">vocab_size</span>
@@ -7314,7 +7349,12 @@ LIN -&gt; ACT]</code></p>
     <span class="bp">self</span><span class="o">.</span><span class="n">head_linear_first</span> <span class="o">=</span> <span class="n">head_linear_first</span>
 
     <span class="c1"># Embeddings</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">word_embed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_embeddings</span><span class="p">(</span><span class="n">embed_matrix</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">embed_matrix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_embed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_embeddings</span><span class="p">(</span><span class="n">embed_matrix</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_embed</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vocab_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_dim</span><span class="p">,</span> <span class="n">padding_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span>
+        <span class="p">)</span>
 
     <span class="c1"># RNN</span>
     <span class="n">rnn_params</span> <span class="o">=</span> <span class="p">{</span>
@@ -9007,8 +9047,7 @@ well understood</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/models/wide_deep.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">134</span>
-<span class="normal">135</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">135</span>
 <span class="normal">136</span>
 <span class="normal">137</span>
 <span class="normal">138</span>
@@ -9081,7 +9120,16 @@ well understood</p>
 <span class="normal">205</span>
 <span class="normal">206</span>
 <span class="normal">207</span>
-<span class="normal">208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Alias</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+    <span class="s2">&quot;pred_dim&quot;</span><span class="p">,</span>
+    <span class="p">[</span><span class="s2">&quot;num_class&quot;</span><span class="p">,</span> <span class="s2">&quot;pred_size&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">deeptabular</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -9542,7 +9590,7 @@ authors used a value of 10.</p>
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="preprocessing.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Preprocessing" rel="prev">
+        <a href="load_from_folder.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Load From Folder" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -9551,7 +9599,7 @@ authors used a value of 10.</p>
               <span class="md-footer__direction">
                 Previous
               </span>
-              Preprocessing
+              Load From Folder
             </div>
           </div>
         </a>

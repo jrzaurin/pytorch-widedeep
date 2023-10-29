@@ -14,7 +14,9 @@ class TextFromFolder:
     This class is used to load text from a folder, or to retrieve the text given
     a text column specified within the preprocessor.
 
-    Parameters:
+    For examples, please, see the examples folder in the repo.
+
+    Parameters
     ----------
     preprocessor: Union[TextPreprocessor, ChunkTextPreprocessor]
         The preprocessor used to process the text. It must be fitted before using

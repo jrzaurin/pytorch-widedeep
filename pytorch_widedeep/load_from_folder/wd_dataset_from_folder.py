@@ -19,7 +19,9 @@ class WideDeepDatasetFromFolder(Dataset):
     the images and to the text files or the texts themselves, it will use the
     '[]FromFolder' classes to load the data consistently from disk per batch.
 
-    Parameters:
+    For examples, please, see the examples folder in the repo.
+
+    Parameters
     ----------
     n_samples: int
         Number of samples in the dataset
