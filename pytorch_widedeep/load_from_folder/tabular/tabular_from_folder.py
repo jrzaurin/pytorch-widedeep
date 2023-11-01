@@ -31,20 +31,20 @@ class TabFromFolder:
         the name of the csv file
     directory: str, Optional, default = None
         the path to the directory where the csv file is located. If None,
-        a 'TabFromFolder' reference object must be provided
+        a `TabFromFolder` reference object must be provided
     target_col: str, Optional, default = None
-        the name of the target column. If None, a 'TabFromFolder' reference
+        the name of the target column. If None, a `TabFromFolder` reference
         object must be provided
     preprocessor: `TabularPreprocessor`, Optional, default = None
-        a fitted `TabularPreprocessor` object. If None, a 'TabFromFolder'
+        a fitted `TabularPreprocessor` object. If None, a `TabFromFolder`
         reference object must be provided
     text_col: str, Optional, default = None
         the name of the column with the texts themselves or the names of the
         files that contain the text dataset. If None, either there is no text
-        column or a 'TabFromFolder' reference object must be provided=
+        column or a `TabFromFolder` reference object must be provided
     img_col: str, Optional, default = None
         the name of the column with the the names of the images. If None,
-        either there is no image column or a 'TabFromFolder' reference object
+        either there is no image column or a `TabFromFolder` reference object
         must be provided
     ignore_target: bool, default = False
         whether to ignore the target column. This is normally set to True when
@@ -100,7 +100,7 @@ class TabFromFolder:
 
         assert (
             self.preprocessor.is_fitted
-        ), "The preprocessor must be fitted before using this class"
+        ), "The preprocessor must be fitted before passing it to this class"
 
     def get_item(
         self, idx: int
@@ -201,10 +201,9 @@ class TabFromFolder:
 
 class WideFromFolder(TabFromFolder):
     """
-    This class is used to load tabular data from disk. The current constrains are:
-
-    1. The only file format supported right now is csv
-    2. The csv file must contain a header
+    This class is mostly identical to `TabFromFolder` but exists because we
+    want to separate the treatment of the wide and the deep tabular
+    components
 
     Parameters
     ----------
@@ -212,20 +211,20 @@ class WideFromFolder(TabFromFolder):
         the name of the csv file
     directory: str, Optional, default = None
         the path to the directory where the csv file is located. If None,
-        a 'WideFromFolder' reference object must be provided
+        a `WideFromFolder` reference object must be provided
     target_col: str, Optional, default = None
-        the name of the target column. If None, a 'WideFromFolder' reference
+        the name of the target column. If None, a `WideFromFolder` reference
         object must be provided
     preprocessor: `TabularPreprocessor`, Optional, default = None
-        a fitted `TabularPreprocessor` object. If None, a 'WideFromFolder'
+        a fitted `TabularPreprocessor` object. If None, a `WideFromFolder`
         reference object must be provided
     text_col: str, Optional, default = None
         the name of the column with the texts themselves or the names of the
         files that contain the text dataset. If None, either there is no text
-        column or a 'WideFromFolder' reference object must be provided=
+        column or a `WideFromFolder` reference object must be provided=
     img_col: str, Optional, default = None
         the name of the column with the the names of the images. If None,
-        either there is no image column or a 'WideFromFolder' reference object
+        either there is no image column or a `WideFromFolder` reference object
         must be provided
     ignore_target: bool, default = False
         whether to ignore the target column. This is normally used when this

@@ -18,9 +18,12 @@ model component: ``wide``, ``deeptabular``, ``deepimage`` and ``deeptext``.
 ## Chunked versions
 
 Chunked versions of the preprocessors are also available. These are useful
-when the data is too big to fit in memory. See also the
-[``load_from_folder``](load_from_folder.md) module in the library and the
-corresponding section here in the documentation.
+when the data is too big to fit in memory. See also the [``load_from_folder``](load_from_folder.md)
+module in the library and the corresponding section here in the documentation.
+
+Note that there is not a ``ChunkImagePreprocessor``. This is because the
+processing of the images will occur inside the `ImageFromFolder` class in
+the [``load_from_folder``](load_from_folder.md) module.
 
 
 ::: pytorch_widedeep.preprocessing.wide_preprocessor.ChunkWidePreprocessor

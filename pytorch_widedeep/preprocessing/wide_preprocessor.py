@@ -204,7 +204,7 @@ class ChunkWidePreprocessor(WidePreprocessor):
 
     This Preprocessor prepares the data for the wide, linear component.
     This linear model is implemented via an Embedding layer that is
-    connected to the output neuron. `WidePreprocessor` numerically
+    connected to the output neuron. `ChunkWidePreprocessor` numerically
     encodes all the unique values of all categorical columns `wide_cols +
     crossed_cols`. See the Example below.
 

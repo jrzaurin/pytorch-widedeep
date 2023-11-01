@@ -11,8 +11,9 @@ from pytorch_widedeep.preprocessing.text_preprocessor import (
 
 class TextFromFolder:
     """
-    This class is used to load text from a folder, or to retrieve the text given
-    a text column specified within the preprocessor.
+    This class is used to load the text dataset (i.e. the text files) from a
+    folder, or to retrieve the text given a texts column specified within the
+    preprocessor object.
 
     For examples, please, see the examples folder in the repo.
 

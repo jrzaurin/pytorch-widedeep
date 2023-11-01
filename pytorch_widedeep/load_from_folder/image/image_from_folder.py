@@ -58,9 +58,10 @@ def default_loader(path: str) -> Any:
 
 class ImageFromFolder:
     """
-    This class is used to load image data from disk. It is inspired by
-    the 'ImageFolder' class at the torchvision package. Simply adapted to
-    work within the context of a Wide and Deep multi-modal model.
+    This class is used to load the image dataset from disk. It is inspired by
+    the `ImageFolder` class at the `torchvision` library. Here, we have
+    simply adapted to work within the context of a Wide and Deep multi-modal
+    model.
 
     For examples, please, see the examples folder in the repo.
 
@@ -75,7 +76,8 @@ class ImageFromFolder:
         a function to load a sample given its path.
     extensions: Tuple[str, ...], Optional, default = IMG_EXTENSIONS
         a tuple with the allowed extensions. If None, IMG_EXTENSIONS will be
-        used
+        used where IMG_EXTENSIONS
+        =".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp"
     transforms: Optional[Any], default = None
         a `torchvision.transforms` object. If None, this class will simply
         return an array representation of the PIL Image
