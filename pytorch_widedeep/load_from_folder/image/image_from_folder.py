@@ -37,7 +37,7 @@ def pil_loader(path: str) -> Image.Image:
 
 
 # TO DO: specify the return type
-def accimage_loader(path: str) -> Any:
+def accimage_loader(path: str) -> Any:  # pragma: no cover
     import accimage
 
     try:
@@ -50,7 +50,7 @@ def accimage_loader(path: str) -> Any:
 def default_loader(path: str) -> Any:
     from torchvision import get_image_backend
 
-    if get_image_backend() == "accimage":
+    if get_image_backend() == "accimage":  # pragma: no cover
         return accimage_loader(path)
     else:
         return pil_loader(path)
@@ -95,7 +95,7 @@ class ImageFromFolder:
             directory is not None or preprocessor is not None
         ), "Either a directory or an instance of ImagePreprocessor must be provided"
 
-        if directory is not None and preprocessor is not None:
+        if directory is not None and preprocessor is not None:  # pragma: no cover
             assert directory == preprocessor.img_path, (
                 "If both 'directory' and 'preprocessor' are provided, the 'img_path' "
                 "attribute of the 'preprocessor' must be the same as the 'directory'"
@@ -123,7 +123,7 @@ class ImageFromFolder:
         path = os.path.join(self.directory, fname)
         sample = self.loader(path)
 
-        assert isinstance(sample, (Image.Image, np.ndarray)), (
+        assert isinstance(sample, (Image.Image, np.ndarray)), (  # pragma: no cover
             "The loader must return an instance of PIL.Image or np.ndarray, "
             f"got {type(sample)} instead"
         )
@@ -148,7 +148,7 @@ class ImageFromFolder:
 
         if isinstance(processed_sample, Image.Image):
             if not self.transforms:
-                raise UserWarning(
+                raise UserWarning(  # pragma: no cover
                     "The images are in PIL Image format, and not 'transforms' are passed. "
                     "This loader will simply return the array representation of the PIL Image. "
                 )

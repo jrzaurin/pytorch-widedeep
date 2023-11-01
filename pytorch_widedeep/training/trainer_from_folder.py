@@ -34,17 +34,18 @@ from pytorch_widedeep.training._trainer_utils import (
     print_loss_and_metric,
 )
 
-# Observation 1: I am a bit annoyed by sublime highlighting an override issue
-# with the abstractmethods. There is no override issue. The Signature of
+# Observation 1: I am annoyed by sublime highlighting an override issue with
+# the abstractmethods. There is no override issue. The Signature of
 # the 'predict' method is compatible with the supertype. Buy for whatever
 # issue sublime highlights this as an error (not vscode and is not returned
 # as an error when running mypy). I am ignoring it
 
 # There is a lot of code repetition between this class and the 'Trainer'
-# class. Maybe in the future I decided to merge the two of them and offer the
-# ability to laod from folder based on the input parameters. For now, I'll
-# leave it like this, separated, since it is the easiest and most manageable
-# (i.e. easier to debug) implementation
+# class (and in consquence a lot of ignore methods for test coverage). Maybe
+# in the future I decided to merge the two of them and offer the ability to
+# laod from folder based on the input parameters. For now, I'll leave it like
+# this, separated, since it is the easiest and most manageable(i.e. easier to
+# debug) implementation
 
 
 class TrainerFromFolder(BaseTrainer):
@@ -269,7 +270,7 @@ class TrainerFromFolder(BaseTrainer):
                         print_loss_and_metric(v, val_loss, val_score)
                 epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
 
-                if self.reducelronplateau:
+                if self.reducelronplateau:  # pragma: no cover
                     if self.reducelronplateau_criterion == "loss":
                         on_epoch_end_metric = val_loss
                     else:
@@ -306,14 +307,14 @@ class TrainerFromFolder(BaseTrainer):
         )
         if self.method == "regression":
             return np.vstack(preds_l).squeeze(1)
-        if self.method == "binary":
+        if self.method == "binary":  # pragma: no cover
             preds = np.vstack(preds_l).squeeze(1)
             return (preds > 0.5).astype("int")
-        if self.method == "qregression":
+        if self.method == "qregression":  # pragma: no cover
             return np.vstack(preds_l)
-        if self.method == "multiclass":
+        if self.method == "multiclass":  # pragma: no cover
             preds = np.vstack(preds_l)
-            return np.argmax(preds, 1)  # type: ignore[return-value]
+            return np.argmax(preds, 1)
 
     def predict_uncertainty(  # type: ignore[return]
         self,
@@ -325,7 +326,7 @@ class TrainerFromFolder(BaseTrainer):
         batch_size: Optional[int] = None,
         test_loader: Optional[DataLoader] = None,
         uncertainty_granularity=1000,
-    ) -> np.ndarray:
+    ) -> np.ndarray:  # pragma: no cover
         preds_l = self._predict(
             X_wide,
             X_tab,
@@ -377,7 +378,7 @@ class TrainerFromFolder(BaseTrainer):
         X_test: Optional[Dict[str, np.ndarray]] = None,
         test_loader: Optional[DataLoader] = None,
         batch_size: Optional[int] = None,
-    ) -> np.ndarray:
+    ) -> np.ndarray:  # pragma: no cover
         preds_l = self._predict(
             X_wide, X_tab, X_text, X_img, X_test, test_loader, batch_size
         )
@@ -395,7 +396,7 @@ class TrainerFromFolder(BaseTrainer):
         path: str,
         save_state_dict: bool = False,
         model_filename: str = "wd_model.pt",
-    ):
+    ):  # pragma: no cover
         save_dir = Path(path)
         history_dir = save_dir / "history"
         history_dir.mkdir(exist_ok=True, parents=True)
@@ -512,7 +513,7 @@ class TrainerFromFolder(BaseTrainer):
 
         y_pred = self.model(X)
 
-        if self.model.is_tabnet:
+        if self.model.is_tabnet:  # pragma: no cover
             loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
             score = self._get_score(y_pred[0], y)
         else:
@@ -539,7 +540,7 @@ class TrainerFromFolder(BaseTrainer):
             y = y.to(self.device)
 
             y_pred = self.model(X)
-            if self.model.is_tabnet:
+            if self.model.is_tabnet:  # pragma: no cover
                 loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
                 score = self._get_score(y_pred[0], y)
             else:
@@ -551,7 +552,7 @@ class TrainerFromFolder(BaseTrainer):
 
         return score, avg_loss
 
-    def _get_score(self, y_pred, y):
+    def _get_score(self, y_pred, y):  # pragma: no cover
         if self.metric is not None:
             if self.method == "regression":
                 score = self.metric(y_pred, y)
@@ -618,7 +619,7 @@ class TrainerFromFolder(BaseTrainer):
         self.model.eval()
         preds_l = []
 
-        if uncertainty:
+        if uncertainty:  # pragma: no cover
             for m in self.model.modules():
                 if m.__class__.__name__.startswith("Dropout"):
                     m.train()
@@ -656,7 +657,7 @@ class TrainerFromFolder(BaseTrainer):
         return preds_l
 
     @staticmethod
-    def _predict_ziln(preds: Tensor) -> Tensor:
+    def _predict_ziln(preds: Tensor) -> Tensor:  # pragma: no cover
         """Calculates predicted mean of zero inflated lognormal logits.
 
         Adjusted implementaion of `code

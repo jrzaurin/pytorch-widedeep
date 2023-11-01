@@ -360,36 +360,3 @@ def get_kernel_window(
         raise ValueError("Kernel can be only ['gaussian', 'triang', 'laplace'].")
 
     return kernel_window
-
-
-# if __name__ == "__main__":
-#     from pytorch_widedeep.datasets import load_adult
-
-#     df = load_adult(as_frame=True)
-#     df.columns = [c.replace("-", "_") for c in df.columns]
-
-#     df.to_csv("df.csv", index=False)
-
-#     fname = "df.csv"
-#     df = pd.read_csv(fname)
-
-#     cat_embed_cols = [
-#         "workclass",
-#         "education",
-#         "marital_status",
-#         "occupation",
-#         "relationship",
-#         "race",
-#         "gender",
-#         "native_country",
-#     ]
-
-#     # le = LabelEncoder(cat_embed_cols, with_attention=True)
-#     le_batch = LabelEncoder(cat_embed_cols)
-#     le = LabelEncoder(cat_embed_cols)
-
-#     for i, chunk in enumerate(pd.read_csv(fname, chunksize=500)):
-#         print(i)
-#         le_batch.partial_fit(chunk)
-
-#     le.fit(df)

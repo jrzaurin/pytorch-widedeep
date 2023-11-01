@@ -86,7 +86,15 @@ class WideDeepDatasetFromFolder(Dataset):
             x.deeptabular = X_tab
 
         if self.wide_from_folder is not None:
-            X_wide, _, _, _ = self.wide_from_folder.get_item(idx=idx)
+            if self.tab_from_folder is None:
+                (
+                    X_wide,
+                    text_fname_or_text,
+                    img_fname,
+                    y,
+                ) = self.wide_from_folder.get_item(idx=idx)
+            else:
+                X_wide, _, _, _ = self.wide_from_folder.get_item(idx=idx)
             x.wide = X_wide
 
         if text_fname_or_text is not None:

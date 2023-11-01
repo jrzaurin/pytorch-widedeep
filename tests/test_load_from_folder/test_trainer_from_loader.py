@@ -397,7 +397,6 @@ def test_trainer_from_loader_with_tab_params(tab_params):
         model,
         objective="regression",
         verbose=1,
-        finetune=True,
         callbacks=[EarlyStopping(patience=10)],  # any number higher than 2
     )
 
@@ -405,6 +404,8 @@ def test_trainer_from_loader_with_tab_params(tab_params):
         train_loader=train_dataloader_from_folder,
         eval_loader=eval_dataloader_from_folder,
         n_epochs=2,
+        finetune=True,
+        finetune_epochs=1,
     )
 
     preds = trainer.predict(test_loader=test_dataloader_from_folder)

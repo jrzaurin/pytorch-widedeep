@@ -5,7 +5,10 @@ omit =
     pytorch_widedeep/bayesian_models/bayesian_nn/modules/*
 
 [report]
+exclude_also =
+    def __repr__
 omit =
     pytorch_widedeep/optim/*
     pytorch_widedeep/bayesian_models/bayesian_nn/modules/*
 precision = 2
+
