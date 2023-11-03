@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import torch
 import pytest
@@ -102,7 +103,7 @@ def test_all_frozen():
         ("regnet", 912),
         ("mobilenet", 1280),
         ("mnasnet", 1280),
-        ("efficientnet", 1280),
+        # ("efficientnet", 1280),
         ("squeezenet", 512),
         ({"shufflenet": ShuffleNet_V2_X0_5_Weights.IMAGENET1K_V1}, 1024),
         ({"resnext": ResNeXt50_32X4D_Weights.IMAGENET1K_V2}, 2048),
@@ -112,3 +113,19 @@ def test_pretrained_model_setup_defaults(arch, expected_out_shape):
     model = Vision(pretrained_model_setup=arch, n_trainable=0)
     out = model(X_images)
     assert out.size(0) == 10 and out.size(1) == expected_out_shape
+
+
+IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
+
+
+@pytest.mark.skipif(
+    IN_GITHUB_ACTIONS,
+    reason=(
+        "For reasons beyond me, when running in GH actions, "
+        "throws a RuntimeError when trying to download the weights"
+    ),
+)
+def test_pretrained_model_efficientnet():
+    model = Vision(pretrained_model_setup="efficientnet", n_trainable=0)
+    out = model(X_images)
+    assert out.size(0) == 10 and out.size(1) == 1280
