@@ -1,10 +1,14 @@
 import os
-from typing import List, Optional
+from typing import List, Union, Optional
 
 import numpy as np
 from gensim.utils import tokenize
 
-from pytorch_widedeep.utils.fastai_transforms import Vocab, Tokenizer
+from pytorch_widedeep.utils.fastai_transforms import (
+    Vocab,
+    Tokenizer,
+    ChunkVocab,
+)
 
 __all__ = ["simple_preprocess", "get_texts", "pad_sequences", "build_embeddings_matrix"]
 
@@ -152,7 +156,10 @@ def pad_sequences(
 
 
 def build_embeddings_matrix(
-    vocab: Vocab, word_vectors_path: str, min_freq: int, verbose: int = 1
+    vocab: Union[Vocab, ChunkVocab],
+    word_vectors_path: str,
+    min_freq: int,
+    verbose: int = 1,
 ) -> np.ndarray:  # pragma: no cover
     r"""Build the embedding matrix using pretrained word vectors.
 

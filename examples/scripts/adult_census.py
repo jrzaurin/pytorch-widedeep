@@ -164,4 +164,4 @@ if __name__ == "__main__":
         )
 
         # 3. Either fit or directly predict
-        preds = trainer_new.predict(X_wide=X_wide, X_tab=X_tab)
+        preds = trainer_new.predict(X_wide=X_wide, X_tab=X_tab, batch_size=256)

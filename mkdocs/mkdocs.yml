@@ -26,6 +26,7 @@ nav:
             - Image utils: pytorch-widedeep/utils/image_utils.md
             - Text utils: pytorch-widedeep/utils/text_utils.md
         - Preprocessing: pytorch-widedeep/preprocessing.md
+        - Load From Folder: pytorch-widedeep/load_from_folder.md
         - Model Components: pytorch-widedeep/model_components.md
         - Bayesian models: pytorch-widedeep/bayesian_models.md
         - Losses: pytorch-widedeep/losses.md
@@ -59,6 +60,7 @@ nav:
         - 18_feature_importance_via_attention_weights: examples/18_feature_importance_via_attention_weights.ipynb
         - 19_wide_and_deep_for_recsys_pt1: examples/19_wide_and_deep_for_recsys_pt1.ipynb
         - 19_wide_and_deep_for_recsys_pt2: examples/19_wide_and_deep_for_recsys_pt2.ipynb
+        - 20_load_from_folder_functionality.: examples/20_load_from_folder_functionality.ipynb
     - Contributing: contributing.md
 
 theme:

@@ -1,0 +1,33 @@
+category1,category2,numeric1,numeric2,text,images,target_multiclass,target_binary,target_regression
+B,Y,28.34716982120366,7.609204229863362,Actions speak louder than words.,image_31_0.png,2,1,0.6023355819507898
+B,Y,80.06084505218237,53.291453655249235,All that glitters is not gold.,image_31_1.png,1,0,0.648390856719063
+A,Y,99.93352385711125,58.67387779127901,Don't count your chickens before they hatch.,image_31_2.png,1,1,0.2973471610636259
+B,X,18.950550188714768,4.323096453135534,The quick brown fox jumps over the lazy dog.,image_31_3.png,1,1,0.9473980363295809
+B,X,30.4568243435011,66.55651574346399,The quick brown fox jumps over the lazy dog.,image_31_4.png,1,0,0.2619592299176039
+B,Y,16.803226844091704,36.513130450337016,The quick brown fox jumps over the lazy dog.,image_31_5.png,2,1,0.7121321101782967
+A,Y,8.604952027243941,36.77645065913406,All that glitters is not gold.,image_31_6.png,1,1,0.08148005689799998
+C,Y,24.474028078193676,3.863164441282123,The quick brown fox jumps over the lazy dog.,image_31_7.png,0,1,0.6648445460983803
+A,X,76.86661375802052,95.58844210395286,"When in Rome, do as the Romans do.",image_31_8.png,2,0,0.45994874865888524
+B,X,96.41400278762084,53.61414259129221,Every cloud has a silver lining.,image_31_9.png,1,1,0.5691078446433954
+A,Y,91.28528562363813,70.66145707836813,A journey of a thousand miles begins with a single step.,image_31_10.png,1,0,0.18407265951386542
+C,X,3.5961023631767866,91.51857060874747,Don't count your chickens before they hatch.,image_31_11.png,0,0,0.4335639685796311
+C,Y,43.09281826568113,21.00480758606949,Don't count your chickens before they hatch.,image_31_12.png,2,0,0.7662778565571535
+C,Y,63.605837048235955,46.88878118607677,Beauty is in the eye of the beholder.,image_31_13.png,0,0,0.7670848328015827
+B,Y,73.66860505134365,87.38145481481455,Don't count your chickens before they hatch.,image_31_14.png,0,0,0.23755596123159606
+B,X,67.29651067976283,79.52353418321347,A journey of a thousand miles begins with a single step.,image_31_15.png,1,1,0.352599275113029
+C,Y,65.12764802552577,30.09507181890324,Actions speak louder than words.,image_31_16.png,1,1,0.0038135553921014864
+A,Y,88.2928813750021,74.30655455924975,Beauty is in the eye of the beholder.,image_31_17.png,0,1,0.089962174338176
+C,Y,25.32685287192898,46.60442167753089,The quick brown fox jumps over the lazy dog.,image_31_18.png,2,0,0.12673035264875487
+B,X,27.572222280459037,92.35051422062861,Actions speak louder than words.,image_31_19.png,2,1,0.29365132589590004
+C,X,22.005289666629945,30.83456734805177,"When in Rome, do as the Romans do.",image_31_20.png,2,1,0.7590154867424669
+C,X,39.89559847536788,63.318290037958405,Don't count your chickens before they hatch.,image_31_21.png,0,1,0.5102501321559869
+C,Y,10.382057486219884,97.7287884278892,Every cloud has a silver lining.,image_31_22.png,2,0,0.7926081365522494
+A,X,86.96250098084357,54.84538615599667,Actions speak louder than words.,image_31_23.png,1,1,0.7549057075970432
+B,Y,8.48446619102915,90.16450545315315,"When in Rome, do as the Romans do.",image_31_24.png,0,1,0.5871382095076755
+A,Y,12.214448710463946,13.250357126561706,Every cloud has a silver lining.,image_31_25.png,0,0,0.49986020119607844
+C,X,34.05472256696206,54.56300266209669,All that glitters is not gold.,image_31_26.png,0,1,0.93132086154928
+B,Y,48.25879073343072,51.68776783338943,Beauty is in the eye of the beholder.,image_31_27.png,2,1,0.5692702226144151
+B,Y,68.35692300857151,27.604883771626206,Beauty is in the eye of the beholder.,image_31_28.png,2,0,0.4828239846157095
+B,X,40.016147423879865,90.0396780033484,"When in Rome, do as the Romans do.",image_31_29.png,1,0,0.8691208095398361
+A,Y,42.0928462430637,43.1047633132499,Actions speak louder than words.,image_31_30.png,2,0,0.07143871475230579
+B,Y,63.24501593279084,1.8026258337540362,The quick brown fox jumps over the lazy dog.,image_31_31.png,2,0,0.6560263195179041

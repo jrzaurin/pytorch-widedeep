@@ -40,7 +40,7 @@ TransformerBasedModels = (
 __all__ = ["FeatureImportance", "Explainer"]
 
 
-# TODO: review typing for WideDeep (in particular the deeptabular part) The
+# TO DO: review typing for WideDeep (in particular the deeptabular part) The
 # issue with the typing of the deeptabular part is the following: the
 # deeptabular part is typed as Optional[BaseWDModelComponent]. While that is
 # correct, is not fully informative, and the most correct approach would

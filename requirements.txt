@@ -7,8 +7,8 @@ spacy
 opencv-contrib-python
 imutils
 tqdm
-torch
-torchvision
+torch >= 2.0.0
+torchvision >= 0.15.0
 einops
 wrapt
 torchmetrics

@@ -11,10 +11,10 @@ Credit for the code here to Jeremy Howard and the fastai team
 import os
 import re
 import html
-import pickle
 from collections import Counter, defaultdict
 from concurrent.futures.process import ProcessPoolExecutor
 
+import numpy as np
 import spacy
 from spacy.symbols import ORTH
 
@@ -338,65 +338,43 @@ class Tokenizer:
             )
 
 
-# TODO: Fix bug regarding token num 0
 class Vocab:
     r"""Contains the correspondence between numbers and tokens.
 
     Parameters
     ----------
-    itos: Collection
-        `index to str`. Collection of strings that are the tokens of the
-        vocabulary
+    max_vocab: int
+        maximum vocabulary size
+    min_freq: int
+        minimum frequency for a token to be considereds
+    pad_idx: int, Optional, default = None
+        padding index. If `None`, Fastai's Tokenizer leaves the 0 index
+        for the unknown token (_'xxunk'_) and defaults to 1 for the padding
+        token (_'xxpad'_).
 
     Attributes
     ----------
+    itos: Collection
+        `index to str`. Collection of strings that are the tokens of the
+        vocabulary
     stoi: defaultdict
         `str to index`. Dictionary containing the tokens of the vocabulary and
         their corresponding index
     """
 
-    def __init__(self, itos: Collection[str]):
-        self.itos = itos
-        self.stoi = defaultdict(int, {v: k for k, v in enumerate(self.itos)})
-
-    def numericalize(self, t: Collection[str]) -> List[int]:
-        """Convert a list of tokens ``t`` to their ids.
-
-        Returns
-        -------
-        List[int]
-            List of '_numericalsed_' tokens
-        """
-        return [self.stoi[w] for w in t]
-
-    def textify(self, nums: Collection[int], sep=" ") -> List[str]:
-        """Convert a list of ``nums`` (or indexes) to their tokens.
-
-        Returns
-        -------
-        List[str]
-            List of tokens
-        """
-        return sep.join([self.itos[i] for i in nums]) if sep is not None else [self.itos[i] for i in nums]  # type: ignore
-
-    def __getstate__(self):
-        return {"itos": self.itos}
-
-    def __setstate__(self, state: dict):
-        self.itos = state["itos"]
-        self.stoi = defaultdict(int, {v: k for k, v in enumerate(self.itos)})
-
-    def save(self, path):
-        """Save the  attribute ``self.itos`` in ``path``"""
-        pickle.dump(self.itos, open(path, "wb"))
-
-    @classmethod
-    def create(
-        cls,
-        tokens: Tokens,
+    def __init__(
+        self,
         max_vocab: int,
         min_freq: int,
         pad_idx: Optional[int] = None,
+    ):
+        self.max_vocab = max_vocab
+        self.min_freq = min_freq
+        self.pad_idx = pad_idx
+
+    def create(
+        self,
+        tokens: Tokens,
     ) -> "Vocab":
         r"""Create a vocabulary object from a set of tokens.
 
@@ -406,19 +384,13 @@ class Vocab:
             Custom type: ``Collection[Collection[str]]``  see
             `pytorch_widedeep.wdtypes`. Collection of collection of
             strings (e.g. list of tokenized sentences)
-        max_vocab: int
-            maximum vocabulary size
-        pad_idx: int, Optional, default = None
-            padding index. If `None`, Fastai's Tokenizer leaves the 0 index
-            for the unknown token (_'xxunk'_) and defaults to 1 for the padding
-            token (_'xxpad'_).
 
         Examples
         --------
         >>> from pytorch_widedeep.utils import Tokenizer, Vocab
         >>> texts = ['Machine learning is great', 'but building stuff is even better']
         >>> tokens = Tokenizer().process_all(texts)
-        >>> vocab = Vocab.create(tokens, max_vocab=18, min_freq=1)
+        >>> vocab = Vocab(max_vocab=18, min_freq=1).create(tokens)
         >>> vocab.numericalize(['machine', 'learning', 'is', 'great'])
         [10, 11, 9, 12]
         >>> vocab.textify([10, 11, 9, 12])
@@ -436,26 +408,172 @@ class Vocab:
         """
 
         freq = Counter(p for o in tokens for p in o)
-        itos = [o for o, c in freq.most_common(max_vocab) if c >= min_freq]
+        itos = [o for o, c in freq.most_common(self.max_vocab) if c >= self.min_freq]
         for o in reversed(defaults.text_spec_tok):
             if o in itos:
                 itos.remove(o)
             itos.insert(0, o)
 
-        if pad_idx is not None:
+        if self.pad_idx is not None and self.pad_idx != 1:
             itos.remove(PAD)
-            itos.insert(pad_idx, PAD)
+            itos.insert(self.pad_idx, PAD)
+            # get the new 'xxunk' index
+            xxunk_idx = np.where([el == "xxunk" for el in itos])[0][0]
+        else:
+            xxunk_idx = 0
 
-        itos = itos[:max_vocab]
+        itos = itos[: self.max_vocab]
         if (
-            len(itos) < max_vocab
+            len(itos) < self.max_vocab
         ):  # Make sure vocab size is a multiple of 8 for fast mixed precision training
             while len(itos) % 8 != 0:
                 itos.append("xxfake")
-        return cls(itos)
 
-    @classmethod
-    def load(cls, path):
-        """Load an intance of :obj:`Vocab` contained in ``path``"""
-        itos = pickle.load(open(path, "rb"))
-        return cls(itos)
+        self.itos = itos
+        self.stoi = defaultdict(
+            lambda: xxunk_idx, {v: k for k, v in enumerate(self.itos)}
+        )
+
+        return self
+
+    def fit(
+        self,
+        tokens: Tokens,
+    ) -> "Vocab":
+        # I simply want to honor fast ai naming, but for consistency with the
+        # rest of the library I am including a fit method
+        return self.create(tokens)
+
+    def numericalize(self, t: Collection[str]) -> List[int]:
+        """Convert a list of tokens ``t`` to their ids.
+
+        Returns
+        -------
+        List[int]
+            List of '_numericalsed_' tokens
+        """
+        return [self.stoi[w] for w in t]
+
+    def transform(self, t: Collection[str]) -> List[int]:
+        # I simply want to honor fast ai naming, but for consistency with the
+        # rest of the library I am including a transform method
+        return self.numericalize(t)
+
+    def textify(self, nums: Collection[int], sep=" ") -> List[str]:
+        """Convert a list of ``nums`` (or indexes) to their tokens.
+
+        Returns
+        -------
+        List[str]
+            List of tokens
+        """
+        return (
+            sep.join([self.itos[i] for i in nums])
+            if sep is not None
+            else [self.itos[i] for i in nums]
+        )
+
+    def inverse_transform(self, nums: Collection[int], sep=" ") -> List[str]:
+        # I simply want to honor fast ai naming, but for consistency with the
+        # rest of the library I am including an inverse_transform method
+        return self.textify(nums, sep)
+
+    def __getstate__(self):
+        return {"itos": self.itos}
+
+    def __setstate__(self, state: dict):
+        self.itos = state["itos"]
+        self.stoi = defaultdict(int, {v: k for k, v in enumerate(self.itos)})
+
+
+class ChunkVocab:
+    def __init__(
+        self,
+        max_vocab: int,
+        min_freq: int,
+        n_chunks: int,
+        pad_idx: Optional[int] = None,
+    ):
+        self.max_vocab = max_vocab
+        self.min_freq = min_freq
+        self.n_chunks = n_chunks
+        self.pad_idx = pad_idx
+
+        self.chunk_counter = 0
+
+        self.is_fitted = False
+
+    def fit(
+        self,
+        tokens: Tokens,
+    ) -> "ChunkVocab":
+        if self.chunk_counter == 0:
+            self.freq = Counter(tok for sent in tokens for tok in sent)
+        else:
+            self.freq.update(tok for sent in tokens for tok in sent)
+        self.chunk_counter += 1
+
+        if self.chunk_counter == self.n_chunks:
+            itos = [
+                o
+                for o, c in self.freq.most_common(self.max_vocab)
+                if c >= self.min_freq
+            ]
+            for o in reversed(defaults.text_spec_tok):
+                if o in itos:
+                    itos.remove(o)
+                itos.insert(0, o)
+
+            if self.pad_idx is not None:
+                itos.remove(PAD)
+                itos.insert(self.pad_idx, PAD)
+
+            # get the new 'xxunk' index
+            xxunk_idx = np.where([el == "xxunk" for el in itos])[0][0]
+
+            itos = itos[: self.max_vocab]
+            if (
+                len(itos) < self.max_vocab
+            ):  # Make sure vocab size is a multiple of 8 for fast mixed precision training
+                while len(itos) % 8 != 0:
+                    itos.append("xxfake")
+
+            self.itos = itos
+            self.stoi = defaultdict(
+                lambda: xxunk_idx, {v: k for k, v in enumerate(self.itos)}
+            )
+
+            self.is_fitted = True
+
+        return self
+
+    def transform(self, t: Collection[str]) -> List[int]:
+        """Convert a list of tokens ``t`` to their ids.
+
+        Returns
+        -------
+        List[int]
+            List of '_numericalsed_' tokens
+        """
+        return [self.stoi[w] for w in t]
+
+    def inverse_transform(self, nums: Collection[int], sep=" ") -> List[str]:
+        """Convert a list of ``nums`` (or indexes) to their tokens.
+
+        Returns
+        -------
+        List[str]
+            List of tokens
+        """
+        return (
+            sep.join([self.itos[i] for i in nums])
+            if sep is not None
+            else [self.itos[i] for i in nums]
+        )
+
+    def __getstate__(self):
+        return {"itos": self.itos}
+
+    def __setstate__(self, state: dict):
+        self.itos = state["itos"]
+        self.stoi = defaultdict(int, {v: k for k, v in enumerate(self.itos)})

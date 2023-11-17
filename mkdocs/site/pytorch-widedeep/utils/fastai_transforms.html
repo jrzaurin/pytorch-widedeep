@@ -420,6 +420,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_4">
@@ -615,6 +617,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../load_from_folder.html" class="md-nav__link">
+        Load From Folder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../model_components.html" class="md-nav__link">
         Model Components
       </a>
@@ -770,6 +786,8 @@
       
       
       
+        
+          
         
           
         
@@ -1115,6 +1133,20 @@
     <li class="md-nav__item">
       <a href="../../examples/19_wide_and_deep_for_recsys_pt2.html" class="md-nav__link">
         19_wide_and_deep_for_recsys_pt2
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/20_load_from_folder_functionality.html" class="md-nav__link">
+        20_load_from_folder_functionality.
       </a>
     </li>
   
@@ -1495,7 +1527,7 @@ details of special tokens please see the <a href="https://docs.fast.ai/text.core
 
 
 <a href="#pytorch_widedeep.utils.fastai_transforms.Vocab" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">Vocab</span><span class="p">(</span><span class="n">itos</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">Vocab</span><span class="p">(</span><span class="n">max_vocab</span><span class="p">,</span> <span class="n">min_freq</span><span class="p">,</span> <span class="n">pad_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
@@ -1506,15 +1538,32 @@ details of special tokens please see the <a href="https://docs.fast.ai/text.core
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>itos</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Collection">Collection</span>[str]</code>)
-        – <p><code>index to str</code>. Collection of strings that are the tokens of the
-vocabulary</p>
+        <b>max_vocab</b>
+            (<code>int</code>)
+        – <p>maximum vocabulary size</p>
+      </li>
+      <li class="field-body">
+        <b>min_freq</b>
+            (<code>int</code>)
+        – <p>minimum frequency for a token to be considereds</p>
+      </li>
+      <li class="field-body">
+        <b>pad_idx</b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>)
+        – <p>padding index. If <code>None</code>, Fastai's Tokenizer leaves the 0 index
+for the unknown token (<em>'xxunk'</em>) and defaults to 1 for the padding
+token (<em>'xxpad'</em>).</p>
       </li>
   </ul>
 
   <p>Attributes:</p>
   <ul>
+      <li class="field-body">
+        <b>itos</b>
+            (<code><span title="pytorch_widedeep.wdtypes.Collection">Collection</span></code>)
+        – <p><code>index to str</code>. Collection of strings that are the tokens of the
+vocabulary</p>
+      </li>
       <li class="field-body">
         <b>stoi</b>
             (<code><span title="collections.defaultdict">defaultdict</span></code>)
@@ -1526,11 +1575,23 @@ their corresponding index</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/utils/fastai_transforms.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">358</span>
-<span class="normal">359</span>
-<span class="normal">360</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">itos</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">itos</span> <span class="o">=</span> <span class="n">itos</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">stoi</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">itos</span><span class="p">)})</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">max_vocab</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">min_freq</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">pad_idx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">max_vocab</span> <span class="o">=</span> <span class="n">max_vocab</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">min_freq</span> <span class="o">=</span> <span class="n">min_freq</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pad_idx</span> <span class="o">=</span> <span class="n">pad_idx</span>
 </code></pre></div></td></tr></table></div>
           </details>
 
@@ -1550,143 +1611,12 @@ their corresponding index</p>
 
 
 
-<h3 id="pytorch_widedeep.utils.fastai_transforms.Vocab.numericalize" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">numericalize</span>
-
-
-<a href="#pytorch_widedeep.utils.fastai_transforms.Vocab.numericalize" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">numericalize</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-</code></pre></div>
-
-  <div class="doc doc-contents ">
-  
-      <p>Convert a list of tokens <code>t</code> to their ids.</p>
-
-  <p>Returns:</p>
-  <ul>
-      <li class="field-body">
-            <code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>
-        – <p>List of '<em>numericalsed</em>' tokens</p>
-      </li>
-  </ul>
-
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/utils/fastai_transforms.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">362</span>
-<span class="normal">363</span>
-<span class="normal">364</span>
-<span class="normal">365</span>
-<span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span>
-<span class="normal">369</span>
-<span class="normal">370</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">numericalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a list of tokens ``t`` to their ids.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    List[int]</span>
-<span class="sd">        List of &#39;_numericalsed_&#39; tokens</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">stoi</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">t</span><span class="p">]</span>
-</code></pre></div></td></tr></table></div>
-      </details>
-  </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-
-<h3 id="pytorch_widedeep.utils.fastai_transforms.Vocab.textify" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">textify</span>
-
-
-<a href="#pytorch_widedeep.utils.fastai_transforms.Vocab.textify" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">textify</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
-</code></pre></div>
-
-  <div class="doc doc-contents ">
-  
-      <p>Convert a list of <code>nums</code> (or indexes) to their tokens.</p>
-
-  <p>Returns:</p>
-  <ul>
-      <li class="field-body">
-            <code><span title="pytorch_widedeep.wdtypes.List">List</span>[str]</code>
-        – <p>List of tokens</p>
-      </li>
-  </ul>
-
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/utils/fastai_transforms.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">372</span>
-<span class="normal">373</span>
-<span class="normal">374</span>
-<span class="normal">375</span>
-<span class="normal">376</span>
-<span class="normal">377</span>
-<span class="normal">378</span>
-<span class="normal">379</span>
-<span class="normal">380</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">textify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nums</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a list of ``nums`` (or indexes) to their tokens.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    List[str]</span>
-<span class="sd">        List of tokens</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">itos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">])</span> <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">itos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
-</code></pre></div></td></tr></table></div>
-      </details>
-  </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-
-<h3 id="pytorch_widedeep.utils.fastai_transforms.Vocab.save" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">save</span>
-
-
-<a href="#pytorch_widedeep.utils.fastai_transforms.Vocab.save" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-</code></pre></div>
-
-  <div class="doc doc-contents ">
-  
-      <p>Save the  attribute <code>self.itos</code> in <code>path</code></p>
-
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/utils/fastai_transforms.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Save the  attribute ``self.itos`` in ``path``&quot;&quot;&quot;</span>
-    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">itos</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">))</span>
-</code></pre></div></td></tr></table></div>
-      </details>
-  </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-
 <h3 id="pytorch_widedeep.utils.fastai_transforms.Vocab.create" class="doc doc-heading">
         <span class="doc doc-object-name doc-function-name">create</span>
 
-  
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
-  </span>
 
 <a href="#pytorch_widedeep.utils.fastai_transforms.Vocab.create" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">create</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">max_vocab</span><span class="p">,</span> <span class="n">min_freq</span><span class="p">,</span> <span class="n">pad_idx</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">create</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1702,25 +1632,13 @@ their corresponding index</p>
 <code>pytorch_widedeep.wdtypes</code>. Collection of collection of
 strings (e.g. list of tokenized sentences)</p>
       </li>
-      <li class="field-body">
-        <b>max_vocab</b>
-            (<code>int</code>)
-        – <p>maximum vocabulary size</p>
-      </li>
-      <li class="field-body">
-        <b>pad_idx</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>)
-        – <p>padding index. If <code>None</code>, Fastai's Tokenizer leaves the 0 index
-for the unknown token (<em>'xxunk'</em>) and defaults to 1 for the padding
-token (<em>'xxpad'</em>).</p>
-      </li>
   </ul>
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.utils</span> <span class="kn">import</span> <span class="n">Tokenizer</span><span class="p">,</span> <span class="n">Vocab</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Machine learning is great&#39;</span><span class="p">,</span> <span class="s1">&#39;but building stuff is even better&#39;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tokens</span> <span class="o">=</span> <span class="n">Tokenizer</span><span class="p">()</span><span class="o">.</span><span class="n">process_all</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">vocab</span> <span class="o">=</span> <span class="n">Vocab</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">max_vocab</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">min_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vocab</span> <span class="o">=</span> <span class="n">Vocab</span><span class="p">(</span><span class="n">max_vocab</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">min_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">vocab</span><span class="o">.</span><span class="n">numericalize</span><span class="p">([</span><span class="s1">&#39;machine&#39;</span><span class="p">,</span> <span class="s1">&#39;learning&#39;</span><span class="p">,</span> <span class="s1">&#39;is&#39;</span><span class="p">,</span> <span class="s1">&#39;great&#39;</span><span class="p">])</span>
 <span class="go">[10, 11, 9, 12]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">vocab</span><span class="o">.</span><span class="n">textify</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">])</span>
@@ -1741,7 +1659,25 @@ classification/Regression tasks. Please see the <a href="https://docs.fast.ai/te
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/utils/fastai_transforms.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">393</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
 <span class="normal">394</span>
 <span class="normal">395</span>
 <span class="normal">396</span>
@@ -1785,31 +1721,9 @@ classification/Regression tasks. Please see the <a href="https://docs.fast.ai/te
 <span class="normal">434</span>
 <span class="normal">435</span>
 <span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span>
-<span class="normal">439</span>
-<span class="normal">440</span>
-<span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
-<span class="k">def</span> <span class="nf">create</span><span class="p">(</span>
-    <span class="bp">cls</span><span class="p">,</span>
+<span class="normal">437</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
     <span class="n">tokens</span><span class="p">:</span> <span class="n">Tokens</span><span class="p">,</span>
-    <span class="n">max_vocab</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">min_freq</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">pad_idx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Vocab&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a vocabulary object from a set of tokens.</span>
 
@@ -1819,19 +1733,13 @@ classification/Regression tasks. Please see the <a href="https://docs.fast.ai/te
 <span class="sd">        Custom type: ``Collection[Collection[str]]``  see</span>
 <span class="sd">        `pytorch_widedeep.wdtypes`. Collection of collection of</span>
 <span class="sd">        strings (e.g. list of tokenized sentences)</span>
-<span class="sd">    max_vocab: int</span>
-<span class="sd">        maximum vocabulary size</span>
-<span class="sd">    pad_idx: int, Optional, default = None</span>
-<span class="sd">        padding index. If `None`, Fastai&#39;s Tokenizer leaves the 0 index</span>
-<span class="sd">        for the unknown token (_&#39;xxunk&#39;_) and defaults to 1 for the padding</span>
-<span class="sd">        token (_&#39;xxpad&#39;_).</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; from pytorch_widedeep.utils import Tokenizer, Vocab</span>
 <span class="sd">    &gt;&gt;&gt; texts = [&#39;Machine learning is great&#39;, &#39;but building stuff is even better&#39;]</span>
 <span class="sd">    &gt;&gt;&gt; tokens = Tokenizer().process_all(texts)</span>
-<span class="sd">    &gt;&gt;&gt; vocab = Vocab.create(tokens, max_vocab=18, min_freq=1)</span>
+<span class="sd">    &gt;&gt;&gt; vocab = Vocab(max_vocab=18, min_freq=1).create(tokens)</span>
 <span class="sd">    &gt;&gt;&gt; vocab.numericalize([&#39;machine&#39;, &#39;learning&#39;, &#39;is&#39;, &#39;great&#39;])</span>
 <span class="sd">    [10, 11, 9, 12]</span>
 <span class="sd">    &gt;&gt;&gt; vocab.textify([10, 11, 9, 12])</span>
@@ -1849,23 +1757,33 @@ classification/Regression tasks. Please see the <a href="https://docs.fast.ai/te
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">freq</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">tokens</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">o</span><span class="p">)</span>
-    <span class="n">itos</span> <span class="o">=</span> <span class="p">[</span><span class="n">o</span> <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">freq</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="n">max_vocab</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;=</span> <span class="n">min_freq</span><span class="p">]</span>
+    <span class="n">itos</span> <span class="o">=</span> <span class="p">[</span><span class="n">o</span> <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">freq</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_vocab</span><span class="p">)</span> <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_freq</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">defaults</span><span class="o">.</span><span class="n">text_spec_tok</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">itos</span><span class="p">:</span>
             <span class="n">itos</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
         <span class="n">itos</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">pad_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad_idx</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">itos</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">PAD</span><span class="p">)</span>
-        <span class="n">itos</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">pad_idx</span><span class="p">,</span> <span class="n">PAD</span><span class="p">)</span>
+        <span class="n">itos</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pad_idx</span><span class="p">,</span> <span class="n">PAD</span><span class="p">)</span>
+        <span class="c1"># get the new &#39;xxunk&#39; index</span>
+        <span class="n">xxunk_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">([</span><span class="n">el</span> <span class="o">==</span> <span class="s2">&quot;xxunk&quot;</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">itos</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xxunk_idx</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="n">itos</span> <span class="o">=</span> <span class="n">itos</span><span class="p">[:</span><span class="n">max_vocab</span><span class="p">]</span>
+    <span class="n">itos</span> <span class="o">=</span> <span class="n">itos</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_vocab</span><span class="p">]</span>
     <span class="k">if</span> <span class="p">(</span>
-        <span class="nb">len</span><span class="p">(</span><span class="n">itos</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">max_vocab</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">itos</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_vocab</span>
     <span class="p">):</span>  <span class="c1"># Make sure vocab size is a multiple of 8 for fast mixed precision training</span>
         <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">itos</span><span class="p">)</span> <span class="o">%</span> <span class="mi">8</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">itos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;xxfake&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">itos</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">itos</span> <span class="o">=</span> <span class="n">itos</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">stoi</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">xxunk_idx</span><span class="p">,</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">itos</span><span class="p">)}</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
       </details>
   </div>
@@ -1876,33 +1794,102 @@ classification/Regression tasks. Please see the <a href="https://docs.fast.ai/te
 
 
 
-<h3 id="pytorch_widedeep.utils.fastai_transforms.Vocab.load" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">load</span>
+<h3 id="pytorch_widedeep.utils.fastai_transforms.Vocab.numericalize" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">numericalize</span>
 
-  
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
-  </span>
 
-<a href="#pytorch_widedeep.utils.fastai_transforms.Vocab.load" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<a href="#pytorch_widedeep.utils.fastai_transforms.Vocab.numericalize" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">numericalize</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
-      <p>Load an intance of :obj:<code>Vocab</code> contained in <code>path</code></p>
+      <p>Convert a list of tokens <code>t</code> to their ids.</p>
+
+  <p>Returns:</p>
+  <ul>
+      <li class="field-body">
+            <code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>
+        – <p>List of '<em>numericalsed</em>' tokens</p>
+      </li>
+  </ul>
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/utils/fastai_transforms.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
-<span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Load an intance of :obj:`Vocab` contained in ``path``&quot;&quot;&quot;</span>
-    <span class="n">itos</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>
-    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">itos</span><span class="p">)</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">numericalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a list of tokens ``t`` to their ids.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[int]</span>
+<span class="sd">        List of &#39;_numericalsed_&#39; tokens</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">stoi</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">t</span><span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.utils.fastai_transforms.Vocab.textify" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">textify</span>
+
+
+<a href="#pytorch_widedeep.utils.fastai_transforms.Vocab.textify" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">textify</span><span class="p">(</span><span class="n">nums</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Convert a list of <code>nums</code> (or indexes) to their tokens.</p>
+
+  <p>Returns:</p>
+  <ul>
+      <li class="field-body">
+            <code><span title="pytorch_widedeep.wdtypes.List">List</span>[str]</code>
+        – <p>List of tokens</p>
+      </li>
+  </ul>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/utils/fastai_transforms.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">textify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nums</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a list of ``nums`` (or indexes) to their tokens.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[str]</span>
+<span class="sd">        List of tokens</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">itos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">sep</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">itos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">nums</span><span class="p">]</span>
+    <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
       </details>
   </div>

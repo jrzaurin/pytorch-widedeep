@@ -420,6 +420,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_4">
@@ -608,6 +610,20 @@
   
   
     <li class="md-nav__item">
+      <a href="../load_from_folder.html" class="md-nav__link">
+        Load From Folder
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../model_components.html" class="md-nav__link">
         Model Components
       </a>
@@ -763,6 +779,8 @@
       
       
       
+        
+          
         
           
         
@@ -1114,6 +1132,20 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/20_load_from_folder_functionality.html" class="md-nav__link">
+        20_load_from_folder_functionality.
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -1214,13 +1246,13 @@ which column is embedded at the time. See: <code>pytorch_widedeep.models.transfo
   <ul>
       <li class="field-body">
         <b>encoding_dict</b>
-            (<code>Dict</code>)
+            (<code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span></code>)
         – <p>Dictionary containing the encoding mappings in the format, e.g. : <br/>
 <code>{'colname1': {'cat1': 1, 'cat2': 2, ...}, 'colname2': {'cat1': 1, 'cat2': 2, ...}, ...}</code></p>
       </li>
       <li class="field-body">
         <b>inverse_encoding_dict</b>
-            (<code>Dict</code>)
+            (<code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span></code>)
         – <p>Dictionary containing the inverse encoding mappings in the format, e.g. : <br/>
 <code>{'colname1': {1: 'cat1', 2: 'cat2', ...}, 'colname2': {1: 'cat1', 2: 'cat2', ...}, ...}</code></p>
       </li>
@@ -1229,19 +1261,19 @@ which column is embedded at the time. See: <code>pytorch_widedeep.models.transfo
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/utils/deeptabular_utils.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">55</span>
-<span class="normal">56</span>
-<span class="normal">57</span>
-<span class="normal">58</span>
-<span class="normal">59</span>
-<span class="normal">60</span>
-<span class="normal">61</span>
-<span class="normal">62</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">62</span>
 <span class="normal">63</span>
 <span class="normal">64</span>
 <span class="normal">65</span>
 <span class="normal">66</span>
-<span class="normal">67</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Alias</span><span class="p">(</span><span class="s2">&quot;with_attention&quot;</span><span class="p">,</span> <span class="s2">&quot;for_transformer&quot;</span><span class="p">)</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@Alias</span><span class="p">(</span><span class="s2">&quot;with_attention&quot;</span><span class="p">,</span> <span class="s2">&quot;for_transformer&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">columns_to_encode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1273,17 +1305,17 @@ which column is embedded at the time. See: <code>pytorch_widedeep.models.transfo
 
 
 
-<h3 id="pytorch_widedeep.utils.deeptabular_utils.LabelEncoder.fit" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">fit</span>
+<h3 id="pytorch_widedeep.utils.deeptabular_utils.LabelEncoder.partial_fit" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">partial_fit</span>
 
 
-<a href="#pytorch_widedeep.utils.deeptabular_utils.LabelEncoder.fit" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<a href="#pytorch_widedeep.utils.deeptabular_utils.LabelEncoder.partial_fit" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">partial_fit</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
-      <p>Creates encoding attributes</p>
+      <p>Main method. Creates encoding attributes.</p>
 
   <p>Returns:</p>
   <ul>
@@ -1295,14 +1327,7 @@ which column is embedded at the time. See: <code>pytorch_widedeep.models.transfo
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/utils/deeptabular_utils.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
-<span class="normal"> 72</span>
-<span class="normal"> 73</span>
-<span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 76</span>
 <span class="normal"> 77</span>
 <span class="normal"> 78</span>
 <span class="normal"> 79</span>
@@ -1339,49 +1364,193 @@ which column is embedded at the time. See: <code>pytorch_widedeep.models.transfo
 <span class="normal">110</span>
 <span class="normal">111</span>
 <span class="normal">112</span>
-<span class="normal">113</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;LabelEncoder&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates encoding attributes</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">partial_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunk</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;LabelEncoder&quot;</span><span class="p">:</span>  <span class="c1"># noqa: C901</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main method. Creates encoding attributes.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    LabelEncoder</span>
 <span class="sd">        `LabelEncoder` fitted object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">df_inp</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
+    <span class="c1"># this is meant to be run when the data is large and we pass a chunk</span>
+    <span class="c1"># at a time. Therefore, we do not copy the input chunk as mutating a</span>
+    <span class="c1"># chunk is ok</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns_to_encode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">columns_to_encode</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
-            <span class="n">df_inp</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;object&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span>
+            <span class="n">chunk</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;object&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># sanity check to make sure all categorical columns are in an adequate</span>
         <span class="c1"># format</span>
         <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns_to_encode</span><span class="p">:</span>
-            <span class="n">df_inp</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_inp</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;O&quot;</span><span class="p">)</span>
+            <span class="n">chunk</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;O&quot;</span><span class="p">)</span>
 
-    <span class="n">unique_column_vals</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">unique_column_vals</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns_to_encode</span><span class="p">:</span>
-        <span class="n">unique_column_vals</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_inp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="n">unique_column_vals</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">chunk</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="k">if</span> <span class="s2">&quot;cls_token&quot;</span> <span class="ow">in</span> <span class="n">unique_column_vals</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_embed</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span><span class="p">[</span><span class="s2">&quot;cls_token&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;[CLS]&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
-        <span class="k">del</span> <span class="n">unique_column_vals</span><span class="p">[</span><span class="s2">&quot;cls_token&quot;</span><span class="p">]</span>
-    <span class="c1"># leave 0 for padding/&quot;unseen&quot; categories</span>
-    <span class="n">idx</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">unique_column_vals</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">o</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">idx</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_column_vals</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-        <span class="p">}</span>
-        <span class="n">idx</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_embed_idx</span> <span class="k">else</span> <span class="n">idx</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_column_vals</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;encoding_dict&quot;</span><span class="p">):</span>
+        <span class="c1"># we run the method &#39;partial_fit&#39; for the 1st time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">&quot;cls_token&quot;</span> <span class="ow">in</span> <span class="n">unique_column_vals</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_embed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span><span class="p">[</span><span class="s2">&quot;cls_token&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;[CLS]&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+            <span class="k">del</span> <span class="n">unique_column_vals</span><span class="p">[</span><span class="s2">&quot;cls_token&quot;</span><span class="p">]</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">inverse_encoding_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inverse_encoding_dict</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">v</span><span class="p">:</span> <span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">inverse_encoding_dict</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;unseen&quot;</span>
+        <span class="c1"># leave 0 for padding/&quot;unseen&quot; categories. Also we need an</span>
+        <span class="c1"># attribute to keep track of the encoding in case we use</span>
+        <span class="c1"># attention and we do not re-start the index/counter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cum_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">unique_column_vals</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">o</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cum_idx</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_column_vals</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cum_idx</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="mi">1</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_embed_idx</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">cum_idx</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_column_vals</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># the &#39;partial_fit&#39; method has already run.</span>
+        <span class="c1"># &quot;cls_token&quot; will have been added already</span>
+        <span class="k">if</span> <span class="s2">&quot;cls_token&quot;</span> <span class="ow">in</span> <span class="n">unique_column_vals</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">shared_embed</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">unique_column_vals</span><span class="p">[</span><span class="s2">&quot;cls_token&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Classes in the new chunk of the dataset that have not been seen</span>
+        <span class="c1"># before</span>
+        <span class="n">unseen_classes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns_to_encode</span><span class="p">:</span>
+            <span class="n">unseen_classes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span>
+                    <span class="n">unique_column_vals</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="c1"># leave 0 for padding/&quot;unseen&quot; categories</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">unique_column_vals</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># if we use attention we need to start encoding from the</span>
+            <span class="c1"># last &#39;overall&#39; encoding index. Otherwise, we use the max</span>
+            <span class="c1"># encoding index per categorical col</span>
+            <span class="n">_idx</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_embed_idx</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">cum_idx</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unseen_classes</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unseen_classes</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">o</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">encoding_dict</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">o</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="n">_idx</span>
+                <span class="c1"># if self.reset_embed_idx is True it will be 1 anyway</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cum_idx</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="mi">1</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_embed_idx</span>
+                    <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">cum_idx</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">unseen_classes</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="p">)</span>
+
+    <span class="k">return</span> <span class="bp">self</span>
+</code></pre></div></td></tr></table></div>
+      </details>
+  </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.utils.deeptabular_utils.LabelEncoder.fit" class="doc doc-heading">
+        <span class="doc doc-object-name doc-function-name">fit</span>
+
+
+<a href="#pytorch_widedeep.utils.deeptabular_utils.LabelEncoder.fit" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Runs update under the hood</p>
+
+  <p>Returns:</p>
+  <ul>
+      <li class="field-body">
+            <code><a class="autorefs autorefs-internal" title="pytorch_widedeep.utils.deeptabular_utils.LabelEncoder" href="#pytorch_widedeep.utils.deeptabular_utils.LabelEncoder">LabelEncoder</a></code>
+        – <p><code>LabelEncoder</code> fitted object</p>
+      </li>
+  </ul>
+
+      <details class="quote">
+        <summary>Source code in <code>pytorch_widedeep/utils/deeptabular_utils.py</code></summary>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;LabelEncoder&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs update under the hood</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    LabelEncoder</span>
+<span class="sd">        `LabelEncoder` fitted object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># this is meant to be run when the data fits in memory and therefore,</span>
+    <span class="c1"># we do not want to mutate the original df, so we copy it</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">partial_fit</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">inverse_encoding_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_inverse_encoding_dict</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
@@ -1416,32 +1585,32 @@ which column is embedded at the time. See: <code>pytorch_widedeep.models.transfo
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/utils/deeptabular_utils.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Label Encoded the categories in `columns_to_encode`</span>
 
 <span class="sd">    Returns</span>
@@ -1514,31 +1683,31 @@ which column is embedded at the time. See: <code>pytorch_widedeep.models.transfo
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/utils/deeptabular_utils.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span>
-<span class="normal">164</span>
-<span class="normal">165</span>
-<span class="normal">166</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Combines `fit` and `transform`</span>
 
 <span class="sd">    Examples</span>
@@ -1609,32 +1778,37 @@ which column is embedded at the time. See: <code>pytorch_widedeep.models.transfo
 
       <details class="quote">
         <summary>Source code in <code>pytorch_widedeep/utils/deeptabular_utils.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">168</span>
-<span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">inverse_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">inverse_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the original categories</span>
 
 <span class="sd">    Examples</span>
@@ -1657,8 +1831,13 @@ which column is embedded at the time. See: <code>pytorch_widedeep.models.transfo
 <span class="sd">    pd.DataFrame</span>
 <span class="sd">        DataFrame with original categories</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;inverse_encoding_dict&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inverse_encoding_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_inverse_encoding_dict</span><span class="p">()</span>
+
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse_encoding_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">df</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
+
     <span class="k">return</span> <span class="n">df</span>
 </code></pre></div></td></tr></table></div>
       </details>

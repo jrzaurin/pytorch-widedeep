@@ -1,2 +1,3 @@
 from pytorch_widedeep.training.trainer import Trainer
 from pytorch_widedeep.training.bayesian_trainer import BayesianTrainer
+from pytorch_widedeep.training.trainer_from_folder import TrainerFromFolder

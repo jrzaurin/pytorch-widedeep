@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import Any, List, Tuple, Union, Tensor, Optional
+from pytorch_widedeep.wdtypes import List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models._base_wd_model_component import (
     BaseWDModelComponent,
@@ -107,6 +107,17 @@ class BasicRNN(BaseWDModelComponent):
     ):
         super(BasicRNN, self).__init__()
 
+        if embed_dim is None and embed_matrix is None:
+            raise ValueError(
+                "If no 'embed_matrix' is passed, the embedding dimension must"
+                "be specified with 'embed_dim'"
+            )
+
+        if rnn_type.lower() not in ["lstm", "gru"]:
+            raise ValueError(
+                f"'rnn_type' must be 'lstm' or 'gru', got {rnn_type} instead"
+            )
+
         if (
             embed_dim is not None
             and embed_matrix is not None
@@ -119,11 +130,6 @@ class BasicRNN(BaseWDModelComponent):
                     embed_dim, embed_matrix.shape[1], embed_matrix.shape[1]
                 ),
                 UserWarning,
-            )
-
-        if rnn_type.lower() not in ["lstm", "gru"]:
-            raise ValueError(
-                f"'rnn_type' must be 'lstm' or 'gru', got {rnn_type} instead"
             )
 
         self.vocab_size = vocab_size
@@ -146,7 +152,12 @@ class BasicRNN(BaseWDModelComponent):
         self.head_linear_first = head_linear_first
 
         # Embeddings
-        self.word_embed, self.embed_dim = self._set_embeddings(embed_matrix)
+        if embed_matrix is not None:
+            self.word_embed, self.embed_dim = self._set_embeddings(embed_matrix)
+        else:
+            self.word_embed = nn.Embedding(
+                self.vocab_size, self.embed_dim, padding_idx=self.padding_idx
+            )
 
         # RNN
         rnn_params = {
@@ -203,9 +214,9 @@ class BasicRNN(BaseWDModelComponent):
         )
 
     def _set_embeddings(
-        self, embed_matrix: Union[Any, np.ndarray]
+        self, embed_matrix: Optional[np.ndarray] = None
     ) -> Tuple[nn.Module, int]:
-        if isinstance(embed_matrix, np.ndarray):
+        if embed_matrix is not None:
             assert (
                 embed_matrix.dtype == "float32"
             ), "'embed_matrix' must be of dtype 'float32', got dtype '{}'".format(

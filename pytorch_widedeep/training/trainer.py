@@ -546,7 +546,7 @@ class Trainer(BaseTrainer):
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
-        batch_size: int = 256,
+        batch_size: Optional[int] = None,
     ) -> np.ndarray:
         r"""Returns the predictions
 
@@ -602,7 +602,7 @@ class Trainer(BaseTrainer):
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
-        batch_size: int = 256,
+        batch_size: Optional[int] = None,
         uncertainty_granularity=1000,
     ) -> np.ndarray:
         r"""Returns the predicted ucnertainty of the model for the test dataset
@@ -699,7 +699,7 @@ class Trainer(BaseTrainer):
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
-        batch_size: int = 256,
+        batch_size: Optional[int] = None,
     ) -> np.ndarray:
         r"""Returns the predicted probabilities for the test dataset for  binary
         and multiclass methods
@@ -1032,7 +1032,7 @@ class Trainer(BaseTrainer):
         X_text: Optional[np.ndarray] = None,
         X_img: Optional[np.ndarray] = None,
         X_test: Optional[Dict[str, np.ndarray]] = None,
-        batch_size: int = 256,
+        batch_size: Optional[int] = None,
         uncertainty_granularity=1000,
         uncertainty: bool = False,
         quantiles: bool = False,
@@ -1056,6 +1056,10 @@ class Trainer(BaseTrainer):
             test_set = WideDeepDataset(**load_dict)  # type: ignore[arg-type]
 
         if not hasattr(self, "batch_size"):
+            assert batch_size is not None, (
+                "'batch_size' has not be previosly set in this Trainer and must be"
+                " specified via the 'batch_size' argument in this predict call"
+            )
             self.batch_size = batch_size
 
         test_loader = DataLoader(

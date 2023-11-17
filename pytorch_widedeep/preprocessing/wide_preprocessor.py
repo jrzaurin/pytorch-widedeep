@@ -71,6 +71,8 @@ class WidePreprocessor(BasePreprocessor):
         self.wide_cols = wide_cols
         self.crossed_cols = crossed_cols
 
+        self.is_fitted = False
+
     def fit(self, df: pd.DataFrame) -> "WidePreprocessor":
         r"""Fits the Preprocessor and creates required attributes
 
@@ -94,6 +96,9 @@ class WidePreprocessor(BasePreprocessor):
         self.wide_dim = len(self.encoding_dict)
         self.inverse_encoding_dict = {k: v for v, k in self.encoding_dict.items()}
         self.inverse_encoding_dict[0] = "unseen"
+
+        self.is_fitted = True
+
         return self
 
     def transform(self, df: pd.DataFrame) -> np.ndarray:
@@ -118,6 +123,9 @@ class WidePreprocessor(BasePreprocessor):
                 else 0
             )
         return encoded.astype("int64")
+
+    def transform_sample(self, df: pd.DataFrame) -> np.ndarray:
+        return self.transform(df)[0]
 
     def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:
         r"""Takes as input the output from the `transform` method and it will
@@ -182,3 +190,119 @@ class WidePreprocessor(BasePreprocessor):
             return pd.concat([df[self.wide_cols], df_cc], axis=1)
         else:
             return df.copy()[self.wide_cols]
+
+    def __repr__(self) -> str:
+        list_of_params: List[str] = ["wide_cols={wide_cols}"]
+        if self.crossed_cols is not None:
+            list_of_params.append("crossed_cols={crossed_cols}")
+        all_params = ", ".join(list_of_params)
+        return f"WidePreprocessor({all_params.format(**self.__dict__)})"
+
+
+class ChunkWidePreprocessor(WidePreprocessor):
+    r"""Preprocessor to prepare the wide input dataset
+
+    This Preprocessor prepares the data for the wide, linear component.
+    This linear model is implemented via an Embedding layer that is
+    connected to the output neuron. `ChunkWidePreprocessor` numerically
+    encodes all the unique values of all categorical columns `wide_cols +
+    crossed_cols`. See the Example below.
+
+    Parameters
+    ----------
+    wide_cols: List
+        List of strings with the name of the columns that will label
+        encoded and passed through the `wide` component
+    crossed_cols: List, default = None
+        List of Tuples with the name of the columns that will be `'crossed'`
+        and then label encoded. e.g. _[('education', 'occupation'), ...]_. For
+        binary features, a cross-product transformation is 1 if and only if
+        the constituent features are all 1, and 0 otherwise.
+
+    Attributes
+    ----------
+    wide_crossed_cols: List
+        List with the names of all columns that will be label encoded
+    encoding_dict: Dict
+        Dictionary where the keys are the result of pasting `colname + '_' +
+        column value` and the values are the corresponding mapped integer.
+    inverse_encoding_dict: Dict
+        the inverse encoding dictionary
+    wide_dim: int
+        Dimension of the wide model (i.e. dim of the linear layer)
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import ChunkWidePreprocessor
+    >>> chunk = pd.DataFrame({'color': ['r', 'b', 'g'], 'size': ['s', 'n', 'l']})
+    >>> wide_cols = ['color']
+    >>> crossed_cols = [('color', 'size')]
+    >>> chunk_wide_preprocessor = ChunkWidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols,
+    ... n_chunks=1)
+    >>> X_wide = chunk_wide_preprocessor.fit_transform(chunk)
+    """
+
+    def __init__(
+        self,
+        wide_cols: List[str],
+        n_chunks: int,
+        crossed_cols: List[Tuple[str, str]] = None,
+    ):
+        super(ChunkWidePreprocessor, self).__init__(wide_cols, crossed_cols)
+
+        self.n_chunks = n_chunks
+
+        self.chunk_counter = 0
+
+        self.is_fitted = False
+
+    def partial_fit(self, chunk: pd.DataFrame) -> "ChunkWidePreprocessor":
+        r"""Fits the Preprocessor and creates required attributes
+
+        Parameters
+        ----------
+        chunk: pd.DataFrame
+            Input pandas dataframe
+
+        Returns
+        -------
+        ChunkWidePreprocessor
+            `ChunkWidePreprocessor` fitted object
+        """
+        df_wide = self._prepare_wide(chunk)
+        self.wide_crossed_cols = df_wide.columns.tolist()
+
+        if self.chunk_counter == 0:
+            self.glob_feature_set = set(
+                self._make_global_feature_list(df_wide[self.wide_crossed_cols])
+            )
+        else:
+            self.glob_feature_set.update(
+                self._make_global_feature_list(df_wide[self.wide_crossed_cols])
+            )
+
+        self.chunk_counter += 1
+
+        if self.chunk_counter == self.n_chunks:
+            self.encoding_dict = {v: i + 1 for i, v in enumerate(self.glob_feature_set)}
+            self.wide_dim = len(self.encoding_dict)
+            self.inverse_encoding_dict = {k: v for v, k in self.encoding_dict.items()}
+            self.inverse_encoding_dict[0] = "unseen"
+
+            self.is_fitted = True
+
+        return self
+
+    def fit(self, chunk: pd.DataFrame) -> "ChunkWidePreprocessor":
+        # just to override the fit method in the base class. This class is not
+        # designed or thought to run fit
+        return self.partial_fit(chunk)
+
+    def __repr__(self) -> str:
+        list_of_params: List[str] = ["wide_cols={wide_cols}"]
+        list_of_params.append("n_chunks={n_chunks}")
+        if self.crossed_cols is not None:
+            list_of_params.append("crossed_cols={crossed_cols}")
+        all_params = ", ".join(list_of_params)
+        return f"WidePreprocessor({all_params.format(**self.__dict__)})"

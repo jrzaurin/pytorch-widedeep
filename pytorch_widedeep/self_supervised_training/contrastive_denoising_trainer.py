@@ -33,7 +33,7 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
     r"""This class trains a Contrastive, Denoising Self Supervised 'routine' that
     is based on the one described in
     [SAINT: Improved Neural Networks for Tabular Data via Row Attention and
-    Contrastive Pre-Training](https://arxiv.org/abs/2203.05556), their Figure 1.
+    Contrastive Pre-Training](https://arxiv.org/abs/2106.01342), their Figure 1.
 
     Parameters
     ----------

@@ -5,6 +5,7 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.models.fds_layer import FDSLayer
+from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.tabnet.tab_net import TabNetPredLayer
@@ -131,6 +132,10 @@ class WideDeep(nn.Module):
      `pytorch_widedeep.models.tab_mlp.TabMlp`
     """
 
+    @Alias(  # noqa: C901
+        "pred_dim",
+        ["num_class", "pred_size"],
+    )
     def __init__(
         self,
         wide: Optional[nn.Module] = None,
