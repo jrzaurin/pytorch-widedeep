@@ -13,9 +13,9 @@ from pytorch_widedeep.models import (
     TabTransformer,
 )
 from pytorch_widedeep.models.tabular.embeddings_layers import (
-    ContEmbeddings,
     SharedEmbeddings,
     FullEmbeddingDropout,
+    LinearContEmbeddings,
 )
 
 # I am going over test these models due to the number of components
@@ -143,7 +143,7 @@ def test_continuous_embeddings():
 
     X = torch.rand(bsz, n_cont_cols)
 
-    cont_embed = ContEmbeddings(
+    cont_embed = LinearContEmbeddings(
         n_cont_cols=n_cont_cols,
         embed_dim=embed_dim,
         embed_dropout=0.0,

@@ -12,15 +12,7 @@ import einops
 import torch.nn.functional as F
 from torch import nn
 
-from pytorch_widedeep.wdtypes import (
-    Any,
-    Dict,
-    List,
-    Tuple,
-    Union,
-    Tensor,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
 
 
 class FullEmbeddingDropout(nn.Module):
@@ -48,7 +40,7 @@ DropoutLayers = Union[nn.Dropout, FullEmbeddingDropout]
 NormLayers = Union[nn.Identity, nn.LayerNorm, nn.BatchNorm1d]
 
 
-class ContEmbeddings(nn.Module):
+class LinearContEmbeddings(nn.Module):
     def __init__(
         self,
         n_cont_cols: int,
@@ -56,7 +48,7 @@ class ContEmbeddings(nn.Module):
         embed_dropout: float,
         use_bias: bool,
     ):
-        super(ContEmbeddings, self).__init__()
+        super(LinearContEmbeddings, self).__init__()
 
         self.n_cont_cols = n_cont_cols
         self.embed_dim = embed_dim
@@ -76,6 +68,7 @@ class ContEmbeddings(nn.Module):
         )
 
     def forward(self, X: Tensor) -> Tensor:
+        # same as torch.einsum("ij,jk->ijk", X, weight)
         x = self.weight.unsqueeze(0) * X.unsqueeze(2)
         if self.bias is not None:
             x = x + self.bias.unsqueeze(0)
@@ -84,6 +77,77 @@ class ContEmbeddings(nn.Module):
     def extra_repr(self) -> str:
         s = "{n_cont_cols}, {embed_dim}, embed_dropout={embed_dropout}, use_bias={use_bias}"
         return s.format(**self.__dict__)
+
+
+class PiecewiseLinearContEmbeddings(nn.Module):
+    def __init__(
+        self,
+        column_idx: Dict[str, int],
+        quantization_setup: Dict[str, List[float]],
+        embed_dim: int,
+        embed_dropout: float,
+        use_bias: bool,
+    ) -> None:
+        super(PiecewiseLinearContEmbeddings, self).__init__()
+
+        self.column_idx = column_idx
+        self.quantization_setup = quantization_setup
+        self.embed_dim = embed_dim
+        self.embed_dropout = embed_dropout
+        self.use_bias = use_bias
+
+        self.n_cont_cols = len(quantization_setup)
+
+        max_num_buckets = max([len(qs) - 1 for qs in quantization_setup.values()])
+
+        boundaries: Dict[str, Tensor] = {}
+        for col, qs in quantization_setup.items():
+            boundaries[col] = torch.tensor(qs)
+            self.register_buffer("boundaries_" + col, boundaries[col])
+
+        self.weight = nn.init.normal_(
+            nn.Parameter(torch.empty(self.n_cont_cols, max_num_buckets, embed_dim)),
+            std=0.01,
+        )
+
+        if self.use_bias:
+            self.bias = nn.init.zeros_(
+                nn.Parameter(torch.empty(self.n_cont_cols, embed_dim))
+            )
+
+    def forward(self, X: Tensor) -> Tensor:
+        # b: batch size
+        # n: n_cont_cols
+        # k: max_num_buckets
+        # e: embed_dim
+        encoded_values = []
+        for col, index in self.column_idx.items():
+            feat = X[:, index]
+
+            col_boundaries = getattr(self, "boundaries_" + col)
+            bucket_indices = torch.bucketize(feat, col_boundaries[1:-1])
+
+            boundary_start = col_boundaries[bucket_indices]
+            boundary_end = col_boundaries[bucket_indices + 1]
+            frac = (feat - boundary_start) / (boundary_end - boundary_start + 1e-8)
+
+            greater_mask = (feat.view(-1, 1) > col_boundaries[:-1]).float()
+            greater_mask[
+                torch.arange(len(bucket_indices), device=greater_mask.device),
+                bucket_indices,
+            ] = frac.float()
+
+            encoded_values.append(greater_mask)
+
+        out = torch.stack(encoded_values, dim=1)
+        x = torch.einsum("b n k, n k e -> b n e", out, self.weight)
+        if hasattr(self, "bias"):
+            x = x + self.bias
+        return F.dropout(x, self.embed_dropout, self.training)
+
+
+class PeriodicContEmbeddings(nn.Module):
+    pass
 
 
 class SharedEmbeddings(nn.Module):
@@ -137,11 +201,9 @@ class DiffSizeCatEmbeddings(nn.Module):
         self.embed_input = embed_input
         self.use_bias = use_bias
 
-        self.embed_layers_names = None
-        if self.embed_input is not None:
-            self.embed_layers_names = {
-                e[0]: e[0].replace(".", "_") for e in self.embed_input
-            }
+        self.embed_layers_names: Dict[str, str] = {
+            e[0]: e[0].replace(".", "_") for e in self.embed_input
+        }
 
         # Categorical: val + 1 because 0 is reserved for padding/unseen cateogories.
         self.embed_layers = nn.ModuleDict(
@@ -190,7 +252,7 @@ class SameSizeCatEmbeddings(nn.Module):
         self,
         embed_dim: int,
         column_idx: Dict[str, int],
-        embed_input: Optional[List[Tuple[str, int]]],
+        embed_input: List[Tuple[str, int]],
         embed_dropout: float,
         use_bias: bool,
         full_embed_dropout: bool,
@@ -206,11 +268,9 @@ class SameSizeCatEmbeddings(nn.Module):
         self.shared_embed = shared_embed
         self.with_cls_token = "cls_token" in column_idx
 
-        self.embed_layers_names = None
-        if self.embed_input is not None:
-            self.embed_layers_names = {
-                e[0]: e[0].replace(".", "_") for e in self.embed_input
-            }
+        self.embed_layers_names: Dict[str, str] = {
+            e[0]: e[0].replace(".", "_") for e in self.embed_input
+        }
 
         categorical_cols = [ei[0] for ei in embed_input]
         self.cat_idx = [self.column_idx[col] for col in categorical_cols]
@@ -323,7 +383,7 @@ class DiffSizeCatAndContEmbeddings(nn.Module):
             else:
                 self.cont_norm = nn.Identity()
             if self.embed_continuous:
-                self.cont_embed = ContEmbeddings(
+                self.cont_embed = LinearContEmbeddings(
                     len(continuous_cols),
                     cont_embed_dim,
                     cont_embed_dropout,
@@ -337,7 +397,7 @@ class DiffSizeCatAndContEmbeddings(nn.Module):
 
         self.output_dim = self.cat_out_dim + self.cont_out_dim
 
-    def forward(self, X: Tensor) -> Tuple[Tensor, Any]:
+    def forward(self, X: Tensor) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         if self.cat_embed_input is not None:
             x_cat = self.cat_embed(X)
         else:
@@ -402,14 +462,14 @@ class SameSizeCatAndContEmbeddings(nn.Module):
             else:
                 self.cont_norm = nn.Identity()
             if self.embed_continuous:
-                self.cont_embed = ContEmbeddings(
+                self.cont_embed = LinearContEmbeddings(
                     len(continuous_cols),
                     embed_dim,
                     cont_embed_dropout,
                     use_cont_bias,
                 )
 
-    def forward(self, X: Tensor) -> Tuple[Tensor, Any]:
+    def forward(self, X: Tensor) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         if self.cat_embed_input is not None:
             x_cat = self.cat_embed(X)
         else:
