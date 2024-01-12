@@ -13,6 +13,7 @@ import torch.nn.functional as F
 from torch import nn
 
 from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
+from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 
 
 class NLinear(nn.Module):
@@ -72,65 +73,64 @@ DropoutLayers = Union[nn.Dropout, FullEmbeddingDropout]
 NormLayers = Union[nn.Identity, nn.LayerNorm, nn.BatchNorm1d]
 
 
-class LinearContEmbeddings(nn.Module):
+class ContEmbeddings(nn.Module):
     def __init__(
         self,
         n_cont_cols: int,
         embed_dim: int,
         embed_dropout: float,
-        use_bias: bool,
+        activation_fn: Optional[str] = None,
     ):
-        super(LinearContEmbeddings, self).__init__()
+        super(ContEmbeddings, self).__init__()
 
         self.n_cont_cols = n_cont_cols
         self.embed_dim = embed_dim
         self.embed_dropout = embed_dropout
-        self.use_bias = use_bias
+        self.activation_fn_name = activation_fn
 
         self.weight = nn.Parameter(torch.Tensor(n_cont_cols, embed_dim))
-        self.bias = (
-            nn.Parameter(torch.Tensor(n_cont_cols, embed_dim)) if use_bias else None
-        )
+        self.bias = nn.Parameter(torch.Tensor(n_cont_cols, embed_dim))
 
         self.reset_parameters()
+
+        self.activation_fn = (
+            get_activation_fn(activation_fn) if activation_fn is not None else None
+        )
 
     def reset_parameters(self) -> None:
         # see here https://pytorch.org/docs/stable/_modules/torch/nn/modules/linear.html#Linear
         nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
-        if self.bias is not None:
-            fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weight)
-            bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
-            nn.init.uniform_(self.bias, -bound, bound)
+        fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weight)
+        bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
+        nn.init.uniform_(self.bias, -bound, bound)
 
     def forward(self, X: Tensor) -> Tensor:
         # same as torch.einsum("ij,jk->ijk", X, weight)
         x = self.weight.unsqueeze(0) * X.unsqueeze(2)
-        if self.bias is not None:
-            x = x + self.bias.unsqueeze(0)
-
-        # TODO: throughout the whole module, add the option of activation at
-        # this stage and change the
-        # order of the operations:
-        # Linear transformation (weights and biases)
-        # Activation function
-        # Dropout
-
+        x = x + self.bias.unsqueeze(0)
+        if self.activation_fn is not None:
+            x = self.activation_fn(x)
         return F.dropout(x, self.embed_dropout, self.training)
 
     def extra_repr(self) -> str:
-        s = "{n_cont_cols}, {embed_dim}, embed_dropout={embed_dropout}, use_bias={use_bias}"
-        return s.format(**self.__dict__)
+        all_params = (
+            "INFO: [ContLinear = weight(n_cont_cols, embed_dim) + bias(n_cont_cols, embed_dim)]\n"
+        )
+        all_params += "(linear): ContLinear(n_cont_cols={n_cont_cols}, embed_dim={embed_dim}"
+        all_params += ", embed_dropout={embed_dropout})"
+        return f"{all_params.format(**self.__dict__)}"
 
 
-class PiecewiseLinearContEmbeddings(nn.Module):
+class PiecewiseContEmbeddings(nn.Module):
     def __init__(
         self,
         column_idx: Dict[str, int],
         quantization_setup: Dict[str, List[float]],
         embed_dim: int,
         embed_dropout: float,
+        activation_fn: Optional[str] = None,
     ) -> None:
-        super(PiecewiseLinearContEmbeddings, self).__init__()
+        super(PiecewiseContEmbeddings, self).__init__()
 
         self.column_idx = column_idx
         self.quantization_setup = quantization_setup
@@ -138,8 +138,7 @@ class PiecewiseLinearContEmbeddings(nn.Module):
         self.embed_dropout = embed_dropout
 
         self.n_cont_cols = len(quantization_setup)
-
-        max_num_buckets = max([len(qs) - 1 for qs in quantization_setup.values()])
+        self.max_num_buckets = max([len(qs) - 1 for qs in quantization_setup.values()])
 
         boundaries: Dict[str, Tensor] = {}
         for col, qs in quantization_setup.items():
@@ -147,11 +146,15 @@ class PiecewiseLinearContEmbeddings(nn.Module):
             self.register_buffer("boundaries_" + col, boundaries[col])
 
         self.weight = nn.Parameter(
-            torch.empty(self.n_cont_cols, max_num_buckets, embed_dim)
+            torch.empty(self.n_cont_cols, self.max_num_buckets, self.embed_dim)
         )
-        self.bias = nn.Parameter(torch.empty(self.n_cont_cols, embed_dim))
+        self.bias = nn.Parameter(torch.empty(self.n_cont_cols, self.embed_dim))
 
         self.reset_parameters()
+
+        self.activation_fn = (
+            get_activation_fn(activation_fn) if activation_fn is not None else None
+        )
 
     def reset_parameters(self) -> None:
         nn.init.normal_(self.weight, std=0.01)
@@ -184,10 +187,19 @@ class PiecewiseLinearContEmbeddings(nn.Module):
         out = torch.stack(encoded_values, dim=1)
         x = torch.einsum("b n k, n k e -> b n e", out, self.weight)
         x = x + self.bias
+        if self.activation_fn is not None:
+            x = self.activation_fn(x)
         return F.dropout(x, self.embed_dropout, self.training)
 
+    def extra_repr(self) -> str:
+        all_params = "INFO: [BucketLinear = weight(n_cont_cols, max_num_buckets, embed_dim) "
+        all_params += "+ bias(n_cont_cols, embed_dim)]\n"
+        all_params += "(linear): BucketLinear(n_cont_cols={n_cont_cols}, max_num_buckets={max_num_buckets}"
+        all_params += ", embed_dim={embed_dim})"
+        return f"{all_params.format(**self.__dict__)}"
 
-class PeriodicLinearContEmbeddings(nn.Module):
+
+class PeriodicContEmbeddings(nn.Module):
     def __init__(
         self,
         n_cont_cols: int,
@@ -196,8 +208,9 @@ class PeriodicLinearContEmbeddings(nn.Module):
         n_frequencies: int,
         sigma: float,
         share_last_layer: bool,
+        activation_fn: Optional[str] = None,
     ) -> None:
-        super(PeriodicLinearContEmbeddings, self).__init__()
+        super(PeriodicContEmbeddings, self).__init__()
 
         self.n_cont_cols = n_cont_cols
         self.embed_dim = embed_dim
@@ -212,6 +225,10 @@ class PeriodicLinearContEmbeddings(nn.Module):
         self.reset_parameters()
 
         if self.share_last_layer:
+            assert activation_fn is not None, (
+                "If 'share_last_layer' is True, 'activation_fn' must be "
+                "provided (preferably 'relu')"
+            )
             self.linear: Union[nn.Linear, NLinear] = nn.Linear(
                 2 * self.n_frequencies, self.embed_dim
             )
@@ -219,6 +236,10 @@ class PeriodicLinearContEmbeddings(nn.Module):
             self.linear = NLinear(
                 self.n_cont_cols, 2 * self.n_frequencies, self.embed_dim
             )
+
+        self.activation_fn = (
+            get_activation_fn(activation_fn) if activation_fn is not None else None
+        )
 
     def reset_parameters(self):
         bound = self.sigma * 3
@@ -228,7 +249,13 @@ class PeriodicLinearContEmbeddings(nn.Module):
         x = 2 * math.pi * self.weight_perdiodic * X[..., None]
         x = torch.cat([torch.cos(x), torch.sin(x)], -1)
         x = self.linear(x)
+        if self.activation_fn is not None:
+            x = self.activation_fn(x)
         return F.dropout(x, self.embed_dropout, self.training)
+
+    def extra_repr(self) -> str:
+        s = "INFO: [NLinear: inp_units = (n_frequencies * 2), out_units = embed_dim]"
+        return f"{s.format(**self.__dict__)}"
 
 
 class SharedEmbeddings(nn.Module):
@@ -464,7 +491,7 @@ class DiffSizeCatAndContEmbeddings(nn.Module):
             else:
                 self.cont_norm = nn.Identity()
             if self.embed_continuous:
-                self.cont_embed = LinearContEmbeddings(
+                self.cont_embed = ContEmbeddings(
                     len(continuous_cols),
                     cont_embed_dim,
                     cont_embed_dropout,
@@ -543,7 +570,7 @@ class SameSizeCatAndContEmbeddings(nn.Module):
             else:
                 self.cont_norm = nn.Identity()
             if self.embed_continuous:
-                self.cont_embed = LinearContEmbeddings(
+                self.cont_embed = ContEmbeddings(
                     len(continuous_cols),
                     embed_dim,
                     cont_embed_dropout,
