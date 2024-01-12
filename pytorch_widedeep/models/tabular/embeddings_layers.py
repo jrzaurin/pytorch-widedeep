@@ -15,6 +15,38 @@ from torch import nn
 from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
 
 
+class NLinear(nn.Module):
+    def __init__(self, n_feat: int, inp_units: int, out_units: int) -> None:
+        super().__init__()
+
+        self.n_feat = n_feat
+        self.inp_units = inp_units
+        self.out_units = out_units
+
+        self.weights = nn.Parameter(torch.Tensor(n_feat, inp_units, out_units))
+        self.bias = nn.Parameter(torch.Tensor(n_feat, out_units))
+
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        d_in_rsqrt = self.weights.shape[-2] ** -0.5
+        nn.init.uniform_(self.weights, -d_in_rsqrt, d_in_rsqrt)
+        nn.init.uniform_(self.bias, -d_in_rsqrt, d_in_rsqrt)
+
+    def forward(self, X: Tensor) -> torch.Tensor:
+        assert X.ndim == 3
+        assert X.shape[1] == self.n_feat
+        assert X.shape[2] == self.inp_units
+
+        x = (X[..., None, :] @ self.weights).squeeze(-2)
+        x = x + self.bias
+        return x
+
+    def extra_repr(self) -> str:
+        s = "n_feat={n_feat}, inp_units={inp_units}, out_units={out_units}"
+        return s.format(**self.__dict__)
+
+
 class FullEmbeddingDropout(nn.Module):
     def __init__(self, p: float):
         super(FullEmbeddingDropout, self).__init__()
@@ -55,23 +87,34 @@ class LinearContEmbeddings(nn.Module):
         self.embed_dropout = embed_dropout
         self.use_bias = use_bias
 
-        self.weight = nn.init.kaiming_uniform_(
-            nn.Parameter(torch.Tensor(n_cont_cols, embed_dim)), a=math.sqrt(5)
+        self.weight = nn.Parameter(torch.Tensor(n_cont_cols, embed_dim))
+        self.bias = (
+            nn.Parameter(torch.Tensor(n_cont_cols, embed_dim)) if use_bias else None
         )
 
-        self.bias = (
-            nn.init.kaiming_uniform_(
-                nn.Parameter(torch.Tensor(n_cont_cols, embed_dim)), a=math.sqrt(5)
-            )
-            if use_bias
-            else None
-        )
+        self.reset_parameters()
+
+    def reset_parameters(self) -> None:
+        # see here https://pytorch.org/docs/stable/_modules/torch/nn/modules/linear.html#Linear
+        nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
+        if self.bias is not None:
+            fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weight)
+            bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
+            nn.init.uniform_(self.bias, -bound, bound)
 
     def forward(self, X: Tensor) -> Tensor:
         # same as torch.einsum("ij,jk->ijk", X, weight)
         x = self.weight.unsqueeze(0) * X.unsqueeze(2)
         if self.bias is not None:
             x = x + self.bias.unsqueeze(0)
+
+        # TODO: throughout the whole module, add the option of activation at
+        # this stage and change the
+        # order of the operations:
+        # Linear transformation (weights and biases)
+        # Activation function
+        # Dropout
+
         return F.dropout(x, self.embed_dropout, self.training)
 
     def extra_repr(self) -> str:
@@ -86,7 +129,6 @@ class PiecewiseLinearContEmbeddings(nn.Module):
         quantization_setup: Dict[str, List[float]],
         embed_dim: int,
         embed_dropout: float,
-        use_bias: bool,
     ) -> None:
         super(PiecewiseLinearContEmbeddings, self).__init__()
 
@@ -94,7 +136,6 @@ class PiecewiseLinearContEmbeddings(nn.Module):
         self.quantization_setup = quantization_setup
         self.embed_dim = embed_dim
         self.embed_dropout = embed_dropout
-        self.use_bias = use_bias
 
         self.n_cont_cols = len(quantization_setup)
 
@@ -105,15 +146,16 @@ class PiecewiseLinearContEmbeddings(nn.Module):
             boundaries[col] = torch.tensor(qs)
             self.register_buffer("boundaries_" + col, boundaries[col])
 
-        self.weight = nn.init.normal_(
-            nn.Parameter(torch.empty(self.n_cont_cols, max_num_buckets, embed_dim)),
-            std=0.01,
+        self.weight = nn.Parameter(
+            torch.empty(self.n_cont_cols, max_num_buckets, embed_dim)
         )
+        self.bias = nn.Parameter(torch.empty(self.n_cont_cols, embed_dim))
 
-        if self.use_bias:
-            self.bias = nn.init.zeros_(
-                nn.Parameter(torch.empty(self.n_cont_cols, embed_dim))
-            )
+        self.reset_parameters()
+
+    def reset_parameters(self) -> None:
+        nn.init.normal_(self.weight, std=0.01)
+        nn.init.zeros_(self.bias)
 
     def forward(self, X: Tensor) -> Tensor:
         # b: batch size
@@ -141,13 +183,52 @@ class PiecewiseLinearContEmbeddings(nn.Module):
 
         out = torch.stack(encoded_values, dim=1)
         x = torch.einsum("b n k, n k e -> b n e", out, self.weight)
-        if hasattr(self, "bias"):
-            x = x + self.bias
+        x = x + self.bias
         return F.dropout(x, self.embed_dropout, self.training)
 
 
-class PeriodicContEmbeddings(nn.Module):
-    pass
+class PeriodicLinearContEmbeddings(nn.Module):
+    def __init__(
+        self,
+        n_cont_cols: int,
+        embed_dim: int,
+        embed_dropout: float,
+        n_frequencies: int,
+        sigma: float,
+        share_last_layer: bool,
+    ) -> None:
+        super(PeriodicLinearContEmbeddings, self).__init__()
+
+        self.n_cont_cols = n_cont_cols
+        self.embed_dim = embed_dim
+        self.embed_dropout = embed_dropout
+        self.n_frequencies = n_frequencies
+        self.sigma = sigma
+        self.share_last_layer = share_last_layer
+
+        self.weight_perdiodic = nn.Parameter(
+            torch.empty((self.n_cont_cols, self.n_frequencies))
+        )
+        self.reset_parameters()
+
+        if self.share_last_layer:
+            self.linear: Union[nn.Linear, NLinear] = nn.Linear(
+                2 * self.n_frequencies, self.embed_dim
+            )
+        else:
+            self.linear = NLinear(
+                self.n_cont_cols, 2 * self.n_frequencies, self.embed_dim
+            )
+
+    def reset_parameters(self):
+        bound = self.sigma * 3
+        nn.init.trunc_normal_(self.weight_perdiodic, 0.0, self.sigma, a=-bound, b=bound)
+
+    def forward(self, X) -> Tensor:
+        x = 2 * math.pi * self.weight_perdiodic * X[..., None]
+        x = torch.cat([torch.cos(x), torch.sin(x)], -1)
+        x = self.linear(x)
+        return F.dropout(x, self.embed_dropout, self.training)
 
 
 class SharedEmbeddings(nn.Module):

@@ -3,6 +3,7 @@ import torch
 import pandas as pd
 
 from pytorch_widedeep.models.tabular.embeddings_layers import (
+    PeriodicLinearContEmbeddings,
     PiecewiseLinearContEmbeddings,
 )
 
@@ -30,11 +31,23 @@ if __name__ == "__main__":
     }
 
     X = torch.tensor(df.values, dtype=torch.float32)
+
+    # # PiecewiseLinearContEmbeddings
     piecewise_linear_cont_embeddings = PiecewiseLinearContEmbeddings(
         column_idx={col: i for i, col in enumerate(df.columns)},
         quantization_setup=percentiles_dict,
         embed_dim=10,
         embed_dropout=0.1,
-        use_bias=True,
     )
     out = piecewise_linear_cont_embeddings(X)
+
+    # PeriodicLinearContEmbeddings
+    periodic_linear_cont_embeddings = PeriodicLinearContEmbeddings(
+        n_cont_cols=X.shape[1],
+        embed_dim=10,
+        embed_dropout=0.1,
+        n_frequencies=6,
+        sigma=0.01,
+        share_last_layer=False,
+    )
+    out = periodic_linear_cont_embeddings(X)

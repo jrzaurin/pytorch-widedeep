@@ -11,6 +11,9 @@ from pytorch_widedeep.models.tabular.embeddings_layers import (
 )
 
 
+# TO DO: change these two functions to generate Cat and Cont embeddings in
+# here as opposed to using DiffSizeCatAndContEmbeddings and
+# SameSizeCatAndContEmbeddings
 class BaseTabularModelWithoutAttention(BaseWDModelComponent):
     def __init__(
         self,
