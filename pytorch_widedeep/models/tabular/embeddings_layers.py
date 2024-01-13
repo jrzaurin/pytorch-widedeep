@@ -113,10 +113,10 @@ class ContEmbeddings(nn.Module):
         return F.dropout(x, self.embed_dropout, self.training)
 
     def extra_repr(self) -> str:
-        all_params = (
-            "INFO: [ContLinear = weight(n_cont_cols, embed_dim) + bias(n_cont_cols, embed_dim)]\n"
+        all_params = "INFO: [ContLinear = weight(n_cont_cols, embed_dim) + bias(n_cont_cols, embed_dim)]\n"
+        all_params += (
+            "(linear): ContLinear(n_cont_cols={n_cont_cols}, embed_dim={embed_dim}"
         )
-        all_params += "(linear): ContLinear(n_cont_cols={n_cont_cols}, embed_dim={embed_dim}"
         all_params += ", embed_dropout={embed_dropout})"
         return f"{all_params.format(**self.__dict__)}"
 
@@ -192,7 +192,9 @@ class PiecewiseContEmbeddings(nn.Module):
         return F.dropout(x, self.embed_dropout, self.training)
 
     def extra_repr(self) -> str:
-        all_params = "INFO: [BucketLinear = weight(n_cont_cols, max_num_buckets, embed_dim) "
+        all_params = (
+            "INFO: [BucketLinear = weight(n_cont_cols, max_num_buckets, embed_dim) "
+        )
         all_params += "+ bias(n_cont_cols, embed_dim)]\n"
         all_params += "(linear): BucketLinear(n_cont_cols={n_cont_cols}, max_num_buckets={max_num_buckets}"
         all_params += ", embed_dim={embed_dim})"
@@ -263,8 +265,6 @@ class SharedEmbeddings(nn.Module):
         self,
         n_embed: int,
         embed_dim: int,
-        embed_dropout: float,
-        full_embed_dropout: bool = False,
         add_shared_embed: bool = False,
         frac_shared_embed=0.25,
     ):
@@ -280,13 +280,8 @@ class SharedEmbeddings(nn.Module):
             col_embed_dim = int(embed_dim * frac_shared_embed)
         self.shared_embed = nn.Parameter(torch.empty(1, col_embed_dim).uniform_(-1, 1))
 
-        if full_embed_dropout:
-            self.dropout: DropoutLayers = FullEmbeddingDropout(embed_dropout)
-        else:
-            self.dropout = nn.Dropout(embed_dropout)
-
     def forward(self, X: Tensor) -> Tensor:
-        out = self.dropout(self.embed(X))
+        out = self.embed(X)
         shared_embed = self.shared_embed.expand(out.shape[0], -1)
         if self.add_shared_embed:
             out += shared_embed
@@ -302,6 +297,7 @@ class DiffSizeCatEmbeddings(nn.Module):
         embed_input: List[Tuple[str, int, int]],
         embed_dropout: float,
         use_bias: bool,
+        activation_fn: Optional[str] = None,
     ):
         super(DiffSizeCatEmbeddings, self).__init__()
 
@@ -323,6 +319,10 @@ class DiffSizeCatEmbeddings(nn.Module):
                 for col, val, dim in self.embed_input
             }
         )
+        self.activation_fn = (
+            get_activation_fn(activation_fn) if activation_fn is not None else None
+        )
+
         self.embedding_dropout = nn.Dropout(embed_dropout)
 
         if use_bias:
@@ -351,6 +351,8 @@ class DiffSizeCatEmbeddings(nn.Module):
             for col, _, dim in self.embed_input
         ]
         x = torch.cat(embed, 1)
+        if self.activation_fn is not None:
+            x = self.activation_fn(x)
         x = self.embedding_dropout(x)
         return x
 
@@ -367,6 +369,7 @@ class SameSizeCatEmbeddings(nn.Module):
         shared_embed: bool,
         add_shared_embed: bool,
         frac_shared_embed: float,
+        activation_fn: Optional[str] = None,
     ):
         super(SameSizeCatEmbeddings, self).__init__()
 
@@ -400,6 +403,10 @@ class SameSizeCatEmbeddings(nn.Module):
         else:
             self.bias = None
 
+        self.activation_fn = (
+            get_activation_fn(activation_fn) if activation_fn is not None else None
+        )
+
         # Categorical: val + 1 because 0 is reserved for padding/unseen cateogories.
         if self.shared_embed:
             self.embed: Union[nn.ModuleDict, nn.Embedding] = nn.ModuleDict(
@@ -408,8 +415,6 @@ class SameSizeCatEmbeddings(nn.Module):
                     + self.embed_layers_names[col]: SharedEmbeddings(
                         val if col == "cls_token" else val + 1,
                         embed_dim,
-                        embed_dropout,
-                        full_embed_dropout,
                         add_shared_embed,
                         frac_shared_embed,
                     )
@@ -435,6 +440,10 @@ class SameSizeCatEmbeddings(nn.Module):
                 for col, _ in self.embed_input
             ]
             x = torch.cat(cat_embed, 1)
+
+            if self.activation_fn is not None:
+                x = self.activation_fn(x)
+            x = self.dropout(x)
         else:
             x = self.embed(X[:, self.cat_idx].long())
             if self.bias is not None:
@@ -447,6 +456,8 @@ class SameSizeCatEmbeddings(nn.Module):
                     bias = self.bias
                 x = x + bias.unsqueeze(0)
 
+            if self.activation_fn is not None:
+                x = self.activation_fn(x)
             x = self.dropout(x)
         return x
 
