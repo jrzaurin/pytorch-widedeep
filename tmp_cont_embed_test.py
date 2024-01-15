@@ -41,6 +41,7 @@ if __name__ == "__main__":
         activation_fn="relu",
     )
     out = cont_embeddings(X)
+    import ipdb; ipdb.set_trace()  # breakpoint dca8dda8 //
 
     # # PiecewiseContEmbeddings
     piecewise_cont_embeddings = PiecewiseContEmbeddings(
@@ -52,6 +53,7 @@ if __name__ == "__main__":
 
     )
     out = piecewise_cont_embeddings(X)
+    import ipdb; ipdb.set_trace()  # breakpoint 5dc699fa //
 
     # PeriodicContEmbeddings
     periodic_cont_embeddings = PeriodicContEmbeddings(
@@ -64,3 +66,4 @@ if __name__ == "__main__":
         activation_fn="relu",
     )
     out = periodic_cont_embeddings(X)
+    import ipdb; ipdb.set_trace()  # breakpoint 86b62bc5 //
