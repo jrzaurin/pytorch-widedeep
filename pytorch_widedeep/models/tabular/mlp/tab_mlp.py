@@ -1,6 +1,14 @@
 from torch import nn
 
-from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithoutAttention,
@@ -91,17 +99,24 @@ class TabMlp(BaseTabularModelWithoutAttention):
     def __init__(
         self,
         column_idx: Dict[str, int],
+        *,
         cat_embed_input: Optional[List[Tuple[str, int, int]]] = None,
-        cat_embed_dropout: float = 0.1,
-        use_cat_bias: bool = False,
+        cat_embed_dropout: Optional[float] = None,
+        use_cat_bias: Optional[bool] = None,
         cat_embed_activation: Optional[str] = None,
         continuous_cols: Optional[List[str]] = None,
-        cont_norm_layer: str = "batchnorm",
-        embed_continuous: bool = False,
-        cont_embed_dim: int = 32,
-        cont_embed_dropout: float = 0.1,
-        use_cont_bias: bool = True,
+        cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = None,
+        embed_continuous: Optional[bool] = None,
+        embed_continuous_method: Optional[
+            Literal["standard", "piecewise", "periodic"]
+        ] = None,
+        cont_embed_dim: Optional[int] = None,
+        cont_embed_dropout: Optional[float] = None,
         cont_embed_activation: Optional[str] = None,
+        quantization_setup: Optional[Dict[str, List[float]]] = None,
+        n_frequencies: Optional[int] = None,
+        sigma: Optional[float] = None,
+        share_last_layer: Optional[bool] = None,
         mlp_hidden_dims: List[int] = [200, 100],
         mlp_activation: str = "relu",
         mlp_dropout: Union[float, List[float]] = 0.1,
@@ -118,10 +133,14 @@ class TabMlp(BaseTabularModelWithoutAttention):
             continuous_cols=continuous_cols,
             cont_norm_layer=cont_norm_layer,
             embed_continuous=embed_continuous,
+            embed_continuous_method=embed_continuous_method,
             cont_embed_dim=cont_embed_dim,
             cont_embed_dropout=cont_embed_dropout,
-            use_cont_bias=use_cont_bias,
             cont_embed_activation=cont_embed_activation,
+            quantization_setup=quantization_setup,
+            n_frequencies=n_frequencies,
+            sigma=sigma,
+            share_last_layer=share_last_layer,
         )
 
         self.mlp_hidden_dims = mlp_hidden_dims

@@ -4,7 +4,9 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import Tensor
-from pytorch_widedeep.utils.general_utils import Alias
+
+# from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 
 
 class Wide(nn.Module):
@@ -39,7 +41,7 @@ class Wide(nn.Module):
     >>> out = wide(X)
     """
 
-    @Alias("pred_dim", ["pred_size", "num_class"])
+    @alias("pred_dim", ["pred_size", "num_class"])
     def __init__(self, input_dim: int, pred_dim: int = 1):
         super(Wide, self).__init__()
 

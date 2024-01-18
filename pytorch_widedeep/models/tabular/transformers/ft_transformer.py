@@ -1,6 +1,14 @@
 from torch import nn
+from pandas.core.computation.ops import Op
 
-from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Tensor,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
@@ -141,19 +149,26 @@ class FTTransformer(BaseTabularModelWithAttention):
     def __init__(
         self,
         column_idx: Dict[str, int],
+        *,
         cat_embed_input: Optional[List[Tuple[str, int]]] = None,
-        cat_embed_dropout: float = 0.1,
-        use_cat_bias: bool = False,
+        cat_embed_dropout: Optional[float] = None,
+        use_cat_bias: Optional[bool] = None,
         cat_embed_activation: Optional[str] = None,
-        full_embed_dropout: bool = False,
-        shared_embed: bool = False,
-        add_shared_embed: bool = False,
-        frac_shared_embed: float = 0.25,
+        full_embed_dropout: Optional[bool] = None,
+        shared_embed: Optional[bool] = None,
+        add_shared_embed: Optional[bool] = None,
+        frac_shared_embed: Optional[float] = None,
         continuous_cols: Optional[List[str]] = None,
-        cont_norm_layer: str = None,
-        cont_embed_dropout: float = 0.1,
-        use_cont_bias: bool = True,
+        cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = "layernorm",
+        embed_continuous_method: Optional[
+            Literal["standard", "piecewise", "periodic"]
+        ] = "standard",
+        cont_embed_dropout: Optional[float] = None,
         cont_embed_activation: Optional[str] = None,
+        quantization_setup: Optional[Dict[str, List[float]]] = None,
+        n_frequencies: Optional[int] = None,
+        sigma: Optional[float] = None,
+        share_last_layer: Optional[bool] = None,
         input_dim: int = 64,
         kv_compression_factor: float = 0.5,
         kv_sharing: bool = False,
@@ -165,11 +180,11 @@ class FTTransformer(BaseTabularModelWithAttention):
         ff_factor: float = 1.33,
         transformer_activation: str = "reglu",
         mlp_hidden_dims: Optional[List[int]] = None,
-        mlp_activation: str = "relu",
-        mlp_dropout: float = 0.1,
-        mlp_batchnorm: bool = False,
-        mlp_batchnorm_last: bool = False,
-        mlp_linear_first: bool = True,
+        mlp_activation: Optional[str] = None,
+        mlp_dropout: Optional[float] = None,
+        mlp_batchnorm: Optional[bool] = None,
+        mlp_batchnorm_last: Optional[bool] = None,
+        mlp_linear_first: Optional[bool] = None,
     ):
         super(FTTransformer, self).__init__(
             column_idx=column_idx,
@@ -184,10 +199,14 @@ class FTTransformer(BaseTabularModelWithAttention):
             continuous_cols=continuous_cols,
             cont_norm_layer=cont_norm_layer,
             embed_continuous=True,
+            embed_continuous_method=embed_continuous_method,
             cont_embed_dropout=cont_embed_dropout,
-            use_cont_bias=use_cont_bias,
             cont_embed_activation=cont_embed_activation,
             input_dim=input_dim,
+            quantization_setup=quantization_setup,
+            n_frequencies=n_frequencies,
+            sigma=sigma,
+            share_last_layer=share_last_layer,
         )
 
         self.kv_compression_factor = kv_compression_factor
@@ -239,15 +258,22 @@ class FTTransformer(BaseTabularModelWithAttention):
             self.input_dim if self.with_cls_token else (self.n_feats * self.input_dim)
         )
 
-        # Mlp
-        if mlp_hidden_dims is not None:
+        # Mlp: adding an MLP on top of the Resnet blocks is optional and
+        # therefore all related params are optional
+        if self.mlp_hidden_dims is not None:
             self.mlp = MLP(
-                [self.mlp_first_hidden_dim] + mlp_hidden_dims,
-                mlp_activation,
-                mlp_dropout,
-                mlp_batchnorm,
-                mlp_batchnorm_last,
-                mlp_linear_first,
+                d_hidden=[self.mlp_first_hidden_dim] + self.mlp_hidden_dim,
+                activation="relu"
+                if self.mlp_activation is None
+                else self.mlp_activation,
+                dropout=0.0 if self.mlp_dropout is None else self.mlp_dropout,
+                batchnorm=False if self.mlp_batchnorm is None else self.mlp_batchnorm,
+                batchnorm_last=False
+                if self.mlp_batchnorm_last is None
+                else self.mlp_batchnorm_last,
+                linear_first=False
+                if self.mlp_linear_first is None
+                else self.mlp_linear_first,
             )
         else:
             self.mlp = None

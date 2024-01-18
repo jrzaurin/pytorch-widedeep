@@ -1,15 +1,13 @@
+import numpy as np
 import torch
 import pandas as pd
-import numpy as np
 
 from pytorch_widedeep.preprocessing import TabPreprocessor
-
 from pytorch_widedeep.models.tabular.embeddings_layers import (
     SharedEmbeddings,
     DiffSizeCatEmbeddings,
     SameSizeCatEmbeddings,
 )
-
 
 # Define categories for each column
 categories_col1 = ["A", "B", "C"]

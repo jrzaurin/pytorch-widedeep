@@ -1,7 +1,14 @@
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Tensor,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
@@ -152,20 +159,27 @@ class TabTransformer(BaseTabularModelWithAttention):
     def __init__(
         self,
         column_idx: Dict[str, int],
+        *,
         cat_embed_input: Optional[List[Tuple[str, int]]] = None,
-        cat_embed_dropout: float = 0.1,
-        use_cat_bias: bool = False,
+        cat_embed_dropout: Optional[float] = None,
+        use_cat_bias: Optional[bool] = None,
         cat_embed_activation: Optional[str] = None,
-        full_embed_dropout: bool = False,
-        shared_embed: bool = False,
-        add_shared_embed: bool = False,
-        frac_shared_embed: float = 0.25,
+        full_embed_dropout: Optional[bool] = None,
+        shared_embed: Optional[bool] = None,
+        add_shared_embed: Optional[bool] = None,
+        frac_shared_embed: Optional[float] = None,
         continuous_cols: Optional[List[str]] = None,
-        cont_norm_layer: str = None,
-        embed_continuous: bool = False,
-        cont_embed_dropout: float = 0.1,
-        use_cont_bias: bool = True,
+        cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = None,
+        embed_continuous: Optional[bool] = None,
+        embed_continuous_method: Optional[
+            Literal["standard", "piecewise", "periodic"]
+        ] = None,
+        cont_embed_dropout: Optional[float] = None,
         cont_embed_activation: Optional[str] = None,
+        quantization_setup: Optional[Dict[str, List[float]]] = None,
+        n_frequencies: Optional[int] = None,
+        sigma: Optional[float] = None,
+        share_last_layer: Optional[bool] = None,
         input_dim: int = 32,
         n_heads: int = 8,
         use_qkv_bias: bool = False,
@@ -196,9 +210,13 @@ class TabTransformer(BaseTabularModelWithAttention):
             continuous_cols=continuous_cols,
             cont_norm_layer=cont_norm_layer,
             embed_continuous=embed_continuous,
+            embed_continuous_method=embed_continuous_method,
             cont_embed_dropout=cont_embed_dropout,
-            use_cont_bias=use_cont_bias,
             cont_embed_activation=cont_embed_activation,
+            quantization_setup=quantization_setup,
+            n_frequencies=n_frequencies,
+            sigma=sigma,
+            share_last_layer=share_last_layer,
             input_dim=input_dim,
         )
 
@@ -249,39 +267,59 @@ class TabTransformer(BaseTabularModelWithAttention):
 
         self.mlp_first_hidden_dim = self._mlp_first_hidden_dim()
 
-        if mlp_hidden_dims is not None:
+        if self.mlp_hidden_dims is not None:
             self.mlp = MLP(
-                [self.mlp_first_hidden_dim] + mlp_hidden_dims,
-                mlp_activation,
-                mlp_dropout,
-                mlp_batchnorm,
-                mlp_batchnorm_last,
-                mlp_linear_first,
+                d_hidden=[self.mlp_first_hidden_dim] + self.mlp_hidden_dim,
+                activation="relu"
+                if self.mlp_activation is None
+                else self.mlp_activation,
+                dropout=0.0 if self.mlp_dropout is None else self.mlp_dropout,
+                batchnorm=False if self.mlp_batchnorm is None else self.mlp_batchnorm,
+                batchnorm_last=False
+                if self.mlp_batchnorm_last is None
+                else self.mlp_batchnorm_last,
+                linear_first=False
+                if self.mlp_linear_first is None
+                else self.mlp_linear_first,
             )
         else:
             self.mlp = None
 
     def forward(self, X: Tensor) -> Tensor:
-        if not self.embed_continuous:
-            x_cat, x_cont = self.cat_and_cont_embed(X)
-            if x_cat is not None:
-                x = (
-                    self.cat_embed_act_fn(x_cat)
-                    if self.cat_embed_act_fn is not None
-                    else x_cat
-                )
+        if self.n_cont and self.embed_continuous and self.n_cat:
+            # there are continuous and categorical features and the continuous
+            # features are embedded
+            x_embed = self._get_embeddings(X)
+            x_cont_not_embed = None
+        elif self.n_cont and self.embed_continuous:
+            # there are only continuous features and they are embedded
+            x_embed = self.cont_norm((X[:, self.cont_idx].float()))
+            x_embed = self.cont_embed(x_embed)
+            x_cont_not_embed = None
+        elif self.n_cont and self.n_cat:
+            # there are continuous and categorical features but the continuous
+            # features are not embedded
+            x_embed = self.cat_embed(X)
+            x_cont_not_embed = self.cont_norm((X[:, self.cont_idx].float()))
+        elif self.n_cat:
+            # there are only categorical features
+            x_embed = self.cat_embed(X)
+            x_cont_not_embed = None
         else:
-            x = self._get_embeddings(X)
-            x_cont = None
+            raise ValueError(
+                "Using only continuous features that are not embedded is "
+                "is not supported in this implementation. Please set 'embed_continuous_method' "
+                "to one of ['standard', 'piecewise', 'periodic']"
+            )
 
-        x = self.encoder(x)
+        x = self.encoder(x_embed)
         if self.with_cls_token:
             x = x[:, 0, :]
         else:
             x = x.flatten(1)
 
-        if x_cont is not None and not self.embed_continuous:
-            x = torch.cat([x, x_cont], 1)
+        if x_cont_not_embed is not None:
+            x = torch.cat([x, x_cont_not_embed], 1)
 
         if self.mlp is not None:
             x = self.mlp(x)

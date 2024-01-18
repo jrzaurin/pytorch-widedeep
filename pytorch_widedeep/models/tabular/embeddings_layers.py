@@ -14,7 +14,6 @@ from torch import nn
 from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 
-
 __all__ = [
     "ContEmbeddings",
     "PiecewiseContEmbeddings",
@@ -82,6 +81,7 @@ DropoutLayers = Union[nn.Dropout, FullEmbeddingDropout]
 NormLayers = Union[nn.Identity, nn.LayerNorm, nn.BatchNorm1d]
 
 
+# TO DO: Add FullEmbeddingDropout to all ContEmbeddings
 class ContEmbeddings(nn.Module):
     def __init__(
         self,
@@ -176,7 +176,7 @@ class PiecewiseContEmbeddings(nn.Module):
         # e: embed_dim
         encoded_values = []
         for col, index in self.column_idx.items():
-            feat = X[:, index]
+            feat = X[:, index].contiguous()
 
             col_boundaries = getattr(self, "boundaries_" + col)
             bucket_indices = torch.bucketize(feat, col_boundaries[1:-1])
@@ -469,146 +469,3 @@ class SameSizeCatEmbeddings(nn.Module):
                 x = self.activation_fn(x)
             x = self.dropout(x)
         return x
-
-
-# class DiffSizeCatAndContEmbeddings(nn.Module):
-#     def __init__(
-#         self,
-#         column_idx: Dict[str, int],
-#         cat_embed_input: List[Tuple[str, int, int]],
-#         cat_embed_dropout: float,
-#         use_cat_bias: bool,
-#         continuous_cols: Optional[List[str]],
-#         cont_norm_layer: str,
-#         embed_continuous: bool,
-#         cont_embed_dim: int,
-#         cont_embed_dropout: float,
-#         use_cont_bias: bool,
-#     ):
-#         super(DiffSizeCatAndContEmbeddings, self).__init__()
-
-#         self.cat_embed_input = cat_embed_input
-#         self.continuous_cols = continuous_cols
-#         self.embed_continuous = embed_continuous
-#         self.cont_embed_dim = cont_embed_dim
-
-#         # Categorical
-#         if self.cat_embed_input is not None:
-#             self.cat_embed = DiffSizeCatEmbeddings(
-#                 column_idx, cat_embed_input, cat_embed_dropout, use_cat_bias
-#             )
-#             self.cat_out_dim = int(np.sum([embed[2] for embed in self.cat_embed_input]))
-#         else:
-#             self.cat_out_dim = 0
-
-#         # Continuous
-#         if continuous_cols is not None:
-#             self.cont_idx = [column_idx[col] for col in continuous_cols]
-#             if cont_norm_layer == "layernorm":
-#                 self.cont_norm: NormLayers = nn.LayerNorm(len(continuous_cols))
-#             elif cont_norm_layer == "batchnorm":
-#                 self.cont_norm = nn.BatchNorm1d(len(continuous_cols))
-#             else:
-#                 self.cont_norm = nn.Identity()
-#             if self.embed_continuous:
-#                 self.cont_embed = ContEmbeddings(
-#                     len(continuous_cols),
-#                     cont_embed_dim,
-#                     cont_embed_dropout,
-#                     use_cont_bias,
-#                 )
-#                 self.cont_out_dim = len(continuous_cols) * cont_embed_dim
-#             else:
-#                 self.cont_out_dim = len(continuous_cols)
-#         else:
-#             self.cont_out_dim = 0
-
-#         self.output_dim = self.cat_out_dim + self.cont_out_dim
-
-#     def forward(self, X: Tensor) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-#         if self.cat_embed_input is not None:
-#             x_cat = self.cat_embed(X)
-#         else:
-#             x_cat = None
-
-#         if self.continuous_cols is not None:
-#             x_cont = self.cont_norm((X[:, self.cont_idx].float()))
-#             if self.embed_continuous:
-#                 x_cont = self.cont_embed(x_cont)
-#                 x_cont = einops.rearrange(x_cont, "b s d -> b (s d)")
-#         else:
-#             x_cont = None
-
-#         return x_cat, x_cont
-
-
-# class SameSizeCatAndContEmbeddings(nn.Module):
-#     def __init__(
-#         self,
-#         embed_dim: int,
-#         column_idx: Dict[str, int],
-#         cat_embed_input: Optional[List[Tuple[str, int]]],
-#         cat_embed_dropout: float,
-#         use_cat_bias: bool,
-#         full_embed_dropout: bool,
-#         shared_embed: bool,
-#         add_shared_embed: bool,
-#         frac_shared_embed: float,
-#         continuous_cols: Optional[List[str]],
-#         cont_norm_layer: str,
-#         embed_continuous: bool,
-#         cont_embed_dropout: float,
-#         use_cont_bias: bool,
-#     ):
-#         super(SameSizeCatAndContEmbeddings, self).__init__()
-
-#         self.embed_dim = embed_dim
-#         self.cat_embed_input = cat_embed_input
-#         self.continuous_cols = continuous_cols
-#         self.embed_continuous = embed_continuous
-
-#         # Categorical
-#         if cat_embed_input is not None:
-#             self.cat_embed = SameSizeCatEmbeddings(
-#                 embed_dim,
-#                 column_idx,
-#                 cat_embed_input,
-#                 cat_embed_dropout,
-#                 use_cat_bias,
-#                 full_embed_dropout,
-#                 shared_embed,
-#                 add_shared_embed,
-#                 frac_shared_embed,
-
-#             )
-#         # Continuous
-#         if continuous_cols is not None:
-#             self.cont_idx = [column_idx[col] for col in continuous_cols]
-#             if cont_norm_layer == "layernorm":
-#                 self.cont_norm: NormLayers = nn.LayerNorm(len(continuous_cols))
-#             elif cont_norm_layer == "batchnorm":
-#                 self.cont_norm = nn.BatchNorm1d(len(continuous_cols))
-#             else:
-#                 self.cont_norm = nn.Identity()
-#             if self.embed_continuous:
-#                 self.cont_embed = ContEmbeddings(
-#                     len(continuous_cols),
-#                     embed_dim,
-#                     cont_embed_dropout,
-#                     use_cont_bias,
-#                 )
-
-#     def forward(self, X: Tensor) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-#         if self.cat_embed_input is not None:
-#             x_cat = self.cat_embed(X)
-#         else:
-#             x_cat = None
-
-#         if self.continuous_cols is not None:
-#             x_cont = self.cont_norm((X[:, self.cont_idx].float()))
-#             if self.embed_continuous:
-#                 x_cont = self.cont_embed(x_cont)
-#         else:
-#             x_cont = None
-
-#         return x_cat, x_cont

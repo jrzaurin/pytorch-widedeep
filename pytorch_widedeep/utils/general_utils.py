@@ -4,8 +4,25 @@ McGushion and his library:
 https://github.com/HunterMcGushion/hyperparameter_hunter
 """
 from typing import Any, List, Union
+from functools import wraps
 
 import wrapt
+
+
+# TO DO: replace Alias throughout the code with alias
+def alias(original_name: str, alternative_names: list):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for alt_name in alternative_names:
+                if alt_name in kwargs:
+                    kwargs[original_name] = kwargs.pop(alt_name)
+                    break
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 class Alias:

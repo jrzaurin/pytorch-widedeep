@@ -1,6 +1,13 @@
 from torch import nn
 
-from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Tensor,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.models.tabular.mlp._encoders import SelfAttentionEncoder
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
@@ -110,19 +117,26 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
     def __init__(
         self,
         column_idx: Dict[str, int],
+        *,
         cat_embed_input: Optional[List[Tuple[str, int]]] = None,
-        cat_embed_dropout: float = 0.1,
-        use_cat_bias: bool = False,
+        cat_embed_dropout: Optional[float] = None,
+        use_cat_bias: Optional[bool] = None,
         cat_embed_activation: Optional[str] = None,
-        full_embed_dropout: bool = False,
-        shared_embed: bool = False,
-        add_shared_embed: bool = False,
-        frac_shared_embed: float = 0.25,
+        full_embed_dropout: Optional[bool] = None,
+        shared_embed: Optional[bool] = None,
+        add_shared_embed: Optional[bool] = None,
+        frac_shared_embed: Optional[float] = None,
         continuous_cols: Optional[List[str]] = None,
-        cont_norm_layer: str = None,
-        cont_embed_dropout: float = 0.1,
-        use_cont_bias: bool = True,
+        cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = "layernorm",
+        embed_continuous_method: Optional[
+            Literal["standard", "piecewise", "periodic"]
+        ] = "standard",
+        cont_embed_dropout: Optional[float] = None,
         cont_embed_activation: Optional[str] = None,
+        quantization_setup: Optional[Dict[str, List[float]]] = None,
+        n_frequencies: Optional[int] = None,
+        sigma: Optional[float] = None,
+        share_last_layer: Optional[bool] = None,
         input_dim: int = 32,
         attn_dropout: float = 0.2,
         n_heads: int = 8,
@@ -144,10 +158,14 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
             continuous_cols=continuous_cols,
             cont_norm_layer=cont_norm_layer,
             embed_continuous=True,
+            embed_continuous_method=embed_continuous_method,
             cont_embed_dropout=cont_embed_dropout,
-            use_cont_bias=use_cont_bias,
             cont_embed_activation=cont_embed_activation,
             input_dim=input_dim,
+            quantization_setup=quantization_setup,
+            n_frequencies=n_frequencies,
+            sigma=sigma,
+            share_last_layer=share_last_layer,
         )
 
         self.attn_dropout = attn_dropout
