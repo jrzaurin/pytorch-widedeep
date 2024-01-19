@@ -34,6 +34,7 @@ class BaseTabularModelWithoutAttention(BaseWDModelComponent):
     def __init__(
         self,
         column_idx: Dict[str, int],
+        *,
         cat_embed_input: Optional[List[Tuple[str, int, int]]],
         cat_embed_dropout: Optional[float],
         use_cat_bias: Optional[bool],
@@ -45,11 +46,11 @@ class BaseTabularModelWithoutAttention(BaseWDModelComponent):
         cont_embed_dim: Optional[int],
         cont_embed_dropout: Optional[float],
         cont_embed_activation: Optional[str],
-        *,
         quantization_setup: Optional[Dict[str, List[float]]],
         n_frequencies: Optional[int],
         sigma: Optional[float],
         share_last_layer: Optional[bool],
+        full_embed_dropout: Optional[bool],
     ):
         super().__init__()
 
@@ -75,6 +76,7 @@ class BaseTabularModelWithoutAttention(BaseWDModelComponent):
         self.n_frequencies = n_frequencies
         self.sigma = sigma
         self.share_last_layer = share_last_layer
+        self.full_embed_dropout = full_embed_dropout
         if embed_continuous is not None:
             self.embed_continuous = embed_continuous
             warnings.warn(
@@ -90,7 +92,9 @@ class BaseTabularModelWithoutAttention(BaseWDModelComponent):
                     "one of 'standard', 'piecewise' or 'periodic'."
                 )
         elif embed_continuous_method is not None:
-            self.embed_continuous = embed_continuous_method != "none"
+            self.embed_continuous = True
+        else:
+            self.embed_continuous = False
 
         # Categorical Embeddings
         if self.cat_embed_input is not None:
@@ -134,6 +138,7 @@ class BaseTabularModelWithoutAttention(BaseWDModelComponent):
                     embed_continuous_method=self.embed_continuous_method,
                     cont_embed_dim=self.cont_embed_dim,
                     cont_embed_dropout=self.cont_embed_dropout,
+                    full_embed_dropout=self.full_embed_dropout,
                     cont_embed_activation=self.cont_embed_activation,
                     quantization_setup=self.quantization_setup,
                     n_frequencies=self.n_frequencies,
@@ -166,11 +171,12 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
     def __init__(
         self,
         column_idx: Dict[str, int],
+        input_dim: int,
+        *,
         cat_embed_input: Optional[List[Tuple[str, int]]],
         cat_embed_dropout: Optional[float],
         use_cat_bias: Optional[bool],
         cat_embed_activation: Optional[str],
-        full_embed_dropout: Optional[bool],
         shared_embed: Optional[bool],
         add_shared_embed: Optional[bool],
         frac_shared_embed: Optional[float],
@@ -180,12 +186,11 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
         embed_continuous_method: Optional[Literal["standard", "piecewise", "periodic"]],
         cont_embed_dropout: Optional[float],
         cont_embed_activation: Optional[str],
-        input_dim: int,
-        *,
         quantization_setup: Optional[Dict[str, List[float]]],
         n_frequencies: Optional[int],
         sigma: Optional[float],
         share_last_layer: Optional[bool],
+        full_embed_dropout: Optional[bool],
     ):
         super().__init__()
 
@@ -199,7 +204,6 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
         self.cat_embed_dropout = cat_embed_dropout
         self.use_cat_bias = use_cat_bias
         self.cat_embed_activation = cat_embed_activation
-        self.full_embed_dropout = full_embed_dropout
         self.shared_embed = shared_embed
         self.add_shared_embed = add_shared_embed
         self.frac_shared_embed = frac_shared_embed
@@ -229,7 +233,12 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
                     "one of 'standard', 'piecewise' or 'periodic'."
                 )
         elif embed_continuous_method is not None:
-            self.embed_continuous = embed_continuous_method != "none"
+            self.embed_continuous = True
+        else:
+            self.embed_continuous = False
+
+        # if full_embed_dropout is not None will be applied to all cont and cat
+        self.full_embed_dropout = full_embed_dropout
 
         # They are going to be stacked over dim 1 so cat and cont need the
         # same embedding dim
@@ -247,10 +256,10 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
                 embed_dropout=0.0
                 if self.cat_embed_dropout is None
                 else self.cat_embed_dropout,
-                use_bias=False if self.use_cat_bias is None else self.use_cat_bias,
                 full_embed_dropout=False
                 if self.full_embed_dropout is None
                 else self.full_embed_dropout,
+                use_bias=False if self.use_cat_bias is None else self.use_cat_bias,
                 shared_embed=False if self.shared_embed is None else self.shared_embed,
                 add_shared_embed=False
                 if self.add_shared_embed is None
@@ -281,6 +290,7 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
                     embed_continuous_method=self.embed_continuous_method,
                     cont_embed_dim=self.input_dim,
                     cont_embed_dropout=self.cont_embed_dropout,
+                    full_embed_dropout=self.full_embed_dropout,
                     cont_embed_activation=self.cont_embed_activation,
                     quantization_setup=self.quantization_setup,
                     n_frequencies=self.n_frequencies,
@@ -337,6 +347,7 @@ def _set_continous_embeddings_layer(
     embed_continuous_method: Literal["standard", "piecewise", "periodic"],
     cont_embed_dim: int,
     cont_embed_dropout: Optional[float],
+    full_embed_dropout: Optional[bool],
     cont_embed_activation: Optional[str],
     quantization_setup: Optional[Dict[str, List[float]]],
     n_frequencies: Optional[int],
@@ -345,10 +356,13 @@ def _set_continous_embeddings_layer(
 ) -> TContEmbeddings:
     if embed_continuous_method == "standard":
         cont_embed: TContEmbeddings = ContEmbeddings(
-            len(continuous_cols),
-            cont_embed_dim,
-            0.0 if cont_embed_dropout is None else cont_embed_dropout,
-            cont_embed_activation,
+            n_cont_cols=len(continuous_cols),
+            embed_dim=cont_embed_dim,
+            embed_dropout=0.0 if cont_embed_dropout is None else cont_embed_dropout,
+            full_embed_dropout=False
+            if full_embed_dropout is None
+            else full_embed_dropout,
+            activation_fn=cont_embed_activation,
         )
 
     elif embed_continuous_method == "piecewise":
@@ -357,11 +371,16 @@ def _set_continous_embeddings_layer(
         ), "If 'embed_continuous_method' is 'piecewise', 'quantization_setup' must be provided"
         min_cont_col_index = min([column_idx[col] for col in continuous_cols])
         cont_embed = PiecewiseContEmbeddings(
-            {col: column_idx[col] - min_cont_col_index for col in continuous_cols},
-            quantization_setup,
-            cont_embed_dim,
-            0.0 if cont_embed_dropout is None else cont_embed_dropout,
-            cont_embed_activation,
+            column_idx={
+                col: column_idx[col] - min_cont_col_index for col in continuous_cols
+            },
+            quantization_setup=quantization_setup,
+            embed_dim=cont_embed_dim,
+            embed_dropout=0.0 if cont_embed_dropout is None else cont_embed_dropout,
+            full_embed_dropout=False
+            if full_embed_dropout is None
+            else full_embed_dropout,
+            activation_fn=cont_embed_activation,
         )
 
     elif embed_continuous_method == "periodic":
@@ -374,13 +393,16 @@ def _set_continous_embeddings_layer(
             "'share_last_layer' must be provided"
         )
         cont_embed = PeriodicContEmbeddings(
-            len(continuous_cols),
-            cont_embed_dim,
-            0.0 if cont_embed_dropout is None else cont_embed_dropout,
-            n_frequencies,
-            sigma,
-            share_last_layer,
-            cont_embed_activation,
+            n_cont_cols=len(continuous_cols),
+            embed_dim=cont_embed_dim,
+            embed_dropout=0.0 if cont_embed_dropout is None else cont_embed_dropout,
+            full_embed_dropout=False
+            if full_embed_dropout is None
+            else full_embed_dropout,
+            n_frequencies=n_frequencies,
+            sigma=sigma,
+            share_last_layer=share_last_layer,
+            activation_fn=cont_embed_activation,
         )
     else:
         raise ValueError(

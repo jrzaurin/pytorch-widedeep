@@ -8,7 +8,6 @@ import warnings
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 from torch import nn
 
 from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
@@ -81,13 +80,13 @@ DropoutLayers = Union[nn.Dropout, FullEmbeddingDropout]
 NormLayers = Union[nn.Identity, nn.LayerNorm, nn.BatchNorm1d]
 
 
-# TO DO: Add FullEmbeddingDropout to all ContEmbeddings
 class ContEmbeddings(nn.Module):
     def __init__(
         self,
         n_cont_cols: int,
         embed_dim: int,
         embed_dropout: float,
+        full_embed_dropout: bool,
         activation_fn: Optional[str] = None,
     ):
         super(ContEmbeddings, self).__init__()
@@ -106,6 +105,11 @@ class ContEmbeddings(nn.Module):
             get_activation_fn(activation_fn) if activation_fn is not None else None
         )
 
+        if full_embed_dropout:
+            self.dropout: DropoutLayers = FullEmbeddingDropout(embed_dropout)
+        else:
+            self.dropout = nn.Dropout(embed_dropout)
+
     def reset_parameters(self) -> None:
         # see here https://pytorch.org/docs/stable/_modules/torch/nn/modules/linear.html#Linear
         nn.init.kaiming_uniform_(self.weight, a=math.sqrt(5))
@@ -119,7 +123,8 @@ class ContEmbeddings(nn.Module):
         x = x + self.bias.unsqueeze(0)
         if self.activation_fn is not None:
             x = self.activation_fn(x)
-        return F.dropout(x, self.embed_dropout, self.training)
+        x = self.dropout(x)
+        return x
 
     def extra_repr(self) -> str:
         all_params = "INFO: [ContLinear = weight(n_cont_cols, embed_dim) + bias(n_cont_cols, embed_dim)]\n"
@@ -137,6 +142,7 @@ class PiecewiseContEmbeddings(nn.Module):
         quantization_setup: Dict[str, List[float]],
         embed_dim: int,
         embed_dropout: float,
+        full_embed_dropout: bool,
         activation_fn: Optional[str] = None,
     ) -> None:
         super(PiecewiseContEmbeddings, self).__init__()
@@ -164,6 +170,11 @@ class PiecewiseContEmbeddings(nn.Module):
         self.activation_fn = (
             get_activation_fn(activation_fn) if activation_fn is not None else None
         )
+
+        if full_embed_dropout:
+            self.dropout: DropoutLayers = FullEmbeddingDropout(embed_dropout)
+        else:
+            self.dropout = nn.Dropout(embed_dropout)
 
     def reset_parameters(self) -> None:
         nn.init.normal_(self.weight, std=0.01)
@@ -198,7 +209,8 @@ class PiecewiseContEmbeddings(nn.Module):
         x = x + self.bias
         if self.activation_fn is not None:
             x = self.activation_fn(x)
-        return F.dropout(x, self.embed_dropout, self.training)
+        x = self.dropout(x)
+        return x
 
     def extra_repr(self) -> str:
         all_params = (
@@ -216,6 +228,7 @@ class PeriodicContEmbeddings(nn.Module):
         n_cont_cols: int,
         embed_dim: int,
         embed_dropout: float,
+        full_embed_dropout: bool,
         n_frequencies: int,
         sigma: float,
         share_last_layer: bool,
@@ -252,6 +265,11 @@ class PeriodicContEmbeddings(nn.Module):
             get_activation_fn(activation_fn) if activation_fn is not None else None
         )
 
+        if full_embed_dropout:
+            self.dropout: DropoutLayers = FullEmbeddingDropout(embed_dropout)
+        else:
+            self.dropout = nn.Dropout(embed_dropout)
+
     def reset_parameters(self):
         bound = self.sigma * 3
         nn.init.trunc_normal_(self.weight_perdiodic, 0.0, self.sigma, a=-bound, b=bound)
@@ -262,7 +280,8 @@ class PeriodicContEmbeddings(nn.Module):
         x = self.linear(x)
         if self.activation_fn is not None:
             x = self.activation_fn(x)
-        return F.dropout(x, self.embed_dropout, self.training)
+        x = self.dropout(x)
+        return x
 
     def extra_repr(self) -> str:
         s = "INFO: [NLinear: inp_units = (n_frequencies * 2), out_units = embed_dim]"
@@ -373,8 +392,8 @@ class SameSizeCatEmbeddings(nn.Module):
         column_idx: Dict[str, int],
         embed_input: List[Tuple[str, int]],
         embed_dropout: float,
-        use_bias: bool,
         full_embed_dropout: bool,
+        use_bias: bool,
         shared_embed: bool,
         add_shared_embed: bool,
         frac_shared_embed: float,

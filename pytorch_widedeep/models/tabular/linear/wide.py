@@ -4,8 +4,6 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import Tensor
-
-# from pytorch_widedeep.utils.general_utils import Alias
 from pytorch_widedeep.utils.general_utils import alias
 
 
