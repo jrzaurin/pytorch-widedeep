@@ -143,6 +143,7 @@ def test_tab_transformer_models(
         "cat_embed_input": tab_preprocessor.cat_embed_input,
         "continuous_cols": tab_preprocessor.continuous_cols,
         "embed_continuous": embed_continuous,
+        "embed_continuous_method": "standard" if embed_continuous else None,
     }
 
     deeptabular = _build_model(model_name, params)

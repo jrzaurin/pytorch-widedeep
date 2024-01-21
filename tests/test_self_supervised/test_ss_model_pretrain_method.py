@@ -68,13 +68,13 @@ def _build_enc_models(model_type, column_idx, cat_embed_input, continuous_cols):
 def _build_dec_models(model_type, encoder):
     if model_type == "mlp":
         decoder = TabMlpDecoder(
-            embed_dim=encoder.cat_and_cont_embed.output_dim,
+            embed_dim=encoder.cat_out_dim + encoder.cont_out_dim,
             mlp_hidden_dims=[encoder.output_dim, encoder.output_dim * 2],
         )
 
     if model_type == "resnet":
         decoder = TabResnetDecoder(
-            embed_dim=encoder.cat_and_cont_embed.output_dim,
+            embed_dim=encoder.cat_out_dim + encoder.cont_out_dim,
             blocks_dims=[
                 encoder.output_dim,
                 encoder.output_dim * 2,
@@ -84,7 +84,7 @@ def _build_dec_models(model_type, encoder):
 
     if model_type == "tabnet":
         decoder = TabNetDecoder(
-            embed_dim=encoder.cat_and_cont_embed.output_dim,
+            embed_dim=encoder.cat_out_dim + encoder.cont_out_dim,
         )
 
     return decoder

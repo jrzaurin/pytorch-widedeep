@@ -123,6 +123,7 @@ class FineTune:
             model, model_name, loader, optimizer, scheduler, n_epochs=n_epochs
         )
 
+    # TO DO: review this method. It is not very elegant
     def finetune_gradual(  # noqa: C901
         self,
         model: WDModel,

@@ -13,9 +13,9 @@ from pytorch_widedeep.models import (
     TabTransformer,
 )
 from pytorch_widedeep.models.tabular.embeddings_layers import (
+    ContEmbeddings,
     SharedEmbeddings,
     FullEmbeddingDropout,
-    LinearContEmbeddings,
 )
 
 # I am going over test these models due to the number of components
@@ -48,13 +48,8 @@ model1 = TabTransformer(
 
 def test_embeddings_have_padding():
     res = []
-    res.append(
-        model1.cat_and_cont_embed.cat_embed.embed.weight.size(0)
-        == model1.cat_and_cont_embed.cat_embed.n_tokens + 1
-    )
-    res.append(
-        not torch.all(model1.cat_and_cont_embed.cat_embed.embed.weight[0].bool())
-    )
+    res.append(model1.cat_embed.embed.weight.size(0) == model1.cat_embed.n_tokens + 1)
+    res.append(not torch.all(model1.cat_embed.embed.weight[0].bool()))
     assert all(res)
 
 
@@ -79,7 +74,6 @@ def test_tabtransformer_shared_embeddings():
     shared_embeddings = SharedEmbeddings(
         n_embed=5,
         embed_dim=16,
-        embed_dropout=0.0,
         add_shared_embed=False,
         frac_shared_embed=0.25,
     )
@@ -92,7 +86,6 @@ def test_tabtransformer_shared_embeddings():
     shared_embeddings = SharedEmbeddings(
         n_embed=5,
         embed_dim=16,
-        embed_dropout=0.0,
         add_shared_embed=True,
         frac_shared_embed=0.25,
     )
@@ -109,14 +102,13 @@ model2 = TabTransformer(
     column_idx={k: v for v, k in enumerate(colnames)},
     cat_embed_input=embed_input,
     continuous_cols=colnames[n_cols:],
-    use_cont_bias=True,
     shared_embed=True,
 )
 
 
 def test_shared_embeddings_have_padding():
     res = []
-    for k, v in model2.cat_and_cont_embed.cat_embed.embed.items():
+    for k, v in model2.cat_embed.embed.items():
         res.append(v.embed.weight.size(0) == n_embed + 1)
         res.append(not torch.all(v.embed.weight[0].bool()))
     assert all(res)
@@ -131,23 +123,24 @@ def test_tabtransformer_w_shared_emb_output():
     )
 
 
+# TO DO: code an entire script testing embeddings
 ###############################################################################
 # Test ContEmbeddings
 ###############################################################################
 
 
-def test_continuous_embeddings():
+def test_standard_continuous_embeddings():
     bsz = 2
     n_cont_cols = 2
     embed_dim = 6
 
     X = torch.rand(bsz, n_cont_cols)
 
-    cont_embed = LinearContEmbeddings(
+    cont_embed = ContEmbeddings(
         n_cont_cols=n_cont_cols,
         embed_dim=embed_dim,
         embed_dropout=0.0,
-        use_bias=False,
+        full_embed_dropout=False,
     )
     out = cont_embed(X)
     res = (
@@ -156,7 +149,9 @@ def test_continuous_embeddings():
         and out.shape[2] == embed_dim
     )
 
-    assert res and torch.allclose(out[0, 0, :], X[0][0] * cont_embed.weight[0])
+    assert res and torch.allclose(
+        out[0, 0, :], X[0][0] * cont_embed.weight[0] + cont_embed.bias[0]
+    )
 
 
 ###############################################################################
@@ -242,6 +237,7 @@ def test_embed_continuous_and_with_cls_token_tabtransformer(
         else embed_input,
         "continuous_cols": n_colnames[cont_idx:],
         "embed_continuous": embed_continuous,
+        "embed_continuous_method": "standard" if embed_continuous else None,
     }
 
     model = _build_model(model_name, params)

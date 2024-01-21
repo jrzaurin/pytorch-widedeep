@@ -45,7 +45,12 @@ y_te = target[16:]
 def _build_model_for_feat_imp_test(model_name, params):
     if model_name == "tabtransformer":
         return TabTransformer(
-            input_dim=6, n_blocks=2, n_heads=2, embed_continuous=True, **params
+            input_dim=6,
+            n_blocks=2,
+            n_heads=2,
+            embed_continuous=True,
+            embed_continuous_method="standard",
+            **params
         )
     if model_name == "saint":
         return SAINT(input_dim=6, n_blocks=2, n_heads=2, **params)
@@ -164,6 +169,8 @@ def test_feature_importances_tabnet():
         cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=tab_preprocessor.continuous_cols,
         embed_continuous=True,
+        embed_continuous_method="standard",
+        cont_embed_dim=8,
     )
 
     model = WideDeep(deeptabular=tabnet)

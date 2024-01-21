@@ -125,9 +125,9 @@ finetuner = FineTune(loss_fn, MultipleMetrics([Accuracy()]), "binary", False)
 # MLP children -> dense layers
 # so here we go...
 last_linear = list(tab_mlp.children())[1]
-inverted_mlp_layers = list(
-    list(list(tab_mlp.named_modules())[12][1].children())[0].children()
-)[::-1]
+inverted_mlp_layers = [
+    list(list(list(tab_mlp.named_modules())[12][1].children())[2].children())[1]
+]
 tab_layers = [last_linear] + inverted_mlp_layers
 text_layers = [c for c in list(deeptext.children())[1:]][::-1]
 image_layers = [c for c in list(deepimage.children())][::-1]
@@ -172,6 +172,7 @@ def test_finetune_gradual(model, modelname, loader, max_lr, layers, routine):
     has_run = True
     try:
         finetuner.finetune_gradual(model, modelname, loader, max_lr, layers, routine)
-    except Exception:
+    except Exception as e:
         has_run = False
+        print(e)
     assert has_run

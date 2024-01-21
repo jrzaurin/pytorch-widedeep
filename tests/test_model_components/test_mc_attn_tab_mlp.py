@@ -135,7 +135,6 @@ def test_shared_embed_and_cls(
             cat_embed_input=tab_preprocessor.cat_embed_input,
             use_cat_bias=True,
             continuous_cols=["col3", "col4"],
-            use_cont_bias=True,
             with_addnorm=with_addnorm,
         )
 

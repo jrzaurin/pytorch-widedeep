@@ -235,9 +235,8 @@ class TabResnet(BaseTabularModelWithoutAttention):
         # Mlp: adding an MLP on top of the Resnet blocks is optional and
         # therefore all related params are optional
         if self.mlp_hidden_dims is not None:
-            mlp_hidden_dims = [self.blocks_dims[-1]] + self.mlp_hidden_dims
             self.mlp = MLP(
-                d_hidden=self.mlp_hidden_dims,
+                d_hidden=[self.blocks_dims[-1]] + self.mlp_hidden_dims,
                 activation="relu"
                 if self.mlp_activation is None
                 else self.mlp_activation,

@@ -69,7 +69,7 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
     cont_norm_layer: str, Optional, default =  None
         Type of normalization layer applied to the continuous features. Options
         are: _'layernorm'_, _'batchnorm'_ or 'None'.
-    embed_continuous_method: Optional, str, default = None,
+    embed_continuous_method: Optional, str, default = "standard"
         Method to use to embed the continuous features. Options are:
         _'standard'_, _'periodic'_ or _'piecewise'_. The _'standard'_
           embedding method is based on the FT-Transformer implementation
@@ -77,7 +77,6 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
           Data](https://arxiv.org/abs/2106.11959v5). The _'periodic'_ and
         _'piecewise'_ methods were presented in the paper: [On Embeddings for
           Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556)
-        If the dataset contains continuous features, this parameter is required.
     cont_embed_dropout: float, Optional, default = None,
         Dropout for the continuous embeddings. If 'None' is passed, it will default to 0.0
     cont_embed_activation: Optional, str, default = None,
@@ -156,7 +155,7 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
         cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = None,
         embed_continuous_method: Optional[
             Literal["standard", "piecewise", "periodic"]
-        ] = None,
+        ] = "standard",
         cont_embed_dropout: Optional[float] = None,
         cont_embed_activation: Optional[str] = None,
         quantization_setup: Optional[Dict[str, List[float]]] = None,

@@ -452,10 +452,11 @@ class SameSizeCatEmbeddings(nn.Module):
         else:
             n_tokens = sum([ei[1] for ei in embed_input])
             self.embed = nn.Embedding(n_tokens + 1, embed_dim, padding_idx=0)
-            if full_embed_dropout:
-                self.dropout: DropoutLayers = FullEmbeddingDropout(embed_dropout)
-            else:
-                self.dropout = nn.Dropout(embed_dropout)
+
+        if full_embed_dropout:
+            self.dropout: DropoutLayers = FullEmbeddingDropout(embed_dropout)
+        else:
+            self.dropout = nn.Dropout(embed_dropout)
 
     def forward(self, X: Tensor) -> Tensor:
         if self.shared_embed:

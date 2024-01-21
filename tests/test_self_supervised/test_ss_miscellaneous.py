@@ -66,6 +66,7 @@ def test_save_and_load(model_type):
             cat_embed_input=transf_preprocessor.cat_embed_input,
             continuous_cols=transf_preprocessor.continuous_cols,
             embed_continuous=True,
+            embed_continuous_method="standard",
             n_heads=2,
             n_blocks=2,
         )
@@ -96,24 +97,20 @@ def test_save_and_load(model_type):
     trainer.pretrain(X, n_epochs=5, batch_size=16)
 
     if model_type == "mlp":
-        col_embed_module = (
-            model.cat_and_cont_embed.cat_embed.embed_layers.emb_layer_col1
-        )
+        col_embed_module = model.cat_embed.embed_layers.emb_layer_col1
         embeddings = col_embed_module.weight.data
     elif model_type == "transformer":
-        embed_module = model.cat_and_cont_embed.cat_embed.embed
+        embed_module = model.cat_embed.embed
         embeddings = embed_module.weight.data
 
     trainer.save("tests/test_self_supervised/model_dir/", model_filename="ss_model.pt")
     new_model = torch.load("tests/test_self_supervised/model_dir/ss_model.pt")
 
     if model_type == "mlp":
-        new_col_embed_module = (
-            new_model.encoder.cat_and_cont_embed.cat_embed.embed_layers.emb_layer_col1
-        )
+        new_col_embed_module = new_model.encoder.cat_embed.embed_layers.emb_layer_col1
         new_embeddings = new_col_embed_module.weight.data
     elif model_type == "transformer":
-        new_embed_module = new_model.model.cat_and_cont_embed.cat_embed.embed
+        new_embed_module = new_model.model.cat_embed.embed
         new_embeddings = new_embed_module.weight.data
 
     shutil.rmtree("tests/test_self_supervised/model_dir/")
@@ -139,6 +136,7 @@ def _build_model_and_trainer(model_type):
             cat_embed_input=transf_preprocessor.cat_embed_input,
             continuous_cols=transf_preprocessor.continuous_cols,
             embed_continuous=True,
+            embed_continuous_method="standard",
             n_heads=2,
             n_blocks=2,
         )
@@ -162,12 +160,10 @@ def test_save_and_load_dict(model_type):  # noqa: C901
     trainer1.pretrain(X, n_epochs=5, batch_size=16)
 
     if model_type == "mlp":
-        col_embed_module = (
-            model1.cat_and_cont_embed.cat_embed.embed_layers.emb_layer_col1
-        )
+        col_embed_module = model1.cat_embed.embed_layers.emb_layer_col1
         embeddings = col_embed_module.weight.data
     elif model_type == "transformer":
-        embed_module = model1.cat_and_cont_embed.cat_embed.embed
+        embed_module = model1.cat_embed.embed
         embeddings = embed_module.weight.data
 
     trainer1.save(
@@ -189,11 +185,11 @@ def test_save_and_load_dict(model_type):  # noqa: C901
 
     if model_type == "mlp":
         new_col_embed_module = (
-            trainer2.ed_model.encoder.cat_and_cont_embed.cat_embed.embed_layers.emb_layer_col1
+            trainer2.ed_model.encoder.cat_embed.embed_layers.emb_layer_col1
         )
         new_embeddings = new_col_embed_module.weight.data
     elif model_type == "transformer":
-        new_embed_module = trainer2.cd_model.model.cat_and_cont_embed.cat_embed.embed
+        new_embed_module = trainer2.cd_model.model.cat_embed.embed
         new_embeddings = new_embed_module.weight.data
 
     same_weights = torch.allclose(embeddings, new_embeddings)
