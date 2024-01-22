@@ -50,6 +50,7 @@ def test_classification(model_name, objective, return_samples, embed_continuous)
             cat_embed_input=embed_input,
             continuous_cols=colnames[-5:],
             embed_continuous=embed_continuous,
+            cont_embed_dim=4 if embed_continuous else None,
             mlp_hidden_dims=[32, 16],
             pred_dim=pred_dim,
         )

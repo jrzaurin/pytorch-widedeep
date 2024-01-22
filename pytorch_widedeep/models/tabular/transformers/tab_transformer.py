@@ -326,33 +326,9 @@ class TabTransformer(BaseTabularModelWithAttention):
             self.mlp = None
 
     def forward(self, X: Tensor) -> Tensor:
-        if self.n_cont and self.embed_continuous and self.n_cat:
-            # there are continuous and categorical features and the continuous
-            # features are embedded
-            x_embed = self._get_embeddings(X)
-            x_cont_not_embed = None
-        elif self.n_cont and self.embed_continuous:
-            # there are only continuous features and they are embedded
-            x_embed = self.cont_norm((X[:, self.cont_idx].float()))
-            x_embed = self.cont_embed(x_embed)
-            x_cont_not_embed = None
-        elif self.n_cont and self.n_cat:
-            # there are continuous and categorical features but the continuous
-            # features are not embedded
-            x_embed = self.cat_embed(X)
-            x_cont_not_embed = self.cont_norm((X[:, self.cont_idx].float()))
-        elif self.n_cat:
-            # there are only categorical features
-            x_embed = self.cat_embed(X)
-            x_cont_not_embed = None
-        else:
-            raise ValueError(
-                "Using only continuous features that are not embedded is "
-                "is not supported in this implementation. Please set 'embed_continuous_method' "
-                "to one of ['standard', 'piecewise', 'periodic']"
-            )
-
+        x_embed, x_cont_not_embed = self._get_embeddings_tt(X)
         x = self.encoder(x_embed)
+
         if self.with_cls_token:
             x = x[:, 0, :]
         else:
@@ -410,15 +386,30 @@ class TabTransformer(BaseTabularModelWithAttention):
 
         return [blk.attn.attn_weights for blk in self.encoder]
 
-    def _compute_attn_output_dim(self) -> int:
-        if self.with_cls_token:
-            if self.embed_continuous:
-                attn_output_dim = self.input_dim
-            else:
-                attn_output_dim = self.input_dim + self.n_cont
-        elif self.embed_continuous:
-            attn_output_dim = (self.n_cat + self.n_cont) * self.input_dim
+    def _get_embeddings_tt(self, X: Tensor) -> Tuple[Tensor, Optional[Tensor]]:  # type: ignore[override]
+        if self.n_cont and self.embed_continuous and self.n_cat:
+            # there are continuous and categorical features and the continuous
+            # features are embedded
+            x_embed = self._get_embeddings(X)
+            x_cont_not_embed = None
+        elif self.n_cont and self.embed_continuous:
+            # there are only continuous features and they are embedded
+            x_embed = self.cont_norm((X[:, self.cont_idx].float()))
+            x_embed = self.cont_embed(x_embed)
+            x_cont_not_embed = None
+        elif self.n_cont and self.n_cat:
+            # there are continuous and categorical features but the continuous
+            # features are not embedded
+            x_embed = self.cat_embed(X)
+            x_cont_not_embed = self.cont_norm((X[:, self.cont_idx].float()))
+        elif self.n_cat:
+            # there are only categorical features
+            x_embed = self.cat_embed(X)
+            x_cont_not_embed = None
         else:
-            attn_output_dim = self.n_cat * self.input_dim + self.n_cont
-
-        return attn_output_dim
+            raise ValueError(
+                "Using only continuous features that are not embedded is "
+                "is not supported in this implementation. Please set 'embed_continuous_method' "
+                "to one of ['standard', 'piecewise', 'periodic']"
+            )
+        return x_embed, x_cont_not_embed

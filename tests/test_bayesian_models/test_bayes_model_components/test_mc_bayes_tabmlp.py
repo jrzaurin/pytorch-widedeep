@@ -5,9 +5,6 @@ import torch
 import pytest
 
 from pytorch_widedeep.bayesian_models import BayesianTabMlp
-from pytorch_widedeep.bayesian_models.tabular.bayesian_embeddings_layers import (
-    BayesianDiffSizeCatAndContEmbeddings,
-)
 
 colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 10) for _ in range(5)]
@@ -134,7 +131,7 @@ def test_act_fn_valueerror():
         ),
     ],
 )
-def test_embedddings_class(
+def test_embedddings_class(  # noqa: C901
     setup, column_idx, cat_embed_input, continuous_cols, embed_continuous
 ):
     if setup == "w_cat":
@@ -144,7 +141,7 @@ def test_embedddings_class(
     else:
         X = X_deep
 
-    cat_and_cont_embed = BayesianDiffSizeCatAndContEmbeddings(
+    bayesian_model = BayesianTabMlp(
         column_idx=column_idx,
         cat_embed_input=cat_embed_input,
         continuous_cols=continuous_cols,
@@ -158,27 +155,24 @@ def test_embedddings_class(
         posterior_mu_init=0.0,
         posterior_rho_init=-7,
     )
-    x_cat, x_cont = cat_and_cont_embed(X)
+
+    x_embed = bayesian_model._get_embeddings(X)
 
     if setup == "w_cat":
         s1 = X.shape[0]
-        s2 = sum([el[2] for el in cat_and_cont_embed.cat_embed_input])
-        assert x_cat.size() == torch.Size((s1, s2)) and x_cont is None
+        s2 = sum([el[2] for el in bayesian_model.cat_embed_input])
+        assert x_embed.size() == torch.Size((s1, s2))
     if setup == "w_cont":
         s1 = X.shape[0]
         s2 = len(continuous_cols)
-        assert x_cont.size() == torch.Size((s1, s2)) and x_cat is None
+        assert x_embed.size() == torch.Size((s1, s2))
     if setup == "w_both":
         s1 = X.shape[0]
-        s2_cat = sum([el[2] for el in cat_and_cont_embed.cat_embed_input])
+        s2_cat = sum([el[2] for el in bayesian_model.cat_embed_input])
         s2_cont = len(continuous_cols)
-        assert x_cat.size() == torch.Size((s1, s2_cat)) and x_cont.size() == torch.Size(
-            (s1, s2_cont)
-        )
+        assert x_embed.size() == torch.Size((s1, s2_cat + s2_cont))
     if setup == "w_both_and_embed_cont":
         s1 = X.shape[0]
-        s2_cat = sum([el[2] for el in cat_and_cont_embed.cat_embed_input])
-        s2_cont = len(continuous_cols) * cat_and_cont_embed.cont_embed_dim
-        assert x_cat.size() == torch.Size((s1, s2_cat)) and x_cont.size() == torch.Size(
-            (s1, s2_cont)
-        )
+        s2_cat = sum([el[2] for el in bayesian_model.cat_embed_input])
+        s2_cont = len(continuous_cols) * bayesian_model.cont_embed_dim
+        assert x_embed.size() == torch.Size((s1, s2_cat + s2_cont))

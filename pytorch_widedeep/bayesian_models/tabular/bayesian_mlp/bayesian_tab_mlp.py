@@ -1,7 +1,16 @@
+import numpy as np
 import torch
+import einops
+from torch import nn
 
-from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Optional
-from pytorch_widedeep.models._get_activation_fn import get_activation_fn
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Tensor,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.bayesian_models._base_bayesian_model import (
     BaseBayesianModel,
 )
@@ -9,7 +18,9 @@ from pytorch_widedeep.bayesian_models.tabular.bayesian_mlp._layers import (
     BayesianMLP,
 )
 from pytorch_widedeep.bayesian_models.tabular.bayesian_embeddings_layers import (
-    BayesianDiffSizeCatAndContEmbeddings,
+    NormLayers,
+    BayesianContEmbeddings,
+    BayesianDiffSizeCatEmbeddings,
 )
 
 
@@ -125,16 +136,16 @@ class BayesianTabMlp(BaseBayesianModel):
     def __init__(
         self,
         column_idx: Dict[str, int],
+        *,
         cat_embed_input: Optional[List[Tuple[str, int, int]]] = None,
-        cat_embed_dropout: float = 0.1,
         cat_embed_activation: Optional[str] = None,
         continuous_cols: Optional[List[str]] = None,
-        embed_continuous: bool = False,
-        cont_embed_dim: int = 32,
-        cont_embed_dropout: float = 0.1,
+        embed_continuous: Optional[bool] = None,
+        cont_embed_dim: Optional[int] = None,
+        cont_embed_dropout: Optional[float] = None,
         cont_embed_activation: Optional[str] = None,
-        use_cont_bias: bool = True,
-        cont_norm_layer: str = "batchnorm",
+        use_cont_bias: Optional[bool] = None,
+        cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = None,
         mlp_hidden_dims: List[int] = [200, 100],
         mlp_activation: str = "leaky_relu",
         prior_sigma_1: float = 1,
@@ -148,7 +159,6 @@ class BayesianTabMlp(BaseBayesianModel):
 
         self.column_idx = column_idx
         self.cat_embed_input = cat_embed_input
-        self.cat_embed_dropout = cat_embed_dropout
         self.cat_embed_activation = cat_embed_activation
 
         self.continuous_cols = continuous_cols
@@ -161,6 +171,7 @@ class BayesianTabMlp(BaseBayesianModel):
 
         self.mlp_hidden_dims = mlp_hidden_dims
         self.mlp_activation = mlp_activation
+
         self.prior_sigma_1 = prior_sigma_1
         self.prior_sigma_2 = prior_sigma_2
         self.prior_pi = prior_pi
@@ -179,33 +190,58 @@ class BayesianTabMlp(BaseBayesianModel):
                 )
             )
 
-        self.cat_and_cont_embed = BayesianDiffSizeCatAndContEmbeddings(
-            column_idx,
-            cat_embed_input,
-            continuous_cols,
-            embed_continuous,
-            cont_embed_dim,
-            use_cont_bias,
-            cont_norm_layer,
-            prior_sigma_1,
-            prior_sigma_2,
-            prior_pi,
-            posterior_mu_init,
-            posterior_rho_init,
-        )
-        self.cat_embed_act_fn = (
-            get_activation_fn(cat_embed_activation)
-            if cat_embed_activation is not None
-            else None
-        )
-        self.cont_embed_act_fn = (
-            get_activation_fn(cont_embed_activation)
-            if cont_embed_activation is not None
-            else None
-        )
+        # Categorical
+        if self.cat_embed_input is not None:
+            self.cat_embed = BayesianDiffSizeCatEmbeddings(
+                column_idx=self.column_idx,
+                embed_input=self.cat_embed_input,
+                prior_sigma_1=self.prior_sigma_1,
+                prior_sigma_2=self.prior_sigma_2,
+                prior_pi=self.prior_pi,
+                posterior_mu_init=self.posterior_mu_init,
+                posterior_rho_init=self.posterior_rho_init,
+                activation_fn=self.cat_embed_activation,
+            )
+            self.cat_out_dim = int(np.sum([embed[2] for embed in self.cat_embed_input]))
+        else:
+            self.cat_out_dim = 0
 
-        mlp_input_dim = self.cat_and_cont_embed.output_dim
-        mlp_hidden_dims = [mlp_input_dim] + mlp_hidden_dims + [pred_dim]
+        # Continuous
+        if self.continuous_cols is not None:
+            self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
+            if cont_norm_layer == "layernorm":
+                self.cont_norm: NormLayers = nn.LayerNorm(len(self.continuous_cols))
+            elif cont_norm_layer == "batchnorm":
+                self.cont_norm = nn.BatchNorm1d(len(self.continuous_cols))
+            else:
+                self.cont_norm = nn.Identity()
+            if self.embed_continuous:
+                assert self.cont_embed_dim is not None, (
+                    "If 'embed_continuous' is True, 'cont_embed_dim' must be "
+                    "provided"
+                )
+                self.cont_embed = BayesianContEmbeddings(
+                    n_cont_cols=len(self.continuous_cols),
+                    embed_dim=self.cont_embed_dim,
+                    prior_sigma_1=self.prior_sigma_1,
+                    prior_sigma_2=self.prior_sigma_2,
+                    prior_pi=self.prior_pi,
+                    posterior_mu_init=self.posterior_mu_init,
+                    posterior_rho_init=self.posterior_rho_init,
+                    use_bias=False
+                    if self.use_cont_bias is None
+                    else self.use_cont_bias,
+                    activation_fn=self.cont_embed_activation,
+                )
+                self.cont_out_dim = len(self.continuous_cols) * self.cont_embed_dim
+            else:
+                self.cont_out_dim = len(self.continuous_cols)
+        else:
+            self.cont_out_dim = 0
+
+        self.output_dim = self.cat_out_dim + self.cont_out_dim
+
+        mlp_hidden_dims = [self.output_dim] + mlp_hidden_dims + [pred_dim]
         self.bayesian_tab_mlp = BayesianMLP(
             mlp_hidden_dims,
             mlp_activation,
@@ -218,15 +254,23 @@ class BayesianTabMlp(BaseBayesianModel):
         )
 
     def forward(self, X: Tensor) -> Tensor:
-        x_cat, x_cont = self.cat_and_cont_embed(X)
-        if x_cat is not None:
-            x = (
-                self.cat_embed_act_fn(x_cat)
-                if self.cat_embed_act_fn is not None
-                else x_cat
-            )
-        if x_cont is not None:
-            if self.cont_embed_act_fn is not None:
-                x_cont = self.cont_embed_act_fn(x_cont)
-            x = torch.cat([x, x_cont], 1) if x_cat is not None else x_cont
-        return self.bayesian_tab_mlp(x)
+        x = self._get_embeddings(X)
+        x = self.bayesian_tab_mlp(x)
+        return x
+
+    def _get_embeddings(self, X: Tensor) -> Tensor:
+        tensors_to_concat: List[Tensor] = []
+        if self.cat_embed_input is not None:
+            x_cat = self.cat_embed(X)
+            tensors_to_concat.append(x_cat)
+
+        if self.continuous_cols is not None:
+            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
+            if self.embed_continuous:
+                x_cont = self.cont_embed(x_cont)
+                x_cont = einops.rearrange(x_cont, "b s d -> b (s d)")
+            tensors_to_concat.append(x_cont)
+
+        x = torch.cat(tensors_to_concat, 1)
+
+        return x

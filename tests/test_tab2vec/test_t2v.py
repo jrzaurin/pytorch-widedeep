@@ -79,8 +79,12 @@ def test_non_transformer_models(deeptabular, return_dataframe):
     model = WideDeep(deeptabular=deeptabular)
 
     # Let's assume the model is trained
-    t2v = Tab2Vec(model, tab_preprocessor, return_dataframe=return_dataframe)
-    t2v_out, _ = t2v.fit_transform(df_t2v, target_col="target")
+    t2v = Tab2Vec(
+        tab_preprocessor=tab_preprocessor,
+        model=model,
+        return_dataframe=return_dataframe,
+    )
+    t2v_out, _ = t2v.transform(df_t2v, target_col="target")
 
     embed_dim = sum([el[2] for el in tab_preprocessor.cat_embed_input])
     cont_dim = len(tab_preprocessor.continuous_cols)
@@ -150,15 +154,18 @@ def test_tab_transformer_models(
 
     # Let's assume the model is trained
     model = WideDeep(deeptabular=deeptabular)
-    t2v = Tab2Vec(model, tab_preprocessor)
-    X_vec = t2v.transform(df_t2v)
+    t2v = Tab2Vec(
+        tab_preprocessor=tab_preprocessor,
+        model=model,
+    )
+    x_vec = t2v.transform(df_t2v)
 
     if embed_continuous:
         out_dim = (len(embed_cols) + len(cont_cols)) * deeptabular.input_dim
     else:
         out_dim = len(embed_cols) * deeptabular.input_dim + len(cont_cols)
 
-    assert X_vec.shape[1] == out_dim
+    assert x_vec.shape[1] == out_dim
 
 
 ###############################################################################
@@ -211,12 +218,15 @@ def test_attentive_mlp(
 
     # Let's assume the model is trained
     model = WideDeep(deeptabular=deeptabular)
-    t2v = Tab2Vec(model, tab_preprocessor)
-    X_vec = t2v.transform(df_t2v)
+    t2v = Tab2Vec(
+        tab_preprocessor=tab_preprocessor,
+        model=model,
+    )
+    x_vec = t2v.transform(df_t2v)
 
     out_dim = (len(embed_cols) + len(cont_cols)) * deeptabular.input_dim
 
-    assert X_vec.shape[1] == out_dim
+    assert x_vec.shape[1] == out_dim
 
 
 @pytest.mark.parametrize(
@@ -281,9 +291,13 @@ def test_transformer_family_models(
 
     # Let's assume the model is trained
     model = WideDeep(deeptabular=deeptabular)
-    t2v = Tab2Vec(model, tab_preprocessor, return_dataframe=return_dataframe)
-    t2v_out = t2v.transform(df_t2v)
+    t2v = Tab2Vec(
+        tab_preprocessor=tab_preprocessor,
+        model=model,
+        return_dataframe=return_dataframe,
+    )
+    x_vec = t2v.transform(df_t2v)
 
     out_dim = (len(embed_cols) + len(cont_cols)) * deeptabular.input_dim
 
-    assert t2v_out.shape[1] == out_dim
+    assert x_vec.shape[1] == out_dim

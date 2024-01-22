@@ -246,17 +246,17 @@ def test_embed_continuous_and_with_cls_token_tabtransformer(
     res = [out.size(0) == 10]
     if with_cls_token:
         if embed_continuous:
-            res.append(model._compute_attn_output_dim() == model.input_dim)
+            res.append(model._mlp_first_hidden_dim() == model.input_dim)
         else:
             res.append(
-                model._compute_attn_output_dim() == model.input_dim + len(cont_cols)
+                model._mlp_first_hidden_dim() == model.input_dim + len(cont_cols)
             )
     elif embed_continuous:
         mlp_first_h = X.shape[1] * model.input_dim
-        res.append(model._compute_attn_output_dim() == mlp_first_h)
+        res.append(model._mlp_first_hidden_dim() == mlp_first_h)
     else:
         mlp_first_h = len(embed_cols) * model.input_dim + 2
-        res.append(model._compute_attn_output_dim() == mlp_first_h)
+        res.append(model._mlp_first_hidden_dim() == mlp_first_h)
 
     assert all(res)
 

@@ -57,12 +57,8 @@ def test_save_and_load(model):
         weight_mu = model.bayesian_wide_linear.weight_mu.data
         weight_rho = model.bayesian_wide_linear.weight_rho.data
     elif model.__class__.__name__ == "BayesianTabMlp":
-        weight_mu = model.cat_and_cont_embed.cat_embed.embed_layers[
-            "emb_layer_a"
-        ].weight_mu.data
-        weight_rho = model.cat_and_cont_embed.cat_embed.embed_layers[
-            "emb_layer_a"
-        ].weight_rho.data
+        weight_mu = model.cat_embed.embed_layers["emb_layer_a"].weight_mu.data
+        weight_rho = model.cat_embed.embed_layers["emb_layer_a"].weight_rho.data
 
     btrainer.save(
         "tests/test_bayesian_models/test_bayes_model_functioning/model_dir/",
@@ -77,12 +73,8 @@ def test_save_and_load(model):
         new_weight_mu = new_model.bayesian_wide_linear.weight_mu.data
         new_weight_rho = new_model.bayesian_wide_linear.weight_rho.data
     elif model.__class__.__name__ == "BayesianTabMlp":
-        new_weight_mu = new_model.cat_and_cont_embed.cat_embed.embed_layers[
-            "emb_layer_a"
-        ].weight_mu.data
-        new_weight_rho = new_model.cat_and_cont_embed.cat_embed.embed_layers[
-            "emb_layer_a"
-        ].weight_rho.data
+        new_weight_mu = new_model.cat_embed.embed_layers["emb_layer_a"].weight_mu.data
+        new_weight_rho = new_model.cat_embed.embed_layers["emb_layer_a"].weight_rho.data
 
     shutil.rmtree("tests/test_bayesian_models/test_bayes_model_functioning/model_dir/")
 
@@ -114,12 +106,8 @@ def test_save_and_load_dict(model_name):
         weight_mu = model1.bayesian_wide_linear.weight_mu.data
         weight_rho = model1.bayesian_wide_linear.weight_rho.data
     elif model_name == "tabmlp":
-        weight_mu = model1.cat_and_cont_embed.cat_embed.embed_layers[
-            "emb_layer_a"
-        ].weight_mu.data
-        weight_rho = model1.cat_and_cont_embed.cat_embed.embed_layers[
-            "emb_layer_a"
-        ].weight_rho.data
+        weight_mu = model1.cat_embed.embed_layers["emb_layer_a"].weight_mu.data
+        weight_rho = model1.cat_embed.embed_layers["emb_layer_a"].weight_rho.data
 
     model2, btrainer2 = _build_model_and_trainer(model_name)
 
@@ -133,12 +121,8 @@ def test_save_and_load_dict(model_name):
         new_weight_mu = model1.bayesian_wide_linear.weight_mu.data
         new_weight_rho = model1.bayesian_wide_linear.weight_rho.data
     elif model_name == "tabmlp":
-        new_weight_mu = model1.cat_and_cont_embed.cat_embed.embed_layers[
-            "emb_layer_a"
-        ].weight_mu.data
-        new_weight_rho = model1.cat_and_cont_embed.cat_embed.embed_layers[
-            "emb_layer_a"
-        ].weight_rho.data
+        new_weight_mu = model1.cat_embed.embed_layers["emb_layer_a"].weight_mu.data
+        new_weight_rho = model1.cat_embed.embed_layers["emb_layer_a"].weight_rho.data
 
     same_weights = torch.allclose(weight_mu, new_weight_mu) and torch.allclose(
         weight_rho, new_weight_rho
@@ -170,40 +154,3 @@ def _build_model_and_trainer(model_name):
         verbose=0,
     )
     return model, trainer
-
-
-# def test_save_and_load_dict():
-#     wide = Wide(np.unique(X_wide).shape[0], 1)
-#     tabmlp = TabMlp(
-#         mlp_hidden_dims=[32, 16],
-#         column_idx={k: v for v, k in enumerate(colnames)},
-#         cat_embed_input=embed_input,
-#         continuous_cols=colnames[-5:],
-#     )
-#     model1 = WideDeep(wide=deepcopy(wide), deeptabular=deepcopy(tabmlp))
-#     trainer1 = Trainer(model1, objective="binary", verbose=0)
-#     trainer1.fit(
-#         X_wide=X_wide,
-#         X_tab=X_tab,
-#         X_text=X_text,
-#         X_img=X_img,
-#         target=target,
-#         batch_size=16,
-#     )
-#     wide_weights = model1.wide.wide_linear.weight.data
-#     trainer1.save(path="tests/test_model_functioning/model_dir/", save_state_dict=True)
-#     model2 = WideDeep(wide=wide, deeptabular=tabmlp)
-#     trainer2 = Trainer(model2, objective="binary", verbose=0)
-#     trainer2.model.load_state_dict(
-#         torch.load("tests/test_model_functioning/model_dir/wd_model.pt")
-#     )
-#     n_wide_weights = trainer2.model.wide.wide_linear.weight.data
-#     same_weights = torch.allclose(wide_weights, n_wide_weights)
-#     if os.path.isfile(
-#         "tests/test_model_functioning/model_dir/history/train_eval_history.json"
-#     ):
-#         history_saved = True
-#     else:
-#         history_saved = False
-#     shutil.rmtree("tests/test_model_functioning/model_dir/")
-#     assert same_weights and history_saved
