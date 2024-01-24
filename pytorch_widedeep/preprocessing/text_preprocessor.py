@@ -9,7 +9,7 @@ from pytorch_widedeep.utils.text_utils import (
     pad_sequences,
     build_embeddings_matrix,
 )
-from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.utils.fastai_transforms import Vocab, ChunkVocab
 from pytorch_widedeep.preprocessing.base_preprocessor import (
     BasePreprocessor,
@@ -76,7 +76,7 @@ class TextPreprocessor(BasePreprocessor):
     array([[ 1,  1,  9, 16, 17, 18, 11,  0,  0, 13]], dtype=int32)
     """
 
-    @Alias("already_processed", "not_text")
+    @alias("already_processed", ["not_text"])
     def __init__(
         self,
         text_col: str,
@@ -342,10 +342,11 @@ class ChunkTextPreprocessor(TextPreprocessor):
 
         self.is_fitted = False
 
-    def partial_fit(self, chunk: pd.DataFrame) -> "ChunkTextPreprocessor":
+    def partial_fit(self, df: pd.DataFrame) -> "ChunkTextPreprocessor":
+        # df is a chunk of the original dataframe
         self.chunk_counter += 1
 
-        texts = self._read_texts(chunk, self.root_dir)
+        texts = self._read_texts(df, self.root_dir)
 
         tokens = get_texts(texts, self.already_processed, self.n_cpus)
 
@@ -371,8 +372,9 @@ class ChunkTextPreprocessor(TextPreprocessor):
 
         return self
 
-    def fit(self, chunk: pd.DataFrame) -> "ChunkTextPreprocessor":
-        return self.partial_fit(chunk)
+    def fit(self, df: pd.DataFrame) -> "ChunkTextPreprocessor":
+        # df is a chunk of the original dataframe
+        return self.partial_fit(df)
 
     def __repr__(self) -> str:
         list_of_params: List[str] = ["text_col='{text_col}'"]

@@ -61,10 +61,15 @@ class MLP(nn.Module):
     ):
         super(MLP, self).__init__()
 
-        if not dropout:
-            dropout = [0.0] * len(d_hidden)
+        if dropout is None:
+            _dropout: List[float] = [0.0] * len(d_hidden)
         elif isinstance(dropout, float):
-            dropout = [dropout] * len(d_hidden)
+            _dropout = [dropout] * len(d_hidden)
+        else:
+            assert isinstance(
+                dropout, list
+            ), "If not None, dropout must be a float or a list of floats"
+            _dropout = dropout
 
         self.mlp = nn.Sequential()
         for i in range(1, len(d_hidden)):
@@ -74,7 +79,7 @@ class MLP(nn.Module):
                     d_hidden[i - 1],
                     d_hidden[i],
                     activation,
-                    dropout[i - 1],
+                    _dropout[i - 1],
                     batchnorm and (i != len(d_hidden) - 1 or batchnorm_last),
                     linear_first,
                 ),

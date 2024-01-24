@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import numpy as np
 import pandas as pd
@@ -64,7 +64,7 @@ class WidePreprocessor(BasePreprocessor):
     """
 
     def __init__(
-        self, wide_cols: List[str], crossed_cols: List[Tuple[str, str]] = None
+        self, wide_cols: List[str], crossed_cols: Optional[List[Tuple[str, str]]] = None
     ):
         super(WidePreprocessor, self).__init__()
 
@@ -247,7 +247,7 @@ class ChunkWidePreprocessor(WidePreprocessor):
         self,
         wide_cols: List[str],
         n_chunks: int,
-        crossed_cols: List[Tuple[str, str]] = None,
+        crossed_cols: Optional[List[Tuple[str, str]]] = None,
     ):
         super(ChunkWidePreprocessor, self).__init__(wide_cols, crossed_cols)
 
@@ -294,10 +294,10 @@ class ChunkWidePreprocessor(WidePreprocessor):
 
         return self
 
-    def fit(self, chunk: pd.DataFrame) -> "ChunkWidePreprocessor":
+    def fit(self, df: pd.DataFrame) -> "ChunkWidePreprocessor":
         # just to override the fit method in the base class. This class is not
         # designed or thought to run fit
-        return self.partial_fit(chunk)
+        return self.partial_fit(df)
 
     def __repr__(self) -> str:
         list_of_params: List[str] = ["wide_cols={wide_cols}"]

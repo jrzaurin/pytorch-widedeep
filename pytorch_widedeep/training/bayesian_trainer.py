@@ -20,7 +20,7 @@ from pytorch_widedeep.wdtypes import (
     LRScheduler,
 )
 from pytorch_widedeep.callbacks import Callback
-from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.training._trainer_utils import (
     save_epoch_logs,
     print_loss_and_metric,
@@ -112,7 +112,7 @@ class BayesianTrainer(BaseBayesianTrainer):
         <https://pytorch.org/docs/stable/optim.html>`_.
     """
 
-    @Alias(  # noqa: C901
+    @alias(  # noqa: C901
         "objective",
         ["loss_function", "loss_fn", "loss", "cost_function", "cost_fn", "cost"],
     )
@@ -121,8 +121,8 @@ class BayesianTrainer(BaseBayesianTrainer):
         model: BaseBayesianModel,
         objective: str,
         custom_loss_function: Optional[Module] = None,
-        optimizer: Optimizer = None,
-        lr_scheduler: LRScheduler = None,
+        optimizer: Optional[Optimizer] = None,
+        lr_scheduler: Optional[LRScheduler] = None,
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
         verbose: int = 1,
@@ -461,7 +461,7 @@ class BayesianTrainer(BaseBayesianTrainer):
 
     def _predict(  # noqa: C901
         self,
-        X_tab: np.ndarray = None,
+        X_tab: np.ndarray,
         n_samples: int = 5,
         return_samples: bool = False,
         batch_size: int = 256,

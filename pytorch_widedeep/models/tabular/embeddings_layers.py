@@ -1,6 +1,13 @@
 """
 SharedEmbeddings is inspired by the TabTransformer available in AutoGluon:
 https://github.com/awslabs/autogluon/tree/master/tabular/src/autogluon/tabular/models/tab_transformer
+
+PiecewiseContEmbeddings and PeriodicContEmbeddings are presented in the paper:
+'On Embeddings for Numerical Features in Tabular Deep Learning'
+
+The implementation here is inspired by and a combination of:
+1. The original implementation here: https://github.com/yandex-research/rtdl-num-embeddings/tree/main?tab=readme-ov-file
+2. And the implementation at pytorch-frame here: https://pytorch-frame.readthedocs.io/en/latest/_modules/torch_frame/nn/encoder/stype_encoder.html
 """
 
 import math

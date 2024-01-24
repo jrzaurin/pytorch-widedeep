@@ -88,7 +88,7 @@ class BaseContrastiveDenoisingTrainer(ABC):
     def pretrain(
         self,
         X_tab: np.ndarray,
-        X_val: Optional[np.ndarray],
+        X_tab_val: Optional[np.ndarray],
         val_split: Optional[float],
         validation_freq: int,
         n_epochs: int,
@@ -108,14 +108,14 @@ class BaseContrastiveDenoisingTrainer(ABC):
     def _set_loss_fn(self, **kwargs):
         if self.loss_type in ["contrastive", "both"]:
             temperature = kwargs.get("temperature", 0.1)
-            reductiom = kwargs.get("reductiom", "mean")
-            self.contrastive_loss = InfoNCELoss(temperature, reductiom)
+            reduction = kwargs.get("reduction", "mean")
+            self.contrastive_loss = InfoNCELoss(temperature, reduction)
 
         if self.loss_type in ["denoising", "both"]:
             lambda_cat = kwargs.get("lambda_cat", 1.0)
             lambda_cont = kwargs.get("lambda_cont", 1.0)
-            reductiom = kwargs.get("reductiom", "mean")
-            self.denoising_loss = DenoisingLoss(lambda_cat, lambda_cont, reductiom)
+            reduction = kwargs.get("reduction", "mean")
+            self.denoising_loss = DenoisingLoss(lambda_cat, lambda_cont, reduction)
 
     def _compute_loss(
         self,

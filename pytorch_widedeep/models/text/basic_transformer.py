@@ -4,7 +4,7 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import Union, Tensor, Optional
-from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.models.tabular.transformers._encoders import (
     TransformerEncoder,
 )
@@ -82,8 +82,8 @@ class Transformer(nn.Module):
     >>> out = model(X_text)
     """
 
-    @Alias("input_dim", ["embed_dim", "d_model"])
-    @Alias("seq_length", ["max_length", "maxlen"])
+    @alias("input_dim", ["embed_dim", "d_model"])
+    @alias("seq_length", ["max_length", "maxlen"])
     def __init__(
         self,
         vocab_size: int,

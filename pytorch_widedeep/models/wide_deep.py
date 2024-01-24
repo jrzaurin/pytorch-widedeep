@@ -5,7 +5,7 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.models.fds_layer import FDSLayer
-from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.tabnet.tab_net import TabNetPredLayer
@@ -132,7 +132,7 @@ class WideDeep(nn.Module):
      `pytorch_widedeep.models.tab_mlp.TabMlp`
     """
 
-    @Alias(  # noqa: C901
+    @alias(  # noqa: C901
         "pred_dim",
         ["num_class", "pred_size"],
     )
@@ -170,7 +170,7 @@ class WideDeep(nn.Module):
 
         # this attribute will be eventually over-written by the Trainer's
         # device. Acts here as a 'placeholder'.
-        self.wd_device: str = None
+        self.wd_device: Optional[str] = None
 
         # required as attribute just in case we pass a deephead
         self.pred_dim = pred_dim
@@ -237,7 +237,7 @@ class WideDeep(nn.Module):
         deeptabular: Optional[BaseWDModelComponent],
         deeptext: Optional[BaseWDModelComponent],
         deepimage: Optional[BaseWDModelComponent],
-        head_hidden_dims: Optional[List[int]],
+        head_hidden_dims: List[int],
         head_activation: str,
         head_dropout: float,
         head_batchnorm: bool,
@@ -350,6 +350,7 @@ class WideDeep(nn.Module):
         if self.deepimage is not None:
             deepside = torch.cat([deepside, self.deepimage(X["deepimage"])], axis=1)  # type: ignore[call-overload]
 
+        assert self.deephead is not None  # assertion to avoid type issues. TO DO: Fix
         deepside_out = self.deephead(deepside)
 
         if self.is_tabnet:
@@ -389,6 +390,10 @@ class WideDeep(nn.Module):
         y: Optional[Tensor] = None,
         epoch: Optional[int] = None,
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+        assert self.deeptabular is not None, (
+            "Feature Distribution Smoothing (FDS) is supported when using only a deeptabular component"
+            " and for regression problems."
+        )
         res = self.fds_layer(self.deeptabular(X["deeptabular"]), y, epoch)
         if self.enforce_positive:
             if isinstance(res, Tuple):  # type: ignore[arg-type]

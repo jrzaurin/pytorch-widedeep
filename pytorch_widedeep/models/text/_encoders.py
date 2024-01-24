@@ -37,6 +37,10 @@ class ContextAttentionEncoder(nn.Module):
             o, (h, c) = self.rnn(X, (h, c))
         elif isinstance(self.rnn, nn.GRU):
             o, h = self.rnn(X, h)
+        else:
+            raise ValueError(
+                "rnn should be either nn.LSTM or nn.GRU. Got {}".format(type(self.rnn))
+            )
 
         attn_inp = self._process_rnn_outputs(o, h)
 

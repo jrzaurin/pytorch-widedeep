@@ -1,3 +1,4 @@
+from typing import Dict, List
 from collections import defaultdict
 
 
@@ -41,13 +42,13 @@ class _LossAliases:
     }
 
     @classproperty
-    def alias_to_loss(cls):
+    def alias_to_loss(cls) -> Dict[str, str]:
         return {
             loss: alias for alias, losses in cls.loss_aliases.items() for loss in losses
         }
 
     @classmethod
-    def get(cls, loss):
+    def get(cls, loss) -> List[str]:
         return cls.loss_aliases.get(loss)
 
 

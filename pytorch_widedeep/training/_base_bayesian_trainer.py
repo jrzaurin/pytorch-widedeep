@@ -42,8 +42,8 @@ class BaseBayesianTrainer(ABC):
         model: BaseBayesianModel,
         objective: str,
         custom_loss_function: Optional[Module],
-        optimizer: Optimizer,
-        lr_scheduler: LRScheduler,
+        optimizer: Optional[Optimizer],
+        lr_scheduler: Optional[LRScheduler],
         callbacks: Optional[List[Callback]],
         metrics: Optional[Union[List[Metric], List[TorchMetric]]],
         verbose: int,
@@ -85,7 +85,7 @@ class BaseBayesianTrainer(ABC):
         target_val: Optional[np.ndarray],
         val_split: Optional[float],
         n_epochs: int,
-        val_freq: int,
+        validation_freq: int,
         batch_size: int,
         n_train_samples: int,
         n_val_samples: int,
@@ -201,7 +201,9 @@ class BaseBayesianTrainer(ABC):
         else:
             self.reducelronplateau_criterion = "loss"
 
-    def _set_lr_scheduler_running_params(self, lr_scheduler, **kwargs):
+    def _set_lr_scheduler_running_params(
+        self, lr_scheduler: Optional[LRScheduler], **kwargs
+    ):
         reducelronplateau_criterion = kwargs.get("reducelronplateau_criterion", None)
         self._set_reduce_on_plateau_criterion(lr_scheduler, reducelronplateau_criterion)
         if lr_scheduler is not None:

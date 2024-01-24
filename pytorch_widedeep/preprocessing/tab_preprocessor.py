@@ -12,7 +12,7 @@ from pytorch_widedeep.wdtypes import (
     Literal,
     Optional,
 )
-from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
 from pytorch_widedeep.preprocessing.base_preprocessor import (
     BasePreprocessor,
@@ -239,10 +239,10 @@ class TabPreprocessor(BasePreprocessor):
     >>> ft_cont_df2 = tab_preprocessor2.fit_transform(cont_df)
     """
 
-    @Alias("with_attention", "for_transformer")
-    @Alias("cat_embed_cols", "embed_cols")
-    @Alias("scale", "scale_cont_cols")
-    @Alias("quantization_setup", "cols_and_bins")
+    @alias("with_attention", ["for_transformer"])
+    @alias("cat_embed_cols", ["embed_cols"])
+    @alias("scale", ["scale_cont_cols"])
+    @alias("quantization_setup", ["cols_and_bins"])
     def __init__(
         self,
         cat_embed_cols: Optional[Union[List[str], List[Tuple[str, int]]]] = None,
@@ -260,7 +260,7 @@ class TabPreprocessor(BasePreprocessor):
         verbose: int = 1,
         *,
         scale: bool = False,
-        already_standard: List[str] = None,
+        already_standard: Optional[List[str]] = None,
         **kwargs,
     ):
         super(TabPreprocessor, self).__init__()
@@ -403,7 +403,7 @@ class TabPreprocessor(BasePreprocessor):
 
         return df_deep.values
 
-    def transform_sample(self, df: pd.DataFrame) -> pd.DataFrame:
+    def transform_sample(self, df: pd.DataFrame) -> np.ndarray:
         return self.transform(df).astype("float")[0]
 
     def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:  # noqa: C901
@@ -420,7 +420,7 @@ class TabPreprocessor(BasePreprocessor):
         pd.DataFrame
             Pandas dataframe with the original values
         """
-        decoded = pd.DataFrame(encoded, columns=self.column_idx.keys())
+        decoded = pd.DataFrame(encoded, columns=list(self.column_idx.keys()))
         # embeddings back to original category
         if self.cat_embed_cols is not None:
             decoded = self.label_encoder.inverse_transform(decoded)
@@ -475,6 +475,11 @@ class TabPreprocessor(BasePreprocessor):
                 self.embed_dim: Dict = dict(self.cat_embed_cols)  # type: ignore
                 embed_colname = [emb[0] for emb in self.cat_embed_cols]
             elif self.auto_embed_dim:
+                assert isinstance(self.cat_embed_cols[0], str), (
+                    "If 'auto_embed_dim' is 'True' and 'with_attention' is 'False', "
+                    "'cat_embed_cols' must be a list of strings with the columns to "
+                    "be encoded as embeddings."
+                )
                 n_cats = {col: df[col].nunique() for col in self.cat_embed_cols}
                 self.embed_dim = {
                     # type: ignore[misc]
@@ -563,8 +568,9 @@ class TabPreprocessor(BasePreprocessor):
 
         if self.with_cls_token and not self.with_attention:
             warnings.warn(
-                "If 'with_cls_token' is set to 'True', 'with_attention' will be automatically ",
+                "If 'with_cls_token' is set to 'True', 'with_attention' will be automatically "
                 "to 'True' if is 'False'",
+                UserWarning,
             )
             self.with_attention = True
 
@@ -740,10 +746,10 @@ class ChunkTabPreprocessor(TabPreprocessor):
     {'cat_col': 0, 'cont_col': 1}
     """
 
-    @Alias("with_attention", "for_transformer")
-    @Alias("cat_embed_cols", "embed_cols")
-    @Alias("scale", "scale_cont_cols")
-    @Alias("cols_and_bins", "quantization_setup")
+    @alias("with_attention", ["for_transformer"])
+    @alias("cat_embed_cols", ["embed_cols"])
+    @alias("scale", ["scale_cont_cols"])
+    @alias("cols_and_bins", ["quantization_setup"])
     def __init__(
         self,
         n_chunks: int,
@@ -758,7 +764,7 @@ class ChunkTabPreprocessor(TabPreprocessor):
         verbose: int = 1,
         *,
         scale: bool = False,
-        already_standard: List[str] = None,
+        already_standard: Optional[List[str]] = None,
         **kwargs,
     ):
         super(ChunkTabPreprocessor, self).__init__(
@@ -789,40 +795,39 @@ class ChunkTabPreprocessor(TabPreprocessor):
         self.embed_prepared = False
         self.continuous_prepared = False
 
-    def partial_fit(self, chunk: pd.DataFrame) -> "ChunkTabPreprocessor":  # noqa: C901
+    def partial_fit(self, df: pd.DataFrame) -> "ChunkTabPreprocessor":  # noqa: C901
+        # df here, and throughout the class, is a chunk of the original df
         self.chunk_counter += 1
 
-        chunk_adj = (
-            self._insert_cls_token(chunk) if self.with_cls_token else chunk.copy()
-        )
+        df_adj = self._insert_cls_token(df) if self.with_cls_token else df.copy()
 
         self.column_idx: Dict[str, int] = {}
         if self.cat_embed_cols is not None:
             if not self.embed_prepared:
-                chunk_emb = self._prepare_embed(chunk_adj)
+                df_emb = self._prepare_embed(df_adj)
                 self.label_encoder = LabelEncoder(
-                    columns_to_encode=chunk_emb.columns.tolist(),
+                    columns_to_encode=df_emb.columns.tolist(),
                     shared_embed=self.shared_embed,
                     with_attention=self.with_attention,
                 )
-                self.label_encoder.partial_fit(chunk_emb)
+                self.label_encoder.partial_fit(df_emb)
             else:
-                chunk_emb = chunk_adj[self.cat_embed_cols]
-                self.label_encoder.partial_fit(chunk_emb)
+                df_emb = df_adj[self.cat_embed_cols]
+                self.label_encoder.partial_fit(df_emb)
 
-            self.column_idx.update({k: v for v, k in enumerate(chunk_emb.columns)})
+            self.column_idx.update({k: v for v, k in enumerate(df_emb.columns)})
 
         if self.continuous_cols is not None:
             if not self.continuous_prepared:
-                chunk_cont = self._prepare_continuous(chunk_adj)
+                df_cont = self._prepare_continuous(df_adj)
             else:
-                chunk_cont = chunk[self.continuous_cols]
+                df_cont = df[self.continuous_cols]
 
             if self.standardize_cols is not None:
-                self.scaler.partial_fit(chunk_cont[self.standardize_cols].values)
+                self.scaler.partial_fit(df_cont[self.standardize_cols].values)
 
             self.column_idx.update(
-                {k: v + len(self.column_idx) for v, k in enumerate(chunk_cont.columns)}
+                {k: v + len(self.column_idx) for v, k in enumerate(df_cont.columns)}
             )
 
         if self.chunk_counter == self.n_chunks:
@@ -839,12 +844,12 @@ class ChunkTabPreprocessor(TabPreprocessor):
 
         return self
 
-    def fit(self, chunk: pd.DataFrame) -> "ChunkTabPreprocessor":
+    def fit(self, df: pd.DataFrame) -> "ChunkTabPreprocessor":
         # just to override the fit method in the base class. This class is not
         # designed or thought to run fit
-        return self.partial_fit(chunk)
+        return self.partial_fit(df)
 
-    def _prepare_embed(self, chunk: pd.DataFrame) -> pd.DataFrame:
+    def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
         # When dealing with chunks we will not support the option of
         # automatically define embeddings as this implies going through the
         # entire dataset
@@ -862,9 +867,9 @@ class ChunkTabPreprocessor(TabPreprocessor):
 
         self.embed_prepared = True
 
-        return chunk[embed_colname]
+        return df[embed_colname]
 
-    def _prepare_continuous(self, chunk: pd.DataFrame) -> pd.DataFrame:
+    def _prepare_continuous(self, df: pd.DataFrame) -> pd.DataFrame:
         if not hasattr(self, "standardize_cols"):
             if self.cols_to_scale is not None:
                 self.standardize_cols = (
@@ -891,7 +896,7 @@ class ChunkTabPreprocessor(TabPreprocessor):
 
         self.continuous_prepared = True
 
-        return chunk[self.continuous_cols]
+        return df[self.continuous_cols]
 
     def __repr__(self) -> str:  # noqa: C901
         list_of_params: List[str] = []

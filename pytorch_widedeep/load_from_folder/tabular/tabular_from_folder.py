@@ -67,7 +67,7 @@ class TabFromFolder:
         text_col: Optional[str] = None,
         img_col: Optional[str] = None,
         ignore_target: bool = False,
-        reference: Type["TabFromFolder"] = None,
+        reference: Optional[Type["TabFromFolder"]] = None,
         verbose: Optional[int] = 1,
     ):
         self.fname = fname
@@ -104,7 +104,7 @@ class TabFromFolder:
 
     def get_item(
         self, idx: int
-    ) -> Tuple[np.ndarray, str, str, Optional[Union[int, float]]]:
+    ) -> Tuple[np.ndarray, Optional[str], Optional[str], Optional[Union[int, float]]]:
         path = os.path.join(self.directory, self.fname)
 
         try:
@@ -122,10 +122,10 @@ class TabFromFolder:
         except Exception:
             raise ValueError("Currently only csv format is supported.")
 
-        text_fname_or_text: str = (
+        text_fname_or_text: Optional[str] = (
             sample[self.text_col].to_list()[0] if self.text_col is not None else None
         )
-        img_fname: str = (
+        img_fname: Optional[str] = (
             sample[self.img_col].to_list()[0] if self.img_col is not None else None
         )
 
@@ -247,7 +247,7 @@ class WideFromFolder(TabFromFolder):
         text_col: Optional[str] = None,
         img_col: Optional[str] = None,
         ignore_target: bool = False,
-        reference: Type["WideFromFolder"] = None,
+        reference: Optional[Type["WideFromFolder"]] = None,
         verbose: int = 1,
     ):
         super(WideFromFolder, self).__init__(

@@ -201,7 +201,7 @@ class StackedAttentiveRNN(BaseWDModelComponent):
 
         # Mlp
         if self.head_hidden_dims is not None:
-            head_hidden_dims = [self.rnn_output_dim] + head_hidden_dims
+            head_hidden_dims = [self.rnn_output_dim] + self.head_hidden_dims
             self.rnn_mlp: Union[MLP, nn.Identity] = MLP(
                 head_hidden_dims,
                 head_activation,

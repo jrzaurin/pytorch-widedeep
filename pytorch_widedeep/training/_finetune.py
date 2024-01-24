@@ -207,6 +207,9 @@ class FineTune:
             if routine == "felbo":
                 params, max_lr, base_lr = layer.parameters(), lr, lr / 10.0  # type: ignore
             elif routine == "howard":
+                # type conflict here that for now I am going to ignore
+                # TO DO: create a _finetune_felbo and _fine_tune_howard
+                # methods
                 params += [{"params": layer.parameters(), "lr": lr / 10.0}]
                 max_lr += [lr]
                 base_lr += [lr / 10.0]

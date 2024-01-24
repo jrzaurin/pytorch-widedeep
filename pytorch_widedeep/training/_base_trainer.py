@@ -155,7 +155,7 @@ class BaseTrainer(ABC):
         if initializers is not None:
             if isinstance(initializers, Dict):
                 self.initializer = MultipleInitializer(
-                    initializers, verbose=self.verbose
+                    initializers, verbose=self.verbose > 0
                 )
                 self.initializer.apply(self.model)
             elif isinstance(initializers, type):
@@ -186,7 +186,9 @@ class BaseTrainer(ABC):
         else:
             return alias_to_loss(objective)
 
-    def _set_optimizer(self, optimizers: Union[Optimizer, Dict[str, Optimizer]]):
+    def _set_optimizer(
+        self, optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]]
+    ):
         if optimizers is not None:
             if isinstance(optimizers, Optimizer):
                 optimizer: Union[Optimizer, MultipleOptimizer] = optimizers

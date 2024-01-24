@@ -162,6 +162,9 @@ def wd_train_val_split(  # noqa: C901
         eval_set = WideDeepDataset(**X_val, transforms=transforms, is_training=False)  # type: ignore
     elif val_split is not None:
         if not X_train:
+            assert (
+                target is not None
+            ), "if the validation split is specified, the target must also be specified"
             X_train = _build_train_dict(X_wide, X_tab, X_text, X_img, target)
         y_tr, y_val, idx_tr, idx_val = train_test_split(
             X_train["target"],
@@ -195,6 +198,7 @@ def wd_train_val_split(  # noqa: C901
         eval_set = WideDeepDataset(**X_val, transforms=transforms, is_training=False)  # type: ignore
     else:
         if not X_train:
+            assert target is not None
             X_train = _build_train_dict(X_wide, X_tab, X_text, X_img, target)
         train_set = WideDeepDataset(**X_train, transforms=transforms, **lds_args)  # type: ignore
         eval_set = None
@@ -202,7 +206,13 @@ def wd_train_val_split(  # noqa: C901
     return train_set, eval_set
 
 
-def _build_train_dict(X_wide, X_tab, X_text, X_img, target):
+def _build_train_dict(
+    X_wide: Optional[np.ndarray],
+    X_tab: Optional[np.ndarray],
+    X_text: Optional[np.ndarray],
+    X_img: Optional[np.ndarray],
+    target: np.ndarray,
+) -> Dict[str, np.ndarray]:
     X_train = {"target": target}
     if X_wide is not None:
         X_train["X_wide"] = X_wide
@@ -241,7 +251,7 @@ def print_loss_and_metric(pb: tqdm, loss: float, score: Optional[Dict] = None):
         pb.set_postfix(loss=loss)
 
 
-def save_epoch_logs(epoch_logs: Dict, loss: float, score: Dict, stage: str):
+def save_epoch_logs(epoch_logs: Dict, loss: float, score: Optional[Dict], stage: str):
     """
     Function to improve readability and avoid code repetition in the
     training/validation loop within the Trainer's fit method
@@ -266,7 +276,7 @@ def save_epoch_logs(epoch_logs: Dict, loss: float, score: Dict, stage: str):
     return epoch_logs
 
 
-def bayesian_alias_to_loss(loss_fn: str, **kwargs):
+def bayesian_alias_to_loss(loss_fn: str, **kwargs) -> nn.Module:
     r"""Function that returns the corresponding loss function given an alias.
     To be used with the ``BayesianTrainer``
 
@@ -287,14 +297,20 @@ def bayesian_alias_to_loss(loss_fn: str, **kwargs):
     """
     if loss_fn == "binary":
         return nn.BCEWithLogitsLoss(pos_weight=kwargs["weight"], reduction="sum")
-    if loss_fn == "multiclass":
+    elif loss_fn == "multiclass":
         return nn.CrossEntropyLoss(weight=kwargs["weight"], reduction="sum")
-    if loss_fn == "regression":
+    elif loss_fn == "regression":
         return BayesianSELoss()
         # return BayesianRegressionLoss(noise_tolerance=kwargs["noise_tolerance"])
+    else:
+        raise ValueError(
+            "objective or loss function is not supported. Please consider passing a callable "
+            "directly to the Trainer (see docs) or use one of 'binary', 'multiclass', "
+            "or 'regression'"
+        )
 
 
-def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
+def alias_to_loss(loss_fn: str, **kwargs) -> nn.Module:  # noqa: C901
     r"""Function that returns the corresponding loss function given an alias
 
     Parameters
@@ -312,39 +328,40 @@ def alias_to_loss(loss_fn: str, **kwargs):  # noqa: C901
     >>> from pytorch_widedeep.training._trainer_utils import alias_to_loss
     >>> loss_fn = alias_to_loss(loss_fn="binary_logloss", weight=None)
     """
-    if loss_fn not in _ObjectiveToMethod.keys():
-        raise ValueError(
-            "objective or loss function is not supported. Please consider passing a callable "
-            "directly to the compile method (see docs) or use one of the supported objectives "
-            "or loss functions: {}".format(", ".join(_ObjectiveToMethod.keys()))
-        )
+
     if loss_fn in _LossAliases.get("binary"):
         return nn.BCEWithLogitsLoss(pos_weight=kwargs["weight"])
-    if loss_fn in _LossAliases.get("multiclass"):
+    elif loss_fn in _LossAliases.get("multiclass"):
         return nn.CrossEntropyLoss(weight=kwargs["weight"])
-    if loss_fn in _LossAliases.get("regression"):
+    elif loss_fn in _LossAliases.get("regression"):
         return MSELoss()
-    if loss_fn in _LossAliases.get("mean_absolute_error"):
+    elif loss_fn in _LossAliases.get("mean_absolute_error"):
         return L1Loss()
-    if loss_fn in _LossAliases.get("mean_squared_log_error"):
+    elif loss_fn in _LossAliases.get("mean_squared_log_error"):
         return MSLELoss()
-    if loss_fn in _LossAliases.get("root_mean_squared_error"):
+    elif loss_fn in _LossAliases.get("root_mean_squared_error"):
         return RMSELoss()
-    if loss_fn in _LossAliases.get("root_mean_squared_log_error"):
+    elif loss_fn in _LossAliases.get("root_mean_squared_log_error"):
         return RMSLELoss()
-    if loss_fn in _LossAliases.get("zero_inflated_lognormal"):
+    elif loss_fn in _LossAliases.get("zero_inflated_lognormal"):
         return ZILNLoss()
-    if loss_fn in _LossAliases.get("quantile"):
+    elif loss_fn in _LossAliases.get("quantile"):
         return QuantileLoss()
-    if loss_fn in _LossAliases.get("tweedie"):
+    elif loss_fn in _LossAliases.get("tweedie"):
         return TweedieLoss()
-    if loss_fn in _LossAliases.get("huber"):
+    elif loss_fn in _LossAliases.get("huber"):
         return HuberLoss()
-    if loss_fn in _LossAliases.get("focalr_l1"):
+    elif loss_fn in _LossAliases.get("focalr_l1"):
         return FocalR_L1Loss()
-    if loss_fn in _LossAliases.get("focalr_mse"):
+    elif loss_fn in _LossAliases.get("focalr_mse"):
         return FocalR_MSELoss()
-    if loss_fn in _LossAliases.get("focalr_rmse"):
+    elif loss_fn in _LossAliases.get("focalr_rmse"):
         return FocalR_RMSELoss()
-    if "focal_loss" in loss_fn:
+    elif "focal_loss" in loss_fn:
         return FocalLoss(**kwargs)
+    else:
+        raise ValueError(
+            "objective or loss function is not supported. Please consider passing a callable "
+            "directly to the Trainer (see docs) or use one of the supported objectives "
+            "or loss functions: {}".format(", ".join(_ObjectiveToMethod.keys()))
+        )
