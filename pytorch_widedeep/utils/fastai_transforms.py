@@ -22,6 +22,7 @@ from pytorch_widedeep.wdtypes import (
     Any,
     List,
     Match,
+    Union,
     Tokens,
     Callable,
     Optional,
@@ -459,7 +460,7 @@ class Vocab:
         # rest of the library I am including a transform method
         return self.numericalize(t)
 
-    def textify(self, nums: Collection[int], sep=" ") -> List[str]:
+    def textify(self, nums: Collection[int], sep=" ") -> Union[str, List[str]]:
         """Convert a list of ``nums`` (or indexes) to their tokens.
 
         Returns
@@ -473,7 +474,9 @@ class Vocab:
             else [self.itos[i] for i in nums]
         )
 
-    def inverse_transform(self, nums: Collection[int], sep=" ") -> List[str]:
+    def inverse_transform(
+        self, nums: Collection[int], sep=" "
+    ) -> Union[str, List[str]]:
         # I simply want to honor fast ai naming, but for consistency with the
         # rest of the library I am including an inverse_transform method
         return self.textify(nums, sep)
@@ -557,7 +560,9 @@ class ChunkVocab:
         """
         return [self.stoi[w] for w in t]
 
-    def inverse_transform(self, nums: Collection[int], sep=" ") -> List[str]:
+    def inverse_transform(
+        self, nums: Collection[int], sep=" "
+    ) -> Union[str, List[str]]:
         """Convert a list of ``nums`` (or indexes) to their tokens.
 
         Returns

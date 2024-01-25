@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Literal, KeysView, DefaultDict
 from collections import defaultdict
 
 
@@ -88,16 +88,18 @@ class _ObjectiveToMethod:
     }
 
     @classproperty
-    def method_to_objecive(cls):
+    def method_to_objecive(cls) -> DefaultDict[str, List[str]]:
         _method_to_objecive = defaultdict(list)
         for obj, method in cls.objective_to_method.items():
             _method_to_objecive[method].append(obj)
         return _method_to_objecive
 
     @classmethod
-    def keys(cls):
+    def keys(cls) -> KeysView[str]:
         return cls.objective_to_method.keys()
 
     @classmethod
     def get(cls, obj):
+        # this will return a str, but typing it has undesired side effects
+        # with Literals typed elsewhere
         return cls.objective_to_method.get(obj)

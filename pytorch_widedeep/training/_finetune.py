@@ -11,6 +11,7 @@ from pytorch_widedeep.wdtypes import (
     Tuple,
     Union,
     Literal,
+    Optional,
     Optimizer,
     DataLoader,
     LRScheduler,
@@ -59,8 +60,8 @@ class FineTune:
     def __init__(
         self,
         loss_fn: Any,
-        metric: Union[Metric, MultipleMetrics],
-        method: Literal["binary", "regression", "multiclass"],
+        metric: Optional[Union[Metric, MultipleMetrics]],
+        method: Literal["binary", "regression", "multiclass", "qregression"],
         verbose: int,
     ):
         self.loss_fn = loss_fn

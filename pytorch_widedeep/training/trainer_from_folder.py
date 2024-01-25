@@ -26,7 +26,7 @@ from pytorch_widedeep.wdtypes import (
 from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.initializers import Initializer
 from pytorch_widedeep.training._finetune import FineTune
-from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._base_trainer import BaseTrainer
 from pytorch_widedeep.training._trainer_utils import (
@@ -178,7 +178,7 @@ class TrainerFromFolder(BaseTrainer):
 
     """
 
-    @Alias(  # noqa: C901
+    @alias(  # noqa: C901
         "objective",
         ["loss_function", "loss_fn", "loss", "cost_function", "cost_fn", "cost"],
     )
@@ -212,7 +212,7 @@ class TrainerFromFolder(BaseTrainer):
             **kwargs,
         )
 
-    @Alias("finetune", "warmup")
+    @alias("finetune", ["warmup"])
     def fit(  # noqa: C901
         self,
         train_loader: DataLoader,
@@ -418,8 +418,8 @@ class TrainerFromFolder(BaseTrainer):
         else:
             torch.save(self.model, model_path)
 
-    @Alias("n_epochs", ["finetune_epochs", "warmup_epochs"])
-    @Alias("max_lr", ["finetune_max_lr", "warmup_max_lr"])
+    @alias("n_epochs", ["finetune_epochs", "warmup_epochs"])
+    @alias("max_lr", ["finetune_max_lr", "warmup_max_lr"])
     def _finetune(
         self,
         loader: DataLoader,
@@ -444,12 +444,15 @@ class TrainerFromFolder(BaseTrainer):
                 "Currently warming up is only supported without a fully connected 'DeepHead'"
             )
 
-        finetuner = FineTune(self.loss_fn, self.metric, self.method, self.verbose)
+        finetuner = FineTune(self.loss_fn, self.metric, self.method, self.verbose)  # type: ignore[arg-type]
         if self.model.wide:
             finetuner.finetune_all(self.model.wide, "wide", loader, n_epochs, max_lr)
 
         if self.model.deeptabular:
             if deeptabular_gradual:
+                assert (
+                    deeptabular_layers is not None
+                ), "deeptabular_layers must be passed if deeptabular_gradual=True"
                 finetuner.finetune_gradual(
                     self.model.deeptabular,
                     "deeptabular",
@@ -465,6 +468,9 @@ class TrainerFromFolder(BaseTrainer):
 
         if self.model.deeptext:
             if deeptext_gradual:
+                assert (
+                    deeptext_layers is not None
+                ), "deeptext_layers must be passed if deeptabular_gradual=True"
                 finetuner.finetune_gradual(
                     self.model.deeptext,
                     "deeptext",
@@ -480,6 +486,9 @@ class TrainerFromFolder(BaseTrainer):
 
         if self.model.deepimage:
             if deepimage_gradual:
+                assert (
+                    deepimage_layers is not None
+                ), "deepimage_layers must be passed if deeptabular_gradual=True"
                 finetuner.finetune_gradual(
                     self.model.deepimage,
                     "deepimage",
@@ -577,7 +586,6 @@ class TrainerFromFolder(BaseTrainer):
         batch_size: Optional[int] = None,
         uncertainty_granularity=1000,
         uncertainty: bool = False,
-        quantiles: bool = False,
     ) -> List:
         r"""Private method to avoid code repetition in predict and
         predict_proba. For parameter information, please, see the .predict()
@@ -629,13 +637,13 @@ class TrainerFromFolder(BaseTrainer):
 
         with torch.no_grad():
             with trange(uncertainty_granularity, disable=uncertainty is False) as t:
-                for i, k in zip(t, range(prediction_iters)):
+                for _ in range(prediction_iters):
                     t.set_description("predict_UncertaintyIter")
 
                     with trange(
                         test_steps, disable=self.verbose != 1 or uncertainty is True
                     ) as tt:
-                        for j, data in zip(tt, test_loader):
+                        for data in test_loader:
                             tt.set_description("predict")
                             X = {k: v.to(self.device) for k, v in data.items()}
                             preds = (

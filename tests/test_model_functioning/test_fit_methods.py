@@ -271,8 +271,8 @@ def test_aliases():
     )
     assert (
         "train_loss" in trainer.history.keys()
-        and trainer.__wd_aliases_used["objective"] == "loss"
-        and trainer.__wd_aliases_used["finetune"] == "warmup"
+        and trainer.objective == "regression"
+        and trainer.with_finetuning
     )
 
 

@@ -15,7 +15,7 @@ from pytorch_widedeep.wdtypes import (
     Literal,
     Optional,
 )
-from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 
 warnings.filterwarnings("ignore")
 pd.options.mode.chained_assignment = None
@@ -59,7 +59,7 @@ class LabelEncoder:
 
     """
 
-    @Alias("with_attention", "for_transformer")
+    @alias("with_attention", ["for_transformer"])
     def __init__(
         self,
         columns_to_encode: Optional[List[str]] = None,
@@ -110,14 +110,8 @@ class LabelEncoder:
             # attention and we do not re-start the index/counter
             self.cum_idx: int = 1
             for k, v in unique_column_vals.items():
-                self.encoding_dict[k] = {
-                    o: i + self.cum_idx for i, o in enumerate(unique_column_vals[k])
-                }
-                self.cum_idx = (
-                    1
-                    if self.reset_embed_idx
-                    else self.cum_idx + len(unique_column_vals[k])
-                )
+                self.encoding_dict[k] = {o: i + self.cum_idx for i, o in enumerate(v)}
+                self.cum_idx = 1 if self.reset_embed_idx else self.cum_idx + len(v)
         else:
             # the 'partial_fit' method has already run.
             # "cls_token" will have been added already
@@ -329,7 +323,7 @@ def get_kernel_window(
     kernel: Literal["gaussian", "triang", "laplace"] = "gaussian",
     ks: int = 5,
     sigma: Union[int, float] = 2,
-) -> List[float]:
+) -> Union[List[float], np.ndarray]:
     """Procedure to prepare the window of values from symetrical kernel function
     for smoothing of the distribution in Label and Feature Distribution
     Smoothing (LDS & FDS).

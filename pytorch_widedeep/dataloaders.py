@@ -82,6 +82,11 @@ class DataLoaderImbalanced(DataLoader):
     def __init__(
         self, dataset: WideDeepDataset, batch_size: int, num_workers: int, **kwargs
     ):
+        assert dataset.Y is not None, (
+            "The 'dataset' instance of WideDeepDataset must contain a "
+            "target array 'Y'"
+        )
+
         self.with_lds = dataset.with_lds
         if "oversample_mul" in kwargs:
             oversample_mul = kwargs["oversample_mul"]

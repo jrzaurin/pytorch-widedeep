@@ -13,7 +13,7 @@ from pytorch_widedeep.wdtypes import (
     Optional,
     WeightsEnum,
 )
-from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.models.image._layers import conv_layer
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models._base_wd_model_component import (
@@ -122,7 +122,7 @@ class Vision(BaseWDModelComponent):
     >>> out = model(X_img)
     """
 
-    @Alias("pretrained_model_setup", ["pretrained_model_name"])
+    @alias("pretrained_model_setup", ["pretrained_model_name"])
     def __init__(
         self,
         pretrained_model_setup: Union[str, Dict[str, Union[str, WeightsEnum]]] = None,

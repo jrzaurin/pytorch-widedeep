@@ -21,7 +21,7 @@ from pytorch_widedeep.losses import (
     FocalR_MSELoss,
     FocalR_RMSELoss,
 )
-from pytorch_widedeep.wdtypes import Dict, List, Optional, Transforms
+from pytorch_widedeep.wdtypes import Dict, List, Literal, Optional, Transforms
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._loss_and_obj_aliases import (
     _LossAliases,
@@ -105,7 +105,7 @@ def tabular_train_val_split(
 
 def wd_train_val_split(  # noqa: C901
     seed: int,
-    method: str,
+    method: Literal["regression", "binary", "multiclass", "qregression"],
     X_wide: Optional[np.ndarray] = None,
     X_tab: Optional[np.ndarray] = None,
     X_text: Optional[np.ndarray] = None,
@@ -171,7 +171,9 @@ def wd_train_val_split(  # noqa: C901
             np.arange(len(X_train["target"])),
             test_size=val_split,
             random_state=seed,
-            stratify=X_train["target"] if method != "regression" else None,
+            stratify=X_train["target"]
+            if method not in ["regression", "qregression"]
+            else None,
         )
         X_tr, X_val = {"target": y_tr}, {"target": y_val}
         if "X_wide" in X_train.keys():
