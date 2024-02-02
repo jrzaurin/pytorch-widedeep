@@ -293,9 +293,12 @@ def test_embed_sz_rule_of_thumb(rule):
     embed_szs = {c: embed_sz_rule(nc, embedding_rule=rule) for c, nc in n_cats.items()}
     tab_preprocessor = TabPreprocessor(cat_embed_cols=embed_cols, embedding_rule=rule)
     tdf = tab_preprocessor.fit_transform(df)  # noqa: F841
-    out = [
-        tab_preprocessor.embed_dim[col] == embed_szs[col] for col in embed_szs.keys()
-    ]
+    out = []
+    for col, val, dim in tab_preprocessor.cat_embed_input:
+        out.append(dim == embed_szs[col])
+    # out = [
+    #     tab_preprocessor.embed_dim[col] == embed_szs[col] for col in embed_szs.keys()
+    # ]
     assert all(out)
 
 

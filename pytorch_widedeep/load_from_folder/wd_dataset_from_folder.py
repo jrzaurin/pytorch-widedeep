@@ -1,4 +1,4 @@
-from typing import List, Type, Tuple, Optional
+from typing import Any, List, Type, Tuple, Optional
 
 from sklearn.utils import Bunch
 from torch.utils.data import Dataset
@@ -50,7 +50,7 @@ class WideDeepDatasetFromFolder(Dataset):
         wide_from_folder: Optional[WideFromFolder] = None,
         text_from_folder: Optional[TextFromFolder] = None,
         img_from_folder: Optional[ImageFromFolder] = None,
-        reference: Optional[Type["WideDeepDatasetFromFolder"]] = None,
+        reference: Optional[Any] = None,  # is Type["WideDeepDatasetFromFolder"],
     ):
         super(WideDeepDatasetFromFolder, self).__init__()
 

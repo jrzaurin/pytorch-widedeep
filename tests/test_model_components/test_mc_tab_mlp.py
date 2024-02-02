@@ -86,7 +86,7 @@ def test_cont_norm_layer(cont_norm_layer):
         mlp_dropout=0.1,
         mlp_batchnorm=True,
         mlp_batchnorm_last=False,
-        mlp_linear_first=False,
+        mlp_linear_first=True,
     )
     out = model(X_deep)
     assert out.size(0) == 10 and out.size(1) == 8

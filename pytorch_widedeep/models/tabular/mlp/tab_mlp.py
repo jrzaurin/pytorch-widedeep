@@ -160,7 +160,7 @@ class TabMlp(BaseTabularModelWithoutAttention):
         mlp_dropout: Union[float, List[float]] = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
-        mlp_linear_first: bool = False,
+        mlp_linear_first: bool = True,
     ):
         super(TabMlp, self).__init__(
             column_idx=column_idx,
@@ -276,7 +276,7 @@ class TabMlpDecoder(nn.Module):
         mlp_dropout: Union[float, List[float]] = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
-        mlp_linear_first: bool = False,
+        mlp_linear_first: bool = True,
     ):
         super(TabMlpDecoder, self).__init__()
 

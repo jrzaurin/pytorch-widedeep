@@ -1,4 +1,5 @@
 import torch
+import pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 
@@ -14,7 +15,7 @@ from pytorch_widedeep.self_supervised_training import (
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-    df = load_adult(as_frame=True)
+    df: pd.DataFrame = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
     df.drop("income", axis=1, inplace=True)
@@ -56,7 +57,7 @@ if __name__ == "__main__":
         column_idx=tab_preprocessor.column_idx,
         cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=tab_preprocessor.continuous_cols,
-        embed_continuous=True,
+        embed_continuous_method="standard",
         n_blocks=3,
     )
 

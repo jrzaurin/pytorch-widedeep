@@ -180,7 +180,7 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
             frac_shared_embed=frac_shared_embed,
             continuous_cols=continuous_cols,
             cont_norm_layer=cont_norm_layer,
-            embed_continuous=True,
+            embed_continuous=None,
             embed_continuous_method=embed_continuous_method,
             cont_embed_dropout=cont_embed_dropout,
             cont_embed_activation=cont_embed_activation,

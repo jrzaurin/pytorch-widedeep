@@ -1,5 +1,5 @@
 import os
-from typing import List, Type, Tuple, Union, Optional
+from typing import Any, List, Tuple, Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -67,7 +67,7 @@ class TabFromFolder:
         text_col: Optional[str] = None,
         img_col: Optional[str] = None,
         ignore_target: bool = False,
-        reference: Optional[Type["TabFromFolder"]] = None,
+        reference: Optional[Any] = None,  # is Type["TabFromFolder"],
         verbose: Optional[int] = 1,
     ):
         self.fname = fname
@@ -140,7 +140,7 @@ class TabFromFolder:
 
     def _set_from_reference(
         self,
-        reference: Type["TabFromFolder"],
+        reference: Any,  # is Type["TabFromFolder"],
         preprocessor: Optional[TabularPreprocessor],
     ) -> Tuple[str, str, TabularPreprocessor, Optional[str], Optional[str]]:
         (
@@ -165,7 +165,7 @@ class TabFromFolder:
 
     @staticmethod
     def _get_from_reference(
-        reference: Type["TabFromFolder"],
+        reference: Any,  # is Type["TabFromFolder"],
     ) -> Tuple[str, str, TabularPreprocessor, Optional[str], Optional[str]]:
         return (
             reference.directory,
@@ -247,7 +247,7 @@ class WideFromFolder(TabFromFolder):
         text_col: Optional[str] = None,
         img_col: Optional[str] = None,
         ignore_target: bool = False,
-        reference: Optional[Type["WideFromFolder"]] = None,
+        reference: Optional[Any] = None,  # is Type["WideFromFolder"],
         verbose: int = 1,
     ):
         super(WideFromFolder, self).__init__(

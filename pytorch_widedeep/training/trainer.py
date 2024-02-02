@@ -1095,13 +1095,13 @@ class Trainer(BaseTrainer):
 
         with torch.no_grad():
             with trange(uncertainty_granularity, disable=uncertainty is False) as t:
-                for _ in range(prediction_iters):
+                for _, _ in zip(t, range(prediction_iters)):
                     t.set_description("predict_UncertaintyIter")
 
                     with trange(
                         test_steps, disable=self.verbose != 1 or uncertainty is True
                     ) as tt:
-                        for data in test_loader:
+                        for _, data in zip(tt, test_loader):
                             tt.set_description("predict")
                             X = {k: v.to(self.device) for k, v in data.items()}
                             preds = (

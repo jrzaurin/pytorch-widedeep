@@ -349,7 +349,7 @@ class TabResnetDecoder(nn.Module):
         mlp_dropout: float = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
-        mlp_linear_first: bool = False,
+        mlp_linear_first: bool = True,
     ):
         super(TabResnetDecoder, self).__init__()
 

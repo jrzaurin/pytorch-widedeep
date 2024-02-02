@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import lightgbm as lgb
 from lightgbm import Dataset as lgbDataset
 from scipy.sparse import hstack, csr_matrix
@@ -15,7 +16,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from pytorch_widedeep.utils import Tokenizer, LabelEncoder
 from pytorch_widedeep.datasets import load_womens_ecommerce
 
-df = load_womens_ecommerce(as_frame=True)
+df: pd.DataFrame = load_womens_ecommerce(as_frame=True)
 
 df.columns = [c.replace(" ", "_").lower() for c in df.columns]
 
@@ -51,7 +52,7 @@ most_common_cm = confusion_matrix(test.rating, most_common_pred)
 
 ###############################################################################
 # The simplest thing: tokenization + tf-idf
-tok = Tokenizer()
+tok = Tokenizer(n_cpus=1)
 tok_reviews_tr = tok.process_all(train.review_text.tolist())
 tok_reviews_te = tok.process_all(test.review_text.tolist())
 vectorizer = TfidfVectorizer(

@@ -580,8 +580,8 @@ def test_early_stopping_restore_weights_with_state():
     shutil.rmtree("tests/test_model_functioning/modelcheckpoint/")
 
     assert torch.allclose(
-        new_model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.1.weight"],
-        model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.1.weight"],
+        new_model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.0.weight"],
+        model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.0.weight"],
     )
 
 
@@ -634,6 +634,6 @@ def test_model_checkpoint_restore_weights():
     shutil.rmtree("tests/test_model_functioning/modelcheckpoint/")
 
     assert torch.allclose(
-        new_model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.1.weight"],
-        model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.1.weight"],
+        new_model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.0.weight"],
+        model.state_dict()["deeptabular.0.encoder.mlp.dense_layer_1.0.weight"],
     )

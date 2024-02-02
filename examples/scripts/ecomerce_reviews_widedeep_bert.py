@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import pandas as pd
 from torch import Tensor, nn
 from transformers import DistilBertModel, DistilBertTokenizer
 from sklearn.metrics import (
@@ -89,7 +90,7 @@ class BertModel(nn.Module):
         return 768
 
 
-df = load_womens_ecommerce(as_frame=True)
+df: pd.DataFrame = load_womens_ecommerce(as_frame=True)
 
 df.columns = [c.replace(" ", "_").lower() for c in df.columns]
 

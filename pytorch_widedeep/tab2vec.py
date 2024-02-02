@@ -258,20 +258,26 @@ class Tab2Vec:
     def _new_colnames_without_attention(
         self,
     ) -> List[str]:
-        new_colnames = []
+        new_colnames: List[str] = []
 
-        for colname, _, embedding_dim in self.tab_preprocessor.cat_embed_input:
-            new_colnames.extend(
-                ["_".join([colname, "embed", str(i + 1)]) for i in range(embedding_dim)]
-            )
+        if self.tab_preprocessor.cat_embed_input is not None:
+            for colname, _, embedding_dim in self.tab_preprocessor.cat_embed_input:  # type: ignore[misc]
+                new_colnames.extend(
+                    [
+                        "_".join([colname, "embed", str(i + 1)])
+                        for i in range(embedding_dim)
+                    ]
+                )
 
         if self.tab_preprocessor.continuous_cols is not None:
             if self.are_cont_embed:
                 for colname in self.tab_preprocessor.continuous_cols:
                     assert self.cont_embed_dim is not None
                     new_colnames.extend(
-                        "_".join([colname, "embed", str(i + 1)])
-                        for i in range(self.cont_embed_dim)
+                        [
+                            "_".join([colname, "embed", str(i + 1)])
+                            for i in range(self.cont_embed_dim)
+                        ]
                     )
             else:
                 new_colnames += self.tab_preprocessor.continuous_cols

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.metrics import (
     f1_score,
     recall_score,
@@ -14,7 +15,7 @@ from pytorch_widedeep.metrics import F1Score, Accuracy
 from pytorch_widedeep.datasets import load_womens_ecommerce
 from pytorch_widedeep.preprocessing import TextPreprocessor
 
-df = load_womens_ecommerce(as_frame=True)
+df: pd.DataFrame = load_womens_ecommerce(as_frame=True)
 
 df.columns = [c.replace(" ", "_").lower() for c in df.columns]
 
@@ -69,7 +70,6 @@ trainer.fit(
     # n_epochs=5,
     batch_size=256,
 )
-
 
 preds_text = trainer.predict_proba(X_text=X_text_te)
 pred_text_class = np.argmax(preds_text, 1)

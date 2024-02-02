@@ -480,7 +480,7 @@ class BayesianTrainer(BaseBayesianTrainer):
         preds_l = []
         with torch.no_grad():
             with trange(test_steps, disable=self.verbose != 1) as tt:
-                for j, Xl in zip(tt, test_loader):
+                for _, Xl in zip(tt, test_loader):
                     tt.set_description("predict")
 
                     X = Xl[0].to(self.device)

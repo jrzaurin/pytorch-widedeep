@@ -25,7 +25,7 @@ from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-    df = load_adult(as_frame=True)
+    df: pd.DataFrame = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
         df.age, bins=[16, 25, 30, 35, 40, 45, 50, 55, 60, 91], labels=np.arange(9)
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         column_idx=tab_preprocessor.column_idx,
         cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=continuous_cols,
-        embed_continuous=True,
+        embed_continuous_method="standard",
         n_blocks=4,
     )
 
