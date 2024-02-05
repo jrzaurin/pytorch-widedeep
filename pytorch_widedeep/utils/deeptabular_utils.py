@@ -73,7 +73,7 @@ class LabelEncoder:
 
         self.reset_embed_idx = not self.with_attention or self.shared_embed
 
-    def partial_fit(self, chunk: pd.DataFrame) -> "LabelEncoder":  # noqa: C901
+    def partial_fit(self, df: pd.DataFrame) -> "LabelEncoder":  # noqa: C901
         """Main method. Creates encoding attributes.
 
         Returns
@@ -81,22 +81,20 @@ class LabelEncoder:
         LabelEncoder
             `LabelEncoder` fitted object
         """
-        # this is meant to be run when the data is large and we pass a chunk
-        # at a time. Therefore, we do not copy the input chunk as mutating a
-        # chunk is ok
+        # here df is a chunk of the data. this is meant to be run when the
+        # data is large and we pass a chunk at a time. Therefore, we do not
+        # copy the input chunk as mutating a chunk is ok
         if self.columns_to_encode is None:
-            self.columns_to_encode = list(
-                chunk.select_dtypes(include=["object"]).columns
-            )
+            self.columns_to_encode = list(df.select_dtypes(include=["object"]).columns)
         else:
             # sanity check to make sure all categorical columns are in an adequate
             # format
             for col in self.columns_to_encode:
-                chunk[col] = chunk[col].astype("O")
+                df[col] = df[col].astype("O")
 
         unique_column_vals: Dict[str, List[str]] = {}
         for c in self.columns_to_encode:
-            unique_column_vals[c] = chunk[c].unique().tolist()
+            unique_column_vals[c] = df[c].unique().tolist()
 
         if not hasattr(self, "encoding_dict"):
             # we run the method 'partial_fit' for the 1st time
@@ -118,7 +116,7 @@ class LabelEncoder:
             if "cls_token" in unique_column_vals and self.shared_embed:
                 del unique_column_vals["cls_token"]
 
-            # Classes in the new chunk of the dataset that have not been seen
+            # Classes in the new df/chunk of the dataset that have not been seen
             # before
             unseen_classes: Dict[str, List[str]] = {}
             for c in self.columns_to_encode:
@@ -152,7 +150,7 @@ class LabelEncoder:
         return self
 
     def fit(self, df: pd.DataFrame) -> "LabelEncoder":
-        """Runs update under the hood
+        """Simply runs the `partial_fit` method when the data fits in memory
 
         Returns
         -------

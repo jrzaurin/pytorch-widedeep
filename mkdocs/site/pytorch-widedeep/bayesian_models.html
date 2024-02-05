@@ -10,8 +10,15 @@
       
         <link rel="canonical" href="https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/bayesian_models.html">
       
+      
+        <link rel="prev" href="model_components.html">
+      
+      
+        <link rel="next" href="losses.html">
+      
+      
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
     
     
       
@@ -19,15 +26,17 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.975780f9.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.2505c338.min.css">
-        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
       
       
 
+
     
+    
+      
     
     
       
@@ -63,9 +72,6 @@
     <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="deep-orange">
   
     
-    
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
-    
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
@@ -86,7 +92,7 @@
 
   
 
-<header class="md-header md-header--lifted" data-md-component="header">
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../index.html" title="pytorch_widedeep" class="md-header__button md-logo" aria-label="pytorch_widedeep" data-md-component="logo">
       
@@ -94,6 +100,7 @@
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
+      
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
@@ -113,33 +120,39 @@
       </div>
     </div>
     
-      <form class="md-header__option" data-md-component="palette">
-        
-          
-          
-          
-          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
-          
-            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
-            </label>
-          
-        
-          
-          
-          
-          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
-          
-            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
-            </label>
-          
-        
-      </form>
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
       <label class="md-header__button md-icon" for="__search">
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
       </label>
       <div class="md-search" data-md-component="search" role="dialog">
@@ -148,12 +161,15 @@
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
         </button>
       </nav>
@@ -165,7 +181,7 @@
           <div class="md-search-result__meta">
             Initializing search
           </div>
-          <ol class="md-search-result__list"></ol>
+          <ol class="md-search-result__list" role="presentation"></ol>
         </div>
       </div>
     </div>
@@ -177,7 +193,7 @@
         <a href="https://github.com/jrzaurin/pytorch-widedeep" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     pytorch_widedeep
@@ -190,81 +206,21 @@
     
       
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
-  <div class="md-tabs__inner md-grid">
+  <div class="md-grid">
     <ul class="md-tabs__list">
       
         
   
   
-
-
-  <li class="md-tabs__item">
-    <a href="../index.html" class="md-tabs__link">
-      Home
-    </a>
-  </li>
-
-      
+  
+    <li class="md-tabs__item">
+      <a href="../index.html" class="md-tabs__link">
         
-  
-  
-
-
-  <li class="md-tabs__item">
-    <a href="../installation.html" class="md-tabs__link">
-      Installation
-    </a>
-  </li>
-
-      
-        
-  
-  
-
-
-  <li class="md-tabs__item">
-    <a href="../quick_start.html" class="md-tabs__link">
-      Quick Start
-    </a>
-  </li>
-
-      
-        
-  
   
     
   
+  Home
 
-
-  
-  
-  
-    
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="utils/index.html" class="md-tabs__link md-tabs__link--active">
-        Pytorch-widedeep
-      </a>
-    </li>
-  
-
-  
-
-      
-        
-  
-  
-
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../examples/01_preprocessors_and_utils.html" class="md-tabs__link">
-        Examples
       </a>
     </li>
   
@@ -273,13 +229,85 @@
         
   
   
+  
+    <li class="md-tabs__item">
+      <a href="../installation.html" class="md-tabs__link">
+        
+  
+    
+  
+  Installation
 
+      </a>
+    </li>
+  
 
-  <li class="md-tabs__item">
-    <a href="../contributing.html" class="md-tabs__link">
-      Contributing
-    </a>
-  </li>
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../quick_start.html" class="md-tabs__link">
+        
+  
+    
+  
+  Quick Start
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="utils/index.html" class="md-tabs__link">
+          
+  
+    
+  
+  Pytorch-widedeep
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing.html" class="md-tabs__link">
+        
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
 
       
     </ul>
@@ -304,6 +332,7 @@
                   <div class="md-sidebar__inner">
                     
 
+
   
 
 
@@ -323,7 +352,7 @@
       <a href="https://github.com/jrzaurin/pytorch-widedeep" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     pytorch_widedeep
@@ -335,14 +364,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../index.html" class="md-nav__link">
-        Home
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
       </a>
     </li>
   
@@ -350,14 +384,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../installation.html" class="md-nav__link">
-        Installation
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
       </a>
     </li>
   
@@ -365,14 +404,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../quick_start.html" class="md-nav__link">
-        Quick Start
+        
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
       </a>
     </li>
   
@@ -380,237 +424,327 @@
     
       
       
+  
+  
+    
+  
+  
+  
+    
+    
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Pytorch-widedeep
+  </span>
+  
 
-  
-  
-    
-  
-  
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
-      
-      
-      
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_4">
-          Pytorch-widedeep
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Pytorch-widedeep" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
-          <span class="md-nav__icon md-icon"></span>
-          Pytorch-widedeep
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Pytorch-widedeep
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
   
   
   
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
     
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_1" type="checkbox" id="__nav_4_1" checked>
-      
-      
-      
         
-          
-            
-          
+        
         
           
         
-          
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_1" >
         
           
-        
           
-        
-      
-      
-        
-        
-        <div class="md-nav__link md-nav__link--index ">
-          <a href="utils/index.html">Utils</a>
-          
-            <label for="__nav_4_1">
-              <span class="md-nav__icon md-icon"></span>
-            </label>
-          
-        </div>
-      
-      <nav class="md-nav" aria-label="Utils" data-md-level="2">
-        <label class="md-nav__title" for="__nav_4_1">
-          <span class="md-nav__icon md-icon"></span>
-          Utils
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-          
+          <div class="md-nav__link md-nav__container">
+            <a href="utils/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Utils
+  </span>
+  
+
+            </a>
             
               
+              <label class="md-nav__link " for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            Utils
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/deeptabular_utils.html" class="md-nav__link">
-        Deeptabular utils
+        
+  
+  <span class="md-ellipsis">
+    Deeptabular utils
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/fastai_transforms.html" class="md-nav__link">
-        Fastai transforms
+        
+  
+  <span class="md-ellipsis">
+    Fastai transforms
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/image_utils.html" class="md-nav__link">
-        Image utils
+        
+  
+  <span class="md-ellipsis">
+    Image utils
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/text_utils.html" class="md-nav__link">
-        Text utils
+        
+  
+  <span class="md-ellipsis">
+    Text utils
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="preprocessing.html" class="md-nav__link">
-        Preprocessing
+        
+  
+  <span class="md-ellipsis">
+    Preprocessing
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="load_from_folder.html" class="md-nav__link">
-        Load From Folder
+        
+  
+  <span class="md-ellipsis">
+    Load From Folder
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="model_components.html" class="md-nav__link">
-        Model Components
+        
+  
+  <span class="md-ellipsis">
+    Model Components
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
   
   
     
   
   
+  
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
         
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Bayesian models
+          
+  
+  <span class="md-ellipsis">
+    Bayesian models
+  </span>
+  
+
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="bayesian_models.html" class="md-nav__link md-nav__link--active">
-        Bayesian models
+        
+  
+  <span class="md-ellipsis">
+    Bayesian models
+  </span>
+  
+
       </a>
       
         
@@ -630,14 +764,18 @@
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.bayesian_models.tabular.bayesian_linear.bayesian_wide.BayesianWide" class="md-nav__link">
-    BayesianWide
+    <span class="md-ellipsis">
+      BayesianWide
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp" class="md-nav__link">
-    BayesianTabMlp
+    <span class="md-ellipsis">
+      BayesianTabMlp
+    </span>
   </a>
   
 </li>
@@ -649,524 +787,198 @@
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="losses.html" class="md-nav__link">
-        Losses
+        
+  
+  <span class="md-ellipsis">
+    Losses
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="metrics.html" class="md-nav__link">
-        Metrics
+        
+  
+  <span class="md-ellipsis">
+    Metrics
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="dataloaders.html" class="md-nav__link">
-        Dataloaders
+        
+  
+  <span class="md-ellipsis">
+    Dataloaders
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="callbacks.html" class="md-nav__link">
-        Callbacks
+        
+  
+  <span class="md-ellipsis">
+    Callbacks
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="trainer.html" class="md-nav__link">
-        Trainer
+        
+  
+  <span class="md-ellipsis">
+    Trainer
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="bayesian_trainer.html" class="md-nav__link">
-        Bayesian Trainer
+        
+  
+  <span class="md-ellipsis">
+    Bayesian Trainer
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="self_supervised_pretraining.html" class="md-nav__link">
-        Self Supervised Pretraining
+        
+  
+  <span class="md-ellipsis">
+    Self Supervised Pretraining
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tab2vec.html" class="md-nav__link">
-        Tab2Vec
+        
+  
+  <span class="md-ellipsis">
+    Tab2Vec
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
     
       
       
-      
-
   
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
-      
-      
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_5">
-          Examples
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Examples" data-md-level="1">
-        <label class="md-nav__title" for="__nav_5">
-          <span class="md-nav__icon md-icon"></span>
-          Examples
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/01_preprocessors_and_utils.html" class="md-nav__link">
-        01_preprocessors_and_utils
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/02_model_components.html" class="md-nav__link">
-        02_model_components
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/03_binary_classification_with_defaults.html" class="md-nav__link">
-        03_binary_classification_with_defaults
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/04_regression_with_images_and_text.html" class="md-nav__link">
-        04_regression_with_images_and_text
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/05_save_and_load_model_and_artifacts.html" class="md-nav__link">
-        05_save_and_load_model_and_artifacts
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/06_finetune_and_warmup.html" class="md-nav__link">
-        06_finetune_and_warmup
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/07_custom_components.html" class="md-nav__link">
-        07_custom_components
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/08_custom_dataLoader_imbalanced_dataset.html" class="md-nav__link">
-        08_custom_dataLoader_imbalanced_dataset
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/09_extracting_embeddings.html" class="md-nav__link">
-        09_extracting_embeddings
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/10_3rd_party_integration-RayTune_WnB.html" class="md-nav__link">
-        10_3rd_party_integration-RayTune_WnB
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/11_auc_multiclass.html" class="md-nav__link">
-        11_auc_multiclass
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/12_ZILNLoss_origkeras_vs_pytorch_widedeep.html" class="md-nav__link">
-        12_ZILNLoss_origkeras_vs_pytorch_widedeep
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/13_model_uncertainty_prediction.html" class="md-nav__link">
-        13_model_uncertainty_prediction
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/14_bayesian_models.html" class="md-nav__link">
-        14_bayesian_models
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/15_DIR-LDS_and_FDS.html" class="md-nav__link">
-        15_DIR-LDS_and_FDS
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/16_Self_Supervised_Pretraning_pt1.html" class="md-nav__link">
-        16_Self-Supervised Pre-Training pt 1
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/16_Self_Supervised_Pretraning_pt2.html" class="md-nav__link">
-        16_Self-Supervised Pre-Training pt 2
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/17_Usign_a_hugging_face_model.html" class="md-nav__link">
-        17_Using_a_huggingface_model
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/18_feature_importance_via_attention_weights.html" class="md-nav__link">
-        18_feature_importance_via_attention_weights
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/19_wide_and_deep_for_recsys_pt1.html" class="md-nav__link">
-        19_wide_and_deep_for_recsys_pt1
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/19_wide_and_deep_for_recsys_pt2.html" class="md-nav__link">
-        19_wide_and_deep_for_recsys_pt2
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/20_load_from_folder_functionality.html" class="md-nav__link">
-        20_load_from_folder_functionality.
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
   
   
   
     <li class="md-nav__item">
       <a href="../contributing.html" class="md-nav__link">
-        Contributing
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
       </a>
     </li>
   
@@ -1186,10 +998,8 @@
                 
                   
 
-  <a href="https://github.com/jrzaurin/pytorch-widedeep/edit/master/mkdocs/sources/pytorch-widedeep/bayesian_models.md" title="Edit this page" class="md-content__button md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
-  </a>
+  
+  
 
 
 <h1 id="the-bayesian-models-module">The <code>bayesian models</code> module<a class="headerlink" href="#the-bayesian-models-module" title="Permanent link">&para;</a></h1>
@@ -1206,11 +1016,11 @@ scenarios where getting a measure of uncertainty is important.</p>
 
 
 <h2 id="pytorch_widedeep.bayesian_models.tabular.bayesian_linear.bayesian_wide.BayesianWide" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">BayesianWide</span>
+          <span class="doc doc-object-name doc-class-name">BayesianWide</span>
 
 
 <a href="#pytorch_widedeep.bayesian_models.tabular.bayesian_linear.bayesian_wide.BayesianWide" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">BayesianWide</span><span class="p">(</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">BayesianWide</span><span class="p">(</span>
     <span class="n">input_dim</span><span class="p">,</span>
     <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">prior_sigma_1</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -1222,91 +1032,133 @@ scenarios where getting a measure of uncertainty is important.</p>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="pytorch_widedeep.bayesian_models._base_bayesian_model.BaseBayesianModel">BaseBayesianModel</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="pytorch_widedeep.bayesian_models._base_bayesian_model.BaseBayesianModel">BaseBayesianModel</span></code></p>
 
   
       <p>Defines a <code>Wide</code> model. This is a linear model where the
 non-linearlities are captured via crossed-columns</p>
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input_dim</b>
+        <b><code>input_dim</code></b>
             (<code>int</code>)
-        – <p>size of the Embedding layer. <code>input_dim</code> is the summation of all the
+        –
+        <div class="doc-md-description">
+          <p>size of the Embedding layer. <code>input_dim</code> is the summation of all the
 individual values for all the features that go through the wide
 component. For example, if the wide component receives 2 features with
 5 individual values each, <code>input_dim = 10</code></p>
+        </div>
       </li>
       <li class="field-body">
-        <b>pred_dim</b>
-            (<code>int</code>)
-        – <p>size of the ouput tensor containing the predictions</p>
+        <b><code>pred_dim</code></b>
+            (<code>int</code>, default:
+                <code>1</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>size of the ouput tensor containing the predictions</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>prior_sigma_1</b>
-            (<code>float</code>)
-        – <p>The prior weight distribution is a scaled mixture of two Gaussian
+        <b><code>prior_sigma_1</code></b>
+            (<code>float</code>, default:
+                <code>1.0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>The prior weight distribution is a scaled mixture of two Gaussian
 densities:</p>
 <div class="arithmatex">\[
-\begin{aligned}
-P(\mathbf{w}) = \prod_{i=j} \pi N (\mathbf{w}_j | 0, \sigma_{1}^{2}) + (1 - \pi) N (\mathbf{w}_j | 0, \sigma_{2}^{2})
-\end{aligned}
+   \begin{aligned}
+   P(\mathbf{w}) = \prod_{i=j} \pi N (\mathbf{w}_j | 0, \sigma_{1}^{2}) + (1 - \pi) N (\mathbf{w}_j | 0, \sigma_{2}^{2})
+   \end{aligned}
 \]</div>
 <p><code>prior_sigma_1</code> is the prior of the sigma parameter for the first of the two
 Gaussians that will be mixed to produce the prior weight
 distribution.</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>prior_sigma_2</b>
-            (<code>float</code>)
-        – <p>Prior of the sigma parameter for the second of the two Gaussian
+        <b><code>prior_sigma_2</code></b>
+            (<code>float</code>, default:
+                <code>0.002</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Prior of the sigma parameter for the second of the two Gaussian
 distributions that will be mixed to produce the prior weight
 distribution</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>prior_pi</b>
-            (<code>float</code>)
-        – <p>Scaling factor that will be used to mix the Gaussians to produce the
+        <b><code>prior_pi</code></b>
+            (<code>float</code>, default:
+                <code>0.8</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Scaling factor that will be used to mix the Gaussians to produce the
 prior weight distribution</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>posterior_mu_init</b>
-            (<code>float</code>)
-        – <p>The posterior sample of the weights is defined as:</p>
+        <b><code>posterior_mu_init</code></b>
+            (<code>float</code>, default:
+                <code>0.0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>The posterior sample of the weights is defined as:</p>
 <div class="arithmatex">\[
-\begin{aligned}
-\mathbf{w} &amp;= \mu + log(1 + exp(\rho))
-\end{aligned}
+   \begin{aligned}
+   \mathbf{w} &amp;= \mu + log(1 + exp(\rho))
+   \end{aligned}
 \]</div>
 <p>where:</p>
 <div class="arithmatex">\[
-\begin{aligned}
-\mathcal{N}(x\vert \mu, \sigma) &amp;= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\
-\log{\mathcal{N}(x\vert \mu, \sigma)} &amp;= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\
-\end{aligned}
+   \begin{aligned}
+   \mathcal{N}(x\vert \mu, \sigma) &amp;= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\
+   \log{\mathcal{N}(x\vert \mu, \sigma)} &amp;= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\
+   \end{aligned}
 \]</div>
 <p><span class="arithmatex">\(\mu\)</span> is initialised using a normal distributtion with mean
 <code>posterior_mu_init</code> and std equal to 0.1.</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>posterior_rho_init</b>
-            (<code>float</code>)
-        – <p>As in the case of <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\rho\)</span> is initialised using a
+        <b><code>posterior_rho_init</code></b>
+            (<code>float</code>, default:
+                <code>-7.0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>As in the case of <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\rho\)</span> is initialised using a
 normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 0.1.</p>
+        </div>
       </li>
   </ul>
+
+
 
   <p>Attributes:</p>
   <ul>
       <li class="field-body">
-        <b>bayesian_wide_linear</b>
-            (<code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code>)
-        – <p>the linear layer that comprises the wide branch of the model</p>
+        <b><code><span title="pytorch_widedeep.bayesian_models.tabular.bayesian_linear.bayesian_wide.BayesianWide.bayesian_wide_linear">bayesian_wide_linear</span></code></b>
+            (<code><span title="torch.nn.Module">Module</span></code>)
+        –
+        <div class="doc-md-description">
+          <p>the linear layer that comprises the wide branch of the model</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
@@ -1316,10 +1168,9 @@ normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">wide</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 </code></pre></div>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/bayesian_models/tabular/bayesian_linear/bayesian_wide.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 83</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/bayesian_models/tabular/bayesian_linear/bayesian_wide.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 83</span>
 <span class="normal"> 84</span>
 <span class="normal"> 85</span>
 <span class="normal"> 86</span>
@@ -1365,7 +1216,7 @@ normal distributtion with mean <code>posterior_rho_init</code> and std equal to
     <span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">pred_dim</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
@@ -1385,6 +1236,7 @@ normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 
   </div>
 
+
 </div>
 
 <div class="doc doc-object doc-class">
@@ -1392,22 +1244,22 @@ normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 
 
 <h2 id="pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">BayesianTabMlp</span>
+          <span class="doc doc-object-name doc-class-name">BayesianTabMlp</span>
 
 
 <a href="#pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">BayesianTabMlp</span><span class="p">(</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">BayesianTabMlp</span><span class="p">(</span>
     <span class="n">column_idx</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
     <span class="n">cat_embed_input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">cat_embed_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
     <span class="n">cat_embed_activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">continuous_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">embed_continuous</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">cont_embed_dim</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
-    <span class="n">cont_embed_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">embed_continuous</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cont_embed_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cont_embed_dropout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">cont_embed_activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">use_cont_bias</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">cont_norm_layer</span><span class="o">=</span><span class="s2">&quot;batchnorm&quot;</span><span class="p">,</span>
+    <span class="n">use_cont_bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cont_norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
     <span class="n">mlp_activation</span><span class="o">=</span><span class="s2">&quot;leaky_relu&quot;</span><span class="p">,</span>
     <span class="n">prior_sigma_1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -1415,13 +1267,13 @@ normal distributtion with mean <code>posterior_rho_init</code> and std equal to
     <span class="n">prior_pi</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
     <span class="n">posterior_mu_init</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
     <span class="n">posterior_rho_init</span><span class="o">=-</span><span class="mf">7.0</span><span class="p">,</span>
-    <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span>
 <span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="pytorch_widedeep.bayesian_models._base_bayesian_model.BaseBayesianModel">BaseBayesianModel</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="pytorch_widedeep.bayesian_models._base_bayesian_model.BaseBayesianModel">BaseBayesianModel</span></code></p>
 
   
       <p>Defines a <code>BayesianTabMlp</code> model.</p>
@@ -1429,151 +1281,248 @@ normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 with numerical (aka continuous) features, embedded or not. These are then
 passed through a series of probabilistic dense layers (i.e. a MLP).</p>
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>column_idx</b>
+        <b><code>column_idx</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>)
-        – <p>Dict containing the index of the columns that will be passed through
+        –
+        <div class="doc-md-description">
+          <p>Dict containing the index of the columns that will be passed through
 the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'education':
 0, 'relationship': 1, 'workclass': 2, ...}</em></p>
+        </div>
       </li>
       <li class="field-body">
-        <b>cat_embed_input</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int, int]]]</code>)
-        – <p>List of Tuples with the column name, number of unique values and
+        <b><code>cat_embed_input</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int, int]]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List of Tuples with the column name, number of unique values and
 embedding dimension. e.g. <em>[(education, 11, 32), ...]</em></p>
+        </div>
       </li>
       <li class="field-body">
-        <b>cat_embed_dropout</b>
-            (<code>float</code>)
-        – <p>Categorical embeddings dropout</p>
+        <b><code>cat_embed_dropout</code></b>
+        –
+        <div class="doc-md-description">
+          <p>Categorical embeddings dropout</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>cat_embed_activation</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>)
-        – <p>Activation function for the categorical embeddings, if any. Currently
+        <b><code>cat_embed_activation</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Activation function for the categorical embeddings, if any. Currently
 <em>'tanh'</em>, <em>'relu'</em>, <em>'leaky_relu'</em> and <em>'gelu'</em> are supported</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>continuous_cols</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>)
-        – <p>List with the name of the numeric (aka continuous) columns</p>
+        <b><code>continuous_cols</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List with the name of the numeric (aka continuous) columns</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>cont_norm_layer</b>
-            (<code>str</code>)
-        – <p>Type of normalization layer applied to the continuous features. Options
+        <b><code>cont_norm_layer</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Type of normalization layer applied to the continuous features. Options
 are: 'layernorm', 'batchnorm' or None.</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>embed_continuous</b>
-            (<code>bool</code>)
-        – <p>Boolean indicating if the continuous columns will be embedded
+        <b><code>embed_continuous</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Boolean indicating if the continuous columns will be embedded
 (i.e. passed each through a linear layer with or without activation)</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>cont_embed_dim</b>
-            (<code>int</code>)
-        – <p>Size of the continuous embeddings</p>
+        <b><code>cont_embed_dim</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Size of the continuous embeddings</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>cont_embed_dropout</b>
-            (<code>float</code>)
-        – <p>Dropout for the continuous embeddings</p>
+        <b><code>cont_embed_dropout</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Dropout for the continuous embeddings</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>use_cont_bias</b>
-            (<code>bool</code>)
-        – <p>Boolean indicating if bias will be used for the continuous embeddings</p>
+        <b><code>use_cont_bias</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Boolean indicating if bias will be used for the continuous embeddings</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>cont_embed_activation</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>)
-        – <p>Activation function for the continuous embeddings if any. Currently
+        <b><code>cont_embed_activation</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Activation function for the continuous embeddings if any. Currently
 <em>'tanh'</em>, <em>'relu'</em>, <em>'leaky_relu'</em> and <em>'gelu'</em> are supported</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>mlp_hidden_dims</b>
-            (<code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>)
-        – <p>List with the number of neurons per dense layer in the mlp.</p>
+        <b><code>mlp_hidden_dims</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>, default:
+                <code>[200, 100]</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List with the number of neurons per dense layer in the mlp.</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>mlp_activation</b>
-            (<code>str</code>)
-        – <p>Activation function for the dense layers of the MLP. Currently
+        <b><code>mlp_activation</code></b>
+            (<code>str</code>, default:
+                <code>&#39;leaky_relu&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Activation function for the dense layers of the MLP. Currently
 <em>'tanh'</em>, <em>'relu'</em>, <em>'leaky_relu'</em> and <em>'gelu'</em> are supported</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>prior_sigma_1</b>
-            (<code>float</code>)
-        – <p>The prior weight distribution is a scaled mixture of two Gaussian
+        <b><code>prior_sigma_1</code></b>
+            (<code>float</code>, default:
+                <code>1</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>The prior weight distribution is a scaled mixture of two Gaussian
 densities:</p>
 <div class="arithmatex">\[
-\begin{aligned}
-P(\mathbf{w}) = \prod_{i=j} \pi N (\mathbf{w}_j | 0, \sigma_{1}^{2}) + (1 - \pi) N (\mathbf{w}_j | 0, \sigma_{2}^{2})
-\end{aligned}
+   \begin{aligned}
+   P(\mathbf{w}) = \prod_{i=j} \pi N (\mathbf{w}_j | 0, \sigma_{1}^{2}) + (1 - \pi) N (\mathbf{w}_j | 0, \sigma_{2}^{2})
+   \end{aligned}
 \]</div>
 <p><code>prior_sigma_1</code> is the prior of the sigma parameter for the first of the two
 Gaussians that will be mixed to produce the prior weight
 distribution.</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>prior_sigma_2</b>
-            (<code>float</code>)
-        – <p>Prior of the sigma parameter for the second of the two Gaussian
+        <b><code>prior_sigma_2</code></b>
+            (<code>float</code>, default:
+                <code>0.002</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Prior of the sigma parameter for the second of the two Gaussian
 distributions that will be mixed to produce the prior weight
 distribution for each Bayesian linear and embedding layer</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>prior_pi</b>
-            (<code>float</code>)
-        – <p>Scaling factor that will be used to mix the Gaussians to produce the
+        <b><code>prior_pi</code></b>
+            (<code>float</code>, default:
+                <code>0.8</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Scaling factor that will be used to mix the Gaussians to produce the
 prior weight distribution ffor each Bayesian linear and embedding
 layer</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>posterior_mu_init</b>
-            (<code>float</code>)
-        – <p>The posterior sample of the weights is defined as:</p>
+        <b><code>posterior_mu_init</code></b>
+            (<code>float</code>, default:
+                <code>0.0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>The posterior sample of the weights is defined as:</p>
 <p>$$
-\begin{aligned}
-\mathbf{w} &amp;= \mu + log(1 + exp(\rho))
-\end{aligned}
+   \begin{aligned}
+   \mathbf{w} &amp;= \mu + log(1 + exp(\rho))
+   \end{aligned}
 $$
 where:</p>
 <div class="arithmatex">\[
-\begin{aligned}
-\mathcal{N}(x\vert \mu, \sigma) &amp;= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\
-\log{\mathcal{N}(x\vert \mu, \sigma)} &amp;= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\
-\end{aligned}
+   \begin{aligned}
+   \mathcal{N}(x\vert \mu, \sigma) &amp;= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\
+   \log{\mathcal{N}(x\vert \mu, \sigma)} &amp;= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\
+   \end{aligned}
 \]</div>
 <p><span class="arithmatex">\(\mu\)</span> is initialised using a normal distributtion with mean
 <code>posterior_mu_init</code> and std equal to 0.1.</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>posterior_rho_init</b>
-            (<code>float</code>)
-        – <p>As in the case of <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\rho\)</span> is initialised using a
+        <b><code>posterior_rho_init</code></b>
+            (<code>float</code>, default:
+                <code>-7.0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>As in the case of <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\rho\)</span> is initialised using a
 normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 0.1.</p>
+        </div>
       </li>
   </ul>
+
+
 
   <p>Attributes:</p>
   <ul>
       <li class="field-body">
-        <b>bayesian_cat_and_cont_embed</b>
-            (<code>nn.<span title="nn.Module">Module</span></code>)
-        – <p>This is the module that processes the categorical and continuous columns</p>
+        <b><code><span title="pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp.bayesian_cat_and_cont_embed">bayesian_cat_and_cont_embed</span></code></b>
+            (<code><span title="torch.nn.Module">Module</span></code>)
+        –
+        <div class="doc-md-description">
+          <p>This is the module that processes the categorical and continuous columns</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>bayesian_tab_mlp</b>
-            (<code>nn.<span title="nn.Sequential">Sequential</span></code>)
-        – <p>mlp model that will receive the concatenation of the embeddings and
+        <b><code><span title="pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp.bayesian_tab_mlp">bayesian_tab_mlp</span></code></b>
+            (<code><span title="torch.nn.Sequential">Sequential</span></code>)
+        –
+        <div class="doc-md-description">
+          <p>mlp model that will receive the concatenation of the embeddings and
 the continuous columns</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
@@ -1587,21 +1536,9 @@ the continuous columns</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/bayesian_models/tabular/bayesian_mlp/bayesian_tab_mlp.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/bayesian_models/tabular/bayesian_mlp/bayesian_tab_mlp.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">136</span>
 <span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
@@ -1683,19 +1620,55 @@ the continuous columns</p>
 <span class="normal">215</span>
 <span class="normal">216</span>
 <span class="normal">217</span>
-<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
     <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">cat_embed_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
     <span class="n">cat_embed_activation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">continuous_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">embed_continuous</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">cont_embed_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
-    <span class="n">cont_embed_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">embed_continuous</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cont_embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cont_embed_dropout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cont_embed_activation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">use_cont_bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">cont_norm_layer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;batchnorm&quot;</span><span class="p">,</span>
+    <span class="n">use_cont_bias</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cont_norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;batchnorm&quot;</span><span class="p">,</span> <span class="s2">&quot;layernorm&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
     <span class="n">mlp_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">,</span>
     <span class="n">prior_sigma_1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -1709,7 +1682,6 @@ the continuous columns</p>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">column_idx</span> <span class="o">=</span> <span class="n">column_idx</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span> <span class="o">=</span> <span class="n">cat_embed_input</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_dropout</span> <span class="o">=</span> <span class="n">cat_embed_dropout</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_activation</span> <span class="o">=</span> <span class="n">cat_embed_activation</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span> <span class="o">=</span> <span class="n">continuous_cols</span>
@@ -1722,6 +1694,7 @@ the continuous columns</p>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="o">=</span> <span class="n">mlp_hidden_dims</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="o">=</span> <span class="n">mlp_activation</span>
+
     <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_1</span> <span class="o">=</span> <span class="n">prior_sigma_1</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_2</span> <span class="o">=</span> <span class="n">prior_sigma_2</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">prior_pi</span> <span class="o">=</span> <span class="n">prior_pi</span>
@@ -1740,33 +1713,58 @@ the continuous columns</p>
             <span class="p">)</span>
         <span class="p">)</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">cat_and_cont_embed</span> <span class="o">=</span> <span class="n">BayesianDiffSizeCatAndContEmbeddings</span><span class="p">(</span>
-        <span class="n">column_idx</span><span class="p">,</span>
-        <span class="n">cat_embed_input</span><span class="p">,</span>
-        <span class="n">continuous_cols</span><span class="p">,</span>
-        <span class="n">embed_continuous</span><span class="p">,</span>
-        <span class="n">cont_embed_dim</span><span class="p">,</span>
-        <span class="n">use_cont_bias</span><span class="p">,</span>
-        <span class="n">cont_norm_layer</span><span class="p">,</span>
-        <span class="n">prior_sigma_1</span><span class="p">,</span>
-        <span class="n">prior_sigma_2</span><span class="p">,</span>
-        <span class="n">prior_pi</span><span class="p">,</span>
-        <span class="n">posterior_mu_init</span><span class="p">,</span>
-        <span class="n">posterior_rho_init</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_act_fn</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">get_activation_fn</span><span class="p">(</span><span class="n">cat_embed_activation</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cat_embed_activation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="k">else</span> <span class="kc">None</span>
-    <span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_act_fn</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">get_activation_fn</span><span class="p">(</span><span class="n">cont_embed_activation</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">cont_embed_activation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="k">else</span> <span class="kc">None</span>
-    <span class="p">)</span>
+    <span class="c1"># Categorical</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed</span> <span class="o">=</span> <span class="n">BayesianDiffSizeCatEmbeddings</span><span class="p">(</span>
+            <span class="n">column_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">column_idx</span><span class="p">,</span>
+            <span class="n">embed_input</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">,</span>
+            <span class="n">prior_sigma_1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_1</span><span class="p">,</span>
+            <span class="n">prior_sigma_2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_2</span><span class="p">,</span>
+            <span class="n">prior_pi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_pi</span><span class="p">,</span>
+            <span class="n">posterior_mu_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_mu_init</span><span class="p">,</span>
+            <span class="n">posterior_rho_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_rho_init</span><span class="p">,</span>
+            <span class="n">activation_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_activation</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_out_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">embed</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">embed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">]))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_out_dim</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="n">mlp_input_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_and_cont_embed</span><span class="o">.</span><span class="n">output_dim</span>
-    <span class="n">mlp_hidden_dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">mlp_input_dim</span><span class="p">]</span> <span class="o">+</span> <span class="n">mlp_hidden_dims</span> <span class="o">+</span> <span class="p">[</span><span class="n">pred_dim</span><span class="p">]</span>
+    <span class="c1"># Continuous</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cont_idx</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">column_idx</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">cont_norm_layer</span> <span class="o">==</span> <span class="s2">&quot;layernorm&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm</span><span class="p">:</span> <span class="n">NormLayers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">cont_norm_layer</span> <span class="o">==</span> <span class="s2">&quot;batchnorm&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_continuous</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
+                <span class="s2">&quot;If &#39;embed_continuous&#39; is True, &#39;cont_embed_dim&#39; must be &quot;</span>
+                <span class="s2">&quot;provided&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed</span> <span class="o">=</span> <span class="n">BayesianContEmbeddings</span><span class="p">(</span>
+                <span class="n">n_cont_cols</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">),</span>
+                <span class="n">embed_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span><span class="p">,</span>
+                <span class="n">prior_sigma_1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_1</span><span class="p">,</span>
+                <span class="n">prior_sigma_2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_2</span><span class="p">,</span>
+                <span class="n">prior_pi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_pi</span><span class="p">,</span>
+                <span class="n">posterior_mu_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_mu_init</span><span class="p">,</span>
+                <span class="n">posterior_rho_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_rho_init</span><span class="p">,</span>
+                <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span><span class="p">,</span>
+                <span class="n">activation_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_activation</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_out_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span>
+
+    <span class="n">mlp_hidden_dims</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">]</span> <span class="o">+</span> <span class="n">mlp_hidden_dims</span> <span class="o">+</span> <span class="p">[</span><span class="n">pred_dim</span><span class="p">]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">bayesian_tab_mlp</span> <span class="o">=</span> <span class="n">BayesianMLP</span><span class="p">(</span>
         <span class="n">mlp_hidden_dims</span><span class="p">,</span>
         <span class="n">mlp_activation</span><span class="p">,</span>
@@ -1778,7 +1776,7 @@ the continuous columns</p>
         <span class="n">posterior_rho_init</span><span class="p">,</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
@@ -1798,7 +1796,38 @@ the continuous columns</p>
 
   </div>
 
+
 </div>
+
+
+
+
+
+
+
+
+  <aside class="md-source-file">
+    
+    
+    
+      
+  
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Contributors">
+      
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9 3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3 3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3 3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.536 5.536 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13v-1.75M0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9-.59.68-.95 1.62-.95 2.65V20H0m24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65 2.56.34 4.45 1.51 4.45 2.9V20Z"/></svg>
+      
+    </span>
+    <nav>
+      
+        <a href="mailto:mulinka.pavol@gmail.com">Pavol Mulinka</a>, 
+        <a href="mailto:javierrodriguezzaurin@javiers-macbook-pro.local">Javier Rodriguez Zaurin</a>
+    </nav>
+  </span>
+
+    
+    
+  </aside>
 
 
 
@@ -1809,47 +1838,12 @@ the continuous columns</p>
             </div>
           
           
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="Footer" >
-      
-        
-        <a href="model_components.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Model Components" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Model Components
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="losses.html" class="md-footer__link md-footer__link--next" aria-label="Next: Losses" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Losses
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -1871,11 +1865,13 @@ the continuous columns</p>
   
     
     
+    
+    
       
       
     
     <a href="https://jrzaurin.medium.com/" target="_blank" rel="noopener" title="jrzaurin.medium.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M180.5 74.262C80.813 74.262 0 155.633 0 256s80.819 181.738 180.5 181.738S361 356.373 361 256 280.191 74.262 180.5 74.262Zm288.25 10.646c-49.845 0-90.245 76.619-90.245 171.095s40.406 171.1 90.251 171.1 90.251-76.619 90.251-171.1H559c0-94.503-40.4-171.095-90.248-171.095Zm139.506 17.821c-17.526 0-31.735 68.628-31.735 153.274s14.2 153.274 31.735 153.274S640 340.631 640 256c0-84.649-14.215-153.271-31.742-153.271Z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M180.5 74.262C80.813 74.262 0 155.633 0 256s80.819 181.738 180.5 181.738S361 356.373 361 256 280.191 74.262 180.5 74.262Zm288.25 10.646c-49.845 0-90.245 76.619-90.245 171.095s40.406 171.1 90.251 171.1 90.251-76.619 90.251-171.1H559c0-94.503-40.4-171.095-90.248-171.095Zm139.506 17.821c-17.526 0-31.735 68.628-31.735 153.274s14.2 153.274 31.735 153.274S640 340.631 640 256c0-84.649-14.215-153.271-31.742-153.271Z"/></svg>
     </a>
   
 </div>
@@ -1889,10 +1885,11 @@ the continuous columns</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.5a2dcb6a.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       
@@ -1902,7 +1899,6 @@ the continuous columns</p>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
-    
     
   </body>
 </html>

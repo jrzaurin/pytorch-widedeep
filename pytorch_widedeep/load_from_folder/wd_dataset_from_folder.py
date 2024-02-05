@@ -26,13 +26,13 @@ class WideDeepDatasetFromFolder(Dataset):
     n_samples: int
         Number of samples in the dataset
     tab_from_folder: TabFromFolder
-        Instance of the TabFromFolder class
+        Instance of the `TabFromFolder` class
     wide_from_folder: Optional[WideFromFolder], default = None
-        Instance of the WideFromFolder class
+        Instance of the `WideFromFolder` class
     text_from_folder: Optional[TextFromFolder], default = None
-        Instance of the TextFromFolder class
+        Instance of the `TextFromFolder` class
     img_from_folder: Optional[ImageFromFolder], default = None
-        Instance of the ImageFromFolder class
+        Instance of the `ImageFromFolder` class
     reference: Type["WideDeepDatasetFromFolder"], default = None
         If not None, the 'text_from_folder' and 'img_from_folder' objects will
         be retrieved from the reference class. This is useful when we want to

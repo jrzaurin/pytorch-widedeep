@@ -295,8 +295,10 @@ class ChunkWidePreprocessor(WidePreprocessor):
         return self
 
     def fit(self, df: pd.DataFrame) -> "ChunkWidePreprocessor":
-        # just to override the fit method in the base class. This class is not
-        # designed or thought to run fit
+        """
+        Runs `partial_fit`. This is just to override the fit method in the base
+        class. This class is not designed or thought to run fit
+        """
         return self.partial_fit(df)
 
     def __repr__(self) -> str:

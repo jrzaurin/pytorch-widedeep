@@ -132,24 +132,11 @@ class TabPreprocessor(BasePreprocessor):
         quantized using this value as the number of bins. Alternatively, a
         dictionary where the keys are the column names to quantize and the
         values are the either integers indicating the number of bins or a
-        list of scalars indicating the bin edges.
+        list of scalars indicating the bin edges can also be used.
     cols_to_scale: List or str, default = None,
         List with the names of the columns that will be standarised via
         sklearn's `StandardScaler`. It can also be the string `'all'` in
         which case all the continuous cols will be scaled.
-    scale: bool, default = False
-        :information_source: **note**: this arg will be removed in the next
-         release. Please use `cols_to_scale` instead. <br/>
-        Bool indicating whether or not to scale/standarise continuous cols. It
-        is important to emphasize that all the DL models for tabular data in
-        the library also include the possibility of normalising the input
-        continuous features via a `BatchNorm` or a `LayerNorm`. <br/>
-        Param alias: `scale_cont_cols`.
-    already_standard: List, default = None
-        :information_source: **note**: this arg will be removed in the next
-         release. Please use `cols_to_scale` instead. <br/>
-        List with the name of the continuous cols that do not need to be
-        scaled/standarised.
     auto_embed_dim: bool, default = True
         Boolean indicating whether the embedding dimensions will be
         automatically defined via rule of thumb. See `embedding_rule`
@@ -164,9 +151,9 @@ class TabPreprocessor(BasePreprocessor):
 
         - _google_: $min(600, round(n_{cat}^{0.24}))$
     default_embed_dim: int, default=16
-        Dimension for the embeddings if the embed_dim is not provided in the
-        `cat_embed_cols` parameter and `auto_embed_dim` is set to
-        `False`.
+        Dimension for the embeddings if the embedding dimension is not
+        provided in the `cat_embed_cols` parameter and `auto_embed_dim` is
+        set to `False`.
     with_attention: bool, default = False
         Boolean indicating whether the preprocessed data will be passed to an
         attention-based model (more precisely a model where all embeddings
@@ -182,8 +169,8 @@ class TabPreprocessor(BasePreprocessor):
         when using attention-based models. The final hidden state
         corresponding to this token is used as the aggregated representation
         for classification and regression tasks. If not, the categorical
-        (and continuous embeddings if present) will be concatenated before
-        being passed to the final MLP (if present).
+        and/or continuous embeddings will be concatenated before being passed
+        to the final MLP (if present).
     shared_embed: bool, default = False
         Boolean indicating if the embeddings will be "shared" when using
         attention-based models. The idea behind `shared_embed` is
@@ -193,6 +180,19 @@ class TabPreprocessor(BasePreprocessor):
         columns'_. In other words, the idea is to let the model learn which
         column is embedded at the time. See: `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
     verbose: int, default = 1
+    scale: bool, default = False
+        :information_source: **note**: this arg will be removed in upcoming
+         releases. Please use `cols_to_scale` instead. <br/> Bool indicating
+         whether or not to scale/standarise continuous cols. It is important
+         to emphasize that all the DL models for tabular data in the library
+         also include the possibility of normalising the input continuous
+         features via a `BatchNorm` or a `LayerNorm`. <br/> Param alias:
+         `scale_cont_cols`.
+    already_standard: List, default = None
+        :information_source: **note**: this arg will be removed in upcoming
+         releases. Please use `cols_to_scale` instead. <br/> List with the
+         name of the continuous cols that do not need to be
+         scaled/standarised.
 
     Other Parameters
     ----------------
@@ -751,6 +751,19 @@ class ChunkTabPreprocessor(TabPreprocessor):
         columns'_. In other words, the idea is to let the model learn which
         column is embedded at the time. See: `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
     verbose: int, default = 1
+    scale: bool, default = False
+        :information_source: **note**: this arg will be removed in upcoming
+         releases. Please use `cols_to_scale` instead. <br/> Bool indicating
+         whether or not to scale/standarise continuous cols. It is important
+         to emphasize that all the DL models for tabular data in the library
+         also include the possibility of normalising the input continuous
+         features via a `BatchNorm` or a `LayerNorm`. <br/> Param alias:
+         `scale_cont_cols`.
+    already_standard: List, default = None
+        :information_source: **note**: this arg will be removed in upcoming
+         releases. Please use `cols_to_scale` instead. <br/> List with the
+         name of the continuous cols that do not need to be
+         scaled/standarised.
 
     Other Parameters
     ----------------

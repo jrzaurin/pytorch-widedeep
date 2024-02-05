@@ -15,10 +15,11 @@ class Wide(nn.Module):
     Parameters
     -----------
     input_dim: int
-        size of the Embedding layer. `input_dim` is the summation of all the
-        individual values for all the features that go through the wide
-        model. For example, if the wide model receives 2 features with
-        5 individual values each, `input_dim = 10`
+        size of the Linear layer (implemented via an Embedding layer).
+        `input_dim` is the summation of all the individual values for all the
+        features that go through the wide model. For example, if the wide
+        model receives 2 features with 5 individual values each, `input_dim =
+        10`
     pred_dim: int, default = 1
         size of the ouput tensor containing the predictions. Note that unlike
         all the other models, the wide model is connected directly to the

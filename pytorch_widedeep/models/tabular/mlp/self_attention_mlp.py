@@ -29,6 +29,20 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
     observed that the '_standard_' attention mechanism used in the
     TabTransformer has a notable tendency to overfit.
 
+    In more detail, this model only uses Q and K (and not V). If we think
+    about it as in terms of text (and intuitively), the Softmax(QK^T) is the
+    attention mechanism that tells us how much, at each position in the input
+    sentence, each word is represented or 'expressed'. We refer to that
+    as 'attention weights'. These attention weighst are normally multiplied
+    by a Value matrix to further strength the focus on the words that each
+    word should be attending to (again, intuitively).
+
+    In this implementation we skip this last multiplication and instead we
+    multiply the attention weights directly by the input tensor. This is a
+    simplification that we expect is beneficial in terms of avoiding
+    overfitting for tabular data.
+
+
     Parameters
     ----------
     column_idx: Dict

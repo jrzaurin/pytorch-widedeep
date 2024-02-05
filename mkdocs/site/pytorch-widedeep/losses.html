@@ -10,8 +10,15 @@
       
         <link rel="canonical" href="https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/losses.html">
       
+      
+        <link rel="prev" href="bayesian_models.html">
+      
+      
+        <link rel="next" href="metrics.html">
+      
+      
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
     
     
       
@@ -19,15 +26,17 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.975780f9.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.2505c338.min.css">
-        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
       
       
 
+
     
+    
+      
     
     
       
@@ -63,9 +72,6 @@
     <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="deep-orange">
   
     
-    
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
-    
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
@@ -86,7 +92,7 @@
 
   
 
-<header class="md-header md-header--lifted" data-md-component="header">
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../index.html" title="pytorch_widedeep" class="md-header__button md-logo" aria-label="pytorch_widedeep" data-md-component="logo">
       
@@ -94,6 +100,7 @@
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
+      
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
@@ -113,33 +120,39 @@
       </div>
     </div>
     
-      <form class="md-header__option" data-md-component="palette">
-        
-          
-          
-          
-          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
-          
-            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
-            </label>
-          
-        
-          
-          
-          
-          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
-          
-            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
-            </label>
-          
-        
-      </form>
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
       <label class="md-header__button md-icon" for="__search">
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
       </label>
       <div class="md-search" data-md-component="search" role="dialog">
@@ -148,12 +161,15 @@
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
         </button>
       </nav>
@@ -165,7 +181,7 @@
           <div class="md-search-result__meta">
             Initializing search
           </div>
-          <ol class="md-search-result__list"></ol>
+          <ol class="md-search-result__list" role="presentation"></ol>
         </div>
       </div>
     </div>
@@ -177,7 +193,7 @@
         <a href="https://github.com/jrzaurin/pytorch-widedeep" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     pytorch_widedeep
@@ -190,81 +206,21 @@
     
       
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
-  <div class="md-tabs__inner md-grid">
+  <div class="md-grid">
     <ul class="md-tabs__list">
       
         
   
   
-
-
-  <li class="md-tabs__item">
-    <a href="../index.html" class="md-tabs__link">
-      Home
-    </a>
-  </li>
-
-      
+  
+    <li class="md-tabs__item">
+      <a href="../index.html" class="md-tabs__link">
         
-  
-  
-
-
-  <li class="md-tabs__item">
-    <a href="../installation.html" class="md-tabs__link">
-      Installation
-    </a>
-  </li>
-
-      
-        
-  
-  
-
-
-  <li class="md-tabs__item">
-    <a href="../quick_start.html" class="md-tabs__link">
-      Quick Start
-    </a>
-  </li>
-
-      
-        
-  
   
     
   
+  Home
 
-
-  
-  
-  
-    
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="utils/index.html" class="md-tabs__link md-tabs__link--active">
-        Pytorch-widedeep
-      </a>
-    </li>
-  
-
-  
-
-      
-        
-  
-  
-
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../examples/01_preprocessors_and_utils.html" class="md-tabs__link">
-        Examples
       </a>
     </li>
   
@@ -273,13 +229,85 @@
         
   
   
+  
+    <li class="md-tabs__item">
+      <a href="../installation.html" class="md-tabs__link">
+        
+  
+    
+  
+  Installation
 
+      </a>
+    </li>
+  
 
-  <li class="md-tabs__item">
-    <a href="../contributing.html" class="md-tabs__link">
-      Contributing
-    </a>
-  </li>
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../quick_start.html" class="md-tabs__link">
+        
+  
+    
+  
+  Quick Start
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="utils/index.html" class="md-tabs__link">
+          
+  
+    
+  
+  Pytorch-widedeep
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing.html" class="md-tabs__link">
+        
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
 
       
     </ul>
@@ -304,6 +332,7 @@
                   <div class="md-sidebar__inner">
                     
 
+
   
 
 
@@ -323,7 +352,7 @@
       <a href="https://github.com/jrzaurin/pytorch-widedeep" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     pytorch_widedeep
@@ -335,14 +364,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../index.html" class="md-nav__link">
-        Home
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
       </a>
     </li>
   
@@ -350,14 +384,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../installation.html" class="md-nav__link">
-        Installation
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
       </a>
     </li>
   
@@ -365,14 +404,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../quick_start.html" class="md-nav__link">
-        Quick Start
+        
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
       </a>
     </li>
   
@@ -380,251 +424,348 @@
     
       
       
+  
+  
+    
+  
+  
+  
+    
+    
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Pytorch-widedeep
+  </span>
+  
 
-  
-  
-    
-  
-  
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
-      
-      
-      
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_4">
-          Pytorch-widedeep
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Pytorch-widedeep" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
-          <span class="md-nav__icon md-icon"></span>
-          Pytorch-widedeep
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Pytorch-widedeep
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
   
   
   
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
     
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_1" type="checkbox" id="__nav_4_1" checked>
-      
-      
-      
         
-          
-            
-          
+        
         
           
         
-          
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_1" >
         
           
-        
           
-        
-      
-      
-        
-        
-        <div class="md-nav__link md-nav__link--index ">
-          <a href="utils/index.html">Utils</a>
-          
-            <label for="__nav_4_1">
-              <span class="md-nav__icon md-icon"></span>
-            </label>
-          
-        </div>
-      
-      <nav class="md-nav" aria-label="Utils" data-md-level="2">
-        <label class="md-nav__title" for="__nav_4_1">
-          <span class="md-nav__icon md-icon"></span>
-          Utils
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-          
+          <div class="md-nav__link md-nav__container">
+            <a href="utils/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Utils
+  </span>
+  
+
+            </a>
             
               
+              <label class="md-nav__link " for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            Utils
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/deeptabular_utils.html" class="md-nav__link">
-        Deeptabular utils
+        
+  
+  <span class="md-ellipsis">
+    Deeptabular utils
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/fastai_transforms.html" class="md-nav__link">
-        Fastai transforms
+        
+  
+  <span class="md-ellipsis">
+    Fastai transforms
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/image_utils.html" class="md-nav__link">
-        Image utils
+        
+  
+  <span class="md-ellipsis">
+    Image utils
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/text_utils.html" class="md-nav__link">
-        Text utils
+        
+  
+  <span class="md-ellipsis">
+    Text utils
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="preprocessing.html" class="md-nav__link">
-        Preprocessing
+        
+  
+  <span class="md-ellipsis">
+    Preprocessing
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="load_from_folder.html" class="md-nav__link">
-        Load From Folder
+        
+  
+  <span class="md-ellipsis">
+    Load From Folder
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="model_components.html" class="md-nav__link">
-        Model Components
+        
+  
+  <span class="md-ellipsis">
+    Model Components
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="bayesian_models.html" class="md-nav__link">
-        Bayesian models
+        
+  
+  <span class="md-ellipsis">
+    Bayesian models
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
   
   
     
   
   
+  
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
         
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Losses
+          
+  
+  <span class="md-ellipsis">
+    Losses
+  </span>
+  
+
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="losses.html" class="md-nav__link md-nav__link--active">
-        Losses
+        
+  
+  <span class="md-ellipsis">
+    Losses
+  </span>
+  
+
       </a>
       
         
@@ -644,119 +785,153 @@
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.MSELoss" class="md-nav__link">
-    MSELoss
+    <span class="md-ellipsis">
+      MSELoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.MSLELoss" class="md-nav__link">
-    MSLELoss
+    <span class="md-ellipsis">
+      MSLELoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.RMSELoss" class="md-nav__link">
-    RMSELoss
+    <span class="md-ellipsis">
+      RMSELoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.RMSLELoss" class="md-nav__link">
-    RMSLELoss
+    <span class="md-ellipsis">
+      RMSLELoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.QuantileLoss" class="md-nav__link">
-    QuantileLoss
+    <span class="md-ellipsis">
+      QuantileLoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.FocalLoss" class="md-nav__link">
-    FocalLoss
+    <span class="md-ellipsis">
+      FocalLoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.BayesianSELoss" class="md-nav__link">
-    BayesianSELoss
+    <span class="md-ellipsis">
+      BayesianSELoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.TweedieLoss" class="md-nav__link">
-    TweedieLoss
+    <span class="md-ellipsis">
+      TweedieLoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.ZILNLoss" class="md-nav__link">
-    ZILNLoss
+    <span class="md-ellipsis">
+      ZILNLoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.L1Loss" class="md-nav__link">
-    L1Loss
+    <span class="md-ellipsis">
+      L1Loss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.FocalR_L1Loss" class="md-nav__link">
-    FocalR_L1Loss
+    <span class="md-ellipsis">
+      FocalR_L1Loss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.FocalR_MSELoss" class="md-nav__link">
-    FocalR_MSELoss
+    <span class="md-ellipsis">
+      FocalR_MSELoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.FocalR_RMSELoss" class="md-nav__link">
-    FocalR_RMSELoss
+    <span class="md-ellipsis">
+      FocalR_RMSELoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.HuberLoss" class="md-nav__link">
-    HuberLoss
+    <span class="md-ellipsis">
+      HuberLoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.InfoNCELoss" class="md-nav__link">
-    InfoNCELoss
+    <span class="md-ellipsis">
+      InfoNCELoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.DenoisingLoss" class="md-nav__link">
-    DenoisingLoss
+    <span class="md-ellipsis">
+      DenoisingLoss
+    </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.losses.EncoderDecoderLoss" class="md-nav__link">
-    EncoderDecoderLoss
+    <span class="md-ellipsis">
+      EncoderDecoderLoss
+    </span>
   </a>
   
 </li>
@@ -768,510 +943,177 @@
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="metrics.html" class="md-nav__link">
-        Metrics
+        
+  
+  <span class="md-ellipsis">
+    Metrics
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="dataloaders.html" class="md-nav__link">
-        Dataloaders
+        
+  
+  <span class="md-ellipsis">
+    Dataloaders
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="callbacks.html" class="md-nav__link">
-        Callbacks
+        
+  
+  <span class="md-ellipsis">
+    Callbacks
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="trainer.html" class="md-nav__link">
-        Trainer
+        
+  
+  <span class="md-ellipsis">
+    Trainer
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="bayesian_trainer.html" class="md-nav__link">
-        Bayesian Trainer
+        
+  
+  <span class="md-ellipsis">
+    Bayesian Trainer
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="self_supervised_pretraining.html" class="md-nav__link">
-        Self Supervised Pretraining
+        
+  
+  <span class="md-ellipsis">
+    Self Supervised Pretraining
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="tab2vec.html" class="md-nav__link">
-        Tab2Vec
+        
+  
+  <span class="md-ellipsis">
+    Tab2Vec
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
     
       
       
-      
-
   
-  
-  
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
-      
-      
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_5">
-          Examples
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Examples" data-md-level="1">
-        <label class="md-nav__title" for="__nav_5">
-          <span class="md-nav__icon md-icon"></span>
-          Examples
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/01_preprocessors_and_utils.html" class="md-nav__link">
-        01_preprocessors_and_utils
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/02_model_components.html" class="md-nav__link">
-        02_model_components
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/03_binary_classification_with_defaults.html" class="md-nav__link">
-        03_binary_classification_with_defaults
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/04_regression_with_images_and_text.html" class="md-nav__link">
-        04_regression_with_images_and_text
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/05_save_and_load_model_and_artifacts.html" class="md-nav__link">
-        05_save_and_load_model_and_artifacts
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/06_finetune_and_warmup.html" class="md-nav__link">
-        06_finetune_and_warmup
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/07_custom_components.html" class="md-nav__link">
-        07_custom_components
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/08_custom_dataLoader_imbalanced_dataset.html" class="md-nav__link">
-        08_custom_dataLoader_imbalanced_dataset
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/09_extracting_embeddings.html" class="md-nav__link">
-        09_extracting_embeddings
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/10_3rd_party_integration-RayTune_WnB.html" class="md-nav__link">
-        10_3rd_party_integration-RayTune_WnB
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/11_auc_multiclass.html" class="md-nav__link">
-        11_auc_multiclass
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/12_ZILNLoss_origkeras_vs_pytorch_widedeep.html" class="md-nav__link">
-        12_ZILNLoss_origkeras_vs_pytorch_widedeep
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/13_model_uncertainty_prediction.html" class="md-nav__link">
-        13_model_uncertainty_prediction
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/14_bayesian_models.html" class="md-nav__link">
-        14_bayesian_models
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/15_DIR-LDS_and_FDS.html" class="md-nav__link">
-        15_DIR-LDS_and_FDS
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/16_Self_Supervised_Pretraning_pt1.html" class="md-nav__link">
-        16_Self-Supervised Pre-Training pt 1
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/16_Self_Supervised_Pretraning_pt2.html" class="md-nav__link">
-        16_Self-Supervised Pre-Training pt 2
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/17_Usign_a_hugging_face_model.html" class="md-nav__link">
-        17_Using_a_huggingface_model
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/18_feature_importance_via_attention_weights.html" class="md-nav__link">
-        18_feature_importance_via_attention_weights
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/19_wide_and_deep_for_recsys_pt1.html" class="md-nav__link">
-        19_wide_and_deep_for_recsys_pt1
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/19_wide_and_deep_for_recsys_pt2.html" class="md-nav__link">
-        19_wide_and_deep_for_recsys_pt2
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/20_load_from_folder_functionality.html" class="md-nav__link">
-        20_load_from_folder_functionality.
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
-    </li>
-  
-
-    
-      
-      
-      
-
   
   
   
     <li class="md-nav__item">
       <a href="../contributing.html" class="md-nav__link">
-        Contributing
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
       </a>
     </li>
   
@@ -1291,10 +1133,8 @@
                 
                   
 
-  <a href="https://github.com/jrzaurin/pytorch-widedeep/edit/master/mkdocs/sources/pytorch-widedeep/losses.md" title="Edit this page" class="md-content__button md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
-  </a>
+  
+  
 
 
 <h1 id="losses">Losses<a class="headerlink" href="#losses" title="Permanent link">&para;</a></h1>
@@ -1322,16 +1162,16 @@ always use them on their own and can be imported as:</p>
 
 
 <h2 id="pytorch_widedeep.losses.MSELoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">MSELoss</span>
+          <span class="doc doc-object-name doc-class-name">MSELoss</span>
 
 
 <a href="#pytorch_widedeep.losses.MSELoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">MSELoss</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">MSELoss</span><span class="p">()</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Mean square error loss with the option of using Label Smooth
@@ -1339,18 +1179,18 @@ Distribution (LDS)</p>
 <p>LDS is based on
 <a href="https://arxiv.org/abs/2102.09554">Delving into Deep Imbalanced Regression</a>.</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">25</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">25</span>
 <span class="normal">26</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -1365,48 +1205,63 @@ Distribution (LDS)</p>
 
 
 <h3 id="pytorch_widedeep.losses.MSELoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.MSELoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual values</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual values</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>lds_weight</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
-        – <p>Tensor of weights that will multiply the loss value.</p>
+        <b><code>lds_weight</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Tensor of weights that will multiply the loss value.</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">MSELoss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lds_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">MSELoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">28</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">28</span>
 <span class="normal">29</span>
 <span class="normal">30</span>
 <span class="normal">31</span>
@@ -1460,7 +1315,7 @@ Distribution (LDS)</p>
         <span class="n">loss</span> <span class="o">*=</span> <span class="n">lds_weight</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -1470,6 +1325,7 @@ Distribution (LDS)</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -1478,16 +1334,16 @@ Distribution (LDS)</p>
 
 
 <h2 id="pytorch_widedeep.losses.MSLELoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">MSLELoss</span>
+          <span class="doc doc-object-name doc-class-name">MSLELoss</span>
 
 
 <a href="#pytorch_widedeep.losses.MSLELoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">MSLELoss</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">MSLELoss</span><span class="p">()</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Mean square log error loss with the option of using Label Smooth
@@ -1495,18 +1351,18 @@ Distribution (LDS)</p>
 <p>LDS is based on
 <a href="https://arxiv.org/abs/2102.09554">Delving into Deep Imbalanced Regression</a>.</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">65</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">65</span>
 <span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -1521,48 +1377,63 @@ Distribution (LDS)</p>
 
 
 <h3 id="pytorch_widedeep.losses.MSLELoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.MSLELoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions (not probabilities)</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions (not probabilities)</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual classes</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual classes</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>lds_weight</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
-        – <p>Tensor of weights that will multiply the loss value.</p>
+        <b><code>lds_weight</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Tensor of weights that will multiply the loss value.</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">MSLELoss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lds_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">MSLELoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 68</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 68</span>
 <span class="normal"> 69</span>
 <span class="normal"> 70</span>
 <span class="normal"> 71</span>
@@ -1630,7 +1501,7 @@ Distribution (LDS)</p>
         <span class="n">loss</span> <span class="o">*=</span> <span class="n">lds_weight</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -1640,6 +1511,7 @@ Distribution (LDS)</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -1648,16 +1520,16 @@ Distribution (LDS)</p>
 
 
 <h2 id="pytorch_widedeep.losses.RMSELoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">RMSELoss</span>
+          <span class="doc doc-object-name doc-class-name">RMSELoss</span>
 
 
 <a href="#pytorch_widedeep.losses.RMSELoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">RMSELoss</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">RMSELoss</span><span class="p">()</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Root mean square error loss adjusted for the possibility of using Label
@@ -1665,18 +1537,18 @@ Smooth Distribution (LDS)</p>
 <p>LDS is based on
 <a href="https://arxiv.org/abs/2102.09554">Delving into Deep Imbalanced Regression</a>.</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">112</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">112</span>
 <span class="normal">113</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -1691,48 +1563,63 @@ Smooth Distribution (LDS)</p>
 
 
 <h3 id="pytorch_widedeep.losses.RMSELoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.RMSELoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions (not probabilities)</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions (not probabilities)</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual classes</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual classes</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>lds_weight</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
-        – <p>Tensor of weights that will multiply the loss value.</p>
+        <b><code>lds_weight</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Tensor of weights that will multiply the loss value.</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">RMSELoss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lds_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">RMSELoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">115</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">115</span>
 <span class="normal">116</span>
 <span class="normal">117</span>
 <span class="normal">118</span>
@@ -1786,7 +1673,7 @@ Smooth Distribution (LDS)</p>
         <span class="n">loss</span> <span class="o">*=</span> <span class="n">lds_weight</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -1796,6 +1683,7 @@ Smooth Distribution (LDS)</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -1804,16 +1692,16 @@ Smooth Distribution (LDS)</p>
 
 
 <h2 id="pytorch_widedeep.losses.RMSLELoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">RMSLELoss</span>
+          <span class="doc doc-object-name doc-class-name">RMSLELoss</span>
 
 
 <a href="#pytorch_widedeep.losses.RMSLELoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">RMSLELoss</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">RMSLELoss</span><span class="p">()</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Root mean square log error loss adjusted for the possibility of using Label
@@ -1821,18 +1709,18 @@ Smooth Distribution (LDS)</p>
 <p>LDS is based on
 <a href="https://arxiv.org/abs/2102.09554">Delving into Deep Imbalanced Regression</a>.</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
 <span class="normal">153</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -1847,48 +1735,63 @@ Smooth Distribution (LDS)</p>
 
 
 <h3 id="pytorch_widedeep.losses.RMSLELoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.RMSLELoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions (not probabilities)</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions (not probabilities)</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual classes</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual classes</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>lds_weight</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
-        – <p>Tensor of weights that will multiply the loss value.</p>
+        <b><code>lds_weight</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Tensor of weights that will multiply the loss value.</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">RMSLELoss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lds_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">RMSLELoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">155</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">155</span>
 <span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
@@ -1956,7 +1859,7 @@ Smooth Distribution (LDS)</p>
         <span class="n">loss</span> <span class="o">*=</span> <span class="n">lds_weight</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -1966,6 +1869,7 @@ Smooth Distribution (LDS)</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -1974,18 +1878,18 @@ Smooth Distribution (LDS)</p>
 
 
 <h2 id="pytorch_widedeep.losses.QuantileLoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">QuantileLoss</span>
+          <span class="doc doc-object-name doc-class-name">QuantileLoss</span>
 
 
 <a href="#pytorch_widedeep.losses.QuantileLoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">QuantileLoss</span><span class="p">(</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">QuantileLoss</span><span class="p">(</span>
     <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">]</span>
 <span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Quantile loss defined as:</p>
@@ -1995,19 +1899,25 @@ Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))
 <p>All credits go to the implementation at
 <a href="https://pytorch-forecasting.readthedocs.io/en/latest/_modules/pytorch_forecasting/metrics.html#QuantileLoss">pytorch-forecasting</a>.</p>
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>quantiles</b>
-            (<code><span title="pytorch_widedeep.wdtypes.List">List</span>[float]</code>)
-        – <p>List of quantiles</p>
+        <b><code>quantiles</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.List">List</span>[float]</code>, default:
+                <code>[0.02, 0.1, 0.25, 0.5, 0.75, 0.9, 0.98]</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List of quantiles</p>
+        </div>
       </li>
   </ul>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">207</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">207</span>
 <span class="normal">208</span>
 <span class="normal">209</span>
 <span class="normal">210</span>
@@ -2019,11 +1929,12 @@ Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">quantiles</span> <span class="o">=</span> <span class="n">quantiles</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -2038,35 +1949,45 @@ Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))
 
 
 <h3 id="pytorch_widedeep.losses.QuantileLoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.QuantileLoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual values</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual values</p>
+        </div>
       </li>
   </ul>
 
+
+
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">QuantileLoss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># REGRESSION</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">]])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">.1</span><span class="p">,</span> <span class="mf">.2</span><span class="p">,],</span> <span class="p">[</span><span class="mf">.4</span><span class="p">,</span> <span class="mf">.5</span><span class="p">]])</span>
@@ -2074,9 +1995,9 @@ Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">qloss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">214</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
 <span class="normal">217</span>
@@ -2148,7 +2069,7 @@ Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -2158,6 +2079,7 @@ Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))
   </div>
 
   </div>
+
 
 </div>
 
@@ -2166,16 +2088,16 @@ Loss = max(q \times (y-y_{pred}), (1-q) \times (y_{pred}-y))
 
 
 <h2 id="pytorch_widedeep.losses.FocalLoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">FocalLoss</span>
+          <span class="doc doc-object-name doc-class-name">FocalLoss</span>
 
 
 <a href="#pytorch_widedeep.losses.FocalLoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">FocalLoss</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">FocalLoss</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Implementation of the <a href="https://arxiv.org/pdf/1708.02002.pdf">Focal loss</a>
@@ -2188,24 +2110,35 @@ FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)
 \begin{equation} p_t= \begin{cases}p, &amp; \text{if $y=1$}.\\1-p, &amp; \text{otherwise}. \end{cases} \end{equation}
 \]</div>
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>alpha</b>
-            (<code>float</code>)
-        – <p>Focal Loss <code>alpha</code> parameter</p>
+        <b><code>alpha</code></b>
+            (<code>float</code>, default:
+                <code>0.25</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Focal Loss <code>alpha</code> parameter</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>gamma</b>
-            (<code>float</code>)
-        – <p>Focal Loss <code>gamma</code> parameter</p>
+        <b><code>gamma</code></b>
+            (<code>float</code>, default:
+                <code>1.0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Focal Loss <code>gamma</code> parameter</p>
+        </div>
       </li>
   </ul>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">274</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">274</span>
 <span class="normal">275</span>
 <span class="normal">276</span>
 <span class="normal">277</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.25</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
@@ -2213,11 +2146,12 @@ FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)
     <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -2232,49 +2166,59 @@ FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)
 
 
 <h3 id="pytorch_widedeep.losses.FocalLoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.FocalLoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions (not probabilities)</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions (not probabilities)</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual classes</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual classes</p>
+        </div>
       </li>
   </ul>
 
+
+
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">FocalLoss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># BINARY</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]])</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">FocalLoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># MULTICLASS</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">FocalLoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">284</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span>
 <span class="normal">287</span>
@@ -2354,7 +2298,7 @@ FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)
         <span class="n">input_prob</span><span class="p">,</span> <span class="n">binary_target</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -2364,6 +2308,7 @@ FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)
   </div>
 
   </div>
+
 
 </div>
 
@@ -2372,34 +2317,34 @@ FL(p_t) = \alpha (1 - p_t)^{\gamma} log(p_t)
 
 
 <h2 id="pytorch_widedeep.losses.BayesianSELoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">BayesianSELoss</span>
+          <span class="doc doc-object-name doc-class-name">BayesianSELoss</span>
 
 
 <a href="#pytorch_widedeep.losses.BayesianSELoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">BayesianSELoss</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">BayesianSELoss</span><span class="p">()</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Squared Loss (log Gaussian) for the case of a regression as specified in
 the original publication
 <a href="https://arxiv.org/abs/1505.05424">Weight Uncertainty in Neural Networks</a>.</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">352</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">352</span>
 <span class="normal">353</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -2414,29 +2359,39 @@ the original publication
 
 
 <h3 id="pytorch_widedeep.losses.BayesianSELoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.BayesianSELoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions (not probabilities)</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions (not probabilities)</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual classes</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual classes</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
@@ -2446,9 +2401,9 @@ the original publication
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">BayesianSELoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">355</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">355</span>
 <span class="normal">356</span>
 <span class="normal">357</span>
 <span class="normal">358</span>
@@ -2484,7 +2439,7 @@ the original publication
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="nb">input</span> <span class="o">-</span> <span class="n">target</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -2494,6 +2449,7 @@ the original publication
   </div>
 
   </div>
+
 
 </div>
 
@@ -2502,16 +2458,16 @@ the original publication
 
 
 <h2 id="pytorch_widedeep.losses.TweedieLoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">TweedieLoss</span>
+          <span class="doc doc-object-name doc-class-name">TweedieLoss</span>
 
 
 <a href="#pytorch_widedeep.losses.TweedieLoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">TweedieLoss</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">TweedieLoss</span><span class="p">()</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Tweedie loss for extremely unbalanced zero-inflated data</p>
@@ -2519,18 +2475,18 @@ the original publication
 <a href="https://towardsdatascience.com/tweedie-loss-function-for-right-skewed-data-2c5ca470678f">this post</a>
 and the <a href="https://arxiv.org/abs/1811.10192">original publication</a> for details.</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">384</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">384</span>
 <span class="normal">385</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -2545,55 +2501,75 @@ and the <a href="https://arxiv.org/abs/1811.10192">original publication</a> for 
 
 
 <h3 id="pytorch_widedeep.losses.TweedieLoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.TweedieLoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual values</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual values</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>lds_weight</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
-        – <p>If we choose to use LDS this is the tensor of weights that will
+        <b><code>lds_weight</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>If we choose to use LDS this is the tensor of weights that will
 multiply the loss value.</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>p</b>
-            (<code>float</code>)
-        – <p>the power to be used to compute the loss. See the original
+        <b><code>p</code></b>
+            (<code>float</code>, default:
+                <code>1.5</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>the power to be used to compute the loss. See the original
 publication for details</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">TweedieLoss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lds_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">TweedieLoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">387</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">387</span>
 <span class="normal">388</span>
 <span class="normal">389</span>
 <span class="normal">390</span>
@@ -2683,7 +2659,7 @@ publication for details</p>
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -2693,6 +2669,7 @@ publication for details</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -2701,16 +2678,16 @@ publication for details</p>
 
 
 <h2 id="pytorch_widedeep.losses.ZILNLoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">ZILNLoss</span>
+          <span class="doc doc-object-name doc-class-name">ZILNLoss</span>
 
 
 <a href="#pytorch_widedeep.losses.ZILNLoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">ZILNLoss</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">ZILNLoss</span><span class="p">()</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Adjusted implementation of the Zero Inflated LogNormal Loss</p>
@@ -2718,18 +2695,18 @@ publication for details</p>
 and the corresponding
 <a href="https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py">code</a>.</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">442</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">442</span>
 <span class="normal">443</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -2744,42 +2721,52 @@ and the corresponding
 
 
 <h3 id="pytorch_widedeep.losses.ZILNLoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.ZILNLoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions with spape (N,3), where N is the batch size</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions with spape (N,3), where N is the batch size</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual target values</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual target values</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">ZILNLoss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">]])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">.1</span><span class="p">,</span> <span class="mf">.2</span><span class="p">,</span> <span class="mf">.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">.4</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mf">.6</span><span class="p">]])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">ZILNLoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">445</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">445</span>
 <span class="normal">446</span>
 <span class="normal">447</span>
 <span class="normal">448</span>
@@ -2883,7 +2870,7 @@ and the corresponding
 
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">classification_loss</span> <span class="o">+</span> <span class="n">regression_loss</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -2893,6 +2880,7 @@ and the corresponding
   </div>
 
   </div>
+
 
 </div>
 
@@ -2901,16 +2889,16 @@ and the corresponding
 
 
 <h2 id="pytorch_widedeep.losses.L1Loss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">L1Loss</span>
+          <span class="doc doc-object-name doc-class-name">L1Loss</span>
 
 
 <a href="#pytorch_widedeep.losses.L1Loss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">L1Loss</span><span class="p">()</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">L1Loss</span><span class="p">()</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>L1 loss adjusted for the possibility of using Label Smooth
@@ -2918,18 +2906,18 @@ Distribution (LDS)</p>
 <p>LDS is based on
 <a href="https://arxiv.org/abs/2102.09554">Delving into Deep Imbalanced Regression</a>.</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">507</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">507</span>
 <span class="normal">508</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -2944,49 +2932,64 @@ Distribution (LDS)</p>
 
 
 <h3 id="pytorch_widedeep.losses.L1Loss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.L1Loss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual values</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual values</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>lds_weight</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
-        – <p>If we choose to use LDS this is the tensor of weights that will
+        <b><code>lds_weight</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>If we choose to use LDS this is the tensor of weights that will
 multiply the loss value.</p>
+        </div>
       </li>
   </ul>
 
+
+
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">L1Loss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">L1Loss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">510</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">510</span>
 <span class="normal">511</span>
 <span class="normal">512</span>
 <span class="normal">513</span>
@@ -3042,7 +3045,7 @@ multiply the loss value.</p>
         <span class="n">loss</span> <span class="o">*=</span> <span class="n">lds_weight</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -3052,6 +3055,7 @@ multiply the loss value.</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -3060,46 +3064,62 @@ multiply the loss value.</p>
 
 
 <h2 id="pytorch_widedeep.losses.FocalR_L1Loss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">FocalR_L1Loss</span>
+          <span class="doc doc-object-name doc-class-name">FocalR_L1Loss</span>
 
 
 <a href="#pytorch_widedeep.losses.FocalR_L1Loss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">FocalR_L1Loss</span><span class="p">(</span><span class="n">beta</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">activation_fn</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">FocalR_L1Loss</span><span class="p">(</span><span class="n">beta</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">activation_fn</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Focal-R L1 loss</p>
 <p>Based on <a href="https://arxiv.org/abs/2102.09554">Delving into Deep Imbalanced Regression</a>.</p>
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>beta</b>
-            (<code>float</code>)
-        – <p>Focal Loss <code>beta</code> parameter in their implementation</p>
+        <b><code>beta</code></b>
+            (<code>float</code>, default:
+                <code>0.2</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Focal Loss <code>beta</code> parameter in their implementation</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>gamma</b>
-            (<code>float</code>)
-        – <p>Focal Loss <code>gamma</code> parameter</p>
+        <b><code>gamma</code></b>
+            (<code>float</code>, default:
+                <code>1.0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Focal Loss <code>gamma</code> parameter</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>activation_fn</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[sigmoid, tanh]</code>)
-        – <p>Activation function to be used during the computation of the loss.
+        <b><code>activation_fn</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[sigmoid, tanh]</code>, default:
+                <code>&#39;sigmoid&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Activation function to be used during the computation of the loss.
 Possible values are <em>'sigmoid'</em> and <em>'tanh'</em>. See the original
 publication for details.</p>
+        </div>
       </li>
   </ul>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">557</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">557</span>
 <span class="normal">558</span>
 <span class="normal">559</span>
 <span class="normal">560</span>
@@ -3119,11 +3139,12 @@ publication for details.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">activation_fn</span> <span class="o">=</span> <span class="n">activation_fn</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -3138,49 +3159,64 @@ publication for details.</p>
 
 
 <h3 id="pytorch_widedeep.losses.FocalR_L1Loss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.FocalR_L1Loss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions (not probabilities)</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions (not probabilities)</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual classes</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual classes</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>lds_weight</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
-        – <p>If we choose to use LDS this is the tensor of weights that will
+        <b><code>lds_weight</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>If we choose to use LDS this is the tensor of weights that will
 multiply the loss value.</p>
+        </div>
       </li>
   </ul>
 
+
+
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">FocalR_L1Loss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">FocalR_L1Loss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">568</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">568</span>
 <span class="normal">569</span>
 <span class="normal">570</span>
 <span class="normal">571</span>
@@ -3262,7 +3298,7 @@ multiply the loss value.</p>
         <span class="n">loss</span> <span class="o">*=</span> <span class="n">lds_weight</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -3272,6 +3308,7 @@ multiply the loss value.</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -3280,48 +3317,64 @@ multiply the loss value.</p>
 
 
 <h2 id="pytorch_widedeep.losses.FocalR_MSELoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">FocalR_MSELoss</span>
+          <span class="doc doc-object-name doc-class-name">FocalR_MSELoss</span>
 
 
 <a href="#pytorch_widedeep.losses.FocalR_MSELoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">FocalR_MSELoss</span><span class="p">(</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">FocalR_MSELoss</span><span class="p">(</span>
     <span class="n">beta</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">activation_fn</span><span class="o">=</span><span class="s2">&quot;sigmoid&quot;</span>
 <span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Focal-R MSE loss</p>
 <p>Based on <a href="https://arxiv.org/abs/2102.09554">Delving into Deep Imbalanced Regression</a>.</p>
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>beta</b>
-            (<code>float</code>)
-        – <p>Focal Loss <code>beta</code> parameter in their implementation</p>
+        <b><code>beta</code></b>
+            (<code>float</code>, default:
+                <code>0.2</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Focal Loss <code>beta</code> parameter in their implementation</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>gamma</b>
-            (<code>float</code>)
-        – <p>Focal Loss <code>gamma</code> parameter</p>
+        <b><code>gamma</code></b>
+            (<code>float</code>, default:
+                <code>1.0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Focal Loss <code>gamma</code> parameter</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>activation_fn</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[sigmoid, tanh]</code>)
-        – <p>Activation function to be used during the computation of the loss.
+        <b><code>activation_fn</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[sigmoid, tanh]</code>, default:
+                <code>&#39;sigmoid&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Activation function to be used during the computation of the loss.
 Possible values are <em>'sigmoid'</em> and <em>'tanh'</em>. See the original
 publication for details.</p>
+        </div>
       </li>
   </ul>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">628</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">628</span>
 <span class="normal">629</span>
 <span class="normal">630</span>
 <span class="normal">631</span>
@@ -3341,11 +3394,12 @@ publication for details.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">activation_fn</span> <span class="o">=</span> <span class="n">activation_fn</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -3360,49 +3414,64 @@ publication for details.</p>
 
 
 <h3 id="pytorch_widedeep.losses.FocalR_MSELoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.FocalR_MSELoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions (not probabilities)</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions (not probabilities)</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual classes</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual classes</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>lds_weight</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
-        – <p>If we choose to use LDS this is the tensor of weights that will
+        <b><code>lds_weight</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>If we choose to use LDS this is the tensor of weights that will
 multiply the loss value.</p>
+        </div>
       </li>
   </ul>
 
+
+
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">FocalR_MSELoss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">FocalR_MSELoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">639</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">639</span>
 <span class="normal">640</span>
 <span class="normal">641</span>
 <span class="normal">642</span>
@@ -3484,7 +3553,7 @@ multiply the loss value.</p>
         <span class="n">loss</span> <span class="o">*=</span> <span class="n">lds_weight</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -3494,6 +3563,7 @@ multiply the loss value.</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -3502,48 +3572,64 @@ multiply the loss value.</p>
 
 
 <h2 id="pytorch_widedeep.losses.FocalR_RMSELoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">FocalR_RMSELoss</span>
+          <span class="doc doc-object-name doc-class-name">FocalR_RMSELoss</span>
 
 
 <a href="#pytorch_widedeep.losses.FocalR_RMSELoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">FocalR_RMSELoss</span><span class="p">(</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">FocalR_RMSELoss</span><span class="p">(</span>
     <span class="n">beta</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">activation_fn</span><span class="o">=</span><span class="s2">&quot;sigmoid&quot;</span>
 <span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Focal-R RMSE loss</p>
 <p>Based on <a href="https://arxiv.org/abs/2102.09554">Delving into Deep Imbalanced Regression</a>.</p>
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>beta</b>
-            (<code>float</code>)
-        – <p>Focal Loss <code>beta</code> parameter in their implementation</p>
+        <b><code>beta</code></b>
+            (<code>float</code>, default:
+                <code>0.2</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Focal Loss <code>beta</code> parameter in their implementation</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>gamma</b>
-            (<code>float</code>)
-        – <p>Focal Loss <code>gamma</code> parameter</p>
+        <b><code>gamma</code></b>
+            (<code>float</code>, default:
+                <code>1.0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Focal Loss <code>gamma</code> parameter</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>activation_fn</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[sigmoid, tanh]</code>)
-        – <p>Activation function to be used during the computation of the loss.
+        <b><code>activation_fn</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[sigmoid, tanh]</code>, default:
+                <code>&#39;sigmoid&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Activation function to be used during the computation of the loss.
 Possible values are <em>'sigmoid'</em> and <em>'tanh'</em>. See the original
 publication for details.</p>
+        </div>
       </li>
   </ul>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">699</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">699</span>
 <span class="normal">700</span>
 <span class="normal">701</span>
 <span class="normal">702</span>
@@ -3563,11 +3649,12 @@ publication for details.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">activation_fn</span> <span class="o">=</span> <span class="n">activation_fn</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -3582,49 +3669,64 @@ publication for details.</p>
 
 
 <h3 id="pytorch_widedeep.losses.FocalR_RMSELoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.FocalR_RMSELoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions (not probabilities)</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions (not probabilities)</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual classes</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual classes</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>lds_weight</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
-        – <p>If we choose to use LDS this is the tensor of weights that will
+        <b><code>lds_weight</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>If we choose to use LDS this is the tensor of weights that will
 multiply the loss value.</p>
+        </div>
       </li>
   </ul>
 
+
+
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">FocalR_RMSELoss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">FocalR_RMSELoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">710</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">710</span>
 <span class="normal">711</span>
 <span class="normal">712</span>
 <span class="normal">713</span>
@@ -3706,7 +3808,7 @@ multiply the loss value.</p>
         <span class="n">loss</span> <span class="o">*=</span> <span class="n">lds_weight</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -3716,6 +3818,7 @@ multiply the loss value.</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -3724,35 +3827,35 @@ multiply the loss value.</p>
 
 
 <h2 id="pytorch_widedeep.losses.HuberLoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">HuberLoss</span>
+          <span class="doc doc-object-name doc-class-name">HuberLoss</span>
 
 
 <a href="#pytorch_widedeep.losses.HuberLoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">HuberLoss</span><span class="p">(</span><span class="n">beta</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">HuberLoss</span><span class="p">(</span><span class="n">beta</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Hubbler Loss</p>
 <p>Based on <a href="https://arxiv.org/abs/2102.09554">Delving into Deep Imbalanced Regression</a>.</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">759</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">759</span>
 <span class="normal">760</span>
 <span class="normal">761</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -3767,49 +3870,64 @@ multiply the loss value.</p>
 
 
 <h3 id="pytorch_widedeep.losses.HuberLoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.HuberLoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">lds_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>input</b>
+        <b><code>input</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Input tensor with predictions (not probabilities)</p>
+        –
+        <div class="doc-md-description">
+          <p>Input tensor with predictions (not probabilities)</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target</b>
+        <b><code>target</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Target tensor with the actual classes</p>
+        –
+        <div class="doc-md-description">
+          <p>Target tensor with the actual classes</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>lds_weight</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
-        – <p>If we choose to use LDS this is the tensor of weights that will
+        <b><code>lds_weight</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>If we choose to use LDS this is the tensor of weights that will
 multiply the loss value.</p>
+        </div>
       </li>
   </ul>
 
+
+
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">HuberLoss</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">])</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">HuberLoss</span><span class="p">()(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">763</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">763</span>
 <span class="normal">764</span>
 <span class="normal">765</span>
 <span class="normal">766</span>
@@ -3879,7 +3997,7 @@ multiply the loss value.</p>
         <span class="n">loss</span> <span class="o">*=</span> <span class="n">lds_weight</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -3889,6 +4007,7 @@ multiply the loss value.</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -3897,16 +4016,16 @@ multiply the loss value.</p>
 
 
 <h2 id="pytorch_widedeep.losses.InfoNCELoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">InfoNCELoss</span>
+          <span class="doc doc-object-name doc-class-name">InfoNCELoss</span>
 
 
 <a href="#pytorch_widedeep.losses.InfoNCELoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">InfoNCELoss</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">InfoNCELoss</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>InfoNCE Loss. Loss applied during the Contrastive Denoising Self
@@ -3924,10 +4043,9 @@ references therein</p>
 reduction: str, default = "mean"
     Loss reduction method</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">822</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">822</span>
 <span class="normal">823</span>
 <span class="normal">824</span>
 <span class="normal">825</span>
@@ -3937,11 +4055,12 @@ reduction: str, default = "mean"
     <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -3956,38 +4075,45 @@ reduction: str, default = "mean"
 
 
 <h3 id="pytorch_widedeep.losses.InfoNCELoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.InfoNCELoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="n">g_projs</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="n">g_projs</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>g_projs</b>
+        <b><code>g_projs</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>, <span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]</code>)
-        – <p>Tuple with the two tensors corresponding to the output of the two
+        –
+        <div class="doc-md-description">
+          <p>Tuple with the two tensors corresponding to the output of the two
 projection heads, as described 'SAINT: Improved Neural Networks
 for Tabular Data via Row Attention and Contrastive Pre-Training'.</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses</span> <span class="kn">import</span> <span class="n">InfoNCELoss</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g_projs</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g_projs</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">16</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">InfoNCELoss</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="n">g_projs</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">828</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">828</span>
 <span class="normal">829</span>
 <span class="normal">830</span>
 <span class="normal">831</span>
@@ -4031,7 +4157,7 @@ for Tabular Data via Row Attention and Contrastive Pre-Training'.</p>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; import torch</span>
 <span class="sd">    &gt;&gt;&gt; from pytorch_widedeep.losses import InfoNCELoss</span>
-<span class="sd">    &gt;&gt;&gt; g_projs = (torch.rand(5, 5), torch.rand(5, 5))</span>
+<span class="sd">    &gt;&gt;&gt; g_projs = (torch.rand(3, 5, 16), torch.rand(3, 5, 16))</span>
 <span class="sd">    &gt;&gt;&gt; loss = InfoNCELoss()</span>
 <span class="sd">    &gt;&gt;&gt; res = loss(g_projs)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -4051,7 +4177,7 @@ for Tabular Data via Row Attention and Contrastive Pre-Training'.</p>
 
     <span class="k">return</span> <span class="p">(</span><span class="n">loss</span> <span class="o">+</span> <span class="n">loss_</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -4061,6 +4187,7 @@ for Tabular Data via Row Attention and Contrastive Pre-Training'.</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -4069,18 +4196,18 @@ for Tabular Data via Row Attention and Contrastive Pre-Training'.</p>
 
 
 <h2 id="pytorch_widedeep.losses.DenoisingLoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">DenoisingLoss</span>
+          <span class="doc doc-object-name doc-class-name">DenoisingLoss</span>
 
 
 <a href="#pytorch_widedeep.losses.DenoisingLoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">DenoisingLoss</span><span class="p">(</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">DenoisingLoss</span><span class="p">(</span>
     <span class="n">lambda_cat</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">lambda_cont</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span>
 <span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>Denoising Loss. Loss applied during the Contrastive Denoising Self
@@ -4101,10 +4228,9 @@ lambda_cont: float, default = 1.
 reduction: str, default = "mean"
     Loss reduction method</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">886</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">886</span>
 <span class="normal">887</span>
 <span class="normal">888</span>
 <span class="normal">889</span>
@@ -4120,11 +4246,12 @@ reduction: str, default = "mean"
     <span class="bp">self</span><span class="o">.</span><span class="n">lambda_cont</span> <span class="o">=</span> <span class="n">lambda_cont</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -4139,33 +4266,43 @@ reduction: str, default = "mean"
 
 
 <h3 id="pytorch_widedeep.losses.DenoisingLoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.DenoisingLoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="n">x_cat_and_cat_</span><span class="p">,</span> <span class="n">x_cont_and_cont_</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="n">x_cat_and_cat_</span><span class="p">,</span> <span class="n">x_cont_and_cont_</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>x_cat_and_cat_</b>
+        <b><code>x_cat_and_cat_</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>, <span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]], <span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>, <span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]]]</code>)
-        – <p>Tuple of tensors containing the raw input features and their
+        –
+        <div class="doc-md-description">
+          <p>Tuple of tensors containing the raw input features and their
 encodings, referred in the SAINT paper as <span class="arithmatex">\(x\)</span> and <span class="arithmatex">\(x''\)</span>
 respectively. If one denoising MLP is used per categorical
 feature <code>x_cat_and_cat_</code> will be a list of tuples, one per
 categorical feature</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>x_cont_and_cont_</b>
+        <b><code>x_cont_and_cont_</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>, <span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]], <span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[<span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>, <span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span>]]]</code>)
-        – <p>same as <code>x_cat_and_cat_</code> but for continuous columns</p>
+        –
+        <div class="doc-md-description">
+          <p>same as <code>x_cat_and_cat_</code> but for continuous columns</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
@@ -4176,9 +4313,9 @@ categorical feature</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="n">x_cat_and_cat_</span><span class="p">,</span> <span class="n">x_cont_and_cont_</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">895</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">895</span>
 <span class="normal">896</span>
 <span class="normal">897</span>
 <span class="normal">898</span>
@@ -4264,7 +4401,7 @@ categorical feature</p>
 
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_cat</span> <span class="o">*</span> <span class="n">loss_cat</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_cont</span> <span class="o">*</span> <span class="n">loss_cont</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -4274,6 +4411,7 @@ categorical feature</p>
   </div>
 
   </div>
+
 
 </div>
 
@@ -4282,16 +4420,16 @@ categorical feature</p>
 
 
 <h2 id="pytorch_widedeep.losses.EncoderDecoderLoss" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">EncoderDecoderLoss</span>
+          <span class="doc doc-object-name doc-class-name">EncoderDecoderLoss</span>
 
 
 <a href="#pytorch_widedeep.losses.EncoderDecoderLoss" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">EncoderDecoderLoss</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mf">1e-09</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">EncoderDecoderLoss</span><span class="p">(</span><span class="n">eps</span><span class="o">=</span><span class="mf">1e-09</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents first">
-      <p class="doc doc-class-bases">
-        Bases: <code><span title="torch.nn">nn</span>.<span title="torch.nn.Module">Module</span></code></p>
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
 
   
       <p>'<em>Standard</em>' Encoder Decoder Loss. Loss applied during the Endoder-Decoder
@@ -4307,20 +4445,20 @@ Interpretable Tabular Learning</a>.</p>
 <p>eps: float
     Simply a small number to avoid dividing by zero</p>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">993</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">993</span>
 <span class="normal">994</span>
 <span class="normal">995</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-9</span><span class="p">):</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">EncoderDecoderLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
 </code></pre></div></td></tr></table></div>
-          </details>
+                </details>
 
   
 
   <div class="doc doc-children">
+
 
 
 
@@ -4335,35 +4473,48 @@ Interpretable Tabular Learning</a>.</p>
 
 
 <h3 id="pytorch_widedeep.losses.EncoderDecoderLoss.forward" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">forward</span>
+          <span class="doc doc-object-name doc-function-name">forward</span>
 
 
 <a href="#pytorch_widedeep.losses.EncoderDecoderLoss.forward" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="n">x_true</span><span class="p">,</span> <span class="n">x_pred</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">forward</span><span class="p">(</span><span class="n">x_true</span><span class="p">,</span> <span class="n">x_pred</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>x_true</b>
+        <b><code>x_true</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Embeddings of the input data</p>
+        –
+        <div class="doc-md-description">
+          <p>Embeddings of the input data</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>x_pred</b>
+        <b><code>x_pred</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Reconstructed embeddings</p>
+        –
+        <div class="doc-md-description">
+          <p>Reconstructed embeddings</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>mask</b>
+        <b><code>mask</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Tensor">Tensor</span></code>)
-        – <p>Mask with 1s indicated that the reconstruction, and therefore the
+        –
+        <div class="doc-md-description">
+          <p>Mask with 1s indicated that the reconstruction, and therefore the
 loss, is based on those features.</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
@@ -4375,9 +4526,9 @@ loss, is based on those features.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">res</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="n">x_true</span><span class="p">,</span> <span class="n">x_pred</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
 </code></pre></div>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 997</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 997</span>
 <span class="normal"> 998</span>
 <span class="normal"> 999</span>
 <span class="normal">1000</span>
@@ -4457,7 +4608,7 @@ loss, is based on those features.</p>
 
     <span class="k">return</span> <span class="n">loss</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -4468,7 +4619,37 @@ loss, is based on those features.</p>
 
   </div>
 
+
 </div>
+
+
+
+
+
+
+
+
+  <aside class="md-source-file">
+    
+    
+    
+      
+  
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Contributors">
+      
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4Z"/></svg>
+      
+    </span>
+    <nav>
+      
+        <a href="mailto:javierrodriguezzaurin@javiers-macbook-pro.local">Javier Rodriguez Zaurin</a>
+    </nav>
+  </span>
+
+    
+    
+  </aside>
 
 
 
@@ -4479,47 +4660,12 @@ loss, is based on those features.</p>
             </div>
           
           
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="Footer" >
-      
-        
-        <a href="bayesian_models.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Bayesian models" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Bayesian models
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="metrics.html" class="md-footer__link md-footer__link--next" aria-label="Next: Metrics" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Metrics
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -4541,11 +4687,13 @@ loss, is based on those features.</p>
   
     
     
+    
+    
       
       
     
     <a href="https://jrzaurin.medium.com/" target="_blank" rel="noopener" title="jrzaurin.medium.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M180.5 74.262C80.813 74.262 0 155.633 0 256s80.819 181.738 180.5 181.738S361 356.373 361 256 280.191 74.262 180.5 74.262Zm288.25 10.646c-49.845 0-90.245 76.619-90.245 171.095s40.406 171.1 90.251 171.1 90.251-76.619 90.251-171.1H559c0-94.503-40.4-171.095-90.248-171.095Zm139.506 17.821c-17.526 0-31.735 68.628-31.735 153.274s14.2 153.274 31.735 153.274S640 340.631 640 256c0-84.649-14.215-153.271-31.742-153.271Z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M180.5 74.262C80.813 74.262 0 155.633 0 256s80.819 181.738 180.5 181.738S361 356.373 361 256 280.191 74.262 180.5 74.262Zm288.25 10.646c-49.845 0-90.245 76.619-90.245 171.095s40.406 171.1 90.251 171.1 90.251-76.619 90.251-171.1H559c0-94.503-40.4-171.095-90.248-171.095Zm139.506 17.821c-17.526 0-31.735 68.628-31.735 153.274s14.2 153.274 31.735 153.274S640 340.631 640 256c0-84.649-14.215-153.271-31.742-153.271Z"/></svg>
     </a>
   
 </div>
@@ -4559,10 +4707,11 @@ loss, is based on those features.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.5a2dcb6a.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       
@@ -4572,7 +4721,6 @@ loss, is based on those features.</p>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
-    
     
   </body>
 </html>
