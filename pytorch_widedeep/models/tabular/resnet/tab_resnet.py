@@ -25,6 +25,10 @@ class TabResnet(BaseTabularModelWithoutAttention):
     `pytorch_widedeep.models.tab_resnet._layers` for details on the
     structure of each block.
 
+    Most of the parameters for this class are `Optional` since the use of
+    categorical or continuous is in fact optional (i.e. one can use
+    categorical features only, continuous features only or both).
+
     Parameters
     ----------
     column_idx: Dict
@@ -35,42 +39,45 @@ class TabResnet(BaseTabularModelWithoutAttention):
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. _[(education, 11, 32), ...]_
     cat_embed_dropout: float, Optional, default = None
-        Categorical embeddings dropout. If 'None' is passed, it will default
+        Categorical embeddings dropout. If `None`, it will default
         to 0.
     use_cat_bias: bool, Optional, default = None,
         Boolean indicating if bias will be used for the categorical embeddings.
-        If 'None' is passed, it will default to 'False'.
+        If `None`, it will default to 'False'.
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings, if any. Currently
         _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, Optional, default =  None
-        Type of normalization layer applied to the continuous features. Options
-        are: _'layernorm'_, _'batchnorm'_ or 'None'.
+        Type of normalization layer applied to the continuous features.
+        Options are: _'layernorm'_ and _'batchnorm'_. if `None`, no
+        normalization layer will be used.
     embed_continuous: bool, Optional, default = None,
         Boolean indicating if the continuous columns will be embedded using
         one of the available methods: _'standard'_, _'periodic'_
-        or _'piecewise'_. If 'None' is passed, it will default to 'False'.
+        or _'piecewise'_. If `None`, it will default to 'False'.<br/>
         :information_source: **NOTE**: This parameter is deprecated and it
          will be removed in future releases. Please, use the
          `embed_continuous_method` parameter instead.
     embed_continuous_method: Optional, str, default = None,
         Method to use to embed the continuous features. Options are:
         _'standard'_, _'periodic'_ or _'piecewise'_. The _'standard'_
-          embedding method is based on the FT-Transformer implementation
-          presented in the paper: [Revisiting Deep Learning Models for Tabular
-          Data](https://arxiv.org/abs/2106.11959v5). The _'periodic'_ and
-        _'piecewise'_ methods were presented in the paper: [On Embeddings for
-          Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556)
+        embedding method is based on the FT-Transformer implementation
+        presented in the paper: [Revisiting Deep Learning Models for
+        Tabular Data](https://arxiv.org/abs/2106.11959v5). The _'periodic'_
+        and_'piecewise'_ methods were presented in the paper: [On Embeddings for
+        Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556).
+        Please, read the papers for details.
     cont_embed_dim: int, Optional, default = None,
         Size of the continuous embeddings. If the continuous columns are
-        embedded, 'cont_embed_dim' must be passed.
+        embedded, `cont_embed_dim` must be passed.
     cont_embed_dropout: float, Optional, default = None,
-        Dropout for the continuous embeddings. If 'None' is passed, it will default to 0.0
+        Dropout for the continuous embeddings. If `None`, it will default to 0.0
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings if any. Currently
-        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported.
+        If `None`, no activation function will be applied.
     quantization_setup: Dict[str, List[float]], Optional, default = None,
         This parameter is used when the _'piecewise'_ method is used to embed
         the continuous cols. It is a dict where keys are the name of the continuous
@@ -78,25 +85,33 @@ class TabResnet(BaseTabularModelWithoutAttention):
         of the continuous_cols. See the examples for details. If
         If the _'piecewise'_ method is used, this parameter is required.
     n_frequencies: int, Optional, default = None,
-        This is the so called _'k'_ in their paper, and is the number
-        of 'frequencies' that will be used to represent each continuous
-        column. See their Eq 2 in the paper for details.
-        If the _'periodic'_ method is used, this parameter is required.
+        This is the so called _'k'_ in their paper [On Embeddings for
+        Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556),
+        and is the number of 'frequencies' that will be used to represent each
+        continuous column. See their Eq 2 in the paper for details. If
+        the _'periodic'_ method is used, this parameter is required.
     sigma: float, Optional, default = None,
-        This is the sigma parameter in the paper used to initialise the
-        'frequency weights'. See their Eq 2 in the paper for details.
-        If the _'periodic'_ method is used, this parameter is required.
+        This is the sigma parameter in the paper mentioned when describing the
+        previous parameters and it is used to initialise the 'frequency
+        weights'. See their Eq 2 in the paper for details. If
+        the _'periodic'_ method is used, this parameter is required.
     share_last_layer: bool, Optional, default = None,
-        This parameter is not present in the paper but it is implemented in
-        the [official repo]
-        (https://github.com/yandex-research/rtdl-num-embeddings/tree/main).
-        If 'True' the linear layer that turns the frequencies into embeddings
-        will be shared across the continuous columns. If 'False' a different
+        This parameter is not present in the before mentioned paper but it is implemented in
+        the [official repo](https://github.com/yandex-research/rtdl-num-embeddings/tree/main).
+        If `True` the linear layer that turns the frequencies into embeddings
+        will be shared across the continuous columns. If `False` a different
         linear layer will be used for each continuous column.
         If the _'periodic'_ method is used, this parameter is required.
     full_embed_dropout: bool, Optional, default = None,
-        If true, as masked dropout will be applied a full embedding of a
-        column. If 'None' is passed, it will default to 'False'.
+        If `True`, the full embedding corresponding to a column will be masked
+        out/dropout. If `None`, it will default to `False`.
+    blocks_dims: List, default = [200, 100, 100]
+        List of integers that define the input and output units of each block.
+        For example: _[200, 100, 100]_ will generate 2 blocks. The first will
+        receive a tensor of size 200 and output a tensor of size 100, and the
+        second will receive a tensor of size 100 and output a tensor of size
+        100. See `pytorch_widedeep.models.tab_resnet._layers` for
+        details on the structure of each block.
     blocks_dropout: float, default =  0.1
         Block's internal dropout.
     simplify_blocks: bool, default = False,
@@ -109,29 +124,29 @@ class TabResnet(BaseTabularModelWithoutAttention):
         connected directly to the output neuron(s).
     mlp_activation: str, Optional, default = None
         Activation function for the dense layers of the MLP. Currently
-        _'tanh'_, _'relu'_, _'leaky'_relu` and _'gelu'_ are supported.
-        If 'mlp_hidden_dims' is not 'None' and this parameter is 'None', it
+        _'tanh'_, _'relu'_, _'leaky'_relu' and _'gelu'_ are supported.
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
         will default to _'relu'_.
     mlp_dropout: float, Optional, default = None
         float with the dropout between the dense layers of the MLP.
-        If 'mlp_hidden_dims' is not 'None' and this parameter is 'None', it
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
         will default to 0.0.
     mlp_batchnorm: bool, Optional, default = None
         Boolean indicating whether or not batch normalization will be applied
         to the dense layers
-        If 'mlp_hidden_dims' is not 'None' and this parameter is 'None', it
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
         will default to False.
     mlp_batchnorm_last: bool, Optional, default = None
         Boolean indicating whether or not batch normalization will be applied
         to the last of the dense layers
-        If 'mlp_hidden_dims' is not 'None' and this parameter is 'None', it
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
         will default to False.
     mlp_linear_first: bool, Optional, default = None
         Boolean indicating the order of the operations in the dense
         layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
         LIN -> ACT]`
-        If 'mlp_hidden_dims' is not 'None' and this parameter is 'None', it
-        will default to False.
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
+        will default to `True`.
 
     Attributes
     ----------
@@ -245,7 +260,7 @@ class TabResnet(BaseTabularModelWithoutAttention):
                 batchnorm_last=False
                 if self.mlp_batchnorm_last is None
                 else self.mlp_batchnorm_last,
-                linear_first=False
+                linear_first=True
                 if self.mlp_linear_first is None
                 else self.mlp_linear_first,
             )
@@ -301,21 +316,31 @@ class TabResnetDecoder(nn.Module):
         List with the number of neurons per dense layer in the MLP. e.g:
         _[64, 32]_. If `None` the  output of the Resnet Blocks will be
         connected directly to the output neuron(s).
-    mlp_activation: str, default = "relu"
+    mlp_activation: str, Optional, default = None
         Activation function for the dense layers of the MLP. Currently
-        _'tanh'_, _'relu'_, _'leaky'_relu` and _'gelu'_ are supported
-    mlp_dropout: float, default = 0.1
+        _'tanh'_, _'relu'_, _'leaky'_relu' and _'gelu'_ are supported.
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
+        will default to _'relu'_.
+    mlp_dropout: float, Optional, default = None
         float with the dropout between the dense layers of the MLP.
-    mlp_batchnorm: bool, default = False
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
+        will default to 0.0.
+    mlp_batchnorm: bool, Optional, default = None
         Boolean indicating whether or not batch normalization will be applied
         to the dense layers
-    mlp_batchnorm_last: bool, default = False
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
+        will default to False.
+    mlp_batchnorm_last: bool, Optional, default = None
         Boolean indicating whether or not batch normalization will be applied
         to the last of the dense layers
-    mlp_linear_first: bool, default = False
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
+        will default to False.
+    mlp_linear_first: bool, Optional, default = None
         Boolean indicating the order of the operations in the dense
         layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
         LIN -> ACT]`
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
+        will default to `True`.
 
     Attributes
     ----------
@@ -345,11 +370,11 @@ class TabResnetDecoder(nn.Module):
         blocks_dropout: float = 0.1,
         simplify_blocks: bool = False,
         mlp_hidden_dims: Optional[List[int]] = None,
-        mlp_activation: str = "relu",
-        mlp_dropout: float = 0.1,
-        mlp_batchnorm: bool = False,
-        mlp_batchnorm_last: bool = False,
-        mlp_linear_first: bool = True,
+        mlp_activation: Optional[str] = None,
+        mlp_dropout: Optional[float] = None,
+        mlp_batchnorm: Optional[bool] = None,
+        mlp_batchnorm_last: Optional[bool] = None,
+        mlp_linear_first: Optional[bool] = None,
     ):
         super(TabResnetDecoder, self).__init__()
 
@@ -382,7 +407,7 @@ class TabResnetDecoder(nn.Module):
                 batchnorm_last=False
                 if self.mlp_batchnorm_last is None
                 else self.mlp_batchnorm_last,
-                linear_first=False
+                linear_first=True
                 if self.mlp_linear_first is None
                 else self.mlp_linear_first,
             )

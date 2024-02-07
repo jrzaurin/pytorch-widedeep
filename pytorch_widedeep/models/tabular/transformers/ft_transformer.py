@@ -22,6 +22,9 @@ class FTTransformer(BaseTabularModelWithAttention):
     can be used as the `deeptabular` component of a Wide & Deep model or
     independently by itself.
 
+    Most of the parameters for this class are `Optional` since the use of
+    categorical or continuous is in fact optional (i.e. one can use
+    categorical features only, continuous features only or both).
 
     Parameters
     ----------
@@ -30,21 +33,24 @@ class FTTransformer(BaseTabularModelWithAttention):
         the `TabMlp` model. Required to slice the tensors. e.g. _{'education':
         0, 'relationship': 1, 'workclass': 2, ...}_.
     cat_embed_input: List, Optional, default = None
-        List of Tuples with the column name, number of unique values and
-        embedding dimension. e.g. _[(education, 11, 32), ...]_
+        List of Tuples with the column name and number of unique values and
+        embedding dimension. e.g. _[(education, 11), ...]_
     cat_embed_dropout: float, Optional, default = None
-        Categorical embeddings dropout. If 'None' is passed, it will default
+        Categorical embeddings dropout. If `None`, it will default
         to 0.
-    use_cat_bias: bool, Optional, default = None
+    use_cat_bias: bool, Optional, default = None,
         Boolean indicating if bias will be used for the categorical embeddings.
-        If 'None' is passed, it will default to 'False'.
+        If `None`, it will default to 'False'.
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings, if any. Currently
         _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
     shared_embed: bool, Optional, default = None
-        The idea behind sharing part of the embeddings per column is to let
-        the model learn which column is embedded at the time.
-        If 'None' is passed, it will default to 'False'.
+        Boolean indicating if the embeddings will be "shared". The idea behind `shared_embed` is
+        described in the Appendix A in the [TabTransformer paper](https://arxiv.org/abs/2012.06678):
+        _'The goal of having column embedding is to enable the model to
+        distinguish the classes in one column from those in the other
+        columns'_. In other words, the idea is to let the model learn which
+        column is embedded at the time. See: `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
     add_shared_embed: bool, Optional, default = None
         The two embedding sharing strategies are: 1) add the shared embeddings
         to the column embeddings or 2) to replace the first
@@ -54,26 +60,28 @@ class FTTransformer(BaseTabularModelWithAttention):
     frac_shared_embed: float, Optional, default = None
         The fraction of embeddings that will be shared (if `add_shared_embed
         = False`) by all the different categories for one particular
-        column.
-        If 'None' is passed, it will default to 0.0.
+        column. If 'None' is passed, it will default to 0.0.
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
     cont_norm_layer: str, Optional, default =  None
-        Type of normalization layer applied to the continuous features. Options
-        are: _'layernorm'_, _'batchnorm'_ or 'None'.
+        Type of normalization layer applied to the continuous features.
+        Options are: _'layernorm'_ and _'batchnorm'_. if `None`, no
+        normalization layer will be used.
     embed_continuous_method: Optional, str, default = None,
         Method to use to embed the continuous features. Options are:
         _'standard'_, _'periodic'_ or _'piecewise'_. The _'standard'_
-          embedding method is based on the FT-Transformer implementation
-          presented in the paper: [Revisiting Deep Learning Models for Tabular
-          Data](https://arxiv.org/abs/2106.11959v5). The _'periodic'_ and
-        _'piecewise'_ methods were presented in the paper: [On Embeddings for
-          Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556)
+        embedding method is based on the FT-Transformer implementation
+        presented in the paper: [Revisiting Deep Learning Models for
+        Tabular Data](https://arxiv.org/abs/2106.11959v5). The _'periodic'_
+        and_'piecewise'_ methods were presented in the paper: [On Embeddings for
+        Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556).
+        Please, read the papers for details.
     cont_embed_dropout: float, Optional, default = None,
-        Dropout for the continuous embeddings. If 'None' is passed, it will default to 0.0
+        Dropout for the continuous embeddings. If `None`, it will default to 0.0
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings if any. Currently
-        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported.
+        If `None`, no activation function will be applied.
     quantization_setup: Dict[str, List[float]], Optional, default = None,
         This parameter is used when the _'piecewise'_ method is used to embed
         the continuous cols. It is a dict where keys are the name of the continuous
@@ -81,25 +89,26 @@ class FTTransformer(BaseTabularModelWithAttention):
         of the continuous_cols. See the examples for details. If
         If the _'piecewise'_ method is used, this parameter is required.
     n_frequencies: int, Optional, default = None,
-        This is the so called _'k'_ in their paper, and is the number
-        of 'frequencies' that will be used to represent each continuous
-        column. See their Eq 2 in the paper for details.
-        If the _'periodic'_ method is used, this parameter is required.
+        This is the so called _'k'_ in their paper [On Embeddings for
+        Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556),
+        and is the number of 'frequencies' that will be used to represent each
+        continuous column. See their Eq 2 in the paper for details. If
+        the _'periodic'_ method is used, this parameter is required.
     sigma: float, Optional, default = None,
-        This is the sigma parameter in the paper used to initialise the
-        'frequency weights'. See their Eq 2 in the paper for details.
-        If the _'periodic'_ method is used, this parameter is required.
+        This is the sigma parameter in the paper mentioned when describing the
+        previous parameters and it is used to initialise the 'frequency
+        weights'. See their Eq 2 in the paper for details. If
+        the _'periodic'_ method is used, this parameter is required.
     share_last_layer: bool, Optional, default = None,
-        This parameter is not present in the paper but it is implemented in
-        the [official repo]
-        (https://github.com/yandex-research/rtdl-num-embeddings/tree/main).
-        If 'True' the linear layer that turns the frequencies into embeddings
-        will be shared across the continuous columns. If 'False' a different
+        This parameter is not present in the before mentioned paper but it is implemented in
+        the [official repo](https://github.com/yandex-research/rtdl-num-embeddings/tree/main).
+        If `True` the linear layer that turns the frequencies into embeddings
+        will be shared across the continuous columns. If `False` a different
         linear layer will be used for each continuous column.
         If the _'periodic'_ method is used, this parameter is required.
     full_embed_dropout: bool, Optional, default = None,
-        If true, as masked dropout will be applied a full embedding of a
-        column. If 'None' is passed, it will default to 'False'.
+        If `True`, the full embedding corresponding to a column will be masked
+        out/dropout. If `None`, it will default to `False`.
     input_dim: int, default = 64
         The so-called *dimension of the model*. Is the number of embeddings used to encode
         the categorical and/or continuous columns.
@@ -133,33 +142,34 @@ class FTTransformer(BaseTabularModelWithAttention):
         Transformer Encoder activation function. _'tanh'_, _'relu'_,
         _'leaky_relu'_, _'gelu'_, _'geglu'_ and _'reglu'_ are supported
     mlp_hidden_dims: List, Optional, default = None
-        MLP hidden dimensions. If not provided no MLP on top of the final
-        FTTransformer block will be used
+        List with the number of neurons per dense layer in the MLP. e.g:
+        _[64, 32]_. If not provided no MLP on top of the final
+        FTTransformer block will be used.
     mlp_activation: str, Optional, default = None
         Activation function for the dense layers of the MLP. Currently
-        _'tanh'_, _'relu'_, _'leaky'_relu` and _'gelu'_ are supported.
-        If 'mlp_hidden_dims' is not 'None' and this parameter is 'None', it
+        _'tanh'_, _'relu'_, _'leaky'_relu' and _'gelu'_ are supported.
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
         will default to _'relu'_.
     mlp_dropout: float, Optional, default = None
         float with the dropout between the dense layers of the MLP.
-        If 'mlp_hidden_dims' is not 'None' and this parameter is 'None', it
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
         will default to 0.0.
     mlp_batchnorm: bool, Optional, default = None
         Boolean indicating whether or not batch normalization will be applied
         to the dense layers
-        If 'mlp_hidden_dims' is not 'None' and this parameter is 'None', it
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
         will default to False.
     mlp_batchnorm_last: bool, Optional, default = None
         Boolean indicating whether or not batch normalization will be applied
         to the last of the dense layers
-        If 'mlp_hidden_dims' is not 'None' and this parameter is 'None', it
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
         will default to False.
     mlp_linear_first: bool, Optional, default = None
         Boolean indicating the order of the operations in the dense
         layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
         LIN -> ACT]`
-        If 'mlp_hidden_dims' is not 'None' and this parameter is 'None', it
-        will default to False.
+        If 'mlp_hidden_dims' is not `None` and this parameter is `None`, it
+        will default to `True`.
 
     Attributes
     ----------

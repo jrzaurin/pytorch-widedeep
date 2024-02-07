@@ -40,8 +40,6 @@ class BayesianTabMlp(BaseBayesianModel):
     cat_embed_input: List, Optional, default = None
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. _[(education, 11, 32), ...]_
-    cat_embed_dropout: float, default = 0.1
-        Categorical embeddings dropout
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings, if any. Currently
         _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported

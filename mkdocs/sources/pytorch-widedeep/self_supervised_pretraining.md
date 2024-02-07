@@ -1,7 +1,7 @@
 # Self Supervised Pre-training for tabular data
 
 In this library we have implemented two methods or routines that allow the
-user to self-suerpvised pre-training for all tabular models in the library
+user to use self-suerpvised pre-training for all tabular models in the library
 with the exception of the `TabPerceiver` (this is a particular model and
 self-supervised pre-training requires some adjustments that will be
 implemented in future versions). Please see the examples folder in the repo

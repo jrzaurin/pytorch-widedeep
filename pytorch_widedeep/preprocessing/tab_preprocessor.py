@@ -232,8 +232,8 @@ class TabPreprocessor(BasePreprocessor):
     >>> cont_cols = ['age']
     >>> deep_preprocessor = TabPreprocessor(cat_embed_cols=cat_embed_cols, continuous_cols=cont_cols)
     >>> X_tab = deep_preprocessor.fit_transform(df)
-    >>> deep_preprocessor.embed_dim
-    {'color': 5, 'size': 5}
+    >>> deep_preprocessor.cat_embed_cols
+    [('color', 5), ('size', 5)]
     >>> deep_preprocessor.column_idx
     {'color': 0, 'size': 1, 'age': 2}
     >>> cont_df = pd.DataFrame({"col1": np.random.rand(10), "col2": np.random.rand(10) + 1})
@@ -325,7 +325,9 @@ class TabPreprocessor(BasePreprocessor):
 
         # Categorical embeddings logic
         if self.cat_embed_cols is not None or self.quantization_setup is not None:
-            self.cat_embed_input: List[Tuple[str, int] | Tuple[str, int, int]] = []
+            self.cat_embed_input: List[
+                Union[Tuple[str, int], Tuple[str, int, int]]
+            ] = []
 
         if self.cat_embed_cols is not None:
             df_cat, cat_embed_dim = self._prepare_categorical(df_adj)
@@ -808,8 +810,8 @@ class ChunkTabPreprocessor(TabPreprocessor):
     ... n_chunks=1, cat_embed_cols=cat_embed_cols, continuous_cols=cont_cols
     ... )
     >>> X_tab = tab_preprocessor.fit_transform(chunk_df)
-    >>> tab_preprocessor.embed_dim
-    {'cat_col': 4}
+    >>> tab_preprocessor.cat_embed_cols
+    [('cat_col', 4)]
     >>> tab_preprocessor.column_idx
     {'cat_col': 0, 'cont_col': 1}
     """
