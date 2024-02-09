@@ -1,3 +1,4 @@
+import sys
 from typing import List, Tuple, Optional
 
 import numpy as np
@@ -143,7 +144,12 @@ class WidePreprocessor(BasePreprocessor):
             Pandas dataframe with the original values
         """
         decoded = pd.DataFrame(encoded, columns=self.wide_crossed_cols)
-        decoded = decoded.map(lambda x: self.inverse_encoding_dict[x])
+
+        if pd.__version__ >= '2.1.0':
+            decoded = decoded.map(lambda x: self.inverse_encoding_dict[x])
+        else:
+            decoded = decoded.applymap(lambda x: self.inverse_encoding_dict[x])
+
         for col in decoded.columns:
             rm_str = "".join([col, "_"])
             decoded[col] = decoded[col].apply(lambda x: x.replace(rm_str, ""))
