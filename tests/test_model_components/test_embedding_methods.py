@@ -1,19 +1,18 @@
 # Some embedding methods are tested somewhere within the test files. Here I
 # will focus on the new embedding methods included for continuous features
 
-import pytest
-import pandas as pd
 import numpy as np
 import torch
+import pandas as pd
+import pytest
 
+from pytorch_widedeep.models import TabMlp, TabTransformer
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.models.tabular.embeddings_layers import (
     ContEmbeddings,
     PeriodicContEmbeddings,
     PiecewiseContEmbeddings,
 )
-from pytorch_widedeep.models import TabMlp, TabTransformer
-
 
 data_size = 32
 embed_dim = 8
@@ -192,6 +191,6 @@ def test_full_dropout(method):
 
     is_a_column_all_zeros = []
     for i in range(out.shape[1]):
-        is_a_column_all_zeros.append(out[:, i, :].sum().item() == 0.)
+        is_a_column_all_zeros.append(out[:, i, :].sum().item() == 0.0)
 
     assert any(is_a_column_all_zeros)
