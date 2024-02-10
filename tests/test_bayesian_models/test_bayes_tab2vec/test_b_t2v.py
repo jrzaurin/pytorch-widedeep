@@ -1,6 +1,7 @@
 import string
 from random import choices
 
+import torch
 import numpy as np
 import pandas as pd
 import pytest
@@ -8,6 +9,8 @@ import pytest
 from pytorch_widedeep import Tab2Vec
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.bayesian_models import BayesianTabMlp
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 colnames = list(string.ascii_lowercase)[:4] + ["target"]
 cat_col1_vals = ["a", "b", "c"]
@@ -46,6 +49,7 @@ def test_bayesian_mlp_models(return_dataframe, embed_continuous):
         cont_embed_dim=4,
         mlp_hidden_dims=[8, 4],
     )
+    model.to(device)
 
     # Let's assume the model is trained
     t2v = Tab2Vec(
