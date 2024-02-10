@@ -1,6 +1,7 @@
 import string
 from random import choices
 
+import torch
 import numpy as np
 import pandas as pd
 import pytest
@@ -20,6 +21,8 @@ from pytorch_widedeep.models import (
     ContextAttentionMLP,
 )
 from pytorch_widedeep.preprocessing import TabPreprocessor
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 colnames = list(string.ascii_lowercase)[:4] + ["target"]
 cat_col1_vals = ["a", "b", "c"]
@@ -77,6 +80,7 @@ tabnet = TabNet(
 )
 def test_non_transformer_models(deeptabular, return_dataframe):
     model = WideDeep(deeptabular=deeptabular)
+    model.to(device)
 
     # Let's assume the model is trained
     t2v = Tab2Vec(
@@ -154,6 +158,8 @@ def test_tab_transformer_models(
 
     # Let's assume the model is trained
     model = WideDeep(deeptabular=deeptabular)
+    model.to(device)
+
     t2v = Tab2Vec(
         tab_preprocessor=tab_preprocessor,
         model=model,
@@ -218,6 +224,8 @@ def test_attentive_mlp(
 
     # Let's assume the model is trained
     model = WideDeep(deeptabular=deeptabular)
+    model.to(device)
+
     t2v = Tab2Vec(
         tab_preprocessor=tab_preprocessor,
         model=model,
@@ -291,6 +299,8 @@ def test_transformer_family_models(
 
     # Let's assume the model is trained
     model = WideDeep(deeptabular=deeptabular)
+    model.to(device)
+
     t2v = Tab2Vec(
         tab_preprocessor=tab_preprocessor,
         model=model,
