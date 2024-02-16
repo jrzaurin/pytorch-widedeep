@@ -101,9 +101,9 @@ class BaseTabularModelWithoutAttention(BaseWDModelComponent):
             self.cat_embed = DiffSizeCatEmbeddings(
                 column_idx=self.column_idx,
                 embed_input=self.cat_embed_input,
-                embed_dropout=0.0
-                if self.cat_embed_dropout is None
-                else self.cat_embed_dropout,
+                embed_dropout=(
+                    0.0 if self.cat_embed_dropout is None else self.cat_embed_dropout
+                ),
                 use_bias=False if self.use_cat_bias is None else self.use_cat_bias,
                 activation_fn=self.cat_embed_activation,
             )
@@ -253,20 +253,22 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
                 embed_dim=self.input_dim,
                 column_idx=self.column_idx,
                 embed_input=self.cat_embed_input,
-                embed_dropout=0.0
-                if self.cat_embed_dropout is None
-                else self.cat_embed_dropout,
-                full_embed_dropout=False
-                if self.full_embed_dropout is None
-                else self.full_embed_dropout,
+                embed_dropout=(
+                    0.0 if self.cat_embed_dropout is None else self.cat_embed_dropout
+                ),
+                full_embed_dropout=(
+                    False
+                    if self.full_embed_dropout is None
+                    else self.full_embed_dropout
+                ),
                 use_bias=False if self.use_cat_bias is None else self.use_cat_bias,
                 shared_embed=False if self.shared_embed is None else self.shared_embed,
-                add_shared_embed=False
-                if self.add_shared_embed is None
-                else self.add_shared_embed,
-                frac_shared_embed=0.0
-                if self.frac_shared_embed is None
-                else self.frac_shared_embed,
+                add_shared_embed=(
+                    False if self.add_shared_embed is None else self.add_shared_embed
+                ),
+                frac_shared_embed=(
+                    0.0 if self.frac_shared_embed is None else self.frac_shared_embed
+                ),
                 activation_fn=self.cat_embed_activation,
             )
 
@@ -359,9 +361,9 @@ def _set_continous_embeddings_layer(
             n_cont_cols=len(continuous_cols),
             embed_dim=cont_embed_dim,
             embed_dropout=0.0 if cont_embed_dropout is None else cont_embed_dropout,
-            full_embed_dropout=False
-            if full_embed_dropout is None
-            else full_embed_dropout,
+            full_embed_dropout=(
+                False if full_embed_dropout is None else full_embed_dropout
+            ),
             activation_fn=cont_embed_activation,
         )
 
@@ -377,9 +379,9 @@ def _set_continous_embeddings_layer(
             quantization_setup=quantization_setup,
             embed_dim=cont_embed_dim,
             embed_dropout=0.0 if cont_embed_dropout is None else cont_embed_dropout,
-            full_embed_dropout=False
-            if full_embed_dropout is None
-            else full_embed_dropout,
+            full_embed_dropout=(
+                False if full_embed_dropout is None else full_embed_dropout
+            ),
             activation_fn=cont_embed_activation,
         )
 
@@ -396,9 +398,9 @@ def _set_continous_embeddings_layer(
             n_cont_cols=len(continuous_cols),
             embed_dim=cont_embed_dim,
             embed_dropout=0.0 if cont_embed_dropout is None else cont_embed_dropout,
-            full_embed_dropout=False
-            if full_embed_dropout is None
-            else full_embed_dropout,
+            full_embed_dropout=(
+                False if full_embed_dropout is None else full_embed_dropout
+            ),
             n_frequencies=n_frequencies,
             sigma=sigma,
             share_last_layer=share_last_layer,

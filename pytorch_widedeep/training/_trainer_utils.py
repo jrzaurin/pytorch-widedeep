@@ -171,9 +171,11 @@ def wd_train_val_split(  # noqa: C901
             np.arange(len(X_train["target"])),
             test_size=val_split,
             random_state=seed,
-            stratify=X_train["target"]
-            if method not in ["regression", "qregression"]
-            else None,
+            stratify=(
+                X_train["target"]
+                if method not in ["regression", "qregression"]
+                else None
+            ),
         )
         X_tr, X_val = {"target": y_tr}, {"target": y_val}
         if "X_wide" in X_train.keys():

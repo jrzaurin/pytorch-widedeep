@@ -127,9 +127,9 @@ class Transformer(nn.Module):
 
         if with_pos_encoding:
             if pos_encoder is not None:
-                self.pos_encoder: Union[
-                    nn.Module, nn.Identity, PositionalEncoding
-                ] = pos_encoder
+                self.pos_encoder: Union[nn.Module, nn.Identity, PositionalEncoding] = (
+                    pos_encoder
+                )
             else:
                 self.pos_encoder = PositionalEncoding(
                     input_dim, pos_encoding_dropout, seq_length

@@ -119,9 +119,11 @@ class WidePreprocessor(BasePreprocessor):
         encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)])
         for col_i, col in enumerate(self.wide_crossed_cols):
             encoded[:, col_i] = df_wide[col].apply(
-                lambda x: self.encoding_dict[col + "_" + str(x)]
-                if col + "_" + str(x) in self.encoding_dict
-                else 0
+                lambda x: (
+                    self.encoding_dict[col + "_" + str(x)]
+                    if col + "_" + str(x) in self.encoding_dict
+                    else 0
+                )
             )
         return encoded.astype("int64")
 

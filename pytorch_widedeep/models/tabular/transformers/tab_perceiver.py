@@ -322,17 +322,19 @@ class TabPerceiver(BaseTabularModelWithAttention):
         if self.mlp_hidden_dims is not None:
             self.mlp = MLP(
                 d_hidden=[self.mlp_first_hidden_dim] + self.mlp_hidden_dim,
-                activation="relu"
-                if self.mlp_activation is None
-                else self.mlp_activation,
+                activation=(
+                    "relu" if self.mlp_activation is None else self.mlp_activation
+                ),
                 dropout=0.0 if self.mlp_dropout is None else self.mlp_dropout,
                 batchnorm=False if self.mlp_batchnorm is None else self.mlp_batchnorm,
-                batchnorm_last=False
-                if self.mlp_batchnorm_last is None
-                else self.mlp_batchnorm_last,
-                linear_first=False
-                if self.mlp_linear_first is None
-                else self.mlp_linear_first,
+                batchnorm_last=(
+                    False
+                    if self.mlp_batchnorm_last is None
+                    else self.mlp_batchnorm_last
+                ),
+                linear_first=(
+                    False if self.mlp_linear_first is None else self.mlp_linear_first
+                ),
             )
         else:
             self.mlp = None

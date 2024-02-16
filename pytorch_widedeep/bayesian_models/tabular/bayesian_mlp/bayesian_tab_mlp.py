@@ -226,9 +226,9 @@ class BayesianTabMlp(BaseBayesianModel):
                     prior_pi=self.prior_pi,
                     posterior_mu_init=self.posterior_mu_init,
                     posterior_rho_init=self.posterior_rho_init,
-                    use_bias=False
-                    if self.use_cont_bias is None
-                    else self.use_cont_bias,
+                    use_bias=(
+                        False if self.use_cont_bias is None else self.use_cont_bias
+                    ),
                     activation_fn=self.cont_embed_activation,
                 )
                 self.cont_out_dim = len(self.continuous_cols) * self.cont_embed_dim

@@ -206,9 +206,9 @@ class AttentiveTransformer(nn.Module):
             self.bn = nn.BatchNorm1d(output_dim, momentum=momentum)
 
         if mask_type == "sparsemax":
-            self.mask: Union[
-                sparsemax.Sparsemax, sparsemax.Entmax15
-            ] = sparsemax.Sparsemax(dim=-1)
+            self.mask: Union[sparsemax.Sparsemax, sparsemax.Entmax15] = (
+                sparsemax.Sparsemax(dim=-1)
+            )
         elif mask_type == "entmax":
             self.mask = sparsemax.Entmax15(dim=-1)
         else:

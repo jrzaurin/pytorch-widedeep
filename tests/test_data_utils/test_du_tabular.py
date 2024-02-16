@@ -383,9 +383,11 @@ def test_quantization(quantization_setup, expected_bins_col1, expected_bins_col2
     assert (
         len(set(X_quant[:, 0])) == expected_bins_col1
         if expected_bins_col1
-        else 20 and len(set(X_quant[:, 1])) == expected_bins_col2
-        if expected_bins_col2
-        else 20
+        else (
+            20 and len(set(X_quant[:, 1])) == expected_bins_col2
+            if expected_bins_col2
+            else 20
+        )
     )
 
 

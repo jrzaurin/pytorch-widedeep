@@ -325,9 +325,9 @@ class TabPreprocessor(BasePreprocessor):
 
         # Categorical embeddings logic
         if self.cat_embed_cols is not None or self.quantization_setup is not None:
-            self.cat_embed_input: List[
-                Union[Tuple[str, int], Tuple[str, int, int]]
-            ] = []
+            self.cat_embed_input: List[Union[Tuple[str, int], Tuple[str, int, int]]] = (
+                []
+            )
 
         if self.cat_embed_cols is not None:
             df_cat, cat_embed_dim = self._prepare_categorical(df_adj)
@@ -546,11 +546,13 @@ class TabPreprocessor(BasePreprocessor):
                         (
                             col,
                             self.quantization_setup,
-                            embed_sz_rule(
-                                self.quantization_setup + 1, self.embedding_rule  # type: ignore[arg-type]
-                            )
-                            if self.auto_embed_dim
-                            else self.default_embed_dim,
+                            (
+                                embed_sz_rule(
+                                    self.quantization_setup + 1, self.embedding_rule  # type: ignore[arg-type]
+                                )
+                                if self.auto_embed_dim
+                                else self.default_embed_dim
+                            ),
                         )
                     )
             else:
@@ -560,11 +562,13 @@ class TabPreprocessor(BasePreprocessor):
                             (
                                 col,
                                 val,
-                                embed_sz_rule(
-                                    val + 1, self.embedding_rule  # type: ignore[arg-type]
-                                )
-                                if self.auto_embed_dim
-                                else self.default_embed_dim,
+                                (
+                                    embed_sz_rule(
+                                        val + 1, self.embedding_rule  # type: ignore[arg-type]
+                                    )
+                                    if self.auto_embed_dim
+                                    else self.default_embed_dim
+                                ),
                             )
                         )
                     else:
@@ -572,9 +576,11 @@ class TabPreprocessor(BasePreprocessor):
                             (
                                 col,
                                 len(val) - 1,
-                                embed_sz_rule(len(val), self.embedding_rule)  # type: ignore[arg-type]
-                                if self.auto_embed_dim
-                                else self.default_embed_dim,
+                                (
+                                    embed_sz_rule(len(val), self.embedding_rule)  # type: ignore[arg-type]
+                                    if self.auto_embed_dim
+                                    else self.default_embed_dim
+                                ),
                             )
                         )
 

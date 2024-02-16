@@ -232,9 +232,9 @@ def test_embed_continuous_and_with_cls_token_tabtransformer(
 
     params = {
         "column_idx": {k: v for v, k in enumerate(n_colnames)},
-        "cat_embed_input": with_cls_token_embed_input
-        if with_cls_token
-        else embed_input,
+        "cat_embed_input": (
+            with_cls_token_embed_input if with_cls_token else embed_input
+        ),
         "continuous_cols": n_colnames[cont_idx:],
         "embed_continuous": embed_continuous,
         "embed_continuous_method": "standard" if embed_continuous else None,
@@ -287,9 +287,9 @@ def test_embed_continuous_and_with_cls_token_transformer_family(
 
     params = {
         "column_idx": {k: v for v, k in enumerate(n_colnames)},
-        "cat_embed_input": with_cls_token_embed_input
-        if with_cls_token
-        else embed_input,
+        "cat_embed_input": (
+            with_cls_token_embed_input if with_cls_token else embed_input
+        ),
         "continuous_cols": n_colnames[cont_idx:],
     }
 
