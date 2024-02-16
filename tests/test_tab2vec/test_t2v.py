@@ -1,8 +1,8 @@
 import string
 from random import choices
 
-import torch
 import numpy as np
+import torch
 import pandas as pd
 import pytest
 

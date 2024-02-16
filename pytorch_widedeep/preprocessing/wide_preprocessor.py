@@ -145,7 +145,7 @@ class WidePreprocessor(BasePreprocessor):
         """
         decoded = pd.DataFrame(encoded, columns=self.wide_crossed_cols)
 
-        if pd.__version__ >= '2.1.0':
+        if pd.__version__ >= "2.1.0":
             decoded = decoded.map(lambda x: self.inverse_encoding_dict[x])
         else:
             decoded = decoded.applymap(lambda x: self.inverse_encoding_dict[x])
