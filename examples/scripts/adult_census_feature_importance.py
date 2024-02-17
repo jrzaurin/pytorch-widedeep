@@ -1,3 +1,4 @@
+import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep import Trainer
@@ -17,7 +18,7 @@ from pytorch_widedeep.preprocessing import TabPreprocessor
 
 # use_cuda = torch.cuda.is_available()
 
-df = load_adult(as_frame=True)
+df: pd.DataFrame = load_adult(as_frame=True)
 df.columns = [c.replace("-", "_") for c in df.columns]
 df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
 df.drop("income", axis=1, inplace=True)

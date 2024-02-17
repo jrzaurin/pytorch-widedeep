@@ -1,18 +1,10 @@
 import numpy as np
 import torch
-import einops
 from torch import nn
 
-from pytorch_widedeep.wdtypes import (
-    Any,
-    Dict,
-    List,
-    Tuple,
-    Union,
-    Tensor,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
 from pytorch_widedeep.bayesian_models import bayesian_nn as bnn
+from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.bayesian_models._weight_sampler import (
     GaussianPosterior,
     ScaleMixtureGaussianPrior,
@@ -35,6 +27,7 @@ class BayesianContEmbeddings(BayesianModule):
         posterior_mu_init: float,
         posterior_rho_init: float,
         use_bias: bool = False,
+        activation_fn: Optional[str] = None,
     ):
         super(BayesianContEmbeddings, self).__init__()
 
@@ -77,6 +70,10 @@ class BayesianContEmbeddings(BayesianModule):
         self.log_prior: Union[Tensor, float] = 0.0
         self.log_variational_posterior: Union[Tensor, float] = 0.0
 
+        self.activation_fn = (
+            get_activation_fn(activation_fn) if activation_fn is not None else None
+        )
+
     def forward(self, X: Tensor) -> Tensor:
         if not self.training:
             x = self.weight_mu.unsqueeze(0) * X.unsqueeze(2)
@@ -102,6 +99,10 @@ class BayesianContEmbeddings(BayesianModule):
         self.log_prior = self.weight_prior_dist.log_prior(weight) + bias_log_prior
 
         x = weight.unsqueeze(0) * X.unsqueeze(2) + bias
+
+        if self.activation_fn is not None:
+            x = self.activation_fn(x)
+
         return x
 
     def extra_repr(self) -> str:
@@ -119,6 +120,7 @@ class BayesianDiffSizeCatEmbeddings(nn.Module):
         prior_pi: float,
         posterior_mu_init: float,
         posterior_rho_init: float,
+        activation_fn: Optional[str] = None,
     ):
         super(BayesianDiffSizeCatEmbeddings, self).__init__()
 
@@ -145,93 +147,18 @@ class BayesianDiffSizeCatEmbeddings(nn.Module):
 
         self.emb_out_dim: int = int(np.sum([embed[2] for embed in self.embed_input]))
 
+        self.activation_fn = (
+            get_activation_fn(activation_fn) if activation_fn is not None else None
+        )
+
     def forward(self, X: Tensor) -> Tensor:
         embed = [
             self.embed_layers["emb_layer_" + col](X[:, self.column_idx[col]].long())
             for col, _, _ in self.embed_input
         ]
         x = torch.cat(embed, 1)
+
+        if self.activation_fn is not None:
+            x = self.activation_fn(x)
+
         return x
-
-
-class BayesianDiffSizeCatAndContEmbeddings(nn.Module):
-    def __init__(
-        self,
-        column_idx: Dict[str, int],
-        cat_embed_input: List[Tuple[str, int, int]],
-        continuous_cols: Optional[List[str]],
-        embed_continuous: bool,
-        cont_embed_dim: int,
-        use_cont_bias: bool,
-        cont_norm_layer: Optional[str],
-        prior_sigma_1: float,
-        prior_sigma_2: float,
-        prior_pi: float,
-        posterior_mu_init: float,
-        posterior_rho_init: float,
-    ):
-        super(BayesianDiffSizeCatAndContEmbeddings, self).__init__()
-
-        self.cat_embed_input = cat_embed_input
-        self.continuous_cols = continuous_cols
-        self.embed_continuous = embed_continuous
-        self.cont_embed_dim = cont_embed_dim
-
-        # Categorical
-        if self.cat_embed_input is not None:
-            self.cat_embed = BayesianDiffSizeCatEmbeddings(
-                column_idx,
-                cat_embed_input,
-                prior_sigma_1,
-                prior_sigma_2,
-                prior_pi,
-                posterior_mu_init,
-                posterior_rho_init,
-            )
-            self.cat_out_dim = int(np.sum([embed[2] for embed in self.cat_embed_input]))
-        else:
-            self.cat_out_dim = 0
-
-        # Continuous
-        if continuous_cols is not None:
-            self.cont_idx = [column_idx[col] for col in continuous_cols]
-            if cont_norm_layer == "layernorm":
-                self.cont_norm: NormLayers = nn.LayerNorm(len(continuous_cols))
-            elif cont_norm_layer == "batchnorm":
-                self.cont_norm = nn.BatchNorm1d(len(continuous_cols))
-            else:
-                self.cont_norm = nn.Identity()
-            if self.embed_continuous:
-                self.cont_embed = BayesianContEmbeddings(
-                    len(continuous_cols),
-                    cont_embed_dim,
-                    prior_sigma_1,
-                    prior_sigma_2,
-                    prior_pi,
-                    posterior_mu_init,
-                    posterior_rho_init,
-                    use_cont_bias,
-                )
-                self.cont_out_dim = len(continuous_cols) * cont_embed_dim
-            else:
-                self.cont_out_dim = len(continuous_cols)
-        else:
-            self.cont_out_dim = 0
-
-        self.output_dim = self.cat_out_dim + self.cont_out_dim
-
-    def forward(self, X: Tensor) -> Tuple[Tensor, Any]:
-        if self.cat_embed_input is not None:
-            x_cat = self.cat_embed(X)
-        else:
-            x_cat = None
-
-        if self.continuous_cols is not None:
-            x_cont = self.cont_norm((X[:, self.cont_idx].float()))
-            if self.embed_continuous:
-                x_cont = self.cont_embed(x_cont)
-                x_cont = einops.rearrange(x_cont, "b s d -> b (s d)")
-        else:
-            x_cont = None
-
-        return x_cat, x_cont

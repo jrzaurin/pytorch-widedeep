@@ -104,7 +104,9 @@ class EncoderDecoderModel(nn.Module):
             decoder_param[cpn] = getattr(self.encoder, cpn)
 
         decoder_param["mlp_hidden_dims"] = decoder_param["mlp_hidden_dims"][::-1]
-        decoder_param["embed_dim"] = self.encoder.cat_and_cont_embed.output_dim
+        decoder_param["embed_dim"] = (
+            self.encoder.cat_out_dim + self.encoder.cont_out_dim
+        )
 
         return TabMlpDecoder(**decoder_param)
 
@@ -121,7 +123,9 @@ class EncoderDecoderModel(nn.Module):
         decoder_param["blocks_dims"] = decoder_param["blocks_dims"][::-1]
         if decoder_param["mlp_hidden_dims"] is not None:
             decoder_param["mlp_hidden_dims"] = decoder_param["mlp_hidden_dims"][::-1]
-        decoder_param["embed_dim"] = self.encoder.cat_and_cont_embed.output_dim
+        decoder_param["embed_dim"] = (
+            self.encoder.cat_out_dim + self.encoder.cont_out_dim
+        )
 
         return TabResnetDecoder(**decoder_param)
 
@@ -135,6 +139,8 @@ class EncoderDecoderModel(nn.Module):
         for cpn in common_params:
             decoder_param[cpn] = getattr(self.encoder, cpn)
 
-        decoder_param["embed_dim"] = self.encoder.cat_and_cont_embed.output_dim
+        decoder_param["embed_dim"] = (
+            self.encoder.cat_out_dim + self.encoder.cont_out_dim
+        )
 
         return TabNetDecoder(**decoder_param)

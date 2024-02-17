@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Any, List, Union, Optional
 
 import pandas as pd
 from sklearn.exceptions import NotFittedError
@@ -25,7 +25,7 @@ class BasePreprocessor:
 
 def check_is_fitted(
     estimator: Union[BasePreprocessor, Any],
-    attributes: List[str] = None,
+    attributes: Optional[List[str]] = None,
     all_or_any: str = "all",
     condition: bool = True,
 ):

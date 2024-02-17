@@ -6,9 +6,6 @@ import pytest
 
 from pytorch_widedeep.models import TabMlp, WideDeep
 from pytorch_widedeep.training import Trainer
-from pytorch_widedeep.models.tabular.embeddings_layers import (
-    DiffSizeCatAndContEmbeddings,
-)
 
 colnames = list(string.ascii_lowercase)[:10]
 embed_cols = [np.random.choice(np.arange(5), 10) for _ in range(5)]
@@ -60,6 +57,7 @@ def test_tab_mlp_only_cont(embed_continuous):
         column_idx={k: v for v, k in enumerate(colnames[5:])},
         continuous_cols=continuous_cols,
         embed_continuous=embed_continuous,
+        embed_continuous_method="standard" if embed_continuous else None,
         cont_embed_dim=6,
     )
     out = model(X_deep_cont)
@@ -88,7 +86,7 @@ def test_cont_norm_layer(cont_norm_layer):
         mlp_dropout=0.1,
         mlp_batchnorm=True,
         mlp_batchnorm_last=False,
-        mlp_linear_first=False,
+        mlp_linear_first=True,
     )
     out = model(X_deep)
     assert out.size(0) == 10 and out.size(1) == 8
@@ -111,84 +109,84 @@ def test_act_fn_ValueError():
         )
 
 
-###############################################################################
-# Test DiffSizeCatAndContEmbeddings
-###############################################################################
+# ###############################################################################
+# # Test DiffSizeCatAndContEmbeddings
+# ###############################################################################
 
 
-@pytest.mark.parametrize(
-    "setup, column_idx, cat_embed_input, continuous_cols, embed_continuous",
-    [
-        ("w_cat", {k: v for v, k in enumerate(colnames[:5])}, embed_input, None, False),
-        (
-            "w_cont",
-            {k: v for v, k in enumerate(colnames[5:])},
-            None,
-            continuous_cols,
-            False,
-        ),
-        (
-            "w_both",
-            {k: v for v, k in enumerate(colnames)},
-            embed_input,
-            continuous_cols,
-            False,
-        ),
-        (
-            "w_both_and_embed_cont",
-            {k: v for v, k in enumerate(colnames)},
-            embed_input,
-            continuous_cols,
-            True,
-        ),
-    ],
-)
-def test_embedddings_class(
-    setup, column_idx, cat_embed_input, continuous_cols, embed_continuous
-):
-    if setup == "w_cat":
-        X = X_deep_emb
-    elif setup == "w_cont":
-        X = X_deep_cont
-    else:
-        X = X_deep
+# @pytest.mark.parametrize(
+#     "setup, column_idx, cat_embed_input, continuous_cols, embed_continuous",
+#     [
+#         ("w_cat", {k: v for v, k in enumerate(colnames[:5])}, embed_input, None, False),
+#         (
+#             "w_cont",
+#             {k: v for v, k in enumerate(colnames[5:])},
+#             None,
+#             continuous_cols,
+#             False,
+#         ),
+#         (
+#             "w_both",
+#             {k: v for v, k in enumerate(colnames)},
+#             embed_input,
+#             continuous_cols,
+#             False,
+#         ),
+#         (
+#             "w_both_and_embed_cont",
+#             {k: v for v, k in enumerate(colnames)},
+#             embed_input,
+#             continuous_cols,
+#             True,
+#         ),
+#     ],
+# )
+# def test_embedddings_class(
+#     setup, column_idx, cat_embed_input, continuous_cols, embed_continuous
+# ):
+#     if setup == "w_cat":
+#         X = X_deep_emb
+#     elif setup == "w_cont":
+#         X = X_deep_cont
+#     else:
+#         X = X_deep
 
-    cat_and_cont_embed = DiffSizeCatAndContEmbeddings(
-        column_idx=column_idx,
-        cat_embed_input=cat_embed_input,
-        cat_embed_dropout=0.1,
-        use_cat_bias=setup == "w_both_and_embed_cont",
-        continuous_cols=continuous_cols,
-        embed_continuous=embed_continuous,
-        cont_embed_dim=16,
-        cont_embed_dropout=0.1,
-        use_cont_bias=setup == "w_both_and_embed_cont",
-        cont_norm_layer=None,
-    )
-    x_cat, x_cont = cat_and_cont_embed(X)
+#     cat_and_cont_embed = DiffSizeCatAndContEmbeddings(
+#         column_idx=column_idx,
+#         cat_embed_input=cat_embed_input,
+#         cat_embed_dropout=0.1,
+#         use_cat_bias=setup == "w_both_and_embed_cont",
+#         continuous_cols=continuous_cols,
+#         embed_continuous=embed_continuous,
+#         cont_embed_dim=16,
+#         cont_embed_dropout=0.1,
+#         use_cont_bias=setup == "w_both_and_embed_cont",
+#         cont_norm_layer=None,
+#     )
+#     x_cat, x_cont = cat_and_cont_embed(X)
 
-    if setup == "w_cat":
-        s1 = X.shape[0]
-        s2 = sum([el[2] for el in cat_and_cont_embed.cat_embed_input])
-        assert x_cat.size() == torch.Size((s1, s2)) and x_cont is None
-    if setup == "w_cont":
-        s1 = X.shape[0]
-        s2 = len(continuous_cols)
-        assert x_cont.size() == torch.Size((s1, s2)) and x_cat is None
-    if setup == "w_both":
-        s1 = X.shape[0]
-        s2_cat = sum([el[2] for el in cat_and_cont_embed.cat_embed_input])
-        s2_cont = len(continuous_cols)
-        assert x_cat.size() == torch.Size((s1, s2_cat)) and x_cont.size() == torch.Size(
-            (s1, s2_cont)
-        )
-    if setup == "w_both_and_embed_cont":
-        s1 = X.shape[0]
-        s2_cat = sum([el[2] for el in cat_and_cont_embed.cat_embed_input])
-        s2_cont = len(continuous_cols) * cat_and_cont_embed.cont_embed_dim
-        assert x_cat.size() == torch.Size((s1, s2_cat)) and x_cont.size() == torch.Size(
-            (s1, s2_cont)
-        )
+#     if setup == "w_cat":
+#         s1 = X.shape[0]
+#         s2 = sum([el[2] for el in cat_and_cont_embed.cat_embed_input])
+#         assert x_cat.size() == torch.Size((s1, s2)) and x_cont is None
+#     if setup == "w_cont":
+#         s1 = X.shape[0]
+#         s2 = len(continuous_cols)
+#         assert x_cont.size() == torch.Size((s1, s2)) and x_cat is None
+#     if setup == "w_both":
+#         s1 = X.shape[0]
+#         s2_cat = sum([el[2] for el in cat_and_cont_embed.cat_embed_input])
+#         s2_cont = len(continuous_cols)
+#         assert x_cat.size() == torch.Size((s1, s2_cat)) and x_cont.size() == torch.Size(
+#             (s1, s2_cont)
+#         )
+#     if setup == "w_both_and_embed_cont":
+#         s1 = X.shape[0]
+#         s2_cat = sum([el[2] for el in cat_and_cont_embed.cat_embed_input])
+#         s2_cont = len(continuous_cols) * cat_and_cont_embed.cont_embed_dim
+#         assert x_cat.size() == torch.Size((s1, s2_cat)) and x_cont.size() == torch.Size(
+#             (s1, s2_cont)
+#         )
 
 
 ###############################################################################

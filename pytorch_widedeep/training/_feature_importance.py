@@ -24,7 +24,7 @@ from pytorch_widedeep.models.tabular import (
     SelfAttentionMLP,
     ContextAttentionMLP,
 )
-from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.models.tabular.tabnet._utils import create_explain_matrix
 
@@ -285,7 +285,7 @@ class TabNetExplainer:
     def __init__(self, device: str, n_samples: int = 1000):
         self.device = device
 
-    @Alias("X_tab", "X")
+    @alias("X_tab", ["X"])
     def explain(
         self,
         model: WideDeep,
@@ -342,7 +342,7 @@ class TransformerBasedExplainer(TransformerBasedFeatureImportance):
             n_samples=1000,  # irrelevant
         )
 
-    @Alias("X_tab", "X")
+    @alias("X_tab", ["X"])
     def explain(
         self,
         model: WideDeep,
@@ -366,7 +366,7 @@ class TransformerBasedExplainer(TransformerBasedFeatureImportance):
             X = data["deeptabular"].to(self.device)
             _ = model.deeptabular(X)
 
-            feat_imp, col_idx = self._feature_importance(model)
+            feat_imp, _ = self._feature_importance(model)
 
             batch_feat_imp.append(feat_imp)
 

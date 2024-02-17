@@ -293,9 +293,12 @@ def test_embed_sz_rule_of_thumb(rule):
     embed_szs = {c: embed_sz_rule(nc, embedding_rule=rule) for c, nc in n_cats.items()}
     tab_preprocessor = TabPreprocessor(cat_embed_cols=embed_cols, embedding_rule=rule)
     tdf = tab_preprocessor.fit_transform(df)  # noqa: F841
-    out = [
-        tab_preprocessor.embed_dim[col] == embed_szs[col] for col in embed_szs.keys()
-    ]
+    out = []
+    for col, val, dim in tab_preprocessor.cat_embed_input:
+        out.append(dim == embed_szs[col])
+    # out = [
+    #     tab_preprocessor.embed_dim[col] == embed_szs[col] for col in embed_szs.keys()
+    # ]
     assert all(out)
 
 
@@ -380,7 +383,69 @@ def test_quantization(quantization_setup, expected_bins_col1, expected_bins_col2
     assert (
         len(set(X_quant[:, 0])) == expected_bins_col1
         if expected_bins_col1
-        else 20 and len(set(X_quant[:, 1])) == expected_bins_col2
-        if expected_bins_col2
-        else 20
+        else (
+            20 and len(set(X_quant[:, 1])) == expected_bins_col2
+            if expected_bins_col2
+            else 20
+        )
+    )
+
+
+###############################################################################
+# Increase coverage for the tabular utils module
+###############################################################################
+
+
+data_size = 16
+
+# Create categorical data
+categories = ["A", "B", "C", "D"]
+cat_data = np.random.choice(categories, size=data_size)
+
+# Create numerical data
+num_data_1 = np.random.rand(data_size)
+num_data_2 = np.random.rand(data_size)
+
+# Create DataFrame
+ndf = pd.DataFrame(
+    {
+        "cat1": cat_data,
+        "cat2": cat_data[::-1],  # Reverse of cat_data
+        "num1": num_data_1,
+        "num2": num_data_2,
+    }
+)
+
+
+def test_label_encoder_with_no_columns():
+    le = LabelEncoder()
+    df_e = le.fit_transform(ndf)
+    df_org = le.inverse_transform(df_e)
+    assert df_org.equals(ndf)
+
+
+def test_label_encoder_with_chunks():
+    df_chunk = pd.DataFrame(
+        {
+            "cat1": ["E"],
+            "cat2": ["F"],
+            "num1": [0.5],
+            "num2": [0.5],
+        }
+    )
+    le = LabelEncoder()
+
+    # treat df as if it was the first chunk
+    le.partial_fit(ndf)
+
+    # treat df_chunk as if it was the second chunk
+    le.partial_fit(df_chunk)
+
+    df_e = le.transform(df_chunk)
+    df_chunk_org = le.inverse_transform(df_e)
+
+    assert (
+        "E" in le.encoding_dict["cat1"]
+        and "F" in le.encoding_dict["cat2"]
+        and df_chunk_org.equals(df_chunk)
     )

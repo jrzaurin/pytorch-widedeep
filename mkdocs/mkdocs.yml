@@ -38,7 +38,6 @@ nav:
         - Self Supervised Pretraining: pytorch-widedeep/self_supervised_pretraining.md
         - Tab2Vec: pytorch-widedeep/tab2vec.md
     - Examples:
-        # - 00_airbnb_data_preprocessing: examples/00_airbnb_data_preprocessing.ipynb
         - 01_preprocessors_and_utils: examples/01_preprocessors_and_utils.ipynb
         - 02_model_components: examples/02_model_components.ipynb
         - 03_binary_classification_with_defaults: examples/03_binary_classification_with_defaults.ipynb

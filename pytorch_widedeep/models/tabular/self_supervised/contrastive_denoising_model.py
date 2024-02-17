@@ -71,9 +71,7 @@ class ContrastiveDenoisingModel(nn.Module):
                 self.denoise_cont_mlp,
             ) = self._set_cat_and_cont_denoise_mlps()
 
-    def forward(
-        self, X: Tensor
-    ) -> Tuple[
+    def forward(self, X: Tensor) -> Tuple[
         Optional[Tuple[Tensor, Tensor]],
         Optional[Tuple[Tensor, Tensor]],
         Optional[Tuple[Tensor, Tensor]],
@@ -190,13 +188,13 @@ class ContrastiveDenoisingModel(nn.Module):
 
         if self.model.continuous_cols is not None:
             if self.cont_mlp_type == "single":
-                denoise_cont_mlp: Union[
-                    ContSingleMlp, ContMlpPerFeature
-                ] = ContSingleMlp(
-                    self.model.input_dim,
-                    self.model.continuous_cols,
-                    self.model.column_idx,
-                    self.denoise_mlps_activation,
+                denoise_cont_mlp: Union[ContSingleMlp, ContMlpPerFeature] = (
+                    ContSingleMlp(
+                        self.model.input_dim,
+                        self.model.continuous_cols,
+                        self.model.column_idx,
+                        self.denoise_mlps_activation,
+                    )
                 )
             elif self.cont_mlp_type == "multiple":
                 denoise_cont_mlp = ContMlpPerFeature(

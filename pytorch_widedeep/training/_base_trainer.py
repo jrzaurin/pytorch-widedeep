@@ -75,7 +75,7 @@ class BaseTrainer(ABC):
         self.model.wd_device = self.device
 
         self.objective = objective
-        self.method = _ObjectiveToMethod.get(objective)
+        self.method: str = _ObjectiveToMethod.get(objective)  # type: ignore
 
         self._initialize(initializers)
         self.loss_fn = self._set_loss_fn(objective, custom_loss_function, **kwargs)
@@ -85,15 +85,15 @@ class BaseTrainer(ABC):
         self._set_callbacks_and_metrics(callbacks, metrics)
 
     @abstractmethod
-    def fit(self, *args, **kwargs):
+    def fit(self, **kwargs):
         pass
 
     @abstractmethod
-    def predict(self, *args, **kwargs) -> np.ndarray:
+    def predict(self, *args) -> np.ndarray:
         pass
 
     @abstractmethod
-    def predict_proba(self, *args, **kwargs) -> np.ndarray:
+    def predict_proba(self, *args) -> np.ndarray:
         pass
 
     @abstractmethod
@@ -155,7 +155,7 @@ class BaseTrainer(ABC):
         if initializers is not None:
             if isinstance(initializers, Dict):
                 self.initializer = MultipleInitializer(
-                    initializers, verbose=self.verbose
+                    initializers, verbose=self.verbose > 0
                 )
                 self.initializer.apply(self.model)
             elif isinstance(initializers, type):
@@ -186,7 +186,9 @@ class BaseTrainer(ABC):
         else:
             return alias_to_loss(objective)
 
-    def _set_optimizer(self, optimizers: Union[Optimizer, Dict[str, Optimizer]]):
+    def _set_optimizer(
+        self, optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]]
+    ):
         if optimizers is not None:
             if isinstance(optimizers, Optimizer):
                 optimizer: Union[Optimizer, MultipleOptimizer] = optimizers

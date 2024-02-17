@@ -1,5 +1,5 @@
 import os
-from typing import List, Type, Tuple, Union, Optional
+from typing import Any, List, Tuple, Union, Optional
 
 import numpy as np
 import pandas as pd
@@ -67,7 +67,7 @@ class TabFromFolder:
         text_col: Optional[str] = None,
         img_col: Optional[str] = None,
         ignore_target: bool = False,
-        reference: Type["TabFromFolder"] = None,
+        reference: Optional[Any] = None,  # is Type["TabFromFolder"],
         verbose: Optional[int] = 1,
     ):
         self.fname = fname
@@ -104,7 +104,7 @@ class TabFromFolder:
 
     def get_item(
         self, idx: int
-    ) -> Tuple[np.ndarray, str, str, Optional[Union[int, float]]]:
+    ) -> Tuple[np.ndarray, Optional[str], Optional[str], Optional[Union[int, float]]]:
         path = os.path.join(self.directory, self.fname)
 
         try:
@@ -122,10 +122,10 @@ class TabFromFolder:
         except Exception:
             raise ValueError("Currently only csv format is supported.")
 
-        text_fname_or_text: str = (
+        text_fname_or_text: Optional[str] = (
             sample[self.text_col].to_list()[0] if self.text_col is not None else None
         )
-        img_fname: str = (
+        img_fname: Optional[str] = (
             sample[self.img_col].to_list()[0] if self.img_col is not None else None
         )
 
@@ -140,7 +140,7 @@ class TabFromFolder:
 
     def _set_from_reference(
         self,
-        reference: Type["TabFromFolder"],
+        reference: Any,  # is Type["TabFromFolder"],
         preprocessor: Optional[TabularPreprocessor],
     ) -> Tuple[str, str, TabularPreprocessor, Optional[str], Optional[str]]:
         (
@@ -165,7 +165,7 @@ class TabFromFolder:
 
     @staticmethod
     def _get_from_reference(
-        reference: Type["TabFromFolder"],
+        reference: Any,  # is Type["TabFromFolder"],
     ) -> Tuple[str, str, TabularPreprocessor, Optional[str], Optional[str]]:
         return (
             reference.directory,
@@ -247,7 +247,7 @@ class WideFromFolder(TabFromFolder):
         text_col: Optional[str] = None,
         img_col: Optional[str] = None,
         ignore_target: bool = False,
-        reference: Type["WideFromFolder"] = None,
+        reference: Optional[Any] = None,  # is Type["WideFromFolder"],
         verbose: int = 1,
     ):
         super(WideFromFolder, self).__init__(

@@ -11,6 +11,7 @@ from pytorch_widedeep.wdtypes import (
     Tuple,
     Union,
     Literal,
+    Optional,
     Optimizer,
     DataLoader,
     LRScheduler,
@@ -59,8 +60,8 @@ class FineTune:
     def __init__(
         self,
         loss_fn: Any,
-        metric: Union[Metric, MultipleMetrics],
-        method: Literal["binary", "regression", "multiclass"],
+        metric: Optional[Union[Metric, MultipleMetrics]],
+        method: Literal["binary", "regression", "multiclass", "qregression"],
         verbose: int,
     ):
         self.loss_fn = loss_fn
@@ -123,6 +124,7 @@ class FineTune:
             model, model_name, loader, optimizer, scheduler, n_epochs=n_epochs
         )
 
+    # TO DO: review this method. It is not very elegant
     def finetune_gradual(  # noqa: C901
         self,
         model: WDModel,
@@ -206,6 +208,9 @@ class FineTune:
             if routine == "felbo":
                 params, max_lr, base_lr = layer.parameters(), lr, lr / 10.0  # type: ignore
             elif routine == "howard":
+                # type conflict here that for now I am going to ignore
+                # TO DO: create a _finetune_felbo and _fine_tune_howard
+                # methods
                 params += [{"params": layer.parameters(), "lr": lr / 10.0}]
                 max_lr += [lr]
                 base_lr += [lr / 10.0]

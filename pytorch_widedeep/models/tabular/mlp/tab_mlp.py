@@ -1,6 +1,14 @@
 from torch import nn
 
-from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithoutAttention,
@@ -15,6 +23,10 @@ class TabMlp(BaseTabularModelWithoutAttention):
     with numerical (aka continuous) features, embedded or not. These are then
     passed through a series of dense layers (i.e. a MLP).
 
+    Most of the parameters for this class are `Optional` since the use of
+    categorical or continuous is in fact optional (i.e. one can use
+    categorical features only, continuous features only or both).
+
     Parameters
     ----------
     column_idx: Dict
@@ -24,30 +36,73 @@ class TabMlp(BaseTabularModelWithoutAttention):
     cat_embed_input: List, Optional, default = None
         List of Tuples with the column name, number of unique values and
         embedding dimension. e.g. _[(education, 11, 32), ...]_
-    cat_embed_dropout: float, default = 0.1
-        Categorical embeddings dropout
-    use_cat_bias: bool, default = False,
-        Boolean indicating if bias will be used for the categorical embeddings
+    cat_embed_dropout: float, Optional, default = None
+        Categorical embeddings dropout. If `None`, it will default
+        to 0.
+    use_cat_bias: bool, Optional, default = None,
+        Boolean indicating if bias will be used for the categorical embeddings.
+        If `None`, it will default to 'False'.
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings, if any. Currently
         _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
     continuous_cols: List, Optional, default = None
         List with the name of the numeric (aka continuous) columns
-    cont_norm_layer: str, default =  "batchnorm"
-        Type of normalization layer applied to the continuous features. Options
-        are: _'layernorm'_, _'batchnorm'_ or None.
-    embed_continuous: bool, default = False,
-        Boolean indicating if the continuous columns will be embedded
-        (i.e. passed each through a linear layer with or without activation)
-    cont_embed_dim: int, default = 32,
-        Size of the continuous embeddings
-    cont_embed_dropout: float, default = 0.1,
-        Dropout for the continuous embeddings
-    use_cont_bias: bool, default = True,
-        Boolean indicating if bias will be used for the continuous embeddings
+    cont_norm_layer: str, Optional, default =  None
+        Type of normalization layer applied to the continuous features.
+        Options are: _'layernorm'_ and _'batchnorm'_. if `None`, no
+        normalization layer will be used.
+    embed_continuous: bool, Optional, default = None,
+        Boolean indicating if the continuous columns will be embedded using
+        one of the available methods: _'standard'_, _'periodic'_
+        or _'piecewise'_. If `None`, it will default to 'False'.<br/>
+        :information_source: **NOTE**: This parameter is deprecated and it
+         will be removed in future releases. Please, use the
+         `embed_continuous_method` parameter instead.
+    embed_continuous_method: Optional, str, default = None,
+        Method to use to embed the continuous features. Options are:
+        _'standard'_, _'periodic'_ or _'piecewise'_. The _'standard'_
+        embedding method is based on the FT-Transformer implementation
+        presented in the paper: [Revisiting Deep Learning Models for
+        Tabular Data](https://arxiv.org/abs/2106.11959v5). The _'periodic'_
+        and_'piecewise'_ methods were presented in the paper: [On Embeddings for
+        Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556).
+        Please, read the papers for details.
+    cont_embed_dim: int, Optional, default = None,
+        Size of the continuous embeddings. If the continuous columns are
+        embedded, `cont_embed_dim` must be passed.
+    cont_embed_dropout: float, Optional, default = None,
+        Dropout for the continuous embeddings. If `None`, it will default to 0.0
     cont_embed_activation: Optional, str, default = None,
         Activation function for the continuous embeddings if any. Currently
-        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported.
+        If `None`, no activation function will be applied.
+    quantization_setup: Dict[str, List[float]], Optional, default = None,
+        This parameter is used when the _'piecewise'_ method is used to embed
+        the continuous cols. It is a dict where keys are the name of the continuous
+        columns and values are lists with the boundaries for the quantization
+        of the continuous_cols. See the examples for details. If
+        If the _'piecewise'_ method is used, this parameter is required.
+    n_frequencies: int, Optional, default = None,
+        This is the so called _'k'_ in their paper [On Embeddings for
+        Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556),
+        and is the number of 'frequencies' that will be used to represent each
+        continuous column. See their Eq 2 in the paper for details. If
+        the _'periodic'_ method is used, this parameter is required.
+    sigma: float, Optional, default = None,
+        This is the sigma parameter in the paper mentioned when describing the
+        previous parameters and it is used to initialise the 'frequency
+        weights'. See their Eq 2 in the paper for details. If
+        the _'periodic'_ method is used, this parameter is required.
+    share_last_layer: bool, Optional, default = None,
+        This parameter is not present in the before mentioned paper but it is implemented in
+        the [official repo](https://github.com/yandex-research/rtdl-num-embeddings/tree/main).
+        If `True` the linear layer that turns the frequencies into embeddings
+        will be shared across the continuous columns. If `False` a different
+        linear layer will be used for each continuous column.
+        If the _'periodic'_ method is used, this parameter is required.
+    full_embed_dropout: bool, Optional, default = None,
+        If `True`, the full embedding corresponding to a column will be masked
+        out/dropout. If `None`, it will default to `False`.
     mlp_hidden_dims: List, default = [200, 100]
         List with the number of neurons per dense layer in the mlp.
     mlp_activation: str, default = "relu"
@@ -69,8 +124,6 @@ class TabMlp(BaseTabularModelWithoutAttention):
 
     Attributes
     ----------
-    cat_and_cont_embed: nn.Module
-        This is the module that processes the categorical and continuous columns
     encoder: nn.Module
         mlp model that will receive the concatenation of the embeddings and
         the continuous columns
@@ -80,34 +133,42 @@ class TabMlp(BaseTabularModelWithoutAttention):
     >>> import torch
     >>> from pytorch_widedeep.models import TabMlp
     >>> X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)
-    >>> colnames = ['a', 'b', 'c', 'd', 'e']
-    >>> cat_embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]
-    >>> column_idx = {k:v for v,k in enumerate(colnames)}
-    >>> model = TabMlp(mlp_hidden_dims=[8,4], column_idx=column_idx, cat_embed_input=cat_embed_input,
-    ... continuous_cols = ['e'])
+    >>> colnames = ["a", "b", "c", "d", "e"]
+    >>> cat_embed_input = [(u, i, j) for u, i, j in zip(colnames[:4], [4] * 4, [8] * 4)]
+    >>> column_idx = {k: v for v, k in enumerate(colnames)}
+    >>> model = TabMlp(mlp_hidden_dims=[8, 4], column_idx=column_idx, cat_embed_input=cat_embed_input,
+    ... continuous_cols=["e"])
     >>> out = model(X_tab)
     """
 
     def __init__(
         self,
         column_idx: Dict[str, int],
+        *,
         cat_embed_input: Optional[List[Tuple[str, int, int]]] = None,
-        cat_embed_dropout: float = 0.1,
-        use_cat_bias: bool = False,
+        cat_embed_dropout: Optional[float] = None,
+        use_cat_bias: Optional[bool] = None,
         cat_embed_activation: Optional[str] = None,
         continuous_cols: Optional[List[str]] = None,
-        cont_norm_layer: str = "batchnorm",
-        embed_continuous: bool = False,
-        cont_embed_dim: int = 32,
-        cont_embed_dropout: float = 0.1,
-        use_cont_bias: bool = True,
+        cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = None,
+        embed_continuous: Optional[bool] = None,
+        embed_continuous_method: Optional[
+            Literal["standard", "piecewise", "periodic"]
+        ] = None,
+        cont_embed_dim: Optional[int] = None,
+        cont_embed_dropout: Optional[float] = None,
         cont_embed_activation: Optional[str] = None,
+        quantization_setup: Optional[Dict[str, List[float]]] = None,
+        n_frequencies: Optional[int] = None,
+        sigma: Optional[float] = None,
+        share_last_layer: Optional[bool] = None,
+        full_embed_dropout: Optional[bool] = None,
         mlp_hidden_dims: List[int] = [200, 100],
         mlp_activation: str = "relu",
         mlp_dropout: Union[float, List[float]] = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
-        mlp_linear_first: bool = False,
+        mlp_linear_first: bool = True,
     ):
         super(TabMlp, self).__init__(
             column_idx=column_idx,
@@ -118,10 +179,15 @@ class TabMlp(BaseTabularModelWithoutAttention):
             continuous_cols=continuous_cols,
             cont_norm_layer=cont_norm_layer,
             embed_continuous=embed_continuous,
+            embed_continuous_method=embed_continuous_method,
             cont_embed_dim=cont_embed_dim,
             cont_embed_dropout=cont_embed_dropout,
-            use_cont_bias=use_cont_bias,
             cont_embed_activation=cont_embed_activation,
+            quantization_setup=quantization_setup,
+            n_frequencies=n_frequencies,
+            sigma=sigma,
+            share_last_layer=share_last_layer,
+            full_embed_dropout=full_embed_dropout,
         )
 
         self.mlp_hidden_dims = mlp_hidden_dims
@@ -133,7 +199,7 @@ class TabMlp(BaseTabularModelWithoutAttention):
 
         # Embeddings are instantiated at the base model
         # Mlp
-        mlp_input_dim = self.cat_and_cont_embed.output_dim
+        mlp_input_dim = self.cat_out_dim + self.cont_out_dim
         mlp_hidden_dims = [mlp_input_dim] + mlp_hidden_dims
         self.encoder = MLP(
             mlp_hidden_dims,
@@ -218,7 +284,7 @@ class TabMlpDecoder(nn.Module):
         mlp_dropout: Union[float, List[float]] = 0.1,
         mlp_batchnorm: bool = False,
         mlp_batchnorm_last: bool = False,
-        mlp_linear_first: bool = False,
+        mlp_linear_first: bool = True,
     ):
         super(TabMlpDecoder, self).__init__()
 

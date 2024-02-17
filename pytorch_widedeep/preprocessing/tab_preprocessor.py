@@ -12,7 +12,7 @@ from pytorch_widedeep.wdtypes import (
     Literal,
     Optional,
 )
-from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
 from pytorch_widedeep.preprocessing.base_preprocessor import (
     BasePreprocessor,
@@ -81,11 +81,13 @@ class Quantizer:
                 k: v
                 for k, v in list(
                     zip(
-                        range(len(bins)),
+                        range(1, len(bins) + 1),
                         [(a + b) / 2.0 for a, b in zip(bins, bins[1:])],
                     )
                 )
             }
+            # 0
+            self.inversed_bins[col][0] = np.nan
 
         self.is_fitted = True
 
@@ -97,6 +99,11 @@ class Quantizer:
         dfc = df.copy()
         for col, bins in self.bins.items():
             dfc[col] = pd.cut(dfc[col], bins, labels=False, **self.quant_args)
+            # 0 will be left for numbers outside the bins, i.e. smaller than
+            # the smaller boundary or larger than the largest boundary
+            dfc[col] = dfc[col] + 1
+            dfc[col] = dfc[col].fillna(0)
+            dfc[col] = dfc[col].astype(int)
 
         return dfc
 
@@ -125,24 +132,11 @@ class TabPreprocessor(BasePreprocessor):
         quantized using this value as the number of bins. Alternatively, a
         dictionary where the keys are the column names to quantize and the
         values are the either integers indicating the number of bins or a
-        list of scalars indicating the bin edges.
+        list of scalars indicating the bin edges can also be used.
     cols_to_scale: List or str, default = None,
         List with the names of the columns that will be standarised via
         sklearn's `StandardScaler`. It can also be the string `'all'` in
         which case all the continuous cols will be scaled.
-    scale: bool, default = False
-        :information_source: **note**: this arg will be removed in the next
-         release. Please use `cols_to_scale` instead. <br/>
-        Bool indicating whether or not to scale/standarise continuous cols. It
-        is important to emphasize that all the DL models for tabular data in
-        the library also include the possibility of normalising the input
-        continuous features via a `BatchNorm` or a `LayerNorm`. <br/>
-        Param alias: `scale_cont_cols`.
-    already_standard: List, default = None
-        :information_source: **note**: this arg will be removed in the next
-         release. Please use `cols_to_scale` instead. <br/>
-        List with the name of the continuous cols that do not need to be
-        scaled/standarised.
     auto_embed_dim: bool, default = True
         Boolean indicating whether the embedding dimensions will be
         automatically defined via rule of thumb. See `embedding_rule`
@@ -157,9 +151,9 @@ class TabPreprocessor(BasePreprocessor):
 
         - _google_: $min(600, round(n_{cat}^{0.24}))$
     default_embed_dim: int, default=16
-        Dimension for the embeddings if the embed_dim is not provided in the
-        `cat_embed_cols` parameter and `auto_embed_dim` is set to
-        `False`.
+        Dimension for the embeddings if the embedding dimension is not
+        provided in the `cat_embed_cols` parameter and `auto_embed_dim` is
+        set to `False`.
     with_attention: bool, default = False
         Boolean indicating whether the preprocessed data will be passed to an
         attention-based model (more precisely a model where all embeddings
@@ -175,8 +169,8 @@ class TabPreprocessor(BasePreprocessor):
         when using attention-based models. The final hidden state
         corresponding to this token is used as the aggregated representation
         for classification and regression tasks. If not, the categorical
-        (and continuous embeddings if present) will be concatenated before
-        being passed to the final MLP (if present).
+        and/or continuous embeddings will be concatenated before being passed
+        to the final MLP (if present).
     shared_embed: bool, default = False
         Boolean indicating if the embeddings will be "shared" when using
         attention-based models. The idea behind `shared_embed` is
@@ -186,6 +180,19 @@ class TabPreprocessor(BasePreprocessor):
         columns'_. In other words, the idea is to let the model learn which
         column is embedded at the time. See: `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
     verbose: int, default = 1
+    scale: bool, default = False
+        :information_source: **note**: this arg will be removed in upcoming
+         releases. Please use `cols_to_scale` instead. <br/> Bool indicating
+         whether or not to scale/standarise continuous cols. It is important
+         to emphasize that all the DL models for tabular data in the library
+         also include the possibility of normalising the input continuous
+         features via a `BatchNorm` or a `LayerNorm`. <br/> Param alias:
+         `scale_cont_cols`.
+    already_standard: List, default = None
+        :information_source: **note**: this arg will be removed in upcoming
+         releases. Please use `cols_to_scale` instead. <br/> List with the
+         name of the continuous cols that do not need to be
+         scaled/standarised.
 
     Other Parameters
     ----------------
@@ -225,8 +232,8 @@ class TabPreprocessor(BasePreprocessor):
     >>> cont_cols = ['age']
     >>> deep_preprocessor = TabPreprocessor(cat_embed_cols=cat_embed_cols, continuous_cols=cont_cols)
     >>> X_tab = deep_preprocessor.fit_transform(df)
-    >>> deep_preprocessor.embed_dim
-    {'color': 5, 'size': 5}
+    >>> deep_preprocessor.cat_embed_cols
+    [('color', 5), ('size', 5)]
     >>> deep_preprocessor.column_idx
     {'color': 0, 'size': 1, 'age': 2}
     >>> cont_df = pd.DataFrame({"col1": np.random.rand(10), "col2": np.random.rand(10) + 1})
@@ -239,10 +246,10 @@ class TabPreprocessor(BasePreprocessor):
     >>> ft_cont_df2 = tab_preprocessor2.fit_transform(cont_df)
     """
 
-    @Alias("with_attention", "for_transformer")
-    @Alias("cat_embed_cols", "embed_cols")
-    @Alias("scale", "scale_cont_cols")
-    @Alias("quantization_setup", "cols_and_bins")
+    @alias("with_attention", ["for_transformer"])
+    @alias("cat_embed_cols", ["embed_cols"])
+    @alias("scale", ["scale_cont_cols"])
+    @alias("quantization_setup", ["cols_and_bins"])
     def __init__(
         self,
         cat_embed_cols: Optional[Union[List[str], List[Tuple[str, int]]]] = None,
@@ -260,7 +267,7 @@ class TabPreprocessor(BasePreprocessor):
         verbose: int = 1,
         *,
         scale: bool = False,
-        already_standard: List[str] = None,
+        already_standard: Optional[List[str]] = None,
         **kwargs,
     ):
         super(TabPreprocessor, self).__init__()
@@ -298,7 +305,7 @@ class TabPreprocessor(BasePreprocessor):
 
         self.is_fitted = False
 
-    def fit(self, df: pd.DataFrame) -> BasePreprocessor:
+    def fit(self, df: pd.DataFrame) -> BasePreprocessor:  # noqa: C901
         """Fits the Preprocessor and creates required attributes
 
         Parameters
@@ -315,26 +322,36 @@ class TabPreprocessor(BasePreprocessor):
         df_adj = self._insert_cls_token(df) if self.with_cls_token else df.copy()
 
         self.column_idx: Dict[str, int] = {}
+
+        # Categorical embeddings logic
+        if self.cat_embed_cols is not None or self.quantization_setup is not None:
+            self.cat_embed_input: List[Union[Tuple[str, int], Tuple[str, int, int]]] = (
+                []
+            )
+
         if self.cat_embed_cols is not None:
-            df_emb = self._prepare_embed(df_adj)
+            df_cat, cat_embed_dim = self._prepare_categorical(df_adj)
+
             self.label_encoder = LabelEncoder(
-                columns_to_encode=df_emb.columns.tolist(),
+                columns_to_encode=df_cat.columns.tolist(),
                 shared_embed=self.shared_embed,
                 with_attention=self.with_attention,
             )
-            self.label_encoder.fit(df_emb)
-            self.cat_embed_input: List = []
+            self.label_encoder.fit(df_cat)
+
             for k, v in self.label_encoder.encoding_dict.items():
                 if self.with_attention:
                     self.cat_embed_input.append((k, len(v)))
                 else:
-                    self.cat_embed_input.append((k, len(v), self.embed_dim[k]))
+                    self.cat_embed_input.append((k, len(v), cat_embed_dim[k]))
 
-            self.column_idx.update({k: v for v, k in enumerate(df_emb.columns)})
+            self.column_idx.update({k: v for v, k in enumerate(df_cat.columns)})
 
+        # Continuous columns logic
         if self.continuous_cols is not None:
-            df_cont = self._prepare_continuous(df_adj)
+            df_cont, cont_embed_dim = self._prepare_continuous(df_adj)
 
+            # Standardization logic
             if self.standardize_cols is not None:
                 self.scaler = StandardScaler(**self.scale_args).fit(
                     df_cont[self.standardize_cols].values
@@ -342,15 +359,22 @@ class TabPreprocessor(BasePreprocessor):
             elif self.verbose:
                 warnings.warn("Continuous columns will not be normalised")
 
-            self.column_idx.update(
-                {k: v + len(self.column_idx) for v, k in enumerate(df_cont)}
-            )
-
+            # Quantization logic
             if self.cols_and_bins is not None:
                 # we do not run 'Quantizer.fit' here since in the wild case
                 # someone wants standardization and quantization for the same
                 # columns, the Quantizer will run on the scaled data
                 self.quantizer = Quantizer(self.cols_and_bins, **self.quant_args)
+
+                if self.with_attention:
+                    for col, n_cat, _ in cont_embed_dim:
+                        self.cat_embed_input.append((col, n_cat))
+                else:
+                    self.cat_embed_input.extend(cont_embed_dim)
+
+            self.column_idx.update(
+                {k: v + len(self.column_idx) for v, k in enumerate(df_cont)}
+            )
 
         self.is_fitted = True
 
@@ -374,14 +398,16 @@ class TabPreprocessor(BasePreprocessor):
         df_adj = self._insert_cls_token(df) if self.with_cls_token else df.copy()
 
         if self.cat_embed_cols is not None:
-            df_emb = self._prepare_embed(df_adj)
-            df_emb = self.label_encoder.transform(df_emb)
+            df_cat = df_adj[self.cat_cols]
+            df_cat = self.label_encoder.transform(df_cat)
         if self.continuous_cols is not None:
-            df_cont = self._prepare_continuous(df_adj)
+            df_cont = df_adj[self.continuous_cols]
+            # Standardization logic
             if self.standardize_cols:
                 df_cont[self.standardize_cols] = self.scaler.transform(
                     df_cont[self.standardize_cols].values
                 )
+            # Quantization logic
             if self.cols_and_bins is not None:
                 # Adjustment so I don't have to override the method
                 # in 'ChunkTabPreprocessor'
@@ -390,20 +416,16 @@ class TabPreprocessor(BasePreprocessor):
                 else:
                     df_cont = self.quantizer.fit_transform(df_cont)
         try:
-            df_deep = pd.concat([df_emb, df_cont], axis=1)
+            df_deep = pd.concat([df_cat, df_cont], axis=1)
         except NameError:
             try:
-                df_deep = df_emb.copy()
+                df_deep = df_cat.copy()
             except NameError:
                 df_deep = df_cont.copy()
 
-        # TO DO: remove this assertion before merge
-        _column_idx = {k: v for v, k in enumerate(df_deep.columns)}
-        assert _column_idx == self.column_idx
-
         return df_deep.values
 
-    def transform_sample(self, df: pd.DataFrame) -> pd.DataFrame:
+    def transform_sample(self, df: pd.DataFrame) -> np.ndarray:
         return self.transform(df).astype("float")[0]
 
     def inverse_transform(self, encoded: np.ndarray) -> pd.DataFrame:  # noqa: C901
@@ -420,7 +442,7 @@ class TabPreprocessor(BasePreprocessor):
         pd.DataFrame
             Pandas dataframe with the original values
         """
-        decoded = pd.DataFrame(encoded, columns=self.column_idx.keys())
+        decoded = pd.DataFrame(encoded, columns=list(self.column_idx.keys()))
         # embeddings back to original category
         if self.cat_embed_cols is not None:
             decoded = self.label_encoder.inverse_transform(decoded)
@@ -467,61 +489,107 @@ class TabPreprocessor(BasePreprocessor):
         df_cls.insert(loc=0, column="cls_token", value="[CLS]")
         return df_cls
 
-    def _prepare_embed(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.with_attention:
-            return df[self.cat_embed_cols]
+    def _prepare_categorical(
+        self, df: pd.DataFrame
+    ) -> Tuple[pd.DataFrame, Dict[str, int]]:
+        if isinstance(self.cat_embed_cols[0], tuple):
+            self.cat_cols: List[str] = [emb[0] for emb in self.cat_embed_cols]
+            cat_embed_dim: Dict[str, int] = dict(self.cat_embed_cols)  # type: ignore
         else:
-            if isinstance(self.cat_embed_cols[0], tuple):
-                self.embed_dim: Dict = dict(self.cat_embed_cols)  # type: ignore
-                embed_colname = [emb[0] for emb in self.cat_embed_cols]
-            elif self.auto_embed_dim:
-                n_cats = {col: df[col].nunique() for col in self.cat_embed_cols}
-                self.embed_dim = {
-                    # type: ignore[misc]
-                    col: embed_sz_rule(n_cat, self.embedding_rule)
+            self.cat_cols = self.cat_embed_cols  # type: ignore[assignment]
+            if self.auto_embed_dim:
+                assert isinstance(self.cat_embed_cols[0], str), (
+                    "If 'auto_embed_dim' is 'True' and 'with_attention' is 'False', "
+                    "'cat_embed_cols' must be a list of strings with the columns to "
+                    "be encoded as embeddings."
+                )
+                n_cats: Dict[str, int] = {col: df[col].nunique() for col in self.cat_embed_cols}  # type: ignore[misc]
+                cat_embed_dim = {
+                    col: embed_sz_rule(n_cat, self.embedding_rule)  # type: ignore[misc]
                     for col, n_cat in n_cats.items()
                 }
-                embed_colname = self.cat_embed_cols  # type: ignore
             else:
-                self.embed_dim = {
-                    e: self.default_embed_dim for e in self.cat_embed_cols
+                cat_embed_dim = {
+                    e: self.default_embed_dim for e in self.cat_embed_cols  # type: ignore[misc]
                 }  # type: ignore
-                embed_colname = self.cat_embed_cols  # type: ignore
-            return df[embed_colname]
+        return df[self.cat_cols], cat_embed_dim
 
-    def _prepare_continuous(self, df: pd.DataFrame) -> pd.DataFrame:
-        if self.is_fitted:
-            return df[self.continuous_cols]
+    def _prepare_continuous(
+        self, df: pd.DataFrame
+    ) -> Tuple[pd.DataFrame, Optional[List[Tuple[str, int, int]]]]:
+        # Standardization logic
+        if self.cols_to_scale is not None:
+            self.standardize_cols = (
+                self.cols_to_scale
+                if self.cols_to_scale != "all"
+                else self.continuous_cols
+            )
+        elif self.scale:
+            if self.already_standard is not None:
+                self.standardize_cols = [
+                    c for c in self.continuous_cols if c not in self.already_standard
+                ]
+            else:
+                self.standardize_cols = self.continuous_cols
         else:
-            if self.cols_to_scale is not None:
-                self.standardize_cols = (
-                    self.cols_to_scale
-                    if self.cols_to_scale != "all"
-                    else self.continuous_cols
-                )
-            elif self.scale:
-                if self.already_standard is not None:
-                    self.standardize_cols = [
-                        c
-                        for c in self.continuous_cols
-                        if c not in self.already_standard
-                    ]
-                else:
-                    self.standardize_cols = self.continuous_cols
-            else:
-                self.standardize_cols = None
+            self.standardize_cols = None
 
-            if self.quantization_setup is not None:
-                if isinstance(self.quantization_setup, int):
-                    self.cols_and_bins: Dict[str, Union[int, List[float]]] = {}
-                    for col in self.continuous_cols:
-                        self.cols_and_bins[col] = self.quantization_setup
-                else:
-                    self.cols_and_bins = self.quantization_setup.copy()
+        # Quantization logic
+        if self.quantization_setup is not None:
+            # the quantized columns are then treated as categorical
+            quant_cont_embed_input: Optional[List[Tuple[str, int, int]]] = []
+            if isinstance(self.quantization_setup, int):
+                self.cols_and_bins: Optional[Dict[str, Union[int, List[float]]]] = {}
+                for col in self.continuous_cols:
+                    self.cols_and_bins[col] = self.quantization_setup
+                    quant_cont_embed_input.append(
+                        (
+                            col,
+                            self.quantization_setup,
+                            (
+                                embed_sz_rule(
+                                    self.quantization_setup + 1, self.embedding_rule  # type: ignore[arg-type]
+                                )
+                                if self.auto_embed_dim
+                                else self.default_embed_dim
+                            ),
+                        )
+                    )
             else:
-                self.cols_and_bins = None
+                for col, val in self.quantization_setup.items():
+                    if isinstance(val, int):
+                        quant_cont_embed_input.append(
+                            (
+                                col,
+                                val,
+                                (
+                                    embed_sz_rule(
+                                        val + 1, self.embedding_rule  # type: ignore[arg-type]
+                                    )
+                                    if self.auto_embed_dim
+                                    else self.default_embed_dim
+                                ),
+                            )
+                        )
+                    else:
+                        quant_cont_embed_input.append(
+                            (
+                                col,
+                                len(val) - 1,
+                                (
+                                    embed_sz_rule(len(val), self.embedding_rule)  # type: ignore[arg-type]
+                                    if self.auto_embed_dim
+                                    else self.default_embed_dim
+                                ),
+                            )
+                        )
 
-            return df[self.continuous_cols]
+                self.cols_and_bins = self.quantization_setup.copy()
+        else:
+            self.cols_and_bins = None
+            quant_cont_embed_input = None
+
+        return df[self.continuous_cols], quant_cont_embed_input
 
     def _check_inputs(self, cat_embed_cols):  # noqa: C901
         if self.scale or self.already_standard is not None:
@@ -563,8 +631,9 @@ class TabPreprocessor(BasePreprocessor):
 
         if self.with_cls_token and not self.with_attention:
             warnings.warn(
-                "If 'with_cls_token' is set to 'True', 'with_attention' will be automatically ",
+                "If 'with_cls_token' is set to 'True', 'with_attention' will be automatically "
                 "to 'True' if is 'False'",
+                UserWarning,
             )
             self.with_attention = True
 
@@ -690,6 +759,19 @@ class ChunkTabPreprocessor(TabPreprocessor):
         columns'_. In other words, the idea is to let the model learn which
         column is embedded at the time. See: `pytorch_widedeep.models.transformers._layers.SharedEmbeddings`.
     verbose: int, default = 1
+    scale: bool, default = False
+        :information_source: **note**: this arg will be removed in upcoming
+         releases. Please use `cols_to_scale` instead. <br/> Bool indicating
+         whether or not to scale/standarise continuous cols. It is important
+         to emphasize that all the DL models for tabular data in the library
+         also include the possibility of normalising the input continuous
+         features via a `BatchNorm` or a `LayerNorm`. <br/> Param alias:
+         `scale_cont_cols`.
+    already_standard: List, default = None
+        :information_source: **note**: this arg will be removed in upcoming
+         releases. Please use `cols_to_scale` instead. <br/> List with the
+         name of the continuous cols that do not need to be
+         scaled/standarised.
 
     Other Parameters
     ----------------
@@ -734,16 +816,16 @@ class ChunkTabPreprocessor(TabPreprocessor):
     ... n_chunks=1, cat_embed_cols=cat_embed_cols, continuous_cols=cont_cols
     ... )
     >>> X_tab = tab_preprocessor.fit_transform(chunk_df)
-    >>> tab_preprocessor.embed_dim
-    {'cat_col': 4}
+    >>> tab_preprocessor.cat_embed_cols
+    [('cat_col', 4)]
     >>> tab_preprocessor.column_idx
     {'cat_col': 0, 'cont_col': 1}
     """
 
-    @Alias("with_attention", "for_transformer")
-    @Alias("cat_embed_cols", "embed_cols")
-    @Alias("scale", "scale_cont_cols")
-    @Alias("cols_and_bins", "quantization_setup")
+    @alias("with_attention", ["for_transformer"])
+    @alias("cat_embed_cols", ["embed_cols"])
+    @alias("scale", ["scale_cont_cols"])
+    @alias("cols_and_bins", ["quantization_setup"])
     def __init__(
         self,
         n_chunks: int,
@@ -758,7 +840,7 @@ class ChunkTabPreprocessor(TabPreprocessor):
         verbose: int = 1,
         *,
         scale: bool = False,
-        already_standard: List[str] = None,
+        already_standard: Optional[List[str]] = None,
         **kwargs,
     ):
         super(ChunkTabPreprocessor, self).__init__(
@@ -782,116 +864,151 @@ class ChunkTabPreprocessor(TabPreprocessor):
         self.chunk_counter = 0
 
         self.cols_and_bins = cols_and_bins  # type: ignore[assignment]
-
         if self.cols_and_bins is not None:
             self.quantizer = Quantizer(self.cols_and_bins, **self.quant_args)
 
         self.embed_prepared = False
         self.continuous_prepared = False
 
-    def partial_fit(self, chunk: pd.DataFrame) -> "ChunkTabPreprocessor":  # noqa: C901
+    def partial_fit(self, df: pd.DataFrame) -> "ChunkTabPreprocessor":  # noqa: C901
+        # df here, and throughout the class, is a chunk of the original df
         self.chunk_counter += 1
 
-        chunk_adj = (
-            self._insert_cls_token(chunk) if self.with_cls_token else chunk.copy()
-        )
+        df_adj = self._insert_cls_token(df) if self.with_cls_token else df.copy()
 
         self.column_idx: Dict[str, int] = {}
+
+        # Categorical embeddings logic
         if self.cat_embed_cols is not None:
             if not self.embed_prepared:
-                chunk_emb = self._prepare_embed(chunk_adj)
+                df_cat, self.cat_embed_dim = self._prepare_categorical(df_adj)
                 self.label_encoder = LabelEncoder(
-                    columns_to_encode=chunk_emb.columns.tolist(),
+                    columns_to_encode=df_cat.columns.tolist(),
                     shared_embed=self.shared_embed,
                     with_attention=self.with_attention,
                 )
-                self.label_encoder.partial_fit(chunk_emb)
+                self.label_encoder.partial_fit(df_cat)
             else:
-                chunk_emb = chunk_adj[self.cat_embed_cols]
-                self.label_encoder.partial_fit(chunk_emb)
+                df_cat = df_adj[self.cat_cols]
+                self.label_encoder.partial_fit(df_cat)
 
-            self.column_idx.update({k: v for v, k in enumerate(chunk_emb.columns)})
+            self.column_idx.update({k: v for v, k in enumerate(df_cat.columns)})
 
+        # Continuous columns logic
         if self.continuous_cols is not None:
             if not self.continuous_prepared:
-                chunk_cont = self._prepare_continuous(chunk_adj)
+                df_cont, self.cont_embed_dim = self._prepare_continuous(df_adj)
             else:
-                chunk_cont = chunk[self.continuous_cols]
-
-            if self.standardize_cols is not None:
-                self.scaler.partial_fit(chunk_cont[self.standardize_cols].values)
+                df_cont = df[self.continuous_cols]
 
             self.column_idx.update(
-                {k: v + len(self.column_idx) for v, k in enumerate(chunk_cont.columns)}
+                {k: v + len(self.column_idx) for v, k in enumerate(df_cont.columns)}
             )
 
+            if self.standardize_cols is not None:
+                self.scaler.partial_fit(df_cont[self.standardize_cols].values)
+
         if self.chunk_counter == self.n_chunks:
-            self.cat_embed_input: List[
-                Union[Tuple[str, int], Tuple[str, int, int]]
-            ] = []
-            for k, v in self.label_encoder.encoding_dict.items():
+            if self.cat_embed_cols is not None or self.cols_and_bins is not None:
+                self.cat_embed_input: List[Tuple[str, int] | Tuple[str, int, int]] = []
+
+            if self.cat_embed_cols is not None:
+                for k, v in self.label_encoder.encoding_dict.items():
+                    if self.with_attention:
+                        self.cat_embed_input.append((k, len(v)))
+                    else:
+                        self.cat_embed_input.append((k, len(v), self.cat_embed_dim[k]))
+
+            if self.cols_and_bins is not None:
+                assert self.cont_embed_dim is not None  # just to make mypy happy
                 if self.with_attention:
-                    self.cat_embed_input.append((k, len(v)))
+                    for col, n_cat, _ in self.cont_embed_dim:
+                        self.cat_embed_input.append((col, n_cat))
                 else:
-                    self.cat_embed_input.append((k, len(v), self.embed_dim[k]))
+                    self.cat_embed_input.extend(self.cont_embed_dim)
 
             self.is_fitted = True
 
         return self
 
-    def fit(self, chunk: pd.DataFrame) -> "ChunkTabPreprocessor":
+    def fit(self, df: pd.DataFrame) -> "ChunkTabPreprocessor":
         # just to override the fit method in the base class. This class is not
         # designed or thought to run fit
-        return self.partial_fit(chunk)
+        return self.partial_fit(df)
 
-    def _prepare_embed(self, chunk: pd.DataFrame) -> pd.DataFrame:
-        # When dealing with chunks we will not support the option of
+    def _prepare_categorical(
+        self, df: pd.DataFrame
+    ) -> Tuple[pd.DataFrame, Dict[str, int]]:
+        # When dealing with chunks we will NOT support the option of
         # automatically define embeddings as this implies going through the
         # entire dataset
-        if self.with_attention:
-            embed_colname = self.cat_embed_cols
+        if isinstance(self.cat_embed_cols[0], tuple):
+            self.cat_cols: List[str] = [emb[0] for emb in self.cat_embed_cols]
+            cat_embed_dim: Dict[str, int] = dict(self.cat_embed_cols)  # type: ignore
         else:
-            if isinstance(self.cat_embed_cols[0], tuple):
-                self.embed_dim: Dict = dict(self.cat_embed_cols)  # type: ignore
-                embed_colname = [emb[0] for emb in self.cat_embed_cols]
-            else:
-                self.embed_dim = {
-                    e: self.default_embed_dim for e in self.cat_embed_cols
-                }  # type: ignore
-                embed_colname = self.cat_embed_cols  # type: ignore
+            self.cat_cols = self.cat_embed_cols  # type: ignore[assignment]
+            cat_embed_dim = {
+                e: self.default_embed_dim for e in self.cat_embed_cols  # type: ignore[misc]
+            }  # type: ignore
 
         self.embed_prepared = True
 
-        return chunk[embed_colname]
+        return df[self.cat_cols], cat_embed_dim
 
-    def _prepare_continuous(self, chunk: pd.DataFrame) -> pd.DataFrame:
-        if not hasattr(self, "standardize_cols"):
-            if self.cols_to_scale is not None:
-                self.standardize_cols = (
-                    self.cols_to_scale
-                    if self.cols_to_scale != "all"
-                    else self.continuous_cols
-                )
-            elif self.scale:
-                if self.already_standard is not None:
-                    self.standardize_cols = [
-                        c
-                        for c in self.continuous_cols
-                        if c not in self.already_standard
-                    ]
-                else:
-                    self.standardize_cols = self.continuous_cols
+    def _prepare_continuous(
+        self, df: pd.DataFrame
+    ) -> Tuple[pd.DataFrame, Optional[List[Tuple[str, int, int]]]]:
+        # Standardization logic
+        if self.cols_to_scale is not None:
+            self.standardize_cols = (
+                self.cols_to_scale
+                if self.cols_to_scale != "all"
+                else self.continuous_cols
+            )
+        elif self.scale:
+            if self.already_standard is not None:
+                self.standardize_cols = [
+                    c
+                    for c in self.continuous_cols  # type: ignore[misc]
+                    if c not in self.already_standard
+                ]
             else:
-                self.standardize_cols = None
+                self.standardize_cols = self.continuous_cols
+        else:
+            self.standardize_cols = None
 
-        if not hasattr(self, "scaler"):
+        if self.standardize_cols is not None:
             self.scaler = StandardScaler(**self.scale_args)
         elif self.verbose:
             warnings.warn("Continuous columns will not be normalised")
 
+        # Quantization logic
+        if self.cols_and_bins is not None:
+            # the quantized columns are then treated as categorical
+            quant_cont_embed_input: Optional[List[Tuple[str, int, int]]] = []
+            for col, val in self.cols_and_bins.items():
+                if isinstance(val, int):
+                    quant_cont_embed_input.append(
+                        (
+                            col,
+                            val,
+                            self.default_embed_dim,
+                        )
+                    )
+                else:
+                    quant_cont_embed_input.append(
+                        (
+                            col,
+                            len(val) - 1,
+                            self.default_embed_dim,
+                        )
+                    )
+        else:
+            quant_cont_embed_input = None
+
         self.continuous_prepared = True
 
-        return chunk[self.continuous_cols]
+        return df[self.continuous_cols], quant_cont_embed_input
 
     def __repr__(self) -> str:  # noqa: C901
         list_of_params: List[str] = []

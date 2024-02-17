@@ -1,4 +1,5 @@
-from typing import List, Tuple
+import sys
+from typing import List, Tuple, Optional
 
 import numpy as np
 import pandas as pd
@@ -64,7 +65,7 @@ class WidePreprocessor(BasePreprocessor):
     """
 
     def __init__(
-        self, wide_cols: List[str], crossed_cols: List[Tuple[str, str]] = None
+        self, wide_cols: List[str], crossed_cols: Optional[List[Tuple[str, str]]] = None
     ):
         super(WidePreprocessor, self).__init__()
 
@@ -118,9 +119,11 @@ class WidePreprocessor(BasePreprocessor):
         encoded = np.zeros([len(df_wide), len(self.wide_crossed_cols)])
         for col_i, col in enumerate(self.wide_crossed_cols):
             encoded[:, col_i] = df_wide[col].apply(
-                lambda x: self.encoding_dict[col + "_" + str(x)]
-                if col + "_" + str(x) in self.encoding_dict
-                else 0
+                lambda x: (
+                    self.encoding_dict[col + "_" + str(x)]
+                    if col + "_" + str(x) in self.encoding_dict
+                    else 0
+                )
             )
         return encoded.astype("int64")
 
@@ -143,7 +146,12 @@ class WidePreprocessor(BasePreprocessor):
             Pandas dataframe with the original values
         """
         decoded = pd.DataFrame(encoded, columns=self.wide_crossed_cols)
-        decoded = decoded.applymap(lambda x: self.inverse_encoding_dict[x])
+
+        if pd.__version__ >= "2.1.0":
+            decoded = decoded.map(lambda x: self.inverse_encoding_dict[x])
+        else:
+            decoded = decoded.applymap(lambda x: self.inverse_encoding_dict[x])
+
         for col in decoded.columns:
             rm_str = "".join([col, "_"])
             decoded[col] = decoded[col].apply(lambda x: x.replace(rm_str, ""))
@@ -247,7 +255,7 @@ class ChunkWidePreprocessor(WidePreprocessor):
         self,
         wide_cols: List[str],
         n_chunks: int,
-        crossed_cols: List[Tuple[str, str]] = None,
+        crossed_cols: Optional[List[Tuple[str, str]]] = None,
     ):
         super(ChunkWidePreprocessor, self).__init__(wide_cols, crossed_cols)
 
@@ -294,10 +302,12 @@ class ChunkWidePreprocessor(WidePreprocessor):
 
         return self
 
-    def fit(self, chunk: pd.DataFrame) -> "ChunkWidePreprocessor":
-        # just to override the fit method in the base class. This class is not
-        # designed or thought to run fit
-        return self.partial_fit(chunk)
+    def fit(self, df: pd.DataFrame) -> "ChunkWidePreprocessor":
+        """
+        Runs `partial_fit`. This is just to override the fit method in the base
+        class. This class is not designed or thought to run fit
+        """
+        return self.partial_fit(df)
 
     def __repr__(self) -> str:
         list_of_params: List[str] = ["wide_cols={wide_cols}"]

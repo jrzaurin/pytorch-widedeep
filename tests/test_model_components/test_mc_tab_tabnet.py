@@ -37,7 +37,7 @@ def test_embeddings_have_padding():
         continuous_cols=colnames[n_cols:],
     )
     res = []
-    for k, v in model.cat_and_cont_embed.cat_embed.embed_layers.items():
+    for k, v in model.cat_embed.embed_layers.items():
         res.append(v.weight.size(0) == n_embed + 1)
         res.append(not torch.all(v.weight[0].bool()))
     assert all(res)
@@ -75,6 +75,8 @@ def test_tabnet_embed_continuos(embed_continuous):
         cat_embed_input=embed_input,
         continuous_cols=colnames[n_cols:],
         embed_continuous=embed_continuous,
+        embed_continuous_method="standard" if embed_continuous else None,
+        cont_embed_dim=4 if embed_continuous else None,
     )
     out1, out2 = model(X_tab)
     assert out1.size(0) == 10 and out1.size(1) == model.step_dim
@@ -192,6 +194,7 @@ def test_create_explain_matrix(w_cat, w_cont, embed_continuous):
         cat_embed_input=cat_embed_input,
         continuous_cols=continuous_cols,
         embed_continuous=embed_continuous,
+        embed_continuous_method="standard" if embed_continuous else None,
         cont_embed_dim=4,
     )
     wdmodel = WideDeep(deeptabular=tabnet)

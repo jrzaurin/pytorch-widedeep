@@ -92,6 +92,7 @@ def test_lr_history(  # noqa: C901
             cat_embed_input=transf_preprocessor.cat_embed_input,
             continuous_cols=transf_preprocessor.continuous_cols,
             embed_continuous=True,
+            embed_continuous_method="standard",
             n_heads=2,
             n_blocks=2,
         )
@@ -184,6 +185,7 @@ def test_early_stop(model_type):
             cat_embed_input=transf_preprocessor.cat_embed_input,
             continuous_cols=transf_preprocessor.continuous_cols,
             embed_continuous=True,
+            embed_continuous_method="standard",
             n_heads=2,
             n_blocks=2,
         )
@@ -249,6 +251,7 @@ def test_checkpoint(model_type, fpath, save_best_only, max_save, n_files):
             cat_embed_input=transf_preprocessor.cat_embed_input,
             continuous_cols=transf_preprocessor.continuous_cols,
             embed_continuous=True,
+            embed_continuous_method="standard",
             n_heads=2,
             n_blocks=2,
         )

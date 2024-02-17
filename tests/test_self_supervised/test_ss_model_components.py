@@ -73,7 +73,8 @@ def test_enc_dec_different_setups(model_type, cat_or_cont, infer_decoder):
         if infer_decoder:
             decoder = None
         else:
-            embed_dim = encoder.cat_and_cont_embed.output_dim
+            # self.encoder.cat_out_dim + self.encoder.cont_out_dim
+            embed_dim = encoder.cat_out_dim + encoder.cont_out_dim
             decoder = TabMlpDecoder(embed_dim=embed_dim, mlp_hidden_dims=[8, 16])
         ed_model = EncoderDecoderModel(encoder, decoder, 0.2)
 
@@ -87,7 +88,7 @@ def test_enc_dec_different_setups(model_type, cat_or_cont, infer_decoder):
         if infer_decoder:
             decoder = None
         else:
-            embed_dim = encoder.cat_and_cont_embed.output_dim
+            embed_dim = encoder.cat_out_dim + encoder.cont_out_dim
             decoder = TabResnetDecoder(embed_dim=embed_dim, blocks_dims=[8, 8, 16])
         ed_model = EncoderDecoderModel(encoder, decoder, 0.2)
 
@@ -100,14 +101,14 @@ def test_enc_dec_different_setups(model_type, cat_or_cont, infer_decoder):
         if infer_decoder:
             decoder = None
         else:
-            embed_dim = encoder.cat_and_cont_embed.output_dim
+            embed_dim = encoder.cat_out_dim + encoder.cont_out_dim
             decoder = TabNetDecoder(embed_dim=embed_dim)
         ed_model = EncoderDecoderModel(encoder, decoder, 0.2)
 
     out, out_rec, mask = ed_model(X)
 
     assert (
-        out.size(1) == encoder.cat_and_cont_embed.output_dim
+        out.size(1) == encoder.cat_out_dim + encoder.cont_out_dim
         and out.size() == out_rec.size()
         and (mask.sum() / mask.numel() <= 0.4).item()  # this last one is not ideal
     )
@@ -371,6 +372,7 @@ def _build_transf_model(transf_model, preprocessor, cat_embed_input, continuous_
             cat_embed_input=cat_embed_input,
             continuous_cols=continuous_cols,
             embed_continuous=True,
+            embed_continuous_method="standard",
             n_heads=2,
             n_blocks=2,
         )

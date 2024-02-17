@@ -101,7 +101,14 @@ class ImageFromFolder:
                 "attribute of the 'preprocessor' must be the same as the 'directory'"
             )
 
-        self.directory = directory if directory is not None else preprocessor.img_path
+        if directory is not None:
+            self.directory = directory
+        else:
+            assert (
+                preprocessor is not None
+            ), "Either a directory or an instance of ImagePreprocessor must be provided"
+            self.directory = preprocessor.img_path
+
         self.preprocessor = preprocessor
         self.loader = loader
         self.extensions = extensions if extensions is not None else IMG_EXTENSIONS
@@ -114,8 +121,6 @@ class ImageFromFolder:
             self.transforms_names = []
 
             self.transpose = True
-
-        self.img_path = directory if directory is not None else preprocessor.img_path
 
     def get_item(self, fname: str) -> np.ndarray:
         assert has_file_allowed_extension(fname, self.extensions)
@@ -142,7 +147,9 @@ class ImageFromFolder:
 
         return prepared_sample
 
-    def _prepare_sample(self, processed_sample: Union[np.ndarray, Image.Image]):
+    def _prepare_sample(
+        self, processed_sample: Union[np.ndarray, Image.Image]
+    ) -> np.ndarray:
         # if an image dataset is used, make sure is in the right format to
         # be ingested by the conv layers
 

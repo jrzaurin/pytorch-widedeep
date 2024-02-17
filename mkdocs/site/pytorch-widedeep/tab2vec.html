@@ -10,8 +10,15 @@
       
         <link rel="canonical" href="https://pytorch-widedeep.readthedocs.io/pytorch-widedeep/tab2vec.html">
       
+      
+        <link rel="prev" href="self_supervised_pretraining.html">
+      
+      
+        <link rel="next" href="../examples/01_preprocessors_and_utils.html">
+      
+      
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
     
     
       
@@ -19,15 +26,17 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.975780f9.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.2505c338.min.css">
-        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
       
       
 
+
     
+    
+      
     
     
       
@@ -63,9 +72,6 @@
     <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="deep-orange">
   
     
-    
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
-    
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
@@ -86,7 +92,7 @@
 
   
 
-<header class="md-header md-header--lifted" data-md-component="header">
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../index.html" title="pytorch_widedeep" class="md-header__button md-logo" aria-label="pytorch_widedeep" data-md-component="logo">
       
@@ -94,6 +100,7 @@
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
+      
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
@@ -113,33 +120,39 @@
       </div>
     </div>
     
-      <form class="md-header__option" data-md-component="palette">
-        
-          
-          
-          
-          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
-          
-            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
-            </label>
-          
-        
-          
-          
-          
-          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
-          
-            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
-            </label>
-          
-        
-      </form>
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="red" data-md-color-accent="deep-orange"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
       <label class="md-header__button md-icon" for="__search">
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
       </label>
       <div class="md-search" data-md-component="search" role="dialog">
@@ -148,12 +161,15 @@
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
         </button>
       </nav>
@@ -165,7 +181,7 @@
           <div class="md-search-result__meta">
             Initializing search
           </div>
-          <ol class="md-search-result__list"></ol>
+          <ol class="md-search-result__list" role="presentation"></ol>
         </div>
       </div>
     </div>
@@ -177,7 +193,7 @@
         <a href="https://github.com/jrzaurin/pytorch-widedeep" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     pytorch_widedeep
@@ -190,81 +206,21 @@
     
       
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
-  <div class="md-tabs__inner md-grid">
+  <div class="md-grid">
     <ul class="md-tabs__list">
       
         
   
   
-
-
-  <li class="md-tabs__item">
-    <a href="../index.html" class="md-tabs__link">
-      Home
-    </a>
-  </li>
-
-      
+  
+    <li class="md-tabs__item">
+      <a href="../index.html" class="md-tabs__link">
         
-  
-  
-
-
-  <li class="md-tabs__item">
-    <a href="../installation.html" class="md-tabs__link">
-      Installation
-    </a>
-  </li>
-
-      
-        
-  
-  
-
-
-  <li class="md-tabs__item">
-    <a href="../quick_start.html" class="md-tabs__link">
-      Quick Start
-    </a>
-  </li>
-
-      
-        
-  
   
     
   
+  Home
 
-
-  
-  
-  
-    
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="utils/index.html" class="md-tabs__link md-tabs__link--active">
-        Pytorch-widedeep
-      </a>
-    </li>
-  
-
-  
-
-      
-        
-  
-  
-
-
-  
-  
-  
-    <li class="md-tabs__item">
-      <a href="../examples/01_preprocessors_and_utils.html" class="md-tabs__link">
-        Examples
       </a>
     </li>
   
@@ -273,13 +229,105 @@
         
   
   
+  
+    <li class="md-tabs__item">
+      <a href="../installation.html" class="md-tabs__link">
+        
+  
+    
+  
+  Installation
 
+      </a>
+    </li>
+  
 
-  <li class="md-tabs__item">
-    <a href="../contributing.html" class="md-tabs__link">
-      Contributing
-    </a>
-  </li>
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../quick_start.html" class="md-tabs__link">
+        
+  
+    
+  
+  Quick Start
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="utils/index.html" class="md-tabs__link">
+          
+  
+    
+  
+  Pytorch-widedeep
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../examples/01_preprocessors_and_utils.html" class="md-tabs__link">
+          
+  
+    
+  
+  Examples
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing.html" class="md-tabs__link">
+        
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
 
       
     </ul>
@@ -304,6 +352,7 @@
                   <div class="md-sidebar__inner">
                     
 
+
   
 
 
@@ -323,7 +372,7 @@
       <a href="https://github.com/jrzaurin/pytorch-widedeep" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
     pytorch_widedeep
@@ -335,14 +384,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../index.html" class="md-nav__link">
-        Home
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
       </a>
     </li>
   
@@ -350,14 +404,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../installation.html" class="md-nav__link">
-        Installation
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
       </a>
     </li>
   
@@ -365,14 +424,19 @@
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../quick_start.html" class="md-nav__link">
-        Quick Start
+        
+  
+  <span class="md-ellipsis">
+    Quick Start
+  </span>
+  
+
       </a>
     </li>
   
@@ -380,349 +444,495 @@
     
       
       
+  
+  
+    
+  
+  
+  
+    
+    
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Pytorch-widedeep
+  </span>
+  
 
-  
-  
-    
-  
-  
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
-      
-      
-      
+            <span class="md-nav__icon md-icon"></span>
+          </label>
         
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-      
-      
-        <label class="md-nav__link" for="__nav_4">
-          Pytorch-widedeep
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Pytorch-widedeep" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
-          <span class="md-nav__icon md-icon"></span>
-          Pytorch-widedeep
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Pytorch-widedeep
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
   
   
   
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
     
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_1" type="checkbox" id="__nav_4_1" checked>
-      
-      
-      
         
-          
-            
-          
+        
         
           
         
-          
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_1" >
         
           
-        
           
-        
-      
-      
-        
-        
-        <div class="md-nav__link md-nav__link--index ">
-          <a href="utils/index.html">Utils</a>
-          
-            <label for="__nav_4_1">
-              <span class="md-nav__icon md-icon"></span>
-            </label>
-          
-        </div>
-      
-      <nav class="md-nav" aria-label="Utils" data-md-level="2">
-        <label class="md-nav__title" for="__nav_4_1">
-          <span class="md-nav__icon md-icon"></span>
-          Utils
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-          
+          <div class="md-nav__link md-nav__container">
+            <a href="utils/index.html" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Utils
+  </span>
+  
+
+            </a>
             
               
+              <label class="md-nav__link " for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            Utils
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/deeptabular_utils.html" class="md-nav__link">
-        Deeptabular utils
+        
+  
+  <span class="md-ellipsis">
+    Deeptabular utils
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/fastai_transforms.html" class="md-nav__link">
-        Fastai transforms
+        
+  
+  <span class="md-ellipsis">
+    Fastai transforms
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/image_utils.html" class="md-nav__link">
-        Image utils
+        
+  
+  <span class="md-ellipsis">
+    Image utils
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="utils/text_utils.html" class="md-nav__link">
-        Text utils
+        
+  
+  <span class="md-ellipsis">
+    Text utils
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="preprocessing.html" class="md-nav__link">
-        Preprocessing
+        
+  
+  <span class="md-ellipsis">
+    Preprocessing
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="load_from_folder.html" class="md-nav__link">
-        Load From Folder
+        
+  
+  <span class="md-ellipsis">
+    Load From Folder
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="model_components.html" class="md-nav__link">
-        Model Components
+        
+  
+  <span class="md-ellipsis">
+    Model Components
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="bayesian_models.html" class="md-nav__link">
-        Bayesian models
+        
+  
+  <span class="md-ellipsis">
+    Bayesian models
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="losses.html" class="md-nav__link">
-        Losses
+        
+  
+  <span class="md-ellipsis">
+    Losses
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="metrics.html" class="md-nav__link">
-        Metrics
+        
+  
+  <span class="md-ellipsis">
+    Metrics
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="dataloaders.html" class="md-nav__link">
-        Dataloaders
+        
+  
+  <span class="md-ellipsis">
+    Dataloaders
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="callbacks.html" class="md-nav__link">
-        Callbacks
+        
+  
+  <span class="md-ellipsis">
+    Callbacks
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="trainer.html" class="md-nav__link">
-        Trainer
+        
+  
+  <span class="md-ellipsis">
+    Trainer
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="bayesian_trainer.html" class="md-nav__link">
-        Bayesian Trainer
+        
+  
+  <span class="md-ellipsis">
+    Bayesian Trainer
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="self_supervised_pretraining.html" class="md-nav__link">
-        Self Supervised Pretraining
+        
+  
+  <span class="md-ellipsis">
+    Self Supervised Pretraining
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
   
   
     
   
   
+  
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
         
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Tab2Vec
+          
+  
+  <span class="md-ellipsis">
+    Tab2Vec
+  </span>
+  
+
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="tab2vec.html" class="md-nav__link md-nav__link--active">
-        Tab2Vec
+        
+  
+  <span class="md-ellipsis">
+    Tab2Vec
+  </span>
+  
+
       </a>
       
         
@@ -742,7 +952,9 @@
       
         <li class="md-nav__item">
   <a href="#pytorch_widedeep.tab2vec.Tab2Vec" class="md-nav__link">
-    Tab2Vec
+    <span class="md-ellipsis">
+      Tab2Vec
+    </span>
   </a>
   
 </li>
@@ -754,412 +966,587 @@
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
     
       
       
-      
-
+  
   
   
   
     
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
-      
-      
+    
       
         
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
+      
         
       
+        
       
-        <label class="md-nav__link" for="__nav_5">
-          Examples
-          <span class="md-nav__icon md-icon"></span>
-        </label>
+        
       
-      <nav class="md-nav" aria-label="Examples" data-md-level="1">
-        <label class="md-nav__title" for="__nav_5">
-          <span class="md-nav__icon md-icon"></span>
-          Examples
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+      
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/01_preprocessors_and_utils.html" class="md-nav__link">
-        01_preprocessors_and_utils
+        
+  
+  <span class="md-ellipsis">
+    01_preprocessors_and_utils
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/02_model_components.html" class="md-nav__link">
-        02_model_components
+        
+  
+  <span class="md-ellipsis">
+    02_model_components
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/03_binary_classification_with_defaults.html" class="md-nav__link">
-        03_binary_classification_with_defaults
+        
+  
+  <span class="md-ellipsis">
+    03_binary_classification_with_defaults
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/04_regression_with_images_and_text.html" class="md-nav__link">
-        04_regression_with_images_and_text
+        
+  
+  <span class="md-ellipsis">
+    04_regression_with_images_and_text
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/05_save_and_load_model_and_artifacts.html" class="md-nav__link">
-        05_save_and_load_model_and_artifacts
+        
+  
+  <span class="md-ellipsis">
+    05_save_and_load_model_and_artifacts
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/06_finetune_and_warmup.html" class="md-nav__link">
-        06_finetune_and_warmup
+        
+  
+  <span class="md-ellipsis">
+    06_finetune_and_warmup
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/07_custom_components.html" class="md-nav__link">
-        07_custom_components
+        
+  
+  <span class="md-ellipsis">
+    07_custom_components
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/08_custom_dataLoader_imbalanced_dataset.html" class="md-nav__link">
-        08_custom_dataLoader_imbalanced_dataset
+        
+  
+  <span class="md-ellipsis">
+    08_custom_dataLoader_imbalanced_dataset
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/09_extracting_embeddings.html" class="md-nav__link">
-        09_extracting_embeddings
+        
+  
+  <span class="md-ellipsis">
+    09_extracting_embeddings
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/10_3rd_party_integration-RayTune_WnB.html" class="md-nav__link">
-        10_3rd_party_integration-RayTune_WnB
+        
+  
+  <span class="md-ellipsis">
+    10_3rd_party_integration-RayTune_WnB
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/11_auc_multiclass.html" class="md-nav__link">
-        11_auc_multiclass
+        
+  
+  <span class="md-ellipsis">
+    11_auc_multiclass
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/12_ZILNLoss_origkeras_vs_pytorch_widedeep.html" class="md-nav__link">
-        12_ZILNLoss_origkeras_vs_pytorch_widedeep
+        
+  
+  <span class="md-ellipsis">
+    12_ZILNLoss_origkeras_vs_pytorch_widedeep
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/13_model_uncertainty_prediction.html" class="md-nav__link">
-        13_model_uncertainty_prediction
+        
+  
+  <span class="md-ellipsis">
+    13_model_uncertainty_prediction
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/14_bayesian_models.html" class="md-nav__link">
-        14_bayesian_models
+        
+  
+  <span class="md-ellipsis">
+    14_bayesian_models
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/15_DIR-LDS_and_FDS.html" class="md-nav__link">
-        15_DIR-LDS_and_FDS
+        
+  
+  <span class="md-ellipsis">
+    15_DIR-LDS_and_FDS
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/16_Self_Supervised_Pretraning_pt1.html" class="md-nav__link">
-        16_Self-Supervised Pre-Training pt 1
+        
+  
+  <span class="md-ellipsis">
+    16_Self-Supervised Pre-Training pt 1
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/16_Self_Supervised_Pretraning_pt2.html" class="md-nav__link">
-        16_Self-Supervised Pre-Training pt 2
+        
+  
+  <span class="md-ellipsis">
+    16_Self-Supervised Pre-Training pt 2
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/17_Usign_a_hugging_face_model.html" class="md-nav__link">
-        17_Using_a_huggingface_model
+        
+  
+  <span class="md-ellipsis">
+    17_Using_a_huggingface_model
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/18_feature_importance_via_attention_weights.html" class="md-nav__link">
-        18_feature_importance_via_attention_weights
+        
+  
+  <span class="md-ellipsis">
+    18_feature_importance_via_attention_weights
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/19_wide_and_deep_for_recsys_pt1.html" class="md-nav__link">
-        19_wide_and_deep_for_recsys_pt1
+        
+  
+  <span class="md-ellipsis">
+    19_wide_and_deep_for_recsys_pt1
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/19_wide_and_deep_for_recsys_pt2.html" class="md-nav__link">
-        19_wide_and_deep_for_recsys_pt2
+        
+  
+  <span class="md-ellipsis">
+    19_wide_and_deep_for_recsys_pt2
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
     <li class="md-nav__item">
       <a href="../examples/20_load_from_folder_functionality.html" class="md-nav__link">
-        20_load_from_folder_functionality.
+        
+  
+  <span class="md-ellipsis">
+    20_load_from_folder_functionality.
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
 
     
       
       
-      
-
+  
   
   
   
     <li class="md-nav__item">
       <a href="../contributing.html" class="md-nav__link">
-        Contributing
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
       </a>
     </li>
   
@@ -1179,10 +1566,8 @@
                 
                   
 
-  <a href="https://github.com/jrzaurin/pytorch-widedeep/edit/master/mkdocs/sources/pytorch-widedeep/tab2vec.md" title="Edit this page" class="md-content__button md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
-  </a>
+  
+  
 
 
 <h1 id="tab2vec">Tab2Vec<a class="headerlink" href="#tab2vec" title="Permanent link">&para;</a></h1>
@@ -1193,13 +1578,13 @@
 
 
 <h2 id="pytorch_widedeep.tab2vec.Tab2Vec" class="doc doc-heading">
-        <span class="doc doc-object-name doc-class-name">Tab2Vec</span>
+          <span class="doc doc-object-name doc-class-name">Tab2Vec</span>
 
 
 <a href="#pytorch_widedeep.tab2vec.Tab2Vec" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><span class="n">Tab2Vec</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">,</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">Tab2Vec</span><span class="p">(</span>
     <span class="n">tab_preprocessor</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">,</span>
     <span class="n">return_dataframe</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
@@ -1218,34 +1603,54 @@ columns.</p>
  text column or a column with the path to images, these will be ignored.
  We will be adding these functionalities in future versions</p>
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>model</b>
+        <b><code>model</code></b>
             (<code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[<a class="autorefs autorefs-internal" title="pytorch_widedeep.wdtypes.WideDeep" href="model_components.html#pytorch_widedeep.models.wide_deep.WideDeep">WideDeep</a>, <a class="autorefs autorefs-internal" title="pytorch_widedeep.bayesian_models.BayesianWide" href="bayesian_models.html#pytorch_widedeep.bayesian_models.tabular.bayesian_linear.bayesian_wide.BayesianWide">BayesianWide</a>, <a class="autorefs autorefs-internal" title="pytorch_widedeep.bayesian_models.BayesianTabMlp" href="bayesian_models.html#pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp">BayesianTabMlp</a>]</code>)
-        – <p><code>WideDeep</code>, <code>BayesianWide</code> or <code>BayesianTabMlp</code> model. Must be trained.</p>
+        –
+        <div class="doc-md-description">
+          <p><code>WideDeep</code>, <code>BayesianWide</code> or <code>BayesianTabMlp</code> model. Must be trained.</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>tab_preprocessor</b>
+        <b><code>tab_preprocessor</code></b>
             (<code><a class="autorefs autorefs-internal" title="pytorch_widedeep.preprocessing.TabPreprocessor" href="preprocessing.html#pytorch_widedeep.preprocessing.tab_preprocessor.TabPreprocessor">TabPreprocessor</a></code>)
-        – <p><code>TabPreprocessor</code> object. Must be fitted.</p>
+        –
+        <div class="doc-md-description">
+          <p><code>TabPreprocessor</code> object. Must be fitted.</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>return_dataframe</b>
-            (<code>bool</code>)
-        – <p>Boolean indicating of the returned object(s) will be array(s) or
+        <b><code>return_dataframe</code></b>
+            (<code>bool</code>, default:
+                <code>False</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Boolean indicating of the returned object(s) will be array(s) or
 pandas dataframe(s)</p>
+        </div>
       </li>
   </ul>
+
+
 
   <p>Attributes:</p>
   <ul>
       <li class="field-body">
-        <b>vectorizer</b>
-            (<code>nn.<span title="nn.Module">Module</span></code>)
-        – <p>Torch module with the categorical and continuous encoding process</p>
+        <b><code><span title="pytorch_widedeep.tab2vec.Tab2Vec.vectorizer">vectorizer</span></code></b>
+            (<code><span title="nn.Module">Module</span></code>)
+        –
+        <div class="doc-md-description">
+          <p>Torch module with the categorical and continuous encoding process</p>
+        </div>
       </li>
   </ul>
+
+
 
 <p><strong>Examples:</strong></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">string</span>
@@ -1255,11 +1660,11 @@ pandas dataframe(s)</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep</span> <span class="kn">import</span> <span class="n">Tab2Vec</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">TabMlp</span><span class="p">,</span> <span class="n">WideDeep</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.preprocessing</span> <span class="kn">import</span> <span class="n">TabPreprocessor</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">colnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">)[:</span><span class="mi">4</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cat_col1_vals</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cat_col2_vals</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;d&quot;</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">,</span> <span class="s2">&quot;f&quot;</span><span class="p">]</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create the toy input dataframe and a toy dataframe to be vectorised</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cat_inp</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">choices</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="n">cat_col1_vals</span><span class="p">,</span> <span class="n">cat_col2_vals</span><span class="p">]]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cont_inp</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span>
@@ -1267,13 +1672,13 @@ pandas dataframe(s)</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cat_t2v</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">choices</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="n">cat_col1_vals</span><span class="p">,</span> <span class="n">cat_col2_vals</span><span class="p">]]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cont_t2v</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df_t2v</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">cat_t2v</span> <span class="o">+</span> <span class="n">cont_t2v</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">columns</span><span class="o">=</span><span class="n">colnames</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># fit the TabPreprocessor</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">embed_cols</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cont_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">TabPreprocessor</span><span class="p">(</span><span class="n">cat_embed_cols</span><span class="o">=</span><span class="n">embed_cols</span><span class="p">,</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="n">cont_cols</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">X_tab</span> <span class="o">=</span> <span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df_inp</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># define the model (and let&#39;s assume we train it)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tabmlp</span> <span class="o">=</span> <span class="n">TabMlp</span><span class="p">(</span>
 <span class="gp">... </span><span class="n">column_idx</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">column_idx</span><span class="p">,</span>
@@ -1282,16 +1687,16 @@ pandas dataframe(s)</p>
 <span class="gp">... </span><span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">WideDeep</span><span class="p">(</span><span class="n">deeptabular</span><span class="o">=</span><span class="n">tabmlp</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># ...train the model...</span>
-<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># vectorise the dataframe</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t2v</span> <span class="o">=</span> <span class="n">Tab2Vec</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">tab_preprocessor</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">X_vec</span> <span class="o">=</span> <span class="n">t2v</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df_t2v</span><span class="p">)</span>
 </code></pre></div>
 
-
-          <details class="quote">
-            <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 96</span>
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 95</span>
+<span class="normal"> 96</span>
 <span class="normal"> 97</span>
 <span class="normal"> 98</span>
 <span class="normal"> 99</span>
@@ -1307,9 +1712,101 @@ pandas dataframe(s)</p>
 <span class="normal">109</span>
 <span class="normal">110</span>
 <span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
+<span class="normal">112</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">tab_preprocessor</span><span class="p">:</span> <span class="n">TabPreprocessor</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">WideDeep</span><span class="p">,</span> <span class="n">BayesianWide</span><span class="p">,</span> <span class="n">BayesianTabMlp</span><span class="p">],</span>
+    <span class="n">return_dataframe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">Tab2Vec</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_check_inputs</span><span class="p">(</span><span class="n">tab_preprocessor</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">tab_preprocessor</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">return_dataframe</span> <span class="o">=</span> <span class="n">return_dataframe</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">vectorizer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_vectorizer</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">_set_dim_attributes</span><span class="p">(</span><span class="n">tab_preprocessor</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+                </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.tab2vec.Tab2Vec.fit" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">fit</span>
+
+
+<a href="#pytorch_widedeep.tab2vec.Tab2Vec.fit" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>This is an empty method i.e. Returns the unchanged object itself. Is
+only included for consistency in case <code>Tab2Vec</code> is used as part of a
+Pipeline</p>
+
+
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b><code>df</code></b>
+            (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+        –
+        <div class="doc-md-description">
+          <p>DataFrame to be vectorised, i.e. the categorical and continuous
+columns will be encoded based on the processing applied within
+the model</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>target_col</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Column name of the target_col variable. If <code>None</code> only the array of
+predictors will be returned</p>
+        </div>
+      </li>
+  </ul>
+
+
+
+  <p>Returns:</p>
+  <ul>
+      <li class="field-body">
+            <code><a class="autorefs autorefs-internal" title="pytorch_widedeep.tab2vec.Tab2Vec" href="#pytorch_widedeep.tab2vec.Tab2Vec">Tab2Vec</a></code>
+        –
+        <div class="doc-md-description">
+          
+      </div>
+      </li>
+  </ul>
+
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">114</span>
 <span class="normal">115</span>
 <span class="normal">116</span>
 <span class="normal">117</span>
@@ -1329,140 +1826,7 @@ pandas dataframe(s)</p>
 <span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">WideDeep</span><span class="p">,</span> <span class="n">BayesianWide</span><span class="p">,</span> <span class="n">BayesianTabMlp</span><span class="p">],</span>
-    <span class="n">tab_preprocessor</span><span class="p">:</span> <span class="n">TabPreprocessor</span><span class="p">,</span>
-    <span class="n">return_dataframe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="nb">super</span><span class="p">(</span><span class="n">Tab2Vec</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-
-    <span class="bp">self</span><span class="o">.</span><span class="n">return_dataframe</span> <span class="o">=</span> <span class="n">return_dataframe</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">tab_preprocessor</span>
-
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">BaseBayesianModel</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vectorizer</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">cat_and_cont_embed</span><span class="p">)</span>  <span class="c1"># type: ignore[index]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">with_attention</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">deepimage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">model</span><span class="o">.</span><span class="n">deeptext</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                    <span class="s2">&quot;Currently &#39;Tab2Vec&#39; is only implemented for the &#39;deeptabular&#39; component.&quot;</span>
-                <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">deeptabular</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;Currently &#39;Tab2Vec&#39; is only implemented for the &#39;deeptabular&#39; component.&quot;</span>
-            <span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="s2">&quot;The &#39;tab_preprocessor&#39; must be fitted before is passed to &#39;Tab2Vec&#39;&quot;</span>
-            <span class="p">)</span>
-
-        <span class="n">models_with_attention</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="s2">&quot;contextattentionmlp&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;selfattentionmlp&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tabtransformer&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;saint&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;fttransformer&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tabperceiver&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tabfastformer&quot;</span><span class="p">,</span>
-        <span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">with_attention</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">deeptabular</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">models_with_attention</span>  <span class="c1"># type: ignore[index]</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vectorizer</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">deeptabular</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cat_and_cont_embed</span><span class="p">)</span>  <span class="c1"># type: ignore[index]</span>
-
-    <span class="bp">self</span><span class="o">.</span><span class="n">vectorizer</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-          </details>
-
-  
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<h3 id="pytorch_widedeep.tab2vec.Tab2Vec.fit" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">fit</span>
-
-
-<a href="#pytorch_widedeep.tab2vec.Tab2Vec.fit" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</code></pre></div>
-
-  <div class="doc doc-contents ">
-  
-      <p>This is an empty method i.e. Returns the unchanged object itself. Is
-only included for consistency in case <code>Tab2Vec</code> is used as part of a
-Pipeline</p>
-
-  <p>Parameters:</p>
-  <ul>
-      <li class="field-body">
-        <b>df</b>
-            (<code><span title="pandas">pd</span>.<span title="pandas.DataFrame">DataFrame</span></code>)
-        – <p>DataFrame to be vectorised, i.e. the categorical and continuous
-columns will be encoded based on the processing applied within
-the model</p>
-      </li>
-      <li class="field-body">
-        <b>target_col</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>)
-        – <p>Column name of the target_col variable. If <code>None</code> only the array of
-predictors will be returned</p>
-      </li>
-  </ul>
-
-  <p>Returns:</p>
-  <ul>
-      <li class="field-body">
-            <code><a class="autorefs autorefs-internal" title="pytorch_widedeep.tab2vec.Tab2Vec" href="#pytorch_widedeep.tab2vec.Tab2Vec">Tab2Vec</a></code>
-        – 
-      </li>
-  </ul>
-
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
-<span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tab2Vec&quot;</span><span class="p">:</span>
+<span class="normal">134</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tab2Vec&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;This is an empty method i.e. Returns the unchanged object itself. Is</span>
 <span class="sd">    only included for consistency in case `Tab2Vec` is used as part of a</span>
 <span class="sd">    Pipeline</span>
@@ -1484,21 +1848,22 @@ predictors will be returned</p>
 
     <span class="k">return</span> <span class="bp">self</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
 
 
 <h3 id="pytorch_widedeep.tab2vec.Tab2Vec.transform" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">transform</span>
+          <span class="doc doc-object-name doc-function-name">transform</span>
 
 
 <a href="#pytorch_widedeep.tab2vec.Tab2Vec.transform" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
@@ -1507,37 +1872,81 @@ predictors will be returned</p>
 column name is passed the target values will be returned separately
 in their corresponding type (np.ndarray or pd.DataFrame)</p>
 
+
+
   <p>Parameters:</p>
   <ul>
       <li class="field-body">
-        <b>df</b>
-            (<code><span title="pandas">pd</span>.<span title="pandas.DataFrame">DataFrame</span></code>)
-        – <p>DataFrame to be vectorised, i.e. the categorical and continuous
+        <b><code>df</code></b>
+            (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+        –
+        <div class="doc-md-description">
+          <p>DataFrame to be vectorised, i.e. the categorical and continuous
 columns will be encoded based on the processing applied within
 the model</p>
+        </div>
       </li>
       <li class="field-body">
-        <b>target_col</b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>)
-        – <p>Column name of the target_col variable. If <code>None</code> only the array of
+        <b><code>target_col</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Column name of the target_col variable. If <code>None</code> only the array of
 predictors will be returned</p>
+        </div>
       </li>
   </ul>
+
+
 
   <p>Returns:</p>
   <ul>
       <li class="field-body">
             <code>Union[np.ndarray, Tuple[np.ndarray, np.ndarray], pd.DataFrame, Tuple[pd.DataFrame, pd.Series]</code>
-        – <p>Returns eiter a numpy array with the vectorised values, or a Tuple
+        –
+        <div class="doc-md-description">
+          <p>Returns eiter a numpy array with the vectorised values, or a Tuple
 of numpy arrays with the vectorised values and the target. The
 same applies to dataframes in case we choose to set
 <code>return_dataframe = True</code></p>
+      </div>
       </li>
   </ul>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">165</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
 <span class="normal">168</span>
@@ -1572,31 +1981,7 @@ same applies to dataframes in case we choose to set
 <span class="normal">197</span>
 <span class="normal">198</span>
 <span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">transform</span><span class="p">(</span>
+<span class="normal">200</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">transform</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">target_col</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1633,63 +2018,69 @@ same applies to dataframes in case we choose to set
     <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X_tab</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-        <span class="n">x_cat</span><span class="p">,</span> <span class="n">x_cont</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vectorizer</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>  <span class="c1"># type: ignore[operator]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_tab_transformer</span><span class="p">:</span>
+            <span class="n">x_vec</span><span class="p">,</span> <span class="n">x_cont_not_embed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vectorizer</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vectorizer</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">x_cont_not_embed</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">with_cls_token</span><span class="p">:</span>
-        <span class="n">x_cat</span> <span class="o">=</span> <span class="n">x_cat</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
+        <span class="n">x_vec</span> <span class="o">=</span> <span class="n">x_vec</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
 
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_attention</span><span class="p">:</span>
-        <span class="n">x_cat</span> <span class="o">=</span> <span class="n">einops</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">x_cat</span><span class="p">,</span> <span class="s2">&quot;s c e -&gt; s (c e)&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">x_cont</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">x_cont</span> <span class="o">=</span> <span class="n">einops</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">x_cont</span><span class="p">,</span> <span class="s2">&quot;s c e -&gt; s (c e)&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">with_attention</span><span class="p">:</span>
+        <span class="n">x_vec</span> <span class="o">=</span> <span class="n">einops</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">x_vec</span><span class="p">,</span> <span class="s2">&quot;s c e -&gt; s (c e)&quot;</span><span class="p">)</span>
 
-    <span class="n">X_vec</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x_cat</span><span class="p">,</span> <span class="n">x_cont</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">x_cont_not_embed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">x_vec</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x_vec</span><span class="p">,</span> <span class="n">x_cont_not_embed</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x_vec</span> <span class="o">=</span> <span class="n">x_vec</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_dataframe</span><span class="p">:</span>
         <span class="n">new_colnames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_colnames</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">target_col</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">X_vec</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">new_colnames</span><span class="p">),</span> <span class="n">df</span><span class="p">[[</span><span class="n">target_col</span><span class="p">]]</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">x_vec</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">new_colnames</span><span class="p">),</span> <span class="n">df</span><span class="p">[[</span><span class="n">target_col</span><span class="p">]]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">X_vec</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">new_colnames</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">x_vec</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">new_colnames</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">target_col</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">X_vec</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="n">target_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">return</span> <span class="n">x_vec</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="n">target_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">X_vec</span>
+            <span class="k">return</span> <span class="n">x_vec</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
+
 
 <div class="doc doc-object doc-function">
 
 
 
 <h3 id="pytorch_widedeep.tab2vec.Tab2Vec.fit_transform" class="doc doc-heading">
-        <span class="doc doc-object-name doc-function-name">fit_transform</span>
+          <span class="doc doc-object-name doc-function-name">fit_transform</span>
 
 
 <a href="#pytorch_widedeep.tab2vec.Tab2Vec.fit_transform" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
   <div class="doc doc-contents ">
   
       <p>Combines <code>fit</code> and <code>transform</code></p>
 
-      <details class="quote">
-        <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span>
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
     <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1700,7 +2091,7 @@ same applies to dataframes in case we choose to set
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Combines `fit` and `transform`&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-      </details>
+          </details>
   </div>
 
 </div>
@@ -1711,7 +2102,37 @@ same applies to dataframes in case we choose to set
 
   </div>
 
+
 </div>
+
+
+
+
+
+
+
+
+  <aside class="md-source-file">
+    
+    
+    
+      
+  
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Contributors">
+      
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4Z"/></svg>
+      
+    </span>
+    <nav>
+      
+        <a href="mailto:mulinka.pavol@gmail.com">Pavol Mulinka</a>
+    </nav>
+  </span>
+
+    
+    
+  </aside>
 
 
 
@@ -1722,47 +2143,12 @@ same applies to dataframes in case we choose to set
             </div>
           
           
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="Footer" >
-      
-        
-        <a href="self_supervised_pretraining.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Self Supervised Pretraining" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Self Supervised Pretraining
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../examples/01_preprocessors_and_utils.html" class="md-footer__link md-footer__link--next" aria-label="Next: 01_preprocessors_and_utils" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              01_preprocessors_and_utils
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -1784,11 +2170,13 @@ same applies to dataframes in case we choose to set
   
     
     
+    
+    
       
       
     
     <a href="https://jrzaurin.medium.com/" target="_blank" rel="noopener" title="jrzaurin.medium.com" class="md-social__link">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M180.5 74.262C80.813 74.262 0 155.633 0 256s80.819 181.738 180.5 181.738S361 356.373 361 256 280.191 74.262 180.5 74.262Zm288.25 10.646c-49.845 0-90.245 76.619-90.245 171.095s40.406 171.1 90.251 171.1 90.251-76.619 90.251-171.1H559c0-94.503-40.4-171.095-90.248-171.095Zm139.506 17.821c-17.526 0-31.735 68.628-31.735 153.274s14.2 153.274 31.735 153.274S640 340.631 640 256c0-84.649-14.215-153.271-31.742-153.271Z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M180.5 74.262C80.813 74.262 0 155.633 0 256s80.819 181.738 180.5 181.738S361 356.373 361 256 280.191 74.262 180.5 74.262Zm288.25 10.646c-49.845 0-90.245 76.619-90.245 171.095s40.406 171.1 90.251 171.1 90.251-76.619 90.251-171.1H559c0-94.503-40.4-171.095-90.248-171.095Zm139.506 17.821c-17.526 0-31.735 68.628-31.735 153.274s14.2 153.274 31.735 153.274S640 340.631 640 256c0-84.649-14.215-153.271-31.742-153.271Z"/></svg>
     </a>
   
 </div>
@@ -1802,10 +2190,11 @@ same applies to dataframes in case we choose to set
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.5a2dcb6a.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       
@@ -1815,7 +2204,6 @@ same applies to dataframes in case we choose to set
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
-    
     
   </body>
 </html>

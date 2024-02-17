@@ -838,7 +838,7 @@ class InfoNCELoss(nn.Module):
         --------
         >>> import torch
         >>> from pytorch_widedeep.losses import InfoNCELoss
-        >>> g_projs = (torch.rand(5, 5), torch.rand(5, 5))
+        >>> g_projs = (torch.rand(3, 5, 16), torch.rand(3, 5, 16))
         >>> loss = InfoNCELoss()
         >>> res = loss(g_projs)
         """

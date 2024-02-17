@@ -6,9 +6,12 @@ from importlib import resources
 
 import numpy as np
 import pandas as pd
+import numpy.typing as npt
 
 
-def load_bio_kdd04(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
+def load_bio_kdd04(
+    as_frame: bool = False,
+) -> Union[npt.NDArray[np.float32], pd.DataFrame]:
     """Load and return the higly imbalanced binary classification Protein Homology
     Dataset from [KDD cup 2004](https://www.kdd.org/kdd-cup/view/kdd-cup-2004/Data).
     This datasets include only bio_train.dat part of the dataset
@@ -35,13 +38,10 @@ def load_bio_kdd04(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     ) as fpath:
         df = pd.read_parquet(fpath)
 
-    if as_frame:
-        return df
-    else:
-        return df.to_numpy()
+    return df if as_frame else df.to_numpy(dtype=np.float32)
 
 
-def load_adult(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
+def load_adult(as_frame: bool = False) -> Union[npt.NDArray[np.object_], pd.DataFrame]:
     """Load and return the higly imbalanced binary classification [adult income datatest](http://www.cs.toronto.edu/~delve/data/adult/desc.html).
     you may find detailed description [here](http://www.cs.toronto.edu/~delve/data/adult/adultDetail.html)
     """
@@ -51,13 +51,10 @@ def load_adult(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     ) as fpath:
         df = pd.read_parquet(fpath)
 
-    if as_frame:
-        return df
-    else:
-        return df.to_numpy()
+    return df if as_frame else df.to_numpy()
 
 
-def load_ecoli(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
+def load_ecoli(as_frame: bool = False) -> Union[npt.NDArray[np.object_], pd.DataFrame]:
     """Load and return the higly imbalanced multiclass classification e.coli dataset
     Dataset from [UCI Machine learning Repository](https://archive.ics.uci.edu/ml/datasets/ecoli).
 
@@ -138,13 +135,12 @@ def load_ecoli(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     ) as fpath:
         df = pd.read_parquet(fpath)
 
-    if as_frame:
-        return df
-    else:
-        return df.to_numpy()
+    return df if as_frame else df.to_numpy()
 
 
-def load_california_housing(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
+def load_california_housing(
+    as_frame: bool = False,
+) -> Union[npt.NDArray[np.float32], pd.DataFrame]:
     """Load and return the higly imbalanced regression California housing dataset.
 
     Characteristics:
@@ -186,13 +182,10 @@ def load_california_housing(as_frame: bool = False) -> Union[np.ndarray, pd.Data
     ) as fpath:
         df = pd.read_parquet(fpath)
 
-    if as_frame:
-        return df
-    else:
-        return df.to_numpy()
+    return df if as_frame else df.to_numpy(dtype=np.float32)
 
 
-def load_birds(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
+def load_birds(as_frame: bool = False) -> Union[npt.NDArray[np.object_], pd.DataFrame]:
     """Load and return the multi-label classification bird dataset.
 
     References
@@ -212,13 +205,10 @@ def load_birds(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     ) as fpath:
         df = pd.read_parquet(fpath)
 
-    if as_frame:
-        return df
-    else:
-        return df.to_numpy()
+    return df if as_frame else df.to_numpy()
 
 
-def load_rf1(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
+def load_rf1(as_frame: bool = False) -> Union[npt.NDArray[np.float32], pd.DataFrame]:
     """Load and return the multi-target regression River Flow(RF1) dataset.
 
         Characterisctics:
@@ -239,13 +229,12 @@ def load_rf1(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
     ) as fpath:
         df = pd.read_parquet(fpath)
 
-    if as_frame:
-        return df
-    else:
-        return df.to_numpy()
+    return df if as_frame else df.to_numpy(dtype=np.float32)
 
 
-def load_womens_ecommerce(as_frame: bool = False) -> Union[np.ndarray, pd.DataFrame]:
+def load_womens_ecommerce(
+    as_frame: bool = False,
+) -> Union[npt.NDArray[np.object_], pd.DataFrame]:
     """
     Context
     This is a Women’s Clothing E-Commerce dataset revolving around the reviews written by customers.
@@ -277,16 +266,13 @@ def load_womens_ecommerce(as_frame: bool = False) -> Union[np.ndarray, pd.DataFr
     ) as fpath:
         df = pd.read_parquet(fpath)
 
-    if as_frame:
-        return df
-    else:
-        return df.to_numpy()
+    return df if as_frame else df.to_numpy()
 
 
 def load_movielens100k(
     as_frame: bool = False,
 ) -> Union[
-    Tuple[np.ndarray, np.ndarray, np.ndarray],
+    Tuple[npt.NDArray[np.int64], npt.NDArray[np.object_], npt.NDArray[np.object_]],
     Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame],
 ]:
     """Load and return the MovieLens 100k dataset in 3 separate files.
@@ -377,7 +363,12 @@ def load_movielens100k(
     ) as fpath:
         df_users = pd.read_parquet(fpath)
 
-    if as_frame:
-        return df_data, df_users, df_items
-    else:
-        return df_data.to_numpy(), df_users.to_numpy(), df_items.to_numpy()
+    return (
+        (df_data, df_users, df_items)
+        if as_frame
+        else (
+            df_data.to_numpy(),
+            df_users.to_numpy(),
+            df_items.to_numpy(),
+        )
+    )

@@ -41,7 +41,7 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
     decoder: Optional[DecoderWithoutAttention] = None,
         An instance of  a `TabMlpDecoder`, `TabResNetDecoder` or
         `TabNetDecoder` model. if `None` the decoder will be automatically
-        build as a '_simetric_' model to the Encoder
+        built as a '_simetric_' model to the Encoder
     masked_prob: float = 0.2,
         Indicates the fraction of elements in the embedding tensor that will
         be masked and hence used for reconstruction

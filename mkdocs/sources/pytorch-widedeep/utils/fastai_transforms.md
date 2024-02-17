@@ -1,7 +1,7 @@
 # Fastai transforms
 
-I have directly copied and pasted part of the ``transforms.py`` module from
-the ``fastai`` library. The reason to do such a thing is because
+I directly copied and pasted part of the ``transforms.py`` module from
+the ``fastai`` library (from an old version). The reason to do such a thing is because
 ``pytorch_widedeep`` only needs the ``Tokenizer`` and the ``Vocab`` classes
 there. This way I avoid extra dependencies. Credit for all the code in the
 ``fastai_transforms`` module in this ``pytorch-widedeep`` package goes to

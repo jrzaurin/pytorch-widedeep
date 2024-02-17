@@ -137,6 +137,7 @@ class WideDeepDataset(Dataset):
         5.      assigning weight to each sample from closest bin value
         """
 
+        assert self.Y is not None, "No target array provided"
         y_max = max(self.Y) if lds_y_max is None else lds_y_max
         y_min = min(self.Y) if lds_y_min is None else lds_y_min
         bin_edges = np.linspace(y_min, y_max, num=granularity, endpoint=True)

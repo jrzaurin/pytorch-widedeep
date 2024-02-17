@@ -21,7 +21,7 @@ from pytorch_widedeep.self_supervised_training import (
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-    df = load_adult(as_frame=True)
+    df: pd.DataFrame = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
         df.age, bins=[16, 25, 30, 35, 40, 45, 50, 55, 60, 91], labels=np.arange(9)
@@ -69,6 +69,7 @@ if __name__ == "__main__":
                 cat_embed_input=processor.cat_embed_input,
                 continuous_cols=continuous_cols,
                 embed_continuous=True,
+                embed_continuous_method="standard",
                 n_blocks=4,
             )
         if transf_model == "saint":

@@ -76,7 +76,7 @@ def test_chunk_tab_preprocessor_one_chunk():
     assert (X_tab == X_tab_chunk).all()
 
 
-def test_chunk_tab_preprocessor():
+def test_chunk_tab_preprocessor_without_params():
     df = pd.read_csv(os.path.join(data_folder, fname))
     tab_processor = TabPreprocessor(cat_embed_cols=cat_cols, continuous_cols=num_cols)
     X_tab = tab_processor.fit_transform(df)

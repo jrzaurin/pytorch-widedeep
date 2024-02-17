@@ -1,3 +1,4 @@
+from typing import Dict, List, Literal, KeysView, DefaultDict
 from collections import defaultdict
 
 
@@ -41,13 +42,13 @@ class _LossAliases:
     }
 
     @classproperty
-    def alias_to_loss(cls):
+    def alias_to_loss(cls) -> Dict[str, str]:
         return {
             loss: alias for alias, losses in cls.loss_aliases.items() for loss in losses
         }
 
     @classmethod
-    def get(cls, loss):
+    def get(cls, loss) -> List[str]:
         return cls.loss_aliases.get(loss)
 
 
@@ -87,16 +88,18 @@ class _ObjectiveToMethod:
     }
 
     @classproperty
-    def method_to_objecive(cls):
+    def method_to_objecive(cls) -> DefaultDict[str, List[str]]:
         _method_to_objecive = defaultdict(list)
         for obj, method in cls.objective_to_method.items():
             _method_to_objecive[method].append(obj)
         return _method_to_objecive
 
     @classmethod
-    def keys(cls):
+    def keys(cls) -> KeysView[str]:
         return cls.objective_to_method.keys()
 
     @classmethod
     def get(cls, obj):
+        # this will return a str, but typing it has undesired side effects
+        # with Literals typed elsewhere
         return cls.objective_to_method.get(obj)

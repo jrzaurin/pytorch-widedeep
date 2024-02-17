@@ -12,7 +12,7 @@ from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
 use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
-    df = load_adult(as_frame=True)
+    df: pd.DataFrame = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
     df["age_buckets"] = pd.cut(
         df.age, bins=[16, 25, 30, 35, 40, 45, 50, 55, 60, 91], labels=np.arange(9)
@@ -61,9 +61,9 @@ if __name__ == "__main__":
 
                 model = BayesianWide(
                     input_dim=np.unique(X_tab).shape[0],
-                    pred_dim=df["age_buckets"].nunique()
-                    if objective == "multiclass"
-                    else 1,
+                    pred_dim=(
+                        df["age_buckets"].nunique() if objective == "multiclass" else 1
+                    ),
                     prior_sigma_1=1.0,
                     prior_sigma_2=0.002,
                     prior_pi=0.8,
@@ -88,9 +88,9 @@ if __name__ == "__main__":
                     prior_pi=0.8,
                     posterior_mu_init=0,
                     posterior_rho_init=-7.0,
-                    pred_dim=df["age_buckets"].nunique()
-                    if objective == "multiclass"
-                    else 1,
+                    pred_dim=(
+                        df["age_buckets"].nunique() if objective == "multiclass" else 1
+                    ),
                 )
 
             model_checkpoint = ModelCheckpoint(

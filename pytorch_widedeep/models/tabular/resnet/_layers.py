@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from torch import nn
 
-from pytorch_widedeep.wdtypes import List, Tensor
+from pytorch_widedeep.wdtypes import List, Tensor, Optional
 
 
 class BasicBlock(nn.Module):
@@ -13,7 +13,7 @@ class BasicBlock(nn.Module):
         out: int,
         dropout: float = 0.0,
         simplify: bool = False,
-        resize: nn.Module = None,
+        resize: Optional[nn.Module] = None,
     ):
         super(BasicBlock, self).__init__()
 

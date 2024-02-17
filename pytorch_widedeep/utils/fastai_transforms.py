@@ -22,6 +22,7 @@ from pytorch_widedeep.wdtypes import (
     Any,
     List,
     Match,
+    Union,
     Tokens,
     Callable,
     Optional,
@@ -440,8 +441,10 @@ class Vocab:
         self,
         tokens: Tokens,
     ) -> "Vocab":
-        # I simply want to honor fast ai naming, but for consistency with the
-        # rest of the library I am including a fit method
+        """
+        Calls the `create` method. I simply want to honor fast ai naming, but
+        for consistency with the rest of the library I am including a fit method
+        """
         return self.create(tokens)
 
     def numericalize(self, t: Collection[str]) -> List[int]:
@@ -455,11 +458,14 @@ class Vocab:
         return [self.stoi[w] for w in t]
 
     def transform(self, t: Collection[str]) -> List[int]:
-        # I simply want to honor fast ai naming, but for consistency with the
-        # rest of the library I am including a transform method
+        """
+        Calls the `numericalize` method. I simply want to honor fast ai naming,
+        but for consistency with the rest of the library I am including a
+        transform method
+        """
         return self.numericalize(t)
 
-    def textify(self, nums: Collection[int], sep=" ") -> List[str]:
+    def textify(self, nums: Collection[int], sep=" ") -> Union[str, List[str]]:
         """Convert a list of ``nums`` (or indexes) to their tokens.
 
         Returns
@@ -473,7 +479,14 @@ class Vocab:
             else [self.itos[i] for i in nums]
         )
 
-    def inverse_transform(self, nums: Collection[int], sep=" ") -> List[str]:
+    def inverse_transform(
+        self, nums: Collection[int], sep=" "
+    ) -> Union[str, List[str]]:
+        """
+        Calls the `textify` method. I simply want to honor fast ai naming, but
+        for consistency with the rest of the library I am including an
+        inverse_transform method
+        """
         # I simply want to honor fast ai naming, but for consistency with the
         # rest of the library I am including an inverse_transform method
         return self.textify(nums, sep)
@@ -557,7 +570,9 @@ class ChunkVocab:
         """
         return [self.stoi[w] for w in t]
 
-    def inverse_transform(self, nums: Collection[int], sep=" ") -> List[str]:
+    def inverse_transform(
+        self, nums: Collection[int], sep=" "
+    ) -> Union[str, List[str]]:
         """Convert a list of ``nums`` (or indexes) to their tokens.
 
         Returns

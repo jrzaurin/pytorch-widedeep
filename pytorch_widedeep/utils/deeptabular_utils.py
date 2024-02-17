@@ -15,7 +15,7 @@ from pytorch_widedeep.wdtypes import (
     Literal,
     Optional,
 )
-from pytorch_widedeep.utils.general_utils import Alias
+from pytorch_widedeep.utils.general_utils import alias
 
 warnings.filterwarnings("ignore")
 pd.options.mode.chained_assignment = None
@@ -59,7 +59,7 @@ class LabelEncoder:
 
     """
 
-    @Alias("with_attention", "for_transformer")
+    @alias("with_attention", ["for_transformer"])
     def __init__(
         self,
         columns_to_encode: Optional[List[str]] = None,
@@ -73,7 +73,7 @@ class LabelEncoder:
 
         self.reset_embed_idx = not self.with_attention or self.shared_embed
 
-    def partial_fit(self, chunk: pd.DataFrame) -> "LabelEncoder":  # noqa: C901
+    def partial_fit(self, df: pd.DataFrame) -> "LabelEncoder":  # noqa: C901
         """Main method. Creates encoding attributes.
 
         Returns
@@ -81,22 +81,20 @@ class LabelEncoder:
         LabelEncoder
             `LabelEncoder` fitted object
         """
-        # this is meant to be run when the data is large and we pass a chunk
-        # at a time. Therefore, we do not copy the input chunk as mutating a
-        # chunk is ok
+        # here df is a chunk of the data. this is meant to be run when the
+        # data is large and we pass a chunk at a time. Therefore, we do not
+        # copy the input chunk as mutating a chunk is ok
         if self.columns_to_encode is None:
-            self.columns_to_encode = list(
-                chunk.select_dtypes(include=["object"]).columns
-            )
+            self.columns_to_encode = list(df.select_dtypes(include=["object"]).columns)
         else:
             # sanity check to make sure all categorical columns are in an adequate
             # format
             for col in self.columns_to_encode:
-                chunk[col] = chunk[col].astype("O")
+                df[col] = df[col].astype("O")
 
         unique_column_vals: Dict[str, List[str]] = {}
         for c in self.columns_to_encode:
-            unique_column_vals[c] = chunk[c].unique().tolist()
+            unique_column_vals[c] = df[c].unique().tolist()
 
         if not hasattr(self, "encoding_dict"):
             # we run the method 'partial_fit' for the 1st time
@@ -110,21 +108,15 @@ class LabelEncoder:
             # attention and we do not re-start the index/counter
             self.cum_idx: int = 1
             for k, v in unique_column_vals.items():
-                self.encoding_dict[k] = {
-                    o: i + self.cum_idx for i, o in enumerate(unique_column_vals[k])
-                }
-                self.cum_idx = (
-                    1
-                    if self.reset_embed_idx
-                    else self.cum_idx + len(unique_column_vals[k])
-                )
+                self.encoding_dict[k] = {o: i + self.cum_idx for i, o in enumerate(v)}
+                self.cum_idx = 1 if self.reset_embed_idx else self.cum_idx + len(v)
         else:
             # the 'partial_fit' method has already run.
             # "cls_token" will have been added already
             if "cls_token" in unique_column_vals and self.shared_embed:
                 del unique_column_vals["cls_token"]
 
-            # Classes in the new chunk of the dataset that have not been seen
+            # Classes in the new df/chunk of the dataset that have not been seen
             # before
             unseen_classes: Dict[str, List[str]] = {}
             for c in self.columns_to_encode:
@@ -158,7 +150,7 @@ class LabelEncoder:
         return self
 
     def fit(self, df: pd.DataFrame) -> "LabelEncoder":
-        """Runs update under the hood
+        """Simply runs the `partial_fit` method when the data fits in memory
 
         Returns
         -------
@@ -329,7 +321,7 @@ def get_kernel_window(
     kernel: Literal["gaussian", "triang", "laplace"] = "gaussian",
     ks: int = 5,
     sigma: Union[int, float] = 2,
-) -> List[float]:
+) -> Union[List[float], np.ndarray]:
     """Procedure to prepare the window of values from symetrical kernel function
     for smoothing of the distribution in Label and Feature Distribution
     Smoothing (LDS & FDS).
