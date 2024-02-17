@@ -1,0 +1,45 @@
+body a {
+  font-weight: bold;
+}
+
+.math {
+    text-align: left;
+}
+
+.eqno {
+    float: right;
+}
+
+div.ethical-rtd {
+  /* hide ads */
+  display: none;
+}
+
+.rst-content dl:not(.docutils) dl dt strong {
+  padding-left: 6pt;
+}
+
+.rst-content dl:not(.docutils) dl dt span {
+  color: #777;
+}
+
+.rst-content dl:not(.docutils) dl dt span.classifier-delimiter {
+  padding-left: 6pt;
+  padding-right: 6pt;
+}
+
+.rst-content dl:not(.docutils) dl dt span.classifier {
+  padding-right: 6pt;
+}
+
+.rst-content dl:not(.docutils) dl dt a.reference.internal span.xref.std.std-term {
+  color: #2980B9;
+}
+
+.wy-nav-content {
+    max-width: none; !important;
+}
+
+div.container a.header-logo {
+  background-image: url("../figures/widedeep_logo.png");
+}

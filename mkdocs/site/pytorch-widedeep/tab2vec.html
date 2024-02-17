@@ -1689,7 +1689,7 @@ pandas dataframe(s)</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># ...train the model...</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># vectorise the dataframe</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">t2v</span> <span class="o">=</span> <span class="n">Tab2Vec</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">tab_preprocessor</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2v</span> <span class="o">=</span> <span class="n">Tab2Vec</span><span class="p">(</span><span class="n">tab_preprocessor</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">X_vec</span> <span class="o">=</span> <span class="n">t2v</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df_t2v</span><span class="p">)</span>
 </code></pre></div>
 
