@@ -2321,9 +2321,9 @@ the continuous columns</p>
                 <span class="n">prior_pi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_pi</span><span class="p">,</span>
                 <span class="n">posterior_mu_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_mu_init</span><span class="p">,</span>
                 <span class="n">posterior_rho_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_rho_init</span><span class="p">,</span>
-                <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span> <span class="ow">is</span> <span class="kc">None</span>
-                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span><span class="p">,</span>
+                <span class="n">use_bias</span><span class="o">=</span><span class="p">(</span>
+                    <span class="kc">False</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span>
+                <span class="p">),</span>
                 <span class="n">activation_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_activation</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span>
