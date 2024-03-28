@@ -12,7 +12,7 @@ import os
 import re
 import html
 from collections import Counter, defaultdict
-from concurrent.futures.process import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 import spacy
