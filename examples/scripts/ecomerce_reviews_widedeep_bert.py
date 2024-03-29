@@ -64,13 +64,13 @@ class Tokenizer(object):
         return fix_html(rm_useless_spaces(spec_add_spaces(text)))
 
 
-class BertModel(nn.Module):
+class CustomBertModel(nn.Module):
     def __init__(
         self,
         model_name: str = "distilbert-base-uncased",
         freeze_bert: bool = False,
     ):
-        super(BertModel, self).__init__()
+        super(CustomBertModel, self).__init__()
 
         self.bert = DistilBertModel.from_pretrained(
             model_name,
@@ -117,7 +117,7 @@ tokenizer = Tokenizer()
 X_text_tr = tokenizer.fit_transform(train["review_text"].tolist())
 X_text_te = tokenizer.transform(test["review_text"].tolist())
 
-bert_model = BertModel(freeze_bert=True)
+bert_model = CustomBertModel(freeze_bert=True)
 model = WideDeep(
     deeptext=bert_model,
     head_hidden_dims=[256, 128, 64],

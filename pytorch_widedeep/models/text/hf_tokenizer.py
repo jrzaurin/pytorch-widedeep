@@ -19,6 +19,7 @@ from transformers import (
 )
 from transformers.tokenization_utils import PreTrainedTokenizer
 
+from pytorch_widedeep.models.text.hf_utils import get_model_class
 from pytorch_widedeep.utils.fastai_transforms import (
     fix_html,
     spec_add_spaces,
@@ -44,7 +45,7 @@ class HFTokenizer:
 
         self._multiprocessing = num_workers is not None and num_workers > 1
 
-        self.model_class = self._get_model_class(model_name)
+        self.model_class = get_model_class(model_name)
         self.tokenizer = self._get_tokenizer(
             self.model_class, self.model_name, **kwargs
         )
@@ -134,24 +135,6 @@ class HFTokenizer:
                 ElectraTokenizer.from_pretrained(model_name, **kwargs)
                 if not self.use_fast_tokenizer
                 else ElectraTokenizerFast.from_pretrained(model_name, **kwargs)
-            )
-
-    @staticmethod
-    def _get_model_class(model_name: str):
-        if "distilbert" in model_name:
-            return "distilbert"
-        elif "bert" in model_name:
-            return "bert"
-        elif "roberta" in model_name:
-            return "roberta"
-        elif "albert" in model_name:
-            return "albert"
-        elif "electra" in model_name:
-            return "electra"
-        else:
-            raise ValueError(
-                "model_name should belong to one of the following classes: "
-                f"'distilbert', 'bert', 'roberta', 'albert', or 'electra'. Got {model_name}"
             )
 
     def _process_text_parallel(self, texts: List[str]) -> List[str]:
