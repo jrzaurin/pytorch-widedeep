@@ -5,25 +5,9 @@ from concurrent.futures import ProcessPoolExecutor
 
 import numpy as np
 import numpy.typing as npt
-from transformers import (
-    BertTokenizer,
-    AlbertTokenizer,
-    ElectraTokenizer,
-    RobertaTokenizer,
-    BertTokenizerFast,
-    AlbertTokenizerFast,
-    DistilBertTokenizer,
-    ElectraTokenizerFast,
-    RobertaTokenizerFast,
-    DistilBertTokenizerFast,
-)
-from transformers.tokenization_utils import PreTrainedTokenizer
 
-from pytorch_widedeep.models.text.hf_utils import get_model_class
-from pytorch_widedeep.utils.fastai_transforms import (
-    fix_html,
-    spec_add_spaces,
-    rm_useless_spaces,
+from pytorch_widedeep.models.text.huggingface_transformers.hf_utils import (
+    get_tokenizer,
 )
 
 num_processes = os.cpu_count()
@@ -45,10 +29,7 @@ class HFTokenizer:
 
         self._multiprocessing = num_workers is not None and num_workers > 1
 
-        self.model_class = get_model_class(model_name)
-        self.tokenizer = self._get_tokenizer(
-            self.model_class, self.model_name, **kwargs
-        )
+        self.tokenizer = get_tokenizer(self.model_name, **kwargs)
 
     def fit(self, texts: List[str], **kwargs) -> "HFTokenizer":
         return self
@@ -99,44 +80,6 @@ class HFTokenizer:
     ) -> List[str]:
         return self.inverse_transform(input_ids, skip_special_tokens)
 
-    def _get_tokenizer(
-        self, model_class: str, model_name: str, **kwargs
-    ) -> PreTrainedTokenizer:
-        if model_class == "distilbert":
-            return (
-                DistilBertTokenizer.from_pretrained(model_name, **kwargs)
-                if not self.use_fast_tokenizer
-                else DistilBertTokenizerFast.from_pretrained(model_name, **kwargs)
-            )
-
-        if model_class == "bert":
-            return (
-                BertTokenizer.from_pretrained(model_name, **kwargs)
-                if not self.use_fast_tokenizer
-                else BertTokenizerFast.from_pretrained(model_name, **kwargs)
-            )
-
-        if model_class == "roberta":
-            return (
-                RobertaTokenizer.from_pretrained(model_name, **kwargs)
-                if not self.use_fast_tokenizer
-                else RobertaTokenizerFast.from_pretrained(model_name, **kwargs)
-            )
-
-        if model_class == "albert":
-            return (
-                AlbertTokenizer.from_pretrained(model_name, **kwargs)
-                if not self.use_fast_tokenizer
-                else AlbertTokenizerFast.from_pretrained(model_name, **kwargs)
-            )
-
-        if model_class == "electra":
-            return (
-                ElectraTokenizer.from_pretrained(model_name, **kwargs)
-                if not self.use_fast_tokenizer
-                else ElectraTokenizerFast.from_pretrained(model_name, **kwargs)
-            )
-
     def _process_text_parallel(self, texts: List[str]) -> List[str]:
         num_processes = (
             self.num_workers if self.num_workers is not None else os.cpu_count()
@@ -161,6 +104,12 @@ class HFTokenizer:
 
 
 if __name__ == "__main__":
+    from pytorch_widedeep.utils.fastai_transforms import (
+        fix_html,
+        spec_add_spaces,
+        rm_useless_spaces,
+    )
+
     tokenizer = HFTokenizer(
         "distilbert-base-uncased",
         use_fast_tokenizer=False,

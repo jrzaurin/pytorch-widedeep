@@ -2,8 +2,8 @@ import numpy as np
 import torch
 
 from pytorch_widedeep.wdtypes import List, Tensor, Optional
-from pytorch_widedeep.models.text.basic_rnn import BasicRNN
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
+from pytorch_widedeep.models.text.rnns.basic_rnn import BasicRNN
 from pytorch_widedeep.models.tabular.mlp._attention_layers import (
     ContextAttention,
 )

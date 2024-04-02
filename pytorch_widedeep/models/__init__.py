@@ -1,5 +1,7 @@
 from pytorch_widedeep.models.text import (
+    HFModel,
     BasicRNN,
+    HFTokenizer,
     Transformer,
     AttentiveRNN,
     StackedAttentiveRNN,
