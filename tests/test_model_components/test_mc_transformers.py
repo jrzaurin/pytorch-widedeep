@@ -208,6 +208,23 @@ def _build_model(model_name, params):
         return TabPerceiver(n_perceiver_blocks=2, n_latents=2, latent_dim=16, **params)
 
 
+# test out of a bug related to the mlp_hidden_dims attribute (https://github.com/jrzaurin/pytorch-widedeep/issues/204)
+@pytest.mark.parametrize(
+    "model_name", ["tabtransformer", "saint", "fttransformer", "tabfastformer"]
+)
+def test_mlphidden_dims(model_name):
+    params = {
+        "column_idx": {k: v for v, k in enumerate(colnames)},
+        "cat_embed_input": embed_input,
+        "continuous_cols": colnames[n_cols:],
+        "mlp_hidden_dims": [32, 16],
+    }
+
+    model = _build_model(model_name, params)
+    out = model(X_tab)
+    assert out.size(0) == 10 and out.size(1) == model.output_dim == 16
+
+
 @pytest.mark.parametrize(
     "embed_continuous, with_cls_token, model_name",
     [
