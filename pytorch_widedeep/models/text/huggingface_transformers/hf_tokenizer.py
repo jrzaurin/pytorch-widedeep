@@ -1,4 +1,5 @@
 import os
+import warnings
 from typing import List, Callable, Optional
 from functools import partial
 from concurrent.futures import ProcessPoolExecutor
@@ -31,10 +32,9 @@ class HFTokenizer:
 
         self.tokenizer = get_tokenizer(self.model_name, **kwargs)
 
-    def fit(self, texts: List[str], **kwargs) -> "HFTokenizer":
-        return self
+        self.is_fitted = False
 
-    def transform(self, texts: List[str], **kwargs) -> npt.NDArray[np.int64]:
+    def encode(self, texts: List[str], **kwargs) -> npt.NDArray[np.int64]:
         if self.preprocessing_rules:
             if self._multiprocessing:
                 texts = self._process_text_parallel(texts)
@@ -56,13 +56,27 @@ class HFTokenizer:
             )
             input_ids = encoded_texts.get("input_ids")
 
-        return np.stack(input_ids)
+        self.encoding_kwargs = kwargs
+        self.is_fitted = True
 
-    def fit_transform(self, texts: List[str], **kwargs) -> npt.NDArray[np.int64]:
-        return self.fit(texts, **kwargs).transform(texts, **kwargs)
+        try:
+            output = np.array(input_ids)
+        except ValueError:
+            warnings.warn(
+                "Padding and Truncating parameters were not passed and all input arrays "
+                "do not have the same shape. Padding to the longest sequence. "
+                "Padding will be done with 0s added to the end of the sequences.",
+                UserWarning,
+            )
+            max_len = max([len(ids) for ids in input_ids])
+            output = np.array(
+                [np.pad(ids, (0, max_len - len(ids))) for ids in input_ids]
+            )
 
-    def inverse_transform(
-        self, input_ids: npt.NDArray[np.int64], skip_special_tokens
+        return output
+
+    def decode(
+        self, input_ids: npt.NDArray[np.int64], skip_special_tokens: bool
     ) -> List[str]:
         texts = [
             self.tokenizer.convert_tokens_to_string(
@@ -72,13 +86,30 @@ class HFTokenizer:
         ]
         return texts
 
-    def encode(self, texts: List[str], **kwargs) -> npt.NDArray[np.int64]:
-        return self.transform(texts, **kwargs)
+    def fit(self, texts: List[str], **kwargs) -> npt.NDArray[np.int64]:
+        # this method exists only for consistency with the rest of the
+        # classes
+        return self.encode(texts, **kwargs)
 
-    def decode(
-        self, input_ids: npt.NDArray[np.int64], skip_special_tokens: bool = False
+    def transform(self, texts: List[str]) -> npt.NDArray[np.int64]:
+        # this method exists only for consistency with the rest of the
+        # classes
+        if not self.is_fitted:
+            raise ValueError(
+                "The `encode` (or `fit`) method must be called before calling `transform`"
+            )
+
+        return self.encode(texts, **self.encoding_kwargs)
+
+    def inverse_transform(
+        self, input_ids: npt.NDArray[np.int64], skip_special_tokens: bool
     ) -> List[str]:
-        return self.inverse_transform(input_ids, skip_special_tokens)
+        return self.decode(input_ids, skip_special_tokens)
+
+    def fit_transform(self, texts: List[str], **kwargs) -> npt.NDArray[np.int64]:
+        # this method exists only for consistency with the rest of the
+        # classes
+        return self.encode(texts, **kwargs)
 
     def _process_text_parallel(self, texts: List[str]) -> List[str]:
         num_processes = (
@@ -101,32 +132,3 @@ class HFTokenizer:
         with ProcessPoolExecutor(max_workers=num_processes) as executor:
             encoded_texts = list(executor.map(ptokenizer, texts))
         return encoded_texts
-
-
-if __name__ == "__main__":
-    from pytorch_widedeep.utils.fastai_transforms import (
-        fix_html,
-        spec_add_spaces,
-        rm_useless_spaces,
-    )
-
-    tokenizer = HFTokenizer(
-        "distilbert-base-uncased",
-        use_fast_tokenizer=False,
-        num_workers=1,
-        preprocessing_rules=[fix_html, spec_add_spaces, rm_useless_spaces],
-    )
-
-    texts = [
-        "this is a test # 1",
-        "this is another test       ",
-        "this is a third test #39;",
-    ]
-
-    encoded_texts = tokenizer.fit_transform(
-        texts,
-        add_special_tokens=True,
-        max_length=10,
-        padding="max_length",
-        truncation=True,
-    )

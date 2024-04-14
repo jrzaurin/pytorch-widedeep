@@ -288,7 +288,7 @@ class SAINT(BaseTabularModelWithAttention):
         # therefore all related params are optional
         if self.mlp_hidden_dims is not None:
             self.mlp = MLP(
-                d_hidden=[self.mlp_first_hidden_dim] + self.mlp_hidden_dim,
+                d_hidden=[self.mlp_first_hidden_dim] + self.mlp_hidden_dims,
                 activation=(
                     "relu" if self.mlp_activation is None else self.mlp_activation
                 ),

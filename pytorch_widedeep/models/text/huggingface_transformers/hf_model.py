@@ -1,18 +1,20 @@
 import warnings
 
 import torch
-from torch import nn
 
 from pytorch_widedeep.wdtypes import List, Tensor, Optional
 from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
+from pytorch_widedeep.models._base_wd_model_component import (
+    BaseWDModelComponent,
+)
 from pytorch_widedeep.models.text.huggingface_transformers.hf_utils import (
     get_model_class,
     get_config_and_model,
 )
 
 
-class HFModel(nn.Module):
+class HFModel(BaseWDModelComponent):
     @alias("use_cls_token", ["use_special_token"])
     def __init__(
         self,
@@ -124,7 +126,6 @@ if __name__ == "__main__":
 
     tokenizer = HFTokenizer(
         model_name="google/electra-base-discriminator",
-        # model_name="distilbert-base-uncased",
         use_fast_tokenizer=False,
         num_workers=1,
     )
@@ -140,8 +141,6 @@ if __name__ == "__main__":
     model = HFModel(
         model_name="google/electra-base-discriminator",
         use_cls_token=True,
-        # model_name="distilbert-base-uncased",
-        # trainable_parameters=["layer.5"],
         output_attentions=True,
     )
 
