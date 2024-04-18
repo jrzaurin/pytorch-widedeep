@@ -65,12 +65,15 @@ class HFTokenizer:
             warnings.warn(
                 "Padding and Truncating parameters were not passed and all input arrays "
                 "do not have the same shape. Padding to the longest sequence. "
-                "Padding will be done with 0s added to the end of the sequences.",
+                "Padding will be done with the index of the pad token for the model",
                 UserWarning,
             )
             max_len = max([len(ids) for ids in input_ids])
             output = np.array(
-                [np.pad(ids, (0, max_len - len(ids))) for ids in input_ids]
+                [
+                    np.pad(ids, (self.tokenizer.pad_token_id, max_len - len(ids)))
+                    for ids in input_ids
+                ]
             )
 
         return output
