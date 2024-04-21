@@ -25,6 +25,7 @@ class HFPreprocessor(BasePreprocessor):
         preprocessing_rules: Optional[List[Callable[[str], str]]] = None,
         tokenizer_params: Optional[Dict[str, Any]] = None,
         encode_params: Optional[Dict[str, Any]] = None,
+        **kwargs,
     ):
         self.model_name = model_name
         self.use_fast_tokenizer = use_fast_tokenizer
@@ -36,11 +37,18 @@ class HFPreprocessor(BasePreprocessor):
 
         self._multiprocessing = num_workers is not None and num_workers > 1
 
-        self.tokenizer = get_tokenizer(self.model_name, **self.tokenizer_params)
+        self.tokenizer = get_tokenizer(
+            self.model_name, **self.tokenizer_params, **kwargs
+        )
 
-        self.is_fitted = False
+        # A HuggingFace tokenizer is already trained, since we need this
+        # attribute elsewhere in the library, we simply set it to True
+        self.is_fitted = True
 
-    def encode(self, texts: List[str]) -> npt.NDArray[np.int64]:
+    def encode(self, texts: List[str], **kwargs) -> npt.NDArray[np.int64]:
+
+        if kwargs:
+            self.encode_params.update(kwargs)
 
         if self.preprocessing_rules:
             if self._multiprocessing:
@@ -100,20 +108,18 @@ class HFPreprocessor(BasePreprocessor):
         # rest of the library and with the BasePreprocessor in particular.
         # HuggingFace's tokenizers and models are already trained. Therefore,
         # the 'fit' method here does nothing
-
         if self.text_col is None:
             raise ValueError(
                 "'text_col' is None. Please specify the column name containing the text data"
                 " if you want to use the 'fit' method"
             )
-
-        self.is_fitted = True
         return self
 
     def transform(self, df: pd.DataFrame) -> npt.NDArray[np.int64]:
-        if not self.is_fitted:
+        if self.text_col is None:
             raise ValueError(
-                "The `encode` (or `fit`) method must be called before calling `transform`"
+                "'text_col' is None. Please specify the column name containing the text data"
+                " if you want to use the 'fit' method"
             )
 
         texts = self._read_texts(df)
@@ -125,7 +131,7 @@ class HFPreprocessor(BasePreprocessor):
             raise ValueError(
                 "The `encode` (or `fit`) method must be called before calling `transform_sample`"
             )
-        return self.encode([text])
+        return self.encode([text])[0]
 
     def fit_transform(self, df: pd.DataFrame) -> npt.NDArray[np.int64]:
         return self.fit(df).transform(df)
@@ -225,3 +231,11 @@ class ChunkHFPreprocessor(HFPreprocessor):
             or not self.encode_params["truncation"]
         ):
             self.encode_params["truncation"] = True
+
+    def __repr__(self):
+        return (
+            f"ChunkHFPreprocessor(text_col={self.text_col}, model_name={self.model_name}, "
+            f"use_fast_tokenizer={self.use_fast_tokenizer}, num_workers={self.num_workers}, "
+            f"preprocessing_rules={self.preprocessing_rules}, tokenizer_params={self.tokenizer_params}, "
+            f"encode_params={self.encode_params}, root_dir={self.root_dir})"
+        )

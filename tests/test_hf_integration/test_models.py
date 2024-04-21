@@ -2,6 +2,7 @@ import torch
 import pytest
 
 from pytorch_widedeep.models import TabMlp, HFModel, WideDeep
+from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.preprocessing import HFPreprocessor as HFTokenizer
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
@@ -127,3 +128,52 @@ def test_hf_model_combined_with_tabmlp(model_name="distilbert-base-uncased"):
 
     assert out.shape[0] == df.shape[0]
     assert out.shape[1] == 1
+
+
+@pytest.mark.parametrize("model_name", model_names)
+def test_full_training_process(model_name):
+    tab_preprocessor = TabPreprocessor(
+        embed_cols=["cat1", "cat2"], continuous_cols=["num1", "num2"]
+    )
+    X_tab = tab_preprocessor.fit_transform(df)
+    tabmlp = TabMlp(
+        column_idx=tab_preprocessor.column_idx,
+        cat_embed_input=tab_preprocessor.cat_embed_input,
+        continuous_cols=tab_preprocessor.continuous_cols,
+        cont_norm_layer="batchnorm",
+        mlp_hidden_dims=[32, 16],
+        mlp_activation="relu",
+        mlp_dropout=0.1,
+    )
+
+    tokenizer = HFTokenizer(
+        model_name=model_name,
+        text_col="random_sentences",
+    )
+    X_text = tokenizer.fit_transform(df)
+    hf_model = HFModel(
+        model_name=model_name,
+        use_cls_token=True,
+    )
+    model = WideDeep(deeptabular=tabmlp, deeptext=hf_model)
+
+    trainer = Trainer(
+        model,
+        objective="binary",
+        verbose=0,
+    )
+
+    trainer.fit(
+        X_tab=X_tab,
+        X_text=X_text,
+        target=df.target.values,
+        batch_size=8,
+    )
+
+    preds = trainer.predict(
+        X_tab=X_tab[:2],
+        X_text=X_text[:2],
+    )
+
+    assert len(trainer.history) > 0 and "train_loss" in trainer.history.keys()
+    assert preds.shape[0] == 2

@@ -128,9 +128,8 @@ def test_text_from_folder_with_hftokenizer():
             "truncation": True,
         },
     )
-    _ = chunk_hf_preprocessor.encode(df.random_sentences.tolist())
 
     text_folder = TextFromFolder(preprocessor=chunk_hf_preprocessor)
     processed_sample_from_folder = text_folder.get_item(df.random_sentences.loc[1])
 
-    assert all(processed_sample_from_folder[0] == X[1])
+    assert all(processed_sample_from_folder == X[1])
