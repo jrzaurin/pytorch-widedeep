@@ -1,16 +1,22 @@
+import os
+
 import numpy as np
+import pandas as pd
 import pytest
 
 from pytorch_widedeep.preprocessing import HFPreprocessor as HFTokenizer
+from pytorch_widedeep.preprocessing import ChunkHFPreprocessor
+from pytorch_widedeep.load_from_folder import TextFromFolder
 from pytorch_widedeep.utils.fastai_transforms import (
     fix_html,
     spec_add_spaces,
     rm_useless_spaces,
 )
 
-from .generate_fake_data import generate
+full_path = os.path.realpath(__file__)
+path = os.path.split(full_path)[0]
 
-df = generate()
+df = pd.read_csv(os.path.join(path, "load_from_folder_test_data", "fake_data.csv"))
 
 model_names = [
     "distilbert-base-uncased",
@@ -26,9 +32,6 @@ encoder_params = {
     "truncation": True,
     "add_special_tokens": True,
 }
-
-
-# TO DO: check the chunk preprocessor and load from folder with a HFPReprocessor
 
 
 @pytest.mark.parametrize("model_name", model_names)
@@ -106,3 +109,28 @@ def test_tokenizer_decode():
     )
     assert len(texts) == df.shape[0]
     assert isinstance(texts[0], str)
+
+
+def test_text_from_folder_with_hftokenizer():
+    # The HF ChunkPreprocessor is mostly the same as the HFPreprocessor. No
+    # need for specific tests
+    hf_preprocessor = HFTokenizer(
+        model_name="distilbert-base-uncased",
+    )
+    X = hf_preprocessor.encode(df.random_sentences.tolist())
+
+    chunk_hf_preprocessor = ChunkHFPreprocessor(
+        model_name="distilbert-base-uncased",
+        text_col="random_sentences",
+        encode_params={
+            "max_length": X.shape[1],
+            "padding": "max_length",
+            "truncation": True,
+        },
+    )
+    _ = chunk_hf_preprocessor.encode(df.random_sentences.tolist())
+
+    text_folder = TextFromFolder(preprocessor=chunk_hf_preprocessor)
+    processed_sample_from_folder = text_folder.get_item(df.random_sentences.loc[1])
+
+    assert all(processed_sample_from_folder[0] == X[1])

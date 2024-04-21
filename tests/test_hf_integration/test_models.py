@@ -96,7 +96,6 @@ def test_model_with_head(model_name="distilbert-base-uncased"):
     assert out.shape[1] == 32
 
 
-# TO DO: Take it from here
 def test_hf_model_combined_with_tabmlp(model_name="distilbert-base-uncased"):
     with pytest.warns(UserWarning):
         tab_preprocessor = TabPreprocessor(

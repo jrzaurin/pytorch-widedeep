@@ -7,11 +7,9 @@ from pytorch_widedeep import Trainer
 from pytorch_widedeep.models import WideDeep
 from pytorch_widedeep.metrics import F1Score, Accuracy
 from pytorch_widedeep.datasets import load_womens_ecommerce
+from pytorch_widedeep.preprocessing import HFPreprocessor as HFTokenizer
 from pytorch_widedeep.models.text.huggingface_transformers.hf_model import (
     HFModel,
-)
-from pytorch_widedeep.models.text.huggingface_transformers.hf_tokenizer import (
-    HFTokenizer,
 )
 
 df: pd.DataFrame = load_womens_ecommerce(as_frame=True)  # type: ignore
@@ -61,14 +59,16 @@ for model_name in model_names:
         model_name=model_name,
         use_fast_tokenizer=False,
         num_workers=1,
+        encode_params={
+            "max_length": 90,
+            "padding": "max_length",
+            "truncation": True,
+            "add_special_tokens": True,
+        },
     )
 
     X_text_tr = tokenizer.fit(
         train["review_text"].tolist(),
-        max_length=90,
-        padding="max_length",
-        truncation=True,
-        add_special_tokens=True,
     )
 
     X_text_te = tokenizer.transform(

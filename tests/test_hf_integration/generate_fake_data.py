@@ -1,4 +1,6 @@
+import os
 import random
+from pathlib import Path
 
 import pandas as pd
 from faker import Faker
@@ -45,3 +47,17 @@ def generate(seed: int = 42) -> pd.DataFrame:
     )
 
     return df
+
+
+if __name__ == "__main__":
+    full_path = os.path.realpath(__file__)
+    path = os.path.split(full_path)[0]
+
+    save_dir = Path(path) / "load_from_folder_test_data"
+
+    if not save_dir.exists():
+        save_dir.mkdir(parents=True)
+
+    df = generate()
+    df.to_csv(save_dir / "data.csv", index=False)
+    print("Data saved to", save_dir / "data.csv")
