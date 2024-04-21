@@ -1,8 +1,7 @@
+import numpy as np
 import pytest
 
-import numpy as np
-
-from pytorch_widedeep.models import HFTokenizer
+from pytorch_widedeep.preprocessing import HFPreprocessor as HFTokenizer
 from pytorch_widedeep.utils.fastai_transforms import (
     fix_html,
     spec_add_spaces,
@@ -21,12 +20,21 @@ model_names = [
     "google/electra-base-discriminator",
 ]
 
+encoder_params = {
+    "max_length": 15,
+    "padding": "max_length",
+    "truncation": True,
+    "add_special_tokens": True,
+}
+
+
+# TO DO: check the chunk preprocessor and load from folder with a HFPReprocessor
+
 
 @pytest.mark.parametrize("model_name", model_names)
 def test_tokenizer_basic_usage(model_name):
-    with pytest.warns(UserWarning):
-        tokenizer = HFTokenizer(model_name)
-        X = tokenizer.encode(df.random_sentences.tolist())
+    tokenizer = HFTokenizer(text_col="random_sentences", model_name=model_name)
+    X = tokenizer.fit_transform(df)
     assert X.shape[0] == df.shape[0]
 
 
@@ -51,7 +59,8 @@ def test_tokenizer_preprocessing_rules():
 def test_tokenizer_use_fast_tokenizer():
     with pytest.warns(UserWarning):
         tokenizer = HFTokenizer(
-            model_name="distilbert-base-uncased", use_fast_tokenizer=False
+            model_name="distilbert-base-uncased",
+            use_fast_tokenizer=True,
         )
         X = tokenizer.encode(df.random_sentences.tolist())
     assert X.shape[0] == df.shape[0]
@@ -65,13 +74,11 @@ def test_tokenizer_multiprocessing():
 
 
 def test_tokenizer_with_params():
-    tokenizer = HFTokenizer(model_name="distilbert-base-uncased")
+    tokenizer = HFTokenizer(
+        model_name="distilbert-base-uncased", encode_params=encoder_params
+    )
     X = tokenizer.encode(
         df.random_sentences.tolist(),
-        max_length=15,
-        padding="max_length",
-        truncation=True,
-        add_special_tokens=True,
     )
 
     special_tokens = np.array(list(tokenizer.tokenizer.added_tokens_decoder.keys()))
@@ -83,11 +90,19 @@ def test_tokenizer_with_params():
 
 
 def test_tokenizer_decode():
-    # TO DO add some intersection assertion
     with pytest.warns(UserWarning):
         tokenizer = HFTokenizer(model_name="distilbert-base-uncased")
         X = tokenizer.encode(df.random_sentences.tolist())
         texts = tokenizer.decode(X, skip_special_tokens=True)
+
+    # This first assertion could be a bit more restrictive
+    assert (
+        len(
+            set(df.random_sentences[0].lower().split()).intersection(
+                set(texts[0].split())
+            )
+        )
+        > 0
+    )
     assert len(texts) == df.shape[0]
     assert isinstance(texts[0], str)
-

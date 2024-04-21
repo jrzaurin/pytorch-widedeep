@@ -1,3 +1,7 @@
+from pytorch_widedeep.preprocessing.hf_preprocessor import (
+    HFPreprocessor,
+    ChunkHFPreprocessor,
+)
 from pytorch_widedeep.preprocessing.tab_preprocessor import (
     TabPreprocessor,
     ChunkTabPreprocessor,

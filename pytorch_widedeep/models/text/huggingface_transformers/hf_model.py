@@ -3,14 +3,14 @@ import warnings
 import torch
 
 from pytorch_widedeep.wdtypes import List, Tensor, Optional
+from pytorch_widedeep.utils.hf_utils import (
+    get_model_class,
+    get_config_and_model,
+)
 from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models._base_wd_model_component import (
     BaseWDModelComponent,
-)
-from pytorch_widedeep.models.text.huggingface_transformers.hf_utils import (
-    get_model_class,
-    get_config_and_model,
 )
 
 
@@ -91,7 +91,10 @@ class HFModel(BaseWDModelComponent):
         if self.use_cls_token:
             output = output[0][:, 0, :]
         else:
-            output = output[0]
+            # Here one can choose to flatten, but unless the sequence length
+            # is very small, flatten will result in a very large output
+            # tensor.
+            output = output[0].mean(dim=1)
 
         if self.head_hidden_dims is not None:
             output = self.head(output)
@@ -114,35 +117,3 @@ class HFModel(BaseWDModelComponent):
                 "Please pass an output_attention_weights=True argument when creating the HFModel object"
             )
         return self.attn_weights
-
-
-if __name__ == "__main__":
-
-    from pytorch_widedeep.models.text.huggingface_transformers.hf_tokenizer import (
-        HFTokenizer,
-    )
-
-    texts = ["this is a text", "Using just a few words to create a sentence"]
-
-    tokenizer = HFTokenizer(
-        model_name="google/electra-base-discriminator",
-        use_fast_tokenizer=False,
-        num_workers=1,
-    )
-
-    X_text_arr = tokenizer.encode(
-        texts,
-        max_length=15,
-        padding="max_length",
-        truncation=True,
-        add_special_tokens=True,
-    )
-
-    model = HFModel(
-        model_name="google/electra-base-discriminator",
-        use_cls_token=True,
-        output_attentions=True,
-    )
-
-    X_text = torch.tensor(X_text_arr)
-    out = model(X_text)
