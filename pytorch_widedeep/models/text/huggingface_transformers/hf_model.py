@@ -15,6 +15,65 @@ from pytorch_widedeep.models._base_wd_model_component import (
 
 
 class HFModel(BaseWDModelComponent):
+    """This class is a wrapper around the Hugging Face transformers library. It
+    can be used as the text component of a Wide & Deep model or independently
+    by itself.
+
+    At the moment only models from the families Bert, Roberta, DistilBert,
+    Albert and Electra are supported. This is because this library is
+    designed to address classification and regression tasks and these the
+    most 'popular' encoder-only models, which have proved to be those that
+    work best for these tasks.
+
+    Parameters
+    ----------
+    model_name: str
+        The model name from the transformers library e.g. 'bert-base-uncased'.
+        Currently supported models are those from the families: Bert, Roberta,
+        DistilBert, Albert and Electra.
+    use_cls_token: bool, default = True
+        Boolean indicating whether to use the [CLS] token or the mean of the
+        sequence of hidden states as the sentence embedding
+    trainable_parameters: List, Optional, default = None
+        List with the names of the model parameters that will be trained. If
+        None, none of the parameters will be trainable
+    head_hidden_dims: List, Optional, default = None
+        List with the sizes of the dense layers in the head e.g: _[128, 64]_
+    head_activation: str, default = "relu"
+        Activation function for the dense layers in the head. Currently
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
+    head_dropout: float, Optional, default = None
+        Dropout of the dense layers in the head
+    head_batchnorm: bool, default = False
+        Boolean indicating whether or not to include batch normalization in the
+        dense layers that form the head
+    head_batchnorm_last: bool, default = False
+        Boolean indicating whether or not to apply batch normalization to the
+        last of the dense layers in the head
+    head_linear_first: bool, default = False
+        Boolean indicating whether the order of the operations in the dense
+        layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
+        LIN -> ACT]`
+    verbose: bool, default = False
+        If True, it will print information about the model
+    **kwargs
+        Additional kwargs to be passed to the model
+
+    Attributes
+    ----------
+    head: nn.Module
+        Stack of dense layers on top of the transformer. This will only exists
+        if `head_layers_dim` is not None
+
+    Examples
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import HFModel
+    >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1).long()
+    >>> model = HFModel(model_name='bert-base-uncased')
+    >>> out = model(X_text)
+    """
+
     @alias("use_cls_token", ["use_special_token"])
     def __init__(
         self,
@@ -111,6 +170,14 @@ class HFModel(BaseWDModelComponent):
 
     @property
     def attention_weight(self) -> Tensor:
+        r"""Returns the attention weights if the model was created with the
+        output_attention_weights=True argument. If not, it will raise an
+        AttributeError.
+
+        The shape of the attention weights is $(N, H, F, F)$, where $N$ is the
+        batch size, $H$ is the number of attention heads and $F$ is the
+        sequence length.
+        """
         if not self.output_attention_weights:
             raise AttributeError(
                 "The output_attention_weights attribute was not set to True when creating the model object "

@@ -4,13 +4,10 @@ from sklearn.metrics import f1_score, accuracy_score
 from sklearn.model_selection import train_test_split
 
 from pytorch_widedeep import Trainer
-from pytorch_widedeep.models import WideDeep
+from pytorch_widedeep.models import HFModel, WideDeep
 from pytorch_widedeep.metrics import F1Score, Accuracy
 from pytorch_widedeep.datasets import load_womens_ecommerce
 from pytorch_widedeep.preprocessing import HFPreprocessor as HFTokenizer
-from pytorch_widedeep.models.text.huggingface_transformers.hf_model import (
-    HFModel,
-)
 
 df: pd.DataFrame = load_womens_ecommerce(as_frame=True)  # type: ignore
 
@@ -47,17 +44,17 @@ train, test = train_test_split(df, train_size=0.8, random_state=1, stratify=df.r
 
 model_names = [
     "distilbert-base-uncased",
-    "bert-base-uncased",
-    "FacebookAI/roberta-base",
-    "albert-base-v2",
-    "google/electra-base-discriminator",
+    # "bert-base-uncased",
+    # "FacebookAI/roberta-base",
+    # "albert-base-v2",
+    # "google/electra-base-discriminator",
 ]
 
 for model_name in model_names:
     print(f"Training model: {model_name}")
     tokenizer = HFTokenizer(
         model_name=model_name,
-        use_fast_tokenizer=False,
+        text_col="review_text",
         num_workers=1,
         encode_params={
             "max_length": 90,
@@ -67,22 +64,16 @@ for model_name in model_names:
         },
     )
 
-    X_text_tr = tokenizer.fit(
-        train["review_text"].tolist(),
-    )
-
-    X_text_te = tokenizer.transform(
-        test["review_text"].tolist(),
-    )
+    X_text_tr = tokenizer.fit_transform(train)
+    X_text_te = tokenizer.transform(test)
 
     hf_model = HFModel(
         model_name=model_name,
         use_cls_token=True,
-        output_attentions=True,
     )
 
     model = WideDeep(
-        deeptext=hf_model,  # TO DO: WideDeepBaseModel class
+        deeptext=hf_model,
         head_hidden_dims=[256, 64],
         pred_dim=4,
     )

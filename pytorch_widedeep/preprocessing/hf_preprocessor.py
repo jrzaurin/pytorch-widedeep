@@ -15,11 +15,75 @@ num_processes = os.cpu_count()
 
 
 class HFPreprocessor(BasePreprocessor):
+    """Text processor to prepare the ``deeptext`` input dataset that is a
+    wrapper around HuggingFace's tokenizers.
+
+    Following the main phylosophy of the library, this class is designed to be
+    as flexible as possible. Therefore, it is coded so that the user can use
+    it as one would use any HuggingFace tokenizers, or following the API of
+    the rest of the library.
+
+    Parameters
+    ----------
+    model_name: str
+        The model name from the transformers library e.g. 'bert-base-uncased'.
+        Currently supported models are those from the families: Bert, Roberta,
+        DistilBert, Albert and Electra.
+    use_fast_tokenizer: bool, default = False
+        Whether to use the fast tokenizer from HuggingFace or not
+    text_col: Optional[str], default = None
+        The column in the input dataframe containing the text data. If this
+        tokenizer is used via the `fit` and `transform` methods, this
+        argument is mandatory. If the tokenizer is used via the `encode`
+        method, this argument is not needed.
+    num_workers: Optional[int], default = None
+        Number of workers to use when preprocessing the text data. If not
+        None, and `use_fast_tokenizer` is False, the text data will be
+        preprocessed in parallel using the number of workers specified. If
+        `use_fast_tokenizer` is True, this argument is ignored.
+    preprocessing_rules: Optional[List[Callable[[str], str]]], default = None
+        A list of functions to be applied to the text data before encoding.
+        This can be useful to clean the text data before encoding. For
+        example, removing html tags, special characters, etc.
+    tokenizer_params: Optional[Dict[str, Any]], default = None
+        Additional parameters to be passed to the HuggingFace's
+        PreTrainedTokenizer. Parameters to the PreTrainedTokenizer
+        can also be passed via the `**kwargs` argument
+    encode_params: Optional[Dict[str, Any]], default = None
+        Additional parameters to be passed to the `batch_encode_plus` method
+        of the HuggingFace's PreTrainedTokenizer. If the `fit` and `transform`
+        methods are used, the `encode_params` dict parameter is mandatory. If
+        the `encode` method is used, this parameter is not needed.
+    **kwargs
+        Additional kwargs to be passed to the model, in particular to the
+        PreTrainedTokenizer class.
+
+    Attributes
+    ----------
+    is_fitted: bool
+        Boolean indicating if the preprocessor has been fitted. This is a
+        HuggingFacea tokenizer, so it is always considered fitted and this
+        attribute is manually set to True. This parameter exists for
+        consistency with the rest of the library and because is needed
+        for some functionality in the library.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import HFPreprocessor
+    >>> df = pd.DataFrame({"text": ["this is the first text", "this is the second text"]})
+    >>> hf_processor_1 = HFPreprocessor(model_name="bert-base-uncased", text_col="text")
+    >>> X_text_1 = hf_processor_1.fit_transform(df)
+    >>> texts = ["this is a new text", "this is another text"]
+    >>> hf_processor_2 = HFPreprocessor(model_name="bert-base-uncased")
+    >>> X_text_2 = hf_processor_2.encode(texts, max_length=10, padding="max_length", truncation=True)
+    """
+
     def __init__(
         self,
         model_name: str,
         *,
-        use_fast_tokenizer: bool = True,
+        use_fast_tokenizer: bool = False,
         text_col: Optional[str] = None,
         num_workers: Optional[int] = None,
         preprocessing_rules: Optional[List[Callable[[str], str]]] = None,
@@ -35,10 +99,17 @@ class HFPreprocessor(BasePreprocessor):
         self.tokenizer_params = tokenizer_params if tokenizer_params is not None else {}
         self.encode_params = encode_params if encode_params is not None else {}
 
-        self._multiprocessing = num_workers is not None and num_workers > 1
+        self._multiprocessing = (
+            num_workers is not None and num_workers > 1 and not use_fast_tokenizer
+        )
+
+        if kwargs:
+            self.tokenizer_params.update(kwargs)
 
         self.tokenizer = get_tokenizer(
-            self.model_name, **self.tokenizer_params, **kwargs
+            model_name=self.model_name,
+            use_fast_tokenizer=self.use_fast_tokenizer,
+            **self.tokenizer_params,
         )
 
         # A HuggingFace tokenizer is already trained, since we need this
@@ -46,7 +117,27 @@ class HFPreprocessor(BasePreprocessor):
         self.is_fitted = True
 
     def encode(self, texts: List[str], **kwargs) -> npt.NDArray[np.int64]:
+        """
+        Encodes a list of texts. The method is a wrapper around the
+        `batch_encode_plus` method of the HuggingFace's tokenizer.
 
+        if 'use_fast_tokenizer' is True, the method will use the `batch_encode_plus`
+
+        Parameters
+        ----------
+        texts: List[str]
+            List of texts to be encoded
+        **kwargs
+            Additional parameters to be passed to the `batch_encode_plus` method
+            of the HuggingFace's tokenizer. If the 'encode_params' dict was passed
+            when instantiating the class, that dictionaly will be updated with
+            the kwargs passed here.
+
+        Returns
+        -------
+        np.array
+            The encoded texts
+        """
         if kwargs:
             self.encode_params.update(kwargs)
 
@@ -56,13 +147,7 @@ class HFPreprocessor(BasePreprocessor):
             else:
                 texts = [self._preprocess_text(text) for text in texts]
 
-        if self.use_fast_tokenizer:
-            encoded_texts = self.tokenizer.batch_encode_plus(
-                texts,
-                **self.encode_params,
-            )
-            input_ids = encoded_texts.get("input_ids")
-        elif self._multiprocessing:
+        if self._multiprocessing:
             input_ids = self._encode_paralell(texts, **self.encode_params)
         else:
             encoded_texts = self.tokenizer.batch_encode_plus(
@@ -95,6 +180,23 @@ class HFPreprocessor(BasePreprocessor):
     def decode(
         self, input_ids: npt.NDArray[np.int64], skip_special_tokens: bool
     ) -> List[str]:
+        """
+        Decodes a list of input_ids. The method is a wrapper around the
+        `convert_ids_to_tokens` and `convert_tokens_to_string` methods of the
+        HuggingFace's tokenizer.
+
+        Parameters
+        ----------
+        input_ids: npt.NDArray[np.int64]
+            The input_ids to be decoded
+        skip_special_tokens: bool
+            Whether to skip the special tokens or not
+
+        Returns
+        -------
+        List[str]
+            The decoded texts
+        """
         texts = [
             self.tokenizer.convert_tokens_to_string(
                 self.tokenizer.convert_ids_to_tokens(input_ids[i], skip_special_tokens)
@@ -104,10 +206,19 @@ class HFPreprocessor(BasePreprocessor):
         return texts
 
     def fit(self, df: pd.DataFrame) -> "HFPreprocessor":
-        # Note that this method is only included here for consistency with the
-        # rest of the library and with the BasePreprocessor in particular.
-        # HuggingFace's tokenizers and models are already trained. Therefore,
-        # the 'fit' method here does nothing
+        """
+        This method is included for consistency with the rest of the library
+        in general and with the BasePreprocessor in particular. HuggingFace's
+        tokenizers and models are already trained. Therefore, the 'fit' method
+        here does nothing other than checking that the 'text_col' parameter is
+        not None.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            The dataframe containing the text data in the column specified by
+            the 'text_col' parameter
+        """
         if self.text_col is None:
             raise ValueError(
                 "'text_col' is None. Please specify the column name containing the text data"
@@ -116,6 +227,23 @@ class HFPreprocessor(BasePreprocessor):
         return self
 
     def transform(self, df: pd.DataFrame) -> npt.NDArray[np.int64]:
+        """
+        Encodes the text data in the input dataframe. This method simply
+        calls the `encode` method under the hood. Similar to the `fit` method,
+        this method is included for consistency with the rest of the library
+        in general and with the BasePreprocessor in particular.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            The dataframe containing the text data in the column specified by
+            the 'text_col' parameter
+
+        Returns
+        -------
+        np.array
+            The encoded texts
+        """
         if self.text_col is None:
             raise ValueError(
                 "'text_col' is None. Please specify the column name containing the text data"
@@ -127,6 +255,20 @@ class HFPreprocessor(BasePreprocessor):
         return self.encode(texts)
 
     def transform_sample(self, text: str) -> npt.NDArray[np.int64]:
+        """
+        Encodes a single text sample.
+
+        Parameters
+        ----------
+        text: str
+            The text sample to be encoded
+
+        Returns
+        -------
+        np.array
+            The encoded text
+        """
+
         if not self.is_fitted:
             raise ValueError(
                 "The `encode` (or `fit`) method must be called before calling `transform_sample`"
@@ -134,11 +276,41 @@ class HFPreprocessor(BasePreprocessor):
         return self.encode([text])[0]
 
     def fit_transform(self, df: pd.DataFrame) -> npt.NDArray[np.int64]:
+        """
+        Encodes the text data in the input dataframe.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            The dataframe containing the text data in the column specified by
+            the 'text_col' parameter
+
+        Returns
+        -------
+        np.array
+            The encoded texts
+        """
         return self.fit(df).transform(df)
 
     def inverse_transform(
         self, input_ids: npt.NDArray[np.int64], skip_special_tokens: bool
     ) -> List[str]:
+        """
+        Decodes a list of input_ids. The method simply calls the `decode` method
+        under the hood.
+
+        Parameters
+        ----------
+        input_ids: npt.NDArray[np.int64]
+            The input_ids to be decoded
+        skip_special_tokens: bool
+            Whether to skip the special tokens or not
+
+        Returns
+        -------
+        List[str]
+            The decoded texts
+        """
         return self.decode(input_ids, skip_special_tokens)
 
     def _process_text_parallel(self, texts: List[str]) -> List[str]:
