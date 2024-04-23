@@ -79,44 +79,36 @@ self-supervised pre-training with tabular data.
         filters:
             - "!^forward$"
 
-<br/>
-
-:information_source: **NOTE**: when we started developing the library we
- thought that combining Deep Learning architectures for tabular data, with
- CNN-based architectures (pretrained or not) for images and Transformer-based
- architectures for text would be an _'overkill'_  (also, pretrained
- transformer-based models were not as readily available as they are today).
- Therefore, at that time we made the decision of including in the library
- simple RNN-based architectures for the text dataset. A lot has passed since
- then and it is our intention to integrate this library with the
- [Hugginface's Transformers library](https://huggingface.co/docs/transformers/main/en/index)
- in the near future. Nonetheless, note that it is still possible to use any
- custom model as the `deeptext` component using this library. Please, see the
- example section in this documentation for details
-
-::: pytorch_widedeep.models.text.attentive_rnn.BasicRNN
+::: pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN
     selection:
         filters:
             - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
-::: pytorch_widedeep.models.text.attentive_rnn.AttentiveRNN
+::: pytorch_widedeep.models.text.rnns.attentive_rnn.AttentiveRNN
     selection:
         filters:
             - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
-::: pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN
+::: pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN
     selection:
         filters:
             - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
-::: pytorch_widedeep.models.text.basic_transformer.Transformer
+::: pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer
     selection:
         filters:
             - "!^_"  # exclude all members starting with _
             - "!^forward$"
+
+::: pytorch_widedeep.models.text.huggingface_transformers.hf_model.HFModel
+    selection:
+        filters:
+            - "!^_"  # exclude all members starting with _
+            - "!^forward$"
+
 
 ::: pytorch_widedeep.models.image.vision.Vision
     selection:

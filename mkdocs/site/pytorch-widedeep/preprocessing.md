@@ -12,6 +12,8 @@ model component: ``wide``, ``deeptabular``, ``deepimage`` and ``deeptext``.
 
 ::: pytorch_widedeep.preprocessing.text_preprocessor.TextPreprocessor
 
+::: pytorch_widedeep.preprocessing.hf_preprocessor.HFPreprocessor
+
 ::: pytorch_widedeep.preprocessing.image_preprocessor.ImagePreprocessor
 
 

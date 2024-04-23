@@ -75,10 +75,10 @@ class BayesianTrainer(BaseBayesianTrainer):
           long as it is an object of type `Metric`. See
           `pytorch_widedeep.metrics.Metric` or the Examples folder in the repo
         - List of objects of type `torchmetrics.Metric`. This can be any
-          metric from torchmetrics library [Examples](https://torchmetrics.readthedocs.io/en/stable/)
+          metric from torchmetrics library [Examples](https://lightning.ai/docs/torchmetrics)
           classification-metrics>`_. It can also be a torchmetric custom metric as
           long as it is an object of type `Metric`.
-          See `the [instructions]((https://torchmetrics.readthedocs.io/en/stable/))
+          See `the [instructions]((https://lightning.ai/docs/torchmetrics))
     verbose: int, default=1
         Setting it to 0 will print nothing during training.
     seed: int, default=1
