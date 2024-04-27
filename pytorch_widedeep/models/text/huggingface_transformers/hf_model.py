@@ -108,7 +108,8 @@ class HFModel(BaseWDModelComponent):
         if self.verbose and self.use_cls_token:
             warnings.warn(
                 "The model will use the [CLS] token. Make sure the tokenizer "
-                "was run with add_special_tokens=True"
+                "was run with add_special_tokens=True",
+                UserWarning,
             )
 
         self.model_class = get_model_class(model_name)

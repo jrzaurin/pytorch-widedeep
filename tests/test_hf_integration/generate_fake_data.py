@@ -59,5 +59,15 @@ if __name__ == "__main__":
         save_dir.mkdir(parents=True)
 
     df = generate()
+
+    df["text_fnames"] = [f"sent_{i}.txt" for i in range(df.shape[0])]
+
     df.to_csv(save_dir / "data.csv", index=False)
     print("Data saved to", save_dir / "data.csv")
+
+    sentences_dir = save_dir / "sentences"
+    if not sentences_dir.exists():
+        sentences_dir.mkdir(parents=True)
+    for i, sent in enumerate(df.random_sentences.tolist()):
+        with open(sentences_dir / f"sent_{i}.txt", "w") as f:
+            f.write(sent)

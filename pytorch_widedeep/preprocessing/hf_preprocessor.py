@@ -85,6 +85,7 @@ class HFPreprocessor(BasePreprocessor):
         *,
         use_fast_tokenizer: bool = False,
         text_col: Optional[str] = None,
+        root_dir: Optional[str] = None,
         num_workers: Optional[int] = None,
         preprocessing_rules: Optional[List[Callable[[str], str]]] = None,
         tokenizer_params: Optional[Dict[str, Any]] = None,
@@ -94,6 +95,7 @@ class HFPreprocessor(BasePreprocessor):
         self.model_name = model_name
         self.use_fast_tokenizer = use_fast_tokenizer
         self.text_col = text_col
+        self.root_dir = root_dir
         self.num_workers = num_workers
         self.preprocessing_rules = preprocessing_rules
         self.tokenizer_params = tokenizer_params if tokenizer_params is not None else {}
@@ -250,7 +252,7 @@ class HFPreprocessor(BasePreprocessor):
                 " if you want to use the 'fit' method"
             )
 
-        texts = self._read_texts(df)
+        texts = self._read_texts(df, self.root_dir)
 
         return self.encode(texts)
 

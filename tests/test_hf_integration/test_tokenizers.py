@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -14,9 +15,9 @@ from pytorch_widedeep.utils.fastai_transforms import (
 )
 
 full_path = os.path.realpath(__file__)
-path = os.path.split(full_path)[0]
+path = Path(os.path.split(full_path)[0])
 
-df = pd.read_csv(os.path.join(path, "load_from_folder_test_data", "fake_data.csv"))
+df = pd.read_csv(os.path.join(path, "load_from_folder_test_data", "data.csv"))
 
 model_names = [
     "distilbert-base-uncased",
@@ -133,3 +134,15 @@ def test_text_from_folder_with_hftokenizer():
     processed_sample_from_folder = text_folder.get_item(df.random_sentences.loc[1])
 
     assert all(processed_sample_from_folder == X[1])
+
+
+def test_load_text_files_from_folder():
+    hf_preprocessor = HFTokenizer(
+        model_name="distilbert-base-uncased",
+        text_col="text_fnames",
+        root_dir=os.path.join(path, "load_from_folder_test_data", "sentences"),
+    )
+
+    X = hf_preprocessor.fit_transform(df)
+
+    assert X.shape[0] == df.shape[0]
