@@ -14,3 +14,6 @@ wrapt
 torchmetrics
 pyarrow
 fastparquet>=0.8.1
+transformers
+sentence-transformers
+sentencepiece

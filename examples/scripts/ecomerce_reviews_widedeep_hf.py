@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 import pandas as pd
 from sklearn.metrics import f1_score, accuracy_score
 from sklearn.model_selection import train_test_split
@@ -28,27 +29,31 @@ df["review_length"] = df.review_text.apply(lambda x: len(x.split(" ")))
 df = df[df.review_length >= 5]
 df = df.drop("review_length", axis=1).reset_index(drop=True)
 
-# stratified sample to the minimum and then sample at random
-# rating
-# 3    12515
-# 2     4904
-# 1     2820
-# 0     2369
-df = (
-    df.groupby("rating", group_keys=False)
-    .apply(lambda x: x.sample(min(len(x), 2369)))
-    .sample(1000)
-)
+if not torch.cuda.is_available():
+    # stratified sample to the minimum and then sample at random
+    # rating
+    # 3    12515
+    # 2     4904
+    # 1     2820
+    # 0     2369
+    df = (
+        df.groupby("rating", group_keys=False)
+        .apply(lambda x: x.sample(min(len(x), 2369)))
+        .sample(1000)
+    )
+    model_names = [
+        "distilbert-base-uncased",
+    ]
+else:
+    model_names = [
+        "distilbert-base-uncased",
+        "bert-base-uncased",
+        "FacebookAI/roberta-base",
+        "albert-base-v2",
+        "google/electra-base-discriminator",
+    ]
 
 train, test = train_test_split(df, train_size=0.8, random_state=1, stratify=df.rating)
-
-model_names = [
-    "distilbert-base-uncased",
-    # "bert-base-uncased",
-    # "FacebookAI/roberta-base",
-    # "albert-base-v2",
-    # "google/electra-base-discriminator",
-]
 
 for model_name in model_names:
     print(f"Training model: {model_name}")
