@@ -19,9 +19,9 @@ class HFModel(BaseWDModelComponent):
     can be used as the text component of a Wide & Deep model or independently
     by itself.
 
-    At the moment only models from the families Bert, Roberta, DistilBert,
-    Albert and Electra are supported. This is because this library is
-    designed to address classification and regression tasks and these the
+    At the moment only models from the families BERT, RoBERTa, DistilBERT,
+    ALBERT and ELECTRA are supported. This is because this library is
+    designed to address classification and regression tasks and these are the
     most 'popular' encoder-only models, which have proved to be those that
     work best for these tasks.
 
@@ -29,8 +29,8 @@ class HFModel(BaseWDModelComponent):
     ----------
     model_name: str
         The model name from the transformers library e.g. 'bert-base-uncased'.
-        Currently supported models are those from the families: Bert, Roberta,
-        DistilBert, Albert and Electra.
+        Currently supported models are those from the families: BERT, RoBERTa,
+        DistilBERT, ALBERT and ELECTRA.
     use_cls_token: bool, default = True
         Boolean indicating whether to use the [CLS] token or the mean of the
         sequence of hidden states as the sentence embedding
@@ -91,8 +91,8 @@ class HFModel(BaseWDModelComponent):
     ):
         super().__init__()
 
-        # TO DO: add warning regarging electra as electra does not have a cls
-        # token.  Research what happens with Electra
+        # TO DO: add warning regarging ELECTRA as ELECTRA does not have a cls
+        # token.  Research what happens with ELECTRA
         self.model_name = model_name
         self.use_cls_token = use_cls_token
         self.trainable_parameters = trainable_parameters

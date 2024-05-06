@@ -29,17 +29,20 @@ pip install -e .
 
 * pandas>=1.3.5
 * numpy>=1.21.6
-* scipy>=1.7.3
+* scipy>=1.7.3,<=1.12.0
 * scikit-learn>=1.0.2
 * gensim
 * spacy
 * opencv-contrib-python
 * imutils
 * tqdm
-* torch
-* torchvision
+* torch >= 2.0.0
+* torchvision >= 0.15.0
 * einops
 * wrapt
 * torchmetrics
 * pyarrow
 * fastparquet>=0.8.1
+* transformers
+* sentence-transformers
+* sentencepiece

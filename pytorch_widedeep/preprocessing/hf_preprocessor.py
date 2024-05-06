@@ -18,24 +18,25 @@ class HFPreprocessor(BasePreprocessor):
     """Text processor to prepare the ``deeptext`` input dataset that is a
     wrapper around HuggingFace's tokenizers.
 
-    Following the main phylosophy of the library, this class is designed to be
-    as flexible as possible. Therefore, it is coded so that the user can use
-    it as one would use any HuggingFace tokenizers, or following the API of
-    the rest of the library.
+    Following the main phylosophy of the `pytorch-widedeep` library, this
+    class is designed to be as flexible as possible. Therefore, it is coded
+    so that the user can use it as one would use any HuggingFace tokenizers,
+    or following the API call 'protocol' of the rest of the library.
 
     Parameters
     ----------
     model_name: str
-        The model name from the transformers library e.g. 'bert-base-uncased'.
-        Currently supported models are those from the families: Bert, Roberta,
-        DistilBert, Albert and Electra.
+        The model name from the transformers library e.g. _'bert-base-uncased'_.
+        Currently supported models are those from the families: BERT, RoBERTa,
+        DistilBERT, ALBERT and ELECTRA.
     use_fast_tokenizer: bool, default = False
         Whether to use the fast tokenizer from HuggingFace or not
     text_col: Optional[str], default = None
         The column in the input dataframe containing the text data. If this
         tokenizer is used via the `fit` and `transform` methods, this
         argument is mandatory. If the tokenizer is used via the `encode`
-        method, this argument is not needed.
+        method, this argument is not needed since the input text is passed
+        directly to the `encode` method.
     num_workers: Optional[int], default = None
         Number of workers to use when preprocessing the text data. If not
         None, and `use_fast_tokenizer` is False, the text data will be
@@ -47,24 +48,25 @@ class HFPreprocessor(BasePreprocessor):
         example, removing html tags, special characters, etc.
     tokenizer_params: Optional[Dict[str, Any]], default = None
         Additional parameters to be passed to the HuggingFace's
-        PreTrainedTokenizer. Parameters to the PreTrainedTokenizer
+        `PreTrainedTokenizer`. Parameters to the `PreTrainedTokenizer`
         can also be passed via the `**kwargs` argument
     encode_params: Optional[Dict[str, Any]], default = None
         Additional parameters to be passed to the `batch_encode_plus` method
-        of the HuggingFace's PreTrainedTokenizer. If the `fit` and `transform`
+        of the HuggingFace's `PreTrainedTokenizer`. If the `fit` and `transform`
         methods are used, the `encode_params` dict parameter is mandatory. If
-        the `encode` method is used, this parameter is not needed.
+        the `encode` method is used, this parameter is not needed since the
+        input text is passed directly to the `encode` method.
     **kwargs
         Additional kwargs to be passed to the model, in particular to the
-        PreTrainedTokenizer class.
+        `PreTrainedTokenizer` class.
 
     Attributes
     ----------
     is_fitted: bool
         Boolean indicating if the preprocessor has been fitted. This is a
         HuggingFacea tokenizer, so it is always considered fitted and this
-        attribute is manually set to True. This parameter exists for
-        consistency with the rest of the library and because is needed
+        attribute is manually set to True internally. This parameter exists
+        for consistency with the rest of the library and because is needed
         for some functionality in the library.
 
     Examples
@@ -210,10 +212,10 @@ class HFPreprocessor(BasePreprocessor):
     def fit(self, df: pd.DataFrame) -> "HFPreprocessor":
         """
         This method is included for consistency with the rest of the library
-        in general and with the BasePreprocessor in particular. HuggingFace's
+        in general and with the `BasePreprocessor` in particular. HuggingFace's
         tokenizers and models are already trained. Therefore, the 'fit' method
         here does nothing other than checking that the 'text_col' parameter is
-        not None.
+        not `None`.
 
         Parameters
         ----------
@@ -233,7 +235,7 @@ class HFPreprocessor(BasePreprocessor):
         Encodes the text data in the input dataframe. This method simply
         calls the `encode` method under the hood. Similar to the `fit` method,
         this method is included for consistency with the rest of the library
-        in general and with the BasePreprocessor in particular.
+        in general and with the `BasePreprocessor` in particular.
 
         Parameters
         ----------
@@ -365,6 +367,63 @@ class HFPreprocessor(BasePreprocessor):
 
 
 class ChunkHFPreprocessor(HFPreprocessor):
+    """Text processor to prepare the ``deeptext`` input dataset that is a
+    wrapper around HuggingFace's tokenizers.
+
+    Hugginface Tokenizer's are already 'trained'. Therefore, unlike the
+    `ChunkTextPreprocessor` this is mostly identical to the `HFPreprocessor`
+    with the only difference that the class needs a 'text_col' parameter to
+    be passed. Also the parameter `encode_params` is not really optional when
+    using this class. It must be passed containing at least the
+    'max_length' encoding parameter. This is because we need to ensure that
+     all sequences have the same length when encoding in chunks.
+
+    Parameters
+    ----------
+    model_name: str
+        The model name from the transformers library e.g. _'bert-base-uncased'_.
+        Currently supported models are those from the families: BERT, RoBERTa,
+        DistilBERT, ALBERT and ELECTRA.
+    text_col: str, default = None
+        The column in the input dataframe containing the text data. When using
+        the `ChunkHFPreprocessor` the `text_col` parameter is mandatory.
+    root_dir: Optional[str], default = None
+        The root directory where the text files are located. This is only
+        needed if the text data is stored in text files. If the text data is
+        stored in a column in the input dataframe, this parameter is not
+        needed.
+    use_fast_tokenizer: bool, default = False
+        Whether to use the fast tokenizer from HuggingFace or not
+    num_workers: Optional[int], default = None
+        Number of workers to use when preprocessing the text data. If not
+        None, and `use_fast_tokenizer` is False, the text data will be
+        preprocessed in parallel using the number of workers specified. If
+        `use_fast_tokenizer` is True, this argument is ignored.
+    preprocessing_rules: Optional[List[Callable[[str], str]]], default = None
+        A list of functions to be applied to the text data before encoding.
+        This can be useful to clean the text data before encoding. For
+        example, removing html tags, special characters, etc.
+    tokenizer_params: Optional[Dict[str, Any]], default = None
+        Additional parameters to be passed to the HuggingFace's
+        `PreTrainedTokenizer`.
+    encode_params: Optional[Dict[str, Any]], default = None
+        Additional parameters to be passed to the `batch_encode_plus` method
+        of the HuggingFace's `PreTrainedTokenizer`. In the case of the
+        `ChunkHFPreprocessor`, this parameter is not really `Optional`. It
+        must be passed containing at least the 'max_length' encoding
+        parameter
+
+    Attributes
+    ----------
+    is_fitted: bool
+        Boolean indicating if the preprocessor has been fitted. This is a
+        HuggingFacea tokenizer, so it is always considered fitted and this
+        attribute is manually set to True internally. This parameter exists
+        for consistency with the rest of the library and because is needed
+        for some functionality in the library.
+
+    """
+
     def __init__(
         self,
         model_name: str,

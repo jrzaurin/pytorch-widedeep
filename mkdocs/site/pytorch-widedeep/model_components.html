@@ -12255,9 +12255,9 @@ the Transformer model via the 'pos_encoder' parameter</p>
       <p>This class is a wrapper around the Hugging Face transformers library. It
 can be used as the text component of a Wide &amp; Deep model or independently
 by itself.</p>
-<p>At the moment only models from the families Bert, Roberta, DistilBert,
-Albert and Electra are supported. This is because this library is
-designed to address classification and regression tasks and these the
+<p>At the moment only models from the families BERT, RoBERTa, DistilBERT,
+ALBERT and ELECTRA are supported. This is because this library is
+designed to address classification and regression tasks and these are the
 most 'popular' encoder-only models, which have proved to be those that
 work best for these tasks.</p>
 
@@ -12271,8 +12271,8 @@ work best for these tasks.</p>
         –
         <div class="doc-md-description">
           <p>The model name from the transformers library e.g. 'bert-base-uncased'.
-Currently supported models are those from the families: Bert, Roberta,
-DistilBert, Albert and Electra.</p>
+Currently supported models are those from the families: BERT, RoBERTa,
+DistilBERT, ALBERT and ELECTRA.</p>
         </div>
       </li>
       <li class="field-body">
@@ -12465,7 +12465,8 @@ if <code>head_layers_dim</code> is not None</p>
 <span class="normal">131</span>
 <span class="normal">132</span>
 <span class="normal">133</span>
-<span class="normal">134</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;use_cls_token&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;use_special_token&quot;</span><span class="p">])</span>
+<span class="normal">134</span>
+<span class="normal">135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;use_cls_token&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;use_special_token&quot;</span><span class="p">])</span>
 <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -12482,8 +12483,8 @@ if <code>head_layers_dim</code> is not None</p>
 <span class="p">):</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-    <span class="c1"># TO DO: add warning regarging electra as electra does not have a cls</span>
-    <span class="c1"># token.  Research what happens with Electra</span>
+    <span class="c1"># TO DO: add warning regarging ELECTRA as ELECTRA does not have a cls</span>
+    <span class="c1"># token.  Research what happens with ELECTRA</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">use_cls_token</span> <span class="o">=</span> <span class="n">use_cls_token</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">trainable_parameters</span> <span class="o">=</span> <span class="n">trainable_parameters</span>
@@ -12499,7 +12500,8 @@ if <code>head_layers_dim</code> is not None</p>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cls_token</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="s2">&quot;The model will use the [CLS] token. Make sure the tokenizer &quot;</span>
-            <span class="s2">&quot;was run with add_special_tokens=True&quot;</span>
+            <span class="s2">&quot;was run with add_special_tokens=True&quot;</span><span class="p">,</span>
+            <span class="ne">UserWarning</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">model_class</span> <span class="o">=</span> <span class="n">get_model_class</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
@@ -13827,8 +13829,7 @@ authors used a value of 10.</p>
     <nav>
       
         <a href="mailto:jrzaurin@gmail.com">Javier</a>, 
-        <a href="mailto:javierrodriguezzaurin@javiers-macbook-pro.local">Javier Rodriguez Zaurin</a>, 
-        <a href="mailto:not.committed.yet">Not Committed Yet</a>
+        <a href="mailto:javierrodriguezzaurin@javiers-macbook-pro.local">Javier Rodriguez Zaurin</a>
     </nav>
   </span>
 

@@ -811,6 +811,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#pytorch_widedeep.preprocessing.hf_preprocessor.ChunkHFPreprocessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      ChunkHFPreprocessor
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1676,8 +1685,12 @@
 
 <h1 id="the-preprocessing-module">The <code>preprocessing</code> module<a class="headerlink" href="#the-preprocessing-module" title="Permanent link">&para;</a></h1>
 <p>This module contains the classes that are used to prepare the data before
-being passed to the models. There is one Preprocessor per data mode or
-model component: <code>wide</code>, <code>deeptabular</code>, <code>deepimage</code> and <code>deeptext</code>.</p>
+being passed to the models. There is one Preprocessor per data mode or model
+component (<code>wide</code>, <code>deeptabular</code>, <code>deepimage</code> and <code>deeptext</code>) with
+the exception of the <code>deeptext</code> component. In this case, two processors are
+available: one for the case when no Hugging Face model is used
+(<code>TextPreprocessor</code>) and another one when a Hugging Face model is used
+(<code>HFPreprocessor</code>).</p>
 
 
 <div class="doc doc-object doc-class">
@@ -4049,6 +4062,7 @@ are already fully processed or are directly not text (e.g. IDs)</p>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">use_fast_tokenizer</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">text_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">root_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">num_workers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">preprocessing_rules</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">tokenizer_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -4064,10 +4078,10 @@ are already fully processed or are directly not text (e.g. IDs)</p>
   
       <p>Text processor to prepare the <code>deeptext</code> input dataset that is a
 wrapper around HuggingFace's tokenizers.</p>
-<p>Following the main phylosophy of the library, this class is designed to be
-as flexible as possible. Therefore, it is coded so that the user can use
-it as one would use any HuggingFace tokenizers, or following the API of
-the rest of the library.</p>
+<p>Following the main phylosophy of the <code>pytorch-widedeep</code> library, this
+class is designed to be as flexible as possible. Therefore, it is coded
+so that the user can use it as one would use any HuggingFace tokenizers,
+or following the API call 'protocol' of the rest of the library.</p>
 
 
 
@@ -4078,9 +4092,9 @@ the rest of the library.</p>
             (<code>str</code>)
         –
         <div class="doc-md-description">
-          <p>The model name from the transformers library e.g. 'bert-base-uncased'.
-Currently supported models are those from the families: Bert, Roberta,
-DistilBert, Albert and Electra.</p>
+          <p>The model name from the transformers library e.g. <em>'bert-base-uncased'</em>.
+Currently supported models are those from the families: BERT, RoBERTa,
+DistilBERT, ALBERT and ELECTRA.</p>
         </div>
       </li>
       <li class="field-body">
@@ -4103,7 +4117,8 @@ DistilBert, Albert and Electra.</p>
           <p>The column in the input dataframe containing the text data. If this
 tokenizer is used via the <code>fit</code> and <code>transform</code> methods, this
 argument is mandatory. If the tokenizer is used via the <code>encode</code>
-method, this argument is not needed.</p>
+method, this argument is not needed since the input text is passed
+directly to the <code>encode</code> method.</p>
         </div>
       </li>
       <li class="field-body">
@@ -4139,7 +4154,7 @@ example, removing html tags, special characters, etc.</p>
         –
         <div class="doc-md-description">
           <p>Additional parameters to be passed to the HuggingFace's
-PreTrainedTokenizer. Parameters to the PreTrainedTokenizer
+<code>PreTrainedTokenizer</code>. Parameters to the <code>PreTrainedTokenizer</code>
 can also be passed via the <code>**kwargs</code> argument</p>
         </div>
       </li>
@@ -4151,9 +4166,10 @@ can also be passed via the <code>**kwargs</code> argument</p>
         –
         <div class="doc-md-description">
           <p>Additional parameters to be passed to the <code>batch_encode_plus</code> method
-of the HuggingFace's PreTrainedTokenizer. If the <code>fit</code> and <code>transform</code>
+of the HuggingFace's <code>PreTrainedTokenizer</code>. If the <code>fit</code> and <code>transform</code>
 methods are used, the <code>encode_params</code> dict parameter is mandatory. If
-the <code>encode</code> method is used, this parameter is not needed.</p>
+the <code>encode</code> method is used, this parameter is not needed since the
+input text is passed directly to the <code>encode</code> method.</p>
         </div>
       </li>
       <li class="field-body">
@@ -4161,7 +4177,7 @@ the <code>encode</code> method is used, this parameter is not needed.</p>
         –
         <div class="doc-md-description">
           <p>Additional kwargs to be passed to the model, in particular to the
-PreTrainedTokenizer class.</p>
+<code>PreTrainedTokenizer</code> class.</p>
         </div>
       </li>
   </ul>
@@ -4177,8 +4193,8 @@ PreTrainedTokenizer class.</p>
         <div class="doc-md-description">
           <p>Boolean indicating if the preprocessor has been fitted. This is a
 HuggingFacea tokenizer, so it is always considered fitted and this
-attribute is manually set to True. This parameter exists for
-consistency with the rest of the library and because is needed
+attribute is manually set to True internally. This parameter exists
+for consistency with the rest of the library and because is needed
 for some functionality in the library.</p>
         </div>
       </li>
@@ -4199,9 +4215,7 @@ for some functionality in the library.</p>
 
                 <details class="quote">
                   <summary>Source code in <code>pytorch_widedeep/preprocessing/hf_preprocessor.py</code></summary>
-                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 84</span>
 <span class="normal"> 85</span>
 <span class="normal"> 86</span>
 <span class="normal"> 87</span>
@@ -4234,12 +4248,17 @@ for some functionality in the library.</p>
 <span class="normal">114</span>
 <span class="normal">115</span>
 <span class="normal">116</span>
-<span class="normal">117</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">use_fast_tokenizer</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">text_col</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">root_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">num_workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">preprocessing_rules</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">tokenizer_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -4249,6 +4268,7 @@ for some functionality in the library.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">use_fast_tokenizer</span> <span class="o">=</span> <span class="n">use_fast_tokenizer</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">text_col</span> <span class="o">=</span> <span class="n">text_col</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span> <span class="o">=</span> <span class="n">root_dir</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="n">num_workers</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">preprocessing_rules</span> <span class="o">=</span> <span class="n">preprocessing_rules</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer_params</span> <span class="o">=</span> <span class="n">tokenizer_params</span> <span class="k">if</span> <span class="n">tokenizer_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
@@ -4343,11 +4363,7 @@ the kwargs passed here.</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/preprocessing/hf_preprocessor.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">123</span>
 <span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
@@ -4402,7 +4418,11 @@ the kwargs passed here.</p>
 <span class="normal">175</span>
 <span class="normal">176</span>
 <span class="normal">177</span>
-<span class="normal">178</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]:</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Encodes a list of texts. The method is a wrapper around the</span>
 <span class="sd">    `batch_encode_plus` method of the HuggingFace&#39;s tokenizer.</span>
@@ -4524,11 +4544,7 @@ HuggingFace's tokenizer.</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/preprocessing/hf_preprocessor.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">180</span>
-<span class="normal">181</span>
-<span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
 <span class="normal">187</span>
@@ -4550,7 +4566,11 @@ HuggingFace's tokenizer.</p>
 <span class="normal">203</span>
 <span class="normal">204</span>
 <span class="normal">205</span>
-<span class="normal">206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">decode</span><span class="p">(</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">decode</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">input_ids</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">],</span> <span class="n">skip_special_tokens</span><span class="p">:</span> <span class="nb">bool</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -4599,10 +4619,10 @@ HuggingFace's tokenizer.</p>
   <div class="doc doc-contents ">
   
       <p>This method is included for consistency with the rest of the library
-in general and with the BasePreprocessor in particular. HuggingFace's
+in general and with the <code>BasePreprocessor</code> in particular. HuggingFace's
 tokenizers and models are already trained. Therefore, the 'fit' method
 here does nothing other than checking that the 'text_col' parameter is
-not None.</p>
+not <code>None</code>.</p>
 
 
 
@@ -4621,11 +4641,7 @@ the 'text_col' parameter</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/preprocessing/hf_preprocessor.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">212</span>
 <span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
@@ -4640,13 +4656,17 @@ the 'text_col' parameter</p>
 <span class="normal">224</span>
 <span class="normal">225</span>
 <span class="normal">226</span>
-<span class="normal">227</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;HFPreprocessor&quot;</span><span class="p">:</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;HFPreprocessor&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This method is included for consistency with the rest of the library</span>
-<span class="sd">    in general and with the BasePreprocessor in particular. HuggingFace&#39;s</span>
+<span class="sd">    in general and with the `BasePreprocessor` in particular. HuggingFace&#39;s</span>
 <span class="sd">    tokenizers and models are already trained. Therefore, the &#39;fit&#39; method</span>
 <span class="sd">    here does nothing other than checking that the &#39;text_col&#39; parameter is</span>
-<span class="sd">    not None.</span>
+<span class="sd">    not `None`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -4684,7 +4704,7 @@ the 'text_col' parameter</p>
       <p>Encodes the text data in the input dataframe. This method simply
 calls the <code>encode</code> method under the hood. Similar to the <code>fit</code> method,
 this method is included for consistency with the rest of the library
-in general and with the BasePreprocessor in particular.</p>
+in general and with the <code>BasePreprocessor</code> in particular.</p>
 
 
 
@@ -4716,11 +4736,7 @@ the 'text_col' parameter</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/preprocessing/hf_preprocessor.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">233</span>
 <span class="normal">234</span>
 <span class="normal">235</span>
 <span class="normal">236</span>
@@ -4742,12 +4758,16 @@ the 'text_col' parameter</p>
 <span class="normal">252</span>
 <span class="normal">253</span>
 <span class="normal">254</span>
-<span class="normal">255</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]:</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Encodes the text data in the input dataframe. This method simply</span>
 <span class="sd">    calls the `encode` method under the hood. Similar to the `fit` method,</span>
 <span class="sd">    this method is included for consistency with the rest of the library</span>
-<span class="sd">    in general and with the BasePreprocessor in particular.</span>
+<span class="sd">    in general and with the `BasePreprocessor` in particular.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -4766,7 +4786,7 @@ the 'text_col' parameter</p>
             <span class="s2">&quot; if you want to use the &#39;fit&#39; method&quot;</span>
         <span class="p">)</span>
 
-    <span class="n">texts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_texts</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">texts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_texts</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -4821,11 +4841,7 @@ the 'text_col' parameter</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/preprocessing/hf_preprocessor.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">261</span>
 <span class="normal">262</span>
 <span class="normal">263</span>
 <span class="normal">264</span>
@@ -4840,7 +4856,11 @@ the 'text_col' parameter</p>
 <span class="normal">273</span>
 <span class="normal">274</span>
 <span class="normal">275</span>
-<span class="normal">276</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">transform_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]:</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">transform_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Encodes a single text sample.</span>
 
@@ -4913,11 +4933,7 @@ the 'text_col' parameter</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/preprocessing/hf_preprocessor.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">282</span>
 <span class="normal">283</span>
 <span class="normal">284</span>
 <span class="normal">285</span>
@@ -4928,7 +4944,11 @@ the 'text_col' parameter</p>
 <span class="normal">290</span>
 <span class="normal">291</span>
 <span class="normal">292</span>
-<span class="normal">293</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]:</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Encodes the text data in the input dataframe.</span>
 
@@ -5005,11 +5025,7 @@ under the hood.</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/preprocessing/hf_preprocessor.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">299</span>
 <span class="normal">300</span>
 <span class="normal">301</span>
 <span class="normal">302</span>
@@ -5024,7 +5040,11 @@ under the hood.</p>
 <span class="normal">311</span>
 <span class="normal">312</span>
 <span class="normal">313</span>
-<span class="normal">314</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">inverse_transform</span><span class="p">(</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">inverse_transform</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">input_ids</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">],</span> <span class="n">skip_special_tokens</span><span class="p">:</span> <span class="nb">bool</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -6503,6 +6523,264 @@ end of the sequences</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">chunk_counter</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre></div></td></tr></table></div>
+                </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="pytorch_widedeep.preprocessing.hf_preprocessor.ChunkHFPreprocessor" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">ChunkHFPreprocessor</span>
+
+
+<a href="#pytorch_widedeep.preprocessing.hf_preprocessor.ChunkHFPreprocessor" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">ChunkHFPreprocessor</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">text_col</span><span class="p">,</span>
+    <span class="n">root_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">use_fast_tokenizer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">preprocessing_rules</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">tokenizer_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">encode_params</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents first">
+          <p class="doc doc-class-bases">
+            Bases: <code><a class="autorefs autorefs-internal" title="pytorch_widedeep.preprocessing.hf_preprocessor.HFPreprocessor" href="#pytorch_widedeep.preprocessing.hf_preprocessor.HFPreprocessor">HFPreprocessor</a></code></p>
+
+  
+      <p>Text processor to prepare the <code>deeptext</code> input dataset that is a
+wrapper around HuggingFace's tokenizers.</p>
+<p>Hugginface Tokenizer's are already 'trained'. Therefore, unlike the
+<code>ChunkTextPreprocessor</code> this is mostly identical to the <code>HFPreprocessor</code>
+with the only difference that the class needs a 'text_col' parameter to
+be passed. Also the parameter <code>encode_params</code> is not really optional when
+using this class. It must be passed containing at least the
+'max_length' encoding parameter. This is because we need to ensure that
+ all sequences have the same length when encoding in chunks.</p>
+
+
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b><code>model_name</code></b>
+            (<code>str</code>)
+        –
+        <div class="doc-md-description">
+          <p>The model name from the transformers library e.g. <em>'bert-base-uncased'</em>.
+Currently supported models are those from the families: BERT, RoBERTa,
+DistilBERT, ALBERT and ELECTRA.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>text_col</code></b>
+            (<code>str</code>)
+        –
+        <div class="doc-md-description">
+          <p>The column in the input dataframe containing the text data. When using
+the <code>ChunkHFPreprocessor</code> the <code>text_col</code> parameter is mandatory.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>root_dir</code></b>
+            (<code><span title="typing.Optional">Optional</span>[str]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>The root directory where the text files are located. This is only
+needed if the text data is stored in text files. If the text data is
+stored in a column in the input dataframe, this parameter is not
+needed.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>use_fast_tokenizer</code></b>
+            (<code>bool</code>, default:
+                <code>True</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Whether to use the fast tokenizer from HuggingFace or not</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>num_workers</code></b>
+            (<code><span title="typing.Optional">Optional</span>[int]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Number of workers to use when preprocessing the text data. If not
+None, and <code>use_fast_tokenizer</code> is False, the text data will be
+preprocessed in parallel using the number of workers specified. If
+<code>use_fast_tokenizer</code> is True, this argument is ignored.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>preprocessing_rules</code></b>
+            (<code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<span title="typing.Callable">Callable</span>[[str], str]]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>A list of functions to be applied to the text data before encoding.
+This can be useful to clean the text data before encoding. For
+example, removing html tags, special characters, etc.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>tokenizer_params</code></b>
+            (<code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Additional parameters to be passed to the HuggingFace's
+<code>PreTrainedTokenizer</code>.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>encode_params</code></b>
+            (<code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Additional parameters to be passed to the <code>batch_encode_plus</code> method
+of the HuggingFace's <code>PreTrainedTokenizer</code>. In the case of the
+<code>ChunkHFPreprocessor</code>, this parameter is not really <code>Optional</code>. It
+must be passed containing at least the 'max_length' encoding
+parameter</p>
+        </div>
+      </li>
+  </ul>
+
+
+
+  <p>Attributes:</p>
+  <ul>
+      <li class="field-body">
+        <b><code><span title="pytorch_widedeep.preprocessing.hf_preprocessor.ChunkHFPreprocessor.is_fitted">is_fitted</span></code></b>
+            (<code>bool</code>)
+        –
+        <div class="doc-md-description">
+          <p>Boolean indicating if the preprocessor has been fitted. This is a
+HuggingFacea tokenizer, so it is always considered fitted and this
+attribute is manually set to True internally. This parameter exists
+for consistency with the rest of the library and because is needed
+for some functionality in the library.</p>
+        </div>
+      </li>
+  </ul>
+
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/preprocessing/hf_preprocessor.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">text_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">root_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">use_fast_tokenizer</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">preprocessing_rules</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tokenizer_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">encode_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="n">model_name</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+        <span class="n">use_fast_tokenizer</span><span class="o">=</span><span class="n">use_fast_tokenizer</span><span class="p">,</span>
+        <span class="n">text_col</span><span class="o">=</span><span class="n">text_col</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+        <span class="n">preprocessing_rules</span><span class="o">=</span><span class="n">preprocessing_rules</span><span class="p">,</span>
+        <span class="n">tokenizer_params</span><span class="o">=</span><span class="n">tokenizer_params</span><span class="p">,</span>
+        <span class="n">encode_params</span><span class="o">=</span><span class="n">encode_params</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span> <span class="o">=</span> <span class="n">root_dir</span>
+
+    <span class="c1"># when using in chunks encode_params is not really optional. I will</span>
+    <span class="c1"># review types in due time</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The &#39;encode_params&#39; dict must be passed to the ChunkHFTokenizer &quot;</span>
+            <span class="s2">&quot;containing at least the &#39;max_length&#39; encoding parameter&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;padding&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode_params</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode_params</span><span class="p">[</span><span class="s2">&quot;padding&quot;</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encode_params</span><span class="p">[</span><span class="s2">&quot;padding&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="s2">&quot;truncation&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode_params</span>
+        <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode_params</span><span class="p">[</span><span class="s2">&quot;truncation&quot;</span><span class="p">]</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encode_params</span><span class="p">[</span><span class="s2">&quot;truncation&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 </code></pre></div></td></tr></table></div>
                 </details>
 
