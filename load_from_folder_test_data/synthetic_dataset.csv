@@ -1,0 +1,33 @@
+category1,category2,numeric1,numeric2,text,images,target_multiclass,target_binary,target_regression
+C,X,87.18133841383992,30.546034353414658,Actions speak louder than words.,image_31_0.png,2,1,0.6023355819507898
+A,Y,76.48856920743998,54.39852398184295,The quick brown fox jumps over the lazy dog.,image_31_1.png,1,0,0.648390856719063
+C,Y,49.37196509486584,12.074904806768611,Don't count your chickens before they hatch.,image_31_2.png,1,1,0.2973471610636259
+B,X,6.734591482924568,87.92295032120002,A journey of a thousand miles begins with a single step.,image_31_3.png,1,1,0.9473980363295809
+A,Y,81.78630208858877,97.82046487405609,All that glitters is not gold.,image_31_4.png,1,0,0.2619592299176039
+A,Y,94.7380192907941,17.347568938438638,Every cloud has a silver lining.,image_31_5.png,2,1,0.7121321101782967
+A,X,71.58194830909306,40.50023769974548,Don't count your chickens before they hatch.,image_31_6.png,1,1,0.08148005689799998
+B,Y,12.979415390958305,23.24503636612418,Don't count your chickens before they hatch.,image_31_7.png,0,1,0.6648445460983803
+A,X,59.255571326624754,1.7118930595242605,The quick brown fox jumps over the lazy dog.,image_31_8.png,2,0,0.45994874865888524
+A,X,90.63658128760667,86.1039046251209,A journey of a thousand miles begins with a single step.,image_31_9.png,1,1,0.5691078446433954
+C,X,28.56924913249015,49.056035415898585,All that glitters is not gold.,image_31_10.png,1,0,0.18407265951386542
+C,Y,25.056726997176728,47.824321351514776,Every cloud has a silver lining.,image_31_11.png,0,0,0.4335639685796311
+A,X,10.59615060865351,43.67406705823137,Every cloud has a silver lining.,image_31_12.png,2,0,0.7662778565571535
+B,Y,86.51983808859072,6.362947535984881,A journey of a thousand miles begins with a single step.,image_31_13.png,0,0,0.7670848328015827
+A,Y,73.09314525567709,80.25865857530817,A journey of a thousand miles begins with a single step.,image_31_14.png,0,0,0.23755596123159606
+A,X,19.83068193564034,45.412741235480055,Every cloud has a silver lining.,image_31_15.png,1,1,0.352599275113029
+A,Y,46.80017877169577,87.57410945298741,A journey of a thousand miles begins with a single step.,image_31_16.png,1,1,0.0038135553921014864
+B,X,6.008244622963242,99.92896437285994,The quick brown fox jumps over the lazy dog.,image_31_17.png,0,1,0.089962174338176
+A,X,17.464799949787487,49.07847141962113,Actions speak louder than words.,image_31_18.png,2,0,0.12673035264875487
+B,X,17.29907501875116,1.2133824567912166,Every cloud has a silver lining.,image_31_19.png,2,1,0.29365132589590004
+B,Y,29.23967366574511,69.9625588564161,"When in Rome, do as the Romans do.",image_31_20.png,2,1,0.7590154867424669
+A,X,30.374074723961858,96.90222713194673,The quick brown fox jumps over the lazy dog.,image_31_21.png,0,1,0.5102501321559869
+C,Y,6.659362017840825,58.83358185143815,All that glitters is not gold.,image_31_22.png,2,0,0.7926081365522494
+A,X,85.28291198906803,7.783611937675443,A journey of a thousand miles begins with a single step.,image_31_23.png,1,1,0.7549057075970432
+C,X,40.97377958050947,94.21801659567984,Actions speak louder than words.,image_31_24.png,0,1,0.5871382095076755
+C,X,62.318769522878206,42.503266618251374,Don't count your chickens before they hatch.,image_31_25.png,0,0,0.49986020119607844
+B,X,67.3028715022131,32.104202416762035,Beauty is in the eye of the beholder.,image_31_26.png,0,1,0.93132086154928
+B,X,67.49733207303716,30.69971090007746,Don't count your chickens before they hatch.,image_31_27.png,2,1,0.5692702226144151
+A,X,46.37026673924003,99.8469896445898,A journey of a thousand miles begins with a single step.,image_31_28.png,2,0,0.4828239846157095
+A,X,51.08258471082777,14.113200466280261,Don't count your chickens before they hatch.,image_31_29.png,1,0,0.8691208095398361
+A,X,37.58318178514951,16.616936403365965,Beauty is in the eye of the beholder.,image_31_30.png,2,0,0.07143871475230579
+C,X,67.11845716754577,55.905625966478105,A journey of a thousand miles begins with a single step.,image_31_31.png,2,0,0.6560263195179041

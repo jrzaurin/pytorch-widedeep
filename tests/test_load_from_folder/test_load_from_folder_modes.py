@@ -7,6 +7,7 @@ from torchvision import transforms
 
 from pytorch_widedeep.preprocessing import (
     ImagePreprocessor,
+    ChunkHFPreprocessor,
     ChunkTabPreprocessor,
     ChunkTextPreprocessor,
     ChunkWidePreprocessor,
@@ -146,7 +147,8 @@ def test_image_from_folder_with_transforms():
     return processed_sample_from_folder.shape == torch.Size([3, 10, 10])
 
 
-def test_full_wide_deep_dataset_from_folder():
+@pytest.mark.parametrize("hugginface", [True, False])
+def test_full_wide_deep_dataset_from_folder(hugginface):
     df = pd.read_csv("/".join([data_folder, fname]))
 
     tab_preprocessor = ChunkTabPreprocessor(
@@ -157,13 +159,24 @@ def test_full_wide_deep_dataset_from_folder():
         verbose=0,
     )
 
-    text_preprocessor = ChunkTextPreprocessor(
-        n_chunks=n_chunks,
-        text_col=text_col,
-        n_cpus=1,
-        maxlen=10,
-        max_vocab=50,
-    )
+    if not hugginface:
+        text_preprocessor = ChunkTextPreprocessor(
+            n_chunks=n_chunks,
+            text_col=text_col,
+            n_cpus=1,
+            maxlen=10,
+            max_vocab=50,
+        )
+    else:
+        text_preprocessor = ChunkHFPreprocessor(
+            model_name="distilbert-base-uncased",
+            text_col=text_col,
+            encode_params={
+                "max_length": 20,
+                "padding": "max_length",
+                "truncation": True,
+            },
+        )
 
     img_preprocessor = ImagePreprocessor(
         img_col=img_col,
@@ -174,6 +187,7 @@ def test_full_wide_deep_dataset_from_folder():
         pd.read_csv("/".join([data_folder, fname]), chunksize=chunksize)
     ):
         tab_preprocessor.fit(chunk)
+        # if it is ChunkHFPreprocessor, the fit method does nothing
         text_preprocessor.fit(chunk)
 
     tab_from_folder = TabFromFolder(
@@ -202,7 +216,7 @@ def test_full_wide_deep_dataset_from_folder():
 
     cond1 = all([k in X for k in ["deeptabular", "deeptext", "deepimage"]])
     cond2 = X["deeptabular"].shape[0] == len(cat_cols) + len(num_cols)
-    cond3 = X["deeptext"].shape[0] == text_preprocessor.maxlen
+    cond3 = X["deeptext"].shape[0] == (20 if hugginface else 10)
     cond4 = X["deepimage"].shape == (3, 224, 224)
 
     assert all([cond1, cond2, cond3, cond4])

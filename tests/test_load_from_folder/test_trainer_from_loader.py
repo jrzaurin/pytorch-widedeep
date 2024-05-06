@@ -10,6 +10,7 @@ from pytorch_widedeep.models import (
     Wide,
     TabMlp,
     Vision,
+    HFModel,
     BasicRNN,
     WideDeep,
     TabTransformer,
@@ -18,6 +19,7 @@ from pytorch_widedeep.training import TrainerFromFolder
 from pytorch_widedeep.callbacks import EarlyStopping
 from pytorch_widedeep.preprocessing import (
     ImagePreprocessor,
+    ChunkHFPreprocessor,
     ChunkTabPreprocessor,
     ChunkTextPreprocessor,
     ChunkWidePreprocessor,
@@ -47,7 +49,7 @@ chunksize = 8
 n_chunks = data_size // chunksize
 
 
-def _build_preprocessors(tab_params={}):
+def _build_preprocessors(tab_params={}, huggingface=False):
     wide_preprocessor = ChunkWidePreprocessor(
         wide_cols=cat_cols,
         n_chunks=n_chunks,
@@ -62,9 +64,20 @@ def _build_preprocessors(tab_params={}):
         **tab_params,
     )
 
-    text_preprocessor = ChunkTextPreprocessor(
-        n_chunks=n_chunks, text_col=text_col, n_cpus=1, max_vocab=50, maxlen=10
-    )
+    if not huggingface:
+        text_preprocessor = ChunkTextPreprocessor(
+            n_chunks=n_chunks, text_col=text_col, n_cpus=1, max_vocab=50, maxlen=10
+        )
+    else:
+        text_preprocessor = ChunkHFPreprocessor(
+            text_col=text_col,
+            model_name="distilbert-base-uncased",
+            encode_params={
+                "max_length": 20,
+                "padding": "max_length",
+                "truncation": True,
+            },
+        )
 
     img_preprocessor = ImagePreprocessor(
         img_col=img_col,
@@ -78,6 +91,8 @@ def _build_preprocessors(tab_params={}):
         # loaders from folder
         wide_preprocessor.fit(chunk)
         tab_preprocessor.fit(chunk)
+        # if the text processor is a HF processor, fit does nothing. I leave
+        # it as it is so I do not need another condition
         text_preprocessor.fit(chunk)
 
     return wide_preprocessor, tab_preprocessor, text_preprocessor, img_preprocessor
@@ -142,6 +157,7 @@ def _buid_model(
     text_preprocessor,
     pred_dim=1,
     with_attention=False,
+    hunuggingface=False,
 ):
     wide = Wide(input_dim=wide_preprocessor.wide_dim, num_class=pred_dim)
 
@@ -162,18 +178,21 @@ def _buid_model(
             continuous_cols=tab_preprocessor.continuous_cols,
         )
 
-    basic_rnn = BasicRNN(
-        vocab_size=len(text_preprocessor.vocab.itos),
-        embed_dim=8,
-        hidden_dim=8,
-    )
+    if not hunuggingface:
+        text_model = BasicRNN(
+            vocab_size=len(text_preprocessor.vocab.itos),
+            embed_dim=8,
+            hidden_dim=8,
+        )
+    else:
+        text_model = HFModel(model_name="distilbert-base-uncased")
 
     basic_cnn = Vision()
 
     model = WideDeep(
         wide=wide,
         deeptabular=deeptabular,
-        deeptext=basic_rnn,
+        deeptext=text_model,
         deepimage=basic_cnn,
         num_class=pred_dim,
     )
@@ -221,12 +240,69 @@ def test_trainer_from_loader_basic_inputs(objective):
 
     pred_dim = 1 if objective == "regression" or objective == "binary" else 3
     model = _buid_model(
-        wide_preprocessor, tab_preprocessor, text_preprocessor, pred_dim=pred_dim
+        wide_preprocessor,
+        tab_preprocessor,
+        text_preprocessor,
+        pred_dim=pred_dim,
     )
 
     trainer = TrainerFromFolder(
         model,
         objective=objective,
+        verbose=0,
+    )
+
+    trainer.fit(
+        train_loader=dataloader_from_folder,
+    )
+
+    # simply assert that it has run and it has a history atttribute
+    assert len(trainer.history) > 0 and "train_loss" in trainer.history.keys()
+
+
+def test_trainer_from_loader_basic_inputs_with_hugginface():
+    (
+        wide_preprocessor,
+        tab_preprocessor,
+        text_preprocessor,
+        img_preprocessor,
+    ) = _build_preprocessors(huggingface=True)
+
+    (
+        wide_from_folder,
+        tab_from_folder,
+        text_from_folder,
+        img_from_folder,
+    ) = _build_data_mode_from_folder(
+        wide_preprocessor,
+        tab_preprocessor,
+        text_preprocessor,
+        img_preprocessor,
+        target_col="target_binary",
+    )
+
+    dataset_from_folder = WideDeepDatasetFromFolder(
+        n_samples=data_size,
+        wide_from_folder=wide_from_folder,
+        tab_from_folder=tab_from_folder,
+        text_from_folder=text_from_folder,
+        img_from_folder=img_from_folder,
+    )
+
+    dataloader_from_folder = DataLoader(dataset_from_folder, batch_size=4)
+
+    pred_dim = 1
+    model = _buid_model(
+        wide_preprocessor,
+        tab_preprocessor,
+        text_preprocessor,
+        pred_dim=pred_dim,
+        hunuggingface=True,
+    )
+
+    trainer = TrainerFromFolder(
+        model,
+        objective="binary",
         verbose=0,
     )
 

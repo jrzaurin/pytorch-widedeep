@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.3">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.13">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.50c56a3b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.7e359304.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -481,14 +481,15 @@
       
     
     
-    
-    
+      
+        
+        
       
       
+    
     
     <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
-        
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
@@ -535,11 +536,12 @@
       
     
     
+      
+      
     
     
     <li class="md-nav__item md-nav__item--nested">
       
-        
         
         
           
@@ -888,7 +890,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pytorch_widedeep.models.text.attentive_rnn.BasicRNN" class="md-nav__link">
+  <a href="#pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN" class="md-nav__link">
     <span class="md-ellipsis">
       BasicRNN
     </span>
@@ -897,7 +899,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pytorch_widedeep.models.text.attentive_rnn.AttentiveRNN" class="md-nav__link">
+  <a href="#pytorch_widedeep.models.text.rnns.attentive_rnn.AttentiveRNN" class="md-nav__link">
     <span class="md-ellipsis">
       AttentiveRNN
     </span>
@@ -906,7 +908,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN" class="md-nav__link">
+  <a href="#pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN" class="md-nav__link">
     <span class="md-ellipsis">
       StackedAttentiveRNN
     </span>
@@ -915,9 +917,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pytorch_widedeep.models.text.basic_transformer.Transformer" class="md-nav__link">
+  <a href="#pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer" class="md-nav__link">
     <span class="md-ellipsis">
       Transformer
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pytorch_widedeep.models.text.huggingface_transformers.hf_model.HFModel" class="md-nav__link">
+    <span class="md-ellipsis">
+      HFModel
     </span>
   </a>
   
@@ -1208,16 +1219,16 @@
       
         
       
-    
-    
-    
-    
-      
-      
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
         
+      
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
         
         
           
@@ -1225,7 +1236,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -1607,11 +1618,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/17_Usign_a_hugging_face_model.html" class="md-nav__link">
+      <a href="../examples/17_Usign_a_custom_hugging_face_model.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    17_Using_a_huggingface_model
+    17_Usign-a-custom-hugging-face-model
   </span>
   
 
@@ -1695,7 +1706,28 @@
         
   
   <span class="md-ellipsis">
-    20_load_from_folder_functionality.
+    20_load_from_folder_functionality
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/21_Using_huggingface_within_widedeep.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    21-Using-huggingface-within-widedeep
   </span>
   
 
@@ -3650,7 +3682,7 @@ deep dense Resnet.</p>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span>
-            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dim</span><span class="p">,</span>
+            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">,</span>
             <span class="n">activation</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;relu&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span>
             <span class="p">),</span>
@@ -6627,7 +6659,7 @@ will default to <code>True</code>.</p>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span>
-            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dim</span><span class="p">,</span>
+            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">,</span>
             <span class="n">activation</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;relu&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span>
             <span class="p">),</span>
@@ -7441,7 +7473,7 @@ will default to <code>True</code>.</p>
     <span class="c1"># therefore all related params are optional</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span>
-            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dim</span><span class="p">,</span>
+            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">,</span>
             <span class="n">activation</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;relu&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span>
             <span class="p">),</span>
@@ -8306,7 +8338,7 @@ will default to <code>True</code>.</p>
     <span class="c1"># therefore all related params are optional</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span>
-            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dim</span><span class="p">,</span>
+            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">,</span>
             <span class="n">activation</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;relu&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span>
             <span class="p">),</span>
@@ -9198,7 +9230,7 @@ will default to <code>True</code>.</p>
     <span class="c1"># Mlp</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span>
-            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dim</span><span class="p">,</span>
+            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">,</span>
             <span class="n">activation</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;relu&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span>
             <span class="p">),</span>
@@ -10101,7 +10133,7 @@ will default to <code>True</code>.</p>
     <span class="c1"># therefore all related params are optional</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mlp</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span>
-            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dim</span><span class="p">,</span>
+            <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mlp_first_hidden_dim</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span><span class="p">,</span>
             <span class="n">activation</span><span class="o">=</span><span class="p">(</span>
                 <span class="s2">&quot;relu&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span>
             <span class="p">),</span>
@@ -10192,30 +10224,17 @@ number of features/columns in the dataset</p>
   </div>
 
 
-</div><p><br/></p>
-<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: when we started developing the library we
- thought that combining Deep Learning architectures for tabular data, with
- CNN-based architectures (pretrained or not) for images and Transformer-based
- architectures for text would be an <em>'overkill'</em>  (also, pretrained
- transformer-based models were not as readily available as they are today).
- Therefore, at that time we made the decision of including in the library
- simple RNN-based architectures for the text dataset. A lot has passed since
- then and it is our intention to integrate this library with the
- <a href="https://huggingface.co/docs/transformers/main/en/index">Hugginface's Transformers library</a>
- in the near future. Nonetheless, note that it is still possible to use any
- custom model as the <code>deeptext</code> component using this library. Please, see the
- example section in this documentation for details</p>
-
+</div>
 
 <div class="doc doc-object doc-class">
 
 
 
-<h2 id="pytorch_widedeep.models.text.attentive_rnn.BasicRNN" class="doc doc-heading">
+<h2 id="pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN" class="doc doc-heading">
           <span class="doc doc-object-name doc-class-name">BasicRNN</span>
 
 
-<a href="#pytorch_widedeep.models.text.attentive_rnn.BasicRNN" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN" class="headerlink" title="Permanent link">&para;</a></h2>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">BasicRNN</span><span class="p">(</span>
     <span class="n">vocab_size</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -10437,7 +10456,7 @@ LIN -&gt; ACT]</code></p>
   <p>Attributes:</p>
   <ul>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.attentive_rnn.BasicRNN.word_embed">word_embed</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN.word_embed">word_embed</span></code></b>
             (<code><span title="torch.nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -10445,7 +10464,7 @@ LIN -&gt; ACT]</code></p>
         </div>
       </li>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.attentive_rnn.BasicRNN.rnn">rnn</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN.rnn">rnn</span></code></b>
             (<code><span title="torch.nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -10453,7 +10472,7 @@ LIN -&gt; ACT]</code></p>
         </div>
       </li>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.attentive_rnn.BasicRNN.rnn_mlp">rnn_mlp</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN.rnn_mlp">rnn_mlp</span></code></b>
             (<code><span title="torch.nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -10474,7 +10493,7 @@ LIN -&gt; ACT]</code></p>
 </code></pre></div>
 
                 <details class="quote">
-                  <summary>Source code in <code>pytorch_widedeep/models/text/basic_rnn.py</code></summary>
+                  <summary>Source code in <code>pytorch_widedeep/models/text/rnns/basic_rnn.py</code></summary>
                   <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 88</span>
 <span class="normal"> 89</span>
 <span class="normal"> 90</span>
@@ -10699,7 +10718,7 @@ LIN -&gt; ACT]</code></p>
 
 
 
-<h3 id="pytorch_widedeep.models.text.attentive_rnn.BasicRNN.output_dim" class="doc doc-heading">
+<h3 id="pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN.output_dim" class="doc doc-heading">
           <span class="doc doc-object-name doc-attribute-name">output_dim</span>
 
   
@@ -10707,7 +10726,7 @@ LIN -&gt; ACT]</code></p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#pytorch_widedeep.models.text.attentive_rnn.BasicRNN.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">output_dim</span>
 </code></pre></div>
 
@@ -10734,11 +10753,11 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
-<h2 id="pytorch_widedeep.models.text.attentive_rnn.AttentiveRNN" class="doc doc-heading">
+<h2 id="pytorch_widedeep.models.text.rnns.attentive_rnn.AttentiveRNN" class="doc doc-heading">
           <span class="doc doc-object-name doc-class-name">AttentiveRNN</span>
 
 
-<a href="#pytorch_widedeep.models.text.attentive_rnn.AttentiveRNN" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#pytorch_widedeep.models.text.rnns.attentive_rnn.AttentiveRNN" class="headerlink" title="Permanent link">&para;</a></h2>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">AttentiveRNN</span><span class="p">(</span>
     <span class="n">vocab_size</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -10764,7 +10783,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 
   <div class="doc doc-contents first">
           <p class="doc doc-class-bases">
-            Bases: <code><a class="autorefs autorefs-internal" title="pytorch_widedeep.models.text.basic_rnn.BasicRNN" href="#pytorch_widedeep.models.text.attentive_rnn.BasicRNN">BasicRNN</a></code></p>
+            Bases: <code><a class="autorefs autorefs-internal" title="pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN" href="#pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN">BasicRNN</a></code></p>
 
   
       <p>Text classifier/regressor comprised by a stack of RNNs
@@ -10985,7 +11004,7 @@ LIN -&gt; ACT]</code></p>
   <p>Attributes:</p>
   <ul>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.attentive_rnn.AttentiveRNN.word_embed">word_embed</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.rnns.attentive_rnn.AttentiveRNN.word_embed">word_embed</span></code></b>
             (<code><span title="nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -10993,7 +11012,7 @@ LIN -&gt; ACT]</code></p>
         </div>
       </li>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.attentive_rnn.AttentiveRNN.rnn">rnn</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.rnns.attentive_rnn.AttentiveRNN.rnn">rnn</span></code></b>
             (<code><span title="nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -11001,7 +11020,7 @@ LIN -&gt; ACT]</code></p>
         </div>
       </li>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.attentive_rnn.AttentiveRNN.rnn_mlp">rnn_mlp</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.rnns.attentive_rnn.AttentiveRNN.rnn_mlp">rnn_mlp</span></code></b>
             (<code><span title="nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -11022,7 +11041,7 @@ LIN -&gt; ACT]</code></p>
 </code></pre></div>
 
                 <details class="quote">
-                  <summary>Source code in <code>pytorch_widedeep/models/text/attentive_rnn.py</code></summary>
+                  <summary>Source code in <code>pytorch_widedeep/models/text/rnns/attentive_rnn.py</code></summary>
                   <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
 <span class="normal"> 94</span>
 <span class="normal"> 95</span>
@@ -11177,7 +11196,7 @@ LIN -&gt; ACT]</code></p>
 
 
 
-<h3 id="pytorch_widedeep.models.text.attentive_rnn.AttentiveRNN.attention_weights" class="doc doc-heading">
+<h3 id="pytorch_widedeep.models.text.rnns.attentive_rnn.AttentiveRNN.attention_weights" class="doc doc-heading">
           <span class="doc doc-object-name doc-attribute-name">attention_weights</span>
 
   
@@ -11185,7 +11204,7 @@ LIN -&gt; ACT]</code></p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#pytorch_widedeep.models.text.attentive_rnn.AttentiveRNN.attention_weights" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#pytorch_widedeep.models.text.rnns.attentive_rnn.AttentiveRNN.attention_weights" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">attention_weights</span>
 </code></pre></div>
 
@@ -11213,11 +11232,11 @@ size and <span class="arithmatex">\(S\)</span> is the length of the sequence</p>
 
 
 
-<h2 id="pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN" class="doc doc-heading">
+<h2 id="pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN" class="doc doc-heading">
           <span class="doc doc-object-name doc-class-name">StackedAttentiveRNN</span>
 
 
-<a href="#pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN" class="headerlink" title="Permanent link">&para;</a></h2>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">StackedAttentiveRNN</span><span class="p">(</span>
     <span class="n">vocab_size</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -11453,7 +11472,7 @@ LIN -&gt; ACT]</code></p>
   <p>Attributes:</p>
   <ul>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN.word_embed">word_embed</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN.word_embed">word_embed</span></code></b>
             (<code><span title="torch.nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -11461,7 +11480,7 @@ LIN -&gt; ACT]</code></p>
         </div>
       </li>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN.rnn">rnn</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN.rnn">rnn</span></code></b>
             (<code><span title="torch.nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -11469,7 +11488,7 @@ LIN -&gt; ACT]</code></p>
         </div>
       </li>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN.rnn_mlp">rnn_mlp</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN.rnn_mlp">rnn_mlp</span></code></b>
             (<code><span title="torch.nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -11490,7 +11509,7 @@ LIN -&gt; ACT]</code></p>
 </code></pre></div>
 
                 <details class="quote">
-                  <summary>Source code in <code>pytorch_widedeep/models/text/stacked_attentive_rnn.py</code></summary>
+                  <summary>Source code in <code>pytorch_widedeep/models/text/rnns/stacked_attentive_rnn.py</code></summary>
                   <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 94</span>
 <span class="normal"> 95</span>
 <span class="normal"> 96</span>
@@ -11751,7 +11770,7 @@ LIN -&gt; ACT]</code></p>
 
 
 
-<h3 id="pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN.output_dim" class="doc doc-heading">
+<h3 id="pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN.output_dim" class="doc doc-heading">
           <span class="doc doc-object-name doc-attribute-name">output_dim</span>
 
   
@@ -11759,7 +11778,7 @@ LIN -&gt; ACT]</code></p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">output_dim</span>
 </code></pre></div>
 
@@ -11775,7 +11794,7 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
-<h3 id="pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN.attention_weights" class="doc doc-heading">
+<h3 id="pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN.attention_weights" class="doc doc-heading">
           <span class="doc doc-object-name doc-attribute-name">attention_weights</span>
 
   
@@ -11783,7 +11802,7 @@ neccesary to build the <code>WideDeep</code> class</p>
       <small class="doc doc-label doc-label-property"><code>property</code></small>
   </span>
 
-<a href="#pytorch_widedeep.models.text.stacked_attentive_rnn.StackedAttentiveRNN.attention_weights" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN.attention_weights" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">attention_weights</span>
 </code></pre></div>
 
@@ -11811,11 +11830,11 @@ size and <span class="arithmatex">\(S\)</span> is the length of the sequence</p>
 
 
 
-<h2 id="pytorch_widedeep.models.text.basic_transformer.Transformer" class="doc doc-heading">
+<h2 id="pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer" class="doc doc-heading">
           <span class="doc doc-object-name doc-class-name">Transformer</span>
 
 
-<a href="#pytorch_widedeep.models.text.basic_transformer.Transformer" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer" class="headerlink" title="Permanent link">&para;</a></h2>
 <div class="doc-signature highlight"><pre><span></span><code><span class="n">Transformer</span><span class="p">(</span>
     <span class="n">vocab_size</span><span class="p">,</span>
     <span class="n">seq_length</span><span class="p">,</span>
@@ -11873,15 +11892,136 @@ to integrate the library wit Huggingface in the (hopefully) near future</p>
 <p>Param aliases: <code>embed_dim</code>, <code>d_model</code>. <br/></p>
         </div>
       </li>
+      <li class="field-body">
+        <b><code>seq_length</code></b>
+            (<code>int</code>)
+        –
+        <div class="doc-md-description">
+          <p>Input sequence length</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>n_heads</code></b>
+            (<code>int</code>)
+        –
+        <div class="doc-md-description">
+          <p>Number of attention heads per Transformer block</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>n_blocks</code></b>
+            (<code>int</code>)
+        –
+        <div class="doc-md-description">
+          <p>Number of Transformer blocks</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>attn_dropout</code></b>
+            (<code>float</code>, default:
+                <code>0.1</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Dropout that will be applied to the Multi-Head Attention layers</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>ff_dropout</code></b>
+            (<code>float</code>, default:
+                <code>0.1</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Dropout that will be applied to the FeedForward network</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>ff_factor</code></b>
+            (<code>int</code>, default:
+                <code>4</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Multiplicative factor applied to the first layer of the FF network in
+each Transformer block, This is normally set to 4.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>activation</code></b>
+            (<code>str</code>, default:
+                <code>&#39;gelu&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Transformer Encoder activation function. <em>'tanh'</em>, <em>'relu'</em>,
+<em>'leaky_relu'</em>, <em>'gelu'</em>, <em>'geglu'</em> and <em>'reglu'</em> are supported</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>padding_idx</code></b>
+            (<code>int</code>, default:
+                <code>0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>index of the padding token in the padded-tokenised sequences.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>with_cls_token</code></b>
+            (<code>bool</code>, default:
+                <code>False</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Boolean indicating if a <code>'[CLS]'</code> token is included in the tokenized
+sequences. If present, the final hidden state corresponding to this
+token is used as the aggregated representation for classification and
+regression tasks. <strong>NOTE</strong>: if included in the tokenized sequences it
+must be inserted as the first token in the sequences.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>with_pos_encoding</code></b>
+            (<code>bool</code>, default:
+                <code>True</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Boolean indicating if positional encoding will be used</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>pos_encoding_dropout</code></b>
+            (<code>float</code>, default:
+                <code>0.1</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Positional encoding dropout</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>pos_encoder</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="torch.nn.Module">Module</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>This model uses by default a standard positional encoding approach.
+However, any custom positional encoder can also be used and pass to
+the Transformer model via the 'pos_encoder' parameter</p>
+        </div>
+      </li>
   </ul>
-      
 
 
 
   <p>Attributes:</p>
   <ul>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.basic_transformer.Transformer.embedding">embedding</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer.embedding">embedding</span></code></b>
             (<code><span title="torch.nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -11889,7 +12029,7 @@ to integrate the library wit Huggingface in the (hopefully) near future</p>
         </div>
       </li>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.basic_transformer.Transformer.pos_encoder">pos_encoder</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer.pos_encoder">pos_encoder</span></code></b>
             (<code><span title="torch.nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -11897,7 +12037,7 @@ to integrate the library wit Huggingface in the (hopefully) near future</p>
         </div>
       </li>
       <li class="field-body">
-        <b><code><span title="pytorch_widedeep.models.text.basic_transformer.Transformer.encoder">encoder</span></code></b>
+        <b><code><span title="pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer.encoder">encoder</span></code></b>
             (<code><span title="torch.nn.Module">Module</span></code>)
         –
         <div class="doc-md-description">
@@ -11917,7 +12057,7 @@ to integrate the library wit Huggingface in the (hopefully) near future</p>
 </code></pre></div>
 
                 <details class="quote">
-                  <summary>Source code in <code>pytorch_widedeep/models/text/basic_transformer.py</code></summary>
+                  <summary>Source code in <code>pytorch_widedeep/models/text/miscellaneous/basic_transformer.py</code></summary>
                   <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 85</span>
 <span class="normal"> 86</span>
 <span class="normal"> 87</span>
@@ -12071,6 +12211,360 @@ to integrate the library wit Huggingface in the (hopefully) near future</p>
 
 
 
+
+
+
+
+
+  </div>
+
+  </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="pytorch_widedeep.models.text.huggingface_transformers.hf_model.HFModel" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">HFModel</span>
+
+
+<a href="#pytorch_widedeep.models.text.huggingface_transformers.hf_model.HFModel" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">HFModel</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="p">,</span>
+    <span class="n">use_cls_token</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">trainable_parameters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_hidden_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+    <span class="n">head_dropout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_batchnorm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">head_batchnorm_last</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">head_linear_first</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents first">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span></code></p>
+
+  
+      <p>This class is a wrapper around the Hugging Face transformers library. It
+can be used as the text component of a Wide &amp; Deep model or independently
+by itself.</p>
+<p>At the moment only models from the families BERT, RoBERTa, DistilBERT,
+ALBERT and ELECTRA are supported. This is because this library is
+designed to address classification and regression tasks and these are the
+most 'popular' encoder-only models, which have proved to be those that
+work best for these tasks.</p>
+
+
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b><code>model_name</code></b>
+            (<code>str</code>)
+        –
+        <div class="doc-md-description">
+          <p>The model name from the transformers library e.g. 'bert-base-uncased'.
+Currently supported models are those from the families: BERT, RoBERTa,
+DistilBERT, ALBERT and ELECTRA.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>use_cls_token</code></b>
+            (<code>bool</code>, default:
+                <code>True</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Boolean indicating whether to use the [CLS] token or the mean of the
+sequence of hidden states as the sentence embedding</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>trainable_parameters</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List with the names of the model parameters that will be trained. If
+None, none of the parameters will be trainable</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_hidden_dims</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List with the sizes of the dense layers in the head e.g: <em>[128, 64]</em></p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_activation</code></b>
+            (<code>str</code>, default:
+                <code>&#39;relu&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Activation function for the dense layers in the head. Currently
+<em>'tanh'</em>, <em>'relu'</em>, <em>'leaky_relu'</em> and <em>'gelu'</em> are supported</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_dropout</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Dropout of the dense layers in the head</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_batchnorm</code></b>
+            (<code>bool</code>, default:
+                <code>False</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Boolean indicating whether or not to include batch normalization in the
+dense layers that form the head</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_batchnorm_last</code></b>
+            (<code>bool</code>, default:
+                <code>False</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Boolean indicating whether or not to apply batch normalization to the
+last of the dense layers in the head</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_linear_first</code></b>
+            (<code>bool</code>, default:
+                <code>False</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Boolean indicating whether the order of the operations in the dense
+layer. If <code>True: [LIN -&gt; ACT -&gt; BN -&gt; DP]</code>. If <code>False: [BN -&gt; DP -&gt;
+LIN -&gt; ACT]</code></p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>verbose</code></b>
+            (<code>bool</code>, default:
+                <code>False</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>If True, it will print information about the model</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>**kwargs</code></b>
+        –
+        <div class="doc-md-description">
+          <p>Additional kwargs to be passed to the model</p>
+        </div>
+      </li>
+  </ul>
+
+
+
+  <p>Attributes:</p>
+  <ul>
+      <li class="field-body">
+        <b><code><span title="pytorch_widedeep.models.text.huggingface_transformers.hf_model.HFModel.head">head</span></code></b>
+            (<code><span title="nn.Module">Module</span></code>)
+        –
+        <div class="doc-md-description">
+          <p>Stack of dense layers on top of the transformer. This will only exists
+if <code>head_layers_dim</code> is not None</p>
+        </div>
+      </li>
+  </ul>
+
+
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">HFModel</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X_text</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">HFModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;bert-base-uncased&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_text</span><span class="p">)</span>
+</code></pre></div>
+
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/models/text/huggingface_transformers/hf_model.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;use_cls_token&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;use_special_token&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">use_cls_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">trainable_parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_hidden_dims</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+    <span class="n">head_dropout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_batchnorm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">head_batchnorm_last</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">head_linear_first</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="c1"># TO DO: add warning regarging ELECTRA as ELECTRA does not have a cls</span>
+    <span class="c1"># token.  Research what happens with ELECTRA</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">use_cls_token</span> <span class="o">=</span> <span class="n">use_cls_token</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">trainable_parameters</span> <span class="o">=</span> <span class="n">trainable_parameters</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">head_hidden_dims</span> <span class="o">=</span> <span class="n">head_hidden_dims</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">head_activation</span> <span class="o">=</span> <span class="n">head_activation</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">head_dropout</span> <span class="o">=</span> <span class="n">head_dropout</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">head_batchnorm</span> <span class="o">=</span> <span class="n">head_batchnorm</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">head_batchnorm_last</span> <span class="o">=</span> <span class="n">head_batchnorm_last</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">head_linear_first</span> <span class="o">=</span> <span class="n">head_linear_first</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cls_token</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;The model will use the [CLS] token. Make sure the tokenizer &quot;</span>
+            <span class="s2">&quot;was run with add_special_tokens=True&quot;</span><span class="p">,</span>
+            <span class="ne">UserWarning</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">model_class</span> <span class="o">=</span> <span class="n">get_model_class</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">get_config_and_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">output_attention_weights</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output_attentions&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainable_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="nb">any</span><span class="p">([</span><span class="n">tl</span> <span class="ow">in</span> <span class="n">n</span> <span class="k">for</span> <span class="n">tl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainable_parameters</span><span class="p">])</span>
+
+    <span class="c1"># FC-Head (Mlp). Note that the FC head will always be trainable</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">head_hidden_dims</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hidden_size</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_hidden_dims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">head</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span>
+            <span class="n">head_hidden_dims</span><span class="p">,</span>
+            <span class="n">head_activation</span><span class="p">,</span>
+            <span class="n">head_dropout</span><span class="p">,</span>
+            <span class="n">head_batchnorm</span><span class="p">,</span>
+            <span class="n">head_batchnorm_last</span><span class="p">,</span>
+            <span class="n">head_linear_first</span><span class="p">,</span>
+        <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+                </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pytorch_widedeep.models.text.huggingface_transformers.hf_model.HFModel.attention_weight" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">attention_weight</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.text.huggingface_transformers.hf_model.HFModel.attention_weight" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">attention_weight</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Returns the attention weights if the model was created with the
+output_attention_weights=True argument. If not, it will raise an
+AttributeError.</p>
+<p>The shape of the attention weights is <span class="arithmatex">\((N, H, F, F)\)</span>, where <span class="arithmatex">\(N\)</span> is the
+batch size, <span class="arithmatex">\(H\)</span> is the number of attention heads and <span class="arithmatex">\(F\)</span> is the
+sequence length.</p>
+  </div>
+
+</div>
 
 
 
@@ -13400,10 +13894,10 @@ authors used a value of 10.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../assets/javascripts/bundle.c8d2eff1.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       

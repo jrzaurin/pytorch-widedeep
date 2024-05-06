@@ -3,6 +3,10 @@ from typing import Union
 
 import numpy as np
 
+from pytorch_widedeep.preprocessing.hf_preprocessor import (
+    HFPreprocessor,
+    ChunkHFPreprocessor,
+)
 from pytorch_widedeep.preprocessing.text_preprocessor import (
     TextPreprocessor,
     ChunkTextPreprocessor,
@@ -19,14 +23,16 @@ class TextFromFolder:
 
     Parameters
     ----------
-    preprocessor: Union[TextPreprocessor, ChunkTextPreprocessor]
+    preprocessor: Union[TextPreprocessor, ChunkTextPreprocessor, HFPreprocessor, ChunkHFPreprocessor]
         The preprocessor used to process the text. It must be fitted before using
         this class
     """
 
     def __init__(
         self,
-        preprocessor: Union[TextPreprocessor, ChunkTextPreprocessor],
+        preprocessor: Union[
+            TextPreprocessor, ChunkTextPreprocessor, HFPreprocessor, ChunkHFPreprocessor
+        ],
     ):
         assert (
             preprocessor.is_fitted
