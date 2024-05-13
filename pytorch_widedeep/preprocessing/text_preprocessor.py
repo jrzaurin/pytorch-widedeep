@@ -240,6 +240,9 @@ class TextPreprocessor(BasePreprocessor):
 
         return texts
 
+    def _load_vocab(self, vocab: TVocab) -> None:
+        self.vocab = vocab
+
     def __repr__(self) -> str:
         list_of_params: List[str] = ["text_col={text_col}"]
         list_of_params.append("max_vocab={max_vocab}")

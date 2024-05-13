@@ -1,6 +1,6 @@
 import re
 import warnings
-from typing import Dict, Union
+from typing import Any, Dict, Union
 
 from torch import nn
 
@@ -17,23 +17,42 @@ class MultipleInitializer(object):
         self, initializers: Dict[str, Union[Initializer, object]], verbose=True
     ):
         self.verbose = verbose
-        instantiated_initializers = {}
+        instantiated_initializers: Dict[str, Any] = {}
         for model_name, initializer in initializers.items():
-            if isinstance(initializer, type):
-                instantiated_initializers[model_name] = initializer()
+            if isinstance(initializer, list):
+                instantiated_initializers[model_name] = []
+                for i in initializer:
+                    instantiated_initializers[model_name].append(
+                        self._instansiate_maybe(i)
+                    )
             else:
-                instantiated_initializers[model_name] = initializer
+                instantiated_initializers[model_name] = self._instansiate_maybe(
+                    initializer
+                )
         self._initializers = instantiated_initializers
 
-    def apply(self, submodel: nn.Module):
+    def apply(self, submodel: nn.Module | nn.ModuleList):
         for name, child in submodel.named_children():
             try:
-                self._initializers[name](child)
+                if isinstance(self._initializers[name], list):
+                    assert isinstance(child, nn.ModuleList)
+                    for i, initializer in enumerate(self._initializers[name]):
+                        initializer(child[i])
+                else:
+                    self._initializers[name](child)
             except KeyError:
                 if self.verbose:
                     warnings.warn(
                         "No initializer found for {}".format(name), UserWarning
                     )
+
+    def _instansiate_maybe(self, initializer: object):
+        # you passed an object, maybe not an instance of an object
+        # and this is crazy, so you know, instantiate it maybe?
+        if isinstance(initializer, type):
+            return initializer()
+        else:
+            return initializer
 
 
 class Normal(Initializer):

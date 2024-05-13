@@ -228,9 +228,13 @@ class Trainer(BaseTrainer):
         model: WideDeep,
         objective: str,
         custom_loss_function: Optional[nn.Module] = None,
-        optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
-        lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]] = None,
-        initializers: Optional[Union[Initializer, Dict[str, Initializer]]] = None,
+        optimizers: Optional[Optimizer | Dict[str, Optimizer | List[Optimizer]]] = None,
+        lr_schedulers: Optional[
+            LRScheduler | Dict[str, LRScheduler | List[LRScheduler]]
+        ] = None,
+        initializers: Optional[
+            Initializer | Dict[str, Initializer | List[Initializer]]
+        ] = None,
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
@@ -258,10 +262,10 @@ class Trainer(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_train: Optional[Dict[str, np.ndarray]] = None,
-        X_val: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_train: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
+        X_val: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
         val_split: Optional[float] = None,
         target: Optional[np.ndarray] = None,
         n_epochs: int = 1,
@@ -354,7 +358,7 @@ class Trainer(BaseTrainer):
 
         Other Parameters
         ----------------
-        **kwargs : dict
+        **kwargs:
             Other keyword arguments are:
 
             - **DataLoader related parameters**:<br/>
@@ -547,9 +551,9 @@ class Trainer(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
         batch_size: Optional[int] = None,
     ) -> np.ndarray:
         r"""Returns the predictions
@@ -603,9 +607,9 @@ class Trainer(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
         batch_size: Optional[int] = None,
         uncertainty_granularity=1000,
     ) -> np.ndarray:
@@ -700,9 +704,9 @@ class Trainer(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
         batch_size: Optional[int] = None,
     ) -> np.ndarray:
         r"""Returns the predicted probabilities for the test dataset for  binary
@@ -911,7 +915,7 @@ class Trainer(BaseTrainer):
 
     def _train_step(
         self,
-        data: Dict[str, Tensor],
+        data: Dict[str, Tensor | List[Tensor]],
         target: Tensor,
         batch_idx: int,
         epoch: int,
@@ -935,7 +939,13 @@ class Trainer(BaseTrainer):
             )
 
         self.model.train()
-        X = {k: v.to(self.device) for k, v in data.items()}
+
+        X: Dict[str, Tensor | List[Tensor]] = {}
+        for k, v in data.items():
+            if isinstance(v, list):
+                X[k] = [i.to(self.device) for i in v]
+            else:
+                X[k] = v.to(self.device)
         y = (
             target.view(-1, 1).float()
             if self.method not in ["multiclass", "qregression"]
@@ -969,10 +979,17 @@ class Trainer(BaseTrainer):
 
         return score, avg_loss
 
-    def _eval_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
+    def _eval_step(
+        self, data: Dict[str, Tensor | List[Tensor]], target: Tensor, batch_idx: int
+    ):
         self.model.eval()
         with torch.no_grad():
-            X = {k: v.to(self.device) for k, v in data.items()}
+            X: Dict[str, Tensor | List[Tensor]] = {}
+            for k, v in data.items():
+                if isinstance(v, list):
+                    X[k] = [i.to(self.device) for i in v]
+                else:
+                    X[k] = v.to(self.device)
             y = (
                 target.view(-1, 1).float()
                 if self.method not in ["multiclass", "qregression"]
@@ -1014,6 +1031,8 @@ class Trainer(BaseTrainer):
         epoch: int,
     ) -> Tuple[Tensor, Tensor]:
         self.model.train()
+        # FDS is only supported for the deeptabular component, X will never
+        # be Dict[str, List[Tensor]]
         X = {k: v.to(self.device) for k, v in data.items()}
         y = target.view(-1, 1).float().to(self.device)
         smoothed_features, _ = self.model(X, y, epoch)
@@ -1042,9 +1061,9 @@ class Trainer(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
         batch_size: Optional[int] = None,
         uncertainty_granularity=1000,
         uncertainty: bool = False,
@@ -1056,7 +1075,7 @@ class Trainer(BaseTrainer):
         if X_test is not None:
             test_set = WideDeepDataset(**X_test)  # type: ignore[arg-type]
         else:
-            load_dict = {}
+            load_dict: Dict[str, np.ndarray | List[np.ndarray]] = {}
             if X_wide is not None:
                 load_dict = {"X_wide": X_wide}
             if X_tab is not None:
@@ -1103,7 +1122,12 @@ class Trainer(BaseTrainer):
                     ) as tt:
                         for _, data in zip(tt, test_loader):
                             tt.set_description("predict")
-                            X = {k: v.to(self.device) for k, v in data.items()}
+                            X: Dict[str, Tensor | List[Tensor]] = {}
+                            for k, v in data.items():
+                                if isinstance(v, list):
+                                    X[k] = [i.to(self.device) for i in v]
+                                else:
+                                    X[k] = v.to(self.device)
                             preds = (
                                 self.model(X)
                                 if not self.model.is_tabnet

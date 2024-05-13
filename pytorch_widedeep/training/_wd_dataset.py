@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 import torch
 from scipy.ndimage import convolve1d
@@ -32,39 +34,38 @@ class WideDeepDataset(Dataset):
     with_lds: bool
         Boolean indicating if Label Distribution Smoothing will be applied to
         the dataset
-    lds_kernel: Literal['gaussian', 'triang', 'laplace'] = 'gaussian'
-        choice of kernel for Label Distribution Smoothing
-    lds_ks: int = 5
-        LDS kernel window size
-    lds_sigma: float = 2
-        standard deviation of ['gaussian','laplace'] kernel for LDS
-    lds_granularity: int = 100,
-        number of bins in the histogram used in LDS to count occurence of sample values
-    lds_reweight: bool
-        option to reweight bin frequency counts in LDS
-    lds_y_max: Optional[float] = None
-        option to restrict LDS bins by upper label limit
-    lds_y_min: Optional[float] = None
-        option to restrict LDS bins by lower label limit
+
+    Other Parameters
+    ----------------
+    **kwargs
+        Label Distribution Smoothing parameters:
+            lds_kernel: Literal['gaussian', 'triang', 'laplace'] = 'gaussian'
+                choice of kernel for Label Distribution Smoothing
+            lds_ks: int = 5
+                LDS kernel window size
+            lds_sigma: float = 2
+                standard deviation of ['gaussian','laplace'] kernel for LDS
+            lds_granularity: int = 100,
+                number of bins in the histogram used in LDS to count occurence of sample values
+            lds_reweight: bool
+                option to reweight bin frequency counts in LDS
+            lds_y_max: Optional[float] = None
+                option to restrict LDS bins by upper label limit
+            lds_y_min: Optional[float] = None
+                option to restrict LDS bins by lower label limit
     """
 
     def __init__(
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
+        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
         target: Optional[np.ndarray] = None,
         transforms: Optional[Any] = None,
-        with_lds: bool = False,
-        lds_kernel: Literal["gaussian", "triang", "laplace"] = "gaussian",
-        lds_ks: int = 5,
-        lds_sigma: float = 2,
-        lds_granularity: int = 100,
-        lds_reweight: bool = False,
-        lds_y_max: Optional[float] = None,
-        lds_y_min: Optional[float] = None,
         is_training: bool = True,
+        with_lds: bool = False,
+        **kwargs,
     ):
         super(WideDeepDataset, self).__init__()
         self.X_wide = X_wide
@@ -80,22 +81,14 @@ class WideDeepDataset(Dataset):
             self.transforms_names = []
         self.Y = target
 
-        # lds
+        # LDS
         self.is_training = is_training
         self.with_lds = with_lds
         if self.Y is not None and self.is_training:
             # this is a hack to avoid having to run separate for loops during
             # training whether we use lds or not
             if self.with_lds:
-                self.weights = self._compute_lds_weights(
-                    lds_y_min=lds_y_min,
-                    lds_y_max=lds_y_max,
-                    granularity=lds_granularity,
-                    reweight=lds_reweight,
-                    kernel=lds_kernel,
-                    ks=lds_ks,
-                    sigma=lds_sigma,
-                )
+                self.weights = self._compute_lds_weights(**kwargs)
             else:
                 self.weights = np.zeros_like(self.Y, dtype="float32")
 
@@ -106,9 +99,17 @@ class WideDeepDataset(Dataset):
         if self.X_tab is not None:
             x.deeptabular = self.X_tab[idx]
         if self.X_text is not None:
-            x.deeptext = self.X_text[idx]
+            if isinstance(self.X_text, list):
+                x.deeptext = [self.X_text[i][idx] for i in range(len(self.X_text))]
+            else:
+                x.deeptext = self.X_text[idx]
         if self.X_img is not None:
-            x.deepimage = self._prepare_images(idx)
+            if isinstance(self.X_img, list):
+                x.deepimage = [
+                    self._prepare_images(idx) for idx in range(len(self.X_img))
+                ]
+            else:
+                x.deepimage = self._prepare_images(idx)
         if self.Y is None:
             return x
         else:
@@ -120,13 +121,13 @@ class WideDeepDataset(Dataset):
 
     def _compute_lds_weights(
         self,
-        lds_y_min: Optional[float],
-        lds_y_max: Optional[float],
-        granularity: int,
-        reweight: bool,
-        kernel: Literal["gaussian", "triang", "laplace"],
-        ks: int,
-        sigma: float,
+        granularity: int = 100,
+        reweight: bool = False,
+        kernel: Literal["gaussian", "triang", "laplace"] = "gaussian",
+        ks: int = 5,
+        sigma: float = 2,
+        lds_y_min: Optional[float] = None,
+        lds_y_max: Optional[float] = None,
     ) -> np.ndarray:
         """Assign weight to each sample by following procedure:
         1.      creating histogram from label values with nuber of bins = granularity
@@ -207,6 +208,12 @@ class WideDeepDataset(Dataset):
         if self.X_tab is not None:
             return len(self.X_tab)
         if self.X_text is not None:
-            return len(self.X_text)
+            if isinstance(self.X_text, list):
+                return len(self.X_text[0])
+            else:
+                return len(self.X_text)
         if self.X_img is not None:
-            return len(self.X_img)
+            if isinstance(self.X_img, list):
+                return len(self.X_img[0])
+            else:
+                return len(self.X_img)

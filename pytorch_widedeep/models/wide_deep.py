@@ -140,8 +140,10 @@ class WideDeep(nn.Module):
         self,
         wide: Optional[nn.Module] = None,
         deeptabular: Optional[BaseWDModelComponent] = None,
-        deeptext: Optional[BaseWDModelComponent] = None,
-        deepimage: Optional[BaseWDModelComponent] = None,
+        deeptext: Optional[BaseWDModelComponent | List[BaseWDModelComponent]] = None,
+        deepimage: Optional[BaseWDModelComponent | List[BaseWDModelComponent]] = None,
+        # deeptext_head: Optional[BaseWDModelComponent] = None,
+        # deeptext_image: Optional[BaseWDModelComponent] = None,
         deephead: Optional[BaseWDModelComponent] = None,
         head_hidden_dims: Optional[List[int]] = None,
         head_activation: str = "relu",
@@ -214,12 +216,12 @@ class WideDeep(nn.Module):
 
     def forward(
         self,
-        X: Dict[str, Tensor],
+        X: Dict[str, Tensor | List[Tensor]],
         y: Optional[Tensor] = None,
         epoch: Optional[int] = None,
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         if self.with_fds:
-            return self._forward_deep_with_fds(X, y, epoch)
+            return self._forward_deep_with_fds(X, y, epoch)  # type: ignore[arg-type]
 
         wide_out = self._forward_wide(X)
         if self.with_deephead:
@@ -235,8 +237,8 @@ class WideDeep(nn.Module):
     def _build_deephead(
         self,
         deeptabular: Optional[BaseWDModelComponent],
-        deeptext: Optional[BaseWDModelComponent],
-        deepimage: Optional[BaseWDModelComponent],
+        deeptext: Optional[BaseWDModelComponent | List[BaseWDModelComponent]],
+        deepimage: Optional[BaseWDModelComponent | List[BaseWDModelComponent]],
         head_hidden_dims: List[int],
         head_activation: str,
         head_dropout: float,
@@ -247,10 +249,20 @@ class WideDeep(nn.Module):
         deep_dim = 0
         if deeptabular is not None:
             deep_dim += deeptabular.output_dim
+        # TO DO: fix this as we add the possibility of adding a head on top of
+        # the text and image components
         if deeptext is not None:
-            deep_dim += deeptext.output_dim
+            if isinstance(deeptext, list):
+                for dt in deeptext:
+                    deep_dim += dt.output_dim
+            else:
+                deep_dim += deeptext.output_dim
         if deepimage is not None:
-            deep_dim += deepimage.output_dim
+            if isinstance(deepimage, list):
+                for di in deepimage:
+                    deep_dim += di.output_dim
+            else:
+                deep_dim += deepimage.output_dim
 
         head_hidden_dims = [deep_dim] + head_hidden_dims
         deephead = nn.Sequential(
@@ -267,13 +279,17 @@ class WideDeep(nn.Module):
 
         return deephead
 
-    def _set_model_components(
+    def _set_model_components(  # noqa: C901
         self,
         deeptabular: Optional[BaseWDModelComponent],
-        deeptext: Optional[BaseWDModelComponent],
-        deepimage: Optional[BaseWDModelComponent],
+        deeptext: Optional[BaseWDModelComponent | List[BaseWDModelComponent]],
+        deepimage: Optional[BaseWDModelComponent | List[BaseWDModelComponent]],
         with_deephead: bool,
-    ) -> Tuple[Optional[WDModel], Optional[WDModel], Optional[WDModel]]:
+    ) -> Tuple[
+        Optional[WDModel],
+        Optional[nn.ModuleList | WDModel],
+        Optional[nn.ModuleList | WDModel],
+    ]:
         if deeptabular is not None:
             self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
         else:
@@ -305,37 +321,65 @@ class WideDeep(nn.Module):
         else:
             deeptabular_ = None
 
+        # TO DO: fix this as we add the possibility of adding a head on top of
+        # the text and image components
         if deeptext is not None:
-            deeptext_ = (
-                nn.Sequential(deeptext, nn.Linear(deeptext.output_dim, self.pred_dim))
-                if not with_deephead
-                else deeptext
-            )
+            if isinstance(deeptext, list):
+                deeptext_: Optional[nn.ModuleList | WDModel] = nn.ModuleList()
+                for dt in deeptext:
+                    deeptext_.append(
+                        nn.Sequential(dt, nn.Linear(dt.output_dim, self.pred_dim))
+                        if not with_deephead
+                        else dt
+                    )
+            else:
+                deeptext_ = (
+                    nn.Sequential(
+                        deeptext, nn.Linear(deeptext.output_dim, self.pred_dim)
+                    )
+                    if not with_deephead
+                    else deeptext
+                )
         else:
             deeptext_ = None
 
         if deepimage is not None:
-            deepimage_ = (
-                nn.Sequential(deepimage, nn.Linear(deepimage.output_dim, self.pred_dim))
-                if not with_deephead
-                else deepimage
-            )
+            if isinstance(deepimage, list):
+                deepimage_: Optional[nn.ModuleList | WDModel] = nn.ModuleList()
+                for di in deepimage:
+                    deepimage_.append(
+                        nn.Sequential(di, nn.Linear(di.output_dim, self.pred_dim))
+                        if not with_deephead
+                        else di
+                    )
+            else:
+                deepimage_ = (
+                    nn.Sequential(
+                        deepimage, nn.Linear(deepimage.output_dim, self.pred_dim)
+                    )
+                    if not with_deephead
+                    else deepimage
+                )
         else:
             deepimage_ = None
 
         return deeptabular_, deeptext_, deepimage_
 
-    def _forward_wide(self, X: Dict[str, Tensor]) -> Tensor:
+    def _forward_wide(self, X: Dict[str, Tensor | List[Tensor]]) -> Tensor:
         if self.wide is not None:
             out = self.wide(X["wide"])
         else:
-            batch_size = X[list(X.keys())[0]].size(0)
+            first_model_mode = list(X.keys())[0]
+            if isinstance(X[first_model_mode], list):
+                batch_size = X[first_model_mode][0].size(0)
+            else:
+                batch_size = X[first_model_mode].size(0)  # type: ignore[union-attr]
             out = torch.zeros(batch_size, self.pred_dim).to(self.wd_device)
 
         return out
 
     def _forward_deephead(
-        self, X: Dict[str, Tensor], wide_out: Tensor
+        self, X: Dict[str, Tensor | List[Tensor]], wide_out: Tensor
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         if self.deeptabular is not None:
             if self.is_tabnet:
@@ -345,10 +389,24 @@ class WideDeep(nn.Module):
                 deepside = self.deeptabular(X["deeptabular"])
         else:
             deepside = torch.FloatTensor().to(self.wd_device)
+
+        # TO DO: fix this as we add the possibility of adding a head on top of
         if self.deeptext is not None:
-            deepside = torch.cat([deepside, self.deeptext(X["deeptext"])], axis=1)  # type: ignore[call-overload]
+            if isinstance(self.deeptext, list):
+                deeptext_out = torch.cat(  # type: ignore[call-overload]
+                    [dt(X["deeptext"]) for dt in self.deeptext], axis=1
+                )
+            else:
+                deeptext_out = self.deeptext(X["deeptext"])
+            deepside = torch.cat([deepside, deeptext_out], axis=1)  # type: ignore[call-overload]
         if self.deepimage is not None:
-            deepside = torch.cat([deepside, self.deepimage(X["deepimage"])], axis=1)  # type: ignore[call-overload]
+            if isinstance(self.deepimage, list):
+                deepimage_out = torch.cat(  # type: ignore[call-overload]
+                    [di(X["deepimage"]) for di in self.deepimage], axis=1
+                )
+            else:
+                deepimage_out = self.deepimage(X["deepimage"])
+            deepside = torch.cat([deepside, deepimage_out], axis=1)  # type: ignore[call-overload]
 
         assert self.deephead is not None  # assertion to avoid type issues. TO DO: Fix
         deepside_out = self.deephead(deepside)
@@ -364,7 +422,7 @@ class WideDeep(nn.Module):
         return res
 
     def _forward_deep(
-        self, X: Dict[str, Tensor], wide_out: Tensor
+        self, X: Dict[str, Tensor | List[Tensor]], wide_out: Tensor
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         if self.deeptabular is not None:
             if self.is_tabnet:
@@ -373,9 +431,21 @@ class WideDeep(nn.Module):
             else:
                 wide_out.add_(self.deeptabular(X["deeptabular"]))
         if self.deeptext is not None:
-            wide_out.add_(self.deeptext(X["deeptext"]))
+            if isinstance(self.deeptext, nn.ModuleList):
+                text_out = torch.add(  # type: ignore[call-overload]
+                    *[dt(X["deeptext"][i]) for i, dt in enumerate(self.deeptext)]
+                )
+                wide_out.add_(text_out)
+            else:
+                wide_out.add_(self.deeptext(X["deeptext"]))
         if self.deepimage is not None:
-            wide_out.add_(self.deepimage(X["deepimage"]))
+            if isinstance(self.deepimage, nn.ModuleList):
+                image_out = torch.add(  # type: ignore[call-overload]
+                    *[di(X["deepimage"][i]) for i, di in enumerate(self.deepimage)]
+                )
+                wide_out.add_(image_out)
+            else:
+                wide_out.add_(self.deepimage(X["deepimage"]))
 
         if self.is_tabnet:
             res: Union[Tensor, Tuple[Tensor, Tensor]] = (wide_out, M_loss)
@@ -447,16 +517,30 @@ class WideDeep(nn.Module):
                     " components. Therefore, such importances will partially lose their 'meaning'.",
                     UserWarning,
                 )
-        if deeptext is not None and not hasattr(deeptext, "output_dim"):
-            raise AttributeError(
+        if deeptext is not None:
+            err_msg = (
                 "deeptext model must have an 'output_dim' attribute or property. "
                 "See pytorch-widedeep.models.deep_text.DeepText"
             )
-        if deepimage is not None and not hasattr(deepimage, "output_dim"):
-            raise AttributeError(
+            if isinstance(deeptext, list):
+                all_have_output_dim = all(hasattr(dt, "output_dim") for dt in deeptext)
+                if not all_have_output_dim:
+                    raise AttributeError(err_msg)
+            else:
+                if not hasattr(deeptext, "output_dim"):
+                    raise AttributeError(err_msg)
+        if deepimage is not None:
+            err_msg = (
                 "deepimage model must have an 'output_dim' attribute or property. "
-                "See pytorch-widedeep.models.deep_text.DeepText"
+                "See pytorch-widedeep.models.deep_image.DeepImage"
             )
+            if isinstance(deepimage, list):
+                all_have_output_dim = all(hasattr(di, "output_dim") for di in deepimage)
+                if not all_have_output_dim:
+                    raise AttributeError(err_msg)
+            else:
+                if not hasattr(deepimage, "output_dim"):
+                    raise AttributeError(err_msg)
         if deephead is not None and head_hidden_dims is not None:
             raise ValueError(
                 "both 'deephead' and 'head_hidden_dims' are not None. Use one of the other, but not both"

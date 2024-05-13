@@ -187,9 +187,13 @@ class TrainerFromFolder(BaseTrainer):
         model: WideDeep,
         objective: str,
         custom_loss_function: Optional[nn.Module] = None,
-        optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
-        lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]] = None,
-        initializers: Optional[Union[Initializer, Dict[str, Initializer]]] = None,
+        optimizers: Optional[Optimizer | Dict[str, Optimizer | List[Optimizer]]] = None,
+        lr_schedulers: Optional[
+            LRScheduler | Dict[str, LRScheduler | List[LRScheduler]]
+        ] = None,
+        initializers: Optional[
+            Initializer | Dict[str, Initializer | List[Initializer]]
+        ] = None,
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
