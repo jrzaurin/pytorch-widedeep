@@ -64,8 +64,8 @@ class TabFromFolder:
         directory: Optional[str] = None,
         target_col: Optional[str] = None,
         preprocessor: Optional[TabularPreprocessor] = None,
-        text_col: Optional[str] = None,
-        img_col: Optional[str] = None,
+        text_col: Optional[str | List[str]] = None,
+        img_col: Optional[str | List[str]] = None,
         ignore_target: bool = False,
         reference: Optional[Any] = None,  # is Type["TabFromFolder"],
         verbose: Optional[int] = 1,
@@ -102,9 +102,12 @@ class TabFromFolder:
             self.preprocessor.is_fitted
         ), "The preprocessor must be fitted before passing it to this class"
 
-    def get_item(
-        self, idx: int
-    ) -> Tuple[np.ndarray, Optional[str], Optional[str], Optional[Union[int, float]]]:
+    def get_item(self, idx: int) -> Tuple[  # noqa: C901
+        np.ndarray,
+        Optional[str | List[str]],
+        Optional[str | List[str]],
+        Optional[Union[int, float]],
+    ]:
         path = os.path.join(self.directory, self.fname)
 
         try:
@@ -122,12 +125,21 @@ class TabFromFolder:
         except Exception:
             raise ValueError("Currently only csv format is supported.")
 
-        text_fname_or_text: Optional[str] = (
-            sample[self.text_col].to_list()[0] if self.text_col is not None else None
-        )
-        img_fname: Optional[str] = (
-            sample[self.img_col].to_list()[0] if self.img_col is not None else None
-        )
+        text_fnames_or_text: Optional[str | List[str]] = None
+        if self.text_col is not None:
+            if isinstance(self.text_col, list):
+                text_fnames_or_text = [
+                    sample[col].to_list()[0] for col in self.text_col
+                ]
+            else:
+                text_fnames_or_text = sample[self.text_col].to_list()[0]
+
+        img_fname: Optional[str | List[str]] = None
+        if self.img_col is not None:
+            if isinstance(self.img_col, list):
+                img_fname = [sample[col].to_list()[0] for col in self.img_col]
+            else:
+                img_fname = sample[self.img_col].to_list()[0]
 
         processed_sample = self.preprocessor.transform_sample(sample)
 
@@ -136,13 +148,19 @@ class TabFromFolder:
         else:
             target = None
 
-        return processed_sample, text_fname_or_text, img_fname, target
+        return processed_sample, text_fnames_or_text, img_fname, target
 
     def _set_from_reference(
         self,
         reference: Any,  # is Type["TabFromFolder"],
         preprocessor: Optional[TabularPreprocessor],
-    ) -> Tuple[str, str, TabularPreprocessor, Optional[str], Optional[str]]:
+    ) -> Tuple[
+        str,
+        str,
+        TabularPreprocessor,
+        Optional[str | List[str]],
+        Optional[str | List[str]],
+    ]:
         (
             directory,
             target_col,
@@ -175,10 +193,10 @@ class TabFromFolder:
             reference.img_col,
         )
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # noqa: C901
         list_of_params: List[str] = []
         if self.fname is not None:
-            list_of_params.append("fname={self.fname}")
+            list_of_params.append("fname={fname}")
         if self.directory is not None:
             list_of_params.append("directory={directory}")
         if self.target_col is not None:
@@ -188,15 +206,25 @@ class TabFromFolder:
                 f"preprocessor={self.preprocessor.__class__.__name__}"
             )
         if self.text_col is not None:
-            list_of_params.append("text_col={text_col}")
+            if isinstance(self.text_col, list):
+                list_of_params.append(
+                    f"text_col={[text_col for text_col in self.text_col]}"
+                )
+            else:
+                list_of_params.append("text_col={text_col}")
         if self.img_col is not None:
-            list_of_params.append("img_col={img_col}")
+            if isinstance(self.img_col, list):
+                list_of_params.append(
+                    f"img_col={[img_col for img_col in self.img_col]}"
+                )
+            else:
+                list_of_params.append("img_col={img_col}")
         if self.ignore_target is not None:
             list_of_params.append("ignore_target={ignore_target}")
         if self.verbose is not None:
             list_of_params.append("verbose={verbose}")
         all_params = ", ".join(list_of_params)
-        return f"self.__class__.__name__({all_params.format(**self.__dict__)})"
+        return f"{self.__class__.__name__}({all_params.format(**self.__dict__)})"
 
 
 class WideFromFolder(TabFromFolder):

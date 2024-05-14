@@ -85,21 +85,29 @@ class ImageFromFolder:
 
     def __init__(
         self,
-        directory: Optional[str] = None,
-        preprocessor: Optional[ImagePreprocessor] = None,
+        directory: Optional[str | List[str]] = None,
+        preprocessor: Optional[ImagePreprocessor | List[ImagePreprocessor]] = None,
         loader: Callable[[str], Any] = default_loader,
         extensions: Optional[Tuple[str, ...]] = None,
         transforms: Optional[Any] = None,
     ) -> None:
         assert (
             directory is not None or preprocessor is not None
-        ), "Either a directory or an instance of ImagePreprocessor must be provided"
+        ), "Either a directory or an instance of ImagePreprocessor(s) must be provided"
 
         if directory is not None and preprocessor is not None:  # pragma: no cover
-            assert directory == preprocessor.img_path, (
+            error_msg = (
                 "If both 'directory' and 'preprocessor' are provided, the 'img_path' "
                 "attribute of the 'preprocessor' must be the same as the 'directory'"
             )
+            if isinstance(directory, list):
+                assert isinstance(preprocessor, list)
+                assert len(directory) == len(preprocessor)
+                for d, p in zip(directory, preprocessor):
+                    assert d == p.img_path, error_msg
+            else:
+                assert isinstance(preprocessor, ImagePreprocessor)
+                assert directory == preprocessor.img_path, error_msg
 
         if directory is not None:
             self.directory = directory
@@ -107,7 +115,10 @@ class ImageFromFolder:
             assert (
                 preprocessor is not None
             ), "Either a directory or an instance of ImagePreprocessor must be provided"
-            self.directory = preprocessor.img_path
+            if isinstance(preprocessor, list):
+                self.directory = [p.img_path for p in preprocessor]
+            else:
+                self.directory = preprocessor.img_path
 
         self.preprocessor = preprocessor
         self.loader = loader
@@ -122,10 +133,29 @@ class ImageFromFolder:
 
             self.transpose = True
 
-    def get_item(self, fname: str) -> np.ndarray:
+    def get_item(self, fname: str | List[str]) -> np.ndarray | List[np.ndarray]:
+        if isinstance(self.directory, list):
+            assert isinstance(fname, list) and isinstance(self.preprocessor, list)
+            processed_sample: np.ndarray | List[np.ndarray] = [
+                self._preprocess_one_sample(f, d, p)
+                for f, d, p in zip(fname, self.directory, self.preprocessor)
+            ]
+        else:
+            assert isinstance(fname, str) and isinstance(
+                self.preprocessor, ImagePreprocessor
+            )
+            processed_sample = self._preprocess_one_sample(
+                fname, self.directory, self.preprocessor
+            )
+
+        return processed_sample
+
+    def _preprocess_one_sample(
+        self, fname: str, directory: str, preprocessor: ImagePreprocessor
+    ) -> np.ndarray:
         assert has_file_allowed_extension(fname, self.extensions)
 
-        path = os.path.join(self.directory, fname)
+        path = os.path.join(directory, fname)
         sample = self.loader(path)
 
         assert isinstance(sample, (Image.Image, np.ndarray)), (  # pragma: no cover
@@ -135,11 +165,9 @@ class ImageFromFolder:
 
         if self.preprocessor is not None:
             if not isinstance(sample, np.ndarray):
-                processed_sample = self.preprocessor.transform_sample(
-                    np.asarray(sample)
-                )
+                processed_sample = preprocessor.transform_sample(np.asarray(sample))
             else:
-                processed_sample = self.preprocessor.transform_sample(sample)
+                processed_sample = preprocessor.transform_sample(sample)
         else:
             processed_sample = sample
 
@@ -198,6 +226,7 @@ class ImageFromFolder:
                 # else apply transforms on the result of calling torch.tensor on
                 # processed_sample after all the previous manipulation
                 processed_sample = self.transforms(torch.tensor(processed_sample))
+
         return processed_sample
 
     def __repr__(self) -> str:
@@ -215,4 +244,4 @@ class ImageFromFolder:
         if self.transforms is not None:
             list_of_params.append(f"transforms={self.transforms_names}")
         all_params = ", ".join(list_of_params)
-        return f"TabFromFolder({all_params.format(**self.__dict__)})"
+        return f"ImageFromFolder({all_params.format(**self.__dict__)})"

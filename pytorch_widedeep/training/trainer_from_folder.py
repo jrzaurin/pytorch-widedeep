@@ -300,9 +300,9 @@ class TrainerFromFolder(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
         test_loader: Optional[DataLoader] = None,
         batch_size: Optional[int] = None,
     ) -> np.ndarray:
@@ -324,9 +324,9 @@ class TrainerFromFolder(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
         batch_size: Optional[int] = None,
         test_loader: Optional[DataLoader] = None,
         uncertainty_granularity=1000,
@@ -377,9 +377,9 @@ class TrainerFromFolder(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
         test_loader: Optional[DataLoader] = None,
         batch_size: Optional[int] = None,
     ) -> np.ndarray:  # pragma: no cover
@@ -508,13 +508,18 @@ class TrainerFromFolder(BaseTrainer):
 
     def _train_step(
         self,
-        data: Dict[str, Tensor],
+        data: Dict[str, Tensor | List[Tensor]],
         target: Tensor,
         batch_idx: int,
         epoch: int,
     ):
         self.model.train()
-        X = {k: v.to(self.device) for k, v in data.items()}
+        X: Dict[str, Tensor | List[Tensor]] = {}
+        for k, v in data.items():
+            if isinstance(v, list):
+                X[k] = [i.to(self.device) for i in v]
+            else:
+                X[k] = v.to(self.device)
         y = (
             target.view(-1, 1).float()
             if self.method not in ["multiclass", "qregression"]
@@ -544,7 +549,12 @@ class TrainerFromFolder(BaseTrainer):
     def _eval_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
         self.model.eval()
         with torch.no_grad():
-            X = {k: v.to(self.device) for k, v in data.items()}
+            X: Dict[str, Tensor | List[Tensor]] = {}
+            for k, v in data.items():
+                if isinstance(v, list):
+                    X[k] = [i.to(self.device) for i in v]
+                else:
+                    X[k] = v.to(self.device)
             y = (
                 target.view(-1, 1).float()
                 if self.method not in ["multiclass", "qregression"]
@@ -583,9 +593,9 @@ class TrainerFromFolder(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
         test_loader: Optional[DataLoader] = None,
         batch_size: Optional[int] = None,
         uncertainty_granularity=1000,
@@ -602,7 +612,7 @@ class TrainerFromFolder(BaseTrainer):
             if X_test is not None:
                 test_set = WideDeepDataset(**X_test)  # type: ignore[arg-type]
             else:
-                load_dict = {}
+                load_dict: Dict[str, np.ndarray | List[np.ndarray]] = {}
                 if X_wide is not None:
                     load_dict = {"X_wide": X_wide}
                 if X_tab is not None:
