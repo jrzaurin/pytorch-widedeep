@@ -10,6 +10,7 @@ from pytorch_widedeep.wdtypes import (
     List,
     Tuple,
     Union,
+    Tensor,
     Literal,
     Optional,
     Optimizer,
@@ -120,9 +121,7 @@ class FineTune:
             cycle_momentum=False,
         )
 
-        self._finetune(
-            model, model_name, loader, optimizer, scheduler, n_epochs=n_epochs
-        )
+        self._train(model, model_name, loader, optimizer, scheduler, n_epochs=n_epochs)
 
     # TO DO: review this method. It is not very elegant
     def finetune_gradual(  # noqa: C901
@@ -180,80 +179,154 @@ class FineTune:
         """
         model.train()
 
-        step_size_up, step_size_down = self._steps_up_down(len(loader))
-
         original_setup = {}
         for n, p in model.named_parameters():
             original_setup[n] = p.requires_grad
+
         layers_max_lr = [last_layer_max_lr] + [
             last_layer_max_lr / (2.5 * n) for n in range(1, len(layers))
         ]
+
+        step_size_up, step_size_down = self._steps_up_down(len(loader))
+
+        if routine == "howard":
+            self._finetune_howard(
+                layers,
+                layers_max_lr,
+                step_size_up,
+                step_size_down,
+                model,
+                model_name,
+                loader,
+            )
+        elif routine == "felbo":
+            self.finetune_felbo(
+                layers,
+                layers_max_lr,
+                step_size_up,
+                step_size_down,
+                model,
+                model_name,
+                loader,
+            )
+        else:
+            raise ValueError(
+                "routine must be one of 'howard' or 'felbo'. Got {}".format(routine)
+            )
+
+        for n, p in model.named_parameters():
+            p.requires_grad = original_setup[n]
+
+    def _finetune_howard(
+        self,
+        layers: List[nn.Module],
+        layers_max_lr: List[float],
+        step_size_up: int,
+        step_size_down: int,
+        model: WDModel,
+        model_name: str,
+        loader: DataLoader,
+    ):
 
         for layer in layers:
             for p in layer.parameters():
                 p.requires_grad = False
 
-        if routine == "howard":
-            params: List = []
-            max_lr: List = []
-            base_lr: List = []
+        params, max_lr, base_lr = [], [], []
+        for i, (lr, layer) in enumerate(zip(layers_max_lr, layers)):
+            if self.verbose:
+                print(
+                    "Training {}, layer {} of {}".format(model_name, i + 1, len(layers))
+                )
+
+            for p in layer.parameters():
+                p.requires_grad = True
+                params += [{"params": layer.parameters(), "lr": lr / 10.0}]
+                max_lr += [lr]
+                base_lr += [lr / 10.0]
+
+            optimizer = torch.optim.AdamW(params)
+
+            scheduler = torch.optim.lr_scheduler.CyclicLR(
+                optimizer,
+                base_lr=base_lr,
+                max_lr=max_lr,
+                step_size_up=step_size_up,
+                step_size_down=step_size_down,
+                cycle_momentum=False,
+            )
+
+            self._train(model, model_name, loader, optimizer, scheduler)
+
+    def finetune_felbo(  # noqa: C901
+        self,
+        layers: List[nn.Module],
+        layers_max_lr: List[float],
+        step_size_up: int,
+        step_size_down: int,
+        model: WDModel,
+        model_name: str,
+        loader: DataLoader,
+    ):
+
+        for layer in layers:
+            for p in layer.parameters():
+                p.requires_grad = False
 
         for i, (lr, layer) in enumerate(zip(layers_max_lr, layers)):
             if self.verbose:
                 print(
                     "Training {}, layer {} of {}".format(model_name, i + 1, len(layers))
                 )
+
             for p in layer.parameters():
                 p.requires_grad = True
-            if routine == "felbo":
-                params, max_lr, base_lr = layer.parameters(), lr, lr / 10.0  # type: ignore
-            elif routine == "howard":
-                # type conflict here that for now I am going to ignore
-                # TO DO: create a _finetune_felbo and _fine_tune_howard
-                # methods
-                params += [{"params": layer.parameters(), "lr": lr / 10.0}]
-                max_lr += [lr]
-                base_lr += [lr / 10.0]
+
+            params, max_lr, base_lr = layer.parameters(), lr, lr / 10.0
+
             optimizer = torch.optim.AdamW(params)
+
             scheduler = torch.optim.lr_scheduler.CyclicLR(
                 optimizer,
-                base_lr=base_lr,  # type: ignore[arg-type]
-                max_lr=max_lr,  # type: ignore
+                base_lr=base_lr,
+                max_lr=max_lr,
                 step_size_up=step_size_up,
                 step_size_down=step_size_down,
                 cycle_momentum=False,
             )
-            self._finetune(model, model_name, loader, optimizer, scheduler)
-            if routine == "felbo":
-                for p in layer.parameters():
-                    p.requires_grad = False
 
-        if routine == "felbo":
+            self._train(model, model_name, loader, optimizer, scheduler)
+
+            for p in layer.parameters():
+                p.requires_grad = False
+
             if self.verbose:
                 print("Training one last epoch...")
+
             for layer in layers:
                 for p in layer.parameters():
                     p.requires_grad = True
-            params, max_lr, base_lr = [], [], []
+
+            params_, max_lr_, base_lr_ = [], [], []
             for lr, layer in zip(layers_max_lr, layers):
-                params += [{"params": layer.parameters(), "lr": lr / 10.0}]
-                max_lr += [lr]
-                base_lr += [lr / 10.0]
-            optimizer = torch.optim.AdamW(params)
+                params_ += [{"params": layer.parameters(), "lr": lr / 10.0}]
+                max_lr_ += [lr]
+                base_lr_ += [lr / 10.0]
+
+            optimizer = torch.optim.AdamW(params_)
+
             scheduler = torch.optim.lr_scheduler.CyclicLR(
                 optimizer,
-                base_lr=base_lr,  # type: ignore
-                max_lr=max_lr,  # type: ignore
+                base_lr=base_lr_,
+                max_lr=max_lr_,
                 step_size_up=step_size_up,
                 step_size_down=step_size_down,
                 cycle_momentum=False,
             )
-            self._finetune(model, model_name, loader, optimizer, scheduler)
 
-        for n, p in model.named_parameters():
-            p.requires_grad = original_setup[n]
+            self._train(model, model_name, loader, optimizer, scheduler)
 
-    def _finetune(
+    def _train(  # noqa: C901
         self,
         model: WDModel,
         model_name: str,
@@ -272,10 +345,16 @@ class FineTune:
                 for batch_idx, packed_data in zip(t, loader):
                     t.set_description("epoch %i" % (epoch + 1))
                     try:
-                        data, target, lds_weightt = packed_data
+                        data, target, _ = packed_data
                     except ValueError:
                         data, target = packed_data
-                    X = data[model_name].cuda() if use_cuda else data[model_name]
+
+                    if isinstance(data[model_name], list):
+                        X: Tensor | List[Tensor] = []
+                        for d in data[model_name]:
+                            X += [d.cuda()] if use_cuda else [d]
+                    else:
+                        X = data[model_name].cuda() if use_cuda else data[model_name]
                     y = (
                         target.view(-1, 1).float()
                         if self.method not in ["multiclass", "qregression"]

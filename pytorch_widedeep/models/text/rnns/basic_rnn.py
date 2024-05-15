@@ -94,7 +94,7 @@ class BasicRNN(BaseWDModelComponent):
         rnn_type: str = "lstm",
         hidden_dim: int = 64,
         n_layers: int = 3,
-        rnn_dropout: float = 0.1,
+        rnn_dropout: float = 0.0,
         bidirectional: bool = False,
         use_hidden_state: bool = True,
         padding_idx: int = 1,

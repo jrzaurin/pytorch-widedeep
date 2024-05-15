@@ -441,6 +441,7 @@ class Trainer(BaseTrainer):
             X_val,
             val_split,
             target,
+            self.transforms,
             **lds_args,
         )
         if isinstance(custom_dataloader, type):

@@ -5,8 +5,9 @@ import torch
 from scipy.ndimage import convolve1d
 from sklearn.utils import Bunch
 from torch.utils.data import Dataset
+from torchvision.transforms import Compose
 
-from pytorch_widedeep.wdtypes import Any, Literal, Optional
+from pytorch_widedeep.wdtypes import Literal, Optional, Transforms
 from pytorch_widedeep.utils.deeptabular_utils import (
     find_bin,
     get_kernel_window,
@@ -62,7 +63,7 @@ class WideDeepDataset(Dataset):
         X_text: Optional[np.ndarray | List[np.ndarray]] = None,
         X_img: Optional[np.ndarray | List[np.ndarray]] = None,
         target: Optional[np.ndarray] = None,
-        transforms: Optional[Any] = None,
+        transforms: Optional[Transforms | Compose] = None,
         is_training: bool = True,
         with_lds: bool = False,
         **kwargs,
@@ -74,9 +75,12 @@ class WideDeepDataset(Dataset):
         self.X_img = X_img
         self.transforms = transforms
         if self.transforms:
-            self.transforms_names = [
-                tr.__class__.__name__ for tr in self.transforms.transforms
-            ]
+            if isinstance(self.transforms, Compose):
+                self.transforms_names = [
+                    tr.__class__.__name__ for tr in self.transforms.transforms
+                ]
+            else:
+                self.transforms_names = [self.transforms.__class__.__name__]
         else:
             self.transforms_names = []
         self.Y = target
@@ -106,10 +110,11 @@ class WideDeepDataset(Dataset):
         if self.X_img is not None:
             if isinstance(self.X_img, list):
                 x.deepimage = [
-                    self._prepare_images(idx) for idx in range(len(self.X_img))
+                    self._prepare_images(self.X_img[i], idx)
+                    for i in range(len(self.X_img))
                 ]
             else:
-                x.deepimage = self._prepare_images(idx)
+                x.deepimage = self._prepare_images(self.X_img, idx)
         if self.Y is None:
             return x
         else:
@@ -174,10 +179,10 @@ class WideDeepDataset(Dataset):
 
         return weights
 
-    def _prepare_images(self, idx):
+    def _prepare_images(self, imgs: np.ndarray, idx: int):
         # if an image dataset is used, make sure is in the right format to
         # be ingested by the conv layers
-        xdi = self.X_img[idx]
+        xdi = imgs[idx]
         # if int must be uint8
         if "int" in str(xdi.dtype) and "uint8" != str(xdi.dtype):
             xdi = xdi.astype("uint8")

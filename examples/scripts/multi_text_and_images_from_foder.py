@@ -9,8 +9,6 @@ from torch.utils.data import DataLoader
 
 from pytorch_widedeep.models import TabMlp, Vision, BasicRNN, WideDeep
 from pytorch_widedeep.training import TrainerFromFolder
-
-# from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.preprocessing import (
     ImagePreprocessor,
     ChunkTabPreprocessor,

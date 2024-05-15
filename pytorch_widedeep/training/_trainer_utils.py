@@ -21,7 +21,14 @@ from pytorch_widedeep.losses import (
     FocalR_MSELoss,
     FocalR_RMSELoss,
 )
-from pytorch_widedeep.wdtypes import Dict, List, Literal, Optional, Transforms
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Compose,
+    Literal,
+    Optional,
+    Transforms,
+)
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._loss_and_obj_aliases import (
     _LossAliases,
@@ -114,7 +121,7 @@ def wd_train_val_split(  # noqa: C901
     X_val: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
     val_split: Optional[float] = None,
     target: Optional[np.ndarray] = None,
-    transforms: Optional[List[Transforms]] = None,
+    transforms: Optional[Transforms | Compose] = None,
     **lds_args,
 ):
     r"""
