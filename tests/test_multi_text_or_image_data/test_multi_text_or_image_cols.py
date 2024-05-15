@@ -117,79 +117,64 @@ model = WideDeep(
 
 
 @pytest.mark.parametrize(
-    "X_tab, X_text, X_img, X_train, X_val, val_split",
+    "X_tab, X_text, X_img, X_train, X_val, val_split, target",
     [
-        # (
-        #     X_tab_tr,
-        #     [X_text_tr_1, X_text_tr_2],
-        #     [X_img_tr_1, X_img_tr_2],
-        #     None,
-        #     None,
-        #     None,
-        # ),
-        # (
-        #     X_tab_tr,
-        #     [X_text_tr_1, X_text_tr_2],
-        #     [X_img_tr_1, X_img_tr_2],
-        #     None,
-        #     None,
-        #     0.2,
-        # ),
         (
             X_tab_tr,
             [X_text_tr_1, X_text_tr_2],
             [X_img_tr_1, X_img_tr_2],
             None,
+            None,
+            None,
+            train_df["target"].values,
+        ),
+        (
+            X_tab_tr,
+            [X_text_tr_1, X_text_tr_2],
+            [X_img_tr_1, X_img_tr_2],
+            None,
+            None,
+            0.2,
+            train_df["target"].values,
+        ),
+        (
+            None,
+            None,
+            None,
+            {
+                "X_tab": X_tab_tr,
+                "X_text": [X_text_tr_1, X_text_tr_2],
+                "X_img": [X_img_tr_1, X_img_tr_2],
+                "target": train_df["target"].values,
+            },
             {
                 "X_tab": X_tab_val,
                 "X_text": [X_text_val_1, X_text_val_2],
                 "X_img": [X_img_val_1, X_img_val_2],
+                "target": valid_df["target"].values,
             },
             None,
+            None,
         ),
-        # (
-        #     None,
-        #     None,
-        #     None,
-        #     {
-        #         "X_tab": X_tab_tr,
-        #         "X_text": [X_text_tr_1, X_text_tr_2],
-        #         "X_img": [X_img_tr_1, X_img_tr_2],
-        #     },
-        #     None,
-        #     None,
-        # ),
-        # (
-        #     None,
-        #     None,
-        #     None,
-        #     {
-        #         "X_tab": X_tab_tr,
-        #         "X_text": [X_text_tr_1, X_text_tr_2],
-        #         "X_img": [X_img_tr_1, X_img_tr_2],
-        #     },
-        #     None,
-        #     0.2,
-        # ),
-        # (
-        #     None,
-        #     None,
-        #     None,
-        #     {
-        #         "X_tab": X_tab_tr,
-        #         "X_text": [X_text_tr_1, X_text_tr_2],
-        #         "X_img": [X_img_tr_1, X_img_tr_2],
-        #     },
-        #     {
-        #         "X_tab": X_tab_val,
-        #         "X_text": [X_text_val_1, X_text_val_2],
-        #         "X_img": [X_img_val_1, X_img_val_2],
-        #     },
-        #     None,
-        # ),
+        (
+            None,
+            None,
+            None,
+            {
+                "X_tab": X_tab_tr,
+                "X_text": [X_text_tr_1, X_text_tr_2],
+                "X_img": [X_img_tr_1, X_img_tr_2],
+                "target": train_df["target"].values,
+            },
+            None,
+            0.2,
+            None,
+        ),
     ],
 )
-def test_multi_text_or_image_cols(X_tab, X_text, X_img, X_train, X_val, val_split):
+def test_multi_text_or_image_cols(
+    X_tab, X_text, X_img, X_train, X_val, val_split, target
+):
 
     trainer = Trainer(
         model,
@@ -203,7 +188,7 @@ def test_multi_text_or_image_cols(X_tab, X_text, X_img, X_train, X_val, val_spli
         X_train=X_train,
         X_val=X_val,
         val_split=val_split,
-        target=train_df["target"].values,
+        target=target,
         n_epochs=1,
         batch_size=4,
     )

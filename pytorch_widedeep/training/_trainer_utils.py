@@ -162,9 +162,10 @@ def wd_train_val_split(  # noqa: C901
     """
 
     if X_val is not None:
-        assert (
-            X_train is not None
-        ), "if the validation set is passed as a dictionary, the training set must also be a dictionary"
+        assert X_train is not None and target is None, (
+            "if the validation set is passed as a dictionary, the training set must also be a dictionary."
+            " This includes the target"
+        )
         train_set = WideDeepDataset(**X_train, transforms=transforms, **lds_args)  # type: ignore
         eval_set = WideDeepDataset(**X_val, transforms=transforms, is_training=False)  # type: ignore
     elif val_split is not None:
