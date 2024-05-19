@@ -10,7 +10,6 @@ from pytorch_widedeep.wdtypes import (
     List,
     Tuple,
     Union,
-    Tensor,
     Literal,
     Optional,
     Optimizer,
@@ -72,11 +71,11 @@ class FineTune:
 
     def finetune_all(
         self,
-        model: WDModel,
+        model: WDModel | nn.ModuleList,
         model_name: str,
         loader: DataLoader,
         n_epochs: int,
-        max_lr: float,
+        max_lr: float | List[float],
     ):
         r"""Fine-tune/warm-up all trainable layers in a model using a one cyclic
         learning rate with a triangular pattern. This is refereed as Slanted
@@ -108,29 +107,32 @@ class FineTune:
         """
         if self.verbose:
             print("Training {} for {} epochs".format(model_name, n_epochs))
-        model.train()
 
-        optimizer = torch.optim.AdamW(model.parameters(), lr=max_lr / 10.0)  # type: ignore
-        step_size_up, step_size_down = self._steps_up_down(len(loader), n_epochs)
-        scheduler = torch.optim.lr_scheduler.CyclicLR(
-            optimizer,
-            base_lr=max_lr / 10.0,
-            max_lr=max_lr,
-            step_size_up=step_size_up,
-            step_size_down=step_size_down,
-            cycle_momentum=False,
-        )
+        if isinstance(model, nn.ModuleList):
 
-        self._train(model, model_name, loader, optimizer, scheduler, n_epochs=n_epochs)
+            for i, _model in enumerate(model):
 
-    # TO DO: review this method. It is not very elegant
+                if isinstance(max_lr, list):
+                    _max_lr = max_lr[i]
+                else:
+                    _max_lr = max_lr
+
+                _model.train()
+
+                self.finetune_one(_model, model_name, loader, n_epochs, _max_lr, idx=i)
+
+        else:
+            assert isinstance(max_lr, float)
+
+            self.finetune_one(model, model_name, loader, n_epochs, max_lr)
+
     def finetune_gradual(  # noqa: C901
         self,
-        model: WDModel,
+        model: WDModel | nn.ModuleList,
         model_name: str,
         loader: DataLoader,
-        last_layer_max_lr: float,
-        layers: List[nn.Module],
+        last_layer_max_lr: float | List[float],
+        layers: List[nn.Module] | List[List[nn.Module]],
         routine: str,
     ):
         r"""Fine-tune/warm-up certain layers within the model following a
@@ -177,45 +179,39 @@ class FineTune:
         routine: str
            one of 'howard' or 'felbo'
         """
-        model.train()
 
-        original_setup = {}
-        for n, p in model.named_parameters():
-            original_setup[n] = p.requires_grad
+        if isinstance(model, nn.ModuleList):
 
-        layers_max_lr = [last_layer_max_lr] + [
-            last_layer_max_lr / (2.5 * n) for n in range(1, len(layers))
-        ]
+            for i, _model in enumerate(model):
 
-        step_size_up, step_size_down = self._steps_up_down(len(loader))
+                assert isinstance(layers[i], list)
 
-        if routine == "howard":
-            self._finetune_howard(
-                layers,
-                layers_max_lr,
-                step_size_up,
-                step_size_down,
-                model,
-                model_name,
-                loader,
-            )
-        elif routine == "felbo":
-            self.finetune_felbo(
-                layers,
-                layers_max_lr,
-                step_size_up,
-                step_size_down,
-                model,
-                model_name,
-                loader,
-            )
+                self._finetune_gradual_one(
+                    _model,
+                    model_name,
+                    loader,
+                    (
+                        last_layer_max_lr[i]
+                        if isinstance(last_layer_max_lr, list)
+                        else last_layer_max_lr
+                    ),
+                    layers[i],  # type: ignore[arg-type]
+                    routine,
+                    idx=i,
+                )
         else:
-            raise ValueError(
-                "routine must be one of 'howard' or 'felbo'. Got {}".format(routine)
-            )
 
-        for n, p in model.named_parameters():
-            p.requires_grad = original_setup[n]
+            assert isinstance(layers, list)
+            assert isinstance(last_layer_max_lr, float)
+
+            self._finetune_gradual_one(
+                model,
+                model_name,
+                loader,
+                last_layer_max_lr,
+                layers,  # type: ignore[arg-type]
+                routine,
+            )
 
     def _finetune_howard(
         self,
@@ -226,6 +222,7 @@ class FineTune:
         model: WDModel,
         model_name: str,
         loader: DataLoader,
+        idx: Optional[int] = None,
     ):
 
         for layer in layers:
@@ -256,7 +253,7 @@ class FineTune:
                 cycle_momentum=False,
             )
 
-            self._train(model, model_name, loader, optimizer, scheduler)
+            self._train(model, model_name, loader, optimizer, scheduler, idx=idx)
 
     def finetune_felbo(  # noqa: C901
         self,
@@ -267,6 +264,7 @@ class FineTune:
         model: WDModel,
         model_name: str,
         loader: DataLoader,
+        idx: Optional[int] = None,
     ):
 
         for layer in layers:
@@ -295,7 +293,7 @@ class FineTune:
                 cycle_momentum=False,
             )
 
-            self._train(model, model_name, loader, optimizer, scheduler)
+            self._train(model, model_name, loader, optimizer, scheduler, idx=idx)
 
             for p in layer.parameters():
                 p.requires_grad = False
@@ -324,7 +322,87 @@ class FineTune:
                 cycle_momentum=False,
             )
 
-            self._train(model, model_name, loader, optimizer, scheduler)
+            self._train(model, model_name, loader, optimizer, scheduler, idx=idx)
+
+    def finetune_one(
+        self,
+        model: WDModel,
+        model_name: str,
+        loader: DataLoader,
+        n_epochs: int,
+        max_lr: float,
+        idx: Optional[int] = None,
+    ):
+
+        model.train()
+
+        optimizer = torch.optim.AdamW(model.parameters(), lr=max_lr / 10.0)
+        step_size_up, step_size_down = self._steps_up_down(len(loader), n_epochs)
+        scheduler = torch.optim.lr_scheduler.CyclicLR(
+            optimizer,
+            base_lr=max_lr / 10.0,
+            max_lr=max_lr,
+            step_size_up=step_size_up,
+            step_size_down=step_size_down,
+            cycle_momentum=False,
+        )
+
+        self._train(
+            model, model_name, loader, optimizer, scheduler, n_epochs=n_epochs, idx=idx
+        )
+
+    def _finetune_gradual_one(
+        self,
+        model: WDModel,
+        model_name: str,
+        loader: DataLoader,
+        last_layer_max_lr: float,
+        layers: List[nn.Module],
+        routine: str,
+        idx: Optional[int] = None,
+    ):
+
+        original_setup = {}
+        for n, p in model.named_parameters():
+            original_setup[n] = p.requires_grad
+
+        model.train()
+
+        layers_max_lr = [last_layer_max_lr] + [
+            last_layer_max_lr / (2.5 * n) for n in range(1, len(layers))
+        ]
+
+        step_size_up, step_size_down = self._steps_up_down(len(loader))
+
+        if routine == "howard":
+            self._finetune_howard(
+                layers,
+                layers_max_lr,
+                step_size_up,
+                step_size_down,
+                model,
+                model_name,
+                loader,
+                idx=idx,
+            )
+        elif routine == "felbo":
+            self.finetune_felbo(
+                layers,
+                layers_max_lr,
+                step_size_up,
+                step_size_down,
+                model,
+                model_name,
+                loader,
+                idx=idx,
+            )
+        else:
+            raise ValueError(
+                "routine must be one of 'howard' or 'felbo'. Got {}".format(routine)
+            )
+
+        for n, p in model.named_parameters():
+            p.requires_grad = original_setup[n]
 
     def _train(  # noqa: C901
         self,
@@ -334,6 +412,7 @@ class FineTune:
         optimizer: Optimizer,
         scheduler: LRScheduler,
         n_epochs: int = 1,
+        idx: Optional[int] = None,
     ):
         r"""
         Standard Pytorch training loop
@@ -343,18 +422,25 @@ class FineTune:
             running_loss = 0.0
             with trange(steps, disable=self.verbose != 1) as t:
                 for batch_idx, packed_data in zip(t, loader):
-                    t.set_description("epoch %i" % (epoch + 1))
+                    if idx is not None:
+                        t.set_description(f"epoch {epoch} for {model_name} {idx}")
+                    else:
+                        t.set_description("epoch %i" % (epoch + 1))
+
                     try:
                         data, target, _ = packed_data
                     except ValueError:
                         data, target = packed_data
 
-                    if isinstance(data[model_name], list):
-                        X: Tensor | List[Tensor] = []
-                        for d in data[model_name]:
-                            X += [d.cuda()] if use_cuda else [d]
+                    if idx is not None:
+                        X = (
+                            data[model_name][idx].cuda()
+                            if use_cuda
+                            else data[model_name][idx]
+                        )
                     else:
                         X = data[model_name].cuda() if use_cuda else data[model_name]
+
                     y = (
                         target.view(-1, 1).float()
                         if self.method not in ["multiclass", "qregression"]

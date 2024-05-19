@@ -142,8 +142,6 @@ class WideDeep(nn.Module):
         deeptabular: Optional[BaseWDModelComponent] = None,
         deeptext: Optional[BaseWDModelComponent | List[BaseWDModelComponent]] = None,
         deepimage: Optional[BaseWDModelComponent | List[BaseWDModelComponent]] = None,
-        # deeptext_head: Optional[BaseWDModelComponent] = None,
-        # deeptext_image: Optional[BaseWDModelComponent] = None,
         deephead: Optional[BaseWDModelComponent] = None,
         head_hidden_dims: Optional[List[int]] = None,
         head_activation: str = "relu",
@@ -249,8 +247,7 @@ class WideDeep(nn.Module):
         deep_dim = 0
         if deeptabular is not None:
             deep_dim += deeptabular.output_dim
-        # TO DO: fix this as we add the possibility of adding a head on top of
-        # the text and image components
+
         if deeptext is not None:
             if isinstance(deeptext, list):
                 for dt in deeptext:
@@ -321,8 +318,6 @@ class WideDeep(nn.Module):
         else:
             deeptabular_ = None
 
-        # TO DO: fix this as we add the possibility of adding a head on top of
-        # the text and image components
         if deeptext is not None:
             if isinstance(deeptext, list):
                 deeptext_: Optional[nn.ModuleList | WDModel] = nn.ModuleList()
@@ -390,7 +385,6 @@ class WideDeep(nn.Module):
         else:
             deepside = torch.FloatTensor().to(self.wd_device)
 
-        # TO DO: fix this as we add the possibility of adding a head on top of
         if self.deeptext is not None:
             if isinstance(self.deeptext, list):
                 deeptext_out = torch.cat(  # type: ignore[call-overload]
