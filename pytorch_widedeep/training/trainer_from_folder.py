@@ -659,7 +659,12 @@ class TrainerFromFolder(BaseTrainer):
                     ) as tt:
                         for _, data in zip(tt, test_loader):
                             tt.set_description("predict")
-                            X = {k: v.to(self.device) for k, v in data.items()}
+                            X: Dict[str, Tensor | List[Tensor]] = {}
+                            for k, v in data.items():
+                                if isinstance(v, list):
+                                    X[k] = [i.to(self.device) for i in v]
+                                else:
+                                    X[k] = v.to(self.device)
                             preds = (
                                 self.model(X)
                                 if not self.model.is_tabnet

@@ -134,24 +134,38 @@ class ImageFromFolder:
             self.transpose = True
 
     def get_item(self, fname: str | List[str]) -> np.ndarray | List[np.ndarray]:
-        if isinstance(self.directory, list):
-            assert isinstance(fname, list) and isinstance(self.preprocessor, list)
-            processed_sample: np.ndarray | List[np.ndarray] = [
-                self._preprocess_one_sample(f, d, p)
-                for f, d, p in zip(fname, self.directory, self.preprocessor)
-            ]
+        if isinstance(fname, list):
+            if not isinstance(self.directory, list):
+                _directory = [self.directory] * len(fname)
+            else:
+                _directory = self.directory
+            if self.preprocessor is not None:
+                assert isinstance(self.preprocessor, list)
+                processed_sample: np.ndarray | List[np.ndarray] = [
+                    self._preprocess_one_sample(f, d, p)
+                    for f, d, p in zip(fname, _directory, self.preprocessor)
+                ]
+            else:
+                processed_sample = [
+                    self._preprocess_one_sample(f, d) for f, d in zip(fname, _directory)
+                ]
         else:
-            assert isinstance(fname, str) and isinstance(
-                self.preprocessor, ImagePreprocessor
-            )
-            processed_sample = self._preprocess_one_sample(
-                fname, self.directory, self.preprocessor
-            )
+            assert isinstance(self.directory, str)
+            if self.preprocessor is not None:
+                assert isinstance(self.preprocessor, ImagePreprocessor)
+                processed_sample = self._preprocess_one_sample(
+                    fname, self.directory, self.preprocessor
+                )
+            else:
+                processed_sample = self._preprocess_one_sample(fname, self.directory)
 
         return processed_sample
 
     def _preprocess_one_sample(
-        self, fname: str, directory: str, preprocessor: ImagePreprocessor
+        self,
+        fname: str,
+        directory: str,
+        preprocessor: Optional[ImagePreprocessor] = None,
     ) -> np.ndarray:
         assert has_file_allowed_extension(fname, self.extensions)
 
@@ -175,57 +189,48 @@ class ImageFromFolder:
 
         return prepared_sample
 
-    def _prepare_sample(
+    def _prepare_sample(  # noqa: C901
         self, processed_sample: Union[np.ndarray, Image.Image]
     ) -> np.ndarray:
         # if an image dataset is used, make sure is in the right format to
         # be ingested by the conv layers
 
         if isinstance(processed_sample, Image.Image):
-            if not self.transforms:
-                raise UserWarning(  # pragma: no cover
-                    "The images are in PIL Image format, and not 'transforms' are passed. "
-                    "This loader will simply return the array representation of the PIL Image. "
+            processed_sample = np.asarray(processed_sample)
+
+        # if int must be uint8
+        if "int" in str(processed_sample.dtype) and "uint8" != str(
+            processed_sample.dtype
+        ):
+            processed_sample = processed_sample.astype("uint8")
+
+        # if float must be float32
+        if "float" in str(processed_sample.dtype) and "float32" != str(
+            processed_sample.dtype
+        ):
+            processed_sample = processed_sample.astype("float32")
+
+        # if there are no transforms, or these do not include ToTensor()
+        # (weird or unexpected case, not sure is even possible) then we need
+        # to  replicate what ToTensor() does -> transpose axis and normalize if
+        # necessary
+        if not self.transforms or "ToTensor" not in self.transforms_names:
+            if processed_sample.ndim == 2:
+                processed_sample = processed_sample[:, :, None]
+
+            processed_sample = processed_sample.transpose(2, 0, 1)
+
+            if "int" in str(processed_sample.dtype):
+                processed_sample = (processed_sample / processed_sample.max()).astype(
+                    "float32"
                 )
-                processed_sample = np.asarray(processed_sample)
-            else:
-                processed_sample = self.transforms(processed_sample)
+        elif "ToTensor" in self.transforms_names:
+            # if ToTensor() is included, simply apply transforms
+            processed_sample = self.transforms(processed_sample)
         else:
-            # if int must be uint8
-            if "int" in str(processed_sample.dtype) and "uint8" != str(
-                processed_sample.dtype
-            ):
-                processed_sample = processed_sample.astype("uint8")
-            # if float must be float32
-            if "float" in str(processed_sample.dtype) and "float32" != str(
-                processed_sample.dtype
-            ):
-                processed_sample = processed_sample.astype("float32")
-
-            if not self.transforms or "ToTensor" not in self.transforms_names:
-                # if there are no transforms, or these do not include ToTensor()
-                # (weird or unexpected case, not sure is even possible) then we need
-                # to  replicate what ToTensor() does -> transpose axis and normalize if
-                # necessary
-                if isinstance(processed_sample, Image.Image):
-                    processed_sample = np.asarray(processed_sample)
-
-                if processed_sample.ndim == 2:
-                    processed_sample = processed_sample[:, :, None]
-
-                processed_sample = processed_sample.transpose(2, 0, 1)
-
-                if "int" in str(processed_sample.dtype):
-                    processed_sample = (
-                        processed_sample / processed_sample.max()
-                    ).astype("float32")
-            elif "ToTensor" in self.transforms_names:
-                # if ToTensor() is included, simply apply transforms
-                processed_sample = self.transforms(processed_sample)
-            else:
-                # else apply transforms on the result of calling torch.tensor on
-                # processed_sample after all the previous manipulation
-                processed_sample = self.transforms(torch.tensor(processed_sample))
+            # else apply transforms on the result of calling torch.tensor on
+            # processed_sample after all the previous manipulation
+            processed_sample = self.transforms(torch.tensor(processed_sample))
 
         return processed_sample
 
