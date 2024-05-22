@@ -329,4 +329,74 @@ def test_finetune_all_for_multi_text_or_image_cols():
     assert len(trainer.history["train_loss"]) == n_epochs
 
 
-# TO DO: test finetune_gradual_for_multi_text_or_image_cols
+@pytest.mark.parametrize("routine", ["felbo", "howard"])
+def test_finetune_gradual_for_multi_text_or_image_cols(routine):
+
+    model = WideDeep(
+        deeptabular=tab_mlp,
+        deeptext=[rnn_1, rnn_2],
+        deepimage=[vision_1, vision_2],
+        pred_dim=1,
+    )
+
+    deeptabular_layers = [
+        model.deeptabular[0].encoder.mlp[1],
+        model.deeptabular[0].encoder.mlp[0],
+    ]
+    deeptext_1_layers = [
+        model.deeptext[0][0].rnn_mlp.mlp[1],
+        model.deeptext[0][0].rnn_mlp.mlp[0],
+    ]
+    deeptext_2_layers = [
+        model.deeptext[1][0].rnn_mlp.mlp[1],
+        model.deeptext[1][0].rnn_mlp.mlp[0],
+    ]
+    deepimage_1_layers = [
+        model.deepimage[0][0].vision_mlp.mlp[1],
+        model.deepimage[0][0].vision_mlp.mlp[0],
+    ]
+    deepimage_2_layers = [
+        model.deepimage[1][0].vision_mlp.mlp[1],
+        model.deepimage[1][0].vision_mlp.mlp[0],
+    ]
+
+    n_epochs = 5
+    trainer = Trainer(
+        model,
+        objective="binary",
+    )
+
+    X_train = {
+        "X_tab": X_tab_tr,
+        "X_text": [X_text_tr_1, X_text_tr_2],
+        "X_img": [X_img_tr_1, X_img_tr_2],
+        "target": train_df["target"].values,
+    }
+    X_val = {
+        "X_tab": X_tab_val,
+        "X_text": [X_text_val_1, X_text_val_2],
+        "X_img": [X_img_val_1, X_img_val_2],
+        "target": valid_df["target"].values,
+    }
+    trainer.fit(
+        X_train=X_train,
+        X_val=X_val,
+        n_epochs=n_epochs,
+        batch_size=4,
+        finetune=True,
+        finetune_epochs=2,
+        routine=routine,  # add alias as finetune_routine
+        deeptabular_gradual=True,
+        deeptabular_layers=deeptabular_layers,
+        deeptabular_max_lr=0.01,
+        deeptext_gradual=True,
+        deeptext_layers=[deeptext_1_layers, deeptext_2_layers],
+        deepteext_max_lr=0.01,
+        deepimage_gradual=True,
+        deepimage_layers=[deepimage_1_layers, deepimage_2_layers],
+        deepimage_max_lr=0.01,
+        verbose=0,
+    )
+
+    # weak assertion, but anyway...
+    assert len(trainer.history["train_loss"]) == n_epochs
