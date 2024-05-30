@@ -8,11 +8,35 @@ import pytest
 from torchvision.transforms import RandomVerticalFlip, RandomHorizontalFlip
 
 from pytorch_widedeep import Trainer
-from pytorch_widedeep.models import TabMlp, Vision, BasicRNN, WideDeep
+from pytorch_widedeep.models import (
+    TabMlp,
+    Vision,
+    BasicRNN,
+    WideDeep,
+    ModelFuser,
+)
 from pytorch_widedeep.metrics import F1Score, Accuracy
 from pytorch_widedeep.callbacks import LRHistory
 from pytorch_widedeep.initializers import XavierNormal, KaimingNormal
 from pytorch_widedeep.preprocessing import TabPreprocessor, TextPreprocessor
+from pytorch_widedeep.models._base_wd_model_component import (
+    BaseWDModelComponent,
+)
+
+
+class CustomHead(BaseWDModelComponent):
+
+    def __init__(self, input_units: int, output_units: int):
+        super(CustomHead, self).__init__()
+        self.fc = torch.nn.Linear(input_units, output_units)
+
+    def forward(self, X: torch.Tensor) -> torch.Tensor:
+        return self.fc(X)
+
+    @property
+    def output_dim(self) -> int:
+        return self.fc.out_features
+
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 data_dir = "/".join([current_dir, "load_from_folder_test_data"])
@@ -109,7 +133,7 @@ rnn_2 = BasicRNN(
     head_hidden_dims=[16, 4],  # just to make the head_hidden_dims different
 )
 
-model = WideDeep(
+global_model = WideDeep(
     deeptabular=tab_mlp,
     deeptext=[rnn_1, rnn_2],
     deepimage=[vision_1, vision_2],
@@ -178,7 +202,7 @@ def test_multi_text_or_image_cols(
 ):
 
     trainer = Trainer(
-        model,
+        global_model,
         objective="binary",
     )
 
@@ -400,3 +424,363 @@ def test_finetune_gradual_for_multi_text_or_image_cols(routine):
 
     # weak assertion, but anyway...
     assert len(trainer.history["train_loss"]) == n_epochs
+
+
+@pytest.mark.parametrize(
+    "fusion_method",
+    [
+        "concatenate",
+        "mean",
+        "max",
+        "sum",
+        "mult",
+        "head",
+        ["concatenate", "mean"],
+        ["concatenate", "max", "mean"],
+        ["concatenate", "max", "mean", "mult"],
+    ],
+)
+def test_text_model_fusion_methods(fusion_method):
+
+    rnn_1 = BasicRNN(
+        vocab_size=len(text_preprocessor_1.vocab.itos),
+        embed_dim=16,
+        hidden_dim=16,
+        n_layers=1,
+        bidirectional=False,
+        head_hidden_dims=[16, 8],
+    )
+
+    rnn_2 = BasicRNN(
+        vocab_size=len(text_preprocessor_2.vocab.itos),
+        embed_dim=16,
+        hidden_dim=16,
+        n_layers=2,
+    )
+
+    rnn_1_output_dim = rnn_1.output_dim
+
+    models_fuser = ModelFuser(
+        models=[rnn_1, rnn_2],
+        fusion_method=fusion_method,
+        projection_method="max",
+        head_hidden_dims=[32, 8] if "head" in fusion_method else None,
+    )
+
+    X_text_tr_1_tnsr = torch.from_numpy(X_text_tr_1)[:16]  # just to make it smaller
+    X_text_tr_2_tnsr = torch.from_numpy(X_text_tr_2)[:16]
+    out = models_fuser([X_text_tr_1_tnsr, X_text_tr_2_tnsr])
+
+    if fusion_method == "concatenate":
+        assert (
+            out.shape[1]
+            == rnn_1_output_dim + rnn_2.output_dim
+            == models_fuser.output_dim
+        )
+    elif any(
+        [
+            fusion_method == "mean",
+            fusion_method == "max",
+            fusion_method == "sum",
+            fusion_method == "mult",
+        ]
+    ):
+        assert (
+            out.shape[1]
+            == max(rnn_1_output_dim, rnn_2.output_dim)
+            == models_fuser.output_dim
+        )
+    elif fusion_method == "head":
+        assert (
+            out.shape[1] == models_fuser.head_hidden_dims[-1] == models_fuser.output_dim
+        )
+    elif fusion_method == ["concatenate", "mean"]:
+        assert (
+            out.shape[1]
+            == rnn_1_output_dim
+            + rnn_2.output_dim
+            + max(rnn_1_output_dim, rnn_2.output_dim)
+            == models_fuser.output_dim
+        )
+    elif fusion_method == ["concatenate", "max", "mean"]:
+        assert (
+            out.shape[1]
+            == rnn_1_output_dim
+            + rnn_2.output_dim
+            + max(rnn_1_output_dim, rnn_2.output_dim) * 2
+            == models_fuser.output_dim
+        )
+    else:
+        # ["concatenate", "max", "mean", "mult"]
+        assert (
+            out.shape[1]
+            == rnn_1_output_dim
+            + rnn_2.output_dim
+            + max(rnn_1_output_dim, rnn_2.output_dim) * 3
+            == models_fuser.output_dim
+        )
+
+
+@pytest.mark.parametrize(
+    "fusion_method",
+    [
+        "concatenate",
+        "mean",
+        "max",
+        "sum",
+        "mult",
+        "head",
+        ["concatenate", "mean"],
+        ["concatenate", "max", "mean"],
+        ["concatenate", "max", "mean", "mult"],
+    ],
+)
+def test_image_model_fusion_methods(fusion_method):
+
+    vision_1 = Vision(
+        channel_sizes=[16, 32],
+        kernel_sizes=[3, 3],
+        strides=[1, 1],
+    )
+
+    vision_2 = Vision(
+        channel_sizes=[16, 32],
+        kernel_sizes=[3, 3],
+        strides=[1, 1],
+        head_hidden_dims=[16, 4],
+    )
+
+    vision_1_output_dim = vision_1.output_dim
+    vision_2_output_dim = vision_2.output_dim
+
+    models_fuser = ModelFuser(
+        models=[vision_1, vision_2],
+        fusion_method=fusion_method,
+        projection_method="max",
+        head_hidden_dims=[32, 8] if "head" in fusion_method else None,
+    )
+
+    X_img_tr_1_tnsr = torch.from_numpy(X_img_tr_1)[:16].transpose(1, 3)
+    X_img_tr_2_tnsr = torch.from_numpy(X_img_tr_2)[:16].transpose(1, 3)
+
+    X_img_tr_1_tnsr = X_img_tr_1_tnsr / X_img_tr_1_tnsr.max()
+    X_img_tr_2_tnsr = X_img_tr_2_tnsr / X_img_tr_2_tnsr.max()
+
+    out = models_fuser([X_img_tr_1_tnsr, X_img_tr_2_tnsr])
+
+    if fusion_method == "concatenate":
+        assert (
+            out.shape[1]
+            == vision_1_output_dim + vision_2_output_dim
+            == models_fuser.output_dim
+        )
+    elif any(
+        [
+            fusion_method == "mean",
+            fusion_method == "max",
+            fusion_method == "sum",
+            fusion_method == "mult",
+        ]
+    ):
+        assert (
+            out.shape[1]
+            == max(vision_1_output_dim, vision_2_output_dim)
+            == models_fuser.output_dim
+        )
+    elif fusion_method == "head":
+        assert (
+            out.shape[1] == models_fuser.head_hidden_dims[-1] == models_fuser.output_dim
+        )
+    elif fusion_method == ["concatenate", "mean"]:
+        assert (
+            out.shape[1]
+            == vision_1_output_dim
+            + vision_2_output_dim
+            + max(vision_1_output_dim, vision_2_output_dim)
+            == models_fuser.output_dim
+        )
+    elif fusion_method == ["concatenate", "max", "mean"]:
+        assert (
+            out.shape[1]
+            == vision_1_output_dim
+            + vision_2_output_dim
+            + max(vision_1_output_dim, vision_2_output_dim) * 2
+            == models_fuser.output_dim
+        )
+    else:
+        # ["concatenate", "max", "mean", "mult"]
+        assert (
+            out.shape[1]
+            == vision_1_output_dim
+            + vision_2_output_dim
+            + max(vision_1_output_dim, vision_2_output_dim) * 3
+            == models_fuser.output_dim
+        )
+
+
+def test_model_fusion_custom_head():
+
+    rnn_1 = BasicRNN(
+        vocab_size=len(text_preprocessor_1.vocab.itos),
+        embed_dim=16,
+        hidden_dim=16,
+        n_layers=1,
+        bidirectional=False,
+        head_hidden_dims=[16, 8],
+    )
+
+    rnn_2 = BasicRNN(
+        vocab_size=len(text_preprocessor_2.vocab.itos),
+        embed_dim=16,
+        hidden_dim=16,
+        n_layers=2,
+    )
+
+    custom_head = CustomHead(rnn_1.output_dim + rnn_2.output_dim, 8)
+
+    models_fuser = ModelFuser(
+        models=[rnn_1, rnn_2],
+        fusion_method="head",
+        custom_head=custom_head,
+        projection_method="max",
+    )
+
+    X_text_tr_1_tnsr = torch.from_numpy(X_text_tr_1)[:16]  # just to make it smaller
+    X_text_tr_2_tnsr = torch.from_numpy(X_text_tr_2)[:16]
+    out = models_fuser([X_text_tr_1_tnsr, X_text_tr_2_tnsr])
+
+    assert out.shape[1] == custom_head.output_dim == models_fuser.output_dim
+
+
+@pytest.mark.parametrize(
+    "projection_method",
+    ["min", "max", "mean"],
+)
+def test_model_fusion_projection_methods(projection_method):
+
+    rnn_1 = BasicRNN(
+        vocab_size=len(text_preprocessor_1.vocab.itos),
+        embed_dim=16,
+        hidden_dim=16,
+        n_layers=1,
+        bidirectional=False,
+        head_hidden_dims=[16, 8],
+    )
+
+    rnn_2 = BasicRNN(
+        vocab_size=len(text_preprocessor_2.vocab.itos),
+        embed_dim=16,
+        hidden_dim=16,
+        n_layers=2,
+    )
+
+    models_fuser = ModelFuser(
+        models=[rnn_1, rnn_2],
+        fusion_method="mean",
+        projection_method=projection_method,
+    )
+
+    X_text_tr_1_tnsr = torch.from_numpy(X_text_tr_1)[:16]  # just to make it smaller
+    X_text_tr_2_tnsr = torch.from_numpy(X_text_tr_2)[:16]
+    out = models_fuser([X_text_tr_1_tnsr, X_text_tr_2_tnsr])
+
+    if projection_method == "min":
+        proj_dim = min(rnn_1.output_dim, rnn_2.output_dim)
+    elif projection_method == "max":
+        proj_dim = max(rnn_1.output_dim, rnn_2.output_dim)
+    else:
+        proj_dim = int((rnn_1.output_dim + rnn_2.output_dim) / 2)
+
+    assert out.shape[1] == proj_dim == models_fuser.output_dim
+
+
+def test_model_fusion_full_process():
+
+    fused_text_model = ModelFuser(
+        models=[rnn_1, rnn_2],
+        fusion_method="mean",
+        projection_method="min",
+    )
+
+    fused_image_model = ModelFuser(
+        models=[vision_1, vision_2],
+        fusion_method="mean",
+        projection_method="max",
+    )
+
+    model = WideDeep(
+        deeptabular=tab_mlp,
+        deeptext=fused_text_model,
+        deepimage=fused_image_model,
+        pred_dim=1,
+    )
+
+    n_epochs = 2
+    trainer = Trainer(
+        model,
+        objective="binary",
+    )
+
+    X_train = {
+        "X_tab": X_tab_tr,
+        "X_text": [X_text_tr_1, X_text_tr_2],
+        "X_img": [X_img_tr_1, X_img_tr_2],
+        "target": train_df["target"].values,
+    }
+    X_val = {
+        "X_tab": X_tab_val,
+        "X_text": [X_text_val_1, X_text_val_2],
+        "X_img": [X_img_val_1, X_img_val_2],
+        "target": valid_df["target"].values,
+    }
+    trainer.fit(
+        X_train=X_train,
+        X_val=X_val,
+        n_epochs=n_epochs,
+        batch_size=4,
+        verbose=1,
+    )
+
+    # weak assertion, but anyway...
+    assert len(trainer.history["train_loss"]) == n_epochs
+
+
+def test_assertion_and_value_errors():
+
+    rnn_1 = BasicRNN(
+        vocab_size=len(text_preprocessor_1.vocab.itos),
+        embed_dim=16,
+        hidden_dim=16,
+        n_layers=1,
+        bidirectional=False,
+        head_hidden_dims=[16, 8],
+    )
+
+    rnn_2 = BasicRNN(
+        vocab_size=len(text_preprocessor_2.vocab.itos),
+        embed_dim=16,
+        hidden_dim=16,
+        n_layers=2,
+    )
+
+    custom_head = torch.nn.Linear(rnn_1.output_dim + rnn_2.output_dim, 8)
+
+    with pytest.raises(ValueError):
+        ModelFuser(models=[rnn_1, rnn_2], fusion_method="wrong")
+
+    with pytest.raises(ValueError):
+        ModelFuser(models=[rnn_1, rnn_2], fusion_method=["max", "wrong"])
+
+    with pytest.raises(ValueError):
+        ModelFuser(
+            models=[rnn_1, rnn_2], fusion_method="max", projection_method="wrong"
+        )
+
+    with pytest.raises(AssertionError):
+        ModelFuser(models=[rnn_1, rnn_2], fusion_method="max")
+
+    with pytest.raises(AssertionError):
+        ModelFuser(models=[rnn_1, rnn_2], fusion_method="head")
+
+    with pytest.raises(AssertionError):
+        ModelFuser(models=[rnn_1, rnn_2], fusion_method="head", custom_head=custom_head)

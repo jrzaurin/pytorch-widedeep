@@ -346,7 +346,9 @@ class LRHistory(Callback):
         suffix = suffix or ""
         model_name = model_name or ""
         for group_idx, group in enumerate(opt.param_groups):
-            group_name = ("_").join(["lr", model_name, suffix, str(group_idx)])
+            group_name = ("_").join(
+                [x for x in ["lr", model_name, suffix, str(group_idx)] if x]
+            )
             self.trainer.lr_history.setdefault(group_name, []).append(group["lr"])
 
     @staticmethod

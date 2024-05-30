@@ -23,3 +23,4 @@ from pytorch_widedeep.models.tabular import (
     ContextAttentionMLP,
 )
 from pytorch_widedeep.models.wide_deep import WideDeep
+from pytorch_widedeep.models.model_fusion import ModelFuser

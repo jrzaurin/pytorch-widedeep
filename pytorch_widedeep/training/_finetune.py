@@ -236,6 +236,9 @@ class FineTune:
                     "Training {}, layer {} of {}".format(model_name, i + 1, len(layers))
                 )
 
+            for p in layer.parameters():
+                p.requires_grad = True
+
             params += [{"params": layer.parameters(), "lr": lr / 10.0}]
             max_lr += [lr]
             base_lr += [lr / 10.0]

@@ -4,7 +4,15 @@ import numpy as np
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import Any, List, Tuple, Union, Tensor, Optional
+from pytorch_widedeep.wdtypes import (
+    Any,
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.text.rnns._encoders import ContextAttentionEncoder
 from pytorch_widedeep.models._base_wd_model_component import (
@@ -97,7 +105,7 @@ class StackedAttentiveRNN(BaseWDModelComponent):
         embed_dim: Optional[int] = None,
         embed_matrix: Optional[np.ndarray] = None,
         embed_trainable: bool = True,
-        rnn_type: str = "lstm",
+        rnn_type: Literal["lstm", "gru"] = "lstm",
         hidden_dim: int = 64,
         bidirectional: bool = False,
         padding_idx: int = 1,
@@ -276,6 +284,7 @@ class StackedAttentiveRNN(BaseWDModelComponent):
                 )
             embed_dim = embed_matrix.shape[1]
         else:
+            assert self.embed_dim is not None
             word_embed = nn.Embedding(
                 self.vocab_size, self.embed_dim, padding_idx=self.padding_idx
             )

@@ -177,7 +177,7 @@ class ImageFromFolder:
             f"got {type(sample)} instead"
         )
 
-        if self.preprocessor is not None:
+        if preprocessor is not None:
             if not isinstance(sample, np.ndarray):
                 processed_sample = preprocessor.transform_sample(np.asarray(sample))
             else:
@@ -226,6 +226,10 @@ class ImageFromFolder:
                 )
         elif "ToTensor" in self.transforms_names:
             # if ToTensor() is included, simply apply transforms
+            assert self.transforms_names[0] == "ToTensor", (
+                "If ToTensor() is included in the transforms, it must be the "
+                "first transform in the list"
+            )
             processed_sample = self.transforms(processed_sample)
         else:
             # else apply transforms on the result of calling torch.tensor on
