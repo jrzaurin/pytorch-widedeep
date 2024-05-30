@@ -50,131 +50,138 @@ from pytorch_widedeep.training._trainer_utils import (
 
 class TrainerFromFolder(BaseTrainer):
     r"""Class to set the of attributes that will be used during the
-    training process.
+     training process.
 
-    For examples, please, see the examples folder in the repo.
+     For examples, please, see the examples folder in the repo.
 
-    Parameters
-    ----------
-    model: `WideDeep`
-        An object of class `WideDeep`
-    objective: str
-        Defines the objective, loss or cost function. <br/>
+     Parameters
+     ----------
+     model: `WideDeep`
+         An object of class `WideDeep`
+     objective: str
+         Defines the objective, loss or cost function. <br/>
 
-        Param aliases: `loss_function`, `loss_fn`, `loss`,
-        `cost_function`, `cost_fn`, `cost`. <br/>
+         Param aliases: `loss_function`, `loss_fn`, `loss`,
+         `cost_function`, `cost_fn`, `cost`. <br/>
 
-        Possible values are:
+         Possible values are:
 
-        - `binary`, aliases: `logistic`, `binary_logloss`, `binary_cross_entropy`
+         - `binary`, aliases: `logistic`, `binary_logloss`, `binary_cross_entropy`
 
-        - `binary_focal_loss`
+         - `binary_focal_loss`
 
-        - `multiclass`, aliases: `multi_logloss`, `cross_entropy`, `categorical_cross_entropy`,
+         - `multiclass`, aliases: `multi_logloss`, `cross_entropy`, `categorical_cross_entropy`,
 
-        - `multiclass_focal_loss`
+         - `multiclass_focal_loss`
 
-        - `regression`, aliases: `mse`, `l2`, `mean_squared_error`
+         - `regression`, aliases: `mse`, `l2`, `mean_squared_error`
 
-        - `mean_absolute_error`, aliases: `mae`, `l1`
+         - `mean_absolute_error`, aliases: `mae`, `l1`
 
-        - `mean_squared_log_error`, aliases: `msle`
+         - `mean_squared_log_error`, aliases: `msle`
 
-        - `root_mean_squared_error`, aliases:  `rmse`
+         - `root_mean_squared_error`, aliases:  `rmse`
 
-        - `root_mean_squared_log_error`, aliases: `rmsle`
+         - `root_mean_squared_log_error`, aliases: `rmsle`
 
-        - `zero_inflated_lognormal`, aliases: `ziln`
+         - `zero_inflated_lognormal`, aliases: `ziln`
 
-        - `quantile`
+         - `quantile`
 
-        - `tweedie`
-    custom_loss_function: `nn.Module`. Optional, default = None
-        It is possible to pass a custom loss function. See for example
-        `pytorch_widedeep.losses.FocalLoss` for the required structure of the
-        object or the Examples section in this documentation or in the repo.
-        Note that if `custom_loss_function` is not `None`, `objective` must
-        be _'binary'_, _'multiclass'_ or _'regression'_, consistent with the
-        loss function
-    optimizers: `Optimzer` or dict. Optional, default= None
-        - An instance of Pytorch's `Optimizer` object
-          (e.g. `torch.optim.Adam()`) or
-        - a dictionary where there keys are the model components (i.e.
-          _'wide'_, _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_)  and
-          the values are the corresponding optimizers. If multiple optimizers are used
-          the  dictionary **MUST** contain an optimizer per model component.
+         - `tweedie`
+     custom_loss_function: `nn.Module`. Optional, default = None
+         It is possible to pass a custom loss function. See for example
+         `pytorch_widedeep.losses.FocalLoss` for the required structure of the
+         object or the Examples section in this documentation or in the repo.
+         Note that if `custom_loss_function` is not `None`, `objective` must
+         be _'binary'_, _'multiclass'_ or _'regression'_, consistent with the
+         loss function
+     optimizers: `Optimizer` or dict. Optional, default=None
+         - An instance of Pytorch's `Optimizer` object
+           (e.g. `torch.optim.Adam()`) or
+         - a dictionary where there keys are the model components (i.e.
+           _'wide'_, _'deeptabular'_, _'deeptext'_, _'deepimage'_
+           and/or _'deephead'_)  and the values are the corresponding
+           optimizers or list of optimizers if multiple models are used for
+           the given data mode (e.g. two text columns/models for the deeptext
+           component). If multiple optimizers are used the
+           dictionary **MUST** contain an optimizer per model component.
 
-        if no optimizers are passed it will default to `Adam` for all
-        model components
-    lr_schedulers: `LRScheduler` or dict. Optional, default=None
-        - An instance of Pytorch's `LRScheduler` object (e.g
-          `torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
-        - a dictionary where there keys are the model componenst (i.e. _'wide'_,
-          _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_) and the
-          values are the corresponding learning rate schedulers.
-    initializers: `Initializer` or dict. Optional, default=None
-        - An instance of an `Initializer` object see `pytorch-widedeep.initializers` or
-        - a dictionary where there keys are the model components (i.e. _'wide'_,
-          _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_)
-          and the values are the corresponding initializers.
+         if no optimizers are passed it will default to `Adam` for all
+         model components
+     lr_schedulers: `LRScheduler` or dict. Optional, default=None
+         - An instance of Pytorch's `LRScheduler` object (e.g
+           `torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
+         - a dictionary where there keys are the model componenst (i.e. _'wide'_,
+           _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_) and the
+           values are the corresponding learning rate schedulers or list of
+             learning rate schedulers if multiple models are used for the given
+             data mode (e.g. two text columns/models for the deeptext component).
+     initializers: `Initializer` or dict. Optional, default=None
+         - An instance of an `Initializer` object see `pytorch-widedeep.initializers` or
+         - a dictionary where there keys are the model components (i.e. _'wide'_,
+           _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_)
+           and the values are the corresponding initializers or list of
+             initializers if multiple models are used for the given data mode (e.g.
+             two text columns/models for the deeptext component).
     transforms: List. Optional, default=None
-        List with `torchvision.transforms` to be applied to the image
-        component of the model (i.e. `deepimage`) See
-        [torchvision transforms](https://pytorch.org/docs/stable/torchvision/transforms.html).
-    callbacks: List. Optional, default=None
-        List with `Callback` objects. The three callbacks available in
-        `pytorch-widedeep` are: `LRHistory`, `ModelCheckpoint` and
-        `EarlyStopping`. The `History` and the `LRShedulerCallback` callbacks
-        are used by default. This can also be a custom callback as long as
-        the object of type `Callback`. See
-        `pytorch_widedeep.callbacks.Callback` or the examples folder in the
-        repo.
-    metrics: List. Optional, default=None
-        - List of objects of type `Metric`. Metrics available are:
-          `Accuracy`, `Precision`, `Recall`, `FBetaScore`,
-          `F1Score` and `R2Score`. This can also be a custom metric as long
-          as it is an object of type `Metric`. See
-          `pytorch_widedeep.metrics.Metric` or the examples folder in the
-          repo
-        - List of objects of type `torchmetrics.Metric`. This can be any
-          metric from torchmetrics library
-          [Examples](https://torchmetrics.readthedocs.io/en/latest/).
-          This can also be a custom metric as long as
-          it is an object of type `Metric`. See
-          [the instructions](https://torchmetrics.readthedocs.io/en/latest/).
-    verbose: int, default=1
-        Verbosity level. If set to 0 nothing will be printed during training
-    seed: int, default=1
-        Random seed to be used internally for train/test split
+         List with `torchvision.transforms` to be applied to the image
+         component of the model (i.e. `deepimage`) See
+         [torchvision transforms](https://pytorch.org/docs/stable/torchvision/transforms.html).
+     callbacks: List. Optional, default=None
+         List with `Callback` objects. The three callbacks available in
+         `pytorch-widedeep` are: `LRHistory`, `ModelCheckpoint` and
+         `EarlyStopping`. The `History` and the `LRShedulerCallback` callbacks
+         are used by default. This can also be a custom callback as long as
+         the object of type `Callback`. See
+         `pytorch_widedeep.callbacks.Callback` or the examples folder in the
+         repo.
+     metrics: List. Optional, default=None
+         - List of objects of type `Metric`. Metrics available are:
+           `Accuracy`, `Precision`, `Recall`, `FBetaScore`,
+           `F1Score` and `R2Score`. This can also be a custom metric as long
+           as it is an object of type `Metric`. See
+           `pytorch_widedeep.metrics.Metric` or the examples folder in the
+           repo
+         - List of objects of type `torchmetrics.Metric`. This can be any
+           metric from torchmetrics library
+           [Examples](https://torchmetrics.readthedocs.io/en/latest/).
+           This can also be a custom metric as long as
+           it is an object of type `Metric`. See
+           [the instructions](https://torchmetrics.readthedocs.io/en/latest/).
+     verbose: int, default=1
+         Verbosity level. If set to 0 nothing will be printed during training
+     seed: int, default=1
+         Random seed to be used internally for train/test split
 
-    Other Parameters
-    ----------------
-    **kwargs: dict
-        Other infrequently used arguments that can also be passed as kwargs are:
+     Other Parameters
+     ----------------
+     **kwargs: dict
+         Other infrequently used arguments that can also be passed as kwargs are:
 
-        - **device**: `str`<br/>
-            string indicating the device. One of _'cpu'_ or _'gpu'_
+         - **device**: `str`<br/>
+             string indicating the device. One of _'cpu'_ or _'gpu'_
 
-        - **num_workers**: `int`<br/>
-            number of workers to be used internally by the data loaders
+         - **num_workers**: `int`<br/>
+             number of workers to be used internally by the data loaders
 
-        - **lambda_sparse**: `float`<br/>
-            lambda sparse parameter in case the `deeptabular` component is `TabNet`
+         - **lambda_sparse**: `float`<br/>
+             lambda sparse parameter in case the `deeptabular` component is `TabNet`
 
-        - **class_weight**: `List[float]`<br/>
-            This is the `weight` or `pos_weight` parameter in
-            `CrossEntropyLoss` and `BCEWithLogitsLoss`, depending on whether
-        - **reducelronplateau_criterion**: `str`
-            This sets the criterion that will be used by the lr scheduler to
-            take a step: One of _'loss'_ or _'metric'_. The ReduceLROnPlateau
-            learning rate is a bit particular.
+         - **class_weight**: `List[float]`<br/>
+             This is the `weight` or `pos_weight` parameter in
+             `CrossEntropyLoss` and `BCEWithLogitsLoss`, depending on whether
+         - **reducelronplateau_criterion**: `str`
+             This sets the criterion that will be used by the lr scheduler to
+             take a step: One of _'loss'_ or _'metric'_. The ReduceLROnPlateau
+             learning rate is a bit particular.
 
-    Attributes
-    ----------
-    cyclic_lr: bool
-        Attribute that indicates if any of the lr_schedulers is cyclic_lr
-        (i.e. `CyclicLR` or
-        `OneCycleLR`). See [Pytorch schedulers](https://pytorch.org/docs/stable/optim.html).
+     Attributes
+     ----------
+     cyclic_lr: bool
+         Attribute that indicates if any of the lr_schedulers is cyclic_lr
+         (i.e. `CyclicLR` or
+         `OneCycleLR`). See [Pytorch schedulers](https://pytorch.org/docs/stable/optim.html).
 
     """
 

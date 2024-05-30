@@ -90,13 +90,16 @@ class Trainer(BaseTrainer):
         Note that if `custom_loss_function` is not `None`, `objective` must
         be _'binary'_, _'multiclass'_ or _'regression'_, consistent with the
         loss function
-    optimizers: `Optimzer` or dict. Optional, default= None
+    optimizers: `Optimizer` or dict. Optional, default=None
         - An instance of Pytorch's `Optimizer` object
           (e.g. `torch.optim.Adam()`) or
         - a dictionary where there keys are the model components (i.e.
-          _'wide'_, _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_)  and
-          the values are the corresponding optimizers. If multiple optimizers are used
-          the  dictionary **MUST** contain an optimizer per model component.
+          _'wide'_, _'deeptabular'_, _'deeptext'_, _'deepimage'_
+          and/or _'deephead'_)  and the values are the corresponding
+          optimizers or list of optimizers if multiple models are used for
+          the given data mode (e.g. two text columns/models for the deeptext
+          component). If multiple optimizers are used the
+          dictionary **MUST** contain an optimizer per model component.
 
         if no optimizers are passed it will default to `Adam` for all
         model components
@@ -105,12 +108,16 @@ class Trainer(BaseTrainer):
           `torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
         - a dictionary where there keys are the model componenst (i.e. _'wide'_,
           _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_) and the
-          values are the corresponding learning rate schedulers.
+          values are the corresponding learning rate schedulers or list of
+            learning rate schedulers if multiple models are used for the given
+            data mode (e.g. two text columns/models for the deeptext component).
     initializers: `Initializer` or dict. Optional, default=None
         - An instance of an `Initializer` object see `pytorch-widedeep.initializers` or
         - a dictionary where there keys are the model components (i.e. _'wide'_,
           _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_)
-          and the values are the corresponding initializers.
+          and the values are the corresponding initializers or list of
+            initializers if multiple models are used for the given data mode (e.g.
+            two text columns/models for the deeptext component).
     transforms: List. Optional, default=None
         List with `torchvision.transforms` to be applied to the image
         component of the model (i.e. `deepimage`) See
@@ -291,20 +298,28 @@ class Trainer(BaseTrainer):
         X_tab: np.ndarray, Optional. default=None
             Input for the `deeptabular` model component.
             See `pytorch_widedeep.preprocessing.TabPreprocessor`
-        X_text: np.ndarray, Optional. default=None
+        X_text: np.ndarray | List[np.ndarray], Optional. default=None
             Input for the `deeptext` model component.
-            See `pytorch_widedeep.preprocessing.TextPreprocessor`
+            See `pytorch_widedeep.preprocessing.TextPreprocessor`.
+            If multiple text columns/models are used, this should be a list of
+            numpy arrays
         X_img: np.ndarray, Optional. default=None
             Input for the `deepimage` model component.
-            See `pytorch_widedeep.preprocessing.ImagePreprocessor`
+            See `pytorch_widedeep.preprocessing.ImagePreprocessor`.
+            If multiple image columns/models are used, this should be a list of
+            numpy arrays
         X_train: Dict, Optional. default=None
             The training dataset can also be passed in a dictionary. Keys are
             _'X_wide'_, _'X_tab'_, _'X_text'_, _'X_img'_ and _'target'_. Values
-            are the corresponding matrices.
+            are the corresponding matrices. Note that of multiple text or image
+            columns/models are used, the corresponding values should be lists
+            of numpy arrays
         X_val: Dict, Optional. default=None
             The validation dataset can also be passed in a dictionary. Keys
             are _'X_wide'_, _'X_tab'_, _'X_text'_, _'X_img'_ and _'target'_.
-            Values are the corresponding matrices.
+            Values are the corresponding matrices. Note that of multiple text
+            or image columns/models are used, the corresponding values should
+            be lists of numpy arrays
         val_split: float, Optional. default=None
             train/val split fraction
         target: np.ndarray, Optional. default=None
@@ -398,23 +413,25 @@ class Trainer(BaseTrainer):
                    one of _'howard'_ or _'felbo'_
                 - `deeptabular_gradual` (`bool`):
                    boolean indicating if the `deeptabular` component will be fine tuned gradually
-                - `deeptabular_layers` (`List[nn.Module]`):
+                - `deeptabular_layers` (`Optional[List[nn.Module] | List[List[nn.Module]]]`):
                    List of pytorch modules indicating the layers of the
                    `deeptabular` that will be fine tuned
-                - `deeptabular_max_lr` (`float`):
+                - `deeptabular_max_lr` (`float | List[float]`):
                    max lr for the `deeptabular` componet during fine tuning
                 - `deeptext_gradual` (`bool`):
                    same as `deeptabular_gradual` but for the `deeptext` component
-                - `deeptext_layers` (`List[nn.Module]`):
+                - `deeptext_layers` (`Optional[List[nn.Module] | List[List[nn.Module]]]`):
+                   same as `deeptabular_gradual` but for the `deeptext` component.
+                   If there are multiple text columns/models, this should be a list of lists
+                - `deeptext_max_lr` (`float | List[float]`):
                    same as `deeptabular_gradual` but for the `deeptext` component
-                - `deeptext_max_lr` (`float`):
-                   same as `deeptabular_gradual` but for the `deeptext` component
+                   If there are multiple text columns/models, this should be a list of floats
                 - `deepimage_gradual` (`bool`):
-                   same as `deeptabular_gradual` but for the `deepimage` component
-                - `deepimage_layers` (`List[nn.Module]`):
-                   same as `deeptabular_gradual` but for the `deepimage` component
-                - `deepimage_max_lr` (`float`):
-                    same as `deeptabular_gradual` but for the `deepimage` component
+                   same as `deeptext_layers` but for the `deepimage` component
+                - `deepimage_layers` (`Optional[List[nn.Module] | List[List[nn.Module]]]`):
+                   same as `deeptext_layers` but for the `deepimage` component
+                - `deepimage_max_lr` (`float | List[float]`):
+                    same as `deeptext_layers` but for the `deepimage` component
 
         Examples
         --------
@@ -839,14 +856,14 @@ class Trainer(BaseTrainer):
         max_lr: float = 0.01,
         routine: Literal["howard", "felbo"] = "howard",
         deeptabular_gradual: bool = False,
-        deeptabular_layers: Optional[List[nn.Module]] = None,
-        deeptabular_max_lr: float = 0.01,
+        deeptabular_layers: Optional[List[nn.Module] | List[List[nn.Module]]] = None,
+        deeptabular_max_lr: float | List[float] = 0.01,
         deeptext_gradual: bool = False,
-        deeptext_layers: Optional[List[nn.Module]] = None,
-        deeptext_max_lr: float = 0.01,
+        deeptext_layers: Optional[List[nn.Module] | List[List[nn.Module]]] = None,
+        deeptext_max_lr: float | List[float] = 0.01,
         deepimage_gradual: bool = False,
-        deepimage_layers: Optional[List[nn.Module]] = None,
-        deepimage_max_lr: float = 0.01,
+        deepimage_layers: Optional[List[nn.Module] | List[List[nn.Module]]] = None,
+        deepimage_max_lr: float | List[float] = 0.01,
     ):
         r"""
         Simple wrap-up to individually fine-tune model components

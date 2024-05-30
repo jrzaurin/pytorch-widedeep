@@ -24,13 +24,13 @@ class WideDeepDataset(Dataset):
         wide input
     X_tab: np.ndarray
         deeptabular input
-    X_text: np.ndarray
+    X_text: np.ndarray or List[np.ndarray]
         deeptext input
-    X_img: np.ndarray
+    X_img: np.ndarray or List[np.ndarray]
         deepimage input
     target: np.ndarray
         target array
-    transforms: :obj:`MultipleTransforms`
+    transforms: Optional[Transforms | Compose]
         torchvision Compose object. See models/_multiple_transforms.py
     with_lds: bool
         Boolean indicating if Label Distribution Smoothing will be applied to

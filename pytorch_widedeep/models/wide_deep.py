@@ -47,14 +47,16 @@ class WideDeep(nn.Module):
         Currently this library implements a number of possible architectures
         for the `deeptabular` component. See the documenation of the
         package.
-    deeptext: BaseWDModelComponent, Optional, default = None
+    deeptext: BaseWDModelComponent | List[BaseWDModelComponent], Optional, default = None
         Currently this library implements a number of possible architectures
         for the `deeptext` component. See the documenation of the
-        package.
-    deepimage: BaseWDModelComponent, Optional, default = None
+        package. Note that `deeptext` can be a list of models. This is useful
+        when using multiple text inputs.
+    deepimage: BaseWDModelComponent | List[BaseWDModelComponent], Optional, default = None
         Currently this library uses `torchvision` and implements a number of
         possible architectures for the `deepimage` component. See the
-        documenation of the package.
+        documenation of the package. Note that `deepimage` can be a list of
+        models. This is useful when using multiple image inputs.
     deephead: BaseWDModelComponent, Optional, default = None
         Alternatively, the user can pass a custom model that will receive the
         output of the deep component. If `deephead` is not None all the

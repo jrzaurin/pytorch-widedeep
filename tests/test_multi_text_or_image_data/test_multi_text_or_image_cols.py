@@ -776,7 +776,7 @@ def test_assertion_and_value_errors():
             models=[rnn_1, rnn_2], fusion_method="max", projection_method="wrong"
         )
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         ModelFuser(models=[rnn_1, rnn_2], fusion_method="max")
 
     with pytest.raises(AssertionError):

@@ -122,6 +122,12 @@ self-supervised pre-training with tabular data.
             - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
+::: pytorch_widedeep.models.model_fusion.ModelFuser
+    selection:
+        filters:
+            - "!^_"  # exclude all members starting with _
+            - "!^forward$"
+
 ::: pytorch_widedeep.models.fds_layer.FDSLayer
     selection:
         filters:

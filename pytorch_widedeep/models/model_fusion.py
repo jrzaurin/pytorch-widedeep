@@ -10,7 +10,6 @@ from pytorch_widedeep.models._base_wd_model_component import (
 
 class ModelFuser(BaseWDModelComponent):
     """
-
     This class is a wrapper around a list of models that are associated to the
     different text and/or image columns (and datasets) The class is designed
     to 'fuse' the models using a variety of methods.
@@ -52,11 +51,52 @@ class ModelFuser(BaseWDModelComponent):
 
     Attributes
     ----------
-    heda: nn.Module or BaseWDModelComponent
+    head: nn.Module or BaseWDModelComponent
         Custom head to be used to fuse the output of the models. If
         custom_head is provided, this will take precedence over
         head_hidden_dims
 
+    Examples
+    --------
+    >>> from pytorch_widedeep.preprocessing import TextPreprocessor
+    >>> from pytorch_widedeep.models import BasicRNN, ModelFuser
+    >>> import torch
+    >>> import pandas as pd
+    >>>
+    >>> df = pd.DataFrame({'text_col1': ['hello world', 'this is a test'],
+    ... 'text_col2': ['goodbye world', 'this is another test']})
+    >>> text_preprocessor_1 = TextPreprocessor(
+    ...     text_col="text_col1",
+    ...     max_vocab=10,
+    ...     min_freq=1,
+    ...     maxlen=5,
+    ...     n_cpus=1,
+    ...     verbose=0)
+    >>> text_preprocessor_2 = TextPreprocessor(
+    ...     text_col="text_col2",
+    ...     max_vocab=10,
+    ...     min_freq=1,
+    ...     maxlen=5,
+    ...     n_cpus=1,
+    ...     verbose=0)
+    >>> X_text1 = text_preprocessor_1.fit_transform(df)
+    >>> X_text2 = text_preprocessor_2.fit_transform(df)
+    >>> X_text1_tnsr = torch.from_numpy(X_text1)
+    >>> X_text2_tnsr = torch.from_numpy(X_text2)
+    >>> rnn1 = BasicRNN(
+    ...     vocab_size=len(text_preprocessor_1.vocab.itos),
+    ...     embed_dim=4,
+    ...     hidden_dim=4,
+    ...     n_layers=1,
+    ...     bidirectional=False)
+    >>> rnn2 = BasicRNN(
+    ...     vocab_size=len(text_preprocessor_2.vocab.itos),
+    ...     embed_dim=4,
+    ...     hidden_dim=4,
+    ...     n_layers=1,
+    ...     bidirectional=False)
+    >>> fused_model = ModelFuser(models=[rnn1, rnn2], fusion_method='concatenate')
+    >>> out = fused_model([X_text1_tnsr, X_text2_tnsr])
     """
 
     def __init__(
@@ -236,7 +276,7 @@ class ModelFuser(BaseWDModelComponent):
 
         return output_dim
 
-    def check_input_parameters(self):
+    def check_input_parameters(self):  # noqa: C901
         if isinstance(self.fusion_method, str):
             if not any(
                 x == self.fusion_method
@@ -248,10 +288,14 @@ class ModelFuser(BaseWDModelComponent):
                 )
 
             if any(x in self.fusion_method for x in ["min", "max", "mean"]):
-                assert (
-                    self.projection_method is not None
-                ), "If 'fusion_method' is not 'concatenate', 'projection_method' must be provided"
-
+                if self.projection_method is None:
+                    raise ValueError(
+                        "If 'fusion_method' is not 'concatenate' or 'head', 'projection_method' must be provided"
+                    )
+                elif self.projection_method not in ["min", "max", "mean"]:
+                    raise ValueError(
+                        "projection_method must be one of ['min', 'max', 'mean']"
+                    )
         else:
             if not all(
                 any(
@@ -275,18 +319,16 @@ class ModelFuser(BaseWDModelComponent):
 
             if all(
                 any(x in fm for x in ["min", "max", "mean"])
-                and self.projection_method is not None
                 for fm in self.fusion_method
             ):
-                assert (
-                    self.projection_method is not None
-                ), "If 'fusion_method' is not 'concatenate', 'projection_method' must be provided"
-
-        if (
-            not any(x == self.projection_method for x in ["min", "max", "mean"])
-            and "head" not in self.fusion_method
-        ):
-            raise ValueError("projection_method must be one of ['min', 'max', 'mean']")
+                if self.projection_method is None:
+                    raise ValueError(
+                        "If 'fusion_method' is not 'concatenate' or 'head', 'projection_method' must be provided"
+                    )
+                elif self.projection_method not in ["min", "max", "mean"]:
+                    raise ValueError(
+                        "projection_method must be one of ['min', 'max', 'mean']"
+                    )
 
         if "head" in self.fusion_method and isinstance(self.fusion_method, list):
             raise ValueError(

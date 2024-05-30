@@ -92,7 +92,7 @@ class FineTune:
 
         Parameters:
         ----------
-        model: `Module``
+        model: WDModel or nn.ModuleList
             ``Module`` object containing one the WideDeep model components (wide,
             deeptabular, deeptext or deepimage)
         model_name: str
@@ -102,7 +102,7 @@ class FineTune:
             Pytorch DataLoader containing the data used to fine-tune
         n_epochs: int
             number of epochs used to fine-tune the model
-        max_lr: float
+        max_lr: float or List[float]
             maximum learning rate value during the triangular cycle.
         """
         if self.verbose:
@@ -160,7 +160,7 @@ class FineTune:
 
         Parameters:
         ----------
-        model: ``Module``
+        model: WDModel or nn.ModuleList
            ``Module`` object containing one the WideDeep model components (wide,
            deeptabular, deeptext or deepimage)
         model_name: str
@@ -168,12 +168,12 @@ class FineTune:
            One of 'wide', 'deeptabular', 'deeptext' or 'deepimage'
         loader: ``DataLoader``
            Pytorch DataLoader containing the data to fine-tune with.
-        last_layer_max_lr: float
+        last_layer_max_lr: float or List[float]
            maximum learning rate value during the triangular cycle for the layer
            closest to the output neuron(s). Deeper layers in 'model' will be trained
            with a gradually descending learning rate. The descending factor is fixed
            and is 2.5
-        layers: list
+        layers: List[nn.Module] or List[List[nn.Module]]
            List of ``Module`` objects containing the layers that will be fine-tuned.
            This must be in *'FINE-TUNE ORDER'*.
         routine: str
