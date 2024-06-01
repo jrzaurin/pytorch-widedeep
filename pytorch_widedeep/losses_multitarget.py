@@ -107,7 +107,7 @@ class MultiTargetClassificationLoss(nn.Module):
             List[int | Tuple[int, int] | Tuple[int, List[float]]]
         ] = None,
         weights: Optional[List[float]] = None,
-        reduction: Literal["mean", "sum"] = "sum",
+        reduction: Literal["mean", "sum"] = "mean",
         binary_trick: bool = False,
     ):
         super(MultiTargetClassificationLoss, self).__init__()
@@ -119,11 +119,13 @@ class MultiTargetClassificationLoss(nn.Module):
         if reduction not in ["mean", "sum"]:
             raise ValueError("reduction must be either 'mean' or 'sum'")
 
-        self.reduce = reduction
+        self.binary_config = binary_config
+        self.multiclass_config = multiclass_config
+        self.weights = weights
+        self.reduction = reduction
         self.binary_trick = binary_trick
 
         if self.binary_trick:
-
             if weights is not None:
                 raise ValueError("weights is not compatible with binary_trick=True")
 
@@ -133,7 +135,6 @@ class MultiTargetClassificationLoss(nn.Module):
                     raise ValueError(
                         "binary_trick=True is only compatible with binary_config as a list of integers"
                     )
-                self.binary_config = binary_config
                 # just to avoid type errors in the forward method
                 self._binary_config: List[int] = binary_config  # type: ignore[assignment]
             if multiclass_config is not None:
@@ -144,12 +145,10 @@ class MultiTargetClassificationLoss(nn.Module):
                         "binary_trick=True is only compatible with multiclass_config as a list of "
                         "tuples with two integers: the index of the target and the number of classes"
                     )
-                self.multiclass_config = multiclass_config
                 # just to avoid type errors in the forward method
                 self._multiclass_config: List[Tuple[int, int]] = multiclass_config  # type: ignore[assignment]
         else:
             if binary_config is not None:
-                self.binary_config = binary_config
                 self.binary_config_with_pos_weights: List[
                     Tuple[int, Optional[float]]
                 ] = []
@@ -160,7 +159,6 @@ class MultiTargetClassificationLoss(nn.Module):
                         self.binary_config_with_pos_weights.append((bc, None))
 
             if multiclass_config is not None:
-                self.multiclass_config = multiclass_config
                 self.multiclass_config_with_weights: List[
                     Tuple[int, Optional[List[float]]]
                 ] = []
@@ -181,8 +179,6 @@ class MultiTargetClassificationLoss(nn.Module):
                     "The number of weights must match the number of binary and multiclass targets"
                 )
 
-            self.weights = weights
-
     def forward(self, input: Tensor, target: Tensor) -> Tensor:  # noqa: C901
 
         if self.binary_trick:
@@ -202,7 +198,7 @@ class MultiTargetClassificationLoss(nn.Module):
         else:
             losses: List[Tensor] = []
             if self.binary_config_with_pos_weights:
-                for idx, bpos_weight in self.binary_config_with_bpos_weights:
+                for idx, bpos_weight in self.binary_config_with_pos_weights:
                     _loss = F.binary_cross_entropy_with_logits(
                         input[:, idx],
                         target[:, idx].float(),
@@ -215,8 +211,9 @@ class MultiTargetClassificationLoss(nn.Module):
                     losses.append(_loss)
             if self.multiclass_config_with_weights:
                 for idx, mpos_weight in self.multiclass_config_with_weights:
+                    # BUG: fix slicing. Need to pass number of classes and slice accordingly
                     _loss = F.cross_entropy(
-                        input[:, idx],
+                        input[:, idx:],
                         target[:, idx].long(),
                         weight=(
                             torch.tensor(mpos_weight).to(input.device)
@@ -229,11 +226,11 @@ class MultiTargetClassificationLoss(nn.Module):
                 if self.weights is not None:
                     losses = [l * w for l, w in zip(losses, self.weights)]  # noqa: E741
 
-                loss = (
-                    torch.stack(losses).sum()
-                    if self.reduce == "sum"
-                    else torch.stack(losses).mean()
-                )
+            loss = (
+                torch.stack(losses).sum()
+                if self.reduction == "sum"
+                else torch.stack(losses).mean()
+            )
 
         return loss
 

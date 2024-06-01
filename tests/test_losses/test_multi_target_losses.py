@@ -114,3 +114,64 @@ def test_multi_target_regression_loss(weights, reduction):
             ) + F.mse_loss(y_pred[:, 1], y_true[:, 1], reduction="sum")
 
     assert torch.allclose(multi_target_loss, manual_loss)
+
+
+@pytest.mark.parametrize("binary_trick", [False, True])
+def test_multi_target_classification_loss(binary_trick):
+
+    tab_preprocessor = TabPreprocessor(continuous_cols=["col1", "col2", "col3", "col4"])
+    X_tab = tab_preprocessor.fit_transform(df)
+    X_tab_tnsr = torch.tensor(X_tab, dtype=torch.float32)
+
+    tab_ml = TabMlp(
+        column_idx=tab_preprocessor.column_idx,
+        continuous_cols=tab_preprocessor.continuous_cols,
+        mlp_hidden_dims=[16, 8],
+    )
+
+    classification_loss = MultiTargetClassificationLoss(
+        binary_config=[0], multiclass_config=[(1, 3)], binary_trick=binary_trick
+    )
+
+    model = WideDeep(deeptabular=tab_ml, pred_dim=2 + 3)
+
+    y_true = torch.tensor(
+        df[["target3_binary", "target4_multiclass"]].values, dtype=torch.float32
+    )
+    y_pred = model({"deeptabular": X_tab_tnsr})
+
+    multi_target_loss = classification_loss(y_pred, y_true)
+
+    # just assert it has run
+    assert multi_target_loss.item() > 0
+
+
+def test_multi_target_classification_loss_with_weights():
+
+    tab_preprocessor = TabPreprocessor(continuous_cols=["col1", "col2", "col3", "col4"])
+    X_tab = tab_preprocessor.fit_transform(df)
+    X_tab_tnsr = torch.tensor(X_tab, dtype=torch.float32)
+
+    tab_ml = TabMlp(
+        column_idx=tab_preprocessor.column_idx,
+        continuous_cols=tab_preprocessor.continuous_cols,
+        mlp_hidden_dims=[16, 8],
+    )
+
+    classification_loss = MultiTargetClassificationLoss(
+        binary_config=[(0, 0.2)],
+        multiclass_config=[(1, [1.0, 2.0, 3.0])],
+        weights=[1.0, 5.0],
+    )
+
+    model = WideDeep(deeptabular=tab_ml, pred_dim=2 + 3)
+
+    y_true = torch.tensor(
+        df[["target3_binary", "target4_multiclass"]].values, dtype=torch.float32
+    )
+    y_pred = model({"deeptabular": X_tab_tnsr})
+
+    multi_target_loss = classification_loss(y_pred, y_true)
+
+    # just assert it has run
+    assert multi_target_loss.item() > 0
