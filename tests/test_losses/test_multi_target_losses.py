@@ -160,11 +160,11 @@ def test_multi_target_classification_loss_with_weights():
 
     classification_loss = MultiTargetClassificationLoss(
         binary_config=[(0, 0.2)],
-        multiclass_config=[(1, [1.0, 2.0, 3.0])],
+        multiclass_config=[(1, 3, [1.0, 2.0, 3.0])],
         weights=[1.0, 5.0],
     )
 
-    model = WideDeep(deeptabular=tab_ml, pred_dim=2 + 3)
+    model = WideDeep(deeptabular=tab_ml, pred_dim=1 + 3)
 
     y_true = torch.tensor(
         df[["target3_binary", "target4_multiclass"]].values, dtype=torch.float32
@@ -175,3 +175,55 @@ def test_multi_target_classification_loss_with_weights():
 
     # just assert it has run
     assert multi_target_loss.item() > 0
+
+
+@pytest.mark.parametrize("binary_trick", [False, True])
+def test_multi_target_regression_and_classification_loss(binary_trick):
+
+    tab_preprocessor = TabPreprocessor(
+        continuous_cols=["col1", "col2", "col3", "col4", "col5", "col6", "col7", "col8"]
+    )
+    X_tab = tab_preprocessor.fit_transform(df)
+    X_tab_tnsr = torch.tensor(X_tab, dtype=torch.float32)
+
+    tab_ml = TabMlp(
+        column_idx=tab_preprocessor.column_idx,
+        continuous_cols=tab_preprocessor.continuous_cols,
+        mlp_hidden_dims=[16, 8],
+    )
+
+    loss = MutilTargetRegressionAndClassificationLoss(
+        regression_config=[0, 1],
+        binary_config=[2] if binary_trick else [(2, 0.2)],
+        multiclass_config=[(3, 3)] if binary_trick else [(3, 3, [1.0, 2.0, 3.0])],
+        binary_trick=binary_trick,
+        weights=None if binary_trick else [1.0, 2.0, 3.0, 4.0],
+    )
+
+    regres_dim = 1
+    bin_dim = 2 if binary_trick else 1
+    multiclass_dim = 3
+    model = WideDeep(
+        deeptabular=tab_ml, pred_dim=regres_dim + regres_dim + bin_dim + multiclass_dim
+    )
+
+    y_true = torch.tensor(
+        df[
+            [
+                "target1_regression",
+                "target2_regression",
+                "target3_binary",
+                "target4_multiclass",
+            ]
+        ].values,
+        dtype=torch.float32,
+    )
+    y_pred = model({"deeptabular": X_tab_tnsr})
+
+    multi_target_loss = loss(y_pred, y_true)
+
+    # just assert it has run
+    assert multi_target_loss.item() > 0
+
+
+# TO DO: check assertion and ValueErrors
