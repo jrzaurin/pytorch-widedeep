@@ -70,7 +70,8 @@ df = create_multitarget_data()
 
 @pytest.mark.parametrize("weights", [None, [1, 5]])
 @pytest.mark.parametrize("reduction", ["mean", "sum"])
-def test_multi_target_regression_loss(weights, reduction):
+@pytest.mark.parametrize("with_alias", [False, True])
+def test_multi_target_regression_loss(weights, reduction, with_alias):
 
     tab_preprocessor = TabPreprocessor(continuous_cols=["col1", "col2", "col3", "col4"])
     X_tab = tab_preprocessor.fit_transform(df)
@@ -82,7 +83,14 @@ def test_multi_target_regression_loss(weights, reduction):
         mlp_hidden_dims=[16, 8],
     )
 
-    regression_loss = MultiTargetRegressionLoss(weights=weights, reduction=reduction)
+    if with_alias:
+        regression_loss = MultiTargetRegressionLoss(
+            target_weights=weights, target_reduction=reduction
+        )
+    else:
+        regression_loss = MultiTargetRegressionLoss(
+            weights=weights, reduction=reduction
+        )
 
     model = WideDeep(deeptabular=tab_ml, pred_dim=2)
 
@@ -161,7 +169,7 @@ def test_multi_target_classification_loss_with_weights():
     classification_loss = MultiTargetClassificationLoss(
         binary_config=[(0, 0.2)],
         multiclass_config=[(1, 3, [1.0, 2.0, 3.0])],
-        weights=[1.0, 5.0],
+        target_weights=[1.0, 5.0],
     )
 
     model = WideDeep(deeptabular=tab_ml, pred_dim=1 + 3)
@@ -226,4 +234,109 @@ def test_multi_target_regression_and_classification_loss(binary_trick):
     assert multi_target_loss.item() > 0
 
 
-# TO DO: check assertion and ValueErrors
+def test_multi_target_regression_loss_errors():
+
+    tab_preprocessor = TabPreprocessor(
+        continuous_cols=["col1", "col2", "col3", "col4", "col5", "col6", "col7", "col8"]
+    )
+    X_tab = tab_preprocessor.fit_transform(df)
+    X_tab_tnsr = torch.tensor(X_tab, dtype=torch.float32)
+
+    tab_ml = TabMlp(
+        column_idx=tab_preprocessor.column_idx,
+        continuous_cols=tab_preprocessor.continuous_cols,
+        mlp_hidden_dims=[16, 8],
+    )
+
+    multi_target_regression_loss = MultiTargetRegressionLoss(
+        weights=[1, 2, 3], reduction="sum"
+    )
+
+    model = WideDeep(deeptabular=tab_ml, pred_dim=2)
+
+    y_true = torch.tensor(
+        df[["target1_regression", "target2_regression"]].values, dtype=torch.float32
+    )
+    y_pred = model({"deeptabular": X_tab_tnsr})
+
+    with pytest.raises(AssertionError):
+        # weights must have the same length as the number of targets
+        multi_target_regression_loss(y_pred, y_true)
+
+    with pytest.raises(ValueError):
+        # reduction must be either 'mean' or 'sum'
+        MultiTargetRegressionLoss(reduction="wrong")
+
+
+def test_multi_target_classification_loss_errors():
+
+    with pytest.raises(ValueError):
+        # reduction must be either 'mean' or 'sum'
+        MultiTargetClassificationLoss(
+            binary_config=[0], multiclass_config=[(1, 3)], reduction="wrong"
+        )
+
+    with pytest.raises(ValueError):
+        # weights must have the same length as the number of targets
+        MultiTargetClassificationLoss(
+            binary_config=[0], multiclass_config=[(1, 3)], weights=[1.0, 2.0, 3.0]
+        )
+
+    with pytest.raises(ValueError):
+        # If binary_trick is True, binary_config must be a list of integers
+        MultiTargetClassificationLoss(
+            binary_config=[(0, 0.2)],
+            multiclass_config=[(1, 3)],
+            binary_trick=True,
+        )
+
+    with pytest.raises(ValueError):
+        # If binary_trick is True, multiclass_config must be a list of tuples
+        MultiTargetClassificationLoss(
+            binary_config=[0],
+            multiclass_config=[(1, 3, [1.0, 2.0, 3.0])],
+            binary_trick=True,
+        )
+
+    with pytest.raises(ValueError):
+        # if binary_trick is True, the binary targets must be the first targets
+        MultiTargetClassificationLoss(
+            binary_config=[1], multiclass_config=[(0, 3)], binary_trick=True
+        )
+
+
+def test_multi_target_regression_and_classification_loss_errors():
+
+    with pytest.raises(AssertionError):
+        # binary_config and multiclass_config cannot be both None
+        MutilTargetRegressionAndClassificationLoss(
+            regression_config=[0, 1],
+        )
+
+    with pytest.raises(ValueError):
+        # if binary_trick is True, the target order should be regression,
+        # binary, multiclass
+        MutilTargetRegressionAndClassificationLoss(
+            regression_config=[1],
+            binary_config=[0],
+            binary_trick=True,
+        )
+
+    with pytest.raises(ValueError):
+        # if binary_trick is True, the target order should be regression,
+        # binary, multiclass
+        MutilTargetRegressionAndClassificationLoss(
+            regression_config=[0],
+            binary_config=[2],
+            multiclass_config=[(1, 3)],
+            binary_trick=True,
+        )
+
+    with pytest.raises(ValueError):
+        # If weigths is not None, it must have the same length as the number of targets
+        MutilTargetRegressionAndClassificationLoss(
+            regression_config=[0, 1],
+            binary_config=[(2, 0.2)],
+            multiclass_config=[(3, 3, [1.0, 2.0, 3.0])],
+            weights=[1.0, 2.0],
+        )

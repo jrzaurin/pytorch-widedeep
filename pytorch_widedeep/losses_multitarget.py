@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from pytorch_widedeep.wdtypes import List, Tuple, Tensor, Literal, Optional
+from pytorch_widedeep.utils.general_utils import alias
 
 use_cuda = torch.cuda.is_available()
 
@@ -17,16 +18,25 @@ class MultiTargetRegressionLoss(nn.Module):
     ----------
     weights: Optional[List[float], default = None]
         List of weights to apply to each target. The length of the list must match
-        the number of targets
+        the number of targets. Alias: 'target_weights'
     reduction: Literal["mean", "sum"], default = "mean
         Specifies the reduction to apply to the output: 'mean' | 'sum'.
         Note that this is NOT the same as the reduction in the MSELoss. This
         reduction is applied after the loss for each target has been computed.
+        Alias: 'target_reduction'
 
     Examples
     --------
+    >>> import torch
+    >>> from pytorch_widedeep.losses_multitarget import MultiTargetRegressionLoss
+    >>> input = torch.randn(3, 2)
+    >>> target = torch.randn(3, 2)
+    >>> loss = MultiTargetRegressionLoss(weights=[0.5, 0.5], reduction="mean")
+    >>> output = loss(input, target)
     """
 
+    @alias("reduction", ["target_reduction"])
+    @alias("weights", ["target_weights"])
     def __init__(
         self,
         weights: Optional[List[float]] = None,
@@ -35,16 +45,22 @@ class MultiTargetRegressionLoss(nn.Module):
         super(MultiTargetRegressionLoss, self).__init__()
 
         self.weights = weights
-
-        if reduction not in ["mean", "sum"]:
-            raise ValueError("reduction must be either 'mean' or 'sum'")
         self.reduction = reduction
+
+        if self.reduction not in ["mean", "sum"]:
+            raise ValueError("reduction must be either 'mean' or 'sum'")
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
 
         assert input.size() == target.size()
 
         if self.weights is not None:
+
+            assert len(self.weights) == input.size(1), (
+                "The number of weights must match the number of targets. "
+                f"Got {len(self.weights)} weights and {input.size(1)} targets"
+            )
+
             loss = F.mse_loss(input, target, reduction="none") * torch.tensor(
                 self.weights
             ).to(input.device)
@@ -73,12 +89,12 @@ class MultiTargetClassificationLoss(nn.Module):
         (i.e. the 'weight' parameter in the cross_entropy loss)
     weights: Optional[List[float], default = None]
         List of weights to apply to each target. The length of the list must match
-        the number of targets
+        the number of targets. Alias: 'target_weights'
     reduction: Literal["mean", "sum"], default = "sum
         Specifies the reduction to apply to the output: 'mean' | 'sum'.
         Note that this is NOT the same as the reduction in the cross_entropy loss or the
         binary_cross_entropy_with_logits. This reduction is applied after the loss for
-        each target has been computed.
+        each target has been computed. Alias: 'target_reduction'
     binary_trick: bool, default = False
         If True, each target will be considered independently and the loss
         will be computed as binary_cross_entropy_with_logits. This is a fast
@@ -100,8 +116,22 @@ class MultiTargetClassificationLoss(nn.Module):
 
     Examples
     --------
+    >>> import torch
+    >>> from pytorch_widedeep.losses_multitarget import MultiTargetClassificationLoss
+    >>> input = torch.randn(5, 4)
+    >>> input_binary_trick = torch.randn(5, 5)
+    >>> target = torch.stack([torch.tensor([0, 1, 0, 1, 1]), torch.tensor([0, 1, 2, 0, 2])], 1)
+    >>> loss_1 = MultiTargetClassificationLoss(binary_config=[0], multiclass_config=[(1, 3)], reduction="mean")
+    >>> output_1 = loss_1(input, target)
+    >>> loss_2 = MultiTargetClassificationLoss(binary_config=[(0, 0.5)], multiclass_config=[(1, 3, [1., 2., 3.])],
+    ... reduction="sum", weights=[0.5, 0.5])
+    >>> output_2 = loss_2(input, target)
+    >>> loss_3 = MultiTargetClassificationLoss(binary_config=[0], multiclass_config=[(1, 3)], binary_trick=True)
+    >>> output_3 = loss_3(input_binary_trick, target)
     """
 
+    @alias("reduction", ["target_reduction"])
+    @alias("weights", ["target_weights"])
     def __init__(  # noqa: C901
         self,
         binary_config: Optional[List[int | Tuple[int, float]]] = None,
@@ -113,10 +143,6 @@ class MultiTargetClassificationLoss(nn.Module):
         binary_trick: bool = False,
     ):
         super(MultiTargetClassificationLoss, self).__init__()
-
-        assert (
-            binary_config is not None or multiclass_config is not None
-        ), "Either binary_config or multiclass_config must be provided"
 
         if reduction not in ["mean", "sum"]:
             raise ValueError("reduction must be either 'mean' or 'sum'")
@@ -282,12 +308,12 @@ class MutilTargetRegressionAndClassificationLoss(nn.Module):
         (i.e. the 'weight' parameter in the cross_entropy loss)
     weights: Optional[List[float], default = None]
         List of weights to apply to each target. The length of the list must match
-        the number of targets
+        the number of targets. Alias: 'target_weights'
     reduction: Literal["mean", "sum"], default = "sum
         Specifies the reduction to apply to the output: 'mean' | 'sum'. Note
         that this is NOT the same as the reduction in the cross_entropy loss,
         the binary_cross_entropy_with_logits or the MSELoss. This reduction
-        is applied after each target has been computed.
+        is applied after each target has been computed. Alias: 'target_reduction'
     binary_trick: bool, default = False
         If True, each target will be considered independently and the loss
         will be computed as binary_cross_entropy_with_logits. This is a fast
@@ -308,9 +334,17 @@ class MutilTargetRegressionAndClassificationLoss(nn.Module):
 
     Examples
     --------
-
+    >>> import torch
+    >>> from pytorch_widedeep.losses_multitarget import MutilTargetRegressionAndClassificationLoss
+    >>> input = torch.randn(5, 5)
+    >>> target = torch.stack([torch.randn(5), torch.tensor([0, 1, 0, 1, 1]), torch.tensor([0, 1, 2, 0, 2])], 1)
+    >>> loss = MutilTargetRegressionAndClassificationLoss(regression_config=[0], binary_config=[2],
+    ... multiclass_config=[(2, 3)], reduction="mean")
+    >>> output = loss(input, target)
     """
 
+    @alias("reduction", ["target_reduction"])
+    @alias("weights", ["target_weights"])
     def __init__(  # noqa: C901
         self,
         regression_config: List[int] = [],
@@ -325,24 +359,17 @@ class MutilTargetRegressionAndClassificationLoss(nn.Module):
 
         super(MutilTargetRegressionAndClassificationLoss, self).__init__()
 
-        assert (
-            binary_config is not None or multiclass_config is not None
-        ), "Either binary_config or multiclass_config must be provided"
-
         self.regression_config = regression_config
 
-        if binary_config is not None:
-            first_regression_idx = regression_config[0]
-            last_regression_idx = regression_config[-1]
-            first_binary_idx = (
-                binary_config[0][0]
-                if isinstance(binary_config[0], tuple)
-                else binary_config[0]
+        assert binary_config is not None or multiclass_config is not None, (
+            "Either binary_config or multiclass_config must be provided. "
+            "Otherwise, use the MultiTargetRegressionLoss"
+        )
+
+        if binary_trick:
+            self._check_inputs_with_binary_trick(
+                regression_config, binary_config, multiclass_config
             )
-            if first_regression_idx != 0 or first_binary_idx != last_regression_idx + 1:
-                raise ValueError(
-                    "When using binary_trick=True, the targets order must be: regression, binary and multiclass"
-                )
 
         if weights is not None:
             if len(weights) != (
@@ -354,32 +381,16 @@ class MutilTargetRegressionAndClassificationLoss(nn.Module):
                     "The number of weights must match the number of regression, binary and multiclass targets"
                 )
 
+            self.weights_regression = self._prepare_weights_for_regression_targets(
+                weights, regression_config
+            )
+            self.weights_binary = self._prepare_weights_per_binary_targets(
+                weights, binary_config
+            )
+            self.weights_multiclass = self._prepare_weights_per_multiclass_targets(
+                weights, multiclass_config
+            )
             self.weights = weights
-
-            self.weights_regression = [
-                w for idx, w in enumerate(weights) if idx in regression_config
-            ]
-
-            if binary_config is not None:
-                binary_idx: List[int] = []
-                for bc in binary_config:
-                    if isinstance(bc, tuple):
-                        binary_idx.append(bc[0])
-                    else:
-                        binary_idx.append(bc)
-                self.weights_binary = [
-                    w for idx, w in enumerate(weights) if idx in binary_idx
-                ]
-            else:
-                self.weights_binary = None
-
-            if multiclass_config is not None:
-                multiclass_idx: List[int] = [mc[0] for mc in multiclass_config]
-                self.weights_multiclass = [
-                    w for idx, w in enumerate(weights) if idx in multiclass_idx
-                ]
-            else:
-                self.weights_multiclass = None
         else:
             self.weights_regression = None
             self.weights_binary = None
@@ -421,3 +432,103 @@ class MutilTargetRegressionAndClassificationLoss(nn.Module):
             classification_loss = self.multi_target_classification_loss(input, target)
 
         return regression_loss + classification_loss
+
+    def _check_inputs_with_binary_trick(
+        self,
+        regression_config: List[int],
+        binary_config: Optional[List[int | Tuple[int, float]]],
+        multiclass_config: Optional[
+            List[Tuple[int, int] | Tuple[int, int, List[float]]]
+        ],
+    ) -> None:
+
+        error_msg = "When using binary_trick=True, the targets order must be: regression, binary and multiclass"
+
+        first_regression_idx = regression_config[0]
+        last_regression_idx = regression_config[-1]
+        if first_regression_idx != 0:
+            raise ValueError(error_msg)
+
+        if binary_config is not None and multiclass_config is not None:
+            first_binary_idx = (
+                binary_config[0][0]
+                if isinstance(binary_config[0], tuple)
+                else binary_config[0]
+            )
+            last_binary_idx = (
+                binary_config[-1][0]
+                if isinstance(binary_config[-1], tuple)
+                else binary_config[-1]
+            )
+            first_multiclass_idx = multiclass_config[0][0]
+
+            if (first_binary_idx != last_regression_idx + 1) or (
+                last_binary_idx >= first_multiclass_idx
+            ):
+                raise ValueError(error_msg)
+        elif binary_config is not None:
+            first_binary_idx = (
+                binary_config[0][0]
+                if isinstance(binary_config[0], tuple)
+                else binary_config[0]
+            )
+            if first_binary_idx != last_regression_idx + 1:
+                raise ValueError(error_msg)
+        elif multiclass_config is not None:
+            first_multiclass_idx = multiclass_config[0][0]
+            if first_multiclass_idx != last_regression_idx + 1:
+                raise ValueError(error_msg)
+        else:
+            raise ValueError(
+                "Either binary_config or multiclass_config must be provided. "
+                "Otherwise, use the MultiTargetRegressionLoss"
+            )
+
+    def _prepare_weights_for_regression_targets(
+        self,
+        weights: List[float],
+        regression_config: List[int],
+    ) -> List[float]:
+
+        weights_regression = [
+            w for idx, w in enumerate(weights) if idx in regression_config
+        ]
+
+        return weights_regression
+
+    def _prepare_weights_per_binary_targets(
+        self,
+        weights: List[float],
+        binary_config: Optional[List[int | Tuple[int, float]]],
+    ) -> Optional[List[float]]:
+
+        if binary_config is not None:
+            binary_idx: List[int] = []
+            for bc in binary_config:
+                if isinstance(bc, tuple):
+                    binary_idx.append(bc[0])
+                else:
+                    binary_idx.append(bc)
+            weights_binary = [w for idx, w in enumerate(weights) if idx in binary_idx]
+        else:
+            weights_binary = None
+
+        return weights_binary
+
+    def _prepare_weights_per_multiclass_targets(
+        self,
+        weights: List[float],
+        multiclass_config: Optional[
+            List[Tuple[int, int] | Tuple[int, int, List[float]]]
+        ],
+    ) -> Optional[List[float]]:
+
+        if multiclass_config is not None:
+            multiclass_idx: List[int] = [mc[0] for mc in multiclass_config]
+            weights_multiclass = [
+                w for idx, w in enumerate(weights) if idx in multiclass_idx
+            ]
+        else:
+            weights_multiclass = None
+
+        return weights_multiclass
