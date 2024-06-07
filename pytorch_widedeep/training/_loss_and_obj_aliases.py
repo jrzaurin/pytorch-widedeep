@@ -85,6 +85,7 @@ class _ObjectiveToMethod:
         "focalr_l1": "regression",
         "huber": "regression",
         "quantile": "qregression",
+        "multitarget": "multitarget",
     }
 
     @classproperty

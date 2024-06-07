@@ -83,6 +83,10 @@ class Trainer(BaseTrainer):
         - `quantile`
 
         - `tweedie`
+
+        - `multitarget`
+
+        **NOTE**: For `multitarget` a custom loss function must be passed
     custom_loss_function: `nn.Module`. Optional, default = None
         It is possible to pass a custom loss function. See for example
         `pytorch_widedeep.losses.FocalLoss` for the required structure of the
@@ -966,7 +970,7 @@ class Trainer(BaseTrainer):
                 X[k] = v.to(self.device)
         y = (
             target.view(-1, 1).float()
-            if self.method not in ["multiclass", "qregression"]
+            if self.method not in ["multiclass", "qregression", "multitarget"]
             else target
         )
         y = y.to(self.device)

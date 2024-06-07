@@ -5,6 +5,7 @@ import pytest
 import torch.nn.functional as F
 from sklearn.datasets import make_regression, make_classification
 
+from pytorch_widedeep import Trainer
 from pytorch_widedeep.models import TabMlp, WideDeep
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.losses_multitarget import (
@@ -57,10 +58,10 @@ def create_multitarget_data() -> pd.DataFrame:
         ),
         columns=["col1", "col2", "col3", "col4", "col5", "col6", "col7", "col8"],
     )
-    df["target1_regression"] = y_regression1
-    df["target2_regression"] = y_regression2
-    df["target3_binary"] = y_classification_binary
-    df["target4_multiclass"] = y_classification_multiclass
+    df["target1_regression"] = y_regression1.astype(np.float32)
+    df["target2_regression"] = y_regression2.astype(np.float32)
+    df["target3_binary"] = y_classification_binary.astype(np.float32)
+    df["target4_multiclass"] = y_classification_multiclass.astype(np.float32)
 
     return df
 
@@ -340,3 +341,55 @@ def test_multi_target_regression_and_classification_loss_errors():
             multiclass_config=[(3, 3, [1.0, 2.0, 3.0])],
             weights=[1.0, 2.0],
         )
+
+
+@pytest.mark.parametrize(
+    "problem", ["regression", "classification", "regression_and_classification"]
+)
+def test_multi_target_losses_integration(problem):
+
+    tab_preprocessor = TabPreprocessor(
+        continuous_cols=["col1", "col2", "col3", "col4", "col5", "col6", "col7", "col8"]
+    )
+    X_tab = tab_preprocessor.fit_transform(df)
+
+    tab_ml = TabMlp(
+        column_idx=tab_preprocessor.column_idx,
+        continuous_cols=tab_preprocessor.continuous_cols,
+        mlp_hidden_dims=[16, 8],
+    )
+
+    if problem == "regression":
+        loss = MultiTargetRegressionLoss()
+        pred_dim = 2
+        target = df[["target1_regression", "target2_regression"]].values
+    elif problem == "classification":
+        loss = MultiTargetClassificationLoss(
+            binary_config=[0],
+            multiclass_config=[(1, 3)],
+        )
+        pred_dim = 1 + 3
+        target = df[["target3_binary", "target4_multiclass"]].values
+    else:
+        loss = MutilTargetRegressionAndClassificationLoss(
+            regression_config=[0, 1],
+            binary_config=[2],
+            multiclass_config=[(3, 3)],
+        )
+        pred_dim = 2 + 1 + 3
+        target = df[
+            [
+                "target1_regression",
+                "target2_regression",
+                "target3_binary",
+                "target4_multiclass",
+            ]
+        ].values
+
+    model = WideDeep(deeptabular=tab_ml, pred_dim=pred_dim)
+
+    trainer = Trainer(model, objective="multitarget", custom_loss_function=loss)
+
+    trainer.fit(X_tab=X_tab, target=target, n_epochs=1)
+
+    assert trainer.history["train_loss"][0] != 0

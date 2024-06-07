@@ -327,6 +327,15 @@ class BaseTrainer(ABC):
                 "Feature Distribution Smooting can be used only for regression"
             )
 
+        if objective == "multitarget":
+            assert custom_loss_function is not None, (
+                "When 'objective' is 'multitarget', 'custom_loss_function' must be "
+                "provided. This library provides three losses for multitarget problems: "
+                "'MultiTargetRegressionLoss', 'MultiTargetClassificationLoss' and "
+                "'MutilTargetRegressionAndClassificationLoss'. Any other loss function "
+                "must be provided by the user. Please, read the documentation for more details"
+            )
+
         if _ObjectiveToMethod.get(objective) == "multiclass" and model.pred_dim == 1:
             raise ValueError(
                 "This is a multiclass classification problem but the size of the output layer"
@@ -346,10 +355,11 @@ class BaseTrainer(ABC):
             "binary",
             "multiclass",
             "regression",
+            "multitarget",
         ]:
             raise ValueError(
                 "If 'custom_loss_function' is not None, 'objective' must be 'binary' "
-                "'multiclass' or 'regression', consistent with the loss function"
+                "'multiclass', 'regression' or 'multitarget' consistent with the loss function"
             )
 
     @staticmethod
