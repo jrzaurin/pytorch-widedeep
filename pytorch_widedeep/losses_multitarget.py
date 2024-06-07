@@ -17,13 +17,14 @@ class MultiTargetRegressionLoss(nn.Module):
     Parameters
     ----------
     weights: Optional[List[float], default = None]
-        List of weights to apply to each target. The length of the list must match
-        the number of targets. Alias: 'target_weights'
+        List of weights to apply to the loss associated to each target. The
+        length of the list must match the number of targets.
+        Alias: 'target_weights'
     reduction: Literal["mean", "sum"], default = "mean
-        Specifies the reduction to apply to the output: 'mean' | 'sum'.
-        Note that this is NOT the same as the reduction in the MSELoss. This
-        reduction is applied after the loss for each target has been computed.
-        Alias: 'target_reduction'
+        Specifies the reduction to apply to the loss associated to each
+        target: 'mean' | 'sum'. Note that this is NOT the same as the
+        reduction in the MSELoss. This reduction is applied after the loss
+        for each target has been computed. Alias: 'target_reduction'
 
     Examples
     --------
@@ -80,34 +81,37 @@ class MultiTargetClassificationLoss(nn.Module):
     Parameters
     ----------
     binary_config: Optional[List[int | Tuple[int, float]]], default = None
-        List of integers or tuples with two elements: the index of the target and the
-        positive weight for binary classification
+        List of integers with the index of the target for binary
+        classification or tuples with two elements: the index of the targets
+        or binary classification and the positive weight for binary
+        classification
     multiclass_config: Optional[Tuple[int, int] | Tuple[int, int, List[float]]], default = None
         List of tuples with two or three elements: the index of the target and the
         number of classes for multiclass classification, or a tuple with the index of
         the target, the number of classes and a list of weights to apply to each class
         (i.e. the 'weight' parameter in the cross_entropy loss)
     weights: Optional[List[float], default = None]
-        List of weights to apply to each target. The length of the list must match
-        the number of targets. Alias: 'target_weights'
+        List of weights to apply to the loss associated to each target. The
+        length of the list must match the number of targets.
+        Alias: 'target_weights'
     reduction: Literal["mean", "sum"], default = "sum
-        Specifies the reduction to apply to the output: 'mean' | 'sum'.
-        Note that this is NOT the same as the reduction in the cross_entropy loss or the
-        binary_cross_entropy_with_logits. This reduction is applied after the loss for
-        each target has been computed. Alias: 'target_reduction'
+        Specifies the reduction to apply to the loss associated to each
+        target: 'mean' | 'sum'. Note that this is NOT the same as the
+        reduction in the cross_entropy loss or the
+        binary_cross_entropy_with_logits. This reduction is applied after the
+        loss for each target has been computed. Alias: 'target_reduction'
     binary_trick: bool, default = False
         If True, each target will be considered independently and the loss
-        will be computed as binary_cross_entropy_with_logits. This is a fast
-        implementation and it is useful when the targets are not mutually
-        exclusive. Note that the 'weights' parameter is not compatible with
-        binary_trick=True. Also note that if binary_trick=True,
-        the 'binary_config' must be a list of integers and
+        will be computed as binary_cross_entropy_with_logits. This is a
+        faster implementation. Note that the 'weights' parameter is not
+        compatible with binary_trick=True. Also note that if
+        binary_trick=True, the 'binary_config' must be a list of integers and
         the 'multiclass_config' must be a list of tuples with two integers:
         the index of the target and the number of classes. Finally, if
         binary_trick=True, the binary targets must be the first targets in
         the target tensor.
 
-        **Note**: When using the binary_trick, the binary targets are
+        :information_source: **NOTE**: When using the binary_trick, the binary targets are
           considered as 2 classes. Therefore, the pred_dim parametere of the
           WideDeep class should be adjusted accordingly (adding 2 to per
           binary target). For example, in a problem with a binary target and
@@ -299,16 +303,19 @@ class MutilTargetRegressionAndClassificationLoss(nn.Module):
     regression_config: List[int], default = []
         List of integers with the indices of the regression targets
     binary_config: Optional[List[int | Tuple[int, float]]], default = None
-        List of integers or tuples with two elements: the index of the target and the
-        positive weight for binary classification
+        List of integers with the index of the target for binary
+        classification or tuples with two elements: the index of the targets
+        or binary classification and the positive weight for binary
+        classification
     multiclass_config: Optional[Tuple[int, int] | Tuple[int, int, List[float]]], default = None
         List of tuples with two or three elements: the index of the target and the
         number of classes for multiclass classification, or a tuple with the index of
         the target, the number of classes and a list of weights to apply to each class
         (i.e. the 'weight' parameter in the cross_entropy loss)
     weights: Optional[List[float], default = None]
-        List of weights to apply to each target. The length of the list must match
-        the number of targets. Alias: 'target_weights'
+        List of weights to apply to the loss associated to each target. The
+        length of the list must match the number of targets.
+        Alias: 'target_weights'
     reduction: Literal["mean", "sum"], default = "sum
         Specifies the reduction to apply to the output: 'mean' | 'sum'. Note
         that this is NOT the same as the reduction in the cross_entropy loss,
@@ -316,17 +323,16 @@ class MutilTargetRegressionAndClassificationLoss(nn.Module):
         is applied after each target has been computed. Alias: 'target_reduction'
     binary_trick: bool, default = False
         If True, each target will be considered independently and the loss
-        will be computed as binary_cross_entropy_with_logits. This is a fast
-        implementation and it is useful when the targets are not mutually
-        exclusive. Note that the 'weights' parameter is not compatible with
-        binary_trick=True. Also note that if binary_trick=True,
-        the 'binary_config' must be a list of integers and
+        will be computed as binary_cross_entropy_with_logits. This is a
+        faster implementation. Note that the 'weights' parameter is not
+        compatible with binary_trick=True. Also note that if
+        binary_trick=True, the 'binary_config' must be a list of integers and
         the 'multiclass_config' must be a list of tuples with two integers:
         the index of the target and the number of classes. Finally, if
-        binary_trick=True, the targets order must be: regression, binary
-        and multiclass.
+        binary_trick=True, the binary targets must be the first targets in
+        the target tensor.
 
-        **Note**: When using the binary_trick, the binary targets are
+        :information_source: **NOTE**: When using the binary_trick, the binary targets are
           considered as 2 classes. Therefore, the pred_dim parametere of the
           WideDeep class should be adjusted accordingly (adding 2 to per
           binary target). For example, in a problem with a binary target and

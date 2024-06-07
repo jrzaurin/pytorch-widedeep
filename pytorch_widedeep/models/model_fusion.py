@@ -17,13 +17,13 @@ class ModelFuser(BaseWDModelComponent):
     Parameters
     ----------
     models: List[BaseWDModelComponent]
-        List of models to be fused
+        List of models whose outputs will be fused
     fusion_method: Union[str, List[str]]
         Method to fuse the output of the models. It can be one of
         ['concatenate', 'mean', 'max', 'sum', 'mult', 'head'] or a list of
         those. If a list is provided the output of the models will be fused
         using all the methods in the list and the final output will be the
-        concatenation of the output of each method
+        concatenation of the outputs of each method
     projection_method: Optional[str]
         If the fusion_method is not 'concatenate', this parameter will
         determine how to project the output of the models to a common

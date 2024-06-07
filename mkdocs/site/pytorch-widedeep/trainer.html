@@ -1694,7 +1694,11 @@ training process.</p>
 <li>
 <p><code>tweedie</code></p>
 </li>
+<li>
+<p><code>multitarget</code></p>
+</li>
 </ul>
+<p><strong>NOTE</strong>: For <code>multitarget</code> a custom loss function must be passed</p>
         </div>
       </li>
       <li class="field-body">
@@ -1714,7 +1718,7 @@ loss function</p>
       </li>
       <li class="field-body">
         <b><code>optimizers</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>, <span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>]]]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span> | <span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>]]]</code>, default:
                 <code>None</code>
 )
         –
@@ -1723,9 +1727,12 @@ loss function</p>
 <li>An instance of Pytorch's <code>Optimizer</code> object
   (e.g. <code>torch.optim.Adam()</code>) or</li>
 <li>a dictionary where there keys are the model components (i.e.
-  <em>'wide'</em>, <em>'deeptabular'</em>, <em>'deeptext'</em>, <em>'deepimage'</em> and/or <em>'deephead'</em>)  and
-  the values are the corresponding optimizers. If multiple optimizers are used
-  the  dictionary <strong>MUST</strong> contain an optimizer per model component.</li>
+  <em>'wide'</em>, <em>'deeptabular'</em>, <em>'deeptext'</em>, <em>'deepimage'</em>
+  and/or <em>'deephead'</em>)  and the values are the corresponding
+  optimizers or list of optimizers if multiple models are used for
+  the given data mode (e.g. two text columns/models for the deeptext
+  component). If multiple optimizers are used the
+  dictionary <strong>MUST</strong> contain an optimizer per model component.</li>
 </ul>
 <p>if no optimizers are passed it will default to <code>Adam</code> for all
 model components</p>
@@ -1733,7 +1740,7 @@ model components</p>
       </li>
       <li class="field-body">
         <b><code>lr_schedulers</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span>, <span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span>]]]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span> | <span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span>]]]</code>, default:
                 <code>None</code>
 )
         –
@@ -1743,13 +1750,15 @@ model components</p>
   <code>torch.optim.lr_scheduler.StepLR(opt, step_size=5)</code>) or</li>
 <li>a dictionary where there keys are the model componenst (i.e. <em>'wide'</em>,
   <em>'deeptabular'</em>, <em>'deeptext'</em>, <em>'deepimage'</em> and/or <em>'deephead'</em>) and the
-  values are the corresponding learning rate schedulers.</li>
+  values are the corresponding learning rate schedulers or list of
+    learning rate schedulers if multiple models are used for the given
+    data mode (e.g. two text columns/models for the deeptext component).</li>
 </ul>
         </div>
       </li>
       <li class="field-body">
         <b><code>initializers</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.initializers.Initializer">Initializer</span>, <span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.initializers.Initializer">Initializer</span>]]]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.initializers.Initializer">Initializer</span> | <span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.initializers.Initializer">Initializer</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.initializers.Initializer">Initializer</span>]]]</code>, default:
                 <code>None</code>
 )
         –
@@ -1758,7 +1767,9 @@ model components</p>
 <li>An instance of an <code>Initializer</code> object see <code>pytorch-widedeep.initializers</code> or</li>
 <li>a dictionary where there keys are the model components (i.e. <em>'wide'</em>,
   <em>'deeptabular'</em>, <em>'deeptext'</em>, <em>'deepimage'</em> and/or <em>'deephead'</em>)
-  and the values are the corresponding initializers.</li>
+  and the values are the corresponding initializers or list of
+    initializers if multiple models are used for the given data mode (e.g.
+    two text columns/models for the deeptext component).</li>
 </ul>
         </div>
       </li>
@@ -1945,18 +1956,7 @@ if the <code>deeptabular</code> component is a Tabnet model.</p>
 
                 <details class="quote">
                   <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">233</span>
 <span class="normal">234</span>
 <span class="normal">235</span>
 <span class="normal">236</span>
@@ -1977,7 +1977,22 @@ if the <code>deeptabular</code> component is a Tabnet model.</p>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
-<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
     <span class="s2">&quot;objective&quot;</span><span class="p">,</span>
     <span class="p">[</span><span class="s2">&quot;loss_function&quot;</span><span class="p">,</span> <span class="s2">&quot;loss_fn&quot;</span><span class="p">,</span> <span class="s2">&quot;loss&quot;</span><span class="p">,</span> <span class="s2">&quot;cost_function&quot;</span><span class="p">,</span> <span class="s2">&quot;cost_fn&quot;</span><span class="p">,</span> <span class="s2">&quot;cost&quot;</span><span class="p">],</span>
 <span class="p">)</span>
@@ -1986,9 +2001,13 @@ if the <code>deeptabular</code> component is a Tabnet model.</p>
     <span class="n">model</span><span class="p">:</span> <span class="n">WideDeep</span><span class="p">,</span>
     <span class="n">objective</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">custom_loss_function</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">optimizers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optimizer</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">lr_schedulers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">LRScheduler</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">LRScheduler</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">initializers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Initializer</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Initializer</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">optimizers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Optimizer</span> <span class="o">|</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optimizer</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">lr_schedulers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">LRScheduler</span> <span class="o">|</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">LRScheduler</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">LRScheduler</span><span class="p">]]</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">initializers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">Initializer</span> <span class="o">|</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Initializer</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">Initializer</span><span class="p">]]</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Transforms</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">callbacks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Metric</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">TorchMetric</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2090,48 +2109,56 @@ See <code>pytorch_widedeep.preprocessing.TabPreprocessor</code></p>
       </li>
       <li class="field-body">
         <b><code>X_text</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]</code>, default:
                 <code>None</code>
 )
         –
         <div class="doc-md-description">
           <p>Input for the <code>deeptext</code> model component.
-See <code>pytorch_widedeep.preprocessing.TextPreprocessor</code></p>
+See <code>pytorch_widedeep.preprocessing.TextPreprocessor</code>.
+If multiple text columns/models are used, this should be a list of
+numpy arrays</p>
         </div>
       </li>
       <li class="field-body">
         <b><code>X_img</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]</code>, default:
                 <code>None</code>
 )
         –
         <div class="doc-md-description">
           <p>Input for the <code>deepimage</code> model component.
-See <code>pytorch_widedeep.preprocessing.ImagePreprocessor</code></p>
+See <code>pytorch_widedeep.preprocessing.ImagePreprocessor</code>.
+If multiple image columns/models are used, this should be a list of
+numpy arrays</p>
         </div>
       </li>
       <li class="field-body">
         <b><code>X_train</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="numpy.ndarray">ndarray</span>]]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]]</code>, default:
                 <code>None</code>
 )
         –
         <div class="doc-md-description">
           <p>The training dataset can also be passed in a dictionary. Keys are
 <em>'X_wide'</em>, <em>'X_tab'</em>, <em>'X_text'</em>, <em>'X_img'</em> and <em>'target'</em>. Values
-are the corresponding matrices.</p>
+are the corresponding matrices. Note that of multiple text or image
+columns/models are used, the corresponding values should be lists
+of numpy arrays</p>
         </div>
       </li>
       <li class="field-body">
         <b><code>X_val</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="numpy.ndarray">ndarray</span>]]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]]</code>, default:
                 <code>None</code>
 )
         –
         <div class="doc-md-description">
           <p>The validation dataset can also be passed in a dictionary. Keys
 are <em>'X_wide'</em>, <em>'X_tab'</em>, <em>'X_text'</em>, <em>'X_img'</em> and <em>'target'</em>.
-Values are the corresponding matrices.</p>
+Values are the corresponding matrices. Note that of multiple text
+or image columns/models are used, the corresponding values should
+be lists of numpy arrays</p>
         </div>
       </li>
       <li class="field-body">
@@ -2255,7 +2282,6 @@ well understood</p>
   <ul>
       <li class="field-body">
         <b><code>**kwargs</code></b>
-            (<code>dict</code>)
         –
         <div class="doc-md-description">
           <p>Other keyword arguments are:</p>
@@ -2300,23 +2326,25 @@ the implications of these parameters</p>
    one of <em>'howard'</em> or <em>'felbo'</em></li>
 <li><code>deeptabular_gradual</code> (<code>bool</code>):
    boolean indicating if the <code>deeptabular</code> component will be fine tuned gradually</li>
-<li><code>deeptabular_layers</code> (<code>List[nn.Module]</code>):
+<li><code>deeptabular_layers</code> (<code>Optional[List[nn.Module] | List[List[nn.Module]]]</code>):
    List of pytorch modules indicating the layers of the
    <code>deeptabular</code> that will be fine tuned</li>
-<li><code>deeptabular_max_lr</code> (<code>float</code>):
+<li><code>deeptabular_max_lr</code> (<code>float | List[float]</code>):
    max lr for the <code>deeptabular</code> componet during fine tuning</li>
 <li><code>deeptext_gradual</code> (<code>bool</code>):
    same as <code>deeptabular_gradual</code> but for the <code>deeptext</code> component</li>
-<li><code>deeptext_layers</code> (<code>List[nn.Module]</code>):
-   same as <code>deeptabular_gradual</code> but for the <code>deeptext</code> component</li>
-<li><code>deeptext_max_lr</code> (<code>float</code>):
-   same as <code>deeptabular_gradual</code> but for the <code>deeptext</code> component</li>
+<li><code>deeptext_layers</code> (<code>Optional[List[nn.Module] | List[List[nn.Module]]]</code>):
+   same as <code>deeptabular_gradual</code> but for the <code>deeptext</code> component.
+   If there are multiple text columns/models, this should be a list of lists</li>
+<li><code>deeptext_max_lr</code> (<code>float | List[float]</code>):
+   same as <code>deeptabular_gradual</code> but for the <code>deeptext</code> component
+   If there are multiple text columns/models, this should be a list of floats</li>
 <li><code>deepimage_gradual</code> (<code>bool</code>):
-   same as <code>deeptabular_gradual</code> but for the <code>deepimage</code> component</li>
-<li><code>deepimage_layers</code> (<code>List[nn.Module]</code>):
-   same as <code>deeptabular_gradual</code> but for the <code>deepimage</code> component</li>
-<li><code>deepimage_max_lr</code> (<code>float</code>):
-    same as <code>deeptabular_gradual</code> but for the <code>deepimage</code> component</li>
+   same as <code>deeptext_layers</code> but for the <code>deepimage</code> component</li>
+<li><code>deepimage_layers</code> (<code>Optional[List[nn.Module] | List[List[nn.Module]]]</code>):
+   same as <code>deeptext_layers</code> but for the <code>deepimage</code> component</li>
+<li><code>deepimage_max_lr</code> (<code>float | List[float]</code>):
+    same as <code>deeptext_layers</code> but for the <code>deepimage</code> component</li>
 </ul>
 </li>
 </ul>
@@ -2333,22 +2361,7 @@ folder in the repo</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">271</span>
 <span class="normal">272</span>
 <span class="normal">273</span>
 <span class="normal">274</span>
@@ -2621,15 +2634,41 @@ folder in the repo</p>
 <span class="normal">541</span>
 <span class="normal">542</span>
 <span class="normal">543</span>
-<span class="normal">544</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;finetune&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;warmup&quot;</span><span class="p">])</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;finetune&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;warmup&quot;</span><span class="p">])</span>
 <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_train</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_train</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">val_split</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">n_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -2655,20 +2694,28 @@ folder in the repo</p>
 <span class="sd">    X_tab: np.ndarray, Optional. default=None</span>
 <span class="sd">        Input for the `deeptabular` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.TabPreprocessor`</span>
-<span class="sd">    X_text: np.ndarray, Optional. default=None</span>
+<span class="sd">    X_text: np.ndarray | List[np.ndarray], Optional. default=None</span>
 <span class="sd">        Input for the `deeptext` model component.</span>
-<span class="sd">        See `pytorch_widedeep.preprocessing.TextPreprocessor`</span>
+<span class="sd">        See `pytorch_widedeep.preprocessing.TextPreprocessor`.</span>
+<span class="sd">        If multiple text columns/models are used, this should be a list of</span>
+<span class="sd">        numpy arrays</span>
 <span class="sd">    X_img: np.ndarray, Optional. default=None</span>
 <span class="sd">        Input for the `deepimage` model component.</span>
-<span class="sd">        See `pytorch_widedeep.preprocessing.ImagePreprocessor`</span>
+<span class="sd">        See `pytorch_widedeep.preprocessing.ImagePreprocessor`.</span>
+<span class="sd">        If multiple image columns/models are used, this should be a list of</span>
+<span class="sd">        numpy arrays</span>
 <span class="sd">    X_train: Dict, Optional. default=None</span>
 <span class="sd">        The training dataset can also be passed in a dictionary. Keys are</span>
 <span class="sd">        _&#39;X_wide&#39;_, _&#39;X_tab&#39;_, _&#39;X_text&#39;_, _&#39;X_img&#39;_ and _&#39;target&#39;_. Values</span>
-<span class="sd">        are the corresponding matrices.</span>
+<span class="sd">        are the corresponding matrices. Note that of multiple text or image</span>
+<span class="sd">        columns/models are used, the corresponding values should be lists</span>
+<span class="sd">        of numpy arrays</span>
 <span class="sd">    X_val: Dict, Optional. default=None</span>
 <span class="sd">        The validation dataset can also be passed in a dictionary. Keys</span>
 <span class="sd">        are _&#39;X_wide&#39;_, _&#39;X_tab&#39;_, _&#39;X_text&#39;_, _&#39;X_img&#39;_ and _&#39;target&#39;_.</span>
-<span class="sd">        Values are the corresponding matrices.</span>
+<span class="sd">        Values are the corresponding matrices. Note that of multiple text</span>
+<span class="sd">        or image columns/models are used, the corresponding values should</span>
+<span class="sd">        be lists of numpy arrays</span>
 <span class="sd">    val_split: float, Optional. default=None</span>
 <span class="sd">        train/val split fraction</span>
 <span class="sd">    target: np.ndarray, Optional. default=None</span>
@@ -2722,7 +2769,7 @@ folder in the repo</p>
 
 <span class="sd">    Other Parameters</span>
 <span class="sd">    ----------------</span>
-<span class="sd">    **kwargs : dict</span>
+<span class="sd">    **kwargs:</span>
 <span class="sd">        Other keyword arguments are:</span>
 
 <span class="sd">        - **DataLoader related parameters**:&lt;br/&gt;</span>
@@ -2762,23 +2809,25 @@ folder in the repo</p>
 <span class="sd">               one of _&#39;howard&#39;_ or _&#39;felbo&#39;_</span>
 <span class="sd">            - `deeptabular_gradual` (`bool`):</span>
 <span class="sd">               boolean indicating if the `deeptabular` component will be fine tuned gradually</span>
-<span class="sd">            - `deeptabular_layers` (`List[nn.Module]`):</span>
+<span class="sd">            - `deeptabular_layers` (`Optional[List[nn.Module] | List[List[nn.Module]]]`):</span>
 <span class="sd">               List of pytorch modules indicating the layers of the</span>
 <span class="sd">               `deeptabular` that will be fine tuned</span>
-<span class="sd">            - `deeptabular_max_lr` (`float`):</span>
+<span class="sd">            - `deeptabular_max_lr` (`float | List[float]`):</span>
 <span class="sd">               max lr for the `deeptabular` componet during fine tuning</span>
 <span class="sd">            - `deeptext_gradual` (`bool`):</span>
 <span class="sd">               same as `deeptabular_gradual` but for the `deeptext` component</span>
-<span class="sd">            - `deeptext_layers` (`List[nn.Module]`):</span>
+<span class="sd">            - `deeptext_layers` (`Optional[List[nn.Module] | List[List[nn.Module]]]`):</span>
+<span class="sd">               same as `deeptabular_gradual` but for the `deeptext` component.</span>
+<span class="sd">               If there are multiple text columns/models, this should be a list of lists</span>
+<span class="sd">            - `deeptext_max_lr` (`float | List[float]`):</span>
 <span class="sd">               same as `deeptabular_gradual` but for the `deeptext` component</span>
-<span class="sd">            - `deeptext_max_lr` (`float`):</span>
-<span class="sd">               same as `deeptabular_gradual` but for the `deeptext` component</span>
+<span class="sd">               If there are multiple text columns/models, this should be a list of floats</span>
 <span class="sd">            - `deepimage_gradual` (`bool`):</span>
-<span class="sd">               same as `deeptabular_gradual` but for the `deepimage` component</span>
-<span class="sd">            - `deepimage_layers` (`List[nn.Module]`):</span>
-<span class="sd">               same as `deeptabular_gradual` but for the `deepimage` component</span>
-<span class="sd">            - `deepimage_max_lr` (`float`):</span>
-<span class="sd">                same as `deeptabular_gradual` but for the `deepimage` component</span>
+<span class="sd">               same as `deeptext_layers` but for the `deepimage` component</span>
+<span class="sd">            - `deepimage_layers` (`Optional[List[nn.Module] | List[List[nn.Module]]]`):</span>
+<span class="sd">               same as `deeptext_layers` but for the `deepimage` component</span>
+<span class="sd">            - `deepimage_max_lr` (`float | List[float]`):</span>
+<span class="sd">                same as `deeptext_layers` but for the `deepimage` component</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -2805,6 +2854,7 @@ folder in the repo</p>
         <span class="n">X_val</span><span class="p">,</span>
         <span class="n">val_split</span><span class="p">,</span>
         <span class="n">target</span><span class="p">,</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">,</span>
         <span class="o">**</span><span class="n">lds_args</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">custom_dataloader</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
@@ -2971,7 +3021,7 @@ See <code>pytorch_widedeep.preprocessing.TabPreprocessor</code></p>
       </li>
       <li class="field-body">
         <b><code>X_text</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]</code>, default:
                 <code>None</code>
 )
         –
@@ -2982,7 +3032,7 @@ See <code>pytorch_widedeep.preprocessing.TextPreprocessor</code></p>
       </li>
       <li class="field-body">
         <b><code>X_img</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]</code>, default:
                 <code>None</code>
 )
         –
@@ -2993,7 +3043,7 @@ See <code>pytorch_widedeep.preprocessing.ImagePreprocessor</code></p>
       </li>
       <li class="field-body">
         <b><code>X_test</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="numpy.ndarray">ndarray</span>]]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]]</code>, default:
                 <code>None</code>
 )
         –
@@ -3032,33 +3082,7 @@ the <code>Trainer</code> is instantiated</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">546</span>
-<span class="normal">547</span>
-<span class="normal">548</span>
-<span class="normal">549</span>
-<span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span>
-<span class="normal">556</span>
-<span class="normal">557</span>
-<span class="normal">558</span>
-<span class="normal">559</span>
-<span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span>
-<span class="normal">564</span>
-<span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span>
-<span class="normal">572</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">572</span>
 <span class="normal">573</span>
 <span class="normal">574</span>
 <span class="normal">575</span>
@@ -3086,13 +3110,39 @@ the <code>Trainer</code> is instantiated</p>
 <span class="normal">597</span>
 <span class="normal">598</span>
 <span class="normal">599</span>
-<span class="normal">600</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the predictions</span>
@@ -3206,7 +3256,7 @@ See <code>pytorch_widedeep.preprocessing.TabPreprocessor</code></p>
       </li>
       <li class="field-body">
         <b><code>X_text</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]</code>, default:
                 <code>None</code>
 )
         –
@@ -3217,7 +3267,7 @@ See <code>pytorch_widedeep.preprocessing.TextPreprocessor</code></p>
       </li>
       <li class="field-body">
         <b><code>X_img</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]</code>, default:
                 <code>None</code>
 )
         –
@@ -3228,7 +3278,7 @@ See <code>pytorch_widedeep.preprocessing.ImagePreprocessor</code></p>
       </li>
       <li class="field-body">
         <b><code>X_test</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="numpy.ndarray">ndarray</span>]]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]]</code>, default:
                 <code>None</code>
 )
         –
@@ -3282,33 +3332,7 @@ the <code>Trainer</code> is instantiated</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">602</span>
-<span class="normal">603</span>
-<span class="normal">604</span>
-<span class="normal">605</span>
-<span class="normal">606</span>
-<span class="normal">607</span>
-<span class="normal">608</span>
-<span class="normal">609</span>
-<span class="normal">610</span>
-<span class="normal">611</span>
-<span class="normal">612</span>
-<span class="normal">613</span>
-<span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span>
-<span class="normal">620</span>
-<span class="normal">621</span>
-<span class="normal">622</span>
-<span class="normal">623</span>
-<span class="normal">624</span>
-<span class="normal">625</span>
-<span class="normal">626</span>
-<span class="normal">627</span>
-<span class="normal">628</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">628</span>
 <span class="normal">629</span>
 <span class="normal">630</span>
 <span class="normal">631</span>
@@ -3377,13 +3401,39 @@ the <code>Trainer</code> is instantiated</p>
 <span class="normal">694</span>
 <span class="normal">695</span>
 <span class="normal">696</span>
-<span class="normal">697</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_uncertainty</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span>
+<span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span>
+<span class="normal">714</span>
+<span class="normal">715</span>
+<span class="normal">716</span>
+<span class="normal">717</span>
+<span class="normal">718</span>
+<span class="normal">719</span>
+<span class="normal">720</span>
+<span class="normal">721</span>
+<span class="normal">722</span>
+<span class="normal">723</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_uncertainty</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">uncertainty_granularity</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -3535,7 +3585,7 @@ See <code>pytorch_widedeep.preprocessing.TabPreprocessor</code></p>
       </li>
       <li class="field-body">
         <b><code>X_text</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]</code>, default:
                 <code>None</code>
 )
         –
@@ -3546,7 +3596,7 @@ See <code>pytorch_widedeep.preprocessing.TextPreprocessor</code></p>
       </li>
       <li class="field-body">
         <b><code>X_img</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]</code>, default:
                 <code>None</code>
 )
         –
@@ -3557,7 +3607,7 @@ See <code>pytorch_widedeep.preprocessing.ImagePreprocessor</code></p>
       </li>
       <li class="field-body">
         <b><code>X_test</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="numpy.ndarray">ndarray</span>]]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="numpy.ndarray">ndarray</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]]</code>, default:
                 <code>None</code>
 )
         –
@@ -3596,33 +3646,7 @@ the <code>Trainer</code> is instantiated</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">699</span>
-<span class="normal">700</span>
-<span class="normal">701</span>
-<span class="normal">702</span>
-<span class="normal">703</span>
-<span class="normal">704</span>
-<span class="normal">705</span>
-<span class="normal">706</span>
-<span class="normal">707</span>
-<span class="normal">708</span>
-<span class="normal">709</span>
-<span class="normal">710</span>
-<span class="normal">711</span>
-<span class="normal">712</span>
-<span class="normal">713</span>
-<span class="normal">714</span>
-<span class="normal">715</span>
-<span class="normal">716</span>
-<span class="normal">717</span>
-<span class="normal">718</span>
-<span class="normal">719</span>
-<span class="normal">720</span>
-<span class="normal">721</span>
-<span class="normal">722</span>
-<span class="normal">723</span>
-<span class="normal">724</span>
-<span class="normal">725</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">725</span>
 <span class="normal">726</span>
 <span class="normal">727</span>
 <span class="normal">728</span>
@@ -3649,13 +3673,39 @@ the <code>Trainer</code> is instantiated</p>
 <span class="normal">749</span>
 <span class="normal">750</span>
 <span class="normal">751</span>
-<span class="normal">752</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span>
+<span class="normal">765</span>
+<span class="normal">766</span>
+<span class="normal">767</span>
+<span class="normal">768</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
+<span class="normal">777</span>
+<span class="normal">778</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the predicted probabilities for the test dataset for  binary</span>
@@ -3784,33 +3834,7 @@ model's state dictionary</p>
 
           <details class="quote">
             <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">765</span>
-<span class="normal">766</span>
-<span class="normal">767</span>
-<span class="normal">768</span>
-<span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span>
-<span class="normal">773</span>
-<span class="normal">774</span>
-<span class="normal">775</span>
-<span class="normal">776</span>
-<span class="normal">777</span>
-<span class="normal">778</span>
-<span class="normal">779</span>
-<span class="normal">780</span>
-<span class="normal">781</span>
-<span class="normal">782</span>
-<span class="normal">783</span>
-<span class="normal">784</span>
-<span class="normal">785</span>
-<span class="normal">786</span>
-<span class="normal">787</span>
-<span class="normal">788</span>
-<span class="normal">789</span>
-<span class="normal">790</span>
-<span class="normal">791</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">791</span>
 <span class="normal">792</span>
 <span class="normal">793</span>
 <span class="normal">794</span>
@@ -3845,7 +3869,33 @@ model's state dictionary</p>
 <span class="normal">823</span>
 <span class="normal">824</span>
 <span class="normal">825</span>
-<span class="normal">826</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+<span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">save_state_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>

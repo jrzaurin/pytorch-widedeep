@@ -944,6 +944,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pytorch_widedeep.models.model_fusion.ModelFuser" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelFuser
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#pytorch_widedeep.models.wide_deep.WideDeep" class="md-nav__link">
     <span class="md-ellipsis">
       WideDeep
@@ -10243,7 +10252,7 @@ number of features/columns in the dataset</p>
     <span class="n">rnn_type</span><span class="o">=</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
     <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
     <span class="n">n_layers</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-    <span class="n">rnn_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">rnn_dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
     <span class="n">bidirectional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">use_hidden_state</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">padding_idx</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -10312,7 +10321,7 @@ used</p>
       </li>
       <li class="field-body">
         <b><code>rnn_type</code></b>
-            (<code>str</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[<span title="torch.lstm">lstm</span>, gru]</code>, default:
                 <code>&#39;lstm&#39;</code>
 )
         –
@@ -10343,7 +10352,7 @@ used</p>
       <li class="field-body">
         <b><code>rnn_dropout</code></b>
             (<code>float</code>, default:
-                <code>0.1</code>
+                <code>0.0</code>
 )
         –
         <div class="doc-md-description">
@@ -10494,14 +10503,7 @@ LIN -&gt; ACT]</code></p>
 
                 <details class="quote">
                   <summary>Source code in <code>pytorch_widedeep/models/text/rnns/basic_rnn.py</code></summary>
-                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 95</span>
 <span class="normal"> 96</span>
 <span class="normal"> 97</span>
 <span class="normal"> 98</span>
@@ -10597,16 +10599,28 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">188</span>
 <span class="normal">189</span>
 <span class="normal">190</span>
-<span class="normal">191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">embed_matrix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">embed_trainable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">rnn_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
+    <span class="n">rnn_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span> <span class="s2">&quot;gru&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
     <span class="n">hidden_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span>
     <span class="n">n_layers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
-    <span class="n">rnn_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">rnn_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">bidirectional</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">use_hidden_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">padding_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -10667,6 +10681,7 @@ LIN -&gt; ACT]</code></p>
     <span class="k">if</span> <span class="n">embed_matrix</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">word_embed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_embeddings</span><span class="p">(</span><span class="n">embed_matrix</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">word_embed</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">vocab_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_dim</span><span class="p">,</span> <span class="n">padding_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span>
         <span class="p">)</span>
@@ -10684,6 +10699,10 @@ LIN -&gt; ACT]</code></p>
         <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">GRU</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="o">**</span><span class="n">rnn_params</span><span class="p">)</span>
     <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnn_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;gru&quot;</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="o">**</span><span class="n">rnn_params</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;rnn_type&#39; must be &#39;lstm&#39; or &#39;gru&#39;, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rnn_type</span><span class="si">}</span><span class="s2"> instead&quot;</span>
+        <span class="p">)</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">rnn_output_dim</span> <span class="o">=</span> <span class="n">hidden_dim</span> <span class="o">*</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">bidirectional</span> <span class="k">else</span> <span class="n">hidden_dim</span>
 
@@ -10838,7 +10857,7 @@ used</p>
       </li>
       <li class="field-body">
         <b><code>rnn_type</code></b>
-            (<code>str</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[lstm, gru]</code>, default:
                 <code>&#39;lstm&#39;</code>
 )
         –
@@ -11116,7 +11135,7 @@ LIN -&gt; ACT]</code></p>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">embed_matrix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">embed_trainable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">rnn_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
+    <span class="n">rnn_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span> <span class="s2">&quot;gru&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
     <span class="n">hidden_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span>
     <span class="n">n_layers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">rnn_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
@@ -11315,7 +11334,7 @@ used</p>
       </li>
       <li class="field-body">
         <b><code>rnn_type</code></b>
-            (<code>str</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[lstm, gru]</code>, default:
                 <code>&#39;lstm&#39;</code>
 )
         –
@@ -11510,15 +11529,7 @@ LIN -&gt; ACT]</code></p>
 
                 <details class="quote">
                   <summary>Source code in <code>pytorch_widedeep/models/text/rnns/stacked_attentive_rnn.py</code></summary>
-                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
@@ -11631,13 +11642,21 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">212</span>
 <span class="normal">213</span>
 <span class="normal">214</span>
-<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">embed_matrix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">embed_trainable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">rnn_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
+    <span class="n">rnn_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span> <span class="s2">&quot;gru&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;lstm&quot;</span><span class="p">,</span>
     <span class="n">hidden_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span>
     <span class="n">bidirectional</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">padding_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -12948,6 +12967,481 @@ neccesary to build the <code>WideDeep</code> class</p>
 
 
 
+<h2 id="pytorch_widedeep.models.model_fusion.ModelFuser" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">ModelFuser</span>
+
+
+<a href="#pytorch_widedeep.models.model_fusion.ModelFuser" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">ModelFuser</span><span class="p">(</span>
+    <span class="n">models</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">fusion_method</span><span class="p">,</span>
+    <span class="n">projection_method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">custom_head</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_hidden_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_dropout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_batchnorm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_batchnorm_last</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_linear_first</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents first">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span></code></p>
+
+  
+      <p>This class is a wrapper around a list of models that are associated to the
+different text and/or image columns (and datasets) The class is designed
+to 'fuse' the models using a variety of methods.</p>
+
+
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b><code>models</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]</code>)
+        –
+        <div class="doc-md-description">
+          <p>List of models whose outputs will be fused</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>fusion_method</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[concatenate, mean, max, sum, mult, <span title="pytorch_widedeep.models.model_fusion.ModelFuser.head">head</span>] | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[concatenate, mean, max, sum, mult, <span title="pytorch_widedeep.models.model_fusion.ModelFuser.head">head</span>]]</code>)
+        –
+        <div class="doc-md-description">
+          <p>Method to fuse the output of the models. It can be one of
+['concatenate', 'mean', 'max', 'sum', 'mult', 'head'] or a list of
+those. If a list is provided the output of the models will be fused
+using all the methods in the list and the final output will be the
+concatenation of the outputs of each method</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>projection_method</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[min, max, mean]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>If the fusion_method is not 'concatenate', this parameter will
+determine how to project the output of the models to a common
+dimension. It can be one of ['min', 'max', 'mean']. Default is None</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>custom_head</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span> | <span title="torch.nn.Module">Module</span>]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Custom head to be used to fuse the output of the models. If provided,
+this will take precedence over head_hidden_dims. Also, if
+provided, 'projection_method' will be ignored.</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_hidden_dims</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List with the number of neurons per layer in the custom head. If
+custom_head is provided, this parameter will be ignored</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_activation</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Activation function to be used in the custom head. Default is None</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_dropout</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Dropout to be used in the custom head. Default is None</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_batchnorm</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Whether to use batchnorm in the custom head. Default is None</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_batchnorm_last</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Whether or not batch normalization will be applied to the last of the
+dense layers</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>head_linear_first</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Boolean indicating the order of the operations in the dense
+layer. If <code>True: [LIN -&gt; ACT -&gt; BN -&gt; DP]</code>. If <code>False: [BN -&gt; DP -&gt;
+LIN -&gt; ACT]</code></p>
+        </div>
+      </li>
+  </ul>
+
+
+
+  <p>Attributes:</p>
+  <ul>
+      <li class="field-body">
+        <b><code><span title="pytorch_widedeep.models.model_fusion.ModelFuser.head">head</span></code></b>
+            (<code><span title="torch.nn.Module">Module</span> or <span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span></code>)
+        –
+        <div class="doc-md-description">
+          <p>Custom head to be used to fuse the output of the models. If
+custom_head is provided, this will take precedence over
+head_hidden_dims</p>
+        </div>
+      </li>
+  </ul>
+
+
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.preprocessing</span> <span class="kn">import</span> <span class="n">TextPreprocessor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">BasicRNN</span><span class="p">,</span> <span class="n">ModelFuser</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;text_col1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;hello world&#39;</span><span class="p">,</span> <span class="s1">&#39;this is a test&#39;</span><span class="p">],</span>
+<span class="gp">... </span><span class="s1">&#39;text_col2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;goodbye world&#39;</span><span class="p">,</span> <span class="s1">&#39;this is another test&#39;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">text_preprocessor_1</span> <span class="o">=</span> <span class="n">TextPreprocessor</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">text_col</span><span class="o">=</span><span class="s2">&quot;text_col1&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">max_vocab</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">min_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">maxlen</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">text_preprocessor_2</span> <span class="o">=</span> <span class="n">TextPreprocessor</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">text_col</span><span class="o">=</span><span class="s2">&quot;text_col2&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">max_vocab</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">min_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">maxlen</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X_text1</span> <span class="o">=</span> <span class="n">text_preprocessor_1</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X_text2</span> <span class="o">=</span> <span class="n">text_preprocessor_2</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X_text1_tnsr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X_text1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X_text2_tnsr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X_text2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rnn1</span> <span class="o">=</span> <span class="n">BasicRNN</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">text_preprocessor_1</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">itos</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">embed_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">bidirectional</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rnn2</span> <span class="o">=</span> <span class="n">BasicRNN</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">text_preprocessor_2</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">itos</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">embed_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">bidirectional</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fused_model</span> <span class="o">=</span> <span class="n">ModelFuser</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="n">rnn1</span><span class="p">,</span> <span class="n">rnn2</span><span class="p">],</span> <span class="n">fusion_method</span><span class="o">=</span><span class="s1">&#39;concatenate&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">fused_model</span><span class="p">([</span><span class="n">X_text1_tnsr</span><span class="p">,</span> <span class="n">X_text2_tnsr</span><span class="p">])</span>
+</code></pre></div>
+
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/models/model_fusion.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">models</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">fusion_method</span><span class="p">:</span> <span class="p">(</span>
+        <span class="n">Literal</span><span class="p">[</span>
+            <span class="s2">&quot;concatenate&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;max&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;sum&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mult&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;head&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;concatenate&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">,</span> <span class="s2">&quot;mult&quot;</span><span class="p">,</span> <span class="s2">&quot;head&quot;</span><span class="p">]]</span>
+    <span class="p">),</span>
+    <span class="n">projection_method</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">custom_head</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWDModelComponent</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_hidden_dims</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_activation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_dropout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_batchnorm</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_batchnorm_last</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">head_linear_first</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">ModelFuser</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">fusion_method</span> <span class="o">=</span> <span class="n">fusion_method</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">projection_method</span> <span class="o">=</span> <span class="n">projection_method</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">check_input_parameters</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fusion_method</span> <span class="o">==</span> <span class="s2">&quot;head&quot;</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">head_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">custom_head</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="s2">&quot;When using &#39;head&#39; as fusion_method, either head_hidden_dims or custom_head must be provided&quot;</span>
+        <span class="k">if</span> <span class="n">custom_head</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># custom_head takes precedence over head_hidden_dims (in case</span>
+            <span class="c1"># both are provided)</span>
+            <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span>
+                <span class="n">custom_head</span><span class="p">,</span> <span class="s2">&quot;output_dim&quot;</span>
+            <span class="p">),</span> <span class="s2">&quot;custom_head must have an &#39;output_dim&#39; property&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head</span><span class="p">:</span> <span class="n">BaseWDModelComponent</span> <span class="o">|</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="n">custom_head</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">head_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_hidden_dims</span> <span class="o">=</span> <span class="n">head_hidden_dims</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_activation</span> <span class="o">=</span> <span class="n">head_activation</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_dropout</span> <span class="o">=</span> <span class="n">head_dropout</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_batchnorm</span> <span class="o">=</span> <span class="n">head_batchnorm</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_batchnorm_last</span> <span class="o">=</span> <span class="n">head_batchnorm_last</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_linear_first</span> <span class="o">=</span> <span class="n">head_linear_first</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">head</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span>
+                <span class="n">d_hidden</span><span class="o">=</span><span class="p">[</span><span class="nb">sum</span><span class="p">([</span><span class="n">model</span><span class="o">.</span><span class="n">output_dim</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">])]</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_hidden_dims</span><span class="p">,</span>
+                <span class="n">activation</span><span class="o">=</span><span class="p">(</span>
+                    <span class="s2">&quot;relu&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_activation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_activation</span>
+                <span class="p">),</span>
+                <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_dropout</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_dropout</span><span class="p">,</span>
+                <span class="n">batchnorm</span><span class="o">=</span><span class="p">(</span>
+                    <span class="kc">False</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_batchnorm</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_batchnorm</span>
+                <span class="p">),</span>
+                <span class="n">batchnorm_last</span><span class="o">=</span><span class="p">(</span>
+                    <span class="kc">False</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_batchnorm_last</span> <span class="ow">is</span> <span class="kc">None</span>
+                    <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_batchnorm_last</span>
+                <span class="p">),</span>
+                <span class="n">linear_first</span><span class="o">=</span><span class="p">(</span>
+                    <span class="kc">True</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_linear_first</span> <span class="ow">is</span> <span class="kc">None</span>
+                    <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_linear_first</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+                </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pytorch_widedeep.models.model_fusion.ModelFuser.output_dim" class="doc doc-heading">
+          <span class="doc doc-object-name doc-attribute-name">output_dim</span>
+
+  
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pytorch_widedeep.models.model_fusion.ModelFuser.output_dim" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">output_dim</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Returns the output dimension of the model.</p>
+  </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h3 id="pytorch_widedeep.models.model_fusion.ModelFuser.project" class="doc doc-heading">
+          <span class="doc doc-object-name doc-function-name">project</span>
+
+
+<a href="#pytorch_widedeep.models.model_fusion.ModelFuser.project" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">project</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents ">
+  
+      <p>Projects the output of the models to a common dimension.</p>
+
+          <details class="quote">
+            <summary>Source code in <code>pytorch_widedeep/models/model_fusion.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Projects the output of the models to a common dimension.&quot;&quot;&quot;</span>
+
+    <span class="n">output_dims</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">output_dim</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection_method</span> <span class="o">==</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span>
+        <span class="n">proj_dim</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">output_dims</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">output_dims</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">proj_dim</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection_method</span> <span class="o">==</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span>
+        <span class="n">proj_dim</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">output_dims</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">output_dims</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">proj_dim</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection_method</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
+        <span class="n">proj_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">output_dims</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_dims</span><span class="p">))</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;projection_method must be one of [&#39;min&#39;, &#39;max&#39;, &#39;mean&#39;]&quot;</span><span class="p">)</span>
+
+    <span class="n">x_proj</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">idx</span><span class="p">:</span>
+            <span class="n">x_proj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_proj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">output_dims</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">proj_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">x_proj</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
 <h2 id="pytorch_widedeep.models.wide_deep.WideDeep" class="doc doc-heading">
           <span class="doc doc-object-name doc-class-name">WideDeep</span>
 
@@ -13027,26 +13521,28 @@ package.</p>
       </li>
       <li class="field-body">
         <b><code>deeptext</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]]</code>, default:
                 <code>None</code>
 )
         –
         <div class="doc-md-description">
           <p>Currently this library implements a number of possible architectures
 for the <code>deeptext</code> component. See the documenation of the
-package.</p>
+package. Note that <code>deeptext</code> can be a list of models. This is useful
+when using multiple text inputs.</p>
         </div>
       </li>
       <li class="field-body">
         <b><code>deepimage</code></b>
-            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]</code>, default:
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span> | <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]]</code>, default:
                 <code>None</code>
 )
         –
         <div class="doc-md-description">
           <p>Currently this library uses <code>torchvision</code> and implements a number of
 possible architectures for the <code>deepimage</code> component. See the
-documenation of the package.</p>
+documenation of the package. Note that <code>deepimage</code> can be a list of
+models. This is useful when using multiple image inputs.</p>
         </div>
       </li>
       <li class="field-body">
@@ -13191,8 +13687,8 @@ Distribution Smoothing. Please, see the docs for the <code>FDSLayer</code>.
 <img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: Feature Distribution Smoothing
  is available when using <strong>ONLY</strong> a <code>deeptabular</code> component
 <br/>
-<img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: We consider this feature absolutely
-experimental and we recommend the user to not use it unless the
+<img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: We consider Feature Distribution Smoothing
+absolutely experimental and we recommend the user to not use it unless the
 corresponding <a href="https://arxiv.org/abs/2102.09554">publication</a> is
 well understood</p>
         </div>
@@ -13222,9 +13718,7 @@ well understood</p>
 
                 <details class="quote">
                   <summary>Source code in <code>pytorch_widedeep/models/wide_deep.py</code></summary>
-                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">137</span>
 <span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
@@ -13300,7 +13794,9 @@ well understood</p>
 <span class="normal">210</span>
 <span class="normal">211</span>
 <span class="normal">212</span>
-<span class="normal">213</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
     <span class="s2">&quot;pred_dim&quot;</span><span class="p">,</span>
     <span class="p">[</span><span class="s2">&quot;num_class&quot;</span><span class="p">,</span> <span class="s2">&quot;pred_size&quot;</span><span class="p">],</span>
 <span class="p">)</span>
@@ -13308,8 +13804,8 @@ well understood</p>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">deeptabular</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">deeptext</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">deepimage</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">deeptext</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWDModelComponent</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">deepimage</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWDModelComponent</span> <span class="o">|</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">deephead</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">head_hidden_dims</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">head_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
@@ -13829,7 +14325,8 @@ authors used a value of 10.</p>
     <nav>
       
         <a href="mailto:jrzaurin@gmail.com">Javier</a>, 
-        <a href="mailto:javierrodriguezzaurin@javiers-macbook-pro.local">Javier Rodriguez Zaurin</a>
+        <a href="mailto:javierrodriguezzaurin@javiers-macbook-pro.local">Javier Rodriguez Zaurin</a>, 
+        <a href="mailto:not.committed.yet">Not Committed Yet</a>
     </nav>
   </span>
 
