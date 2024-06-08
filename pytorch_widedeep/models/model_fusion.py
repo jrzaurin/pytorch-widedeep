@@ -238,7 +238,9 @@ class ModelFuser(BaseWDModelComponent):
             if i == idx:
                 x_proj.append(x)
             else:
-                x_proj.append(nn.Linear(output_dims[i], proj_dim, bias=False)(x))
+                x_proj.append(
+                    nn.Linear(output_dims[i], proj_dim, bias=False, device=x.device)(x)
+                )
 
         return x_proj
 
