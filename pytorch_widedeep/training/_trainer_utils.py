@@ -24,6 +24,7 @@ from pytorch_widedeep.losses import (
 from pytorch_widedeep.wdtypes import (
     Dict,
     List,
+    Union,
     Compose,
     Literal,
     Optional,
@@ -115,13 +116,13 @@ def wd_train_val_split(  # noqa: C901
     method: Literal["regression", "binary", "multiclass", "qregression"],
     X_wide: Optional[np.ndarray] = None,
     X_tab: Optional[np.ndarray] = None,
-    X_text: Optional[np.ndarray | List[np.ndarray]] = None,
-    X_img: Optional[np.ndarray | List[np.ndarray]] = None,
-    X_train: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
-    X_val: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
+    X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+    X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+    X_train: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
+    X_val: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
     val_split: Optional[float] = None,
     target: Optional[np.ndarray] = None,
-    transforms: Optional[Transforms | Compose] = None,
+    transforms: Optional[Union[Transforms, Compose]] = None,
     **lds_args,
 ):
     r"""
@@ -242,11 +243,11 @@ def wd_train_val_split(  # noqa: C901
 def _build_train_dict(
     X_wide: Optional[np.ndarray],
     X_tab: Optional[np.ndarray],
-    X_text: Optional[np.ndarray | List[np.ndarray]],
-    X_img: Optional[np.ndarray | List[np.ndarray]],
+    X_text: Optional[Union[np.ndarray, List[np.ndarray]]],
+    X_img: Optional[Union[np.ndarray, List[np.ndarray]]],
     target: np.ndarray,
-) -> Dict[str, np.ndarray | List[np.ndarray]]:
-    X_train: Dict[str, np.ndarray | List[np.ndarray]] = {"target": target}
+) -> Dict[str, Union[np.ndarray, List[np.ndarray]]]:
+    X_train: Dict[str, Union[np.ndarray, List[np.ndarray]]] = {"target": target}
     if X_wide is not None:
         X_train["X_wide"] = X_wide
     if X_tab is not None:

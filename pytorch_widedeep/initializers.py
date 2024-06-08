@@ -31,7 +31,7 @@ class MultipleInitializer(object):
                 )
         self._initializers = instantiated_initializers
 
-    def apply(self, submodel: nn.Module | nn.ModuleList):
+    def apply(self, submodel: Union[nn.Module, nn.ModuleList]):
         for name, child in submodel.named_children():
             try:
                 if isinstance(self._initializers[name], list):

@@ -64,8 +64,8 @@ class TabFromFolder:
         directory: Optional[str] = None,
         target_col: Optional[str] = None,
         preprocessor: Optional[TabularPreprocessor] = None,
-        text_col: Optional[str | List[str]] = None,
-        img_col: Optional[str | List[str]] = None,
+        text_col: Optional[Union[str, List[str]]] = None,
+        img_col: Optional[Union[str, List[str]]] = None,
         ignore_target: bool = False,
         reference: Optional[Any] = None,  # is Type["TabFromFolder"],
         verbose: Optional[int] = 1,
@@ -104,8 +104,8 @@ class TabFromFolder:
 
     def get_item(self, idx: int) -> Tuple[  # noqa: C901
         np.ndarray,
-        Optional[str | List[str]],
-        Optional[str | List[str]],
+        Optional[Union[str, List[str]]],
+        Optional[Union[str, List[str]]],
         Optional[Union[int, float]],
     ]:
         path = os.path.join(self.directory, self.fname)
@@ -125,7 +125,7 @@ class TabFromFolder:
         except Exception:
             raise ValueError("Currently only csv format is supported.")
 
-        text_fnames_or_text: Optional[str | List[str]] = None
+        text_fnames_or_text: Optional[Union[str, List[str]]] = None
         if self.text_col is not None:
             if isinstance(self.text_col, list):
                 text_fnames_or_text = [
@@ -134,7 +134,7 @@ class TabFromFolder:
             else:
                 text_fnames_or_text = sample[self.text_col].to_list()[0]
 
-        img_fname: Optional[str | List[str]] = None
+        img_fname: Optional[Union[str, List[str]]] = None
         if self.img_col is not None:
             if isinstance(self.img_col, list):
                 img_fname = [sample[col].to_list()[0] for col in self.img_col]
@@ -158,8 +158,8 @@ class TabFromFolder:
         str,
         str,
         TabularPreprocessor,
-        Optional[str | List[str]],
-        Optional[str | List[str]],
+        Optional[Union[str, List[str]]],
+        Optional[Union[str, List[str]]],
     ]:
         (
             directory,

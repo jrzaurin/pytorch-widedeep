@@ -910,7 +910,9 @@ class ChunkTabPreprocessor(TabPreprocessor):
 
         if self.chunk_counter == self.n_chunks:
             if self.cat_embed_cols is not None or self.cols_and_bins is not None:
-                self.cat_embed_input: List[Tuple[str, int] | Tuple[str, int, int]] = []
+                self.cat_embed_input: List[
+                    Union[Tuple[str, int], Tuple[str, int, int]]
+                ] = []
 
             if self.cat_embed_cols is not None:
                 for k, v in self.label_encoder.encoding_dict.items():

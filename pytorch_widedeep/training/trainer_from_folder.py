@@ -194,12 +194,14 @@ class TrainerFromFolder(BaseTrainer):
         model: WideDeep,
         objective: str,
         custom_loss_function: Optional[nn.Module] = None,
-        optimizers: Optional[Optimizer | Dict[str, Optimizer | List[Optimizer]]] = None,
+        optimizers: Optional[
+            Union[Optimizer, Dict[str, Union[Optimizer, List[Optimizer]]]]
+        ] = None,
         lr_schedulers: Optional[
-            LRScheduler | Dict[str, LRScheduler | List[LRScheduler]]
+            Union[LRScheduler, Dict[str, Union[LRScheduler, List[LRScheduler]]]]
         ] = None,
         initializers: Optional[
-            Initializer | Dict[str, Initializer | List[Initializer]]
+            Union[Initializer, Dict[str, Union[Initializer, List[Initializer]]]]
         ] = None,
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
@@ -303,13 +305,13 @@ class TrainerFromFolder(BaseTrainer):
         self._restore_best_weights()
         self.model.train()
 
-    def predict(  # type: ignore[return]
+    def predict(  # type: ignore[override, return]
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
-        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
-        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
+        X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         test_loader: Optional[DataLoader] = None,
         batch_size: Optional[int] = None,
     ) -> np.ndarray:
@@ -331,9 +333,9 @@ class TrainerFromFolder(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
-        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
-        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
+        X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         batch_size: Optional[int] = None,
         test_loader: Optional[DataLoader] = None,
         uncertainty_granularity=1000,
@@ -380,13 +382,13 @@ class TrainerFromFolder(BaseTrainer):
             preds = np.hstack((preds, np.vstack(np.argmax(preds, 1))))
             return preds
 
-    def predict_proba(  # type: ignore[return]
+    def predict_proba(  # type: ignore[override, return]
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
-        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
-        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
+        X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         test_loader: Optional[DataLoader] = None,
         batch_size: Optional[int] = None,
     ) -> np.ndarray:  # pragma: no cover
@@ -515,13 +517,13 @@ class TrainerFromFolder(BaseTrainer):
 
     def _train_step(
         self,
-        data: Dict[str, Tensor | List[Tensor]],
+        data: Dict[str, Union[Tensor, List[Tensor]]],
         target: Tensor,
         batch_idx: int,
         epoch: int,
     ):
         self.model.train()
-        X: Dict[str, Tensor | List[Tensor]] = {}
+        X: Dict[str, Union[Tensor, List[Tensor]]] = {}
         for k, v in data.items():
             if isinstance(v, list):
                 X[k] = [i.to(self.device) for i in v]
@@ -556,7 +558,7 @@ class TrainerFromFolder(BaseTrainer):
     def _eval_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
         self.model.eval()
         with torch.no_grad():
-            X: Dict[str, Tensor | List[Tensor]] = {}
+            X: Dict[str, Union[Tensor, List[Tensor]]] = {}
             for k, v in data.items():
                 if isinstance(v, list):
                     X[k] = [i.to(self.device) for i in v]
@@ -600,9 +602,9 @@ class TrainerFromFolder(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
-        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
-        X_test: Optional[Dict[str, np.ndarray | List[np.ndarray]]] = None,
+        X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         test_loader: Optional[DataLoader] = None,
         batch_size: Optional[int] = None,
         uncertainty_granularity=1000,
@@ -619,7 +621,7 @@ class TrainerFromFolder(BaseTrainer):
             if X_test is not None:
                 test_set = WideDeepDataset(**X_test)  # type: ignore[arg-type]
             else:
-                load_dict: Dict[str, np.ndarray | List[np.ndarray]] = {}
+                load_dict: Dict[str, Union[np.ndarray, List[np.ndarray]]] = {}
                 if X_wide is not None:
                     load_dict = {"X_wide": X_wide}
                 if X_tab is not None:
@@ -666,7 +668,7 @@ class TrainerFromFolder(BaseTrainer):
                     ) as tt:
                         for _, data in zip(tt, test_loader):
                             tt.set_description("predict")
-                            X: Dict[str, Tensor | List[Tensor]] = {}
+                            X: Dict[str, Union[Tensor, List[Tensor]]] = {}
                             for k, v in data.items():
                                 if isinstance(v, list):
                                     X[k] = [i.to(self.device) for i in v]

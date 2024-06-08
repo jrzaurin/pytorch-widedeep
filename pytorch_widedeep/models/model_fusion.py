@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import List, Tensor, Literal, Optional
+from pytorch_widedeep.wdtypes import List, Union, Tensor, Literal, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models._base_wd_model_component import (
     BaseWDModelComponent,
@@ -103,7 +103,7 @@ class ModelFuser(BaseWDModelComponent):
         self,
         models: List[BaseWDModelComponent],
         *,
-        fusion_method: (
+        fusion_method: Union[
             Literal[
                 "concatenate",
                 "mean",
@@ -111,11 +111,11 @@ class ModelFuser(BaseWDModelComponent):
                 "sum",
                 "mult",
                 "head",
-            ]
-            | List[Literal["concatenate", "mean", "max", "sum", "mult", "head"]]
-        ),
+            ],
+            List[Literal["concatenate", "mean", "max", "sum", "mult", "head"]],
+        ],
         projection_method: Optional[Literal["min", "max", "mean"]] = None,
-        custom_head: Optional[BaseWDModelComponent | nn.Module] = None,
+        custom_head: Optional[Union[BaseWDModelComponent, nn.Module]] = None,
         head_hidden_dims: Optional[List[int]] = None,
         head_activation: Optional[str] = None,
         head_dropout: Optional[float] = None,
@@ -141,7 +141,7 @@ class ModelFuser(BaseWDModelComponent):
                 assert hasattr(
                     custom_head, "output_dim"
                 ), "custom_head must have an 'output_dim' property"
-                self.head: BaseWDModelComponent | nn.Module = custom_head
+                self.head: Union[BaseWDModelComponent, nn.Module] = custom_head
             else:
                 assert head_hidden_dims is not None
                 self.head_hidden_dims = head_hidden_dims

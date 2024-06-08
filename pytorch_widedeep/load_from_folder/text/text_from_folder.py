@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Union
 
 import numpy as np
 
@@ -30,16 +30,16 @@ class TextFromFolder:
 
     def __init__(
         self,
-        preprocessor: (
-            TextPreprocessor
-            | ChunkTextPreprocessor
-            | HFPreprocessor
-            | ChunkHFPreprocessor
-            | List[TextPreprocessor]
-            | List[ChunkTextPreprocessor]
-            | List[HFPreprocessor]
-            | List[ChunkHFPreprocessor]
-        ),
+        preprocessor: Union[
+            TextPreprocessor,
+            ChunkTextPreprocessor,
+            HFPreprocessor,
+            ChunkHFPreprocessor,
+            List[TextPreprocessor],
+            List[ChunkTextPreprocessor],
+            List[HFPreprocessor],
+            List[ChunkHFPreprocessor],
+        ],
     ):
         if isinstance(preprocessor, list):
             for p in preprocessor:
@@ -53,10 +53,12 @@ class TextFromFolder:
 
         self.preprocessor = preprocessor
 
-    def get_item(self, text: str | List[str]) -> np.ndarray | List[np.ndarray]:
+    def get_item(
+        self, text: Union[str, List[str]]
+    ) -> Union[np.ndarray, List[np.ndarray]]:
         if isinstance(self.preprocessor, list):
             assert isinstance(text, list)
-            processed_sample: np.ndarray | List[np.ndarray] = [
+            processed_sample: Union[np.ndarray, List[np.ndarray]] = [
                 self._preprocess_one_sample(t, self.preprocessor[i])
                 for i, t in enumerate(text)
             ]
@@ -69,12 +71,12 @@ class TextFromFolder:
     def _preprocess_one_sample(
         self,
         text: str,
-        preprocessor: (
-            TextPreprocessor
-            | ChunkTextPreprocessor
-            | HFPreprocessor
-            | ChunkHFPreprocessor
-        ),
+        preprocessor: Union[
+            TextPreprocessor,
+            ChunkTextPreprocessor,
+            HFPreprocessor,
+            ChunkHFPreprocessor,
+        ],
     ) -> np.ndarray:
         if (
             isinstance(preprocessor, ChunkTextPreprocessor)

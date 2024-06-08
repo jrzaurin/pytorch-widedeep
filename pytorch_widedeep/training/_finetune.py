@@ -71,11 +71,11 @@ class FineTune:
 
     def finetune_all(
         self,
-        model: WDModel | nn.ModuleList,
+        model: Union[WDModel, nn.ModuleList],
         model_name: str,
         loader: DataLoader,
         n_epochs: int,
-        max_lr: float | List[float],
+        max_lr: Union[float, List[float]],
     ):
         r"""Fine-tune/warm-up all trainable layers in a model using a one cyclic
         learning rate with a triangular pattern. This is refereed as Slanted
@@ -128,11 +128,11 @@ class FineTune:
 
     def finetune_gradual(  # noqa: C901
         self,
-        model: WDModel | nn.ModuleList,
+        model: Union[WDModel, nn.ModuleList],
         model_name: str,
         loader: DataLoader,
-        last_layer_max_lr: float | List[float],
-        layers: List[nn.Module] | List[List[nn.Module]],
+        last_layer_max_lr: Union[float, List[float]],
+        layers: Union[List[nn.Module], List[List[nn.Module]]],
         routine: str,
     ):
         r"""Fine-tune/warm-up certain layers within the model following a

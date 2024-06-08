@@ -1,8 +1,8 @@
-from pytorch_widedeep.wdtypes import Dict, List, Optimizer
+from pytorch_widedeep.wdtypes import Dict, List, Union, Optimizer
 
 
 class MultipleOptimizer(object):
-    def __init__(self, opts: Dict[str, Optimizer | List[Optimizer]]) -> None:
+    def __init__(self, opts: Dict[str, Union[Optimizer, List[Optimizer]]]) -> None:
         self._optimizers = opts
 
     def zero_grad(self):

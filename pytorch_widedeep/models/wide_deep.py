@@ -142,8 +142,12 @@ class WideDeep(nn.Module):
         self,
         wide: Optional[nn.Module] = None,
         deeptabular: Optional[BaseWDModelComponent] = None,
-        deeptext: Optional[BaseWDModelComponent | List[BaseWDModelComponent]] = None,
-        deepimage: Optional[BaseWDModelComponent | List[BaseWDModelComponent]] = None,
+        deeptext: Optional[
+            Union[BaseWDModelComponent, List[BaseWDModelComponent]]
+        ] = None,
+        deepimage: Optional[
+            Union[BaseWDModelComponent, List[BaseWDModelComponent]]
+        ] = None,
         deephead: Optional[BaseWDModelComponent] = None,
         head_hidden_dims: Optional[List[int]] = None,
         head_activation: str = "relu",
@@ -216,7 +220,7 @@ class WideDeep(nn.Module):
 
     def forward(
         self,
-        X: Dict[str, Tensor | List[Tensor]],
+        X: Dict[str, Union[Tensor, List[Tensor]]],
         y: Optional[Tensor] = None,
         epoch: Optional[int] = None,
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
@@ -237,8 +241,8 @@ class WideDeep(nn.Module):
     def _build_deephead(
         self,
         deeptabular: Optional[BaseWDModelComponent],
-        deeptext: Optional[BaseWDModelComponent | List[BaseWDModelComponent]],
-        deepimage: Optional[BaseWDModelComponent | List[BaseWDModelComponent]],
+        deeptext: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
+        deepimage: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
         head_hidden_dims: List[int],
         head_activation: str,
         head_dropout: float,
@@ -281,13 +285,13 @@ class WideDeep(nn.Module):
     def _set_model_components(  # noqa: C901
         self,
         deeptabular: Optional[BaseWDModelComponent],
-        deeptext: Optional[BaseWDModelComponent | List[BaseWDModelComponent]],
-        deepimage: Optional[BaseWDModelComponent | List[BaseWDModelComponent]],
+        deeptext: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
+        deepimage: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
         with_deephead: bool,
     ) -> Tuple[
         Optional[WDModel],
-        Optional[nn.ModuleList | WDModel],
-        Optional[nn.ModuleList | WDModel],
+        Optional[Union[nn.ModuleList, WDModel]],
+        Optional[Union[nn.ModuleList, WDModel]],
     ]:
         if deeptabular is not None:
             self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
@@ -322,7 +326,7 @@ class WideDeep(nn.Module):
 
         if deeptext is not None:
             if isinstance(deeptext, list):
-                deeptext_: Optional[nn.ModuleList | WDModel] = nn.ModuleList()
+                deeptext_: Optional[Union[nn.ModuleList, WDModel]] = nn.ModuleList()
                 for dt in deeptext:
                     deeptext_.append(
                         nn.Sequential(dt, nn.Linear(dt.output_dim, self.pred_dim))
@@ -342,7 +346,7 @@ class WideDeep(nn.Module):
 
         if deepimage is not None:
             if isinstance(deepimage, list):
-                deepimage_: Optional[nn.ModuleList | WDModel] = nn.ModuleList()
+                deepimage_: Optional[Union[nn.ModuleList, WDModel]] = nn.ModuleList()
                 for di in deepimage:
                     deepimage_.append(
                         nn.Sequential(di, nn.Linear(di.output_dim, self.pred_dim))
@@ -362,7 +366,7 @@ class WideDeep(nn.Module):
 
         return deeptabular_, deeptext_, deepimage_
 
-    def _forward_wide(self, X: Dict[str, Tensor | List[Tensor]]) -> Tensor:
+    def _forward_wide(self, X: Dict[str, Union[Tensor, List[Tensor]]]) -> Tensor:
         if self.wide is not None:
             out = self.wide(X["wide"])
         else:
@@ -376,7 +380,7 @@ class WideDeep(nn.Module):
         return out
 
     def _forward_deephead(
-        self, X: Dict[str, Tensor | List[Tensor]], wide_out: Tensor
+        self, X: Dict[str, Union[Tensor, List[Tensor]]], wide_out: Tensor
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         if self.deeptabular is not None:
             if self.is_tabnet:
@@ -418,7 +422,7 @@ class WideDeep(nn.Module):
         return res
 
     def _forward_deep(
-        self, X: Dict[str, Tensor | List[Tensor]], wide_out: Tensor
+        self, X: Dict[str, Union[Tensor, List[Tensor]]], wide_out: Tensor
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         if self.deeptabular is not None:
             if self.is_tabnet:

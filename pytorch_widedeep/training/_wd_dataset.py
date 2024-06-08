@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 import numpy as np
 import torch
@@ -60,10 +60,10 @@ class WideDeepDataset(Dataset):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray | List[np.ndarray]] = None,
-        X_img: Optional[np.ndarray | List[np.ndarray]] = None,
+        X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         target: Optional[np.ndarray] = None,
-        transforms: Optional[Transforms | Compose] = None,
+        transforms: Optional[Union[Transforms, Compose]] = None,
         is_training: bool = True,
         with_lds: bool = False,
         **kwargs,

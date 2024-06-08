@@ -49,12 +49,14 @@ class BaseTrainer(ABC):
         model: WideDeep,
         objective: str,
         custom_loss_function: Optional[Module],
-        optimizers: Optional[Optimizer | Dict[str, Optimizer | List[Optimizer]]],
+        optimizers: Optional[
+            Union[Optimizer, Dict[str, Union[Optimizer, List[Optimizer]]]]
+        ],
         lr_schedulers: Optional[
-            LRScheduler | Dict[str, LRScheduler | List[LRScheduler]]
+            Union[LRScheduler, Dict[str, Union[LRScheduler, List[LRScheduler]]]]
         ],
         initializers: Optional[
-            Initializer | Dict[str, Initializer | List[Initializer]]
+            Union[Initializer, Dict[str, Union[Initializer, List[Initializer]]]]
         ],
         transforms: Optional[List[Transforms]],
         callbacks: Optional[List[Callback]],
@@ -195,7 +197,9 @@ class BaseTrainer(ABC):
 
     def _set_optimizer(
         self,
-        optimizers: Optional[Union[Optimizer, Dict[str, Optimizer | List[Optimizer]]]],
+        optimizers: Optional[
+            Union[Optimizer, Dict[str, Union[Optimizer, List[Optimizer]]]]
+        ],
     ):
         if optimizers is not None:
             if isinstance(optimizers, Optimizer):
@@ -225,10 +229,10 @@ class BaseTrainer(ABC):
     def _set_lr_scheduler(
         self,
         lr_schedulers: Optional[
-            LRScheduler | Dict[str, LRScheduler | List[LRScheduler]]
+            Union[LRScheduler, Dict[str, Union[LRScheduler, List[LRScheduler]]]]
         ] = None,
         **kwargs,
-    ) -> Optional[LRScheduler | MultipleLRScheduler]:
+    ) -> Optional[Union[LRScheduler, MultipleLRScheduler]]:
         # ReduceLROnPlateau is special
         reducelronplateau_criterion = kwargs.get("reducelronplateau_criterion", None)
 
@@ -240,7 +244,7 @@ class BaseTrainer(ABC):
             if isinstance(lr_schedulers, LRScheduler) or isinstance(
                 lr_schedulers, ReduceLROnPlateau
             ):
-                lr_scheduler: Optional[LRScheduler | MultipleLRScheduler] = (
+                lr_scheduler: Optional[Union[LRScheduler, MultipleLRScheduler]] = (
                     lr_schedulers
                 )
                 cyclic_lr = "cycl" in lr_scheduler.__class__.__name__.lower()

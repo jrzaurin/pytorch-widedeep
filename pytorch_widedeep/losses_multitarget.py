@@ -2,7 +2,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from pytorch_widedeep.wdtypes import List, Tuple, Tensor, Literal, Optional
+from pytorch_widedeep.wdtypes import (
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.utils.general_utils import alias
 
 use_cuda = torch.cuda.is_available()
@@ -138,9 +145,9 @@ class MultiTargetClassificationLoss(nn.Module):
     @alias("weights", ["target_weights"])
     def __init__(  # noqa: C901
         self,
-        binary_config: Optional[List[int | Tuple[int, float]]] = None,
+        binary_config: Optional[List[Union[int, Tuple[int, float]]]] = None,
         multiclass_config: Optional[
-            List[Tuple[int, int] | Tuple[int, int, List[float]]]
+            List[Union[Tuple[int, int], Tuple[int, int, List[float]]]]
         ] = None,
         weights: Optional[List[float]] = None,
         reduction: Literal["mean", "sum"] = "mean",
@@ -285,7 +292,7 @@ class MultiTargetClassificationLoss(nn.Module):
         )
         for mc in self.multiclass_config:
             if len(mc) == 3:
-                multiclass_config_with_weights.append(mc)
+                multiclass_config_with_weights.append(mc)  # type: ignore[arg-type]
             else:
                 multiclass_config_with_weights.append((mc[0], mc[1], None))
         return multiclass_config_with_weights
@@ -354,9 +361,9 @@ class MutilTargetRegressionAndClassificationLoss(nn.Module):
     def __init__(  # noqa: C901
         self,
         regression_config: List[int] = [],
-        binary_config: Optional[List[int | Tuple[int, float]]] = None,
+        binary_config: Optional[List[Union[int, Tuple[int, float]]]] = None,
         multiclass_config: Optional[
-            List[Tuple[int, int] | Tuple[int, int, List[float]]]
+            List[Union[Tuple[int, int], Tuple[int, int, List[float]]]]
         ] = None,
         weights: Optional[List[float]] = None,
         reduction: Literal["mean", "sum"] = "mean",
@@ -442,9 +449,9 @@ class MutilTargetRegressionAndClassificationLoss(nn.Module):
     def _check_inputs_with_binary_trick(
         self,
         regression_config: List[int],
-        binary_config: Optional[List[int | Tuple[int, float]]],
+        binary_config: Optional[List[Union[int, Tuple[int, float]]]],
         multiclass_config: Optional[
-            List[Tuple[int, int] | Tuple[int, int, List[float]]]
+            List[Union[Tuple[int, int], Tuple[int, int, List[float]]]]
         ],
     ) -> None:
 
@@ -505,7 +512,7 @@ class MutilTargetRegressionAndClassificationLoss(nn.Module):
     def _prepare_weights_per_binary_targets(
         self,
         weights: List[float],
-        binary_config: Optional[List[int | Tuple[int, float]]],
+        binary_config: Optional[List[Union[int, Tuple[int, float]]]],
     ) -> Optional[List[float]]:
 
         if binary_config is not None:
@@ -525,7 +532,7 @@ class MutilTargetRegressionAndClassificationLoss(nn.Module):
         self,
         weights: List[float],
         multiclass_config: Optional[
-            List[Tuple[int, int] | Tuple[int, int, List[float]]]
+            List[Union[Tuple[int, int], Tuple[int, int, List[float]]]]
         ],
     ) -> Optional[List[float]]:
 

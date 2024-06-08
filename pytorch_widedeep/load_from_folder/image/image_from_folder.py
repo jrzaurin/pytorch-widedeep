@@ -85,8 +85,10 @@ class ImageFromFolder:
 
     def __init__(
         self,
-        directory: Optional[str | List[str]] = None,
-        preprocessor: Optional[ImagePreprocessor | List[ImagePreprocessor]] = None,
+        directory: Optional[Union[str, List[str]]] = None,
+        preprocessor: Optional[
+            Union[ImagePreprocessor, List[ImagePreprocessor]]
+        ] = None,
         loader: Callable[[str], Any] = default_loader,
         extensions: Optional[Tuple[str, ...]] = None,
         transforms: Optional[Any] = None,
@@ -133,7 +135,9 @@ class ImageFromFolder:
 
             self.transpose = True
 
-    def get_item(self, fname: str | List[str]) -> np.ndarray | List[np.ndarray]:
+    def get_item(
+        self, fname: Union[str, List[str]]
+    ) -> Union[np.ndarray, List[np.ndarray]]:
         if isinstance(fname, list):
             if not isinstance(self.directory, list):
                 _directory = [self.directory] * len(fname)
@@ -141,7 +145,7 @@ class ImageFromFolder:
                 _directory = self.directory
             if self.preprocessor is not None:
                 assert isinstance(self.preprocessor, list)
-                processed_sample: np.ndarray | List[np.ndarray] = [
+                processed_sample: Union[np.ndarray, List[np.ndarray]] = [
                     self._preprocess_one_sample(f, d, p)
                     for f, d, p in zip(fname, _directory, self.preprocessor)
                 ]

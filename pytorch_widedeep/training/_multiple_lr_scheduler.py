@@ -1,8 +1,10 @@
-from pytorch_widedeep.wdtypes import Dict, List, LRScheduler
+from pytorch_widedeep.wdtypes import Dict, List, Union, LRScheduler
 
 
 class MultipleLRScheduler(object):
-    def __init__(self, scheds: Dict[str, LRScheduler | List[LRScheduler]]) -> None:
+    def __init__(
+        self, scheds: Dict[str, Union[LRScheduler, List[LRScheduler]]]
+    ) -> None:
         self._schedulers = scheds
 
     def step(self):
