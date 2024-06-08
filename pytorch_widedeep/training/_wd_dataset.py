@@ -126,11 +126,11 @@ class WideDeepDataset(Dataset):
 
     def _compute_lds_weights(
         self,
-        granularity: int = 100,
-        reweight: bool = False,
-        kernel: Literal["gaussian", "triang", "laplace"] = "gaussian",
-        ks: int = 5,
-        sigma: float = 2,
+        lds_granularity: int = 100,
+        lds_reweight: bool = False,
+        lds_kernel: Literal["gaussian", "triang", "laplace"] = "gaussian",
+        lds_ks: int = 5,
+        lds_sigma: float = 2,
         lds_y_min: Optional[float] = None,
         lds_y_max: Optional[float] = None,
     ) -> np.ndarray:
@@ -146,16 +146,16 @@ class WideDeepDataset(Dataset):
         assert self.Y is not None, "No target array provided"
         y_max = max(self.Y) if lds_y_max is None else lds_y_max
         y_min = min(self.Y) if lds_y_min is None else lds_y_min
-        bin_edges = np.linspace(y_min, y_max, num=granularity, endpoint=True)
+        bin_edges = np.linspace(y_min, y_max, num=lds_granularity, endpoint=True)
         value_dict = dict(zip(bin_edges[:-1], np.histogram(self.Y, bin_edges)[0]))
 
-        if reweight:
+        if lds_reweight:
             value_dict = dict(
                 zip(value_dict.keys(), np.sqrt(list(value_dict.values())))
             )
 
-        if kernel is not None:
-            lds_kernel_window = get_kernel_window(kernel, ks, sigma)
+        if lds_kernel is not None:
+            lds_kernel_window = get_kernel_window(lds_kernel, lds_ks, lds_sigma)
             smoothed_values = convolve1d(
                 list(value_dict.values()), weights=lds_kernel_window, mode="constant"
             )
