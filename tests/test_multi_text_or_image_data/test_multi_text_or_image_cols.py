@@ -197,7 +197,7 @@ global_model = WideDeep(
         ),
     ],
 )
-def test_multi_text_or_image_cols(
+def test_multi_text_or_image_cols_input_options(
     X_tab, X_text, X_img, X_train, X_val, val_split, target
 ):
 

@@ -31,7 +31,9 @@ The content of this document is organized as follows:
 
 - [**pytorch-widedeep**](#pytorch-widedeep)
     - [Introduction](#introduction)
+    - [Architectures](#Architectures)
     - [The ``deeptabular`` component](#the-deeptabular-component)
+    - [Text and Images](#text-and-images)
     - [Acknowledgments](#acknowledgments)
     - [License](#license)
     - [Cite](#cite)
@@ -42,46 +44,32 @@ The content of this document is organized as follows:
 ### Introduction
 
 ``pytorch-widedeep`` is based on Google's [Wide and Deep Algorithm](https://arxiv.org/abs/1606.07792),
-adjusted for multi-modal datasets
+adjusted for multi-modal datasets.
 
 In general terms, `pytorch-widedeep` is a package to use deep learning with
-tabular data. In particular, is intended to facilitate the combination of text
-and images with corresponding tabular data using wide and deep models. With
-that in mind there are a number of architectures that can be implemented with
-just a few lines of code. The main components of those architectures are shown
-in the Figure below:
+tabular data. In particular, is intended to facilitate the combination of
+text and images with corresponding tabular data using wide and deep models.
+With that in mind there are a number of architectures that can be implemented
+with the library. The main components of those architectures are shown in the
+Figure below:
+
 
 <p align="center">
-  <img width="750" src="docs/figures/widedeep_arch.png">
+  <img width="750" src="docs/figures/widedeep_arch_new.png">
 </p>
 
-The dashed boxes in the figure represent optional, overall components, and the
-dashed lines/arrows indicate the corresponding connections, depending on
-whether or not certain components are present. For example, the dashed,
-blue-lines indicate that the ``deeptabular``, ``deeptext`` and ``deepimage``
-components are connected directly to the output neuron or neurons (depending
-on whether we are performing a binary classification or regression, or a
-multi-class classification) if the optional ``deephead`` is not present.
-Finally, the components within the faded-pink rectangle are concatenated.
-
-
-Note that it is not possible to illustrate the number of possible
-architectures and components available in ``pytorch-widedeep`` in one Figure.
-Therefore, for more details on possible architectures (and more) please, read
-this documentation, or see the Examples folder in the repo.
 
 In math terms, and following the notation in the
 [paper](https://arxiv.org/abs/1606.07792), the expression for the architecture
 without a ``deephead`` component can be formulated as:
 
-$$
-pred = \sigma(W^{T}_{wide}[x,\phi(x)] + W^{T}_{deeptabular}a^{l_f}_{deeptabular} + W^{T}_{deeptext}a^{l_f}_{deeptext} + W^{T}_{deepimage}a^{l_f}_{deepimage} + b)
-$$
-
+<p align="center">
+  <img width="500" src="docs/figures/architecture_1_math.png">
+</p>
 
 
 Where &sigma; is the sigmoid function, *'W'* are the weight matrices applied to the wide model and to the final
-activations of the deep models, *'a'* are these final activations, 
+activations of the deep models, *'a'* are these final activations,
 &phi;(x) are the cross product transformations of the original features *'x'*, and
 , and *'b'* is the bias term.
 In case you are wondering what are *"cross product transformations"*, here is
@@ -90,23 +78,513 @@ transformation (e.g., “AND(gender=female, language=en)”) is 1 if and only if
 the constituent features (“gender=female” and “language=en”) are all 1, and 0
 otherwise".*
 
-
-While if there is a ``deephead`` component, the previous expression turns
-into:
-
-$$
-pred = \sigma(W^{T}_{wide}[x,\phi(x)] + W^{T}_{deephead}a^{l_f}_{deephead} + b)
-$$
-
 It is perfectly possible to use custom models (and not necessarily those in
-the library) as long as the the custom models have an attribute called
+the library) as long as the the custom models have a property called
 ``output_dim`` with the size of the last layer of activations, so that
 ``WideDeep`` can be constructed. Examples on how to use custom components can
-be found in the Examples folder.
+be found in the Examples folder and the section below.
+
+### Architectures
+
+The `pytorch-widedeep` library offers a number of different architectures. In
+this section we will show some of them in their simplest form (i.e. with
+default param values in most cases) with their corresponding code snippets.
+Note that **all** the snippets below shoud run locally. For a more detailed
+explanation of the different components and their parameters, please refer to
+the documentation.
+
+For the examples below we will be using a toy dataset generated as follows:
+
+```python
+import os
+import random
+
+import numpy as np
+import pandas as pd
+from PIL import Image
+from faker import Faker
+
+
+def create_and_save_random_image(image_number, size=(32, 32)):
+
+    if not os.path.exists("images"):
+        os.makedirs("images")
+
+    array = np.random.randint(0, 256, (size[0], size[1], 3), dtype=np.uint8)
+
+    image = Image.fromarray(array)
+
+    image_name = f"image_{image_number}.png"
+    image.save(os.path.join("images", image_name))
+
+    return image_name
+
+
+fake = Faker()
+
+cities = ["New York", "Los Angeles", "Chicago", "Houston"]
+names = ["Alice", "Bob", "Charlie", "David", "Eva"]
+
+data = {
+    "city": [random.choice(cities) for _ in range(100)],
+    "name": [random.choice(names) for _ in range(100)],
+    "age": [random.uniform(18, 70) for _ in range(100)],
+    "height": [random.uniform(150, 200) for _ in range(100)],
+    "sentence": [fake.sentence() for _ in range(100)],
+    "other_sentence": [fake.sentence() for _ in range(100)],
+    "image_name": [create_and_save_random_image(i) for i in range(100)],
+    "target": [random.choice([0, 1]) for _ in range(100)],
+}
+
+df = pd.DataFrame(data)
+```
+
+This will create a 100 rows dataframe and a dir in your local folder, called
+`images` with 100 random images (or images with just noise).
+
+Perhaps the simplest architecture would be just one component, `wide`,
+`deeptabular`, `deeptext` or `deepimage` on their own, which is also
+possible, but let's start the examples with a standard Wide and Deep
+architecture. From there, how to build a model comprised only of one
+component will be straightforward.
+
+Note that the examples shown below would be almost identical using any of the
+models available in the library. For example, `TabMlp` can be replaced by
+`TabResnet`, `TabNet`, `TabTransformer`, etc. Similarly, `BasicRNN` can be
+replaced by `AttentiveRNN`, `StackedAttentiveRNN`, or `HFModel` with
+their corresponding parameters and preprocessor in the case of the Hugging
+Face models.
+
+**1. Wide and Tabular component (aka deeptabular)**
+
+
+<p align="center">
+  <img width="400" src="docs/figures/arch_1.png">
+</p>
+
+
+```python
+from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
+from pytorch_widedeep.models import Wide, TabMlp, WideDeep
+from pytorch_widedeep.training import Trainer
+
+# Wide
+wide_cols = ["city"]
+crossed_cols = [("city", "name")]
+wide_preprocessor = WidePreprocessor(wide_cols=wide_cols, crossed_cols=crossed_cols)
+X_wide = wide_preprocessor.fit_transform(df)
+wide = Wide(input_dim=np.unique(X_wide).shape[0])
+
+# Tabular
+tab_preprocessor = TabPreprocessor(
+    embed_cols=["city", "name"], continuous_cols=["age", "height"]
+)
+X_tab = tab_preprocessor.fit_transform(df)
+tab_mlp = TabMlp(
+    column_idx=tab_preprocessor.column_idx,
+    cat_embed_input=tab_preprocessor.cat_embed_input,
+    continuous_cols=tab_preprocessor.continuous_cols,
+    mlp_hidden_dims=[64, 32],
+)
+
+# WideDeep
+model = WideDeep(wide=wide, deeptabular=tab_mlp)
+
+# Train
+trainer = Trainer(model, objective="binary")
+
+trainer.fit(
+    X_wide=X_wide,
+    X_tab=X_tab,
+    target=df["target"].values,
+    n_epochs=1,
+    batch_size=32,
+)
+```
+
+**2. Tabular and Text data**
+
+<p align="center">
+  <img width="400" src="docs/figures/arch_2.png">
+</p>
+
+
+```python
+from pytorch_widedeep.preprocessing import TabPreprocessor, TextPreprocessor
+from pytorch_widedeep.models import TabMlp, BasicRNN, WideDeep
+from pytorch_widedeep.training import Trainer
+
+# Tabular
+tab_preprocessor = TabPreprocessor(
+    embed_cols=["city", "name"], continuous_cols=["age", "height"]
+)
+X_tab = tab_preprocessor.fit_transform(df)
+tab_mlp = TabMlp(
+    column_idx=tab_preprocessor.column_idx,
+    cat_embed_input=tab_preprocessor.cat_embed_input,
+    continuous_cols=tab_preprocessor.continuous_cols,
+    mlp_hidden_dims=[64, 32],
+)
+
+# Text
+text_preprocessor = TextPreprocessor(
+    text_col="sentence", maxlen=20, max_vocab=100, n_cpus=1
+)
+X_text = text_preprocessor.fit_transform(df)
+rnn = BasicRNN(
+    vocab_size=len(text_preprocessor.vocab.itos),
+    embed_dim=16,
+    hidden_dim=8,
+    n_layers=1,
+)
+
+# WideDeep
+model = WideDeep(deeptabular=tab_mlp, deeptext=rnn)
+
+# Train
+trainer = Trainer(model, objective="binary")
+
+trainer.fit(
+    X_tab=X_tab,
+    X_text=X_text,
+    target=df["target"].values,
+    n_epochs=1,
+    batch_size=32,
+)
+```
+
+**3. Tabular and text with a FC head on top via the `head_hidden_dims` param
+  in `WideDeep`**
+
+<p align="center">
+  <img width="400" src="docs/figures/arch_3.png">
+</p>
+
+```python
+from pytorch_widedeep.preprocessing import TabPreprocessor, TextPreprocessor
+from pytorch_widedeep.models import TabMlp, BasicRNN, WideDeep
+from pytorch_widedeep.training import Trainer
+
+# Tabular
+tab_preprocessor = TabPreprocessor(
+    embed_cols=["city", "name"], continuous_cols=["age", "height"]
+)
+X_tab = tab_preprocessor.fit_transform(df)
+tab_mlp = TabMlp(
+    column_idx=tab_preprocessor.column_idx,
+    cat_embed_input=tab_preprocessor.cat_embed_input,
+    continuous_cols=tab_preprocessor.continuous_cols,
+    mlp_hidden_dims=[64, 32],
+)
+
+# Text
+text_preprocessor = TextPreprocessor(
+    text_col="sentence", maxlen=20, max_vocab=100, n_cpus=1
+)
+X_text = text_preprocessor.fit_transform(df)
+rnn = BasicRNN(
+    vocab_size=len(text_preprocessor.vocab.itos),
+    embed_dim=16,
+    hidden_dim=8,
+    n_layers=1,
+)
+
+# WideDeep
+model = WideDeep(deeptabular=tab_mlp, deeptext=rnn, head_hidden_dims=[32, 16])
+
+# Train
+trainer = Trainer(model, objective="binary")
+
+trainer.fit(
+    X_tab=X_tab,
+    X_text=X_text,
+    target=df["target"].values,
+    n_epochs=1,
+    batch_size=32,
+)
+```
+
+**4. Tabular and multiple text columns that are passed directly to
+  `WideDeep`**
+
+<p align="center">
+  <img width="500" src="docs/figures/arch_4.png">
+</p>
+
+```python
+from pytorch_widedeep.preprocessing import TabPreprocessor, TextPreprocessor
+from pytorch_widedeep.models import TabMlp, BasicRNN, WideDeep
+from pytorch_widedeep.training import Trainer
+
+
+# Tabular
+tab_preprocessor = TabPreprocessor(
+    embed_cols=["city", "name"], continuous_cols=["age", "height"]
+)
+X_tab = tab_preprocessor.fit_transform(df)
+tab_mlp = TabMlp(
+    column_idx=tab_preprocessor.column_idx,
+    cat_embed_input=tab_preprocessor.cat_embed_input,
+    continuous_cols=tab_preprocessor.continuous_cols,
+    mlp_hidden_dims=[64, 32],
+)
+
+# Text
+text_preprocessor_1 = TextPreprocessor(
+    text_col="sentence", maxlen=20, max_vocab=100, n_cpus=1
+)
+X_text_1 = text_preprocessor_1.fit_transform(df)
+text_preprocessor_2 = TextPreprocessor(
+    text_col="other_sentence", maxlen=20, max_vocab=100, n_cpus=1
+)
+X_text_2 = text_preprocessor_2.fit_transform(df)
+rnn_1 = BasicRNN(
+    vocab_size=len(text_preprocessor_1.vocab.itos),
+    embed_dim=16,
+    hidden_dim=8,
+    n_layers=1,
+)
+rnn_2 = BasicRNN(
+    vocab_size=len(text_preprocessor_2.vocab.itos),
+    embed_dim=16,
+    hidden_dim=8,
+    n_layers=1,
+)
+
+# WideDeep
+model = WideDeep(deeptabular=tab_mlp, deeptext=[rnn_1, rnn_2])
+
+# Train
+trainer = Trainer(model, objective="binary")
+
+trainer.fit(
+    X_tab=X_tab,
+    X_text=[X_text_1, X_text_2],
+    target=df["target"].values,
+    n_epochs=1,
+    batch_size=32,
+)
+```
+
+**5. Tabular data and multiple text columns that are fused via a the library's
+  `ModelFuser` class**
+
+<p align="center">
+    <img width="500" src="docs/figures/arch_5.png">
+</p>
+
+```python
+from pytorch_widedeep.preprocessing import TabPreprocessor, TextPreprocessor
+from pytorch_widedeep.models import TabMlp, BasicRNN, WideDeep, ModelFuser
+from pytorch_widedeep import Trainer
+
+# Tabular
+tab_preprocessor = TabPreprocessor(
+    embed_cols=["city", "name"], continuous_cols=["age", "height"]
+)
+X_tab = tab_preprocessor.fit_transform(df)
+tab_mlp = TabMlp(
+    column_idx=tab_preprocessor.column_idx,
+    cat_embed_input=tab_preprocessor.cat_embed_input,
+    continuous_cols=tab_preprocessor.continuous_cols,
+    mlp_hidden_dims=[64, 32],
+)
+
+# Text
+text_preprocessor_1 = TextPreprocessor(
+    text_col="sentence", maxlen=20, max_vocab=100, n_cpus=1
+)
+X_text_1 = text_preprocessor_1.fit_transform(df)
+text_preprocessor_2 = TextPreprocessor(
+    text_col="other_sentence", maxlen=20, max_vocab=100, n_cpus=1
+)
+X_text_2 = text_preprocessor_2.fit_transform(df)
+
+rnn_1 = BasicRNN(
+    vocab_size=len(text_preprocessor_1.vocab.itos),
+    embed_dim=16,
+    hidden_dim=8,
+    n_layers=1,
+)
+rnn_2 = BasicRNN(
+    vocab_size=len(text_preprocessor_2.vocab.itos),
+    embed_dim=16,
+    hidden_dim=8,
+    n_layers=1,
+)
+
+models_fuser = ModelFuser(models=[rnn_1, rnn_2], fusion_method="mult")
+
+# WideDeep
+model = WideDeep(deeptabular=tab_mlp, deeptext=models_fuser)
+
+# Train
+trainer = Trainer(model, objective="binary")
+
+trainer.fit(
+    X_tab=X_tab,
+    X_text=[X_text_1, X_text_2],
+    target=df["target"].values,
+    n_epochs=1,
+    batch_size=32,
+)
+```
+
+**6. Tabular and multiple text columns, with an image column. The text columns
+  are fused via the library's `ModelFuser` and then all fused via the
+  deephead paramenter in `WideDeep` which is a custom `ModelFuser` coded by
+  the user**
+
+This is perhaps the less elegant solution as it involves a custom component by
+the user and slicing the 'incoming' tensor. In the future, we will include a
+`TextAndImageModelFuser` to make this process more straightforward. Still, is not
+really complicated and it is a good example of how to use custom components in
+`pytorch-widedeep`.
+
+Note that the only requirement for the custom component is that it has a
+property called `output_dim` that returns the size of the last layer of
+activations. In other words, it does not need to inherit from
+`BaseWDModelComponent`. This base class simply checks the existence of such
+property and avoids some typing errors internally.
+
+
+<p align="center">
+    <img width="600" src="docs/figures/arch_6.png">
+</p>
+
+
+```python
+import torch
+
+from pytorch_widedeep.preprocessing import TabPreprocessor, TextPreprocessor, ImagePreprocessor
+from pytorch_widedeep.models import TabMlp, BasicRNN, WideDeep, ModelFuser, Vision
+from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
+from pytorch_widedeep import Trainer
+
+# Tabular
+tab_preprocessor = TabPreprocessor(
+    embed_cols=["city", "name"], continuous_cols=["age", "height"]
+)
+X_tab = tab_preprocessor.fit_transform(df)
+tab_mlp = TabMlp(
+    column_idx=tab_preprocessor.column_idx,
+    cat_embed_input=tab_preprocessor.cat_embed_input,
+    continuous_cols=tab_preprocessor.continuous_cols,
+    mlp_hidden_dims=[16, 8],
+)
+
+# Text
+text_preprocessor_1 = TextPreprocessor(
+    text_col="sentence", maxlen=20, max_vocab=100, n_cpus=1
+)
+X_text_1 = text_preprocessor_1.fit_transform(df)
+text_preprocessor_2 = TextPreprocessor(
+    text_col="other_sentence", maxlen=20, max_vocab=100, n_cpus=1
+)
+X_text_2 = text_preprocessor_2.fit_transform(df)
+rnn_1 = BasicRNN(
+    vocab_size=len(text_preprocessor_1.vocab.itos),
+    embed_dim=16,
+    hidden_dim=8,
+    n_layers=1,
+)
+rnn_2 = BasicRNN(
+    vocab_size=len(text_preprocessor_2.vocab.itos),
+    embed_dim=16,
+    hidden_dim=8,
+    n_layers=1,
+)
+models_fuser = ModelFuser(
+    models=[rnn_1, rnn_2],
+    fusion_method="mult",
+)
+
+# Image
+image_preprocessor = ImagePreprocessor(img_col="image_name", img_path="images")
+X_img = image_preprocessor.fit_transform(df)
+vision = Vision(pretrained_model_setup="resnet18", head_hidden_dims=[16, 8])
+
+# deephead (custom model fuser)
+class MyModelFuser(BaseWDModelComponent):
+    """
+    Simply a Linear + Relu sequence on top of the text + images followed by a
+    Linear -> Relu -> Linear for the concatenation of tabular slice of the
+    tensor and the output of the text and image sequential model
+    """
+    def __init__(
+        self,
+        tab_incoming_dim: int,
+        text_incoming_dim: int,
+        image_incoming_dim: int,
+        output_units: int,
+    ):
+
+        super(MyModelFuser, self).__init__()
+
+        self.tab_incoming_dim = tab_incoming_dim
+        self.text_incoming_dim = text_incoming_dim
+        self.image_incoming_dim = image_incoming_dim
+        self.output_units = output_units
+        self.text_and_image_fuser = torch.nn.Sequential(
+            torch.nn.Linear(text_incoming_dim + image_incoming_dim, output_units),
+            torch.nn.ReLU(),
+        )
+        self.out = torch.nn.Sequential(
+            torch.nn.Linear(output_units + tab_incoming_dim, output_units * 4),
+            torch.nn.ReLU(),
+            torch.nn.Linear(output_units * 4, output_units),
+        )
+
+    def forward(self, X: torch.Tensor) -> torch.Tensor:
+        tab_slice = slice(0, self.tab_incoming_dim)
+        text_slice = slice(
+            self.tab_incoming_dim, self.tab_incoming_dim + self.text_incoming_dim
+        )
+        image_slice = slice(
+            self.tab_incoming_dim + self.text_incoming_dim,
+            self.tab_incoming_dim + self.text_incoming_dim + self.image_incoming_dim,
+        )
+        X_tab = X[:, tab_slice]
+        X_text = X[:, text_slice]
+        X_img = X[:, image_slice]
+        X_text_and_image = self.text_and_image_fuser(torch.cat([X_text, X_img], dim=1))
+        return self.out(torch.cat([X_tab, X_text_and_image], dim=1))
+
+    @property
+    def output_dim(self):
+        return self.output_units
+
+deephead = MyModelFuser(
+    tab_incoming_dim=tab_mlp.output_dim,
+    text_incoming_dim=models_fuser.output_dim,
+    image_incoming_dim=vision.output_dim,
+    output_units=8,
+)
+
+# WideDeep
+model = WideDeep(
+    deeptabular=tab_mlp,
+    deeptext=models_fuser,
+    deepimage=vision,
+    deephead=deephead,
+)
+
+# Train
+trainer = Trainer(model, objective="binary")
+
+trainer.fit(
+    X_tab=X_tab,
+    X_text=[X_text_1, X_text_2],
+    X_img=X_img,
+    target=df["target"].values,
+    n_epochs=1,
+    batch_size=32,
+)
+```
 
 ### The ``deeptabular`` component
 
-It is important to emphasize that **each individual component, `wide`,
+It is important to emphasize again that **each individual component, `wide`,
 `deeptabular`, `deeptext` and `deepimage`, can be used independently** and in
 isolation. For example, one could use only `wide`, which is in simply a
 linear model. In fact, one of the most interesting functionalities
@@ -136,8 +614,6 @@ The ``Tabformer`` family, i.e. Transformers for Tabular data:
 
 6. **TabTransformer**: details on the TabTransformer can be found in
 [TabTransformer: Tabular Data Modeling Using Contextual Embeddings](https://arxiv.org/pdf/2012.06678.pdf).
-Note that this is an 'enhanced' implementation that allows for many options that can be set up via
-the `TabTransformer` params.
 7. **SAINT**: Details on SAINT can be found in
 [SAINT: Improved Neural Networks for Tabular Data via Row Attention and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342).
 8. **FT-Transformer**: details on the FT-Transformer can be found in
@@ -165,6 +641,27 @@ pre-training can be used via two methods or routines which we refer as:
 encoder-decoder method and constrastive-denoising method. Please, see the
 documentation and the examples for details on this functionality, and all
 other options in the library.
+
+### Text and Images
+For the text component, `deeptext`, the library offers the following models:
+
+1. **BasicRNN**: a simple RNN 2. **AttentiveRNN**: a RNN with an attention
+mechanism based on the
+[Hierarchical Attention Networks for DocumentClassification](https://www.cs.cmu.edu/~./hovy/papers/16HLT-hierarchical-attention-networks.pd)
+3. **StackedAttentiveRNN**: a stack of AttentiveRNNs
+4. **HFModel**: a wrapper around Hugging Face Transfomer-based models. At the moment
+only models from the families BERT, RoBERTa, DistilBERT, ALBERT and ELECTRA
+are supported. This is because this library is designed to address
+classification and regression tasks and these are the most 'popular'
+encoder-only models, which have proved to be those that work best for these
+tasks. If there is demand for other models, they will be included in the
+future.
+
+For the image component, `deepimage`, the library supports models from the
+following families:
+'resnet', 'shufflenet', 'resnext', 'wide_resnet', 'regnet', 'densenet', 'mobilenetv3',
+ 'mobilenetv2', 'mnasnet', 'efficientnet' and 'squeezenet'.  These are
+ offered via `torchvision` and wrapped up in the `Vision` class.
 
 ### Acknowledgments
 

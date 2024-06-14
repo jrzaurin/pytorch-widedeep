@@ -568,13 +568,12 @@ class WideDeep(nn.Module):
                 output_dim += deeptext.output_dim
             if deepimage is not None:
                 output_dim += deepimage.output_dim
-            assert deephead_inp_feat == output_dim, (
-                "if a custom 'deephead' is used its input features ({}) must be equal to "
-                "the output features of the deep component ({})".format(
-                    deephead_inp_feat, output_dim
+            if deephead_inp_feat != output_dim:
+                warnings.warn(
+                    "A custom 'deephead' is used and it seems that the input features "
+                    "do not match the output of the deep components",
+                    UserWarning,
                 )
-            )
-
         if with_fds and (
             (
                 wide is not None

@@ -129,6 +129,10 @@ class ModelFuser(BaseWDModelComponent):
         self.fusion_method = fusion_method
         self.projection_method = projection_method
 
+        self.all_output_dim_equal = all(
+            model.output_dim == self.models[0].output_dim for model in self.models
+        )
+
         self.check_input_parameters()
 
         if self.fusion_method == "head":
@@ -219,6 +223,9 @@ class ModelFuser(BaseWDModelComponent):
     def project(self, X: List[Tensor]) -> List[Tensor]:
         r"""Projects the output of the models to a common dimension."""
 
+        if self.all_output_dim_equal and self.projection_method is None:
+            return X
+
         output_dims = [model.output_dim for model in self.models]
 
         if self.projection_method == "min":
@@ -271,6 +278,8 @@ class ModelFuser(BaseWDModelComponent):
                     output_dim += min([model.output_dim for model in self.models])
                 elif self.projection_method == "max":
                     output_dim += max([model.output_dim for model in self.models])
+                elif self.all_output_dim_equal:
+                    output_dim += self.models[0].output_dim
                 else:
                     raise ValueError(
                         "projection_method must be one of ['min', 'max', 'mean']"
@@ -289,10 +298,15 @@ class ModelFuser(BaseWDModelComponent):
                     "or a list of those"
                 )
 
-            if any(x in self.fusion_method for x in ["min", "max", "mean"]):
+            if (
+                any(x in self.fusion_method for x in ["min", "max", "mean"])
+                and not self.all_output_dim_equal
+            ):
                 if self.projection_method is None:
                     raise ValueError(
-                        "If 'fusion_method' is not 'concatenate' or 'head', 'projection_method' must be provided"
+                        "If 'fusion_method' is not 'concatenate' or 'head', "
+                        " and the output dimensions of the models are not equal, "
+                        "'projection_method' must be provided"
                     )
                 elif self.projection_method not in ["min", "max", "mean"]:
                     raise ValueError(
@@ -319,13 +333,18 @@ class ModelFuser(BaseWDModelComponent):
                     "or a list of those"
                 )
 
-            if all(
-                any(x in fm for x in ["min", "max", "mean"])
-                for fm in self.fusion_method
+            if (
+                all(
+                    any(x in fm for x in ["min", "max", "mean"])
+                    for fm in self.fusion_method
+                )
+                and not self.all_output_dim_equal
             ):
                 if self.projection_method is None:
                     raise ValueError(
-                        "If 'fusion_method' is not 'concatenate' or 'head', 'projection_method' must be provided"
+                        "If 'fusion_method' is not 'concatenate' or 'head', "
+                        " and the output dimensions of the models are not equal, "
+                        "'projection_method' must be provided"
                     )
                 elif self.projection_method not in ["min", "max", "mean"]:
                     raise ValueError(
