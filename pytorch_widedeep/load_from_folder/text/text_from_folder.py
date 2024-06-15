@@ -1,5 +1,5 @@
 import os
-from typing import Union
+from typing import List, Union
 
 import numpy as np
 
@@ -31,30 +31,70 @@ class TextFromFolder:
     def __init__(
         self,
         preprocessor: Union[
-            TextPreprocessor, ChunkTextPreprocessor, HFPreprocessor, ChunkHFPreprocessor
+            TextPreprocessor,
+            ChunkTextPreprocessor,
+            HFPreprocessor,
+            ChunkHFPreprocessor,
+            List[TextPreprocessor],
+            List[ChunkTextPreprocessor],
+            List[HFPreprocessor],
+            List[ChunkHFPreprocessor],
         ],
     ):
-        assert (
-            preprocessor.is_fitted
-        ), "The preprocessor must be fitted before using this class"
+        if isinstance(preprocessor, list):
+            for p in preprocessor:
+                assert (
+                    p.is_fitted
+                ), "All preprocessors must be fitted before using this class"
+        else:
+            assert (
+                preprocessor.is_fitted
+            ), "The preprocessor must be fitted before using this class"
 
         self.preprocessor = preprocessor
 
-    def get_item(self, text: str) -> np.ndarray:
+    def get_item(
+        self, text: Union[str, List[str]]
+    ) -> Union[np.ndarray, List[np.ndarray]]:
+        if isinstance(self.preprocessor, list):
+            assert isinstance(text, list)
+            processed_sample: Union[np.ndarray, List[np.ndarray]] = [
+                self._preprocess_one_sample(t, self.preprocessor[i])
+                for i, t in enumerate(text)
+            ]
+        else:
+            assert isinstance(text, str)
+            processed_sample = self._preprocess_one_sample(text, self.preprocessor)
+
+        return processed_sample
+
+    def _preprocess_one_sample(
+        self,
+        text: str,
+        preprocessor: Union[
+            TextPreprocessor,
+            ChunkTextPreprocessor,
+            HFPreprocessor,
+            ChunkHFPreprocessor,
+        ],
+    ) -> np.ndarray:
         if (
-            isinstance(self.preprocessor, ChunkTextPreprocessor)
-            and self.preprocessor.root_dir is not None
+            isinstance(preprocessor, ChunkTextPreprocessor)
+            and preprocessor.root_dir is not None
         ):
-            path = os.path.join(self.preprocessor.root_dir, text)
+            path = os.path.join(preprocessor.root_dir, text)
 
             with open(path, "r") as f:
                 sample = f.read().replace("\n", "")
         else:
             sample = text
 
-        processed_sample = self.preprocessor.transform_sample(sample)
+        processed_sample = preprocessor.transform_sample(sample)
 
         return processed_sample
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.preprocessor.__class__.__name__})"
+        if isinstance(self.preprocessor, list):
+            return f"{self.__class__.__name__}({[p.__class__.__name__ for p in self.preprocessor]})"
+        else:
+            return f"{self.__class__.__name__}({self.preprocessor.__class__.__name__})"

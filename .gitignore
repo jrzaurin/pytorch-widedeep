@@ -18,6 +18,7 @@ Untitled*.ipynb
 # data related dirs
 tmp_data/
 tmp_dir/
+fake_data/
 weights/
 pretrained_weights/
 model_weights/

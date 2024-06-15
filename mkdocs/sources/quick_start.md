@@ -101,5 +101,5 @@ model_new.load_state_dict(torch.load("model_weights/wd_model.pt"))
 trainer_new = Trainer(model_new, objective="binary")
 
 # 3. Either start the fit or directly predict
-preds = trainer_new.predict(X_wide=X_wide, X_tab=X_tab)
+preds = trainer_new.predict(X_wide=X_wide, X_tab=X_tab, batch_size=32)
 ```

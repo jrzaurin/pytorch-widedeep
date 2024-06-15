@@ -85,21 +85,31 @@ class ImageFromFolder:
 
     def __init__(
         self,
-        directory: Optional[str] = None,
-        preprocessor: Optional[ImagePreprocessor] = None,
+        directory: Optional[Union[str, List[str]]] = None,
+        preprocessor: Optional[
+            Union[ImagePreprocessor, List[ImagePreprocessor]]
+        ] = None,
         loader: Callable[[str], Any] = default_loader,
         extensions: Optional[Tuple[str, ...]] = None,
         transforms: Optional[Any] = None,
     ) -> None:
         assert (
             directory is not None or preprocessor is not None
-        ), "Either a directory or an instance of ImagePreprocessor must be provided"
+        ), "Either a directory or an instance of ImagePreprocessor(s) must be provided"
 
         if directory is not None and preprocessor is not None:  # pragma: no cover
-            assert directory == preprocessor.img_path, (
+            error_msg = (
                 "If both 'directory' and 'preprocessor' are provided, the 'img_path' "
                 "attribute of the 'preprocessor' must be the same as the 'directory'"
             )
+            if isinstance(directory, list):
+                assert isinstance(preprocessor, list)
+                assert len(directory) == len(preprocessor)
+                for d, p in zip(directory, preprocessor):
+                    assert d == p.img_path, error_msg
+            else:
+                assert isinstance(preprocessor, ImagePreprocessor)
+                assert directory == preprocessor.img_path, error_msg
 
         if directory is not None:
             self.directory = directory
@@ -107,7 +117,10 @@ class ImageFromFolder:
             assert (
                 preprocessor is not None
             ), "Either a directory or an instance of ImagePreprocessor must be provided"
-            self.directory = preprocessor.img_path
+            if isinstance(preprocessor, list):
+                self.directory = [p.img_path for p in preprocessor]
+            else:
+                self.directory = preprocessor.img_path
 
         self.preprocessor = preprocessor
         self.loader = loader
@@ -122,10 +135,45 @@ class ImageFromFolder:
 
             self.transpose = True
 
-    def get_item(self, fname: str) -> np.ndarray:
+    def get_item(
+        self, fname: Union[str, List[str]]
+    ) -> Union[np.ndarray, List[np.ndarray]]:
+        if isinstance(fname, list):
+            if not isinstance(self.directory, list):
+                _directory = [self.directory] * len(fname)
+            else:
+                _directory = self.directory
+            if self.preprocessor is not None:
+                assert isinstance(self.preprocessor, list)
+                processed_sample: Union[np.ndarray, List[np.ndarray]] = [
+                    self._preprocess_one_sample(f, d, p)
+                    for f, d, p in zip(fname, _directory, self.preprocessor)
+                ]
+            else:
+                processed_sample = [
+                    self._preprocess_one_sample(f, d) for f, d in zip(fname, _directory)
+                ]
+        else:
+            assert isinstance(self.directory, str)
+            if self.preprocessor is not None:
+                assert isinstance(self.preprocessor, ImagePreprocessor)
+                processed_sample = self._preprocess_one_sample(
+                    fname, self.directory, self.preprocessor
+                )
+            else:
+                processed_sample = self._preprocess_one_sample(fname, self.directory)
+
+        return processed_sample
+
+    def _preprocess_one_sample(
+        self,
+        fname: str,
+        directory: str,
+        preprocessor: Optional[ImagePreprocessor] = None,
+    ) -> np.ndarray:
         assert has_file_allowed_extension(fname, self.extensions)
 
-        path = os.path.join(self.directory, fname)
+        path = os.path.join(directory, fname)
         sample = self.loader(path)
 
         assert isinstance(sample, (Image.Image, np.ndarray)), (  # pragma: no cover
@@ -133,13 +181,11 @@ class ImageFromFolder:
             f"got {type(sample)} instead"
         )
 
-        if self.preprocessor is not None:
+        if preprocessor is not None:
             if not isinstance(sample, np.ndarray):
-                processed_sample = self.preprocessor.transform_sample(
-                    np.asarray(sample)
-                )
+                processed_sample = preprocessor.transform_sample(np.asarray(sample))
             else:
-                processed_sample = self.preprocessor.transform_sample(sample)
+                processed_sample = preprocessor.transform_sample(sample)
         else:
             processed_sample = sample
 
@@ -147,57 +193,53 @@ class ImageFromFolder:
 
         return prepared_sample
 
-    def _prepare_sample(
+    def _prepare_sample(  # noqa: C901
         self, processed_sample: Union[np.ndarray, Image.Image]
     ) -> np.ndarray:
         # if an image dataset is used, make sure is in the right format to
         # be ingested by the conv layers
 
         if isinstance(processed_sample, Image.Image):
-            if not self.transforms:
-                raise UserWarning(  # pragma: no cover
-                    "The images are in PIL Image format, and not 'transforms' are passed. "
-                    "This loader will simply return the array representation of the PIL Image. "
+            processed_sample = np.asarray(processed_sample)
+
+        # if int must be uint8
+        if "int" in str(processed_sample.dtype) and "uint8" != str(
+            processed_sample.dtype
+        ):
+            processed_sample = processed_sample.astype("uint8")
+
+        # if float must be float32
+        if "float" in str(processed_sample.dtype) and "float32" != str(
+            processed_sample.dtype
+        ):
+            processed_sample = processed_sample.astype("float32")
+
+        # if there are no transforms, or these do not include ToTensor()
+        # (weird or unexpected case, not sure is even possible) then we need
+        # to  replicate what ToTensor() does -> transpose axis and normalize if
+        # necessary
+        if not self.transforms or "ToTensor" not in self.transforms_names:
+            if processed_sample.ndim == 2:
+                processed_sample = processed_sample[:, :, None]
+
+            processed_sample = processed_sample.transpose(2, 0, 1)
+
+            if "int" in str(processed_sample.dtype):
+                processed_sample = (processed_sample / processed_sample.max()).astype(
+                    "float32"
                 )
-                processed_sample = np.asarray(processed_sample)
-            else:
-                processed_sample = self.transforms(processed_sample)
+        elif "ToTensor" in self.transforms_names:
+            # if ToTensor() is included, simply apply transforms
+            assert self.transforms_names[0] == "ToTensor", (
+                "If ToTensor() is included in the transforms, it must be the "
+                "first transform in the list"
+            )
+            processed_sample = self.transforms(processed_sample)
         else:
-            # if int must be uint8
-            if "int" in str(processed_sample.dtype) and "uint8" != str(
-                processed_sample.dtype
-            ):
-                processed_sample = processed_sample.astype("uint8")
-            # if float must be float32
-            if "float" in str(processed_sample.dtype) and "float32" != str(
-                processed_sample.dtype
-            ):
-                processed_sample = processed_sample.astype("float32")
+            # else apply transforms on the result of calling torch.tensor on
+            # processed_sample after all the previous manipulation
+            processed_sample = self.transforms(torch.tensor(processed_sample))
 
-            if not self.transforms or "ToTensor" not in self.transforms_names:
-                # if there are no transforms, or these do not include ToTensor()
-                # (weird or unexpected case, not sure is even possible) then we need
-                # to  replicate what ToTensor() does -> transpose axis and normalize if
-                # necessary
-                if isinstance(processed_sample, Image.Image):
-                    processed_sample = np.asarray(processed_sample)
-
-                if processed_sample.ndim == 2:
-                    processed_sample = processed_sample[:, :, None]
-
-                processed_sample = processed_sample.transpose(2, 0, 1)
-
-                if "int" in str(processed_sample.dtype):
-                    processed_sample = (
-                        processed_sample / processed_sample.max()
-                    ).astype("float32")
-            elif "ToTensor" in self.transforms_names:
-                # if ToTensor() is included, simply apply transforms
-                processed_sample = self.transforms(processed_sample)
-            else:
-                # else apply transforms on the result of calling torch.tensor on
-                # processed_sample after all the previous manipulation
-                processed_sample = self.transforms(torch.tensor(processed_sample))
         return processed_sample
 
     def __repr__(self) -> str:
@@ -215,4 +257,4 @@ class ImageFromFolder:
         if self.transforms is not None:
             list_of_params.append(f"transforms={self.transforms_names}")
         all_params = ", ".join(list_of_params)
-        return f"TabFromFolder({all_params.format(**self.__dict__)})"
+        return f"ImageFromFolder({all_params.format(**self.__dict__)})"

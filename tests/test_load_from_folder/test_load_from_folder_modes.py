@@ -136,8 +136,8 @@ def test_image_from_folder_with_transforms():
 
     img_transforms = transforms.Compose(
         [
-            transforms.CenterCrop(10),
             transforms.ToTensor(),
+            transforms.CenterCrop(10),
         ]
     )
     img_from_folder = ImageFromFolder(directory=img_folder, transforms=img_transforms)

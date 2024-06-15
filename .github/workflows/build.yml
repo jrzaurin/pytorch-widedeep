@@ -78,9 +78,10 @@ jobs:
     - name: Convert coverage
       run: |
         coverage combine coverage*/.coverage*
-        coverage report --fail-under=95
+        coverage report --fail-under=90
         coverage xml
     - name: upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: true

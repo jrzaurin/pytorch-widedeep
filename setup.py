@@ -24,6 +24,7 @@ dev_status = {
     "1.3": "Development Status :: 5 - Production/Stable",  # v1.3 - new functionality
     "1.4": "Development Status :: 5 - Production/Stable",  # v1.3 - new functionality
     "1.5": "Development Status :: 5 - Production/Stable",  # v1.5 - new functionality
+    "1.6": "Development Status :: 5 - Production/Stable",  # v1.6 - new functionality
     "2.0": "Development Status :: 6 - Mature",  # v2.0 - new functionality?
 }
 

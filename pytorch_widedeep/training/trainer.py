@@ -83,6 +83,10 @@ class Trainer(BaseTrainer):
         - `quantile`
 
         - `tweedie`
+
+        - `multitarget`, aliases: `multi_target`
+
+        **NOTE**: For `multitarget` a custom loss function must be passed
     custom_loss_function: `nn.Module`. Optional, default = None
         It is possible to pass a custom loss function. See for example
         `pytorch_widedeep.losses.FocalLoss` for the required structure of the
@@ -90,13 +94,16 @@ class Trainer(BaseTrainer):
         Note that if `custom_loss_function` is not `None`, `objective` must
         be _'binary'_, _'multiclass'_ or _'regression'_, consistent with the
         loss function
-    optimizers: `Optimzer` or dict. Optional, default= None
+    optimizers: `Optimizer` or dict. Optional, default=None
         - An instance of Pytorch's `Optimizer` object
           (e.g. `torch.optim.Adam()`) or
         - a dictionary where there keys are the model components (i.e.
-          _'wide'_, _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_)  and
-          the values are the corresponding optimizers. If multiple optimizers are used
-          the  dictionary **MUST** contain an optimizer per model component.
+          _'wide'_, _'deeptabular'_, _'deeptext'_, _'deepimage'_
+          and/or _'deephead'_)  and the values are the corresponding
+          optimizers or list of optimizers if multiple models are used for
+          the given data mode (e.g. two text columns/models for the deeptext
+          component). If multiple optimizers are used the
+          dictionary **MUST** contain an optimizer per model component.
 
         if no optimizers are passed it will default to `Adam` for all
         model components
@@ -105,12 +112,16 @@ class Trainer(BaseTrainer):
           `torch.optim.lr_scheduler.StepLR(opt, step_size=5)`) or
         - a dictionary where there keys are the model componenst (i.e. _'wide'_,
           _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_) and the
-          values are the corresponding learning rate schedulers.
+          values are the corresponding learning rate schedulers or list of
+            learning rate schedulers if multiple models are used for the given
+            data mode (e.g. two text columns/models for the deeptext component).
     initializers: `Initializer` or dict. Optional, default=None
         - An instance of an `Initializer` object see `pytorch-widedeep.initializers` or
         - a dictionary where there keys are the model components (i.e. _'wide'_,
           _'deeptabular'_, _'deeptext'_, _'deepimage'_ and/or _'deephead'_)
-          and the values are the corresponding initializers.
+          and the values are the corresponding initializers or list of
+            initializers if multiple models are used for the given data mode (e.g.
+            two text columns/models for the deeptext component).
     transforms: List. Optional, default=None
         List with `torchvision.transforms` to be applied to the image
         component of the model (i.e. `deepimage`) See
@@ -228,9 +239,15 @@ class Trainer(BaseTrainer):
         model: WideDeep,
         objective: str,
         custom_loss_function: Optional[nn.Module] = None,
-        optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]] = None,
-        lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]] = None,
-        initializers: Optional[Union[Initializer, Dict[str, Initializer]]] = None,
+        optimizers: Optional[
+            Union[Optimizer, Dict[str, Union[Optimizer, List[Optimizer]]]]
+        ] = None,
+        lr_schedulers: Optional[
+            Union[LRScheduler, Dict[str, Union[LRScheduler, List[LRScheduler]]]]
+        ] = None,
+        initializers: Optional[
+            Union[Initializer, Dict[str, Union[Initializer, List[Initializer]]]]
+        ] = None,
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
@@ -258,10 +275,10 @@ class Trainer(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_train: Optional[Dict[str, np.ndarray]] = None,
-        X_val: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_train: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
+        X_val: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         val_split: Optional[float] = None,
         target: Optional[np.ndarray] = None,
         n_epochs: int = 1,
@@ -287,20 +304,28 @@ class Trainer(BaseTrainer):
         X_tab: np.ndarray, Optional. default=None
             Input for the `deeptabular` model component.
             See `pytorch_widedeep.preprocessing.TabPreprocessor`
-        X_text: np.ndarray, Optional. default=None
+        X_text: Union[np.ndarray, List[np.ndarray]], Optional. default=None
             Input for the `deeptext` model component.
-            See `pytorch_widedeep.preprocessing.TextPreprocessor`
+            See `pytorch_widedeep.preprocessing.TextPreprocessor`.
+            If multiple text columns/models are used, this should be a list of
+            numpy arrays
         X_img: np.ndarray, Optional. default=None
             Input for the `deepimage` model component.
-            See `pytorch_widedeep.preprocessing.ImagePreprocessor`
+            See `pytorch_widedeep.preprocessing.ImagePreprocessor`.
+            If multiple image columns/models are used, this should be a list of
+            numpy arrays
         X_train: Dict, Optional. default=None
             The training dataset can also be passed in a dictionary. Keys are
             _'X_wide'_, _'X_tab'_, _'X_text'_, _'X_img'_ and _'target'_. Values
-            are the corresponding matrices.
+            are the corresponding matrices. Note that of multiple text or image
+            columns/models are used, the corresponding values should be lists
+            of numpy arrays
         X_val: Dict, Optional. default=None
             The validation dataset can also be passed in a dictionary. Keys
             are _'X_wide'_, _'X_tab'_, _'X_text'_, _'X_img'_ and _'target'_.
-            Values are the corresponding matrices.
+            Values are the corresponding matrices. Note that of multiple text
+            or image columns/models are used, the corresponding values should
+            be lists of numpy arrays
         val_split: float, Optional. default=None
             train/val split fraction
         target: np.ndarray, Optional. default=None
@@ -354,7 +379,7 @@ class Trainer(BaseTrainer):
 
         Other Parameters
         ----------------
-        **kwargs : dict
+        **kwargs:
             Other keyword arguments are:
 
             - **DataLoader related parameters**:<br/>
@@ -394,23 +419,25 @@ class Trainer(BaseTrainer):
                    one of _'howard'_ or _'felbo'_
                 - `deeptabular_gradual` (`bool`):
                    boolean indicating if the `deeptabular` component will be fine tuned gradually
-                - `deeptabular_layers` (`List[nn.Module]`):
+                - `deeptabular_layers` (`Optional[Union[List[nn.Module], List[List[nn.Module]]]]`):
                    List of pytorch modules indicating the layers of the
                    `deeptabular` that will be fine tuned
-                - `deeptabular_max_lr` (`float`):
+                - `deeptabular_max_lr` (`Union[float, List[float]]`):
                    max lr for the `deeptabular` componet during fine tuning
                 - `deeptext_gradual` (`bool`):
                    same as `deeptabular_gradual` but for the `deeptext` component
-                - `deeptext_layers` (`List[nn.Module]`):
+                - `deeptext_layers` (`Optional[Union[List[nn.Module], List[List[nn.Module]]]]`):
+                   same as `deeptabular_gradual` but for the `deeptext` component.
+                   If there are multiple text columns/models, this should be a list of lists
+                - `deeptext_max_lr` (`Union[float, List[float]]`):
                    same as `deeptabular_gradual` but for the `deeptext` component
-                - `deeptext_max_lr` (`float`):
-                   same as `deeptabular_gradual` but for the `deeptext` component
+                   If there are multiple text columns/models, this should be a list of floats
                 - `deepimage_gradual` (`bool`):
-                   same as `deeptabular_gradual` but for the `deepimage` component
-                - `deepimage_layers` (`List[nn.Module]`):
-                   same as `deeptabular_gradual` but for the `deepimage` component
-                - `deepimage_max_lr` (`float`):
-                    same as `deeptabular_gradual` but for the `deepimage` component
+                   same as `deeptext_layers` but for the `deepimage` component
+                - `deepimage_layers` (`Optional[Union[List[nn.Module], List[List[nn.Module]]]]`):
+                   same as `deeptext_layers` but for the `deepimage` component
+                - `deepimage_max_lr` (`Union[float, List[float]]`):
+                    same as `deeptext_layers` but for the `deepimage` component
 
         Examples
         --------
@@ -437,6 +464,7 @@ class Trainer(BaseTrainer):
             X_val,
             val_split,
             target,
+            self.transforms,
             **lds_args,
         )
         if isinstance(custom_dataloader, type):
@@ -543,13 +571,13 @@ class Trainer(BaseTrainer):
         self._restore_best_weights()
         self.model.train()
 
-    def predict(  # type: ignore[return]
+    def predict(  # type: ignore[override, return]
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         batch_size: Optional[int] = None,
     ) -> np.ndarray:
         r"""Returns the predictions
@@ -603,9 +631,9 @@ class Trainer(BaseTrainer):
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         batch_size: Optional[int] = None,
         uncertainty_granularity=1000,
     ) -> np.ndarray:
@@ -696,13 +724,13 @@ class Trainer(BaseTrainer):
             preds = np.hstack((preds, np.vstack(np.argmax(preds, 1))))
             return preds
 
-    def predict_proba(  # type: ignore[return]
+    def predict_proba(  # type: ignore[override, return]  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         batch_size: Optional[int] = None,
     ) -> np.ndarray:
         r"""Returns the predicted probabilities for the test dataset for  binary
@@ -834,14 +862,18 @@ class Trainer(BaseTrainer):
         max_lr: float = 0.01,
         routine: Literal["howard", "felbo"] = "howard",
         deeptabular_gradual: bool = False,
-        deeptabular_layers: Optional[List[nn.Module]] = None,
-        deeptabular_max_lr: float = 0.01,
+        deeptabular_layers: Optional[
+            Union[List[nn.Module], List[List[nn.Module]]]
+        ] = None,
+        deeptabular_max_lr: Union[float, List[float]] = 0.01,
         deeptext_gradual: bool = False,
-        deeptext_layers: Optional[List[nn.Module]] = None,
-        deeptext_max_lr: float = 0.01,
+        deeptext_layers: Optional[Union[List[nn.Module], List[List[nn.Module]]]] = None,
+        deeptext_max_lr: Union[float, List[float]] = 0.01,
         deepimage_gradual: bool = False,
-        deepimage_layers: Optional[List[nn.Module]] = None,
-        deepimage_max_lr: float = 0.01,
+        deepimage_layers: Optional[
+            Union[List[nn.Module], List[List[nn.Module]]]
+        ] = None,
+        deepimage_max_lr: Union[float, List[float]] = 0.01,
     ):
         r"""
         Simple wrap-up to individually fine-tune model components
@@ -911,7 +943,7 @@ class Trainer(BaseTrainer):
 
     def _train_step(
         self,
-        data: Dict[str, Tensor],
+        data: Dict[str, Union[Tensor, List[Tensor]]],
         target: Tensor,
         batch_idx: int,
         epoch: int,
@@ -935,10 +967,16 @@ class Trainer(BaseTrainer):
             )
 
         self.model.train()
-        X = {k: v.to(self.device) for k, v in data.items()}
+
+        X: Dict[str, Union[Tensor, List[Tensor]]] = {}
+        for k, v in data.items():
+            if isinstance(v, list):
+                X[k] = [i.to(self.device) for i in v]
+            else:
+                X[k] = v.to(self.device)
         y = (
             target.view(-1, 1).float()
-            if self.method not in ["multiclass", "qregression"]
+            if self.method not in ["multiclass", "qregression", "multitarget"]
             else target
         )
         y = y.to(self.device)
@@ -969,10 +1007,20 @@ class Trainer(BaseTrainer):
 
         return score, avg_loss
 
-    def _eval_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
+    def _eval_step(
+        self,
+        data: Dict[str, Union[Tensor, List[Tensor]]],
+        target: Tensor,
+        batch_idx: int,
+    ):
         self.model.eval()
         with torch.no_grad():
-            X = {k: v.to(self.device) for k, v in data.items()}
+            X: Dict[str, Union[Tensor, List[Tensor]]] = {}
+            for k, v in data.items():
+                if isinstance(v, list):
+                    X[k] = [i.to(self.device) for i in v]
+                else:
+                    X[k] = v.to(self.device)
             y = (
                 target.view(-1, 1).float()
                 if self.method not in ["multiclass", "qregression"]
@@ -1014,6 +1062,8 @@ class Trainer(BaseTrainer):
         epoch: int,
     ) -> Tuple[Tensor, Tensor]:
         self.model.train()
+        # FDS is only supported for the deeptabular component, X will never
+        # be Dict[str, List[Tensor]]
         X = {k: v.to(self.device) for k, v in data.items()}
         y = target.view(-1, 1).float().to(self.device)
         smoothed_features, _ = self.model(X, y, epoch)
@@ -1038,13 +1088,13 @@ class Trainer(BaseTrainer):
         self.model.fds_layer.update_last_epoch_stats(epoch)
         self.model.fds_layer.update_running_stats(features, y_pred, epoch)
 
-    def _predict(  # noqa: C901
+    def _predict(  # type: ignore[override, return]  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
-        X_text: Optional[np.ndarray] = None,
-        X_img: Optional[np.ndarray] = None,
-        X_test: Optional[Dict[str, np.ndarray]] = None,
+        X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+        X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         batch_size: Optional[int] = None,
         uncertainty_granularity=1000,
         uncertainty: bool = False,
@@ -1056,7 +1106,7 @@ class Trainer(BaseTrainer):
         if X_test is not None:
             test_set = WideDeepDataset(**X_test)  # type: ignore[arg-type]
         else:
-            load_dict = {}
+            load_dict: Dict[str, Union[np.ndarray, List[np.ndarray]]] = {}
             if X_wide is not None:
                 load_dict = {"X_wide": X_wide}
             if X_tab is not None:
@@ -1103,7 +1153,12 @@ class Trainer(BaseTrainer):
                     ) as tt:
                         for _, data in zip(tt, test_loader):
                             tt.set_description("predict")
-                            X = {k: v.to(self.device) for k, v in data.items()}
+                            X: Dict[str, Union[Tensor, List[Tensor]]] = {}
+                            for k, v in data.items():
+                                if isinstance(v, list):
+                                    X[k] = [i.to(self.device) for i in v]
+                                else:
+                                    X[k] = v.to(self.device)
                             preds = (
                                 self.model(X)
                                 if not self.model.is_tabnet

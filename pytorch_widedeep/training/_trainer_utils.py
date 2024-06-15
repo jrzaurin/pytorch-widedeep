@@ -21,7 +21,15 @@ from pytorch_widedeep.losses import (
     FocalR_MSELoss,
     FocalR_RMSELoss,
 )
-from pytorch_widedeep.wdtypes import Dict, List, Literal, Optional, Transforms
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Union,
+    Compose,
+    Literal,
+    Optional,
+    Transforms,
+)
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._loss_and_obj_aliases import (
     _LossAliases,
@@ -108,13 +116,13 @@ def wd_train_val_split(  # noqa: C901
     method: Literal["regression", "binary", "multiclass", "qregression"],
     X_wide: Optional[np.ndarray] = None,
     X_tab: Optional[np.ndarray] = None,
-    X_text: Optional[np.ndarray] = None,
-    X_img: Optional[np.ndarray] = None,
-    X_train: Optional[Dict[str, np.ndarray]] = None,
-    X_val: Optional[Dict[str, np.ndarray]] = None,
+    X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+    X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
+    X_train: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
+    X_val: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
     val_split: Optional[float] = None,
     target: Optional[np.ndarray] = None,
-    transforms: Optional[List[Transforms]] = None,
+    transforms: Optional[Union[Transforms, Compose]] = None,
     **lds_args,
 ):
     r"""
@@ -155,9 +163,10 @@ def wd_train_val_split(  # noqa: C901
     """
 
     if X_val is not None:
-        assert (
-            X_train is not None
-        ), "if the validation set is passed as a dictionary, the training set must also be a dictionary"
+        assert X_train is not None and target is None, (
+            "if the validation set is passed as a dictionary, the training set must also be a dictionary,"
+            " that includes the target"
+        )
         train_set = WideDeepDataset(**X_train, transforms=transforms, **lds_args)  # type: ignore
         eval_set = WideDeepDataset(**X_val, transforms=transforms, is_training=False)  # type: ignore
     elif val_split is not None:
@@ -189,15 +198,36 @@ def wd_train_val_split(  # noqa: C901
                 X_train["X_tab"][idx_val],
             )
         if "X_text" in X_train.keys():
-            X_tr["X_text"], X_val["X_text"] = (
-                X_train["X_text"][idx_tr],
-                X_train["X_text"][idx_val],
-            )
+            if isinstance(X_train["X_text"], list):
+                X_tr["X_text"], X_val["X_text"] = (
+                    [
+                        X_train["X_text"][i][idx_tr]
+                        for i in range(len(X_train["X_text"]))
+                    ],
+                    [
+                        X_train["X_text"][i][idx_val]
+                        for i in range(len(X_train["X_text"]))
+                    ],
+                )
+            else:
+                X_tr["X_text"], X_val["X_text"] = (
+                    X_train["X_text"][idx_tr],
+                    X_train["X_text"][idx_val],
+                )
         if "X_img" in X_train.keys():
-            X_tr["X_img"], X_val["X_img"] = (
-                X_train["X_img"][idx_tr],
-                X_train["X_img"][idx_val],
-            )
+            if isinstance(X_train["X_img"], list):
+                X_tr["X_img"], X_val["X_img"] = (
+                    [X_train["X_img"][i][idx_tr] for i in range(len(X_train["X_img"]))],
+                    [
+                        X_train["X_img"][i][idx_val]
+                        for i in range(len(X_train["X_img"]))
+                    ],
+                )
+            else:
+                X_tr["X_img"], X_val["X_img"] = (
+                    X_train["X_img"][idx_tr],
+                    X_train["X_img"][idx_val],
+                )
         train_set = WideDeepDataset(**X_tr, transforms=transforms, **lds_args)  # type: ignore
         eval_set = WideDeepDataset(**X_val, transforms=transforms, is_training=False)  # type: ignore
     else:
@@ -213,11 +243,11 @@ def wd_train_val_split(  # noqa: C901
 def _build_train_dict(
     X_wide: Optional[np.ndarray],
     X_tab: Optional[np.ndarray],
-    X_text: Optional[np.ndarray],
-    X_img: Optional[np.ndarray],
+    X_text: Optional[Union[np.ndarray, List[np.ndarray]]],
+    X_img: Optional[Union[np.ndarray, List[np.ndarray]]],
     target: np.ndarray,
-) -> Dict[str, np.ndarray]:
-    X_train = {"target": target}
+) -> Dict[str, Union[np.ndarray, List[np.ndarray]]]:
+    X_train: Dict[str, Union[np.ndarray, List[np.ndarray]]] = {"target": target}
     if X_wide is not None:
         X_train["X_wide"] = X_wide
     if X_tab is not None:

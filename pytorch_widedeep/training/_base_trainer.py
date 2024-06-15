@@ -49,9 +49,15 @@ class BaseTrainer(ABC):
         model: WideDeep,
         objective: str,
         custom_loss_function: Optional[Module],
-        optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]],
-        lr_schedulers: Optional[Union[LRScheduler, Dict[str, LRScheduler]]],
-        initializers: Optional[Union[Initializer, Dict[str, Initializer]]],
+        optimizers: Optional[
+            Union[Optimizer, Dict[str, Union[Optimizer, List[Optimizer]]]]
+        ],
+        lr_schedulers: Optional[
+            Union[LRScheduler, Dict[str, Union[LRScheduler, List[LRScheduler]]]]
+        ],
+        initializers: Optional[
+            Union[Initializer, Dict[str, Union[Initializer, List[Initializer]]]]
+        ],
         transforms: Optional[List[Transforms]],
         callbacks: Optional[List[Callback]],
         metrics: Optional[Union[List[Metric], List[TorchMetric]]],
@@ -77,7 +83,8 @@ class BaseTrainer(ABC):
         self.objective = objective
         self.method: str = _ObjectiveToMethod.get(objective)  # type: ignore
 
-        self._initialize(initializers)
+        if initializers is not None:
+            self._initialize(initializers)
         self.loss_fn = self._set_loss_fn(objective, custom_loss_function, **kwargs)
         self.optimizer = self._set_optimizer(optimizers)
         self.lr_scheduler = self._set_lr_scheduler(lr_schedulers, **kwargs)
@@ -152,18 +159,20 @@ class BaseTrainer(ABC):
                             )
 
     def _initialize(self, initializers):
-        if initializers is not None:
-            if isinstance(initializers, Dict):
-                self.initializer = MultipleInitializer(
-                    initializers, verbose=self.verbose > 0
-                )
-                self.initializer.apply(self.model)
-            elif isinstance(initializers, type):
-                self.initializer = initializers()
-                self.initializer(self.model)
-            elif isinstance(initializers, Initializer):
-                self.initializer = initializers
-                self.initializer(self.model)
+        if isinstance(initializers, Dict):
+            self.initializer = MultipleInitializer(
+                initializers, verbose=self.verbose > 0
+            )
+            self.initializer.apply(self.model)
+        elif isinstance(initializers, type):
+            self.initializer = initializers()
+            self.initializer(self.model)
+        elif isinstance(initializers, Initializer):
+            self.initializer = initializers
+            self.initializer(self.model)
+        else:
+            # aesthetics
+            pass
 
     def _set_loss_fn(self, objective, custom_loss_function, **kwargs):
         class_weight = (
@@ -187,7 +196,10 @@ class BaseTrainer(ABC):
             return alias_to_loss(objective)
 
     def _set_optimizer(
-        self, optimizers: Optional[Union[Optimizer, Dict[str, Optimizer]]]
+        self,
+        optimizers: Optional[
+            Union[Optimizer, Dict[str, Union[Optimizer, List[Optimizer]]]]
+        ],
     ):
         if optimizers is not None:
             if isinstance(optimizers, Optimizer):
@@ -202,6 +214,8 @@ class BaseTrainer(ABC):
                     if "enf_pos" in mod_names:
                         mod_names.remove("enf_pos")
                     mod_names.remove("fds_layer")
+                    # The Tabular optimizer is always going to be just one
+                    assert isinstance(optimizers["deeptabular"], Optimizer)
                     optimizers["deeptabular"].add_param_group(
                         {"params": self.model.fds_layer.pred_layer.parameters()}
                     )
@@ -212,7 +226,13 @@ class BaseTrainer(ABC):
             optimizer = torch.optim.Adam(self.model.parameters())  # type: ignore
         return optimizer
 
-    def _set_lr_scheduler(self, lr_schedulers, **kwargs):
+    def _set_lr_scheduler(
+        self,
+        lr_schedulers: Optional[
+            Union[LRScheduler, Dict[str, Union[LRScheduler, List[LRScheduler]]]]
+        ] = None,
+        **kwargs,
+    ) -> Optional[Union[LRScheduler, MultipleLRScheduler]]:
         # ReduceLROnPlateau is special
         reducelronplateau_criterion = kwargs.get("reducelronplateau_criterion", None)
 
@@ -224,14 +244,18 @@ class BaseTrainer(ABC):
             if isinstance(lr_schedulers, LRScheduler) or isinstance(
                 lr_schedulers, ReduceLROnPlateau
             ):
-                lr_scheduler = lr_schedulers
+                lr_scheduler: Optional[Union[LRScheduler, MultipleLRScheduler]] = (
+                    lr_schedulers
+                )
                 cyclic_lr = "cycl" in lr_scheduler.__class__.__name__.lower()
             else:
                 lr_scheduler = MultipleLRScheduler(lr_schedulers)
-                scheduler_names = [
-                    sc.__class__.__name__.lower()
-                    for _, sc in lr_scheduler._schedulers.items()
-                ]
+                scheduler_names: List[str] = []
+                for _, sc in lr_scheduler._schedulers.items():
+                    if isinstance(sc, list):
+                        scheduler_names += [s.__class__.__name__.lower() for s in sc]
+                    else:
+                        scheduler_names.append(sc.__class__.__name__.lower())
                 cyclic_lr = any(["cycl" in sn for sn in scheduler_names])
         else:
             lr_scheduler, cyclic_lr = None, False
@@ -307,6 +331,15 @@ class BaseTrainer(ABC):
                 "Feature Distribution Smooting can be used only for regression"
             )
 
+        if objective == "multitarget":
+            assert custom_loss_function is not None, (
+                "When 'objective' is 'multitarget', 'custom_loss_function' must be "
+                "provided. This library provides three losses for multitarget problems: "
+                "'MultiTargetRegressionLoss', 'MultiTargetClassificationLoss' and "
+                "'MutilTargetRegressionAndClassificationLoss'. Any other loss function "
+                "must be provided by the user. Please, read the documentation for more details"
+            )
+
         if _ObjectiveToMethod.get(objective) == "multiclass" and model.pred_dim == 1:
             raise ValueError(
                 "This is a multiclass classification problem but the size of the output layer"
@@ -326,10 +359,11 @@ class BaseTrainer(ABC):
             "binary",
             "multiclass",
             "regression",
+            "multitarget",
         ]:
             raise ValueError(
                 "If 'custom_loss_function' is not None, 'objective' must be 'binary' "
-                "'multiclass' or 'regression', consistent with the loss function"
+                "'multiclass', 'regression' or 'multitarget' consistent with the loss function"
             )
 
     @staticmethod

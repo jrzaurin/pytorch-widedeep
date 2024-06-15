@@ -2,9 +2,16 @@ import warnings
 
 import numpy as np
 import torch
-from torch import nn
+from torch import nn, lstm
 
-from pytorch_widedeep.wdtypes import List, Tuple, Union, Tensor, Optional
+from pytorch_widedeep.wdtypes import (
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models._base_wd_model_component import (
     BaseWDModelComponent,
@@ -91,10 +98,10 @@ class BasicRNN(BaseWDModelComponent):
         embed_dim: Optional[int] = None,
         embed_matrix: Optional[np.ndarray] = None,
         embed_trainable: bool = True,
-        rnn_type: str = "lstm",
+        rnn_type: Literal["lstm", "gru"] = "lstm",
         hidden_dim: int = 64,
         n_layers: int = 3,
-        rnn_dropout: float = 0.1,
+        rnn_dropout: float = 0.0,
         bidirectional: bool = False,
         use_hidden_state: bool = True,
         padding_idx: int = 1,
@@ -155,6 +162,7 @@ class BasicRNN(BaseWDModelComponent):
         if embed_matrix is not None:
             self.word_embed, self.embed_dim = self._set_embeddings(embed_matrix)
         else:
+            assert self.embed_dim is not None
             self.word_embed = nn.Embedding(
                 self.vocab_size, self.embed_dim, padding_idx=self.padding_idx
             )
@@ -172,6 +180,10 @@ class BasicRNN(BaseWDModelComponent):
             self.rnn: Union[nn.LSTM, nn.GRU] = nn.LSTM(**rnn_params)
         elif self.rnn_type.lower() == "gru":
             self.rnn = nn.GRU(**rnn_params)
+        else:
+            raise ValueError(
+                f"'rnn_type' must be 'lstm' or 'gru', got {self.rnn_type} instead"
+            )
 
         self.rnn_output_dim = hidden_dim * 2 if bidirectional else hidden_dim
 
@@ -197,6 +209,10 @@ class BasicRNN(BaseWDModelComponent):
             o, (h, c) = self.rnn(embed)
         elif self.rnn_type.lower() == "gru":
             o, h = self.rnn(embed)
+        else:
+            raise ValueError(
+                f"'rnn_type' must be 'lstm' or 'gru', got {self.rnn_type} instead"
+            )
 
         processed_outputs = self._process_rnn_outputs(o, h)
 
@@ -235,6 +251,7 @@ class BasicRNN(BaseWDModelComponent):
                 )
             embed_dim = embed_matrix.shape[1]
         else:
+            assert self.embed_dim is not None
             word_embed = nn.Embedding(
                 self.vocab_size, self.embed_dim, padding_idx=self.padding_idx
             )

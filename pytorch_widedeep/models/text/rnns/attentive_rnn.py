@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from pytorch_widedeep.wdtypes import List, Tensor, Optional
+from pytorch_widedeep.wdtypes import List, Tensor, Literal, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.text.rnns.basic_rnn import BasicRNN
 from pytorch_widedeep.models.tabular.mlp._attention_layers import (
@@ -96,7 +96,7 @@ class AttentiveRNN(BasicRNN):
         embed_dim: Optional[int] = None,
         embed_matrix: Optional[np.ndarray] = None,
         embed_trainable: bool = True,
-        rnn_type: str = "lstm",
+        rnn_type: Literal["lstm", "gru"] = "lstm",
         hidden_dim: int = 64,
         n_layers: int = 3,
         rnn_dropout: float = 0.1,

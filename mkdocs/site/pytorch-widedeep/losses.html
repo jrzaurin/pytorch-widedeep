@@ -958,6 +958,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#pytorch_widedeep.losses_multitarget.MultiTargetRegressionLoss" class="md-nav__link">
+    <span class="md-ellipsis">
+      MultiTargetRegressionLoss
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pytorch_widedeep.losses_multitarget.MultiTargetClassificationLoss" class="md-nav__link">
+    <span class="md-ellipsis">
+      MultiTargetClassificationLoss
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pytorch_widedeep.losses_multitarget.MutilTargetRegressionAndClassificationLoss" class="md-nav__link">
+    <span class="md-ellipsis">
+      MutilTargetRegressionAndClassificationLoss
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -4638,10 +4665,32 @@ and Contrastive Pre-Training</a> and
 references therein</p>
 <p>Partially inspired by the code in this <a href="https://github.com/RElbers/info-nce-pytorch">repo</a></p>
 
-<details class="parameters:" open>
-  <summary></summary>
-  
-</details>
+
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b><code>temperature</code></b>
+            (<code>float</code>, default:
+                <code>0.1</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>The logits are divided by the temperature before computing the loss value</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>reduction</code></b>
+            (<code>str</code>, default:
+                <code>&#39;mean&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Loss reduction method</p>
+        </div>
+      </li>
+  </ul>
+
                 <details class="quote">
                   <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
                   <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">822</span>
@@ -4818,10 +4867,44 @@ Supervised Pre-training routine available in this library</p>
 and Contrastive Pre-Training</a> and
 references therein</p>
 
-<details class="parameters:" open>
-  <summary></summary>
-  
-</details>
+
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b><code>lambda_cat</code></b>
+            (<code>float</code>, default:
+                <code>1.0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Multiplicative factor that will be applied to loss associated to the
+categorical features</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>lambda_cont</code></b>
+            (<code>float</code>, default:
+                <code>1.0</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Multiplicative factor that will be applied to loss associated to the
+continuous features</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>reduction</code></b>
+            (<code>str</code>, default:
+                <code>&#39;mean&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Loss reduction method</p>
+        </div>
+      </li>
+  </ul>
+
                 <details class="quote">
                   <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
                   <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">886</span>
@@ -5036,10 +5119,22 @@ categorical feature</p>
 adaptation of that in the original paper <a href="https://arxiv.org/abs/1908.07442">TabNet: Attentive
 Interpretable Tabular Learning</a>.</p>
 
-<details class="parameters:" open>
-  <summary></summary>
-  
-</details>
+
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b><code>eps</code></b>
+            (<code>float</code>, default:
+                <code>1e-09</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Simply a small number to avoid dividing by zero</p>
+        </div>
+      </li>
+  </ul>
+
                 <details class="quote">
                   <summary>Source code in <code>pytorch_widedeep/losses.py</code></summary>
                   <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">993</span>
@@ -5217,6 +5312,671 @@ loss, is based on those features.</p>
 
 </div>
 
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="pytorch_widedeep.losses_multitarget.MultiTargetRegressionLoss" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">MultiTargetRegressionLoss</span>
+
+
+<a href="#pytorch_widedeep.losses_multitarget.MultiTargetRegressionLoss" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">MultiTargetRegressionLoss</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents first">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
+
+  
+      <p>This class is a wrapper around the Pytorch MSELoss. It allows for multi-target
+regression problems. The user can provide a list of weights to apply to each
+target. The loss can be either the sum or the mean of the individual losses</p>
+
+
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b><code>weights</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[float]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List of weights to apply to the loss associated to each target. The
+length of the list must match the number of targets.
+Alias: 'target_weights'</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>reduction</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[mean, sum]</code>, default:
+                <code>&#39;mean&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Specifies the reduction to apply to the loss associated to each
+target: 'mean' | 'sum'. Note that this is NOT the same as the
+reduction in the MSELoss. This reduction is applied after the loss
+for each target has been computed. Alias: 'target_reduction'</p>
+        </div>
+      </li>
+  </ul>
+
+
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses_multitarget</span> <span class="kn">import</span> <span class="n">MultiTargetRegressionLoss</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">MultiTargetRegressionLoss</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+</code></pre></div>
+
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses_multitarget.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;reduction&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;target_reduction&quot;</span><span class="p">])</span>
+<span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;weights&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;target_weights&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">reduction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">MultiTargetRegressionLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;reduction must be either &#39;mean&#39; or &#39;sum&#39;&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+                </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="pytorch_widedeep.losses_multitarget.MultiTargetClassificationLoss" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">MultiTargetClassificationLoss</span>
+
+
+<a href="#pytorch_widedeep.losses_multitarget.MultiTargetClassificationLoss" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">MultiTargetClassificationLoss</span><span class="p">(</span>
+    <span class="n">binary_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">multiclass_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="n">binary_trick</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents first">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
+
+  
+      <p>This class is a wrapper around the Pytorch binary_cross_entropy_with_logits and
+cross_entropy losses. It allows for multi-target classification problems. The
+user can provide a list of weights to apply to each target. The loss can be
+either the sum or the mean of the individual losses</p>
+
+
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b><code>binary_config</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[int, <span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[int, float]]]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List of integers with the index of the target for binary
+classification or tuples with two elements: the index of the targets
+or binary classification and the positive weight for binary
+classification</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>multiclass_config</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[int, int], <span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[int, int, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List of tuples with two or three elements: the index of the target and the
+number of classes for multiclass classification, or a tuple with the index of
+the target, the number of classes and a list of weights to apply to each class
+(i.e. the 'weight' parameter in the cross_entropy loss)</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>weights</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[float]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List of weights to apply to the loss associated to each target. The
+length of the list must match the number of targets.
+Alias: 'target_weights'</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>reduction</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[mean, sum]</code>, default:
+                <code>&#39;mean&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Specifies the reduction to apply to the loss associated to each
+target: 'mean' | 'sum'. Note that this is NOT the same as the
+reduction in the cross_entropy loss or the
+binary_cross_entropy_with_logits. This reduction is applied after the
+loss for each target has been computed. Alias: 'target_reduction'</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>binary_trick</code></b>
+            (<code>bool</code>, default:
+                <code>False</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>If True, each target will be considered independently and the loss
+will be computed as binary_cross_entropy_with_logits. This is a
+faster implementation. Note that the 'weights' parameter is not
+compatible with binary_trick=True. Also note that if
+binary_trick=True, the 'binary_config' must be a list of integers and
+the 'multiclass_config' must be a list of tuples with two integers:
+the index of the target and the number of classes. Finally, if
+binary_trick=True, the binary targets must be the first targets in
+the target tensor.</p>
+<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: When using the binary_trick, the binary targets are
+  considered as 2 classes. Therefore, the pred_dim parametere of the
+  WideDeep class should be adjusted accordingly (adding 2 to per
+  binary target). For example, in a problem with a binary target and
+  a 4 class multiclassification target, the pred_dim should be 6.</p>
+        </div>
+      </li>
+  </ul>
+
+
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses_multitarget</span> <span class="kn">import</span> <span class="n">MultiTargetClassificationLoss</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">input_binary_trick</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])],</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_1</span> <span class="o">=</span> <span class="n">MultiTargetClassificationLoss</span><span class="p">(</span><span class="n">binary_config</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">multiclass_config</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)],</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_1</span> <span class="o">=</span> <span class="n">loss_1</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_2</span> <span class="o">=</span> <span class="n">MultiTargetClassificationLoss</span><span class="p">(</span><span class="n">binary_config</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)],</span> <span class="n">multiclass_config</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">])],</span>
+<span class="gp">... </span><span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_2</span> <span class="o">=</span> <span class="n">loss_2</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss_3</span> <span class="o">=</span> <span class="n">MultiTargetClassificationLoss</span><span class="p">(</span><span class="n">binary_config</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">multiclass_config</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)],</span> <span class="n">binary_trick</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_3</span> <span class="o">=</span> <span class="n">loss_3</span><span class="p">(</span><span class="n">input_binary_trick</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+</code></pre></div>
+
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses_multitarget.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;reduction&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;target_reduction&quot;</span><span class="p">])</span>
+<span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;weights&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;target_weights&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">binary_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">multiclass_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]]</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">reduction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="n">binary_trick</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">MultiTargetClassificationLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">reduction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;reduction must be either &#39;mean&#39; or &#39;sum&#39;&quot;</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">binary_config</span> <span class="o">=</span> <span class="n">binary_config</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">multiclass_config</span> <span class="o">=</span> <span class="n">multiclass_config</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">binary_trick</span> <span class="o">=</span> <span class="n">binary_trick</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binary_config</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multiclass_config</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The number of weights must match the number of binary and multiclass targets&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary_trick</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_inputs_with_binary_trick</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_binary_config</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">binary_config</span>  <span class="c1"># type: ignore[assignment]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_multiclass_config</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass_config</span>  <span class="c1"># type: ignore[assignment]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binary_config_with_pos_weights</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_set_binary_config_without_binary_trick</span><span class="p">())</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binary_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiclass_config_with_weights</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_set_multiclass_config_without_binary_trick</span><span class="p">())</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+                </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="pytorch_widedeep.losses_multitarget.MutilTargetRegressionAndClassificationLoss" class="doc doc-heading">
+          <span class="doc doc-object-name doc-class-name">MutilTargetRegressionAndClassificationLoss</span>
+
+
+<a href="#pytorch_widedeep.losses_multitarget.MutilTargetRegressionAndClassificationLoss" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">MutilTargetRegressionAndClassificationLoss</span><span class="p">(</span>
+    <span class="n">regression_config</span><span class="o">=</span><span class="p">[],</span>
+    <span class="n">binary_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">multiclass_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="n">binary_trick</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+  <div class="doc doc-contents first">
+          <p class="doc doc-class-bases">
+            Bases: <code><span title="torch.Module">Module</span></code></p>
+
+  
+      <p>This class is a wrapper around the MultiTargetRegressionLoss and the
+MultiTargetClassificationLoss. It allows for multi-target regression and
+classification problems. The user can provide a list of weights to apply to
+each target. The loss can be either the sum or the mean of the individual losses</p>
+
+
+
+  <p>Parameters:</p>
+  <ul>
+      <li class="field-body">
+        <b><code>regression_config</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>, default:
+                <code>[]</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List of integers with the indices of the regression targets</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>binary_config</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[int, <span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[int, float]]]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List of integers with the index of the target for binary
+classification or tuples with two elements: the index of the targets
+or binary classification and the positive weight for binary
+classification</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>multiclass_config</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[int, int], <span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[int, int, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List of tuples with two or three elements: the index of the target and the
+number of classes for multiclass classification, or a tuple with the index of
+the target, the number of classes and a list of weights to apply to each class
+(i.e. the 'weight' parameter in the cross_entropy loss)</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>weights</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[float]]</code>, default:
+                <code>None</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>List of weights to apply to the loss associated to each target. The
+length of the list must match the number of targets.
+Alias: 'target_weights'</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>reduction</code></b>
+            (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[mean, sum]</code>, default:
+                <code>&#39;mean&#39;</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>Specifies the reduction to apply to the output: 'mean' | 'sum'. Note
+that this is NOT the same as the reduction in the cross_entropy loss,
+the binary_cross_entropy_with_logits or the MSELoss. This reduction
+is applied after each target has been computed. Alias: 'target_reduction'</p>
+        </div>
+      </li>
+      <li class="field-body">
+        <b><code>binary_trick</code></b>
+            (<code>bool</code>, default:
+                <code>False</code>
+)
+        –
+        <div class="doc-md-description">
+          <p>If True, each target will be considered independently and the loss
+will be computed as binary_cross_entropy_with_logits. This is a
+faster implementation. Note that the 'weights' parameter is not
+compatible with binary_trick=True. Also note that if
+binary_trick=True, the 'binary_config' must be a list of integers and
+the 'multiclass_config' must be a list of tuples with two integers:
+the index of the target and the number of classes. Finally, if
+binary_trick=True, the binary targets must be the first targets in
+the target tensor.</p>
+<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>: When using the binary_trick, the binary targets are
+  considered as 2 classes. Therefore, the pred_dim parametere of the
+  WideDeep class should be adjusted accordingly (adding 2 to per
+  binary target). For example, in a problem with a binary target and
+  a 4 class multiclassification target, the pred_dim should be 6.</p>
+        </div>
+      </li>
+  </ul>
+
+
+
+<p><strong>Examples:</strong></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.losses_multitarget</span> <span class="kn">import</span> <span class="n">MutilTargetRegressionAndClassificationLoss</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])],</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">MutilTargetRegressionAndClassificationLoss</span><span class="p">(</span><span class="n">regression_config</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">binary_config</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+<span class="gp">... </span><span class="n">multiclass_config</span><span class="o">=</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)],</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+</code></pre></div>
+
+                <details class="quote">
+                  <summary>Source code in <code>pytorch_widedeep/losses_multitarget.py</code></summary>
+                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;reduction&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;target_reduction&quot;</span><span class="p">])</span>
+<span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;weights&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;target_weights&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">regression_config</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+    <span class="n">binary_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">multiclass_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]]</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">weights</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">reduction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="n">binary_trick</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+
+    <span class="nb">super</span><span class="p">(</span><span class="n">MutilTargetRegressionAndClassificationLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">regression_config</span> <span class="o">=</span> <span class="n">regression_config</span>
+
+    <span class="k">assert</span> <span class="n">binary_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">multiclass_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
+        <span class="s2">&quot;Either binary_config or multiclass_config must be provided. &quot;</span>
+        <span class="s2">&quot;Otherwise, use the MultiTargetRegressionLoss&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">binary_trick</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_inputs_with_binary_trick</span><span class="p">(</span>
+            <span class="n">regression_config</span><span class="p">,</span> <span class="n">binary_config</span><span class="p">,</span> <span class="n">multiclass_config</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">regression_config</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">binary_config</span><span class="p">)</span> <span class="k">if</span> <span class="n">binary_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="o">+</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">multiclass_config</span><span class="p">)</span> <span class="k">if</span> <span class="n">multiclass_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The number of weights must match the number of regression, binary and multiclass targets&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_regression</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_weights_for_regression_targets</span><span class="p">(</span>
+            <span class="n">weights</span><span class="p">,</span> <span class="n">regression_config</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_binary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_weights_per_binary_targets</span><span class="p">(</span>
+            <span class="n">weights</span><span class="p">,</span> <span class="n">binary_config</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_multiclass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_weights_per_multiclass_targets</span><span class="p">(</span>
+            <span class="n">weights</span><span class="p">,</span> <span class="n">multiclass_config</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_regression</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_binary</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights_multiclass</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">multi_target_regression_loss</span> <span class="o">=</span> <span class="n">MultiTargetRegressionLoss</span><span class="p">(</span>
+        <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weights_regression</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span>
+    <span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">multi_target_classification_loss</span> <span class="o">=</span> <span class="n">MultiTargetClassificationLoss</span><span class="p">(</span>
+        <span class="n">binary_config</span><span class="o">=</span><span class="n">binary_config</span><span class="p">,</span>
+        <span class="n">multiclass_config</span><span class="o">=</span><span class="n">multiclass_config</span><span class="p">,</span>
+        <span class="n">weights</span><span class="o">=</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weights_binary</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_multiclass</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_binary</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_multiclass</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">weights_binary</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_binary</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights_multiclass</span>
+            <span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span><span class="p">,</span>
+        <span class="n">binary_trick</span><span class="o">=</span><span class="n">binary_trick</span><span class="p">,</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+                </details>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+  </div>
+
+
+</div>
+
 
 
 
@@ -5233,11 +5993,12 @@ loss, is based on those features.</p>
   <span class="md-source-file__fact">
     <span class="md-icon" title="Contributors">
       
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5.5A3.5 3.5 0 0 1 15.5 9a3.5 3.5 0 0 1-3.5 3.5A3.5 3.5 0 0 1 8.5 9 3.5 3.5 0 0 1 12 5.5M5 8c.56 0 1.08.15 1.53.42-.15 1.43.27 2.85 1.13 3.96C7.16 13.34 6.16 14 5 14a3 3 0 0 1-3-3 3 3 0 0 1 3-3m14 0a3 3 0 0 1 3 3 3 3 0 0 1-3 3c-1.16 0-2.16-.66-2.66-1.62a5.536 5.536 0 0 0 1.13-3.96c.45-.27.97-.42 1.53-.42M5.5 18.25c0-2.07 2.91-3.75 6.5-3.75s6.5 1.68 6.5 3.75V20h-13v-1.75M0 20v-1.5c0-1.39 1.89-2.56 4.45-2.9-.59.68-.95 1.62-.95 2.65V20H0m24 0h-3.5v-1.75c0-1.03-.36-1.97-.95-2.65 2.56.34 4.45 1.51 4.45 2.9V20Z"/></svg>
       
     </span>
     <nav>
       
+        <a href="mailto:jrzaurin@gmail.com">Javier</a>, 
         <a href="mailto:javierrodriguezzaurin@javiers-macbook-pro.local">Javier Rodriguez Zaurin</a>
     </nav>
   </span>

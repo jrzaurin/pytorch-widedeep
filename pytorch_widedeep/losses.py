@@ -811,8 +811,8 @@ class InfoNCELoss(nn.Module):
 
     Partially inspired by the code in this [repo](https://github.com/RElbers/info-nce-pytorch)
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     temperature: float, default = 0.1
         The logits are divided by the temperature before computing the loss value
     reduction: str, default = "mean"
@@ -871,8 +871,8 @@ class DenoisingLoss(nn.Module):
     and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342) and
     references therein
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     lambda_cat: float, default = 1.
         Multiplicative factor that will be applied to loss associated to the
         categorical features
@@ -984,8 +984,8 @@ class EncoderDecoderLoss(nn.Module):
     adaptation of that in the original paper [TabNet: Attentive
     Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442).
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     eps: float
         Simply a small number to avoid dividing by zero
     """

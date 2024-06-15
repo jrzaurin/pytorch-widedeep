@@ -1572,7 +1572,9 @@ text and images using Wide and Deep models in Pytorch</p>
 <ul>
 <li><a href="#pytorch-widedeep"><strong>pytorch-widedeep</strong></a><ul>
 <li><a href="#introduction">Introduction</a></li>
+<li><a href="#Architectures">Architectures</a></li>
 <li><a href="#the-deeptabular-component">The <code>deeptabular</code> component</a></li>
+<li><a href="#text-and-images">Text and Images</a></li>
 <li><a href="#acknowledgments">Acknowledgments</a></li>
 <li><a href="#license">License</a></li>
 <li><a href="#cite">Cite</a><ul>
@@ -1585,37 +1587,26 @@ text and images using Wide and Deep models in Pytorch</p>
 </ul>
 <h3 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h3>
 <p><code>pytorch-widedeep</code> is based on Google's <a href="https://arxiv.org/abs/1606.07792">Wide and Deep Algorithm</a>,
-adjusted for multi-modal datasets</p>
+adjusted for multi-modal datasets.</p>
 <p>In general terms, <code>pytorch-widedeep</code> is a package to use deep learning with
-tabular data. In particular, is intended to facilitate the combination of text
-and images with corresponding tabular data using wide and deep models. With
-that in mind there are a number of architectures that can be implemented with
-just a few lines of code. The main components of those architectures are shown
-in the Figure below:</p>
+tabular data. In particular, is intended to facilitate the combination of
+text and images with corresponding tabular data using wide and deep models.
+With that in mind there are a number of architectures that can be implemented
+with the library. The main components of those architectures are shown in the
+Figure below:</p>
 <p align="center">
-  <img width="750" src="docs/figures/widedeep_arch.png">
+  <img width="750" src="docs/figures/widedeep_arch_new.png">
 </p>
 
-<p>The dashed boxes in the figure represent optional, overall components, and the
-dashed lines/arrows indicate the corresponding connections, depending on
-whether or not certain components are present. For example, the dashed,
-blue-lines indicate that the <code>deeptabular</code>, <code>deeptext</code> and <code>deepimage</code>
-components are connected directly to the output neuron or neurons (depending
-on whether we are performing a binary classification or regression, or a
-multi-class classification) if the optional <code>deephead</code> is not present.
-Finally, the components within the faded-pink rectangle are concatenated.</p>
-<p>Note that it is not possible to illustrate the number of possible
-architectures and components available in <code>pytorch-widedeep</code> in one Figure.
-Therefore, for more details on possible architectures (and more) please, read
-this documentation, or see the Examples folder in the repo.</p>
 <p>In math terms, and following the notation in the
 <a href="https://arxiv.org/abs/1606.07792">paper</a>, the expression for the architecture
 without a <code>deephead</code> component can be formulated as:</p>
-<div class="arithmatex">\[
-pred = \sigma(W^{T}_{wide}[x,\phi(x)] + W^{T}_{deeptabular}a^{l_f}_{deeptabular} + W^{T}_{deeptext}a^{l_f}_{deeptext} + W^{T}_{deepimage}a^{l_f}_{deepimage} + b)
-\]</div>
+<p align="center">
+  <img width="500" src="docs/figures/architecture_1_math.png">
+</p>
+
 <p>Where &sigma; is the sigmoid function, <em>'W'</em> are the weight matrices applied to the wide model and to the final
-activations of the deep models, <em>'a'</em> are these final activations, 
+activations of the deep models, <em>'a'</em> are these final activations,
 &phi;(x) are the cross product transformations of the original features <em>'x'</em>, and
 , and <em>'b'</em> is the bias term.
 In case you are wondering what are <em>"cross product transformations"</em>, here is
@@ -1623,18 +1614,523 @@ a quote taken directly from the paper: <em>"For binary features, a cross-product
 transformation (e.g., “AND(gender=female, language=en)”) is 1 if and only if
 the constituent features (“gender=female” and “language=en”) are all 1, and 0
 otherwise".</em></p>
-<p>While if there is a <code>deephead</code> component, the previous expression turns
-into:</p>
-<div class="arithmatex">\[
-pred = \sigma(W^{T}_{wide}[x,\phi(x)] + W^{T}_{deephead}a^{l_f}_{deephead} + b)
-\]</div>
 <p>It is perfectly possible to use custom models (and not necessarily those in
-the library) as long as the the custom models have an attribute called
+the library) as long as the the custom models have a property called
 <code>output_dim</code> with the size of the last layer of activations, so that
 <code>WideDeep</code> can be constructed. Examples on how to use custom components can
-be found in the Examples folder.</p>
+be found in the Examples folder and the section below.</p>
+<h3 id="architectures">Architectures<a class="headerlink" href="#architectures" title="Permanent link">&para;</a></h3>
+<p>The <code>pytorch-widedeep</code> library offers a number of different architectures. In
+this section we will show some of them in their simplest form (i.e. with
+default param values in most cases) with their corresponding code snippets.
+Note that <strong>all</strong> the snippets below shoud run locally. For a more detailed
+explanation of the different components and their parameters, please refer to
+the documentation.</p>
+<p>For the examples below we will be using a toy dataset generated as follows:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">faker</span> <span class="kn">import</span> <span class="n">Faker</span>
+
+
+<span class="k">def</span> <span class="nf">create_and_save_random_image</span><span class="p">(</span><span class="n">image_number</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">)):</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;images&quot;</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s2">&quot;images&quot;</span><span class="p">)</span>
+
+    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+    <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">array</span><span class="p">)</span>
+
+    <span class="n">image_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;image_</span><span class="si">{</span><span class="n">image_number</span><span class="si">}</span><span class="s2">.png&quot;</span>
+    <span class="n">image</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;images&quot;</span><span class="p">,</span> <span class="n">image_name</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">image_name</span>
+
+
+<span class="n">fake</span> <span class="o">=</span> <span class="n">Faker</span><span class="p">()</span>
+
+<span class="n">cities</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;New York&quot;</span><span class="p">,</span> <span class="s2">&quot;Los Angeles&quot;</span><span class="p">,</span> <span class="s2">&quot;Chicago&quot;</span><span class="p">,</span> <span class="s2">&quot;Houston&quot;</span><span class="p">]</span>
+<span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Alice&quot;</span><span class="p">,</span> <span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="s2">&quot;Charlie&quot;</span><span class="p">,</span> <span class="s2">&quot;David&quot;</span><span class="p">,</span> <span class="s2">&quot;Eva&quot;</span><span class="p">]</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;city&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">cities</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)],</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">names</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)],</span>
+    <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">70</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)],</span>
+    <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)],</span>
+    <span class="s2">&quot;sentence&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">fake</span><span class="o">.</span><span class="n">sentence</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)],</span>
+    <span class="s2">&quot;other_sentence&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">fake</span><span class="o">.</span><span class="n">sentence</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)],</span>
+    <span class="s2">&quot;image_name&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">create_and_save_random_image</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)],</span>
+    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)],</span>
+<span class="p">}</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</code></pre></div>
+<p>This will create a 100 rows dataframe and a dir in your local folder, called
+<code>images</code> with 100 random images (or images with just noise).</p>
+<p>Perhaps the simplest architecture would be just one component, <code>wide</code>,
+<code>deeptabular</code>, <code>deeptext</code> or <code>deepimage</code> on their own, which is also
+possible, but let's start the examples with a standard Wide and Deep
+architecture. From there, how to build a model comprised only of one
+component will be straightforward.</p>
+<p>Note that the examples shown below would be almost identical using any of the
+models available in the library. For example, <code>TabMlp</code> can be replaced by
+<code>TabResnet</code>, <code>TabNet</code>, <code>TabTransformer</code>, etc. Similarly, <code>BasicRNN</code> can be
+replaced by <code>AttentiveRNN</code>, <code>StackedAttentiveRNN</code>, or <code>HFModel</code> with
+their corresponding parameters and preprocessor in the case of the Hugging
+Face models.</p>
+<p><strong>1. Wide and Tabular component (aka deeptabular)</strong></p>
+<p align="center">
+  <img width="400" src="docs/figures/arch_1.png">
+</p>
+
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pytorch_widedeep.preprocessing</span> <span class="kn">import</span> <span class="n">TabPreprocessor</span><span class="p">,</span> <span class="n">WidePreprocessor</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">Wide</span><span class="p">,</span> <span class="n">TabMlp</span><span class="p">,</span> <span class="n">WideDeep</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.training</span> <span class="kn">import</span> <span class="n">Trainer</span>
+
+<span class="c1"># Wide</span>
+<span class="n">wide_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;city&quot;</span><span class="p">]</span>
+<span class="n">crossed_cols</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;city&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)]</span>
+<span class="n">wide_preprocessor</span> <span class="o">=</span> <span class="n">WidePreprocessor</span><span class="p">(</span><span class="n">wide_cols</span><span class="o">=</span><span class="n">wide_cols</span><span class="p">,</span> <span class="n">crossed_cols</span><span class="o">=</span><span class="n">crossed_cols</span><span class="p">)</span>
+<span class="n">X_wide</span> <span class="o">=</span> <span class="n">wide_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">wide</span> <span class="o">=</span> <span class="n">Wide</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">X_wide</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="c1"># Tabular</span>
+<span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">TabPreprocessor</span><span class="p">(</span>
+    <span class="n">embed_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;city&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;height&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">X_tab</span> <span class="o">=</span> <span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">tab_mlp</span> <span class="o">=</span> <span class="n">TabMlp</span><span class="p">(</span>
+    <span class="n">column_idx</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">column_idx</span><span class="p">,</span>
+    <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">,</span>
+    <span class="n">continuous_cols</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">,</span>
+    <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># WideDeep</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">WideDeep</span><span class="p">(</span><span class="n">wide</span><span class="o">=</span><span class="n">wide</span><span class="p">,</span> <span class="n">deeptabular</span><span class="o">=</span><span class="n">tab_mlp</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">objective</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">)</span>
+
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">X_wide</span><span class="o">=</span><span class="n">X_wide</span><span class="p">,</span>
+    <span class="n">X_tab</span><span class="o">=</span><span class="n">X_tab</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><strong>2. Tabular and Text data</strong></p>
+<p align="center">
+  <img width="400" src="docs/figures/arch_2.png">
+</p>
+
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pytorch_widedeep.preprocessing</span> <span class="kn">import</span> <span class="n">TabPreprocessor</span><span class="p">,</span> <span class="n">TextPreprocessor</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">TabMlp</span><span class="p">,</span> <span class="n">BasicRNN</span><span class="p">,</span> <span class="n">WideDeep</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.training</span> <span class="kn">import</span> <span class="n">Trainer</span>
+
+<span class="c1"># Tabular</span>
+<span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">TabPreprocessor</span><span class="p">(</span>
+    <span class="n">embed_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;city&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;height&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">X_tab</span> <span class="o">=</span> <span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">tab_mlp</span> <span class="o">=</span> <span class="n">TabMlp</span><span class="p">(</span>
+    <span class="n">column_idx</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">column_idx</span><span class="p">,</span>
+    <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">,</span>
+    <span class="n">continuous_cols</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">,</span>
+    <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># Text</span>
+<span class="n">text_preprocessor</span> <span class="o">=</span> <span class="n">TextPreprocessor</span><span class="p">(</span>
+    <span class="n">text_col</span><span class="o">=</span><span class="s2">&quot;sentence&quot;</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_vocab</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+<span class="n">X_text</span> <span class="o">=</span> <span class="n">text_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">rnn</span> <span class="o">=</span> <span class="n">BasicRNN</span><span class="p">(</span>
+    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">text_preprocessor</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">itos</span><span class="p">),</span>
+    <span class="n">embed_dim</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># WideDeep</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">WideDeep</span><span class="p">(</span><span class="n">deeptabular</span><span class="o">=</span><span class="n">tab_mlp</span><span class="p">,</span> <span class="n">deeptext</span><span class="o">=</span><span class="n">rnn</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">objective</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">)</span>
+
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">X_tab</span><span class="o">=</span><span class="n">X_tab</span><span class="p">,</span>
+    <span class="n">X_text</span><span class="o">=</span><span class="n">X_text</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><strong>3. Tabular and text with a FC head on top via the <code>head_hidden_dims</code> param
+  in <code>WideDeep</code></strong></p>
+<p align="center">
+  <img width="400" src="docs/figures/arch_3.png">
+</p>
+
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pytorch_widedeep.preprocessing</span> <span class="kn">import</span> <span class="n">TabPreprocessor</span><span class="p">,</span> <span class="n">TextPreprocessor</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">TabMlp</span><span class="p">,</span> <span class="n">BasicRNN</span><span class="p">,</span> <span class="n">WideDeep</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.training</span> <span class="kn">import</span> <span class="n">Trainer</span>
+
+<span class="c1"># Tabular</span>
+<span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">TabPreprocessor</span><span class="p">(</span>
+    <span class="n">embed_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;city&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;height&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">X_tab</span> <span class="o">=</span> <span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">tab_mlp</span> <span class="o">=</span> <span class="n">TabMlp</span><span class="p">(</span>
+    <span class="n">column_idx</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">column_idx</span><span class="p">,</span>
+    <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">,</span>
+    <span class="n">continuous_cols</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">,</span>
+    <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># Text</span>
+<span class="n">text_preprocessor</span> <span class="o">=</span> <span class="n">TextPreprocessor</span><span class="p">(</span>
+    <span class="n">text_col</span><span class="o">=</span><span class="s2">&quot;sentence&quot;</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_vocab</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+<span class="n">X_text</span> <span class="o">=</span> <span class="n">text_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">rnn</span> <span class="o">=</span> <span class="n">BasicRNN</span><span class="p">(</span>
+    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">text_preprocessor</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">itos</span><span class="p">),</span>
+    <span class="n">embed_dim</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># WideDeep</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">WideDeep</span><span class="p">(</span><span class="n">deeptabular</span><span class="o">=</span><span class="n">tab_mlp</span><span class="p">,</span> <span class="n">deeptext</span><span class="o">=</span><span class="n">rnn</span><span class="p">,</span> <span class="n">head_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">16</span><span class="p">])</span>
+
+<span class="c1"># Train</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">objective</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">)</span>
+
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">X_tab</span><span class="o">=</span><span class="n">X_tab</span><span class="p">,</span>
+    <span class="n">X_text</span><span class="o">=</span><span class="n">X_text</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><strong>4. Tabular and multiple text columns that are passed directly to
+  <code>WideDeep</code></strong></p>
+<p align="center">
+  <img width="500" src="docs/figures/arch_4.png">
+</p>
+
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pytorch_widedeep.preprocessing</span> <span class="kn">import</span> <span class="n">TabPreprocessor</span><span class="p">,</span> <span class="n">TextPreprocessor</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">TabMlp</span><span class="p">,</span> <span class="n">BasicRNN</span><span class="p">,</span> <span class="n">WideDeep</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.training</span> <span class="kn">import</span> <span class="n">Trainer</span>
+
+
+<span class="c1"># Tabular</span>
+<span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">TabPreprocessor</span><span class="p">(</span>
+    <span class="n">embed_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;city&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;height&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">X_tab</span> <span class="o">=</span> <span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">tab_mlp</span> <span class="o">=</span> <span class="n">TabMlp</span><span class="p">(</span>
+    <span class="n">column_idx</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">column_idx</span><span class="p">,</span>
+    <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">,</span>
+    <span class="n">continuous_cols</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">,</span>
+    <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># Text</span>
+<span class="n">text_preprocessor_1</span> <span class="o">=</span> <span class="n">TextPreprocessor</span><span class="p">(</span>
+    <span class="n">text_col</span><span class="o">=</span><span class="s2">&quot;sentence&quot;</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_vocab</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+<span class="n">X_text_1</span> <span class="o">=</span> <span class="n">text_preprocessor_1</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">text_preprocessor_2</span> <span class="o">=</span> <span class="n">TextPreprocessor</span><span class="p">(</span>
+    <span class="n">text_col</span><span class="o">=</span><span class="s2">&quot;other_sentence&quot;</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_vocab</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+<span class="n">X_text_2</span> <span class="o">=</span> <span class="n">text_preprocessor_2</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">rnn_1</span> <span class="o">=</span> <span class="n">BasicRNN</span><span class="p">(</span>
+    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">text_preprocessor_1</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">itos</span><span class="p">),</span>
+    <span class="n">embed_dim</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">rnn_2</span> <span class="o">=</span> <span class="n">BasicRNN</span><span class="p">(</span>
+    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">text_preprocessor_2</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">itos</span><span class="p">),</span>
+    <span class="n">embed_dim</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># WideDeep</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">WideDeep</span><span class="p">(</span><span class="n">deeptabular</span><span class="o">=</span><span class="n">tab_mlp</span><span class="p">,</span> <span class="n">deeptext</span><span class="o">=</span><span class="p">[</span><span class="n">rnn_1</span><span class="p">,</span> <span class="n">rnn_2</span><span class="p">])</span>
+
+<span class="c1"># Train</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">objective</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">)</span>
+
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">X_tab</span><span class="o">=</span><span class="n">X_tab</span><span class="p">,</span>
+    <span class="n">X_text</span><span class="o">=</span><span class="p">[</span><span class="n">X_text_1</span><span class="p">,</span> <span class="n">X_text_2</span><span class="p">],</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><strong>5. Tabular data and multiple text columns that are fused via a the library's
+  <code>ModelFuser</code> class</strong></p>
+<p align="center">
+    <img width="500" src="docs/figures/arch_5.png">
+</p>
+
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pytorch_widedeep.preprocessing</span> <span class="kn">import</span> <span class="n">TabPreprocessor</span><span class="p">,</span> <span class="n">TextPreprocessor</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">TabMlp</span><span class="p">,</span> <span class="n">BasicRNN</span><span class="p">,</span> <span class="n">WideDeep</span><span class="p">,</span> <span class="n">ModelFuser</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep</span> <span class="kn">import</span> <span class="n">Trainer</span>
+
+<span class="c1"># Tabular</span>
+<span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">TabPreprocessor</span><span class="p">(</span>
+    <span class="n">embed_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;city&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;height&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">X_tab</span> <span class="o">=</span> <span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">tab_mlp</span> <span class="o">=</span> <span class="n">TabMlp</span><span class="p">(</span>
+    <span class="n">column_idx</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">column_idx</span><span class="p">,</span>
+    <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">,</span>
+    <span class="n">continuous_cols</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">,</span>
+    <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># Text</span>
+<span class="n">text_preprocessor_1</span> <span class="o">=</span> <span class="n">TextPreprocessor</span><span class="p">(</span>
+    <span class="n">text_col</span><span class="o">=</span><span class="s2">&quot;sentence&quot;</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_vocab</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+<span class="n">X_text_1</span> <span class="o">=</span> <span class="n">text_preprocessor_1</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">text_preprocessor_2</span> <span class="o">=</span> <span class="n">TextPreprocessor</span><span class="p">(</span>
+    <span class="n">text_col</span><span class="o">=</span><span class="s2">&quot;other_sentence&quot;</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_vocab</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+<span class="n">X_text_2</span> <span class="o">=</span> <span class="n">text_preprocessor_2</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+<span class="n">rnn_1</span> <span class="o">=</span> <span class="n">BasicRNN</span><span class="p">(</span>
+    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">text_preprocessor_1</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">itos</span><span class="p">),</span>
+    <span class="n">embed_dim</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">rnn_2</span> <span class="o">=</span> <span class="n">BasicRNN</span><span class="p">(</span>
+    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">text_preprocessor_2</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">itos</span><span class="p">),</span>
+    <span class="n">embed_dim</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">models_fuser</span> <span class="o">=</span> <span class="n">ModelFuser</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="n">rnn_1</span><span class="p">,</span> <span class="n">rnn_2</span><span class="p">],</span> <span class="n">fusion_method</span><span class="o">=</span><span class="s2">&quot;mult&quot;</span><span class="p">)</span>
+
+<span class="c1"># WideDeep</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">WideDeep</span><span class="p">(</span><span class="n">deeptabular</span><span class="o">=</span><span class="n">tab_mlp</span><span class="p">,</span> <span class="n">deeptext</span><span class="o">=</span><span class="n">models_fuser</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">objective</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">)</span>
+
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">X_tab</span><span class="o">=</span><span class="n">X_tab</span><span class="p">,</span>
+    <span class="n">X_text</span><span class="o">=</span><span class="p">[</span><span class="n">X_text_1</span><span class="p">,</span> <span class="n">X_text_2</span><span class="p">],</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><strong>6. Tabular and multiple text columns, with an image column. The text columns
+  are fused via the library's <code>ModelFuser</code> and then all fused via the
+  deephead paramenter in <code>WideDeep</code> which is a custom <code>ModelFuser</code> coded by
+  the user</strong></p>
+<p>This is perhaps the less elegant solution as it involves a custom component by
+the user and slicing the 'incoming' tensor. In the future, we will include a
+<code>TextAndImageModelFuser</code> to make this process more straightforward. Still, is not
+really complicated and it is a good example of how to use custom components in
+<code>pytorch-widedeep</code>.</p>
+<p>Note that the only requirement for the custom component is that it has a
+property called <code>output_dim</code> that returns the size of the last layer of
+activations. In other words, it does not need to inherit from
+<code>BaseWDModelComponent</code>. This base class simply checks the existence of such
+property and avoids some typing errors internally.</p>
+<p align="center">
+    <img width="600" src="docs/figures/arch_6.png">
+</p>
+
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.preprocessing</span> <span class="kn">import</span> <span class="n">TabPreprocessor</span><span class="p">,</span> <span class="n">TextPreprocessor</span><span class="p">,</span> <span class="n">ImagePreprocessor</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">TabMlp</span><span class="p">,</span> <span class="n">BasicRNN</span><span class="p">,</span> <span class="n">WideDeep</span><span class="p">,</span> <span class="n">ModelFuser</span><span class="p">,</span> <span class="n">Vision</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.models._base_wd_model_component</span> <span class="kn">import</span> <span class="n">BaseWDModelComponent</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep</span> <span class="kn">import</span> <span class="n">Trainer</span>
+
+<span class="c1"># Tabular</span>
+<span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">TabPreprocessor</span><span class="p">(</span>
+    <span class="n">embed_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;city&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;height&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">X_tab</span> <span class="o">=</span> <span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">tab_mlp</span> <span class="o">=</span> <span class="n">TabMlp</span><span class="p">(</span>
+    <span class="n">column_idx</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">column_idx</span><span class="p">,</span>
+    <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">,</span>
+    <span class="n">continuous_cols</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">,</span>
+    <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># Text</span>
+<span class="n">text_preprocessor_1</span> <span class="o">=</span> <span class="n">TextPreprocessor</span><span class="p">(</span>
+    <span class="n">text_col</span><span class="o">=</span><span class="s2">&quot;sentence&quot;</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_vocab</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+<span class="n">X_text_1</span> <span class="o">=</span> <span class="n">text_preprocessor_1</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">text_preprocessor_2</span> <span class="o">=</span> <span class="n">TextPreprocessor</span><span class="p">(</span>
+    <span class="n">text_col</span><span class="o">=</span><span class="s2">&quot;other_sentence&quot;</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_vocab</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+<span class="n">X_text_2</span> <span class="o">=</span> <span class="n">text_preprocessor_2</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">rnn_1</span> <span class="o">=</span> <span class="n">BasicRNN</span><span class="p">(</span>
+    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">text_preprocessor_1</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">itos</span><span class="p">),</span>
+    <span class="n">embed_dim</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">rnn_2</span> <span class="o">=</span> <span class="n">BasicRNN</span><span class="p">(</span>
+    <span class="n">vocab_size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">text_preprocessor_2</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">itos</span><span class="p">),</span>
+    <span class="n">embed_dim</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">models_fuser</span> <span class="o">=</span> <span class="n">ModelFuser</span><span class="p">(</span>
+    <span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="n">rnn_1</span><span class="p">,</span> <span class="n">rnn_2</span><span class="p">],</span>
+    <span class="n">fusion_method</span><span class="o">=</span><span class="s2">&quot;mult&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Image</span>
+<span class="n">image_preprocessor</span> <span class="o">=</span> <span class="n">ImagePreprocessor</span><span class="p">(</span><span class="n">img_col</span><span class="o">=</span><span class="s2">&quot;image_name&quot;</span><span class="p">,</span> <span class="n">img_path</span><span class="o">=</span><span class="s2">&quot;images&quot;</span><span class="p">)</span>
+<span class="n">X_img</span> <span class="o">=</span> <span class="n">image_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">vision</span> <span class="o">=</span> <span class="n">Vision</span><span class="p">(</span><span class="n">pretrained_model_setup</span><span class="o">=</span><span class="s2">&quot;resnet18&quot;</span><span class="p">,</span> <span class="n">head_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span>
+
+<span class="c1"># deephead (custom model fuser)</span>
+<span class="k">class</span> <span class="nc">MyModelFuser</span><span class="p">(</span><span class="n">BaseWDModelComponent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simply a Linear + Relu sequence on top of the text + images followed by a</span>
+<span class="sd">    Linear -&gt; Relu -&gt; Linear for the concatenation of tabular slice of the</span>
+<span class="sd">    tensor and the output of the text and image sequential model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tab_incoming_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">text_incoming_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">image_incoming_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">output_units</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">MyModelFuser</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab_incoming_dim</span> <span class="o">=</span> <span class="n">tab_incoming_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_incoming_dim</span> <span class="o">=</span> <span class="n">text_incoming_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_incoming_dim</span> <span class="o">=</span> <span class="n">image_incoming_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_units</span> <span class="o">=</span> <span class="n">output_units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text_and_image_fuser</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">text_incoming_dim</span> <span class="o">+</span> <span class="n">image_incoming_dim</span><span class="p">,</span> <span class="n">output_units</span><span class="p">),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">output_units</span> <span class="o">+</span> <span class="n">tab_incoming_dim</span><span class="p">,</span> <span class="n">output_units</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">output_units</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">output_units</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">tab_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_incoming_dim</span><span class="p">)</span>
+        <span class="n">text_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tab_incoming_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_incoming_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_incoming_dim</span>
+        <span class="p">)</span>
+        <span class="n">image_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tab_incoming_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_incoming_dim</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tab_incoming_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_incoming_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_incoming_dim</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">X_tab</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">tab_slice</span><span class="p">]</span>
+        <span class="n">X_text</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">text_slice</span><span class="p">]</span>
+        <span class="n">X_img</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">image_slice</span><span class="p">]</span>
+        <span class="n">X_text_and_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">text_and_image_fuser</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">X_text</span><span class="p">,</span> <span class="n">X_img</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">X_tab</span><span class="p">,</span> <span class="n">X_text_and_image</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_units</span>
+
+<span class="n">deephead</span> <span class="o">=</span> <span class="n">MyModelFuser</span><span class="p">(</span>
+    <span class="n">tab_incoming_dim</span><span class="o">=</span><span class="n">tab_mlp</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
+    <span class="n">text_incoming_dim</span><span class="o">=</span><span class="n">models_fuser</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
+    <span class="n">image_incoming_dim</span><span class="o">=</span><span class="n">vision</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
+    <span class="n">output_units</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># WideDeep</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">WideDeep</span><span class="p">(</span>
+    <span class="n">deeptabular</span><span class="o">=</span><span class="n">tab_mlp</span><span class="p">,</span>
+    <span class="n">deeptext</span><span class="o">=</span><span class="n">models_fuser</span><span class="p">,</span>
+    <span class="n">deepimage</span><span class="o">=</span><span class="n">vision</span><span class="p">,</span>
+    <span class="n">deephead</span><span class="o">=</span><span class="n">deephead</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">objective</span><span class="o">=</span><span class="s2">&quot;binary&quot;</span><span class="p">)</span>
+
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">X_tab</span><span class="o">=</span><span class="n">X_tab</span><span class="p">,</span>
+    <span class="n">X_text</span><span class="o">=</span><span class="p">[</span><span class="n">X_text_1</span><span class="p">,</span> <span class="n">X_text_2</span><span class="p">],</span>
+    <span class="n">X_img</span><span class="o">=</span><span class="n">X_img</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><strong>7. Tabular with a multi-target loss</strong></p>
+<p>This one is "a bonus" to illustrate the use of multi-target losses, more than
+actually a different architecture.</p>
+<p align="center">
+  <img width="200" src="docs/figures/arch_7.png">
+</p>
+
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">pytorch_widedeep.preprocessing</span> <span class="kn">import</span> <span class="n">TabPreprocessor</span><span class="p">,</span> <span class="n">TextPreprocessor</span><span class="p">,</span> <span class="n">ImagePreprocessor</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">TabMlp</span><span class="p">,</span> <span class="n">BasicRNN</span><span class="p">,</span> <span class="n">WideDeep</span><span class="p">,</span> <span class="n">ModelFuser</span><span class="p">,</span> <span class="n">Vision</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.losses_multitarget</span> <span class="kn">import</span> <span class="n">MultiTargetClassificationLoss</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep.models._base_wd_model_component</span> <span class="kn">import</span> <span class="n">BaseWDModelComponent</span>
+<span class="kn">from</span> <span class="nn">pytorch_widedeep</span> <span class="kn">import</span> <span class="n">Trainer</span>
+
+<span class="c1"># let&#39;s add a second target to the dataframe</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;target2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
+
+<span class="c1"># Tabular</span>
+<span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">TabPreprocessor</span><span class="p">(</span>
+    <span class="n">embed_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;city&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;age&quot;</span><span class="p">,</span> <span class="s2">&quot;height&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">X_tab</span> <span class="o">=</span> <span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">tab_mlp</span> <span class="o">=</span> <span class="n">TabMlp</span><span class="p">(</span>
+    <span class="n">column_idx</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">column_idx</span><span class="p">,</span>
+    <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">,</span>
+    <span class="n">continuous_cols</span><span class="o">=</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">,</span>
+    <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="c1"># &#39;pred_dim=2&#39; because we have two binary targets. For other types of targets,</span>
+<span class="c1">#  please, see the documentation</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">WideDeep</span><span class="p">(</span><span class="n">deeptabular</span><span class="o">=</span><span class="n">tab_mlp</span><span class="p">,</span> <span class="n">pred_dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span>
+
+<span class="n">loss</span> <span class="o">=</span> <span class="n">MultiTargetClassificationLoss</span><span class="p">(</span><span class="n">binary_config</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+
+<span class="c1"># When a multi-target loss is used, &#39;custom_loss_function&#39; must not be None.</span>
+<span class="c1"># See the docs</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">objective</span><span class="o">=</span><span class="s2">&quot;multitarget&quot;</span><span class="p">,</span> <span class="n">custom_loss_function</span><span class="o">=</span><span class="n">loss</span><span class="p">)</span>
+
+<span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">X_tab</span><span class="o">=</span><span class="n">X_tab</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">df</span><span class="p">[[</span><span class="s2">&quot;target&quot;</span><span class="p">,</span> <span class="s2">&quot;target2&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
 <h3 id="the-deeptabular-component">The <code>deeptabular</code> component<a class="headerlink" href="#the-deeptabular-component" title="Permanent link">&para;</a></h3>
-<p>It is important to emphasize that <strong>each individual component, <code>wide</code>,
+<p>It is important to emphasize again that <strong>each individual component, <code>wide</code>,
 <code>deeptabular</code>, <code>deeptext</code> and <code>deepimage</code>, can be used independently</strong> and in
 isolation. For example, one could use only <code>wide</code>, which is in simply a
 linear model. In fact, one of the most interesting functionalities
@@ -1663,9 +2159,7 @@ passed through a series of ResNet blocks built with dense layers.</li>
 <p>The <code>Tabformer</code> family, i.e. Transformers for Tabular data:</p>
 <ol>
 <li><strong>TabTransformer</strong>: details on the TabTransformer can be found in
-<a href="https://arxiv.org/pdf/2012.06678.pdf">TabTransformer: Tabular Data Modeling Using Contextual Embeddings</a>.
-Note that this is an 'enhanced' implementation that allows for many options that can be set up via
-the <code>TabTransformer</code> params.</li>
+<a href="https://arxiv.org/pdf/2012.06678.pdf">TabTransformer: Tabular Data Modeling Using Contextual Embeddings</a>.</li>
 <li><strong>SAINT</strong>: Details on SAINT can be found in
 <a href="https://arxiv.org/abs/2106.01342">SAINT: Improved Neural Networks for Tabular Data via Row Attention and Contrastive Pre-Training</a>.</li>
 <li><strong>FT-Transformer</strong>: details on the FT-Transformer can be found in
@@ -1692,6 +2186,26 @@ pre-training can be used via two methods or routines which we refer as:
 encoder-decoder method and constrastive-denoising method. Please, see the
 documentation and the examples for details on this functionality, and all
 other options in the library.</p>
+<h3 id="text-and-images">Text and Images<a class="headerlink" href="#text-and-images" title="Permanent link">&para;</a></h3>
+<p>For the text component, <code>deeptext</code>, the library offers the following models:</p>
+<ol>
+<li><strong>BasicRNN</strong>: a simple RNN 2. <strong>AttentiveRNN</strong>: a RNN with an attention
+mechanism based on the
+<a href="https://www.cs.cmu.edu/~./hovy/papers/16HLT-hierarchical-attention-networks.pd">Hierarchical Attention Networks for DocumentClassification</a></li>
+<li><strong>StackedAttentiveRNN</strong>: a stack of AttentiveRNNs</li>
+<li><strong>HFModel</strong>: a wrapper around Hugging Face Transfomer-based models. At the moment
+only models from the families BERT, RoBERTa, DistilBERT, ALBERT and ELECTRA
+are supported. This is because this library is designed to address
+classification and regression tasks and these are the most 'popular'
+encoder-only models, which have proved to be those that work best for these
+tasks. If there is demand for other models, they will be included in the
+future.</li>
+</ol>
+<p>For the image component, <code>deepimage</code>, the library supports models from the
+following families:
+'resnet', 'shufflenet', 'resnext', 'wide_resnet', 'regnet', 'densenet', 'mobilenetv3',
+ 'mobilenetv2', 'mnasnet', 'efficientnet' and 'squeezenet'.  These are
+ offered via <code>torchvision</code> and wrapped up in the <code>Vision</code> class.</p>
 <h3 id="acknowledgments">Acknowledgments<a class="headerlink" href="#acknowledgments" title="Permanent link">&para;</a></h3>
 <p>This library takes from a series of other libraries, so I think it is just
 fair to mention them here in the README (specific mentions are also included
@@ -1754,9 +2268,10 @@ https://doi.org/10.21105/joss.05027
     </span>
     <nav>
       
+        <a href="mailto:jrzaurin@gmail.com">Javier</a>, 
         <a href="mailto:mulinka.pavol@gmail.com">Pavol Mulinka</a>, 
         <a href="mailto:javierrodriguezzaurin@javiers-macbook-pro.local">Javier Rodriguez Zaurin</a>, 
-        <a href="mailto:jrzaurin@gmail.com">Javier</a>
+        <a href="mailto:not.committed.yet">Not Committed Yet</a>
     </nav>
   </span>
 

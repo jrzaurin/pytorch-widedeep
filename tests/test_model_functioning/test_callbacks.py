@@ -460,7 +460,6 @@ def test_early_stopping_get_state():
     trainer_tt.fit(
         X_train={"X_wide": X_wide, "X_tab": X_tab, "target": target},
         X_val={"X_wide": X_wide_val, "X_tab": X_tab_val, "target": target_val},
-        target=target,
         n_epochs=1,
         batch_size=16,
     )
@@ -498,7 +497,6 @@ def test_early_stopping_restore_weights_with_metric():
     trainer.fit(
         X_train={"X_wide": X_wide, "X_tab": X_tab, "target": target},
         X_val={"X_wide": X_wide_val, "X_tab": X_tab_val, "target": target_val},
-        target=target,
         n_epochs=2,
         batch_size=16,
     )
@@ -549,7 +547,6 @@ def test_early_stopping_restore_weights_with_state():
     trainer.fit(
         X_train={"X_wide": X_wide, "X_tab": X_tab, "target": target},
         X_val={"X_wide": X_wide_val, "X_tab": X_tab_val, "target": target_val},
-        target=target,
         n_epochs=5,
         batch_size=16,
     )
@@ -610,7 +607,6 @@ def test_model_checkpoint_restore_weights():
     trainer.fit(
         X_train={"X_wide": X_wide, "X_tab": X_tab, "target": target},
         X_val={"X_wide": X_wide_val, "X_tab": X_tab_val, "target": target_val},
-        target=target,
         n_epochs=5,
         batch_size=16,
     )

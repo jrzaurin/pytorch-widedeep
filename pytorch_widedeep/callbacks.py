@@ -11,7 +11,7 @@ import warnings
 
 import numpy as np
 import torch
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim.lr_scheduler import LRScheduler, ReduceLROnPlateau
 
 from pytorch_widedeep.metrics import MultipleMetrics
 from pytorch_widedeep.wdtypes import Any, Dict, List, Optional, Optimizer
@@ -147,6 +147,7 @@ class Callback(object):
 class History(Callback):
     r"""Saves the metrics in the `history` attribute of the `Trainer`.
 
+    TO DO: move this sentence to the docs, not here.
     This callback runs by default within `Trainer`, therefore, should not
     be passed to the `Trainer`. It is included here just for completion.
     """
@@ -171,56 +172,63 @@ class History(Callback):
 class LRShedulerCallback(Callback):
     r"""Callback for the learning rate schedulers to take a step
 
+    TO DO: move this sentence to the docs, not here.
     This callback runs by default within `Trainer`, therefore, should not
     be passed to the `Trainer`. It is included here just for completion.
     """
 
     def on_batch_end(self, batch: int, logs: Optional[Dict] = None):
         if self.trainer.lr_scheduler is not None:
-            if self._multiple_scheduler():
+            if self._multiple_scheduler(self.trainer.lr_scheduler):
                 for (
-                    model_name,
+                    _,
                     scheduler,
                 ) in self.trainer.lr_scheduler._schedulers.items():
-                    if self._is_cyclic(model_name):
-                        scheduler.step()
+                    if isinstance(scheduler, list):
+                        for s in scheduler:
+                            if self._is_cyclic(s):
+                                s.step()
+                    else:
+                        if self._is_cyclic(scheduler):
+                            scheduler.step()
             elif self.trainer.cyclic_lr:
                 self.trainer.lr_scheduler.step()
 
-    def on_epoch_end(
+    def on_epoch_end(  # noqa: C901
         self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
     ):
         if self.trainer.lr_scheduler is not None:
-            if self._multiple_scheduler():
+            if self._multiple_scheduler(self.trainer.lr_scheduler):
                 for (
-                    model_name,
+                    _,
                     scheduler,
                 ) in self.trainer.lr_scheduler._schedulers.items():
-                    if not self._is_cyclic(model_name):
-                        if isinstance(scheduler, ReduceLROnPlateau):
-                            scheduler.step(metric)
-                        else:
-                            scheduler.step()
+                    if isinstance(scheduler, list):
+                        for s in scheduler:
+                            if not self._is_cyclic(s):
+                                if isinstance(s, ReduceLROnPlateau):
+                                    s.step(metric)
+                                else:
+                                    s.step()
+                    else:
+                        if not self._is_cyclic(scheduler):
+                            if isinstance(scheduler, ReduceLROnPlateau):
+                                scheduler.step(metric)
+                            else:
+                                scheduler.step()
             elif not self.trainer.cyclic_lr:
                 if isinstance(self.trainer.lr_scheduler, ReduceLROnPlateau):
                     self.trainer.lr_scheduler.step(metric)
                 else:
                     self.trainer.lr_scheduler.step()
 
-    def _multiple_scheduler(self):
-        return self.trainer.lr_scheduler.__class__.__name__ == "MultipleLRScheduler"
+    @staticmethod
+    def _multiple_scheduler(scheduler: LRScheduler) -> bool:
+        return scheduler.__class__.__name__ == "MultipleLRScheduler"
 
-    def _is_cyclic(self, model_name: str):
-        return (
-            self._has_scheduler(model_name)
-            and "cycl"
-            in self.trainer.lr_scheduler._schedulers[
-                model_name
-            ].__class__.__name__.lower()
-        )
-
-    def _has_scheduler(self, model_name: str):
-        return model_name in self.trainer.lr_scheduler._schedulers
+    @staticmethod
+    def _is_cyclic(scheduler: LRScheduler) -> bool:
+        return "cycl" in scheduler.__class__.__name__.lower()
 
 
 class MetricCallback(Callback):
@@ -273,14 +281,14 @@ class LRHistory(Callback):
     def on_epoch_begin(self, epoch: int, logs: Optional[Dict] = None):
         if epoch == 0 and self.trainer.lr_scheduler is not None:
             self.trainer.lr_history = {}
-            if self._multiple_scheduler():
+            if self._multiple_scheduler(self.trainer.lr_scheduler):
                 self._save_group_lr_mulitple_scheduler(step_location="on_epoch_begin")
             else:
                 self._save_group_lr(self.trainer.optimizer)
 
     def on_batch_end(self, batch: int, logs: Optional[Dict] = None):
         if self.trainer.lr_scheduler is not None:
-            if self._multiple_scheduler():
+            if self._multiple_scheduler(self.trainer.lr_scheduler):
                 self._save_group_lr_mulitple_scheduler(step_location="on_batch_end")
             elif self.trainer.cyclic_lr:
                 self._save_group_lr(self.trainer.optimizer)
@@ -289,44 +297,81 @@ class LRHistory(Callback):
         self, epoch: int, logs: Optional[Dict] = None, metric: Optional[float] = None
     ):
         if epoch != (self.n_epochs - 1) and self.trainer.lr_scheduler is not None:
-            if self._multiple_scheduler():
+            if self._multiple_scheduler(self.trainer.lr_scheduler):
                 self._save_group_lr_mulitple_scheduler(step_location="on_epoch_end")
             elif not self.trainer.cyclic_lr:
                 self._save_group_lr(self.trainer.optimizer)
 
     def _save_group_lr_mulitple_scheduler(self, step_location: str):
-        for model_name, opt in self.trainer.optimizer._optimizers.items():
-            if step_location == "on_epoch_begin":
-                self._save_group_lr(opt, model_name)
-            if step_location == "on_batch_end":
-                if self._is_cyclic(model_name):
-                    self._save_group_lr(opt, model_name)
-            if step_location == "on_epoch_end":
-                if not self._is_cyclic(model_name):
-                    self._save_group_lr(opt, model_name)
-
-    def _save_group_lr(self, opt: Optimizer, model_name: Optional[str] = None):
-        for group_idx, group in enumerate(opt.param_groups):
-            if model_name is not None:
-                group_name = ("_").join(["lr", model_name, str(group_idx)])
+        for model_name, optimizer in self.trainer.optimizer._optimizers.items():
+            if isinstance(optimizer, list):
+                # then, if it has schedulers, we assume it has to have the
+                # same number of schedulers as optimizers
+                for i, opt in enumerate(optimizer):
+                    if (
+                        step_location == "on_epoch_begin"
+                        or (
+                            step_location == "on_batch_end"
+                            and self._has_cyclic_scheduler(model_name)
+                        )
+                        or (
+                            step_location == "on_epoch_end"
+                            and not self._has_cyclic_scheduler(model_name)
+                        )
+                    ):
+                        self._save_group_lr(opt, model_name, "_".join(["opt", str(i)]))
+                else:
+                    # do nothing
+                    pass
             else:
-                group_name = ("_").join(["lr", str(group_idx)])
+                if (
+                    step_location == "on_epoch_begin"
+                    or (
+                        step_location == "on_batch_end"
+                        and self._has_cyclic_scheduler(model_name)
+                    )
+                    or (
+                        step_location == "on_epoch_end"
+                        and not self._has_cyclic_scheduler(model_name)
+                    )
+                ):
+                    self._save_group_lr(optimizer, model_name)
+
+    def _save_group_lr(
+        self,
+        opt: Optimizer,
+        suffix: Optional[str] = None,
+        model_name: Optional[str] = None,
+    ):
+        suffix = suffix or ""
+        model_name = model_name or ""
+        for group_idx, group in enumerate(opt.param_groups):
+            group_name = ("_").join(
+                [x for x in ["lr", model_name, suffix, str(group_idx)] if x]
+            )
             self.trainer.lr_history.setdefault(group_name, []).append(group["lr"])
 
-    def _multiple_scheduler(self):
-        return self.trainer.lr_scheduler.__class__.__name__ == "MultipleLRScheduler"
+    @staticmethod
+    def _multiple_scheduler(scheduler: LRScheduler) -> bool:
+        return scheduler.__class__.__name__ == "MultipleLRScheduler"
 
-    def _is_cyclic(self, model_name: str):
-        return (
-            self._has_scheduler(model_name)
-            and "cycl"
-            in self.trainer.lr_scheduler._schedulers[
-                model_name
-            ].__class__.__name__.lower()
-        )
+    def _has_cyclic_scheduler(self, model_name: str):
+        if model_name in self.trainer.lr_scheduler._schedulers:
+            if isinstance(self.trainer.lr_scheduler._schedulers[model_name], list):
+                return any(
+                    [
+                        self._is_cyclic(s)
+                        for s in self.trainer.lr_scheduler._schedulers[model_name]
+                    ]
+                )
+            else:
+                return self._is_cyclic(
+                    self.trainer.lr_scheduler._schedulers[model_name]
+                )
 
-    def _has_scheduler(self, model_name: str):
-        return model_name in self.trainer.lr_scheduler._schedulers
+    @staticmethod
+    def _is_cyclic(scheduler: LRScheduler) -> bool:
+        return "cycl" in scheduler.__class__.__name__.lower()
 
 
 class ModelCheckpoint(Callback):

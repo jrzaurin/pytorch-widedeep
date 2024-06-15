@@ -56,3 +56,11 @@ from pytorch_widedeep.losses import FocalLoss
 ::: pytorch_widedeep.losses.DenoisingLoss
 
 ::: pytorch_widedeep.losses.EncoderDecoderLoss
+
+::: pytorch_widedeep.losses_multitarget.MultiTargetRegressionLoss
+
+::: pytorch_widedeep.losses_multitarget.MultiTargetClassificationLoss
+
+::: pytorch_widedeep.losses_multitarget.MutilTargetRegressionAndClassificationLoss
+
+
