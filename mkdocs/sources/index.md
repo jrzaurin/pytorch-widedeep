@@ -582,6 +582,56 @@ trainer.fit(
 )
 ```
 
+**7. Tabular with a multi-target loss**
+
+This one is "a bonus" to illustrate the use of multi-target losses, more than
+actually a different architecture.
+
+<p align="center">
+  <img width="200" src="docs/figures/arch_7.png">
+</p>
+
+
+```python
+from pytorch_widedeep.preprocessing import TabPreprocessor, TextPreprocessor, ImagePreprocessor
+from pytorch_widedeep.models import TabMlp, BasicRNN, WideDeep, ModelFuser, Vision
+from pytorch_widedeep.losses_multitarget import MultiTargetClassificationLoss
+from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
+from pytorch_widedeep import Trainer
+
+# let's add a second target to the dataframe
+df["target2"] = [random.choice([0, 1]) for _ in range(100)]
+
+# Tabular
+tab_preprocessor = TabPreprocessor(
+    embed_cols=["city", "name"], continuous_cols=["age", "height"]
+)
+X_tab = tab_preprocessor.fit_transform(df)
+tab_mlp = TabMlp(
+    column_idx=tab_preprocessor.column_idx,
+    cat_embed_input=tab_preprocessor.cat_embed_input,
+    continuous_cols=tab_preprocessor.continuous_cols,
+    mlp_hidden_dims=[64, 32],
+)
+
+# 'pred_dim=2' because we have two binary targets. For other types of targets,
+#  please, see the documentation
+model = WideDeep(deeptabular=tab_mlp, pred_dim=2).
+
+loss = MultiTargetClassificationLoss(binary_config=[0, 1], reduction="mean")
+
+# When a multi-target loss is used, 'custom_loss_function' must not be None.
+# See the docs
+trainer = Trainer(model, objective="multitarget", custom_loss_function=loss)
+
+trainer.fit(
+    X_tab=X_tab,
+    target=df[["target", "target2"]].values,
+    n_epochs=1,
+    batch_size=32,
+)
+```
+
 ### The ``deeptabular`` component
 
 It is important to emphasize again that **each individual component, `wide`,

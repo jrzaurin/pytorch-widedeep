@@ -84,7 +84,7 @@ class Trainer(BaseTrainer):
 
         - `tweedie`
 
-        - `multitarget`
+        - `multitarget`, aliases: `multi_target`
 
         **NOTE**: For `multitarget` a custom loss function must be passed
     custom_loss_function: `nn.Module`. Optional, default = None

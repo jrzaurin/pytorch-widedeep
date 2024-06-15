@@ -86,6 +86,7 @@ class _ObjectiveToMethod:
         "huber": "regression",
         "quantile": "qregression",
         "multitarget": "multitarget",
+        "multi_target": "multitarget",
     }
 
     @classproperty
