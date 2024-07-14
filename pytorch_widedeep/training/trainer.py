@@ -467,21 +467,15 @@ class Trainer(BaseTrainer):
             self.transforms,
             **lds_args,
         )
-        if isinstance(custom_dataloader, type):
-            if issubclass(custom_dataloader, DataLoader):
-                train_loader = custom_dataloader(  # type: ignore[misc]
-                    dataset=train_set,
-                    batch_size=batch_size,
-                    num_workers=self.num_workers,
-                    **dataloader_args,
-                )
-            else:
-                NotImplementedError(
-                    "Custom DataLoader must be a subclass of "
-                    "torch.utils.data.DataLoader, please see the "
-                    "pytorch documentation or examples in "
-                    "pytorch_widedeep.dataloaders"
-                )
+        if custom_dataloader is not None:
+            # make sure is callable (and HAS to be an subclass of DataLoader)
+            assert isinstance(custom_dataloader, type)
+            train_loader = custom_dataloader(  # type: ignore[misc]
+                dataset=train_set,
+                batch_size=batch_size,
+                num_workers=self.num_workers,
+                **dataloader_args,
+            )
         else:
             train_loader = DataLoaderDefault(
                 dataset=train_set,
@@ -794,6 +788,7 @@ class Trainer(BaseTrainer):
         self,
         path: str,
         save_state_dict: bool = False,
+        save_optimizer: bool = False,
         model_filename: str = "wd_model.pt",
     ):
         r"""Saves the model, training and evaluation history, and the
@@ -824,6 +819,8 @@ class Trainer(BaseTrainer):
         save_state_dict: bool, default = False
             Boolean indicating whether to save directly the model or the
             model's state dictionary
+        save_optimizer: bool, default = False
+            Boolean indicating whether to save the optimizer state dictionary
         model_filename: str, Optional, default = "wd_model.pt"
             filename where the model weights will be store
         """
@@ -844,8 +841,24 @@ class Trainer(BaseTrainer):
                 json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
 
         model_path = save_dir / model_filename
-        if save_state_dict:
+        if save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model_state_dict": self.model.state_dict(),
+                    "optimizer_state_dict": self.optimizer.state_dict(),
+                },
+                model_path,
+            )
+        elif save_state_dict and not save_optimizer:
             torch.save(self.model.state_dict(), model_path)
+        elif not save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model": self.model,
+                    "optimizer": self.optimizer,
+                },
+                model_path,
+            )
         else:
             torch.save(self.model, model_path)
 

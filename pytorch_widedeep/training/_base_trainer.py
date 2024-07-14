@@ -108,6 +108,7 @@ class BaseTrainer(ABC):
         self,
         path: str,
         save_state_dict: bool,
+        save_optimizer: bool,
         model_filename: str,
     ):
         raise NotImplementedError("Trainer.save method not implemented")

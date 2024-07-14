@@ -408,8 +408,23 @@ class TrainerFromFolder(BaseTrainer):
         self,
         path: str,
         save_state_dict: bool = False,
+        save_optimizer: bool = False,
         model_filename: str = "wd_model.pt",
     ):  # pragma: no cover
+        """
+        Parameters
+        ----------
+        path: str
+            path to the directory where the model and the feature importance
+            attribute will be saved.
+        save_state_dict: bool, default = False
+            Boolean indicating whether to save directly the model or the
+            model's state dictionary
+        save_optimizer: bool, default = False
+            Boolean indicating whether to save the optimizer state dictionary
+        model_filename: str, Optional, default = "wd_model.pt"
+            filename where the model weights will be store
+        """
         save_dir = Path(path)
         history_dir = save_dir / "history"
         history_dir.mkdir(exist_ok=True, parents=True)
@@ -426,8 +441,24 @@ class TrainerFromFolder(BaseTrainer):
                 json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
 
         model_path = save_dir / model_filename
-        if save_state_dict:
+        if save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model_state_dict": self.model.state_dict(),
+                    "optimizer_state_dict": self.optimizer.state_dict(),
+                },
+                model_path,
+            )
+        elif save_state_dict and not save_optimizer:
             torch.save(self.model.state_dict(), model_path)
+        elif not save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model": self.model,
+                    "optimizer": self.optimizer,
+                },
+                model_path,
+            )
         else:
             torch.save(self.model, model_path)
 

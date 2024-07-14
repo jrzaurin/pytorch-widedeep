@@ -263,6 +263,7 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         self,
         path: str,
         save_state_dict: bool = False,
+        save_optimizer: bool = False,
         model_filename: str = "cd_model.pt",
     ):
         r"""Saves the model, training and evaluation history (if any) to disk
@@ -275,6 +276,8 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         save_state_dict: bool, default = False
             Boolean indicating whether to save directly the model or the
             model's state dictionary
+        save_optimizer: bool, default = False
+            Boolean indicating whether to save the optimizer or not
         model_filename: str, Optional, default = "cd_model.pt"
             filename where the model weights will be store
         """
@@ -294,8 +297,24 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
                 json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
 
         model_path = save_dir / model_filename
-        if save_state_dict:
+        if save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model_state_dict": self.cd_model.state_dict(),
+                    "optimizer_state_dict": self.optimizer.state_dict(),
+                },
+                model_path,
+            )
+        elif save_state_dict and not save_optimizer:
             torch.save(self.cd_model.state_dict(), model_path)
+        elif not save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model": self.cd_model,
+                    "optimizer": self.optimizer,
+                },
+                model_path,
+            )
         else:
             torch.save(self.cd_model, model_path)
 
