@@ -1,7 +1,9 @@
 import os
 import sys
+import json
 import warnings
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -318,6 +320,61 @@ class BaseTrainer(ABC):
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self.model)
         self.callback_container.set_trainer(self)
+
+    def _save_history(self, path: str):
+        # 'history' here refers to both, the training/evaluation history and
+        #  the lr history
+        save_dir = Path(path)
+        history_dir = save_dir / "history"
+        history_dir.mkdir(exist_ok=True, parents=True)
+
+        # the trainer is run with the History Callback by default
+        with open(history_dir / "train_eval_history.json", "w") as teh:
+            json.dump(self.history, teh)  # type: ignore[attr-defined]
+
+        has_lr_history = any(
+            [clbk.__class__.__name__ == "LRHistory" for clbk in self.callbacks]
+        )
+        if self.lr_scheduler is not None and has_lr_history:
+            with open(history_dir / "lr_history.json", "w") as lrh:
+                json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
+
+    def _save_model_and_optimizer(
+        self,
+        path: str,
+        save_state_dict: bool,
+        save_optimizer: bool,
+        model_filename: str,
+    ):
+
+        model_path = Path(path) / model_filename
+        if save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model_state_dict": self.model.state_dict(),
+                    "optimizer_state_dict": (
+                        self.optimizer.state_dict()
+                        if not isinstance(self.optimizer, MultipleOptimizer)
+                        else {
+                            k: v.state_dict()  # type: ignore[union-attr]
+                            for k, v in self.optimizer._optimizers.items()
+                        }
+                    ),
+                },
+                model_path,
+            )
+        elif save_state_dict and not save_optimizer:
+            torch.save(self.model.state_dict(), model_path)
+        elif not save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model": self.model,
+                    "optimizer": self.optimizer,  # this can be a MultipleOptimizer
+                },
+                model_path,
+            )
+        else:
+            torch.save(self.model, model_path)
 
     @staticmethod
     def _check_inputs(

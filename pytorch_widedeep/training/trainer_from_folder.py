@@ -425,42 +425,11 @@ class TrainerFromFolder(BaseTrainer):
         model_filename: str, Optional, default = "wd_model.pt"
             filename where the model weights will be store
         """
-        save_dir = Path(path)
-        history_dir = save_dir / "history"
-        history_dir.mkdir(exist_ok=True, parents=True)
+        self._save_history(path)
 
-        # the trainer is run with the History Callback by default
-        with open(history_dir / "train_eval_history.json", "w") as teh:
-            json.dump(self.history, teh)  # type: ignore[attr-defined]
-
-        has_lr_history = any(
-            [clbk.__class__.__name__ == "LRHistory" for clbk in self.callbacks]
+        self._save_model_and_optimizer(
+            path, save_state_dict, save_optimizer, model_filename
         )
-        if self.lr_scheduler is not None and has_lr_history:
-            with open(history_dir / "lr_history.json", "w") as lrh:
-                json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
-
-        model_path = save_dir / model_filename
-        if save_state_dict and save_optimizer:
-            torch.save(
-                {
-                    "model_state_dict": self.model.state_dict(),
-                    "optimizer_state_dict": self.optimizer.state_dict(),
-                },
-                model_path,
-            )
-        elif save_state_dict and not save_optimizer:
-            torch.save(self.model.state_dict(), model_path)
-        elif not save_state_dict and save_optimizer:
-            torch.save(
-                {
-                    "model": self.model,
-                    "optimizer": self.optimizer,
-                },
-                model_path,
-            )
-        else:
-            torch.save(self.model, model_path)
 
     @alias("n_epochs", ["finetune_epochs", "warmup_epochs"])
     @alias("max_lr", ["finetune_max_lr", "warmup_max_lr"])
