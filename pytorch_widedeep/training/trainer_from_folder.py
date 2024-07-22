@@ -415,10 +415,11 @@ class TrainerFromFolder(BaseTrainer):
             path to the directory where the model and the feature importance
             attribute will be saved.
         save_state_dict: bool, default = False
-            Boolean indicating whether to save directly the model or the
-            model's state dictionary
+            Boolean indicating whether to save directly the model
+            (and optimizer) or the model's (and optimizer's) state
+            dictionary
         save_optimizer: bool, default = False
-            Boolean indicating whether to save the optimizer state dictionary
+            Boolean indicating whether to save the optimizer
         model_filename: str, Optional, default = "wd_model.pt"
             filename where the model weights will be store
         """
