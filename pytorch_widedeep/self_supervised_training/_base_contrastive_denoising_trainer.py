@@ -1,7 +1,9 @@
 import os
 import sys
+import json
 import warnings
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -31,6 +33,11 @@ from pytorch_widedeep.models.tabular.self_supervised import (
 from pytorch_widedeep.preprocessing.tab_preprocessor import TabPreprocessor
 
 
+# There is quite a lot of code repetition between the
+# BaseContrastiveDenoisingTrainer and the BaseEncoderDecoderTrainer. Given
+# how differently they are instantiated I am happy to tolerate this
+# repetition. However, if the code base grows, it might be worth refactoring
+# this code
 class BaseContrastiveDenoisingTrainer(ABC):
     def __init__(
         self,
@@ -104,38 +111,60 @@ class BaseContrastiveDenoisingTrainer(ABC):
         save_optimizer: bool,
         model_filename: str,
     ):
-        raise NotImplementedError("Trainer.save method not implemented")
 
-    def _set_loss_fn(self, **kwargs):
-        if self.loss_type in ["contrastive", "both"]:
-            temperature = kwargs.get("temperature", 0.1)
-            reduction = kwargs.get("reduction", "mean")
-            self.contrastive_loss = InfoNCELoss(temperature, reduction)
+        self._save_history(path)
 
-        if self.loss_type in ["denoising", "both"]:
-            lambda_cat = kwargs.get("lambda_cat", 1.0)
-            lambda_cont = kwargs.get("lambda_cont", 1.0)
-            reduction = kwargs.get("reduction", "mean")
-            self.denoising_loss = DenoisingLoss(lambda_cat, lambda_cont, reduction)
+        self._save_model_and_optimizer(
+            path, save_state_dict, save_optimizer, model_filename
+        )
 
-    def _compute_loss(
+    def _save_history(self, path: str):
+        # 'history' here refers to both, the training/evaluation history and
+        #  the lr history
+        save_dir = Path(path)
+        history_dir = save_dir / "history"
+        history_dir.mkdir(exist_ok=True, parents=True)
+
+        # the trainer is run with the History Callback by default
+        with open(history_dir / "train_eval_history.json", "w") as teh:
+            json.dump(self.history, teh)  # type: ignore[attr-defined]
+
+        has_lr_history = any(
+            [clbk.__class__.__name__ == "LRHistory" for clbk in self.callbacks]
+        )
+        if self.lr_scheduler is not None and has_lr_history:
+            with open(history_dir / "lr_history.json", "w") as lrh:
+                json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
+
+    def _save_model_and_optimizer(
         self,
-        g_projs: Optional[Tuple[Tensor, Tensor]],
-        x_cat_and_cat_: Optional[Tuple[Tensor, Tensor]],
-        x_cont_and_cont_: Optional[Tuple[Tensor, Tensor]],
-    ) -> Tensor:
-        contrastive_loss = (
-            self.contrastive_loss(g_projs)
-            if self.loss_type in ["contrastive", "both"]
-            else torch.tensor(0.0)
-        )
-        denoising_loss = (
-            self.denoising_loss(x_cat_and_cat_, x_cont_and_cont_)
-            if self.loss_type in ["denoising", "both"]
-            else torch.tensor(0.0)
-        )
+        path: str,
+        save_state_dict: bool,
+        save_optimizer: bool,
+        model_filename: str,
+    ):
 
-        return contrastive_loss + denoising_loss
+        model_path = Path(path) / model_filename
+        if save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model_state_dict": self.cd_model.state_dict(),
+                    "optimizer_state_dict": self.optimizer.state_dict(),
+                },
+                model_path,
+            )
+        elif save_state_dict and not save_optimizer:
+            torch.save(self.cd_model.state_dict(), model_path)
+        elif not save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model": self.cd_model,
+                    "optimizer": self.optimizer,  # this can be a MultipleOptimizer
+                },
+                model_path,
+            )
+        else:
+            torch.save(self.cd_model, model_path)
 
     def _set_reduce_on_plateau_criterion(
         self, lr_scheduler, reducelronplateau_criterion
@@ -233,6 +262,37 @@ class BaseContrastiveDenoisingTrainer(ABC):
         device = kwargs.get("device", default_device)
         num_workers = kwargs.get("num_workers", default_num_workers)
         return device, num_workers
+
+    def _set_loss_fn(self, **kwargs):
+        if self.loss_type in ["contrastive", "both"]:
+            temperature = kwargs.get("temperature", 0.1)
+            reduction = kwargs.get("reduction", "mean")
+            self.contrastive_loss = InfoNCELoss(temperature, reduction)
+
+        if self.loss_type in ["denoising", "both"]:
+            lambda_cat = kwargs.get("lambda_cat", 1.0)
+            lambda_cont = kwargs.get("lambda_cont", 1.0)
+            reduction = kwargs.get("reduction", "mean")
+            self.denoising_loss = DenoisingLoss(lambda_cat, lambda_cont, reduction)
+
+    def _compute_loss(
+        self,
+        g_projs: Optional[Tuple[Tensor, Tensor]],
+        x_cat_and_cat_: Optional[Tuple[Tensor, Tensor]],
+        x_cont_and_cont_: Optional[Tuple[Tensor, Tensor]],
+    ) -> Tensor:
+        contrastive_loss = (
+            self.contrastive_loss(g_projs)
+            if self.loss_type in ["contrastive", "both"]
+            else torch.tensor(0.0)
+        )
+        denoising_loss = (
+            self.denoising_loss(x_cat_and_cat_, x_cont_and_cont_)
+            if self.loss_type in ["denoising", "both"]
+            else torch.tensor(0.0)
+        )
+
+        return contrastive_loss + denoising_loss
 
     @staticmethod
     def _check_model_is_supported(model: ModelWithAttention):
