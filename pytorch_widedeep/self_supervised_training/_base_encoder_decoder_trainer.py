@@ -68,7 +68,7 @@ class BaseEncoderDecoderTrainer(ABC):
     def pretrain(
         self,
         X_tab: np.ndarray,
-        X_val: Optional[np.ndarray],
+        X_tab_val: Optional[np.ndarray],
         val_split: Optional[float],
         validation_freq: int,
         n_epochs: int,
@@ -76,7 +76,6 @@ class BaseEncoderDecoderTrainer(ABC):
     ):
         raise NotImplementedError("Trainer.pretrain method not implemented")
 
-    @abstractmethod
     def save(
         self,
         path: str,
@@ -84,6 +83,21 @@ class BaseEncoderDecoderTrainer(ABC):
         save_optimizer: bool,
         model_filename: str,
     ):
+        r"""Saves the model, training and evaluation history (if any) to disk
+
+        Parameters
+        ----------
+        path: str
+            path to the directory where the model and the feature importance
+            attribute will be saved.
+        save_state_dict: bool, default = False
+            Boolean indicating whether to save directly the model or the
+            model's state dictionary
+        save_optimizer: bool, default = False
+            Boolean indicating whether to save the optimizer or not
+        model_filename: str, Optional, default = "ed_model.pt"
+            filename where the model weights will be store
+        """
 
         self._save_history(path)
 

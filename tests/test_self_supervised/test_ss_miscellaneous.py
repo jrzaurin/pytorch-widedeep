@@ -104,7 +104,12 @@ def test_save_and_load(model_type):
         embed_module = model.cat_embed.embed
         embeddings = embed_module.weight.data
 
-    trainer.save("tests/test_self_supervised/model_dir/", model_filename="ss_model.pt")
+    trainer.save(
+        path="tests/test_self_supervised/model_dir/",
+        save_optimizer=False,
+        save_state_dict=False,
+        model_filename="ss_model.pt",
+    )
     new_model = torch.load("tests/test_self_supervised/model_dir/ss_model.pt")
 
     if model_type == "mlp":
@@ -263,6 +268,7 @@ def test_save_and_load_dict(model_type):  # noqa: C901
         "tests/test_self_supervised/model_dir/",
         model_filename="ss_model.pt",
         save_state_dict=True,
+        save_optimizer=False,
     )
 
     model2, trainer2 = _build_model_and_trainer(model_type)

@@ -1,6 +1,3 @@
-import json
-from pathlib import Path
-
 import numpy as np
 import torch
 from tqdm import trange
@@ -259,65 +256,6 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
             X_tab, X_tab_val, val_split, validation_freq, n_epochs, batch_size
         )
 
-    def save(
-        self,
-        path: str,
-        save_state_dict: bool = False,
-        save_optimizer: bool = False,
-        model_filename: str = "cd_model.pt",
-    ):
-        r"""Saves the model, training and evaluation history (if any) to disk
-
-        Parameters
-        ----------
-        path: str
-            path to the directory where the model and the feature importance
-            attribute will be saved.
-        save_state_dict: bool, default = False
-            Boolean indicating whether to save directly the model or the
-            model's state dictionary
-        save_optimizer: bool, default = False
-            Boolean indicating whether to save the optimizer or not
-        model_filename: str, Optional, default = "cd_model.pt"
-            filename where the model weights will be store
-        """
-        save_dir = Path(path)
-        history_dir = save_dir / "history"
-        history_dir.mkdir(exist_ok=True, parents=True)
-
-        # the trainer is run with the History Callback by default
-        with open(history_dir / "train_eval_history.json", "w") as teh:
-            json.dump(self.history, teh)  # type: ignore[attr-defined]
-
-        has_lr_history = any(
-            [clbk.__class__.__name__ == "LRHistory" for clbk in self.callbacks]
-        )
-        if self.lr_scheduler is not None and has_lr_history:
-            with open(history_dir / "lr_history.json", "w") as lrh:
-                json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
-
-        model_path = save_dir / model_filename
-        if save_state_dict and save_optimizer:
-            torch.save(
-                {
-                    "model_state_dict": self.cd_model.state_dict(),
-                    "optimizer_state_dict": self.optimizer.state_dict(),
-                },
-                model_path,
-            )
-        elif save_state_dict and not save_optimizer:
-            torch.save(self.cd_model.state_dict(), model_path)
-        elif not save_state_dict and save_optimizer:
-            torch.save(
-                {
-                    "model": self.cd_model,
-                    "optimizer": self.optimizer,
-                },
-                model_path,
-            )
-        else:
-            torch.save(self.cd_model, model_path)
-
     def _train_step(self, X_tab: Tensor, batch_idx: int) -> float:
         X = X_tab.to(self.device)
 
@@ -356,7 +294,7 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
             train_set = TensorDataset(torch.from_numpy(X))
             eval_set = TensorDataset(torch.from_numpy(X_tab_val))
         elif val_split is not None:
-            X_tr, X_tab_val = train_test_split(
+            X_tr, X_tab_val = train_test_split(  # type: ignore
                 X, test_size=val_split, random_state=self.seed
             )
             train_set = TensorDataset(torch.from_numpy(X_tr))
