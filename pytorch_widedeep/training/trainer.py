@@ -467,21 +467,15 @@ class Trainer(BaseTrainer):
             self.transforms,
             **lds_args,
         )
-        if isinstance(custom_dataloader, type):
-            if issubclass(custom_dataloader, DataLoader):
-                train_loader = custom_dataloader(  # type: ignore[misc]
-                    dataset=train_set,
-                    batch_size=batch_size,
-                    num_workers=self.num_workers,
-                    **dataloader_args,
-                )
-            else:
-                NotImplementedError(
-                    "Custom DataLoader must be a subclass of "
-                    "torch.utils.data.DataLoader, please see the "
-                    "pytorch documentation or examples in "
-                    "pytorch_widedeep.dataloaders"
-                )
+        if custom_dataloader is not None:
+            # make sure is callable (and HAS to be an subclass of DataLoader)
+            assert isinstance(custom_dataloader, type)
+            train_loader = custom_dataloader(  # type: ignore[misc]
+                dataset=train_set,
+                batch_size=batch_size,
+                num_workers=self.num_workers,
+                **dataloader_args,
+            )
         else:
             train_loader = DataLoaderDefault(
                 dataset=train_set,
@@ -794,6 +788,7 @@ class Trainer(BaseTrainer):
         self,
         path: str,
         save_state_dict: bool = False,
+        save_optimizer: bool = False,
         model_filename: str = "wd_model.pt",
     ):
         r"""Saves the model, training and evaluation history, and the
@@ -822,35 +817,23 @@ class Trainer(BaseTrainer):
             path to the directory where the model and the feature importance
             attribute will be saved.
         save_state_dict: bool, default = False
-            Boolean indicating whether to save directly the model or the
-            model's state dictionary
+            Boolean indicating whether to save directly the model
+            (and optimizer) or the model's (and optimizer's) state
+            dictionary
+        save_optimizer: bool, default = False
+            Boolean indicating whether to save the optimizer
         model_filename: str, Optional, default = "wd_model.pt"
             filename where the model weights will be store
         """
 
-        save_dir = Path(path)
-        history_dir = save_dir / "history"
-        history_dir.mkdir(exist_ok=True, parents=True)
+        self._save_history(path)
 
-        # the trainer is run with the History Callback by default
-        with open(history_dir / "train_eval_history.json", "w") as teh:
-            json.dump(self.history, teh)  # type: ignore[attr-defined]
-
-        has_lr_history = any(
-            [clbk.__class__.__name__ == "LRHistory" for clbk in self.callbacks]
+        self._save_model_and_optimizer(
+            path, save_state_dict, save_optimizer, model_filename
         )
-        if self.lr_scheduler is not None and has_lr_history:
-            with open(history_dir / "lr_history.json", "w") as lrh:
-                json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
-
-        model_path = save_dir / model_filename
-        if save_state_dict:
-            torch.save(self.model.state_dict(), model_path)
-        else:
-            torch.save(self.model, model_path)
 
         if self.model.is_tabnet:
-            with open(save_dir / "feature_importance.json", "w") as fi:
+            with open(Path(path) / "feature_importance.json", "w") as fi:
                 json.dump(self.feature_importance, fi)
 
     @alias("n_epochs", ["finetune_epochs", "warmup_epochs"])

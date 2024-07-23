@@ -1,6 +1,3 @@
-import json
-from pathlib import Path
-
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -408,28 +405,29 @@ class TrainerFromFolder(BaseTrainer):
         self,
         path: str,
         save_state_dict: bool = False,
+        save_optimizer: bool = False,
         model_filename: str = "wd_model.pt",
     ):  # pragma: no cover
-        save_dir = Path(path)
-        history_dir = save_dir / "history"
-        history_dir.mkdir(exist_ok=True, parents=True)
+        """
+        Parameters
+        ----------
+        path: str
+            path to the directory where the model and the feature importance
+            attribute will be saved.
+        save_state_dict: bool, default = False
+            Boolean indicating whether to save directly the model
+            (and optimizer) or the model's (and optimizer's) state
+            dictionary
+        save_optimizer: bool, default = False
+            Boolean indicating whether to save the optimizer
+        model_filename: str, Optional, default = "wd_model.pt"
+            filename where the model weights will be store
+        """
+        self._save_history(path)
 
-        # the trainer is run with the History Callback by default
-        with open(history_dir / "train_eval_history.json", "w") as teh:
-            json.dump(self.history, teh)  # type: ignore[attr-defined]
-
-        has_lr_history = any(
-            [clbk.__class__.__name__ == "LRHistory" for clbk in self.callbacks]
+        self._save_model_and_optimizer(
+            path, save_state_dict, save_optimizer, model_filename
         )
-        if self.lr_scheduler is not None and has_lr_history:
-            with open(history_dir / "lr_history.json", "w") as lrh:
-                json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
-
-        model_path = save_dir / model_filename
-        if save_state_dict:
-            torch.save(self.model.state_dict(), model_path)
-        else:
-            torch.save(self.model, model_path)
 
     @alias("n_epochs", ["finetune_epochs", "warmup_epochs"])
     @alias("max_lr", ["finetune_max_lr", "warmup_max_lr"])

@@ -1,7 +1,9 @@
 import os
 import sys
+import json
 import warnings
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -66,7 +68,7 @@ class BaseEncoderDecoderTrainer(ABC):
     def pretrain(
         self,
         X_tab: np.ndarray,
-        X_val: Optional[np.ndarray],
+        X_tab_val: Optional[np.ndarray],
         val_split: Optional[float],
         validation_freq: int,
         n_epochs: int,
@@ -74,14 +76,82 @@ class BaseEncoderDecoderTrainer(ABC):
     ):
         raise NotImplementedError("Trainer.pretrain method not implemented")
 
-    @abstractmethod
     def save(
         self,
         path: str,
         save_state_dict: bool,
+        save_optimizer: bool,
         model_filename: str,
     ):
-        raise NotImplementedError("Trainer.save method not implemented")
+        r"""Saves the model, training and evaluation history (if any) to disk
+
+        Parameters
+        ----------
+        path: str
+            path to the directory where the model and the feature importance
+            attribute will be saved.
+        save_state_dict: bool, default = False
+            Boolean indicating whether to save directly the model or the
+            model's state dictionary
+        save_optimizer: bool, default = False
+            Boolean indicating whether to save the optimizer or not
+        model_filename: str, Optional, default = "ed_model.pt"
+            filename where the model weights will be store
+        """
+
+        self._save_history(path)
+
+        self._save_model_and_optimizer(
+            path, save_state_dict, save_optimizer, model_filename
+        )
+
+    def _save_history(self, path: str):
+        # 'history' here refers to both, the training/evaluation history and
+        #  the lr history
+        save_dir = Path(path)
+        history_dir = save_dir / "history"
+        history_dir.mkdir(exist_ok=True, parents=True)
+
+        # the trainer is run with the History Callback by default
+        with open(history_dir / "train_eval_history.json", "w") as teh:
+            json.dump(self.history, teh)  # type: ignore[attr-defined]
+
+        has_lr_history = any(
+            [clbk.__class__.__name__ == "LRHistory" for clbk in self.callbacks]
+        )
+        if self.lr_scheduler is not None and has_lr_history:
+            with open(history_dir / "lr_history.json", "w") as lrh:
+                json.dump(self.lr_history, lrh)  # type: ignore[attr-defined]
+
+    def _save_model_and_optimizer(
+        self,
+        path: str,
+        save_state_dict: bool,
+        save_optimizer: bool,
+        model_filename: str,
+    ):
+
+        model_path = Path(path) / model_filename
+        if save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model_state_dict": self.ed_model.state_dict(),
+                    "optimizer_state_dict": self.optimizer.state_dict(),
+                },
+                model_path,
+            )
+        elif save_state_dict and not save_optimizer:
+            torch.save(self.ed_model.state_dict(), model_path)
+        elif not save_state_dict and save_optimizer:
+            torch.save(
+                {
+                    "model": self.ed_model,
+                    "optimizer": self.optimizer,  # this can be a MultipleOptimizer
+                },
+                model_path,
+            )
+        else:
+            torch.save(self.ed_model, model_path)
 
     def _set_reduce_on_plateau_criterion(
         self, lr_scheduler, reducelronplateau_criterion
