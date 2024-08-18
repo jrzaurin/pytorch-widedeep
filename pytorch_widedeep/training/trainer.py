@@ -958,6 +958,7 @@ class Trainer(BaseTrainer):
             self.valid_running_loss += loss.item()
             avg_loss = self.valid_running_loss / (batch_idx + 1)
 
+        self.model.train()
         return score, avg_loss
 
     def _get_score(self, y_pred, y):
