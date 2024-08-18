@@ -134,7 +134,7 @@ class BaseFeatureImportance(ABC):
         n_iterations = self.n_samples // loader.batch_size
 
         batches = []
-        for i, (data, _, _) in enumerate(loader):
+        for i, (data, _) in enumerate(loader):
             if i < n_iterations:
                 batches.append(data["deeptabular"].to(self.device))
             else:

@@ -1,6 +1,4 @@
 import json
-import warnings
-from inspect import signature
 from pathlib import Path
 
 import numpy as np
@@ -16,7 +14,6 @@ from pytorch_widedeep.metrics import Metric
 from pytorch_widedeep.wdtypes import (
     Dict,
     List,
-    Tuple,
     Union,
     Tensor,
     Literal,
@@ -27,7 +24,6 @@ from pytorch_widedeep.wdtypes import (
     LRScheduler,
 )
 from pytorch_widedeep.callbacks import Callback
-from pytorch_widedeep.dataloaders import DataLoaderDefault
 from pytorch_widedeep.initializers import Initializer
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.utils.general_utils import alias
@@ -287,7 +283,6 @@ class Trainer(BaseTrainer):
         custom_dataloader: Optional[DataLoader] = None,
         feature_importance_sample_size: Optional[int] = None,
         finetune: bool = False,
-        with_lds: bool = False,
         **kwargs,
     ):
         r"""Fit method.
@@ -370,12 +365,6 @@ class Trainer(BaseTrainer):
             For details on how these routines work, please see the Examples
             section in this documentation and the Examples folder in the repo. <br/>
             Param Alias: `warmup`
-        with_lds: bool, default=False
-            Boolean indicating if Label Distribution Smoothing will be used. <br/>
-            information_source: **NOTE**: We consider this feature absolutely
-            experimental and we recommend the user to not use it unless the
-            corresponding [publication](https://arxiv.org/abs/2102.09554) is
-            well understood
 
         Other Parameters
         ----------------
@@ -387,26 +376,6 @@ class Trainer(BaseTrainer):
                 Please, see the pytorch
                 [DataLoader docs](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)
                 for details.
-
-            - **Label Distribution Smoothing related parameters**:<br/>
-
-                - lds_kernel (`Literal['gaussian', 'triang', 'laplace']`):
-                    choice of kernel for Label Distribution Smoothing
-                - lds_ks (`int`):
-                    LDS kernel window size
-                - lds_sigma (`float`):
-                    standard deviation of ['gaussian','laplace'] kernel for LDS
-                - lds_granularity (`int`):
-                    number of bins in histogram used in LDS to count occurence of sample values
-                - lds_reweight (`bool`):
-                    option to reweight bin frequency counts in LDS
-                - lds_y_max (`Optional[float]`):
-                    option to restrict LDS bins by upper label limit
-                - lds_y_min (`Optional[float]`):
-                    option to restrict LDS bins by lower label limit
-
-                See `pytorch_widedeep.trainer._wd_dataset` for more details on
-                the implications of these parameters
 
             - **Finetune related parameters**:<br/>
                 see the source code at `pytorch_widedeep._finetune`. Namely, these are:
@@ -447,9 +416,7 @@ class Trainer(BaseTrainer):
         folder in the repo
         """
 
-        lds_args, dataloader_args, finetune_args = self._extract_kwargs(kwargs)
-        lds_args["with_lds"] = with_lds
-        self.with_lds = with_lds
+        dataloader_args, finetune_args = self._extract_kwargs(kwargs)
 
         self.batch_size = batch_size
 
@@ -465,7 +432,6 @@ class Trainer(BaseTrainer):
             val_split,
             target,
             self.transforms,
-            **lds_args,
         )
         if custom_dataloader is not None:
             # make sure is callable (and HAS to be an subclass of DataLoader)
@@ -477,7 +443,7 @@ class Trainer(BaseTrainer):
                 **dataloader_args,
             )
         else:
-            train_loader = DataLoaderDefault(
+            train_loader = DataLoader(
                 dataset=train_set,
                 batch_size=batch_size,
                 num_workers=self.num_workers,
@@ -513,11 +479,9 @@ class Trainer(BaseTrainer):
 
             self.train_running_loss = 0.0
             with trange(train_steps, disable=self.verbose != 1) as t:
-                for batch_idx, (data, targett, lds_weightt) in zip(t, train_loader):
+                for batch_idx, (data, targett) in zip(t, train_loader):
                     t.set_description("epoch %i" % (epoch + 1))
-                    train_score, train_loss = self._train_step(
-                        data, targett, batch_idx, epoch, lds_weightt
-                    )
+                    train_score, train_loss = self._train_step(data, targett, batch_idx)
                     print_loss_and_metric(t, train_loss, train_score)
                     self.callback_container.on_batch_end(batch=batch_idx)
             epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
@@ -552,9 +516,6 @@ class Trainer(BaseTrainer):
             if self.early_stop:
                 # self.callback_container.on_train_end(epoch_logs)
                 break
-
-            if self.model.with_fds:
-                self._update_fds_stats(train_loader, epoch)
 
         self.callback_container.on_train_end(epoch_logs)
 
@@ -929,25 +890,7 @@ class Trainer(BaseTrainer):
         data: Dict[str, Union[Tensor, List[Tensor]]],
         target: Tensor,
         batch_idx: int,
-        epoch: int,
-        lds_weightt: Tensor,
     ):
-        lds_weight = (
-            None
-            if torch.all(lds_weightt == 0)
-            else lds_weightt.view(-1, 1).to(self.device)
-        )
-        if (
-            self.with_lds
-            and lds_weight is not None
-            and "lds_weight" not in signature(self.loss_fn.forward).parameters
-        ):
-            warnings.warn(
-                """LDS weights are not None but the loss function used does not"
-                " support LDS weightening. For loss functions that support LDS"
-                " weightening please read the docs""",
-                UserWarning,
-            )
 
         self.model.train()
 
@@ -966,20 +909,13 @@ class Trainer(BaseTrainer):
 
         self.optimizer.zero_grad()
 
-        if self.model.with_fds:
-            _, y_pred = self.model(X, y, epoch)
-        else:
-            y_pred = self.model(X)
+        y_pred = self.model(X)
 
         if self.model.is_tabnet:
             loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
             score = self._get_score(y_pred[0], y)
         else:
-            loss = (
-                self.loss_fn(y_pred, y)
-                if not self.with_lds
-                else self.loss_fn(y_pred, y, lds_weight=lds_weight)
-            )
+            loss = self.loss_fn(y_pred, y)
             score = self._get_score(y_pred, y)
 
         loss.backward()
@@ -1037,39 +973,6 @@ class Trainer(BaseTrainer):
             return score
         else:
             return None
-
-    def _fds_step(
-        self,
-        data: Dict[str, Tensor],
-        target: Tensor,
-        epoch: int,
-    ) -> Tuple[Tensor, Tensor]:
-        self.model.train()
-        # FDS is only supported for the deeptabular component, X will never
-        # be Dict[str, List[Tensor]]
-        X = {k: v.to(self.device) for k, v in data.items()}
-        y = target.view(-1, 1).float().to(self.device)
-        smoothed_features, _ = self.model(X, y, epoch)
-        return smoothed_features, y
-
-    def _update_fds_stats(self, train_loader: DataLoader, epoch: int):
-        train_steps = len(train_loader)
-        features_l, y_pred_l = [], []
-        with torch.no_grad():
-            with trange(train_steps, disable=self.verbose != 1) as t:
-                for _, (data, targett, _) in zip(t, train_loader):
-                    t.set_description("FDS update")
-                    deeptab_features, deeptab_preds = self._fds_step(
-                        data,
-                        targett,
-                        epoch,
-                    )
-                    features_l.append(deeptab_features)
-                    y_pred_l.append(deeptab_preds)
-        features = torch.cat(features_l)
-        y_pred = torch.cat(y_pred_l)
-        self.model.fds_layer.update_last_epoch_stats(epoch)
-        self.model.fds_layer.update_running_stats(features, y_pred, epoch)
 
     def _predict(  # type: ignore[override, return]  # noqa: C901
         self,
@@ -1195,15 +1098,6 @@ class Trainer(BaseTrainer):
             "persistent_workers",
             "oversample_mul",
         ]
-        lds_params = [
-            "lds_kernel",
-            "lds_ks",
-            "lds_sigma",
-            "lds_granularity",
-            "lds_reweight",
-            "lds_y_max",
-            "lds_y_min",
-        ]
         finetune_params = [
             "n_epochs",
             "finetune_epochs",
@@ -1223,13 +1117,11 @@ class Trainer(BaseTrainer):
             "deepimage_max_lr",
         ]
 
-        lds_args, dataloader_args, finetune_args = {}, {}, {}
+        dataloader_args, finetune_args = {}, {}
         for k, v in kwargs.items():
-            if k in lds_params:
-                lds_args[k] = v
             if k in dataloader_params:
                 dataloader_args[k] = v
             if k in finetune_params:
                 finetune_args[k] = v
 
-        return lds_args, dataloader_args, finetune_args
+        return dataloader_args, finetune_args

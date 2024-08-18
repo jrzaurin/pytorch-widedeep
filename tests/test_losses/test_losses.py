@@ -358,33 +358,6 @@ def test_inverse_maps():
 
 
 ##############################################################################
-# Test LDS weight compatible losses
-##############################################################################
-@pytest.mark.parametrize(
-    "loss_f",
-    [
-        MSELoss,
-        MSLELoss,
-        RMSELoss,
-        RMSLELoss,
-        TweedieLoss,
-        L1Loss,
-        FocalR_L1Loss,
-        FocalR_MSELoss,
-        FocalR_RMSELoss,
-        HuberLoss,
-    ],
-)
-def test_lds_losses(loss_f):
-    lds_weight = np.array([1, 1, 1, 1]).reshape(-1, 1)
-    t_lds_weight = torch.from_numpy(lds_weight)
-    assert (
-        loss_f()(t_pred, t_true).item()
-        == loss_f()(t_pred, t_true, lds_weight=t_lds_weight).item()
-    )
-
-
-##############################################################################
 # Test FocalR loss activation functions
 ##############################################################################
 @pytest.mark.parametrize(

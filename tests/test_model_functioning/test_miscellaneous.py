@@ -24,7 +24,6 @@ from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.callbacks import EarlyStopping
 from pytorch_widedeep.preprocessing import TabPreprocessor
-from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 
 # Wide array
 X_wide = np.random.choice(50, (32, 10))
@@ -382,38 +381,3 @@ def test_handle_columns_with_dots():
     )
     preds = trainer.predict(X_tab=X_tab, batch_size=16)
     assert preds.shape[0] == 32 and "train_loss" in trainer.history
-
-
-###############################################################################
-# test Label Distribution Smoothing
-###############################################################################
-
-
-def test_lds_component_with_model():
-    model = WideDeep(deeptabular=tabmlp)
-    trainer = Trainer(model, objective="regression", verbose=0)
-    trainer.fit(X_tab=X_tab, target=target, with_lds=True)
-    # simply checking that runs and produces outputs
-    preds = trainer.predict(X_tab=X_tab)
-
-    assert preds.shape[0] == 32 and "train_loss" in trainer.history
-
-
-def test_lds_component_with_dataset():
-    dataset_with_lds = WideDeepDataset(X_tab=X_tab, target=target, with_lds=True)
-    # test if weights were created
-    assert dataset_with_lds.weights.shape[0] == 32
-
-
-###############################################################################
-# test Trainer _extract_kwargs
-###############################################################################
-
-
-def test_Trainer_extract_kwargs():
-    lds_args, dataloader_args, finetune_args = Trainer._extract_kwargs(
-        {"pin_memory": True, "lds_ks": 7, "n_epochs": 10}
-    )
-    assert lds_args == {"lds_ks": 7}
-    assert dataloader_args == {"pin_memory": True}
-    assert finetune_args == {"n_epochs": 10}
