@@ -121,7 +121,9 @@ class WideDeep(nn.Module):
     def __init__(
         self,
         wide: Optional[nn.Module] = None,
-        deeptabular: Optional[BaseWDModelComponent] = None,
+        deeptabular: Optional[
+            Union[BaseWDModelComponent, List[BaseWDModelComponent]]
+        ] = None,
         deeptext: Optional[
             Union[BaseWDModelComponent, List[BaseWDModelComponent]]
         ] = None,
@@ -210,7 +212,7 @@ class WideDeep(nn.Module):
 
     def _build_deephead(
         self,
-        deeptabular: Optional[BaseWDModelComponent],
+        deeptabular: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
         deeptext: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
         deepimage: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
         head_hidden_dims: List[int],
@@ -222,8 +224,11 @@ class WideDeep(nn.Module):
     ) -> nn.Sequential:
         deep_dim = 0
         if deeptabular is not None:
-            deep_dim += deeptabular.output_dim
-
+            if isinstance(deeptabular, list):
+                for dt in deeptabular:
+                    deep_dim += dt.output_dim
+            else:
+                deep_dim += deeptabular.output_dim
         if deeptext is not None:
             if isinstance(deeptext, list):
                 for dt in deeptext:
@@ -254,7 +259,7 @@ class WideDeep(nn.Module):
 
     def _set_model_components(  # noqa: C901
         self,
-        deeptabular: Optional[BaseWDModelComponent],
+        deeptabular: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
         deeptext: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
         deepimage: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
         with_deephead: bool,
@@ -264,41 +269,50 @@ class WideDeep(nn.Module):
         Optional[Union[nn.ModuleList, WDModel]],
     ]:
         if deeptabular is not None:
-            self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
+            self.is_tabnet, self.tabnet_indexes = self._is_tabnet(deeptabular)
         else:
-            self.is_tabnet = False
+            self.is_tabnet, self.tabnet_indexes = False, []
 
         if deeptabular is not None:
-            if self.is_tabnet:
-                deeptabular_ = (
-                    nn.Sequential(
-                        deeptabular,
-                        TabNetPredLayer(deeptabular.output_dim, self.pred_dim),
-                    )
-                    if not with_deephead
-                    else deeptabular
+            if isinstance(deeptabular, list):
+                deeptabular_: Optional[Union[nn.ModuleList, WDModel]] = nn.ModuleList()
+                for i, dtb in enumerate(deeptabular):
+                    if with_deephead:
+                        deeptabular_.append(dtb)
+                    elif i in self.tabnet_indexes:
+                        deeptabular_.append(
+                            nn.Sequential(
+                                dtb,
+                                TabNetPredLayer(dtb.output_dim, self.pred_dim),
+                            )
+                        )
+                    else:
+                        deeptabular_.append(
+                            nn.Sequential(dtb, nn.Linear(dtb.output_dim, self.pred_dim))
+                        )
+            elif with_deephead:
+                deeptabular_ = deeptabular
+            elif self.is_tabnet:
+                deeptabular_ = nn.Sequential(
+                    deeptabular, TabNetPredLayer(deeptabular.output_dim, self.pred_dim)
                 )
             else:
-                deeptabular_ = (
-                    nn.Sequential(
-                        deeptabular,
-                        nn.Linear(deeptabular.output_dim, self.pred_dim),
-                    )
-                    if not with_deephead
-                    else deeptabular
+                deeptabular_ = nn.Sequential(
+                    deeptabular, nn.Linear(deeptabular.output_dim, self.pred_dim)
                 )
         else:
-            deeptabular_ = deeptabular
+            deeptabular_ = None
 
         if deeptext is not None:
             if isinstance(deeptext, list):
                 deeptext_: Optional[Union[nn.ModuleList, WDModel]] = nn.ModuleList()
-                for dt in deeptext:
-                    deeptext_.append(
-                        nn.Sequential(dt, nn.Linear(dt.output_dim, self.pred_dim))
-                        if not with_deephead
-                        else dt
-                    )
+                for dtx in deeptext:
+                    if with_deephead:
+                        deeptext_.append(dtx)
+                    else:
+                        deeptext_.append(
+                            nn.Sequential(dtx, nn.Linear(dtx.output_dim, self.pred_dim))
+                        )
             else:
                 deeptext_ = (
                     nn.Sequential(
@@ -314,11 +328,12 @@ class WideDeep(nn.Module):
             if isinstance(deepimage, list):
                 deepimage_: Optional[Union[nn.ModuleList, WDModel]] = nn.ModuleList()
                 for di in deepimage:
-                    deepimage_.append(
-                        nn.Sequential(di, nn.Linear(di.output_dim, self.pred_dim))
-                        if not with_deephead
-                        else di
-                    )
+                    if with_deephead:
+                        deepimage_.append(di)
+                    else:
+                        deepimage_.append(
+                            nn.Sequential(di, nn.Linear(di.output_dim, self.pred_dim))
+                        )
             else:
                 deepimage_ = (
                     nn.Sequential(
@@ -420,6 +435,28 @@ class WideDeep(nn.Module):
 
         return res
 
+    def _is_tabnet(
+        self,
+        deeptabular: Union[BaseWDModelComponent, List[BaseWDModelComponent]],
+    ) -> Tuple[bool, List[int]]:
+
+        tabnet_indexes: Optional[List[int]] = []
+        if isinstance(deeptabular, list):
+            is_tabnet = any(dt.__class__.__name__ == "TabNet" for dt in deeptabular)
+            # We could just use a tabnet_indexes var but I do not want to
+            # drop the is_tabnet attribute since it has many effects
+            # downstream
+            if is_tabnet:
+                tabnet_indexes = [
+                    i
+                    for i, dt in enumerate(deeptabular)
+                    if dt.__class__.__name__ == "TabNet"
+                ]
+        else:
+            is_tabnet = deeptabular.__class__.__name__ == "TabNet"
+
+        return is_tabnet, tabnet_indexes
+
     @staticmethod  # noqa: C901
     def _check_inputs(  # noqa: C901
         wide,
@@ -437,13 +474,26 @@ class WideDeep(nn.Module):
                     wide.wide_linear.weight.size(1), pred_dim
                 )
             )
-        if deeptabular is not None and not hasattr(deeptabular, "output_dim"):
-            raise AttributeError(
-                "deeptabular model must have an 'output_dim' attribute or property. "
-                "See pytorch-widedeep.models.deep_text.DeepText"
-            )
+
         if deeptabular is not None:
-            is_tabnet = deeptabular.__class__.__name__ == "TabNet"
+            err_msg = (
+                "deeptabular model must have an 'output_dim' attribute or property."
+            )
+            if isinstance(deeptabular, list):
+                all_have_output_dim = all(
+                    hasattr(dt, "output_dim") for dt in deeptabular
+                )
+                if not all_have_output_dim:
+                    raise AttributeError(err_msg)
+            else:
+                if not hasattr(deeptabular, "output_dim"):
+                    raise AttributeError(err_msg)
+
+        if deeptabular is not None:
+            if isinstance(deeptabular, list):
+                is_tabnet = any(dt.__class__.__name__ == "TabNet" for dt in deeptabular)
+            else:
+                is_tabnet = deeptabular.__class__.__name__ == "TabNet"
             has_wide_text_or_image = (
                 wide is not None or deeptext is not None or deepimage is not None
             )
@@ -459,11 +509,9 @@ class WideDeep(nn.Module):
                     " components. Therefore, such importances will partially lose their 'meaning'.",
                     UserWarning,
                 )
+
         if deeptext is not None:
-            err_msg = (
-                "deeptext model must have an 'output_dim' attribute or property. "
-                "See pytorch-widedeep.models.deep_text.DeepText"
-            )
+            err_msg = "deeptext model must have an 'output_dim' attribute or property."
             if isinstance(deeptext, list):
                 all_have_output_dim = all(hasattr(dt, "output_dim") for dt in deeptext)
                 if not all_have_output_dim:
@@ -471,11 +519,9 @@ class WideDeep(nn.Module):
             else:
                 if not hasattr(deeptext, "output_dim"):
                     raise AttributeError(err_msg)
+
         if deepimage is not None:
-            err_msg = (
-                "deepimage model must have an 'output_dim' attribute or property. "
-                "See pytorch-widedeep.models.deep_image.DeepImage"
-            )
+            err_msg = "deepimage model must have an 'output_dim' attribute or property."
             if isinstance(deepimage, list):
                 all_have_output_dim = all(hasattr(di, "output_dim") for di in deepimage)
                 if not all_have_output_dim:
@@ -483,6 +529,7 @@ class WideDeep(nn.Module):
             else:
                 if not hasattr(deepimage, "output_dim"):
                     raise AttributeError(err_msg)
+
         if deephead is not None and head_hidden_dims is not None:
             raise ValueError(
                 "both 'deephead' and 'head_hidden_dims' are not None. Use one of the other, but not both"
@@ -496,6 +543,7 @@ class WideDeep(nn.Module):
             raise ValueError(
                 "if 'head_hidden_dims' is not None, at least one deep component must be used"
             )
+
         if deephead is not None:
             if not hasattr(deephead, "output_dim"):
                 raise AttributeError(
