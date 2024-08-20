@@ -3,7 +3,15 @@ import warnings
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Optional
+from pytorch_widedeep.wdtypes import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+    Tensor,
+    Literal,
+    Optional,
+)
 from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
@@ -162,6 +170,12 @@ class WideDeep(nn.Module):
 
         self.enforce_positive = enforce_positive
 
+        # better to set this attribute already here
+        if isinstance(deeptabular, list):
+            self.is_tabnet = False
+        else:
+            self.is_tabnet = deeptabular.__class__.__name__ == "TabNet"
+
         # The main 5 components of the wide and deep assemble: wide,
         # deeptabular, deeptext, deepimage and deephead
         self.with_deephead = deephead is not None or head_hidden_dims is not None
@@ -187,7 +201,7 @@ class WideDeep(nn.Module):
 
         self.wide = wide
         self.deeptabular, self.deeptext, self.deepimage = self._set_model_components(
-            deeptabular, deeptext, deepimage, self.with_deephead
+            deeptabular, deeptext, deepimage
         )
 
         if self.enforce_positive:
@@ -262,86 +276,23 @@ class WideDeep(nn.Module):
         deeptabular: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
         deeptext: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
         deepimage: Optional[Union[BaseWDModelComponent, List[BaseWDModelComponent]]],
-        with_deephead: bool,
     ) -> Tuple[
-        Optional[WDModel],
+        Optional[Union[nn.ModuleList, WDModel]],
         Optional[Union[nn.ModuleList, WDModel]],
         Optional[Union[nn.ModuleList, WDModel]],
     ]:
         if deeptabular is not None:
-            self.is_tabnet, self.tabnet_indexes = self._is_tabnet(deeptabular)
-        else:
-            self.is_tabnet, self.tabnet_indexes = False, []
-
-        if deeptabular is not None:
-            if isinstance(deeptabular, list):
-                deeptabular_: Optional[Union[nn.ModuleList, WDModel]] = nn.ModuleList()
-                for i, dtb in enumerate(deeptabular):
-                    if with_deephead:
-                        deeptabular_.append(dtb)
-                    elif i in self.tabnet_indexes:
-                        deeptabular_.append(
-                            nn.Sequential(
-                                dtb,
-                                TabNetPredLayer(dtb.output_dim, self.pred_dim),
-                            )
-                        )
-                    else:
-                        deeptabular_.append(
-                            nn.Sequential(dtb, nn.Linear(dtb.output_dim, self.pred_dim))
-                        )
-            elif with_deephead:
-                deeptabular_ = deeptabular
-            elif self.is_tabnet:
-                deeptabular_ = nn.Sequential(
-                    deeptabular, TabNetPredLayer(deeptabular.output_dim, self.pred_dim)
-                )
-            else:
-                deeptabular_ = nn.Sequential(
-                    deeptabular, nn.Linear(deeptabular.output_dim, self.pred_dim)
-                )
+            deeptabular_ = self._set_model_component(deeptabular, is_deeptabular=True)
         else:
             deeptabular_ = None
 
         if deeptext is not None:
-            if isinstance(deeptext, list):
-                deeptext_: Optional[Union[nn.ModuleList, WDModel]] = nn.ModuleList()
-                for dtx in deeptext:
-                    if with_deephead:
-                        deeptext_.append(dtx)
-                    else:
-                        deeptext_.append(
-                            nn.Sequential(dtx, nn.Linear(dtx.output_dim, self.pred_dim))
-                        )
-            else:
-                deeptext_ = (
-                    nn.Sequential(
-                        deeptext, nn.Linear(deeptext.output_dim, self.pred_dim)
-                    )
-                    if not with_deephead
-                    else deeptext
-                )
+            deeptext_ = self._set_model_component(deeptext)
         else:
             deeptext_ = None
 
         if deepimage is not None:
-            if isinstance(deepimage, list):
-                deepimage_: Optional[Union[nn.ModuleList, WDModel]] = nn.ModuleList()
-                for di in deepimage:
-                    if with_deephead:
-                        deepimage_.append(di)
-                    else:
-                        deepimage_.append(
-                            nn.Sequential(di, nn.Linear(di.output_dim, self.pred_dim))
-                        )
-            else:
-                deepimage_ = (
-                    nn.Sequential(
-                        deepimage, nn.Linear(deepimage.output_dim, self.pred_dim)
-                    )
-                    if not with_deephead
-                    else deepimage
-                )
+            deepimage_ = self._set_model_component(deepimage)
         else:
             deepimage_ = None
 
@@ -360,36 +311,56 @@ class WideDeep(nn.Module):
 
         return out
 
-    def _forward_deephead(
+    def _forward_deep(
         self, X: Dict[str, Union[Tensor, List[Tensor]]], wide_out: Tensor
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         if self.deeptabular is not None:
             if self.is_tabnet:
-                tab_out = self.deeptabular(X["deeptabular"])
-                deepside, M_loss = tab_out[0], tab_out[1]
+                tab_out, M_loss = self.deeptabular(X["deeptabular"])
+                wide_out.add_(tab_out)
             else:
-                deepside = self.deeptabular(X["deeptabular"])
-        else:
-            deepside = torch.FloatTensor().to(self.wd_device)
+                wide_out = self._forward_component(
+                    X, self.deeptabular, "deeptabular", wide_out
+                )
 
         if self.deeptext is not None:
-            if isinstance(self.deeptext, list):
-                deeptext_out = torch.cat(  # type: ignore[call-overload]
-                    [dt(X["deeptext"]) for dt in self.deeptext], axis=1
-                )
-            else:
-                deeptext_out = self.deeptext(X["deeptext"])
-            deepside = torch.cat([deepside, deeptext_out], axis=1)  # type: ignore[call-overload]
-        if self.deepimage is not None:
-            if isinstance(self.deepimage, list):
-                deepimage_out = torch.cat(  # type: ignore[call-overload]
-                    [di(X["deepimage"]) for di in self.deepimage], axis=1
-                )
-            else:
-                deepimage_out = self.deepimage(X["deepimage"])
-            deepside = torch.cat([deepside, deepimage_out], axis=1)  # type: ignore[call-overload]
+            wide_out = self._forward_component(X, self.deeptext, "deeptext", wide_out)
 
-        assert self.deephead is not None  # assertion to avoid type issues. TO DO: Fix
+        if self.deepimage is not None:
+            wide_out = self._forward_component(X, self.deepimage, "deepimage", wide_out)
+
+        if self.is_tabnet:
+            res: Union[Tensor, Tuple[Tensor, Tensor]] = (wide_out, M_loss)
+        else:
+            res = wide_out
+
+        return res
+
+    def _forward_deephead(
+        self, X: Dict[str, Union[Tensor, List[Tensor]]], wide_out: Tensor
+    ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+        deepside = torch.FloatTensor().to(self.wd_device)
+
+        if self.deeptabular is not None:
+            if self.is_tabnet:
+                deepside, M_loss = self.deeptabular(X["deeptabular"])
+            else:
+                deepside = self._forward_component(
+                    X, self.deeptabular, "deeptabular", deepside
+                )
+
+        if self.deeptext is not None:
+            deepside = self._forward_component_with_head(
+                X, self.deeptext, "deeptext", deepside
+            )
+
+        if self.deepimage is not None:
+            deepside = self._forward_component_with_head(
+                X, self.deepimage, "deepimage", deepside
+            )
+
+        # assertion to avoid type issues
+        assert self.deephead is not None
         deepside_out = self.deephead(deepside)
 
         if self.is_tabnet:
@@ -402,60 +373,64 @@ class WideDeep(nn.Module):
 
         return res
 
-    def _forward_deep(
-        self, X: Dict[str, Union[Tensor, List[Tensor]]], wide_out: Tensor
-    ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        if self.deeptabular is not None:
-            if self.is_tabnet:
-                tab_out, M_loss = self.deeptabular(X["deeptabular"])
-                wide_out.add_(tab_out)
-            else:
-                wide_out.add_(self.deeptabular(X["deeptabular"]))
-        if self.deeptext is not None:
-            if isinstance(self.deeptext, nn.ModuleList):
-                text_out = torch.add(  # type: ignore[call-overload]
-                    *[dt(X["deeptext"][i]) for i, dt in enumerate(self.deeptext)]
-                )
-                wide_out.add_(text_out)
-            else:
-                wide_out.add_(self.deeptext(X["deeptext"]))
-        if self.deepimage is not None:
-            if isinstance(self.deepimage, nn.ModuleList):
-                image_out = torch.add(  # type: ignore[call-overload]
-                    *[di(X["deepimage"][i]) for i, di in enumerate(self.deepimage)]
-                )
-                wide_out.add_(image_out)
-            else:
-                wide_out.add_(self.deepimage(X["deepimage"]))
-
-        if self.is_tabnet:
-            res: Union[Tensor, Tuple[Tensor, Tensor]] = (wide_out, M_loss)
-        else:
-            res = wide_out
-
-        return res
-
-    def _is_tabnet(
+    def _forward_component(
         self,
-        deeptabular: Union[BaseWDModelComponent, List[BaseWDModelComponent]],
-    ) -> Tuple[bool, List[int]]:
-
-        tabnet_indexes: Optional[List[int]] = []
-        if isinstance(deeptabular, list):
-            is_tabnet = any(dt.__class__.__name__ == "TabNet" for dt in deeptabular)
-            # We could just use a tabnet_indexes var but I do not want to
-            # drop the is_tabnet attribute since it has many effects
-            # downstream
-            if is_tabnet:
-                tabnet_indexes = [
-                    i
-                    for i, dt in enumerate(deeptabular)
-                    if dt.__class__.__name__ == "TabNet"
-                ]
+        X: Dict[str, Union[Tensor, List[Tensor]]],
+        component: Union[nn.ModuleList, WDModel],
+        component_type: Literal["deeptabular", "deeptext", "deepimage"],
+        wide_out: Tensor,
+    ) -> Tensor:
+        if isinstance(component, nn.ModuleList):
+            component_out = torch.add(  # type: ignore[call-overload]
+                *[cp(X[component_type][i]) for i, cp in enumerate(component)]
+            )
         else:
-            is_tabnet = deeptabular.__class__.__name__ == "TabNet"
+            component_out = component(X[component_type])
 
-        return is_tabnet, tabnet_indexes
+        return wide_out.add_(component_out)
+
+    def _forward_component_with_head(
+        self,
+        X: Dict[str, Union[Tensor, List[Tensor]]],
+        component: Union[nn.ModuleList, WDModel],
+        component_type: Literal["deeptabular", "deeptext", "deepimage"],
+        deepside: Tensor,
+    ) -> Tensor:
+        if isinstance(component, nn.ModuleList):
+            component_out = torch.cat(  # type: ignore[call-overload]
+                [cp(X[component_type]) for cp in component], axis=1
+            )
+        else:
+            component_out = component(X[component_type])
+
+        return torch.cat([deepside, component_out], axis=1)  # type: ignore[call-overload]
+
+    def _set_model_component(
+        self,
+        component: Union[BaseWDModelComponent, List[BaseWDModelComponent]],
+        is_deeptabular: bool = False,
+    ) -> Union[nn.ModuleList, WDModel]:
+        if isinstance(component, list):
+            component_: Optional[Union[nn.ModuleList, WDModel]] = nn.ModuleList()
+            for cp in component:
+                if self.with_deephead:
+                    component_.append(cp)
+                else:
+                    component_.append(
+                        nn.Sequential(cp, nn.Linear(cp.output_dim, self.pred_dim))
+                    )
+        elif self.with_deephead:
+            component_ = component
+        elif is_deeptabular and self.is_tabnet:
+            component_ = nn.Sequential(
+                component, TabNetPredLayer(component.output_dim, self.pred_dim)
+            )
+        else:
+            component_ = nn.Sequential(
+                component, nn.Linear(component.output_dim, self.pred_dim)
+            )
+
+        return component_
 
     @staticmethod  # noqa: C901
     def _check_inputs(  # noqa: C901
@@ -490,8 +465,16 @@ class WideDeep(nn.Module):
                     raise AttributeError(err_msg)
 
         if deeptabular is not None:
+            is_tabnet = False
             if isinstance(deeptabular, list):
-                is_tabnet = any(dt.__class__.__name__ == "TabNet" for dt in deeptabular)
+                is_any_tabnet = any(
+                    dt.__class__.__name__ == "TabNet" for dt in deeptabular
+                )
+                if is_any_tabnet:
+                    raise ValueError(
+                        "Currently TabNet is not supported as a component of a multiple "
+                        "tabular component model."
+                    )
             else:
                 is_tabnet = deeptabular.__class__.__name__ == "TabNet"
             has_wide_text_or_image = (
