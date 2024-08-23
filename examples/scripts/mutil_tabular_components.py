@@ -89,6 +89,7 @@ tab_mlp_item = TabMlp(
 
 two_tower_model = ModelFuser([tab_mlp_user, tab_mlp_item], fusion_method="dot")
 
+# model = WideDeep(deeptabular=[tab_mlp_user, tab_mlp_item])
 model = WideDeep(deeptabular=two_tower_model)
 
 trainer = Trainer(
