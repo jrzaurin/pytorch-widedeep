@@ -270,7 +270,7 @@ class Trainer(BaseTrainer):
     def fit(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_tab: Optional[np.ndarray] = None,
+        X_tab: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_train: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
@@ -529,7 +529,7 @@ class Trainer(BaseTrainer):
     def predict(  # type: ignore[override, return]
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_tab: Optional[np.ndarray] = None,
+        X_tab: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
@@ -585,7 +585,7 @@ class Trainer(BaseTrainer):
     def predict_uncertainty(  # type: ignore[return]
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_tab: Optional[np.ndarray] = None,
+        X_tab: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
@@ -682,7 +682,7 @@ class Trainer(BaseTrainer):
     def predict_proba(  # type: ignore[override, return]  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_tab: Optional[np.ndarray] = None,
+        X_tab: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
@@ -942,7 +942,7 @@ class Trainer(BaseTrainer):
                     X[k] = v.to(self.device)
             y = (
                 target.view(-1, 1).float()
-                if self.method not in ["multiclass", "qregression"]
+                if self.method not in ["multiclass", "qregression", "multitarget"]
                 else target
             )
             y = y.to(self.device)
@@ -971,6 +971,7 @@ class Trainer(BaseTrainer):
                 score = self.metric(y_pred, y)
             if self.method == "multiclass":
                 score = self.metric(F.softmax(y_pred, dim=1), y)
+            # TO DO: handle multitarget
             return score
         else:
             return None
@@ -978,7 +979,7 @@ class Trainer(BaseTrainer):
     def _predict(  # type: ignore[override, return]  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_tab: Optional[np.ndarray] = None,
+        X_tab: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,

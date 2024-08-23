@@ -22,8 +22,10 @@ from pytorch_widedeep.losses import (
     FocalR_RMSELoss,
 )
 from pytorch_widedeep.wdtypes import (
+    Any,
     Dict,
     List,
+    Tuple,
     Union,
     Compose,
     Literal,
@@ -115,7 +117,7 @@ def wd_train_val_split(  # noqa: C901
     seed: int,
     method: Literal["regression", "binary", "multiclass", "qregression"],
     X_wide: Optional[np.ndarray] = None,
-    X_tab: Optional[np.ndarray] = None,
+    X_tab: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
     X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
     X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
     X_train: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
@@ -174,6 +176,7 @@ def wd_train_val_split(  # noqa: C901
                 target is not None
             ), "if the validation split is specified, the target must also be specified"
             X_train = _build_train_dict(X_wide, X_tab, X_text, X_img, target)
+
         y_tr, y_val, idx_tr, idx_val = train_test_split(
             X_train["target"],
             np.arange(len(X_train["target"])),
@@ -187,46 +190,23 @@ def wd_train_val_split(  # noqa: C901
         )
         X_tr, X_val = {"target": y_tr}, {"target": y_val}
         if "X_wide" in X_train.keys():
-            X_tr["X_wide"], X_val["X_wide"] = (
-                X_train["X_wide"][idx_tr],
-                X_train["X_wide"][idx_val],
+            # the wide component will never be a list, but can still be passed
+            # to '_wd_train_val_split_component'
+            X_tr, X_val = _wd_train_val_split_component(
+                X_train, X_tr, X_val, idx_tr, idx_val, "X_wide"
             )
         if "X_tab" in X_train.keys():
-            X_tr["X_tab"], X_val["X_tab"] = (
-                X_train["X_tab"][idx_tr],
-                X_train["X_tab"][idx_val],
+            X_tr, X_val = _wd_train_val_split_component(
+                X_train, X_tr, X_val, idx_tr, idx_val, "X_tab"
             )
         if "X_text" in X_train.keys():
-            if isinstance(X_train["X_text"], list):
-                X_tr["X_text"], X_val["X_text"] = (
-                    [
-                        X_train["X_text"][i][idx_tr]
-                        for i in range(len(X_train["X_text"]))
-                    ],
-                    [
-                        X_train["X_text"][i][idx_val]
-                        for i in range(len(X_train["X_text"]))
-                    ],
-                )
-            else:
-                X_tr["X_text"], X_val["X_text"] = (
-                    X_train["X_text"][idx_tr],
-                    X_train["X_text"][idx_val],
-                )
+            X_tr, X_val = _wd_train_val_split_component(
+                X_train, X_tr, X_val, idx_tr, idx_val, "X_text"
+            )
         if "X_img" in X_train.keys():
-            if isinstance(X_train["X_img"], list):
-                X_tr["X_img"], X_val["X_img"] = (
-                    [X_train["X_img"][i][idx_tr] for i in range(len(X_train["X_img"]))],
-                    [
-                        X_train["X_img"][i][idx_val]
-                        for i in range(len(X_train["X_img"]))
-                    ],
-                )
-            else:
-                X_tr["X_img"], X_val["X_img"] = (
-                    X_train["X_img"][idx_tr],
-                    X_train["X_img"][idx_val],
-                )
+            X_tr, X_val = _wd_train_val_split_component(
+                X_train, X_tr, X_val, idx_tr, idx_val, "X_img"
+            )
         train_set = WideDeepDataset(**X_tr, transforms=transforms)  # type: ignore
         eval_set = WideDeepDataset(**X_val, transforms=transforms)  # type: ignore
     else:
@@ -239,9 +219,34 @@ def wd_train_val_split(  # noqa: C901
     return train_set, eval_set
 
 
+def _wd_train_val_split_component(
+    X: Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    X_tr: Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    X_val: Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    idx_tr: Any,  # is a numpy array but sklearn's train_test_split returns a non-sensical type
+    idx_val: Any,
+    component_type: Literal["X_wide", "X_tab", "X_text", "X_img"],
+) -> Tuple[
+    Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    Dict[str, Union[np.ndarray, List[np.ndarray]]],
+]:
+    if isinstance(X[component_type], list):
+        X_tr[component_type], X_val[component_type] = (
+            [X[component_type][i][idx_tr] for i in range(len(X[component_type]))],
+            [X[component_type][i][idx_val] for i in range(len(X[component_type]))],
+        )
+    else:
+        X_tr[component_type], X_val[component_type] = (
+            X[component_type][idx_tr],
+            X[component_type][idx_val],
+        )
+
+    return X_tr, X_val
+
+
 def _build_train_dict(
     X_wide: Optional[np.ndarray],
-    X_tab: Optional[np.ndarray],
+    X_tab: Optional[Union[np.ndarray, List[np.ndarray]]],
     X_text: Optional[Union[np.ndarray, List[np.ndarray]]],
     X_img: Optional[Union[np.ndarray, List[np.ndarray]]],
     target: np.ndarray,

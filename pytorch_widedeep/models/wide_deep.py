@@ -413,13 +413,13 @@ class WideDeep(nn.Module):
         if isinstance(component, list):
             component_: Optional[Union[nn.ModuleList, WDModel]] = nn.ModuleList()
             for cp in component:
-                if self.with_deephead:
+                if self.with_deephead or cp.output_dim == 1:
                     component_.append(cp)
                 else:
                     component_.append(
                         nn.Sequential(cp, nn.Linear(cp.output_dim, self.pred_dim))
                     )
-        elif self.with_deephead:
+        elif self.with_deephead or component.output_dim == 1:
             component_ = component
         elif is_deeptabular and self.is_tabnet:
             component_ = nn.Sequential(
@@ -463,6 +463,11 @@ class WideDeep(nn.Module):
             else:
                 if not hasattr(deeptabular, "output_dim"):
                     raise AttributeError(err_msg)
+                # the following assertion is thought for those cases where we
+                # use fusion with 'dot product' so that the output_dim will
+                # be 1 and the pred_dim is not 1
+                if deeptabular.output_dim == 1:
+                    assert pred_dim == 1, "If 'output_dim' is 1, 'pred_dim' must be 1"
 
         if deeptabular is not None:
             is_tabnet = False
@@ -502,6 +507,8 @@ class WideDeep(nn.Module):
             else:
                 if not hasattr(deeptext, "output_dim"):
                     raise AttributeError(err_msg)
+                if deeptext.output_dim == 1:
+                    assert pred_dim == 1, "If 'output_dim' is 1, 'pred_dim' must be 1"
 
         if deepimage is not None:
             err_msg = "deepimage model must have an 'output_dim' attribute or property."
@@ -512,6 +519,8 @@ class WideDeep(nn.Module):
             else:
                 if not hasattr(deepimage, "output_dim"):
                     raise AttributeError(err_msg)
+                if deepimage.output_dim == 1:
+                    assert pred_dim == 1, "If 'output_dim' is 1, 'pred_dim' must be 1"
 
         if deephead is not None and head_hidden_dims is not None:
             raise ValueError(

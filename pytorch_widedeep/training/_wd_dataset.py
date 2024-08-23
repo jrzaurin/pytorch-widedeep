@@ -32,7 +32,7 @@ class WideDeepDataset(Dataset):
     def __init__(
         self,
         X_wide: Optional[np.ndarray] = None,
-        X_tab: Optional[np.ndarray] = None,
+        X_tab: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         target: Optional[np.ndarray] = None,
@@ -60,7 +60,10 @@ class WideDeepDataset(Dataset):
         if self.X_wide is not None:
             x.wide = self.X_wide[idx]
         if self.X_tab is not None:
-            x.deeptabular = self.X_tab[idx]
+            if isinstance(self.X_tab, list):
+                x.deeptabular = [self.X_tab[i][idx] for i in range(len(self.X_tab))]
+            else:
+                x.deeptabular = self.X_tab[idx]
         if self.X_text is not None:
             if isinstance(self.X_text, list):
                 x.deeptext = [self.X_text[i][idx] for i in range(len(self.X_text))]
@@ -112,7 +115,10 @@ class WideDeepDataset(Dataset):
         if self.X_wide is not None:
             return len(self.X_wide)
         if self.X_tab is not None:
-            return len(self.X_tab)
+            if isinstance(self.X_tab, list):
+                return len(self.X_tab[0])
+            else:
+                return len(self.X_tab)
         if self.X_text is not None:
             if isinstance(self.X_text, list):
                 return len(self.X_text[0])
