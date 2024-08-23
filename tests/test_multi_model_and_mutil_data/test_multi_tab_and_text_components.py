@@ -194,566 +194,424 @@ def test_multi_text_and_tab_col_input_options(
     assert trainer.history["train_loss"] is not None
 
 
-# def test_multiple_setups_for_multi_text_or_image_cols():
-
-#     model = WideDeep(
-#         deeptabular=tab_mlp,
-#         deeptext=[rnn_1, rnn_2],
-#         deepimage=[vision_1, vision_2],
-#         pred_dim=1,
-#     )
-
-#     tab_opt = torch.optim.Adam(model.deeptabular.parameters(), lr=0.01)
-
-#     text_opt1 = torch.optim.Adam(model.deeptext[0].parameters(), lr=0.01)
-#     text_opt2 = torch.optim.AdamW(model.deeptext[1].parameters(), lr=0.05)
-
-#     img_opt1 = torch.optim.Adam(model.deepimage[0].parameters(), lr=0.01)
-#     img_opt2 = torch.optim.AdamW(model.deepimage[1].parameters(), lr=0.05)
-
-#     text_sch1 = torch.optim.lr_scheduler.StepLR(text_opt1, step_size=2)
-#     text_sch2 = torch.optim.lr_scheduler.StepLR(text_opt2, step_size=3)
-
-#     img_sch1 = torch.optim.lr_scheduler.StepLR(img_opt1, step_size=2)
-#     img_sch2 = torch.optim.lr_scheduler.StepLR(img_opt2, step_size=3)
-
-#     optimizers = {
-#         "deeptabular": tab_opt,
-#         "deeptext": [text_opt1, text_opt2],
-#         "deepimage": [img_opt1, img_opt2],
-#     }
-#     schedulers = {
-#         "deeptext": [text_sch1, text_sch2],
-#         "deepimage": [img_sch1, img_sch2],
-#     }
-#     initializers = {
-#         "deeptext": [XavierNormal, KaimingNormal],
-#         "deepimage": [XavierNormal, KaimingNormal],
-#     }
-
-#     n_epochs = 6
-#     trainer = Trainer(
-#         model,
-#         objective="binary",
-#         optimizers=optimizers,
-#         lr_schedulers=schedulers,
-#         initializers=initializers,
-#         transforms=[RandomVerticalFlip(), RandomHorizontalFlip()],
-#         metrics=[Accuracy(), F1Score(average=True)],
-#         callbacks=[LRHistory(n_epochs=n_epochs)],
-#     )
-
-#     X_train = {
-#         "X_tab": X_tab_tr,
-#         "X_text": [X_text_tr_1, X_text_tr_2],
-#         "X_img": [X_img_tr_1, X_img_tr_2],
-#         "target": train_df["target"].values,
-#     }
-#     X_val = {
-#         "X_tab": X_tab_val,
-#         "X_text": [X_text_val_1, X_text_val_2],
-#         "X_img": [X_img_val_1, X_img_val_2],
-#         "target": valid_df["target"].values,
-#     }
-#     trainer.fit(
-#         X_train=X_train,
-#         X_val=X_val,
-#         n_epochs=n_epochs,
-#         batch_size=4,
-#         verbose=0,
-#     )
-
-#     assert len(trainer.history["train_loss"]) == n_epochs
-
-#     deepimage_keys = sorted([k for k in trainer.lr_history.keys() if "deepimage" in k])
-#     deeptext_keys = sorted([k for k in trainer.lr_history.keys() if "deeptext" in k])
-
-#     for k, sz in zip(deepimage_keys, [img_sch1.step_size, img_sch2.step_size]):
-#         n_lr_decreases = n_epochs // sz - 1 if n_epochs % sz == 0 else n_epochs // sz
-#         lr_decrease_factor = 10**n_lr_decreases
-#         assert len(trainer.lr_history[k]) == n_epochs
-#         assert np.allclose(
-#             trainer.lr_history[k][0] / trainer.lr_history[k][-1], lr_decrease_factor
-#         )
-
-#     for k, sz in zip(deeptext_keys, [text_sch1.step_size, text_sch2.step_size]):
-#         n_lr_decreases = n_epochs // sz - 1 if n_epochs % sz == 0 else n_epochs // sz
-#         lr_decrease_factor = 10**n_lr_decreases
-#         assert len(trainer.lr_history[k]) == n_epochs
-#         assert np.allclose(
-#             trainer.lr_history[k][0] / trainer.lr_history[k][-1], lr_decrease_factor
-#         )
-
-
-# def test_finetune_all_for_multi_text_or_image_cols():
-
-#     model = WideDeep(
-#         deeptabular=tab_mlp,
-#         deeptext=[rnn_1, rnn_2],
-#         deepimage=[vision_1, vision_2],
-#         pred_dim=1,
-#     )
-
-#     n_epochs = 5
-#     trainer = Trainer(
-#         model,
-#         objective="binary",
-#     )
-
-#     X_train = {
-#         "X_tab": X_tab_tr,
-#         "X_text": [X_text_tr_1, X_text_tr_2],
-#         "X_img": [X_img_tr_1, X_img_tr_2],
-#         "target": train_df["target"].values,
-#     }
-#     X_val = {
-#         "X_tab": X_tab_val,
-#         "X_text": [X_text_val_1, X_text_val_2],
-#         "X_img": [X_img_val_1, X_img_val_2],
-#         "target": valid_df["target"].values,
-#     }
-#     trainer.fit(
-#         X_train=X_train,
-#         X_val=X_val,
-#         n_epochs=n_epochs,
-#         batch_size=4,
-#         finetune=True,
-#         finetune_epochs=2,
-#         verbose=0,
-#     )
-
-#     # weak assertion, but anyway...
-#     assert len(trainer.history["train_loss"]) == n_epochs
-
-
-# @pytest.mark.parametrize("routine", ["felbo", "howard"])
-# def test_finetune_gradual_for_multi_text_or_image_cols(routine):
-
-#     model = WideDeep(
-#         deeptabular=tab_mlp,
-#         deeptext=[rnn_1, rnn_2],
-#         deepimage=[vision_1, vision_2],
-#         pred_dim=1,
-#     )
-
-#     deeptabular_layers = [
-#         model.deeptabular[0].encoder.mlp[1],
-#         model.deeptabular[0].encoder.mlp[0],
-#     ]
-#     deeptext_1_layers = [
-#         model.deeptext[0][0].rnn_mlp.mlp[1],
-#         model.deeptext[0][0].rnn_mlp.mlp[0],
-#     ]
-#     deeptext_2_layers = [
-#         model.deeptext[1][0].rnn_mlp.mlp[1],
-#         model.deeptext[1][0].rnn_mlp.mlp[0],
-#     ]
-#     deepimage_1_layers = [
-#         model.deepimage[0][0].vision_mlp.mlp[1],
-#         model.deepimage[0][0].vision_mlp.mlp[0],
-#     ]
-#     deepimage_2_layers = [
-#         model.deepimage[1][0].vision_mlp.mlp[1],
-#         model.deepimage[1][0].vision_mlp.mlp[0],
-#     ]
-
-#     n_epochs = 5
-#     trainer = Trainer(
-#         model,
-#         objective="binary",
-#     )
-
-#     X_train = {
-#         "X_tab": X_tab_tr,
-#         "X_text": [X_text_tr_1, X_text_tr_2],
-#         "X_img": [X_img_tr_1, X_img_tr_2],
-#         "target": train_df["target"].values,
-#     }
-#     X_val = {
-#         "X_tab": X_tab_val,
-#         "X_text": [X_text_val_1, X_text_val_2],
-#         "X_img": [X_img_val_1, X_img_val_2],
-#         "target": valid_df["target"].values,
-#     }
-#     trainer.fit(
-#         X_train=X_train,
-#         X_val=X_val,
-#         n_epochs=n_epochs,
-#         batch_size=4,
-#         finetune=True,
-#         finetune_epochs=2,
-#         routine=routine,  # add alias as finetune_routine
-#         deeptabular_gradual=True,
-#         deeptabular_layers=deeptabular_layers,
-#         deeptabular_max_lr=0.01,
-#         deeptext_gradual=True,
-#         deeptext_layers=[deeptext_1_layers, deeptext_2_layers],
-#         deepteext_max_lr=0.01,
-#         deepimage_gradual=True,
-#         deepimage_layers=[deepimage_1_layers, deepimage_2_layers],
-#         deepimage_max_lr=0.01,
-#         verbose=0,
-#     )
-
-#     # weak assertion, but anyway...
-#     assert len(trainer.history["train_loss"]) == n_epochs
-
-
-# @pytest.mark.parametrize(
-#     "fusion_method",
-#     [
-#         "concatenate",
-#         "mean",
-#         "max",
-#         "sum",
-#         "mult",
-#         "head",
-#         ["concatenate", "mean"],
-#         ["concatenate", "max", "mean"],
-#         ["concatenate", "max", "mean", "mult"],
-#     ],
-# )
-# def test_text_model_fusion_methods(fusion_method):
-
-#     rnn_1 = BasicRNN(
-#         vocab_size=len(text_preprocessor_1.vocab.itos),
-#         embed_dim=16,
-#         hidden_dim=16,
-#         n_layers=1,
-#         bidirectional=False,
-#         head_hidden_dims=[16, 8],
-#     )
-
-#     rnn_2 = BasicRNN(
-#         vocab_size=len(text_preprocessor_2.vocab.itos),
-#         embed_dim=16,
-#         hidden_dim=16,
-#         n_layers=2,
-#     )
-
-#     rnn_1_output_dim = rnn_1.output_dim
-
-#     models_fuser = ModelFuser(
-#         models=[rnn_1, rnn_2],
-#         fusion_method=fusion_method,
-#         projection_method="max",
-#         head_hidden_dims=[32, 8] if "head" in fusion_method else None,
-#     )
-
-#     X_text_tr_1_tnsr = torch.from_numpy(X_text_tr_1)[:16]  # just to make it smaller
-#     X_text_tr_2_tnsr = torch.from_numpy(X_text_tr_2)[:16]
-#     out = models_fuser([X_text_tr_1_tnsr, X_text_tr_2_tnsr])
-
-#     if fusion_method == "concatenate":
-#         assert (
-#             out.shape[1]
-#             == rnn_1_output_dim + rnn_2.output_dim
-#             == models_fuser.output_dim
-#         )
-#     elif any(
-#         [
-#             fusion_method == "mean",
-#             fusion_method == "max",
-#             fusion_method == "sum",
-#             fusion_method == "mult",
-#         ]
-#     ):
-#         assert (
-#             out.shape[1]
-#             == max(rnn_1_output_dim, rnn_2.output_dim)
-#             == models_fuser.output_dim
-#         )
-#     elif fusion_method == "head":
-#         assert (
-#             out.shape[1] == models_fuser.head_hidden_dims[-1] == models_fuser.output_dim
-#         )
-#     elif fusion_method == ["concatenate", "mean"]:
-#         assert (
-#             out.shape[1]
-#             == rnn_1_output_dim
-#             + rnn_2.output_dim
-#             + max(rnn_1_output_dim, rnn_2.output_dim)
-#             == models_fuser.output_dim
-#         )
-#     elif fusion_method == ["concatenate", "max", "mean"]:
-#         assert (
-#             out.shape[1]
-#             == rnn_1_output_dim
-#             + rnn_2.output_dim
-#             + max(rnn_1_output_dim, rnn_2.output_dim) * 2
-#             == models_fuser.output_dim
-#         )
-#     else:
-#         # ["concatenate", "max", "mean", "mult"]
-#         assert (
-#             out.shape[1]
-#             == rnn_1_output_dim
-#             + rnn_2.output_dim
-#             + max(rnn_1_output_dim, rnn_2.output_dim) * 3
-#             == models_fuser.output_dim
-#         )
-
-
-# @pytest.mark.parametrize(
-#     "fusion_method",
-#     [
-#         "concatenate",
-#         "mean",
-#         "max",
-#         "sum",
-#         "mult",
-#         "head",
-#         ["concatenate", "mean"],
-#         ["concatenate", "max", "mean"],
-#         ["concatenate", "max", "mean", "mult"],
-#     ],
-# )
-# def test_image_model_fusion_methods(fusion_method):
-
-#     vision_1 = Vision(
-#         channel_sizes=[16, 32],
-#         kernel_sizes=[3, 3],
-#         strides=[1, 1],
-#     )
-
-#     vision_2 = Vision(
-#         channel_sizes=[16, 32],
-#         kernel_sizes=[3, 3],
-#         strides=[1, 1],
-#         head_hidden_dims=[16, 4],
-#     )
-
-#     vision_1_output_dim = vision_1.output_dim
-#     vision_2_output_dim = vision_2.output_dim
-
-#     models_fuser = ModelFuser(
-#         models=[vision_1, vision_2],
-#         fusion_method=fusion_method,
-#         projection_method="max",
-#         head_hidden_dims=[32, 8] if "head" in fusion_method else None,
-#     )
-
-#     X_img_tr_1_tnsr = torch.from_numpy(X_img_tr_1)[:16].transpose(1, 3)
-#     X_img_tr_2_tnsr = torch.from_numpy(X_img_tr_2)[:16].transpose(1, 3)
-
-#     X_img_tr_1_tnsr = X_img_tr_1_tnsr / X_img_tr_1_tnsr.max()
-#     X_img_tr_2_tnsr = X_img_tr_2_tnsr / X_img_tr_2_tnsr.max()
-
-#     out = models_fuser([X_img_tr_1_tnsr, X_img_tr_2_tnsr])
-
-#     if fusion_method == "concatenate":
-#         assert (
-#             out.shape[1]
-#             == vision_1_output_dim + vision_2_output_dim
-#             == models_fuser.output_dim
-#         )
-#     elif any(
-#         [
-#             fusion_method == "mean",
-#             fusion_method == "max",
-#             fusion_method == "sum",
-#             fusion_method == "mult",
-#         ]
-#     ):
-#         assert (
-#             out.shape[1]
-#             == max(vision_1_output_dim, vision_2_output_dim)
-#             == models_fuser.output_dim
-#         )
-#     elif fusion_method == "head":
-#         assert (
-#             out.shape[1] == models_fuser.head_hidden_dims[-1] == models_fuser.output_dim
-#         )
-#     elif fusion_method == ["concatenate", "mean"]:
-#         assert (
-#             out.shape[1]
-#             == vision_1_output_dim
-#             + vision_2_output_dim
-#             + max(vision_1_output_dim, vision_2_output_dim)
-#             == models_fuser.output_dim
-#         )
-#     elif fusion_method == ["concatenate", "max", "mean"]:
-#         assert (
-#             out.shape[1]
-#             == vision_1_output_dim
-#             + vision_2_output_dim
-#             + max(vision_1_output_dim, vision_2_output_dim) * 2
-#             == models_fuser.output_dim
-#         )
-#     else:
-#         # ["concatenate", "max", "mean", "mult"]
-#         assert (
-#             out.shape[1]
-#             == vision_1_output_dim
-#             + vision_2_output_dim
-#             + max(vision_1_output_dim, vision_2_output_dim) * 3
-#             == models_fuser.output_dim
-#         )
-
-
-# def test_model_fusion_custom_head():
-
-#     rnn_1 = BasicRNN(
-#         vocab_size=len(text_preprocessor_1.vocab.itos),
-#         embed_dim=16,
-#         hidden_dim=16,
-#         n_layers=1,
-#         bidirectional=False,
-#         head_hidden_dims=[16, 8],
-#     )
-
-#     rnn_2 = BasicRNN(
-#         vocab_size=len(text_preprocessor_2.vocab.itos),
-#         embed_dim=16,
-#         hidden_dim=16,
-#         n_layers=2,
-#     )
-
-#     custom_head = CustomHead(rnn_1.output_dim + rnn_2.output_dim, 8)
-
-#     models_fuser = ModelFuser(
-#         models=[rnn_1, rnn_2],
-#         fusion_method="head",
-#         custom_head=custom_head,
-#         projection_method="max",
-#     )
-
-#     X_text_tr_1_tnsr = torch.from_numpy(X_text_tr_1)[:16]  # just to make it smaller
-#     X_text_tr_2_tnsr = torch.from_numpy(X_text_tr_2)[:16]
-#     out = models_fuser([X_text_tr_1_tnsr, X_text_tr_2_tnsr])
-
-#     assert out.shape[1] == custom_head.output_dim == models_fuser.output_dim
-
-
-# @pytest.mark.parametrize(
-#     "projection_method",
-#     ["min", "max", "mean"],
-# )
-# def test_model_fusion_projection_methods(projection_method):
-
-#     rnn_1 = BasicRNN(
-#         vocab_size=len(text_preprocessor_1.vocab.itos),
-#         embed_dim=16,
-#         hidden_dim=16,
-#         n_layers=1,
-#         bidirectional=False,
-#         head_hidden_dims=[16, 8],
-#     )
-
-#     rnn_2 = BasicRNN(
-#         vocab_size=len(text_preprocessor_2.vocab.itos),
-#         embed_dim=16,
-#         hidden_dim=16,
-#         n_layers=2,
-#     )
-
-#     models_fuser = ModelFuser(
-#         models=[rnn_1, rnn_2],
-#         fusion_method="mean",
-#         projection_method=projection_method,
-#     )
-
-#     X_text_tr_1_tnsr = torch.from_numpy(X_text_tr_1)[:16]  # just to make it smaller
-#     X_text_tr_2_tnsr = torch.from_numpy(X_text_tr_2)[:16]
-#     out = models_fuser([X_text_tr_1_tnsr, X_text_tr_2_tnsr])
-
-#     if projection_method == "min":
-#         proj_dim = min(rnn_1.output_dim, rnn_2.output_dim)
-#     elif projection_method == "max":
-#         proj_dim = max(rnn_1.output_dim, rnn_2.output_dim)
-#     else:
-#         proj_dim = int((rnn_1.output_dim + rnn_2.output_dim) / 2)
-
-#     assert out.shape[1] == proj_dim == models_fuser.output_dim
-
-
-# def test_model_fusion_full_process():
-
-#     fused_text_model = ModelFuser(
-#         models=[rnn_1, rnn_2],
-#         fusion_method="mean",
-#         projection_method="min",
-#     )
-
-#     fused_image_model = ModelFuser(
-#         models=[vision_1, vision_2],
-#         fusion_method="mean",
-#         projection_method="max",
-#     )
-
-#     model = WideDeep(
-#         deeptabular=tab_mlp,
-#         deeptext=fused_text_model,
-#         deepimage=fused_image_model,
-#         pred_dim=1,
-#     )
-
-#     n_epochs = 2
-#     trainer = Trainer(
-#         model,
-#         objective="binary",
-#     )
-
-#     X_train = {
-#         "X_tab": X_tab_tr,
-#         "X_text": [X_text_tr_1, X_text_tr_2],
-#         "X_img": [X_img_tr_1, X_img_tr_2],
-#         "target": train_df["target"].values,
-#     }
-#     X_val = {
-#         "X_tab": X_tab_val,
-#         "X_text": [X_text_val_1, X_text_val_2],
-#         "X_img": [X_img_val_1, X_img_val_2],
-#         "target": valid_df["target"].values,
-#     }
-#     trainer.fit(
-#         X_train=X_train,
-#         X_val=X_val,
-#         n_epochs=n_epochs,
-#         batch_size=4,
-#         verbose=1,
-#     )
-
-#     # weak assertion, but anyway...
-#     assert len(trainer.history["train_loss"]) == n_epochs
-
-
-# def test_assertion_and_value_errors():
-
-#     rnn_1 = BasicRNN(
-#         vocab_size=len(text_preprocessor_1.vocab.itos),
-#         embed_dim=16,
-#         hidden_dim=16,
-#         n_layers=1,
-#         bidirectional=False,
-#         head_hidden_dims=[16, 8],
-#     )
-
-#     rnn_2 = BasicRNN(
-#         vocab_size=len(text_preprocessor_2.vocab.itos),
-#         embed_dim=16,
-#         hidden_dim=16,
-#         n_layers=2,
-#     )
-
-#     custom_head = torch.nn.Linear(rnn_1.output_dim + rnn_2.output_dim, 8)
-
-#     with pytest.raises(ValueError):
-#         ModelFuser(models=[rnn_1, rnn_2], fusion_method="wrong")
-
-#     with pytest.raises(ValueError):
-#         ModelFuser(models=[rnn_1, rnn_2], fusion_method=["max", "wrong"])
-
-#     with pytest.raises(ValueError):
-#         ModelFuser(
-#             models=[rnn_1, rnn_2], fusion_method="max", projection_method="wrong"
-#         )
-
-#     with pytest.raises(ValueError):
-#         ModelFuser(models=[rnn_1, rnn_2], fusion_method="max")
-
-#     with pytest.raises(AssertionError):
-#         ModelFuser(models=[rnn_1, rnn_2], fusion_method="head")
-
-#     with pytest.raises(AssertionError):
-#         ModelFuser(models=[rnn_1, rnn_2], fusion_method="head", custom_head=custom_head)
+def test_multiple_setups_for_multi_text_or_tab_cols():
+
+    model = WideDeep(
+        deeptabular=[tab_mlp_user, tab_mlp_item],
+        deeptext=[rnn_reviews, rnn_descriptions],
+        pred_dim=1,
+    )
+
+    tab_opt_user = torch.optim.Adam(model.deeptabular[0].parameters(), lr=0.01)
+    tab_opt_item = torch.optim.Adam(model.deeptabular[1].parameters(), lr=0.01)
+
+    text_opt_reviews = torch.optim.Adam(model.deeptext[0].parameters(), lr=0.01)
+    text_opt2_descriptions = torch.optim.Adam(model.deeptext[1].parameters(), lr=0.01)
+
+    tab_scheduler_user = torch.optim.lr_scheduler.StepLR(tab_opt_user, step_size=2)
+    tab_scheduler_item = torch.optim.lr_scheduler.StepLR(tab_opt_item, step_size=3)
+
+    text_scheduler_reviews = torch.optim.lr_scheduler.StepLR(
+        text_opt_reviews, step_size=2
+    )
+    text_scheduler_descriptions = torch.optim.lr_scheduler.StepLR(
+        text_opt2_descriptions, step_size=3
+    )
+
+    optimizers = {
+        "deeptabular": [tab_opt_user, tab_opt_item],
+        "deeptext": [text_opt_reviews, text_opt2_descriptions],
+    }
+    schedulers = {
+        "deeptabular": [tab_scheduler_user, tab_scheduler_item],
+        "deeptext": [text_scheduler_reviews, text_scheduler_descriptions],
+    }
+    initializers = {
+        "deeptabular": [XavierNormal, KaimingNormal],
+        "deepimage": [XavierNormal, KaimingNormal],
+    }
+
+    n_epochs = 6
+    trainer = Trainer(
+        model,
+        objective="binary",
+        optimizers=optimizers,
+        lr_schedulers=schedulers,
+        initializers=initializers,
+        metrics=[Accuracy(), F1Score(average=True)],
+        callbacks=[LRHistory(n_epochs=n_epochs)],
+    )
+
+    X_train = {
+        "X_tab": [X_tab_user_tr, X_tab_item_tr],
+        "X_text": [X_text_review_tr, X_text_description_tr],
+        "target": train_df["purchased"].values,
+    }
+    X_val = {
+        "X_tab": [X_tab_user_val, X_tab_item_val],
+        "X_text": [X_text_review_val, X_text_description_val],
+        "target": valid_df["purchased"].values,
+    }
+    trainer.fit(
+        X_train=X_train,
+        X_val=X_val,
+        n_epochs=n_epochs,
+        batch_size=4,
+        verbose=0,
+    )
+
+    assert len(trainer.history["train_loss"]) == n_epochs
+
+    deeptabular_keys = sorted(
+        [k for k in trainer.lr_history.keys() if "deeptabular" in k]
+    )
+    deeptext_keys = sorted([k for k in trainer.lr_history.keys() if "deeptext" in k])
+
+    for k, sz in zip(
+        deeptabular_keys, [tab_scheduler_user.step_size, tab_scheduler_item.step_size]
+    ):
+        n_lr_decreases = n_epochs // sz - 1 if n_epochs % sz == 0 else n_epochs // sz
+        lr_decrease_factor = 10**n_lr_decreases
+        assert len(trainer.lr_history[k]) == n_epochs
+        assert np.allclose(
+            trainer.lr_history[k][0] / trainer.lr_history[k][-1], lr_decrease_factor
+        )
+
+    for k, sz in zip(
+        deeptext_keys, [tab_scheduler_user.step_size, tab_scheduler_item.step_size]
+    ):
+        n_lr_decreases = n_epochs // sz - 1 if n_epochs % sz == 0 else n_epochs // sz
+        lr_decrease_factor = 10**n_lr_decreases
+        assert len(trainer.lr_history[k]) == n_epochs
+        assert np.allclose(
+            trainer.lr_history[k][0] / trainer.lr_history[k][-1], lr_decrease_factor
+        )
+
+
+def test_finetune_all_for_multi_text_or_tab_cols():
+
+    model = WideDeep(
+        deeptabular=[tab_mlp_user, tab_mlp_item],
+        deeptext=[rnn_reviews, rnn_descriptions],
+        pred_dim=1,
+    )
+
+    n_epochs = 5
+    trainer = Trainer(
+        model,
+        objective="binary",
+    )
+
+    X_train = {
+        "X_tab": [X_tab_user_tr, X_tab_item_tr],
+        "X_text": [X_text_review_tr, X_text_description_tr],
+        "target": train_df["purchased"].values,
+    }
+    X_val = {
+        "X_tab": [X_tab_user_val, X_tab_item_val],
+        "X_text": [X_text_review_val, X_text_description_val],
+        "target": valid_df["purchased"].values,
+    }
+    trainer.fit(
+        X_train=X_train,
+        X_val=X_val,
+        n_epochs=n_epochs,
+        batch_size=4,
+        finetune=True,
+        finetune_epochs=2,
+        verbose=0,
+    )
+
+    # weak assertion, but anyway...
+    assert len(trainer.history["train_loss"]) == n_epochs
+
+
+@pytest.mark.parametrize("routine", ["felbo", "howard"])
+def test_finetune_gradual_for_multi_text_or_tab_cols(routine):
+
+    model = WideDeep(
+        deeptabular=[tab_mlp_user, tab_mlp_item],
+        deeptext=[rnn_reviews, rnn_descriptions],
+        pred_dim=1,
+    )
+
+    deeptabular_users_layers = [
+        model.deeptabular[0][0].encoder.mlp[1],
+        model.deeptabular[0][0].encoder.mlp[0],
+    ]
+
+    deeptabular_items_layers = [
+        model.deeptabular[1][0].encoder.mlp[1],
+        model.deeptabular[1][0].encoder.mlp[0],
+    ]
+
+    deeptext_reviews_layers = [
+        model.deeptext[0][0].rnn_mlp.mlp[1],
+        model.deeptext[0][0].rnn_mlp.mlp[0],
+    ]
+    deeptext_descriptions_layers = [
+        model.deeptext[1][0].rnn_mlp.mlp[1],
+        model.deeptext[1][0].rnn_mlp.mlp[0],
+    ]
+
+    n_epochs = 5
+    trainer = Trainer(
+        model,
+        objective="binary",
+    )
+
+    X_train = {
+        "X_tab": [X_tab_user_tr, X_tab_item_tr],
+        "X_text": [X_text_review_tr, X_text_description_tr],
+        "target": train_df["purchased"].values,
+    }
+    X_val = {
+        "X_tab": [X_tab_user_val, X_tab_item_val],
+        "X_text": [X_text_review_val, X_text_description_val],
+        "target": valid_df["purchased"].values,
+    }
+    trainer.fit(
+        X_train=X_train,
+        X_val=X_val,
+        n_epochs=n_epochs,
+        batch_size=4,
+        finetune=True,
+        finetune_epochs=2,
+        routine=routine,  # add alias as finetune_routine
+        deeptabular_gradual=True,
+        deeptabular_layers=[deeptabular_users_layers, deeptabular_items_layers],
+        deeptabular_max_lr=0.01,
+        deeptext_gradual=True,
+        deeptext_layers=[deeptext_reviews_layers, deeptext_descriptions_layers],
+        deepteext_max_lr=0.01,
+        deepimage_gradual=True,
+        deepimage_max_lr=0.01,
+        verbose=0,
+    )
+
+    # weak assertion, but anyway...
+    assert len(trainer.history["train_loss"]) == n_epochs
+
+
+@pytest.mark.parametrize(
+    "fusion_method",
+    [
+        "concatenate",
+        "mean",
+        "max",
+        "sum",
+        "mult",
+        "dot",
+        "head",
+        ["max", "dot"],
+        ["concatenate", "mean"],
+        ["concatenate", "max", "mean"],
+        ["concatenate", "max", "mean", "mult"],
+    ],
+)
+def test_tab_model_fusion_methods(fusion_method):
+
+    tab_mlp_user = TabMlp(
+        column_idx=tab_preprocessor_user.column_idx,
+        cat_embed_input=tab_preprocessor_user.cat_embed_input,
+        continuous_cols=tab_preprocessor_user.continuous_cols,
+        mlp_hidden_dims=[16, 4],
+    )
+
+    tab_mlp_item = TabMlp(
+        column_idx=tab_preprocessor_item.column_idx,
+        cat_embed_input=tab_preprocessor_item.cat_embed_input,
+        continuous_cols=tab_preprocessor_item.continuous_cols,
+        mlp_hidden_dims=[16, 4],
+    )
+
+    if isinstance(fusion_method, list) and "dot" in fusion_method:
+        with pytest.raises(ValueError):
+            models_fuser = ModelFuser(
+                models=[tab_mlp_user, tab_mlp_item],
+                fusion_method=fusion_method,
+            )
+        return
+    else:
+        models_fuser = ModelFuser(
+            models=[tab_mlp_user, tab_mlp_item],
+            fusion_method=fusion_method,
+            projection_method="max",
+            head_hidden_dims=[32, 8] if "head" in fusion_method else None,
+        )
+
+    X_tab_user_tr_tnsr = torch.from_numpy(X_tab_user_tr)[:16]
+    X_tab_item_tr_tnsr = torch.from_numpy(X_tab_item_tr)[:16]
+
+    out = models_fuser([X_tab_user_tr_tnsr, X_tab_item_tr_tnsr])
+
+    if fusion_method == "dot":
+        assert out.shape[1] == 1 == models_fuser.output_dim
+    elif fusion_method == "concatenate":
+        assert (
+            out.shape[1]
+            == tab_mlp_user.output_dim + tab_mlp_item.output_dim
+            == models_fuser.output_dim
+        )
+    elif any(
+        [
+            fusion_method == "mean",
+            fusion_method == "max",
+            fusion_method == "sum",
+            fusion_method == "mult",
+        ]
+    ):
+        assert (
+            out.shape[1]
+            == max(tab_mlp_user.output_dim, tab_mlp_item.output_dim)
+            == models_fuser.output_dim
+        )
+    elif fusion_method == "head":
+        assert (
+            out.shape[1] == models_fuser.head_hidden_dims[-1] == models_fuser.output_dim
+        )
+    elif fusion_method == ["concatenate", "mean"]:
+        assert (
+            out.shape[1]
+            == tab_mlp_user.output_dim
+            + tab_mlp_item.output_dim
+            + max(tab_mlp_user.output_dim, tab_mlp_item.output_dim)
+            == models_fuser.output_dim
+        )
+    elif fusion_method == ["concatenate", "max", "mean"]:
+        assert (
+            out.shape[1]
+            == tab_mlp_user.output_dim
+            + tab_mlp_item.output_dim
+            + max(tab_mlp_user.output_dim, tab_mlp_item.output_dim) * 2
+            == models_fuser.output_dim
+        )
+    else:
+        # ["concatenate", "max", "mean", "mult"]
+        assert (
+            out.shape[1]
+            == tab_mlp_user.output_dim
+            + tab_mlp_item.output_dim
+            + max(tab_mlp_user.output_dim, tab_mlp_item.output_dim) * 3
+            == models_fuser.output_dim
+        )
+
+
+def test_model_fusion_custom_head():
+
+    tab_mlp_user = TabMlp(
+        column_idx=tab_preprocessor_user.column_idx,
+        cat_embed_input=tab_preprocessor_user.cat_embed_input,
+        continuous_cols=tab_preprocessor_user.continuous_cols,
+        mlp_hidden_dims=[16, 4],
+    )
+
+    tab_mlp_item = TabMlp(
+        column_idx=tab_preprocessor_item.column_idx,
+        cat_embed_input=tab_preprocessor_item.cat_embed_input,
+        continuous_cols=tab_preprocessor_item.continuous_cols,
+        mlp_hidden_dims=[16, 4],
+    )
+
+    custom_head = CustomHead(tab_mlp_user.output_dim + tab_mlp_item.output_dim, 8)
+
+    models_fuser = ModelFuser(
+        models=[tab_mlp_user, tab_mlp_item],
+        fusion_method="head",
+        custom_head=custom_head,
+        projection_method="max",
+    )
+
+    X_tab_user_tr_tnsr = torch.from_numpy(X_tab_user_tr)[:16]
+    X_tab_item_tr_tnsr = torch.from_numpy(X_tab_item_tr)[:16]
+    out = models_fuser([X_tab_user_tr_tnsr, X_tab_item_tr_tnsr])
+
+    assert out.shape[1] == custom_head.output_dim == models_fuser.output_dim
+
+
+@pytest.mark.parametrize(
+    "projection_method",
+    ["min", "max", "mean"],
+)
+def test_model_fusion_projection_methods(projection_method):
+
+    tab_mlp_user = TabMlp(
+        column_idx=tab_preprocessor_user.column_idx,
+        cat_embed_input=tab_preprocessor_user.cat_embed_input,
+        continuous_cols=tab_preprocessor_user.continuous_cols,
+        mlp_hidden_dims=[16, 4],
+    )
+
+    tab_mlp_item = TabMlp(
+        column_idx=tab_preprocessor_item.column_idx,
+        cat_embed_input=tab_preprocessor_item.cat_embed_input,
+        continuous_cols=tab_preprocessor_item.continuous_cols,
+        mlp_hidden_dims=[16, 4],
+    )
+
+    models_fuser = ModelFuser(
+        models=[tab_mlp_user, tab_mlp_item],
+        fusion_method="mean",
+        projection_method=projection_method,
+    )
+
+    X_tab_user_tr_tnsr = torch.from_numpy(X_tab_user_tr)[:16]
+    X_tab_item_tr_tnsr = torch.from_numpy(X_tab_item_tr)[:16]
+    out = models_fuser([X_tab_user_tr_tnsr, X_tab_item_tr_tnsr])
+
+    if projection_method == "min":
+        proj_dim = min(tab_mlp_user.output_dim, tab_mlp_item.output_dim)
+    elif projection_method == "max":
+        proj_dim = max(tab_mlp_user.output_dim, tab_mlp_item.output_dim)
+    else:
+        proj_dim = int((tab_mlp_user.output_dim + tab_mlp_item.output_dim) / 2)
+
+    assert out.shape[1] == proj_dim == models_fuser.output_dim
+
+
+def test_model_fusion_full_process():
+
+    fused_tab_model = ModelFuser(
+        models=[tab_mlp_user, tab_mlp_item],
+        fusion_method="mean",
+        projection_method="max",
+    )
+
+    fused_text_model = ModelFuser(
+        models=[rnn_reviews, rnn_descriptions],
+        fusion_method="mean",
+        projection_method="min",
+    )
+
+    model = WideDeep(
+        deeptabular=fused_tab_model,
+        deeptext=fused_text_model,
+        pred_dim=1,
+    )
+
+    n_epochs = 2
+    trainer = Trainer(
+        model,
+        objective="binary",
+    )
+
+    X_train = {
+        "X_tab": [X_tab_user_tr, X_tab_item_tr],
+        "X_text": [X_text_review_tr, X_text_description_tr],
+        "target": train_df["purchased"].values,
+    }
+    X_val = {
+        "X_tab": [X_tab_user_val, X_tab_item_val],
+        "X_text": [X_text_review_val, X_text_description_val],
+        "target": valid_df["purchased"].values,
+    }
+    trainer.fit(
+        X_train=X_train,
+        X_val=X_val,
+        n_epochs=n_epochs,
+        batch_size=4,
+        verbose=1,
+    )
+
+    # weak assertion, but anyway...
+    assert len(trainer.history["train_loss"]) == n_epochs

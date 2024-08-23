@@ -345,7 +345,7 @@ class WideDeep(nn.Module):
             if self.is_tabnet:
                 deepside, M_loss = self.deeptabular(X["deeptabular"])
             else:
-                deepside = self._forward_component(
+                deepside = self._forward_component_with_head(
                     X, self.deeptabular, "deeptabular", deepside
                 )
 
