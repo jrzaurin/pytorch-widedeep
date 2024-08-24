@@ -53,7 +53,9 @@ class WideDeep(nn.Module):
     deeptabular: BaseWDModelComponent, Optional, default = None
         Currently this library implements a number of possible architectures
         for the `deeptabular` component. See the documenation of the
-        package.
+        package. Note that `deeptabular` can be a list of models. This is
+        useful when using multiple tabular inputs (e.g. for example in the
+        context of a two-tower model for recommendation systems)
     deeptext: BaseWDModelComponent | List[BaseWDModelComponent], Optional, default = None
         Currently this library implements a number of possible architectures
         for the `deeptext` component. See the documenation of the

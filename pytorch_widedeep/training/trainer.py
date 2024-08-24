@@ -298,7 +298,9 @@ class Trainer(BaseTrainer):
             See `pytorch_widedeep.preprocessing.WidePreprocessor`
         X_tab: np.ndarray, Optional. default=None
             Input for the `deeptabular` model component.
-            See `pytorch_widedeep.preprocessing.TabPreprocessor`
+            See `pytorch_widedeep.preprocessing.TabPreprocessor`. If multiple
+            tabular models are used for different columns, this should be a
+            list of numpy arrays
         X_text: Union[np.ndarray, List[np.ndarray]], Optional. default=None
             Input for the `deeptext` model component.
             See `pytorch_widedeep.preprocessing.TextPreprocessor`.
@@ -547,13 +549,13 @@ class Trainer(BaseTrainer):
         X_wide: np.ndarray, Optional. default=None
             Input for the `wide` model component.
             See `pytorch_widedeep.preprocessing.WidePreprocessor`
-        X_tab: np.ndarray, Optional. default=None
+        X_tab: np.ndarray or List[np.ndarray], Optional. default=None
             Input for the `deeptabular` model component.
             See `pytorch_widedeep.preprocessing.TabPreprocessor`
-        X_text: np.ndarray, Optional. default=None
+        X_text: np.ndarray or List[np.ndarray], Optional. default=None
             Input for the `deeptext` model component.
             See `pytorch_widedeep.preprocessing.TextPreprocessor`
-        X_img: np.ndarray, Optional. default=None
+        X_img: np.ndarray or List[np.ndarray], Optional. default=None
             Input for the `deepimage` model component.
             See `pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_test: Dict, Optional. default=None
@@ -606,13 +608,13 @@ class Trainer(BaseTrainer):
         X_wide: np.ndarray, Optional. default=None
             Input for the `wide` model component.
             See `pytorch_widedeep.preprocessing.WidePreprocessor`
-        X_tab: np.ndarray, Optional. default=None
+        X_tab: np.ndarray or List[np.ndarray], Optional. default=None
             Input for the `deeptabular` model component.
             See `pytorch_widedeep.preprocessing.TabPreprocessor`
-        X_text: np.ndarray, Optional. default=None
+        X_text: np.ndarray or List[np.ndarray], Optional. default=None
             Input for the `deeptext` model component.
             See `pytorch_widedeep.preprocessing.TextPreprocessor`
-        X_img: np.ndarray, Optional. default=None
+        X_img: np.ndarray or List[np.ndarray], Optional. default=None
             Input for the `deepimage` model component.
             See `pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_test: Dict, Optional. default=None
@@ -700,13 +702,13 @@ class Trainer(BaseTrainer):
         X_wide: np.ndarray, Optional. default=None
             Input for the `wide` model component.
             See `pytorch_widedeep.preprocessing.WidePreprocessor`
-        X_tab: np.ndarray, Optional. default=None
+        X_tab: np.ndarray or List[np.ndarray], Optional. default=None
             Input for the `deeptabular` model component.
             See `pytorch_widedeep.preprocessing.TabPreprocessor`
-        X_text: np.ndarray, Optional. default=None
+        X_text: np.ndarray or List[np.ndarray], Optional. default=None
             Input for the `deeptext` model component.
             See `pytorch_widedeep.preprocessing.TextPreprocessor`
-        X_img: np.ndarray, Optional. default=None
+        X_img: np.ndarray or List[np.ndarray], Optional. default=None
             Input for the `deepimage` model component.
             See `pytorch_widedeep.preprocessing.ImagePreprocessor`
         X_test: Dict, Optional. default=None

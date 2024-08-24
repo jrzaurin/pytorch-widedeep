@@ -17,7 +17,7 @@ class WideDeepDataset(Dataset):
     ----------
     X_wide: np.ndarray
         wide input
-    X_tab: np.ndarray
+    X_tab: np.ndarray or List[np.ndarray]
         deeptabular input
     X_text: np.ndarray or List[np.ndarray]
         deeptext input

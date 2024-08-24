@@ -47,7 +47,7 @@ def tabular_train_val_split(
     X_val: Optional[np.ndarray] = None,
     y_val: Optional[np.ndarray] = None,
     val_split: Optional[float] = None,
-):
+) -> Tuple[TensorDataset, Optional[TensorDataset]]:
     r"""
     Function to create the train/val split for the BayesianTrainer where only
     tabular data is used
@@ -86,7 +86,7 @@ def tabular_train_val_split(
             torch.from_numpy(y_val),
         )
     elif val_split is not None:
-        y_tr, y_val, idx_tr, idx_val = train_test_split(
+        y_tr, y_val, idx_tr, idx_val = train_test_split(  # type: ignore
             y,
             np.arange(len(y)),
             test_size=val_split,
@@ -140,13 +140,13 @@ def wd_train_val_split(  # noqa: C901
         random seed to be used during train/val split
     method: str
         'regression',  'binary' or 'multiclass'
-    X_wide: np.ndarray, Optional, default = None
+    X_wide: np.ndaaray, Optional, default = None
         wide dataset
-    X_tab: np.ndarray, Optional, default = None
+    X_tab: np.ndarray or List[np.ndarray], Optional, default = None
         tabular dataset (categorical and continuous features)
-    X_img: np.ndarray, Optional, default = None
+    X_img: np.ndarray or List[np.ndarray], Optional, default = None
         image dataset
-    X_text: np.ndarray, Optional, default = None
+    X_text: np.ndarray or List[np.ndarray], Optional, default = None
         text dataset
     X_val: Dict, Optional, default = None
         Dict with the validation set, where the keys are the component names
