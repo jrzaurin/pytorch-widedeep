@@ -10,7 +10,13 @@ import pandas as pd
 import pytest
 
 from pytorch_widedeep import Trainer
-from pytorch_widedeep.models import TabMlp, BasicRNN, WideDeep, ModelFuser
+from pytorch_widedeep.models import (
+    TabMlp,
+    TabNet,
+    BasicRNN,
+    WideDeep,
+    ModelFuser,
+)
 from pytorch_widedeep.metrics import F1Score, Accuracy
 from pytorch_widedeep.callbacks import LRHistory
 from pytorch_widedeep.initializers import XavierNormal, KaimingNormal
@@ -569,7 +575,8 @@ def test_model_fusion_projection_methods(projection_method):
     assert out.shape[1] == proj_dim == models_fuser.output_dim
 
 
-def test_model_fusion_full_process():
+@pytest.mark.parametrize("head_type", [None, "via_params", "custom"])
+def test_full_process_with_fusion(head_type):
 
     fused_tab_model = ModelFuser(
         models=[tab_mlp_user, tab_mlp_item],
@@ -583,10 +590,87 @@ def test_model_fusion_full_process():
         projection_method="min",
     )
 
+    if head_type == "via_params":
+        head_hidden_dims = [fused_tab_model.output_dim + fused_text_model.output_dim, 8]
+        custom_head = None
+    elif head_type == "custom":
+        head_hidden_dims = None
+        custom_head = CustomHead(
+            fused_tab_model.output_dim + fused_text_model.output_dim, 8
+        )
+    else:
+        head_hidden_dims = None
+        custom_head = None
+
     model = WideDeep(
         deeptabular=fused_tab_model,
         deeptext=fused_text_model,
         pred_dim=1,
+        head_hidden_dims=head_hidden_dims,
+        deephead=custom_head,
+    )
+
+    n_epochs = 2
+    trainer = Trainer(
+        model,
+        objective="binary",
+        verbose=0,
+    )
+
+    X_train = {
+        "X_tab": [X_tab_user_tr, X_tab_item_tr],
+        "X_text": [X_text_review_tr, X_text_description_tr],
+        "target": train_df["purchased"].values,
+    }
+    X_val = {
+        "X_tab": [X_tab_user_val, X_tab_item_val],
+        "X_text": [X_text_review_val, X_text_description_val],
+        "target": valid_df["purchased"].values,
+    }
+    trainer.fit(
+        X_train=X_train,
+        X_val=X_val,
+        n_epochs=n_epochs,
+        batch_size=4,
+    )
+
+    # weak assertion, but anyway...
+    assert len(trainer.history["train_loss"]) == n_epochs
+
+
+@pytest.mark.parametrize("head_type", [None, "via_params", "custom"])
+def test_full_process_without_fusion(head_type):
+
+    # the 4 models to be combined are tab_mlp_user, tab_mlp_item, rnn_reviews,
+    # rnn_descriptions
+    if head_type == "via_params":
+        head_hidden_dims = [
+            tab_mlp_user.output_dim
+            + tab_mlp_item.output_dim
+            + rnn_reviews.output_dim
+            + rnn_descriptions.output_dim,
+            8,
+        ]
+        custom_head = None
+    elif head_type == "custom":
+        head_hidden_dims = None
+        custom_head = CustomHead(
+            tab_mlp_user.output_dim
+            + tab_mlp_item.output_dim
+            + rnn_reviews.output_dim
+            + rnn_descriptions.output_dim,
+            8,
+        )
+    else:
+        head_hidden_dims = None
+        custom_head = None
+
+    model = WideDeep(
+        deeptabular=[tab_mlp_user, tab_mlp_item],
+        deeptext=[rnn_reviews, rnn_descriptions],
+        pred_dim=1,
+        head_hidden_dims=head_hidden_dims,
+        deephead=custom_head,
     )
 
     n_epochs = 2
@@ -615,3 +699,30 @@ def test_model_fusion_full_process():
 
     # weak assertion, but anyway...
     assert len(trainer.history["train_loss"]) == n_epochs
+
+
+@pytest.mark.parametrize("fuse_models", [True, False])
+def test_catch_tabnet_error(fuse_models):
+
+    tabnet_user = TabNet(
+        column_idx=tab_preprocessor_user.column_idx,
+        cat_embed_input=tab_preprocessor_user.cat_embed_input,
+        continuous_cols=tab_preprocessor_user.continuous_cols,
+    )
+
+    tab_mlp_item = TabMlp(
+        column_idx=tab_preprocessor_item.column_idx,
+        cat_embed_input=tab_preprocessor_item.cat_embed_input,
+        continuous_cols=tab_preprocessor_item.continuous_cols,
+    )
+
+    if fuse_models:
+        with pytest.raises(ValueError):
+            fused_model = ModelFuser(  # noqa: F841
+                models=[tabnet_user, tab_mlp_item],
+                fusion_method="mean",
+                projection_method="max",
+            )
+    else:
+        with pytest.raises(ValueError):
+            model = WideDeep(deeptabular=[tabnet_user, tab_mlp_item])  # noqa: F841

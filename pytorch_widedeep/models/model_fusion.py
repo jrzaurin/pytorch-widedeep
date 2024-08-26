@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 
+from pytorch_widedeep.models import TabNet
 from pytorch_widedeep.wdtypes import List, Union, Tensor, Literal, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models._base_wd_model_component import (
@@ -300,6 +301,13 @@ class ModelFuser(BaseWDModelComponent):
         return output_dim
 
     def check_input_parameters(self):  # noqa: C901
+
+        if any(isinstance(model, TabNet) for model in self.models):
+            raise ValueError(
+                "TabNet is not supported in ModelFuser. "
+                "Please, use another model for tabular data"
+            )
+
         if isinstance(self.fusion_method, str):
             if not any(
                 x == self.fusion_method

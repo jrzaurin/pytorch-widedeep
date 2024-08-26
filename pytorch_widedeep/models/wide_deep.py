@@ -400,7 +400,7 @@ class WideDeep(nn.Module):
     ) -> Tensor:
         if isinstance(component, nn.ModuleList):
             component_out = torch.cat(  # type: ignore[call-overload]
-                [cp(X[component_type]) for cp in component], axis=1
+                [cp(X[component_type][i]) for i, cp in enumerate(component)], axis=1
             )
         else:
             component_out = component(X[component_type])
@@ -547,11 +547,23 @@ class WideDeep(nn.Module):
             deephead_inp_feat = next(deephead.parameters()).size(1)
             output_dim = 0
             if deeptabular is not None:
-                output_dim += deeptabular.output_dim
+                if isinstance(deeptabular, list):
+                    for dt in deeptabular:
+                        output_dim += dt.output_dim
+                else:
+                    output_dim += deeptabular.output_dim
             if deeptext is not None:
-                output_dim += deeptext.output_dim
+                if isinstance(deeptext, list):
+                    for dt in deeptext:
+                        output_dim += dt.output_dim
+                else:
+                    output_dim += deeptext.output_dim
             if deepimage is not None:
-                output_dim += deepimage.output_dim
+                if isinstance(deepimage, list):
+                    for di in deepimage:
+                        output_dim += di.output_dim
+                else:
+                    output_dim += deepimage.output_dim
             if deephead_inp_feat != output_dim:
                 warnings.warn(
                     "A custom 'deephead' is used and it seems that the input features "
