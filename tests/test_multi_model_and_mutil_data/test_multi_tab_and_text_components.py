@@ -677,6 +677,7 @@ def test_full_process_without_fusion(head_type):
     trainer = Trainer(
         model,
         objective="binary",
+        verbose=0,
     )
 
     X_train = {
@@ -694,7 +695,6 @@ def test_full_process_without_fusion(head_type):
         X_val=X_val,
         n_epochs=n_epochs,
         batch_size=4,
-        verbose=1,
     )
 
     # weak assertion, but anyway...
