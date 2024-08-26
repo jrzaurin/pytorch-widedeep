@@ -407,7 +407,90 @@ trainer.fit(
 )
 
 
-# 7. Simply Tabular with a multi-target loss
+# 7. A Two tower model
+np.random.seed(42)
+
+# user_features dataframe
+user_ids = np.arange(1, 101)
+ages = np.random.randint(18, 60, size=100)
+genders = np.random.choice(["male", "female"], size=100)
+locations = np.random.choice(["city_a", "city_b", "city_c", "city_d"], size=100)
+user_features = pd.DataFrame(
+    {"id": user_ids, "age": ages, "gender": genders, "location": locations}
+)
+
+# item_features dataframe
+item_ids = np.arange(1, 101)
+prices = np.random.uniform(10, 500, size=100).round(2)
+colors = np.random.choice(["red", "blue", "green", "black"], size=100)
+categories = np.random.choice(["electronics", "clothing", "home", "toys"], size=100)
+
+item_features = pd.DataFrame(
+    {"id": item_ids, "price": prices, "color": colors, "category": categories}
+)
+
+# Interactions dataframe
+interaction_user_ids = np.random.choice(user_ids, size=1000)
+interaction_item_ids = np.random.choice(item_ids, size=1000)
+purchased = np.random.choice([0, 1], size=1000, p=[0.7, 0.3])
+interactions = pd.DataFrame(
+    {
+        "user_id": interaction_user_ids,
+        "item_id": interaction_item_ids,
+        "purchased": purchased,
+    }
+)
+user_item_purchased = interactions.merge(
+    user_features, left_on="user_id", right_on="id"
+).merge(item_features, left_on="item_id", right_on="id")
+
+
+# Users
+tab_preprocessor_user = TabPreprocessor(
+    cat_embed_cols=["gender", "location"],
+    continuous_cols=["age"],
+)
+X_user = tab_preprocessor_user.fit_transform(user_item_purchased)
+tab_mlp_user = TabMlp(
+    column_idx=tab_preprocessor_user.column_idx,
+    cat_embed_input=tab_preprocessor_user.cat_embed_input,
+    continuous_cols=["age"],
+    mlp_hidden_dims=[16, 8],
+    mlp_dropout=[0.2, 0.2],
+)
+
+# Items
+tab_preprocessor_item = TabPreprocessor(
+    cat_embed_cols=["color", "category"],
+    continuous_cols=["price"],
+)
+X_item = tab_preprocessor_item.fit_transform(user_item_purchased)
+tab_mlp_item = TabMlp(
+    column_idx=tab_preprocessor_item.column_idx,
+    cat_embed_input=tab_preprocessor_item.cat_embed_input,
+    continuous_cols=["price"],
+    mlp_hidden_dims=[16, 8],
+    mlp_dropout=[0.2, 0.2],
+)
+
+two_tower_model = ModelFuser([tab_mlp_user, tab_mlp_item], fusion_method="dot")
+
+model = WideDeep(deeptabular=two_tower_model)
+
+trainer = Trainer(
+    model,
+    objective="binary",
+)
+
+trainer.fit(
+    X_tab=[X_user, X_item],
+    target=interactions.purchased.values,
+    n_epochs=1,
+    batch_size=32,
+)
+
+
+# 8. Simply Tabular with a multi-target loss
 
 # let's add a second target to the dataframe
 df["target2"] = [random.choice([0, 1]) for _ in range(100)]

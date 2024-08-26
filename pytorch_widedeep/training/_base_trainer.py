@@ -210,18 +210,6 @@ class BaseTrainer(ABC):
             elif isinstance(optimizers, Dict):
                 opt_names = list(optimizers.keys())
                 mod_names = [n for n, c in self.model.named_children()]
-                # if with_fds - the prediction layer is part of the model and
-                # should be optimized with the rest of deeptabular
-                # component/model
-                if self.model.with_fds:
-                    if "enf_pos" in mod_names:
-                        mod_names.remove("enf_pos")
-                    mod_names.remove("fds_layer")
-                    # The Tabular optimizer is always going to be just one
-                    assert isinstance(optimizers["deeptabular"], Optimizer)
-                    optimizers["deeptabular"].add_param_group(
-                        {"params": self.model.fds_layer.pred_layer.parameters()}
-                    )
                 for mn in mod_names:
                     assert mn in opt_names, "No optimizer found for {}".format(mn)
                 optimizer = MultipleOptimizer(optimizers)
@@ -384,11 +372,6 @@ class BaseTrainer(ABC):
         lr_schedulers,
         custom_loss_function,
     ):
-        if model.with_fds and _ObjectiveToMethod.get(objective) != "regression":
-            raise ValueError(
-                "Feature Distribution Smooting can be used only for regression"
-            )
-
         if objective == "multitarget":
             assert custom_loss_function is not None, (
                 "When 'objective' is 'multitarget', 'custom_loss_function' must be "

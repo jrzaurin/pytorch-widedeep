@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 
+from pytorch_widedeep.models import TabNet
 from pytorch_widedeep.wdtypes import List, Union, Tensor, Literal, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models._base_wd_model_component import (
@@ -20,10 +21,10 @@ class ModelFuser(BaseWDModelComponent):
         List of models whose outputs will be fused
     fusion_method: Union[str, List[str]]
         Method to fuse the output of the models. It can be one of
-        ['concatenate', 'mean', 'max', 'sum', 'mult', 'head'] or a list of
-        those. If a list is provided the output of the models will be fused
-        using all the methods in the list and the final output will be the
-        concatenation of the outputs of each method
+        ['concatenate', 'mean', 'max', 'sum', 'mult', 'dot', 'head'] or a
+        list of those, but 'dot'. If a list is provided the output of the
+        models will be fused using all the methods in the list and the final
+        output will be the concatenation of the outputs of each method
     projection_method: Optional[str]
         If the fusion_method is not 'concatenate', this parameter will
         determine how to project the output of the models to a common
@@ -110,6 +111,7 @@ class ModelFuser(BaseWDModelComponent):
                 "max",
                 "sum",
                 "mult",
+                "dot",
                 "head",
             ],
             List[Literal["concatenate", "mean", "max", "sum", "mult", "head"]],
@@ -182,11 +184,20 @@ class ModelFuser(BaseWDModelComponent):
             return self.head(
                 torch.cat([model(x) for model, x in zip(self.models, X)], -1)
             )
+        elif self.fusion_method == "dot":
+            assert len(X) == 2, (
+                "When using 'dot' as fusion_method, only two models "
+                " can be fused. Accordingly, only two inputs should be provided"
+            )
+            outputs = [model(x) for model, x in zip(self.models, X)]
+            return torch.bmm(outputs[1].unsqueeze(1), outputs[0].unsqueeze(2)).view(
+                -1, 1
+            )
         else:
             if isinstance(self.fusion_method, str):
                 fusion_methods = [self.fusion_method]
             else:
-                fusion_methods = self.fusion_method
+                fusion_methods = self.fusion_method  # type: ignore
 
             fused_outputs: List[Tensor] = []
             for fm in fusion_methods:
@@ -210,7 +221,7 @@ class ModelFuser(BaseWDModelComponent):
                     else:
                         # This should never happen, but avoids type errors
                         raise ValueError(
-                            "fusion_method must be one of ['concatenate', 'mean', 'max', 'sum', 'mult', 'head'] "
+                            "fusion_method must be one of ['concatenate', 'mean', 'max', 'sum', 'mult', 'dot', 'head'] "
                             "or a list of those"
                         )
                 fused_outputs.append(out)
@@ -260,12 +271,14 @@ class ModelFuser(BaseWDModelComponent):
                 if hasattr(self, "head_hidden_dims")
                 else self.head.output_dim
             )
+        elif self.fusion_method == "dot":
+            output_dim = 1
         else:
             output_dim = 0
             if isinstance(self.fusion_method, str):
                 fusion_methods = [self.fusion_method]
             else:
-                fusion_methods = self.fusion_method
+                fusion_methods = self.fusion_method  # type: ignore
             for fm in fusion_methods:
                 if fm == "concatenate":
                     output_dim += sum([model.output_dim for model in self.models])
@@ -288,14 +301,30 @@ class ModelFuser(BaseWDModelComponent):
         return output_dim
 
     def check_input_parameters(self):  # noqa: C901
+
+        if any(isinstance(model, TabNet) for model in self.models):
+            raise ValueError(
+                "TabNet is not supported in ModelFuser. "
+                "Please, use another model for tabular data"
+            )
+
         if isinstance(self.fusion_method, str):
             if not any(
                 x == self.fusion_method
-                for x in ["concatenate", "min", "max", "mean", "sum", "mult", "head"]
+                for x in [
+                    "concatenate",
+                    "min",
+                    "max",
+                    "mean",
+                    "sum",
+                    "dot",
+                    "mult",
+                    "head",
+                ]
             ):
                 raise ValueError(
-                    "fusion_method must be one of ['concatenate', 'mean', 'max', 'sum', 'mult', 'head'] "
-                    "or a list of those"
+                    "fusion_method must be one of ['concatenate', 'mean', 'max', 'sum', 'mult', 'dot', 'head'] "
+                    "or a list of any those but 'dot'"
                 )
 
             if (
@@ -323,14 +352,15 @@ class ModelFuser(BaseWDModelComponent):
                         "mean",
                         "sum",
                         "mult",
+                        "dot",
                         "head",
                     ]
                 )
                 for fm in self.fusion_method
             ):
                 raise ValueError(
-                    "fusion_method must be one of ['concatenate', 'mean', 'max', 'sum', 'mult', 'head'] "
-                    "or a list of those"
+                    "fusion_method must be one of ['concatenate', 'mean', 'max', 'sum', 'mult', 'dot', 'head'] "
+                    "or a list of those but 'dot'"
                 )
 
             if (
@@ -351,9 +381,11 @@ class ModelFuser(BaseWDModelComponent):
                         "projection_method must be one of ['min', 'max', 'mean']"
                     )
 
-        if "head" in self.fusion_method and isinstance(self.fusion_method, list):
+        if any(x in self.fusion_method for x in ["head", "dot"]) and isinstance(
+            self.fusion_method, list
+        ):
             raise ValueError(
-                "When using 'head' as fusion_method, no other method should be provided"
+                "When using 'head' or 'dot' as fusion_method, no other method should be provided"
             )
 
     def __repr__(self):

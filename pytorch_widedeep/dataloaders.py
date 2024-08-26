@@ -37,16 +37,6 @@ def get_class_weights(dataset: WideDeepDataset) -> Tuple[np.ndarray, int, int]:
     return weights, minor_class_count, num_classes
 
 
-class DataLoaderDefault(DataLoader):
-    def __init__(
-        self, dataset: WideDeepDataset, batch_size: int, num_workers: int, **kwargs
-    ):
-        self.with_lds = dataset.with_lds
-        super().__init__(
-            dataset=dataset, batch_size=batch_size, num_workers=num_workers, **kwargs
-        )
-
-
 class DataLoaderImbalanced(DataLoader):
     r"""Class to load and shuffle batches with adjusted weights for imbalanced
     datasets. If the classes do not begin from 0 remapping is necessary. See
@@ -87,7 +77,6 @@ class DataLoaderImbalanced(DataLoader):
             "target array 'Y'"
         )
 
-        self.with_lds = dataset.with_lds
         if "oversample_mul" in kwargs:
             oversample_mul = kwargs["oversample_mul"]
             del kwargs["oversample_mul"]

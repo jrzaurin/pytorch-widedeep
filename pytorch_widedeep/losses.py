@@ -15,18 +15,18 @@ use_cuda = torch.cuda.is_available()
 
 
 class MSELoss(nn.Module):
-    r"""Mean square error loss with the option of using Label Smooth
-    Distribution (LDS)
+    r"""Mean square error loss"""
 
-    LDS is based on
-    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
-    """
-
+    # legacy code from when we used to support FDS-LDS and this class could
+    # taked the corresponding params. At this stage probably you want to use
+    # torch.nn.MSELoss
     def __init__(self):
         super().__init__()
 
     def forward(
-        self, input: Tensor, target: Tensor, lds_weight: Optional[Tensor] = None
+        self,
+        input: Tensor,
+        target: Tensor,
     ) -> Tensor:
         r"""
         Parameters
@@ -35,8 +35,6 @@ class MSELoss(nn.Module):
             Input tensor with predictions
         target: Tensor
             Target tensor with the actual values
-        lds_weight: Tensor, Optional
-            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -45,28 +43,22 @@ class MSELoss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> loss = MSELoss()(input, target, lds_weight)
+        >>> loss = MSELoss()(input, target)
         """
         loss = (input - target) ** 2
-        if lds_weight is not None:
-            loss *= lds_weight
         return torch.mean(loss)
 
 
 class MSLELoss(nn.Module):
-    r"""Mean square log error loss with the option of using Label Smooth
-    Distribution (LDS)
-
-    LDS is based on
-    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
-    """
+    r"""Mean square log error loss"""
 
     def __init__(self):
         super().__init__()
 
     def forward(
-        self, input: Tensor, target: Tensor, lds_weight: Optional[Tensor] = None
+        self,
+        input: Tensor,
+        target: Tensor,
     ) -> Tensor:
         r"""
         Parameters
@@ -75,8 +67,6 @@ class MSLELoss(nn.Module):
             Input tensor with predictions (not probabilities)
         target: Tensor
             Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -85,8 +75,7 @@ class MSLELoss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> loss = MSLELoss()(input, target, lds_weight)
+        >>> loss = MSLELoss()(input, target)
         """
         assert (
             input.min() >= 0
@@ -96,25 +85,19 @@ class MSLELoss(nn.Module):
         assert target.min() >= 0, "All target values must be >=0"
 
         loss = (torch.log(input + 1) - torch.log(target + 1)) ** 2
-        if lds_weight is not None:
-            loss *= lds_weight
         return torch.mean(loss)
 
 
 class RMSELoss(nn.Module):
-    r"""Root mean square error loss adjusted for the possibility of using Label
-    Smooth Distribution (LDS)
+    r"""Root mean square error loss"""
 
-    LDS is based on
-    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
-    """
-
+    # legacy code from when we used to support FDS-LDS and this class could
+    # taked the corresponding params. At this stage probably you want to use
+    # torch.sqrt(nn.MSELoss)
     def __init__(self):
         super().__init__()
 
-    def forward(
-        self, input: Tensor, target: Tensor, lds_weight: Optional[Tensor] = None
-    ) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
         r"""
         Parameters
         ----------
@@ -122,8 +105,6 @@ class RMSELoss(nn.Module):
             Input tensor with predictions (not probabilities)
         target: Tensor
             Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -132,29 +113,19 @@ class RMSELoss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> loss = RMSELoss()(input, target, lds_weight)
+        >>> loss = RMSELoss()(input, target)
         """
         loss = (input - target) ** 2
-        if lds_weight is not None:
-            loss *= lds_weight
         return torch.sqrt(torch.mean(loss))
 
 
 class RMSLELoss(nn.Module):
-    r"""Root mean square log error loss adjusted for the possibility of using Label
-    Smooth Distribution (LDS)
-
-    LDS is based on
-    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
-    """
+    r"""Root mean square log error loss"""
 
     def __init__(self):
         super().__init__()
 
-    def forward(
-        self, input: Tensor, target: Tensor, lds_weight: Optional[Tensor] = None
-    ) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
         r"""
         Parameters
         ----------
@@ -162,8 +133,6 @@ class RMSLELoss(nn.Module):
             Input tensor with predictions (not probabilities)
         target: Tensor
             Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            Tensor of weights that will multiply the loss value.
 
         Examples
         --------
@@ -172,8 +141,7 @@ class RMSLELoss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> loss = RMSLELoss()(input, target, lds_weight)
+        >>> loss = RMSLELoss()(input, target)
         """
         assert (
             input.min() >= 0
@@ -183,8 +151,6 @@ class RMSLELoss(nn.Module):
         assert target.min() >= 0, "All target values must be >=0"
 
         loss = (torch.log(input + 1) - torch.log(target + 1)) ** 2
-        if lds_weight is not None:
-            loss *= lds_weight
         return torch.sqrt(torch.mean(loss))
 
 
@@ -388,7 +354,6 @@ class TweedieLoss(nn.Module):
         self,
         input: Tensor,
         target: Tensor,
-        lds_weight: Optional[Tensor] = None,
         p: float = 1.5,
     ) -> Tensor:
         r"""
@@ -398,9 +363,6 @@ class TweedieLoss(nn.Module):
             Input tensor with predictions
         target: Tensor
             Target tensor with the actual values
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
         p: float, default = 1.5
             the power to be used to compute the loss. See the original
             publication for details
@@ -412,8 +374,7 @@ class TweedieLoss(nn.Module):
         >>>
         >>> target = torch.tensor([1, 1.2, 0, 2]).view(-1, 1)
         >>> input = torch.tensor([0.6, 0.7, 0.3, 0.8]).view(-1, 1)
-        >>> lds_weight = torch.tensor([0.1, 0.2, 0.3, 0.4]).view(-1, 1)
-        >>> loss = TweedieLoss()(input, target, lds_weight)
+        >>> loss = TweedieLoss()(input, target)
         """
 
         assert (
@@ -425,9 +386,6 @@ class TweedieLoss(nn.Module):
         loss = -target * torch.pow(input, 1 - p) / (1 - p) + torch.pow(input, 2 - p) / (
             2 - p
         )
-        if lds_weight is not None:
-            loss *= lds_weight
-
         return torch.mean(loss)
 
 
@@ -497,19 +455,15 @@ class ZILNLoss(nn.Module):
 
 
 class L1Loss(nn.Module):
-    r"""L1 loss adjusted for the possibility of using Label Smooth
-    Distribution (LDS)
+    r"""L1 loss"""
 
-    LDS is based on
-    [Delving into Deep Imbalanced Regression](https://arxiv.org/abs/2102.09554).
-    """
-
+    # legacy code from when we used to support FDS-LDS and this class could
+    # taked the corresponding params. At this stage probably you want to use
+    # torch.nn.L1Loss
     def __init__(self):
         super().__init__()
 
-    def forward(
-        self, input: Tensor, target: Tensor, lds_weight: Optional[Tensor] = None
-    ) -> Tensor:
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
         r"""
         Parameters
         ----------
@@ -517,9 +471,6 @@ class L1Loss(nn.Module):
             Input tensor with predictions
         target: Tensor
             Target tensor with the actual values
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
 
         Examples
         --------
@@ -532,8 +483,6 @@ class L1Loss(nn.Module):
         >>> loss = L1Loss()(input, target)
         """
         loss = F.l1_loss(input, target, reduction="none")
-        if lds_weight is not None:
-            loss *= lds_weight
         return torch.mean(loss)
 
 
@@ -569,7 +518,6 @@ class FocalR_L1Loss(nn.Module):
         self,
         input: Tensor,
         target: Tensor,
-        lds_weight: Optional[Tensor] = None,
     ) -> Tensor:
         r"""
         Parameters
@@ -578,9 +526,6 @@ class FocalR_L1Loss(nn.Module):
             Input tensor with predictions (not probabilities)
         target: Tensor
             Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
 
         Examples
         --------
@@ -603,8 +548,6 @@ class FocalR_L1Loss(nn.Module):
             ValueError(
                 "Incorrect activation function value - must be in ['sigmoid', 'tanh']"
             )
-        if lds_weight is not None:
-            loss *= lds_weight
         return torch.mean(loss)
 
 
@@ -640,7 +583,6 @@ class FocalR_MSELoss(nn.Module):
         self,
         input: Tensor,
         target: Tensor,
-        lds_weight: Optional[Tensor] = None,
     ) -> Tensor:
         r"""
         Parameters
@@ -649,9 +591,6 @@ class FocalR_MSELoss(nn.Module):
             Input tensor with predictions (not probabilities)
         target: Tensor
             Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
 
         Examples
         --------
@@ -674,8 +613,6 @@ class FocalR_MSELoss(nn.Module):
             ValueError(
                 "Incorrect activation function value - must be in ['sigmoid', 'tanh']"
             )
-        if lds_weight is not None:
-            loss *= lds_weight
         return torch.mean(loss)
 
 
@@ -711,7 +648,6 @@ class FocalR_RMSELoss(nn.Module):
         self,
         input: Tensor,
         target: Tensor,
-        lds_weight: Optional[Tensor] = None,
     ) -> Tensor:
         r"""
         Parameters
@@ -720,9 +656,6 @@ class FocalR_RMSELoss(nn.Module):
             Input tensor with predictions (not probabilities)
         target: Tensor
             Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
 
         Examples
         --------
@@ -745,8 +678,6 @@ class FocalR_RMSELoss(nn.Module):
             ValueError(
                 "Incorrect activation function value - must be in ['sigmoid', 'tanh']"
             )
-        if lds_weight is not None:
-            loss *= lds_weight
         return torch.sqrt(torch.mean(loss))
 
 
@@ -764,7 +695,6 @@ class HuberLoss(nn.Module):
         self,
         input: Tensor,
         target: Tensor,
-        lds_weight: Optional[Tensor] = None,
     ) -> Tensor:
         r"""
         Parameters
@@ -773,9 +703,6 @@ class HuberLoss(nn.Module):
             Input tensor with predictions (not probabilities)
         target: Tensor
             Target tensor with the actual classes
-        lds_weight: Tensor, Optional
-            If we choose to use LDS this is the tensor of weights that will
-            multiply the loss value.
 
         Examples
         --------
@@ -792,8 +719,6 @@ class HuberLoss(nn.Module):
         loss = torch.where(
             cond, 0.5 * l1_loss**2 / self.beta, l1_loss - 0.5 * self.beta
         )
-        if lds_weight is not None:
-            loss *= lds_weight
         return torch.mean(loss)
 
 

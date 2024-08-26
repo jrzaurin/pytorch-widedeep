@@ -2,7 +2,7 @@ import warnings
 
 import numpy as np
 import torch
-from torch import nn, lstm
+from torch import nn
 
 from pytorch_widedeep.wdtypes import (
     List,

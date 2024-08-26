@@ -1,15 +1,10 @@
 import numpy as np
-import torch
 import pandas as pd
 import pytest
 from sklearn.exceptions import NotFittedError
 
 from pytorch_widedeep.preprocessing import TabPreprocessor
-from pytorch_widedeep.utils.deeptabular_utils import (
-    LabelEncoder,
-    find_bin,
-    get_kernel_window,
-)
+from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
 from pytorch_widedeep.preprocessing.tab_preprocessor import embed_sz_rule
 
 
@@ -314,37 +309,6 @@ def test_overlapping_cols_valueerror():
     with pytest.raises(ValueError):
         tab_preprocessor = TabPreprocessor(  # noqa: F841
             cat_embed_cols=embed_cols, continuous_cols=cont_cols
-        )
-
-
-###############################################################################
-# Test get_kernel_window
-###############################################################################
-
-
-def test_get_kernel_window():
-    assert get_kernel_window().shape[0] == 5
-
-
-###############################################################################
-# Test find_bin
-###############################################################################
-
-
-@pytest.mark.parametrize(
-    "bin_edges, values",
-    [
-        (np.array([1, 2, 3, 4, 5]), np.array([-1, 0.5, 1, 2.5, 5, 6])),
-        (torch.tensor([1, 2, 3, 4, 5]), torch.tensor([-1, 0.5, 1, 2.5, 5, 6])),
-    ],
-)
-def test_find_bin(bin_edges, values):
-    if type(bin_edges) == np.ndarray and type(values) == np.ndarray:
-        assert np.array_equal(find_bin(bin_edges, values), np.array([1, 1, 1, 2, 4, 4]))
-    elif type(bin_edges) == torch.Tensor and type(values) == torch.Tensor:
-        assert torch.equal(
-            find_bin(bin_edges, values, ret_value=False),
-            torch.tensor([0, 0, 0, 1, 3, 3]),
         )
 
 

@@ -22,8 +22,10 @@ from pytorch_widedeep.losses import (
     FocalR_RMSELoss,
 )
 from pytorch_widedeep.wdtypes import (
+    Any,
     Dict,
     List,
+    Tuple,
     Union,
     Compose,
     Literal,
@@ -45,7 +47,7 @@ def tabular_train_val_split(
     X_val: Optional[np.ndarray] = None,
     y_val: Optional[np.ndarray] = None,
     val_split: Optional[float] = None,
-):
+) -> Tuple[TensorDataset, Optional[TensorDataset]]:
     r"""
     Function to create the train/val split for the BayesianTrainer where only
     tabular data is used
@@ -84,7 +86,7 @@ def tabular_train_val_split(
             torch.from_numpy(y_val),
         )
     elif val_split is not None:
-        y_tr, y_val, idx_tr, idx_val = train_test_split(
+        y_tr, y_val, idx_tr, idx_val = train_test_split(  # type: ignore
             y,
             np.arange(len(y)),
             test_size=val_split,
@@ -115,7 +117,7 @@ def wd_train_val_split(  # noqa: C901
     seed: int,
     method: Literal["regression", "binary", "multiclass", "qregression"],
     X_wide: Optional[np.ndarray] = None,
-    X_tab: Optional[np.ndarray] = None,
+    X_tab: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
     X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
     X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
     X_train: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
@@ -123,7 +125,6 @@ def wd_train_val_split(  # noqa: C901
     val_split: Optional[float] = None,
     target: Optional[np.ndarray] = None,
     transforms: Optional[Union[Transforms, Compose]] = None,
-    **lds_args,
 ):
     r"""
     Function to create the train/val split for a wide and deep model
@@ -139,13 +140,13 @@ def wd_train_val_split(  # noqa: C901
         random seed to be used during train/val split
     method: str
         'regression',  'binary' or 'multiclass'
-    X_wide: np.ndarray, Optional, default = None
+    X_wide: np.ndaaray, Optional, default = None
         wide dataset
-    X_tab: np.ndarray, Optional, default = None
+    X_tab: np.ndarray or List[np.ndarray], Optional, default = None
         tabular dataset (categorical and continuous features)
-    X_img: np.ndarray, Optional, default = None
+    X_img: np.ndarray or List[np.ndarray], Optional, default = None
         image dataset
-    X_text: np.ndarray, Optional, default = None
+    X_text: np.ndarray or List[np.ndarray], Optional, default = None
         text dataset
     X_val: Dict, Optional, default = None
         Dict with the validation set, where the keys are the component names
@@ -167,14 +168,15 @@ def wd_train_val_split(  # noqa: C901
             "if the validation set is passed as a dictionary, the training set must also be a dictionary,"
             " that includes the target"
         )
-        train_set = WideDeepDataset(**X_train, transforms=transforms, **lds_args)  # type: ignore
-        eval_set = WideDeepDataset(**X_val, transforms=transforms, is_training=False)  # type: ignore
+        train_set = WideDeepDataset(**X_train, transforms=transforms)  # type: ignore
+        eval_set = WideDeepDataset(**X_val, transforms=transforms)  # type: ignore
     elif val_split is not None:
         if not X_train:
             assert (
                 target is not None
             ), "if the validation split is specified, the target must also be specified"
             X_train = _build_train_dict(X_wide, X_tab, X_text, X_img, target)
+
         y_tr, y_val, idx_tr, idx_val = train_test_split(
             X_train["target"],
             np.arange(len(X_train["target"])),
@@ -188,61 +190,63 @@ def wd_train_val_split(  # noqa: C901
         )
         X_tr, X_val = {"target": y_tr}, {"target": y_val}
         if "X_wide" in X_train.keys():
-            X_tr["X_wide"], X_val["X_wide"] = (
-                X_train["X_wide"][idx_tr],
-                X_train["X_wide"][idx_val],
+            # the wide component will never be a list, but can still be passed
+            # to '_wd_train_val_split_component'
+            X_tr, X_val = _wd_train_val_split_component(
+                X_train, X_tr, X_val, idx_tr, idx_val, "X_wide"
             )
         if "X_tab" in X_train.keys():
-            X_tr["X_tab"], X_val["X_tab"] = (
-                X_train["X_tab"][idx_tr],
-                X_train["X_tab"][idx_val],
+            X_tr, X_val = _wd_train_val_split_component(
+                X_train, X_tr, X_val, idx_tr, idx_val, "X_tab"
             )
         if "X_text" in X_train.keys():
-            if isinstance(X_train["X_text"], list):
-                X_tr["X_text"], X_val["X_text"] = (
-                    [
-                        X_train["X_text"][i][idx_tr]
-                        for i in range(len(X_train["X_text"]))
-                    ],
-                    [
-                        X_train["X_text"][i][idx_val]
-                        for i in range(len(X_train["X_text"]))
-                    ],
-                )
-            else:
-                X_tr["X_text"], X_val["X_text"] = (
-                    X_train["X_text"][idx_tr],
-                    X_train["X_text"][idx_val],
-                )
+            X_tr, X_val = _wd_train_val_split_component(
+                X_train, X_tr, X_val, idx_tr, idx_val, "X_text"
+            )
         if "X_img" in X_train.keys():
-            if isinstance(X_train["X_img"], list):
-                X_tr["X_img"], X_val["X_img"] = (
-                    [X_train["X_img"][i][idx_tr] for i in range(len(X_train["X_img"]))],
-                    [
-                        X_train["X_img"][i][idx_val]
-                        for i in range(len(X_train["X_img"]))
-                    ],
-                )
-            else:
-                X_tr["X_img"], X_val["X_img"] = (
-                    X_train["X_img"][idx_tr],
-                    X_train["X_img"][idx_val],
-                )
-        train_set = WideDeepDataset(**X_tr, transforms=transforms, **lds_args)  # type: ignore
-        eval_set = WideDeepDataset(**X_val, transforms=transforms, is_training=False)  # type: ignore
+            X_tr, X_val = _wd_train_val_split_component(
+                X_train, X_tr, X_val, idx_tr, idx_val, "X_img"
+            )
+        train_set = WideDeepDataset(**X_tr, transforms=transforms)  # type: ignore
+        eval_set = WideDeepDataset(**X_val, transforms=transforms)  # type: ignore
     else:
         if not X_train:
             assert target is not None
             X_train = _build_train_dict(X_wide, X_tab, X_text, X_img, target)
-        train_set = WideDeepDataset(**X_train, transforms=transforms, **lds_args)  # type: ignore
+        train_set = WideDeepDataset(**X_train, transforms=transforms)  # type: ignore
         eval_set = None
 
     return train_set, eval_set
 
 
+def _wd_train_val_split_component(
+    X: Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    X_tr: Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    X_val: Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    idx_tr: Any,  # is a numpy array but sklearn's train_test_split returns a non-sensical type
+    idx_val: Any,
+    component_type: Literal["X_wide", "X_tab", "X_text", "X_img"],
+) -> Tuple[
+    Dict[str, Union[np.ndarray, List[np.ndarray]]],
+    Dict[str, Union[np.ndarray, List[np.ndarray]]],
+]:
+    if isinstance(X[component_type], list):
+        X_tr[component_type], X_val[component_type] = (
+            [X[component_type][i][idx_tr] for i in range(len(X[component_type]))],
+            [X[component_type][i][idx_val] for i in range(len(X[component_type]))],
+        )
+    else:
+        X_tr[component_type], X_val[component_type] = (
+            X[component_type][idx_tr],
+            X[component_type][idx_val],
+        )
+
+    return X_tr, X_val
+
+
 def _build_train_dict(
     X_wide: Optional[np.ndarray],
-    X_tab: Optional[np.ndarray],
+    X_tab: Optional[Union[np.ndarray, List[np.ndarray]]],
     X_text: Optional[Union[np.ndarray, List[np.ndarray]]],
     X_img: Optional[Union[np.ndarray, List[np.ndarray]]],
     target: np.ndarray,

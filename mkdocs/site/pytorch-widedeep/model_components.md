@@ -127,9 +127,3 @@ self-supervised pre-training with tabular data.
         filters:
             - "!^_"  # exclude all members starting with _
             - "!^forward$"
-
-::: pytorch_widedeep.models.fds_layer.FDSLayer
-    selection:
-        filters:
-            - "!^_"  # exclude all members starting with _
-            - "!^forward$"

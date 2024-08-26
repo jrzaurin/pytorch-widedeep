@@ -17,5 +17,4 @@ them to address different problems
 * `HyperParameter Tuning With RayTune <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/notebooks/10_hyperParameter_tuning_w_raytune_n_wnb.ipynb>`__
 * `Model Uncertainty Prediction <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/notebooks/13_Model_Uncertainty_prediction.ipynb>`__
 * `Bayesian Models <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/notebooks/14_bayesian_models.ipynb>`__
-* `Deep Imbalanced Regression <https://github.com/jrzaurin/pytorch-widedeep/blob/master/examples/notebooks/15_DIR-LDS_and_FDS.ipynb>`__
 
