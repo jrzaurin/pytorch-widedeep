@@ -8,11 +8,7 @@ import pytest
 from torch.optim.lr_scheduler import StepLR, CyclicLR
 
 from pytorch_widedeep.training import BayesianTrainer
-from pytorch_widedeep.callbacks import (
-    LRHistory,
-    EarlyStopping,
-    ModelCheckpoint,
-)
+from pytorch_widedeep.callbacks import LRHistory, EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
 
 # Wide array

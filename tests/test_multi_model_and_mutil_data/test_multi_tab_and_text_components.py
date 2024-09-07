@@ -10,20 +10,12 @@ import pandas as pd
 import pytest
 
 from pytorch_widedeep import Trainer
-from pytorch_widedeep.models import (
-    TabMlp,
-    TabNet,
-    BasicRNN,
-    WideDeep,
-    ModelFuser,
-)
+from pytorch_widedeep.models import TabMlp, TabNet, BasicRNN, WideDeep, ModelFuser
 from pytorch_widedeep.metrics import F1Score, Accuracy
 from pytorch_widedeep.callbacks import LRHistory
 from pytorch_widedeep.initializers import XavierNormal, KaimingNormal
 from pytorch_widedeep.preprocessing import TabPreprocessor, TextPreprocessor
-from pytorch_widedeep.models._base_wd_model_component import (
-    BaseWDModelComponent,
-)
+from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 
 
 class CustomHead(BaseWDModelComponent):

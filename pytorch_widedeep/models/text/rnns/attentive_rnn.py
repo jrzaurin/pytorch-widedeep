@@ -4,9 +4,7 @@ import torch
 from pytorch_widedeep.wdtypes import List, Tensor, Literal, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.text.rnns.basic_rnn import BasicRNN
-from pytorch_widedeep.models.tabular.mlp._attention_layers import (
-    ContextAttention,
-)
+from pytorch_widedeep.models.tabular.mlp._attention_layers import ContextAttention
 
 
 class AttentiveRNN(BasicRNN):

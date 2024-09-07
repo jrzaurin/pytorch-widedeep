@@ -9,11 +9,7 @@ import pytest
 from torch.optim.lr_scheduler import StepLR, CyclicLR, ReduceLROnPlateau
 
 from pytorch_widedeep.models import TabMlp, TabTransformer
-from pytorch_widedeep.callbacks import (
-    LRHistory,
-    EarlyStopping,
-    ModelCheckpoint,
-)
+from pytorch_widedeep.callbacks import LRHistory, EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.self_supervised_training import (
     EncoderDecoderTrainer,

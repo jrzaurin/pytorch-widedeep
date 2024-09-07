@@ -26,12 +26,8 @@ from pytorch_widedeep.training._trainer_utils import (
     print_loss_and_metric,
     tabular_train_val_split,
 )
-from pytorch_widedeep.training._base_bayesian_trainer import (
-    BaseBayesianTrainer,
-)
-from pytorch_widedeep.bayesian_models._base_bayesian_model import (
-    BaseBayesianModel,
-)
+from pytorch_widedeep.training._base_bayesian_trainer import BaseBayesianTrainer
+from pytorch_widedeep.bayesian_models._base_bayesian_model import BaseBayesianModel
 
 
 class BayesianTrainer(BaseBayesianTrainer):

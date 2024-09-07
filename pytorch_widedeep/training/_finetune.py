@@ -16,9 +16,7 @@ from pytorch_widedeep.wdtypes import (
     DataLoader,
     LRScheduler,
 )
-from pytorch_widedeep.models._base_wd_model_component import (
-    BaseWDModelComponent,
-)
+from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 
 use_cuda = torch.cuda.is_available()
 

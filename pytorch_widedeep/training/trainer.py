@@ -34,10 +34,7 @@ from pytorch_widedeep.training._trainer_utils import (
     wd_train_val_split,
     print_loss_and_metric,
 )
-from pytorch_widedeep.training._feature_importance import (
-    Explainer,
-    FeatureImportance,
-)
+from pytorch_widedeep.training._feature_importance import Explainer, FeatureImportance
 
 
 class Trainer(BaseTrainer):

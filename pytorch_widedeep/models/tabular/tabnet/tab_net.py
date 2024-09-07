@@ -1,14 +1,7 @@
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import (
-    Dict,
-    List,
-    Tuple,
-    Tensor,
-    Literal,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Literal, Optional
 from pytorch_widedeep.models.tabular.tabnet._layers import (
     TabNetEncoder,
     FeatTransformer,

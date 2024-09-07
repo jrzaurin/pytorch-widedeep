@@ -4,20 +4,10 @@ import numpy as np
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import (
-    Any,
-    List,
-    Tuple,
-    Union,
-    Tensor,
-    Literal,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import Any, List, Tuple, Union, Tensor, Literal, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.text.rnns._encoders import ContextAttentionEncoder
-from pytorch_widedeep.models._base_wd_model_component import (
-    BaseWDModelComponent,
-)
+from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 
 
 class StackedAttentiveRNN(BaseWDModelComponent):

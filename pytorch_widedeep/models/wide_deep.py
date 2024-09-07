@@ -3,22 +3,12 @@ import warnings
 import torch
 from torch import nn
 
-from pytorch_widedeep.wdtypes import (
-    Dict,
-    List,
-    Tuple,
-    Union,
-    Tensor,
-    Literal,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Literal, Optional
 from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.models._get_activation_fn import get_activation_fn
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular.tabnet.tab_net import TabNetPredLayer
-from pytorch_widedeep.models._base_wd_model_component import (
-    BaseWDModelComponent,
-)
+from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 
 warnings.filterwarnings("default", category=UserWarning)
 

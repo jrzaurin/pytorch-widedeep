@@ -5,19 +5,9 @@ import torch
 import einops
 from torch import nn
 
-from pytorch_widedeep.wdtypes import (
-    Dict,
-    List,
-    Tuple,
-    Union,
-    Tensor,
-    Literal,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Literal, Optional
 from pytorch_widedeep.utils.general_utils import alias
-from pytorch_widedeep.models._base_wd_model_component import (
-    BaseWDModelComponent,
-)
+from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 from pytorch_widedeep.models.tabular.embeddings_layers import (
     NormLayers,
     ContEmbeddings,

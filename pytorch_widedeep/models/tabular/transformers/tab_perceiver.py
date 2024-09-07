@@ -2,21 +2,12 @@ import torch
 import einops
 from torch import nn
 
-from pytorch_widedeep.wdtypes import (
-    Dict,
-    List,
-    Tuple,
-    Tensor,
-    Literal,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Literal, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
 )
-from pytorch_widedeep.models.tabular.transformers._encoders import (
-    PerceiverEncoder,
-)
+from pytorch_widedeep.models.tabular.transformers._encoders import PerceiverEncoder
 
 
 class TabPerceiver(BaseTabularModelWithAttention):

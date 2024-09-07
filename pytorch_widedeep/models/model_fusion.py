@@ -4,9 +4,7 @@ from torch import nn
 from pytorch_widedeep.models import TabNet
 from pytorch_widedeep.wdtypes import List, Union, Tensor, Literal, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
-from pytorch_widedeep.models._base_wd_model_component import (
-    BaseWDModelComponent,
-)
+from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 
 
 class ModelFuser(BaseWDModelComponent):

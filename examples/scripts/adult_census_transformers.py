@@ -14,11 +14,7 @@ from pytorch_widedeep.models import (
 )
 from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.datasets import load_adult
-from pytorch_widedeep.callbacks import (
-    LRHistory,
-    EarlyStopping,
-    ModelCheckpoint,
-)
+from pytorch_widedeep.callbacks import LRHistory, EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.initializers import XavierNormal, KaimingNormal
 from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 

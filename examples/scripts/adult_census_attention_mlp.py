@@ -3,11 +3,7 @@ import torch
 import pandas as pd
 
 from pytorch_widedeep import Trainer
-from pytorch_widedeep.models import (
-    WideDeep,
-    SelfAttentionMLP,
-    ContextAttentionMLP,
-)
+from pytorch_widedeep.models import WideDeep, SelfAttentionMLP, ContextAttentionMLP
 from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.preprocessing import TabPreprocessor

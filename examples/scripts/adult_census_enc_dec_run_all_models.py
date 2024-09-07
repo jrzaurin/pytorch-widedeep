@@ -5,11 +5,7 @@ import pandas as pd
 from pytorch_widedeep.models import TabMlp as TabMlpEncoder
 from pytorch_widedeep.models import TabNet as TabNetEncoder
 from pytorch_widedeep.models import TabResnet as TabResnetEncoder
-from pytorch_widedeep.models import (
-    TabMlpDecoder,
-    TabNetDecoder,
-    TabResnetDecoder,
-)
+from pytorch_widedeep.models import TabMlpDecoder, TabNetDecoder, TabResnetDecoder
 from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.self_supervised_training import EncoderDecoderTrainer

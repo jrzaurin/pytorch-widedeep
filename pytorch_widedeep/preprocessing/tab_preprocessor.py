@@ -4,14 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from pytorch_widedeep.wdtypes import (
-    Dict,
-    List,
-    Tuple,
-    Union,
-    Literal,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Literal, Optional
 from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
 from pytorch_widedeep.preprocessing.base_preprocessor import (

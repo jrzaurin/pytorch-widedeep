@@ -1,16 +1,7 @@
 from torch import nn
 
-from pytorch_widedeep.wdtypes import (
-    Dict,
-    List,
-    Tuple,
-    Tensor,
-    Literal,
-    Optional,
-)
-from pytorch_widedeep.models.tabular.mlp._encoders import (
-    ContextAttentionEncoder,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Literal, Optional
+from pytorch_widedeep.models.tabular.mlp._encoders import ContextAttentionEncoder
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
 )

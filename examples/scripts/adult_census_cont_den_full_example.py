@@ -8,9 +8,7 @@ from pytorch_widedeep.models import WideDeep, TabTransformer
 from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.preprocessing import TabPreprocessor
-from pytorch_widedeep.self_supervised_training import (
-    ContrastiveDenoisingTrainer,
-)
+from pytorch_widedeep.self_supervised_training import ContrastiveDenoisingTrainer
 
 use_cuda = torch.cuda.is_available()
 

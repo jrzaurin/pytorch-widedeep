@@ -7,19 +7,13 @@ import pytest
 from pytorch_widedeep.models import TabMlp as TabMlpEncoder
 from pytorch_widedeep.models import TabNet as TabNetEncoder
 from pytorch_widedeep.models import TabResnet as TabResnetEncoder
-from pytorch_widedeep.models import (
-    TabMlpDecoder,
-    TabNetDecoder,
-    TabResnetDecoder,
-)
+from pytorch_widedeep.models import TabMlpDecoder, TabNetDecoder, TabResnetDecoder
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.self_supervised_training import (
     EncoderDecoderTrainer,
     ContrastiveDenoisingTrainer,
 )
-from tests.test_self_supervised.test_ss_model_components import (
-    _build_transf_model,
-)
+from tests.test_self_supervised.test_ss_model_components import _build_transf_model
 
 some_letters = list(string.ascii_lowercase)
 some_numbers = range(10)

@@ -5,9 +5,7 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import Union, Tensor, Optional
 from pytorch_widedeep.utils.general_utils import alias
-from pytorch_widedeep.models.tabular.transformers._encoders import (
-    TransformerEncoder,
-)
+from pytorch_widedeep.models.tabular.transformers._encoders import TransformerEncoder
 
 
 class Transformer(nn.Module):

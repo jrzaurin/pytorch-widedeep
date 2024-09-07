@@ -27,9 +27,7 @@ from pytorch_widedeep.callbacks import (
     CallbackContainer,
     LRShedulerCallback,
 )
-from pytorch_widedeep.models.tabular.self_supervised import (
-    ContrastiveDenoisingModel,
-)
+from pytorch_widedeep.models.tabular.self_supervised import ContrastiveDenoisingModel
 from pytorch_widedeep.preprocessing.tab_preprocessor import TabPreprocessor
 
 

@@ -1,4 +1,1 @@
-from pytorch_widedeep.bayesian_models.tabular import (
-    BayesianWide,
-    BayesianTabMlp,
-)
+from pytorch_widedeep.bayesian_models.tabular import BayesianWide, BayesianTabMlp

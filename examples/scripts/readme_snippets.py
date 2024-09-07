@@ -12,14 +12,7 @@ from PIL import Image
 from faker import Faker
 
 from pytorch_widedeep import Trainer
-from pytorch_widedeep.models import (
-    Wide,
-    TabMlp,
-    Vision,
-    BasicRNN,
-    WideDeep,
-    ModelFuser,
-)
+from pytorch_widedeep.models import Wide, TabMlp, Vision, BasicRNN, WideDeep, ModelFuser
 from pytorch_widedeep.preprocessing import (
     TabPreprocessor,
     TextPreprocessor,
@@ -27,9 +20,7 @@ from pytorch_widedeep.preprocessing import (
     ImagePreprocessor,
 )
 from pytorch_widedeep.losses_multitarget import MultiTargetClassificationLoss
-from pytorch_widedeep.models._base_wd_model_component import (
-    BaseWDModelComponent,
-)
+from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 
 
 def create_and_save_random_image(image_number, size=(32, 32)):

@@ -6,9 +6,7 @@ from pytorch_widedeep.models.tabular.mlp._attention_layers import (
     ContextAttention,
     QueryKeySelfAttention,
 )
-from pytorch_widedeep.models.tabular.transformers._attention_layers import (
-    AddNorm,
-)
+from pytorch_widedeep.models.tabular.transformers._attention_layers import AddNorm
 
 
 class ContextAttentionEncoder(nn.Module):
