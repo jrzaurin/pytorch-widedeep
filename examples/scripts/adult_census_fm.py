@@ -6,8 +6,8 @@ from pytorch_widedeep.models import WideDeep as ModelConstructor
 from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.models.rec import (
-    FactorizationMachine,
-    FieldAwareFactorizationMachine,
+    DeepFactorizationMachine,
+    DeepFieldAwareFactorizationMachine,
 )
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
@@ -37,8 +37,10 @@ if __name__ == "__main__":
 
     tab_preprocessor = TabPreprocessor(
         cat_embed_cols=cat_embed_cols,
-        continuous_cols=continuous_cols,
-        # for_transformer=True,
+        # continuous_cols=continuous_cols,
+        # auto_embed_dim=False,
+        # default_embed_dim=5,
+        for_transformer=True,
         # scale=True,  # type: ignore[arg-type]
     )
     X_tab = tab_preprocessor.fit_transform(df)
@@ -54,16 +56,10 @@ if __name__ == "__main__":
         + [df["hours_per_week"].max()]
     )
 
-    fm = FieldAwareFactorizationMachine(
+    fm = DeepFieldAwareFactorizationMachine(
         column_idx=tab_preprocessor.column_idx,
-        cat_embed_input=tab_preprocessor.cat_embed_input,
         num_factors=4,
-        continuous_cols=continuous_cols,
-        embed_continuous_method="piecewise",
-        quantization_setup={
-            "age": age_quantiles,
-            "hours_per_week": hours_per_week_quantiles,
-        },
+        cat_embed_input=tab_preprocessor.cat_embed_input,
     )
 
     model = ModelConstructor(deeptabular=fm)

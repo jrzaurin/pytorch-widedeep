@@ -1,4 +1,2 @@
-from pytorch_widedeep.models.rec.fm import (
-    FactorizationMachine,
-    FieldAwareFactorizationMachine,
-)
+from pytorch_widedeep.models.rec.deepfm import DeepFactorizationMachine
+from pytorch_widedeep.models.rec.deepffm import DeepFieldAwareFactorizationMachine
