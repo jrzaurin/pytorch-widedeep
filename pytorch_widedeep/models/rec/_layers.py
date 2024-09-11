@@ -1,6 +1,7 @@
 from typing import Dict, List, Tuple, Literal, Optional
 
-from torch import Tensor
+import torch
+from torch import Tensor, nn
 
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
@@ -53,3 +54,31 @@ class PseudoLinear(BaseTabularModelWithAttention):
 
     def forward(self, X: Tensor) -> Tensor:
         return self._get_embeddings(X).sum(dim=1)
+
+
+class CompressedInteractionNetwork(nn.Module):
+    def __init__(self, num_cols: int, cin_layer_dims: List[int]):
+        super(CompressedInteractionNetwork, self).__init__()
+        self.num_cols = num_cols
+        self.cin_layer_dims = cin_layer_dims
+        self.cin_layers = nn.ModuleList()
+
+        prev_layer_dim = num_cols
+        for layer_dim in cin_layer_dims:
+            self.cin_layers.append(
+                nn.Conv1d(prev_layer_dim * num_cols, layer_dim, kernel_size=1)
+            )
+            prev_layer_dim = layer_dim
+
+    def forward(self, X: Tensor) -> Tensor:
+        batch_size, embed_dim = X.shape[0], X.shape[-1]
+        prev_x = X
+        cin_outs = []
+        for layer in self.cin_layers:
+            x_i = torch.einsum("b m d, b h d  -> b m h d", X, prev_x)
+            x_i = x_i.reshape(batch_size, self.num_cols * prev_x.shape[1], embed_dim)
+            x_i = layer(x_i)
+            cin_outs.append(x_i.sum(2))
+            prev_x = x_i
+
+        return torch.cat(cin_outs, dim=1)

@@ -20,6 +20,7 @@ class DeepFactorizationMachine(BaseTabularModelWithAttention):
         self,
         column_idx: Dict[str, int],
         num_factors: int,
+        with_pseudo_linear: bool,
         *,
         cat_embed_input: Optional[List[Tuple[str, int]]] = None,
         cat_embed_dropout: Optional[float] = None,
@@ -75,24 +76,27 @@ class DeepFactorizationMachine(BaseTabularModelWithAttention):
         self.mlp_batchnorm_last = mlp_batchnorm_last
         self.mlp_linear_first = mlp_linear_first
 
-        self.linear = PseudoLinear(
-            column_idx=column_idx,
-            cat_embed_input=cat_embed_input,
-            cat_embed_dropout=cat_embed_dropout,
-            use_cat_bias=use_cat_bias,
-            cat_embed_activation=cat_embed_activation,
-            continuous_cols=continuous_cols,
-            cont_norm_layer=cont_norm_layer,
-            embed_continuous=embed_continuous,
-            embed_continuous_method=embed_continuous_method,
-            cont_embed_dropout=cont_embed_dropout,
-            cont_embed_activation=cont_embed_activation,
-            quantization_setup=quantization_setup,
-            n_frequencies=n_frequencies,
-            sigma=sigma,
-            share_last_layer=share_last_layer,
-            full_embed_dropout=full_embed_dropout,
-        )
+        if with_pseudo_linear:
+            self.linear = PseudoLinear(
+                column_idx=column_idx,
+                cat_embed_input=cat_embed_input,
+                cat_embed_dropout=cat_embed_dropout,
+                use_cat_bias=use_cat_bias,
+                cat_embed_activation=cat_embed_activation,
+                continuous_cols=continuous_cols,
+                cont_norm_layer=cont_norm_layer,
+                embed_continuous=embed_continuous,
+                embed_continuous_method=embed_continuous_method,
+                cont_embed_dropout=cont_embed_dropout,
+                cont_embed_activation=cont_embed_activation,
+                quantization_setup=quantization_setup,
+                n_frequencies=n_frequencies,
+                sigma=sigma,
+                share_last_layer=share_last_layer,
+                full_embed_dropout=full_embed_dropout,
+            )
+        else:
+            self.linear = None
 
         if self.mlp_hidden_dims is not None:
             self.mlp = MLP(
@@ -116,16 +120,20 @@ class DeepFactorizationMachine(BaseTabularModelWithAttention):
 
     def forward(self, X: Tensor) -> Tensor:
 
-        linear_output = self.linear(X)
         embed = self._get_embeddings(X)
         factorization_output = factorization_machine(embed)
 
         if self.mlp is not None:
             mlp_input = embed.view(embed.size(0), -1)
             mlp_output = self.mlp(mlp_input)
-            return linear_output + factorization_output + mlp_output
+            deep_out = factorization_output + mlp_output
         else:
-            return linear_output + factorization_output
+            deep_out = factorization_output
+
+        if self.linear is not None:
+            return self.linear(X) + deep_out
+        else:
+            return deep_out
 
     @property
     def output_dim(self) -> int:

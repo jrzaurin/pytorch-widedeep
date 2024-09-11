@@ -1,21 +1,25 @@
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 
-from pytorch_widedeep.models.rec._layers import PseudoLinear
+from pytorch_widedeep.models.rec._layers import (
+    PseudoLinear,
+    CompressedInteractionNetwork,
+)
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
 )
 
 
-class DeepFieldAwareFactorizationMachine(BaseTabularModelWithAttention):
+class xDeepFM(BaseTabularModelWithAttention):
     def __init__(
         self,
         column_idx: Dict[str, int],
         cat_embed_input: List[Tuple[str, int]],
-        num_factors: int,
+        input_dim: int,
+        cin_layer_dims: List[int],
         with_pseudo_linear: bool,
         *,
         cat_embed_dropout: Optional[float] = None,
@@ -28,9 +32,9 @@ class DeepFieldAwareFactorizationMachine(BaseTabularModelWithAttention):
         mlp_batchnorm_last: Optional[bool] = None,
         mlp_linear_first: Optional[bool] = None,
     ):
-        super(DeepFieldAwareFactorizationMachine, self).__init__(
+        super(xDeepFM, self).__init__(
             column_idx=column_idx,
-            input_dim=num_factors,
+            input_dim=input_dim,
             cat_embed_input=cat_embed_input,
             cat_embed_dropout=cat_embed_dropout,
             use_cat_bias=use_cat_bias,
@@ -59,7 +63,8 @@ class DeepFieldAwareFactorizationMachine(BaseTabularModelWithAttention):
         self.mlp_linear_first = mlp_linear_first
 
         self.n_features = len(self.column_idx)
-        self.n_tokens = sum([ei[1] for ei in cat_embed_input])
+
+        self.with_pseudo_linear = with_pseudo_linear
 
         if with_pseudo_linear:
             self.linear = PseudoLinear(
@@ -83,17 +88,13 @@ class DeepFieldAwareFactorizationMachine(BaseTabularModelWithAttention):
         else:
             self.linear = None
 
-        self.encoders = nn.ModuleList(
-            [
-                BaseTabularModelWithAttention(**config)
-                for config in self._get_encoder_configs()
-            ]
+        self.cin = CompressedInteractionNetwork(
+            num_cols=self.n_features, cin_layer_dims=cin_layer_dims
         )
 
         if self.mlp_hidden_dims is not None:
-            first_layer_dim = self.n_features * (self.n_features - 1) // 2 * num_factors
             self.mlp = MLP(
-                d_hidden=[first_layer_dim] + self.mlp_hidden_dims,
+                d_hidden=[sum(cin_layer_dims)] + self.mlp_hidden_dims,
                 activation=(
                     "relu" if self.mlp_activation is None else self.mlp_activation
                 ),
@@ -113,61 +114,16 @@ class DeepFieldAwareFactorizationMachine(BaseTabularModelWithAttention):
 
     def forward(self, X: Tensor) -> Tensor:
 
-        interactions: List[Tensor] = []
-        for i in range(len(self.column_idx)):
-            for j in range(i + 1, len(self.column_idx)):
-                # the syntax [i] and [j] is to keep the shape of the tensors
-                # as they are sliced within '_get_embeddings'. This will
-                # return a tensor of shape (b, 1, embed_dim). Then it has to
-                # be squeezed to (b, embed_dim)  before multiplied
-                embed_i = self.encoders[i]._get_embeddings(X[:, [i]]).squeeze(1)
-                embed_j = self.encoders[j]._get_embeddings(X[:, [j]]).squeeze(1)
-                interactions.append(embed_i * embed_j)
+        if self.linear is not None:
+            linear_out = self.linear(X)
+        else:
+            linear_out = torch.tensor(0).to(X.device)
+
+        cin_out = self.cin(self._get_embeddings(X))
 
         if self.mlp is not None:
-            mlp_input = torch.cat(interactions, dim=1).view(X.size(0), -1)
-            interactions_output = self.mlp(mlp_input)
+            mlp_out = self.mlp(cin_out)
         else:
-            interactions_output = torch.cat(interactions, dim=1).sum(
-                dim=1, keepdim=True
-            )
+            mlp_out = torch.tensor(0).to(X.device)
 
-        if self.linear is not None:
-            return self.linear(X) + interactions_output
-        else:
-            return interactions_output
-
-    def _get_encoder_configs(self) -> List[Dict[str, Any]]:
-        config: List[Dict[str, Any]] = []
-        for col, _ in self.column_idx.items():
-            cat_embed_input = [(col, self.n_tokens)]
-            _config = {
-                "column_idx": {col: 0},
-                "input_dim": self.input_dim,
-                "cat_embed_input": cat_embed_input,
-                "cat_embed_dropout": self.cat_embed_dropout,
-                "use_cat_bias": self.use_cat_bias,
-                "cat_embed_activation": self.cat_embed_activation,
-                "shared_embed": None,
-                "add_shared_embed": None,
-                "frac_shared_embed": None,
-                "continuous_cols": None,
-                "cont_norm_layer": None,
-                "embed_continuous": None,
-                "embed_continuous_method": None,
-                "cont_embed_dropout": None,
-                "cont_embed_activation": None,
-                "quantization_setup": None,
-                "n_frequencies": None,
-                "sigma": None,
-                "share_last_layer": None,
-                "full_embed_dropout": None,
-            }
-
-            config.append(_config)
-
-        return config
-
-    @property
-    def output_dim(self) -> int:
-        return 1
+        return linear_out + cin_out + mlp_out
