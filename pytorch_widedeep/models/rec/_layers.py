@@ -35,7 +35,7 @@ class ActivationUnit(nn.Module):
         self.linear_out = nn.Linear(self.proj_dim, 1)
 
     def forward(self, item: Tensor, user_behavior: Tensor) -> Tensor:
-        # in my implementation:
+        # in this implementation:
         # item: [batch_size, 1, embedding_dim]
         # user_behavior: [batch_size, seq_len, embedding_dim]
         item = item.expand(-1, user_behavior.size(1), -1)

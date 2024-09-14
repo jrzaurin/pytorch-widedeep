@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Literal, Optional
 
 import torch
 from torch import Tensor
@@ -11,17 +11,161 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 
 
 class xDeepFM(BaseTabularModelWithAttention):
+    """
+    Adaptation 'xDeepFM implementation: xDeepFM: Combining Explicit and
+    Implicit Feature Interactions for Recommender Systems' by Jianxun Lian,
+    Xiaohuan Zhou, Fuzheng Zhang, Zhongxia Chen, Xing Xie, Guangzhong Sun and
+    Enhong Chen, 2018
+
+    Parameters
+    ----------
+    column_idx : Dict[str, int]
+        Dictionary mapping column names to their corresponding index.
+    input_dim : int
+        Embedding input dimensions
+    reduce_sum : bool, default=True
+        Whether to reduce the sum in the factorization machine output.
+    cin_layer_dims : List[int]
+        List with the number of units per CIN layer. e.g: _[128, 64]_
+    cat_embed_input : Optional[List[Tuple[str, int]]], default=None
+        List of tuples with categorical column names and number of unique values.
+    cat_embed_dropout : Optional[float], default=None
+        Categorical embeddings dropout. If `None`, it will default
+        to 0.
+    use_cat_bias : Optional[bool], default=None
+        Boolean indicating if bias will be used for the categorical embeddings.
+        If `None`, it will default to 'False'.
+    cat_embed_activation : Optional[str], default=None
+        Activation function for the categorical embeddings, if any. Currently
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
+    continuous_cols : Optional[List[str]], default=None
+        List with the name of the numeric (aka continuous) columns
+    cont_norm_layer : Optional[Literal["batchnorm", "layernorm"]], default=None
+        Type of normalization layer applied to the continuous features.
+        Options are: _'layernorm'_ and _'batchnorm'_. if `None`, no
+        normalization layer will be used.
+    embed_continuous : Optional[bool], default=None
+        Boolean indicating if the continuous columns will be embedded using
+        one of the available methods: _'standard'_, _'periodic'_
+        or _'piecewise'_. If `None`, it will default to 'False'.<br/>
+        :information_source: **NOTE**: This parameter is deprecated and it
+         will be removed in future releases. Please, use the
+         `embed_continuous_method` parameter instead.
+    embed_continuous_method : Optional[Literal["piecewise", "periodic"]], default="piecewise"
+        Method to use to embed the continuous features. Options are:
+        _'standard'_, _'periodic'_ or _'piecewise'_. The _'standard'_
+        embedding method is based on the FT-Transformer implementation
+        presented in the paper: [Revisiting Deep Learning Models for
+        Tabular Data](https://arxiv.org/abs/2106.11959v5). The _'periodic'_
+        and_'piecewise'_ methods were presented in the paper: [On Embeddings for
+        Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556).
+        Please, read the papers for details.
+    cont_embed_dim : Optional[int], default=None
+        Size of the continuous embeddings. If the continuous columns are
+        embedded, `cont_embed_dim` must be passed.
+    cont_embed_dropout : Optional[float], default=None
+        Dropout for the continuous embeddings. If `None`, it will default to 0.0
+    cont_embed_activation : Optional[str], default=None
+        Activation function for the continuous embeddings if any. Currently
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported.
+        If `None`, no activation function will be applied.
+    quantization_setup : Optional[Dict[str, List[float]]], default=None
+        This parameter is used when the _'piecewise'_ method is used to embed
+        the continuous cols. It is a dict where keys are the name of the continuous
+        columns and values are lists with the boundaries for the quantization
+        of the continuous_cols. See the examples for details. If
+        If the _'piecewise'_ method is used, this parameter is required.
+    n_frequencies : Optional[int], default=None
+        This is the so called _'k'_ in their paper [On Embeddings for
+        Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556),
+        and is the number of 'frequencies' that will be used to represent each
+        continuous column. See their Eq 2 in the paper for details. If
+        the _'periodic'_ method is used, this parameter is required.
+    sigma : Optional[float], default=None
+        This is the sigma parameter in the paper mentioned when describing the
+        previous parameters and it is used to initialise the 'frequency
+        weights'. See their Eq 2 in the paper for details. If
+        the _'periodic'_ method is used, this parameter is required.
+    share_last_layer : Optional[bool], default=None
+        This parameter is not present in the before mentioned paper but it is implemented in
+        the [official repo](https://github.com/yandex-research/rtdl-num-embeddings/tree/main).
+        If `True` the linear layer that turns the frequencies into embeddings
+        will be shared across the continuous columns. If `False` a different
+        linear layer will be used for each continuous column.
+        If the _'periodic'_ method is used, this parameter is required.
+    full_embed_dropout: bool, Optional, default = None,
+        If `True`, the full embedding corresponding to a column will be masked
+        out/dropout. If `None`, it will default to `False`.
+    mlp_hidden_dims: List, default = [200, 100]
+        List with the number of neurons per dense layer in the mlp.
+    mlp_activation: str, default = "relu"
+        Activation function for the dense layers of the MLP. Currently
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
+    mlp_dropout: float or List, default = 0.1
+        float or List of floats with the dropout between the dense layers.
+        e.g: _[0.5,0.5]_
+    mlp_batchnorm: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the dense layers
+    mlp_batchnorm_last: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the last of the dense layers
+    mlp_linear_first: bool, default = False
+        Boolean indicating the order of the operations in the dense
+        layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
+        LIN -> ACT]`
+
+    Attributes
+    ----------
+    n_features: int
+        Number of unique features/columns
+    cin: CompressedInteractionNetwork
+        Instance of the CompressedInteractionNetwork class
+    mlp: MLP
+        Instance of the MLP class if `mlp_hidden_dims` is not None. If None,
+        the model will return directly the output of the CIN
+
+    Examples
+    --------
+    >>> import torch
+    >>> from pytorch_widedeep.models import.rec xDeepFM
+    >>> X_tab = torch.randint(0, 10, (16, 2))
+    >>> column_idx = {"col1": 0, "col2": 1}
+    >>> cat_embed_input = [("col1", 10), ("col2", 10)]
+    >>> xdeepfm = xDeepFM(
+    ...     column_idx=column_idx,
+    ...     input_dim=4,
+    ...     cin_layer_dims=[8, 16],
+    ...     cat_embed_input=cat_embed_input,
+    ...     mlp_hidden_dims=[16, 8]
+    ... )
+    >>> output = xdeepfm(X_tab)
+    """
+
     def __init__(
         self,
         *,
         column_idx: Dict[str, int],
-        cat_embed_input: List[Tuple[str, int]],
         input_dim: int,
-        cin_layer_dims: List[int],
         reduce_sum: bool = True,
+        cin_layer_dims: List[int],
+        cat_embed_input: List[Tuple[str, int]],
         cat_embed_dropout: Optional[float] = None,
         use_cat_bias: Optional[bool] = None,
         cat_embed_activation: Optional[str] = None,
+        continuous_cols: Optional[List[str]] = None,
+        cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = None,
+        embed_continuous: Optional[bool] = None,
+        embed_continuous_method: Optional[
+            Literal["piecewise", "periodic"]
+        ] = "piecewise",
+        cont_embed_dropout: Optional[float] = None,
+        cont_embed_activation: Optional[str] = None,
+        quantization_setup: Optional[Dict[str, List[float]]] = None,
+        n_frequencies: Optional[int] = None,
+        sigma: Optional[float] = None,
+        share_last_layer: Optional[bool] = None,
+        full_embed_dropout: Optional[bool] = None,
         mlp_hidden_dims: Optional[List[int]] = None,
         mlp_activation: Optional[str] = None,
         mlp_dropout: Optional[float] = None,
@@ -39,17 +183,17 @@ class xDeepFM(BaseTabularModelWithAttention):
             shared_embed=False,
             add_shared_embed=None,
             frac_shared_embed=None,
-            continuous_cols=None,
-            cont_norm_layer=None,
-            embed_continuous=None,
-            embed_continuous_method=None,
-            cont_embed_dropout=None,
-            cont_embed_activation=None,
-            quantization_setup=None,
-            n_frequencies=None,
-            sigma=None,
-            share_last_layer=None,
-            full_embed_dropout=None,
+            continuous_cols=continuous_cols,
+            cont_norm_layer=cont_norm_layer,
+            embed_continuous=embed_continuous,
+            embed_continuous_method=embed_continuous_method,
+            cont_embed_dropout=cont_embed_dropout,
+            cont_embed_activation=cont_embed_activation,
+            quantization_setup=quantization_setup,
+            n_frequencies=n_frequencies,
+            sigma=sigma,
+            share_last_layer=share_last_layer,
+            full_embed_dropout=full_embed_dropout,
         )
 
         self.mlp_hidden_dims = mlp_hidden_dims

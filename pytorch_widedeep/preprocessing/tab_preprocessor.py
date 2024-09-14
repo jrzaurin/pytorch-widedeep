@@ -239,7 +239,7 @@ class TabPreprocessor(BasePreprocessor):
     >>> ft_cont_df2 = tab_preprocessor2.fit_transform(cont_df)
     """
 
-    @alias("with_attention", ["for_transformer"])
+    @alias("with_attention", ["for_transformer", "for_matrix_factorization"])
     @alias("cat_embed_cols", ["embed_cols"])
     @alias("scale", ["scale_cont_cols"])
     @alias("quantization_setup", ["cols_and_bins"])

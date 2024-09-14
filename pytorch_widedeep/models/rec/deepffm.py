@@ -10,12 +10,92 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 
 
 class DeepFieldAwareFactorizationMachine(BaseTabularModelWithAttention):
+    """
+    Deep Field Aware Factorization Machine (DeepFFM) for recommendation
+    systems. Adaptation of the paper Field-aware Factorization Machines in a
+    Real-world Online Advertising System, Juan et al. 2017.
+
+    Note that in this case, only categorical features are accepted. This is
+    because the embeddings of each feature will be learned using all other
+    features. Therefore these embeddings have to be all of the same nature.
+    This does not occur if we mix categorical and continuous features.
+
+    Parameters
+    ----------
+    column_idx : Dict[str, int]
+        Dictionary mapping column names to their corresponding index.
+    num_factors : int
+        Number of factors for the factorization machine.
+    reduce_sum : bool, default=True
+        Whether to reduce the sum in the factorization machine output.
+    cat_embed_input : Optional[List[Tuple[str, int]]], default=None
+        List of tuples with categorical column names and number of unique values.
+    cat_embed_dropout : Optional[float], default=None
+        Categorical embeddings dropout. If `None`, it will default
+        to 0.
+    use_cat_bias : Optional[bool], default=None
+        Boolean indicating if bias will be used for the categorical embeddings.
+        If `None`, it will default to 'False'.
+    cat_embed_activation : Optional[str], default=None
+        Activation function for the categorical embeddings, if any. Currently
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
+    mlp_hidden_dims: List, default = [200, 100]
+        List with the number of neurons per dense layer in the mlp.
+    mlp_activation: str, default = "relu"
+        Activation function for the dense layers of the MLP. Currently
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
+    mlp_dropout: float or List, default = 0.1
+        float or List of floats with the dropout between the dense layers.
+        e.g: _[0.5,0.5]_
+    mlp_batchnorm: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the dense layers
+    mlp_batchnorm_last: bool, default = False
+        Boolean indicating whether or not batch normalization will be applied
+        to the last of the dense layers
+    mlp_linear_first: bool, default = False
+        Boolean indicating the order of the operations in the dense
+        layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
+        LIN -> ACT]`
+
+    Attributes
+    ----------
+    n_features: int
+        Number of unique features/columns
+    n_tokens: int
+        Number of unique values (tokens) in the full dataset (corpus)
+    encoders: nn.ModuleList
+        List of `BaseTabularModelWithAttention` instances. One per categorical
+        column
+    mlp: nn.Module
+        Multi-layer perceptron. If `None` the output will be the output of the
+        factorization machine (i.e. the sum of the interactions)
+
+    Examples
+    --------
+    >>> import torch
+    >>> from torch import Tensor
+    >>> from typing import Dict, List, Tuple
+    >>> from pytorch_widedeep.models.rec import DeepFieldAwareFactorizationMachine
+    >>> X = torch.randint(0, 10, (16, 2))
+    >>> column_idx: Dict[str, int] = {"col1": 0, "col2": 1}
+    >>> cat_embed_input: List[Tuple[str, int]] = [("col1", 10), ("col2", 10)]
+    >>> ffm = DeepFieldAwareFactorizationMachine(
+    ...     column_idx=column_idx,
+    ...     num_factors=4,
+    ...     cat_embed_input=cat_embed_input,
+    ...     mlp_hidden_dims=[16, 8]
+    ... )
+    >>> # Forward pass
+    >>> output = ffm(X)
+    """
+
     def __init__(
         self,
         *,
         column_idx: Dict[str, int],
-        cat_embed_input: List[Tuple[str, int]],
         num_factors: int,
+        cat_embed_input: List[Tuple[str, int]],
         reduce_sum: bool = True,
         cat_embed_dropout: Optional[float] = None,
         use_cat_bias: Optional[bool] = None,
