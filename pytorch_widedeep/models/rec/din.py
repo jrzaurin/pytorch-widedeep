@@ -33,8 +33,9 @@ class DeepInterestNetwork(BaseWDModelComponent):
         - List of column names that correspond to the user behavior sequence
         - Number of unique feature values (n_tokens)
         - Embedding dimension
-    rating_seq_config : Optional[Tuple[List[str], int, int]], default=None
-        Configuration for rating sequence columns. Tuple containing:
+    action_seq_config : Optional[Tuple[List[str], int, int]], default=None
+        Configuration for a so-called action (for example a rating, or
+        purchased/not-purchased, etc) sequence columns. Tuple containing:
         - List of column names
         - Number of unique feature values (n_tokens)
         - Embedding dimension
@@ -143,12 +144,12 @@ class DeepInterestNetwork(BaseWDModelComponent):
         List with the indexes of the user behavior columns
     user_behavior_embed: BaseTabularModelWithAttention
         Embedding layer for the user
-    rating_seq_indexes: List[int]
+    action_seq_indexes: List[int]
         List with the indexes of the rating sequence columns if the
-        rating_seq_config parameter is not None
-    rating_embed: BaseTabularModelWithAttention
+        action_seq_config parameter is not None
+    action_embed: BaseTabularModelWithAttention
         Embedding layer for the rating sequence columns if the
-        rating_seq_config parameter is not None
+        action_seq_config parameter is not None
     other_seq_cols_indexes: Dict[str, List[int]]
         Dictionary with the indexes of the other sequential columns if the
         other_seq_cols_confiq parameter is not None
@@ -224,7 +225,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
         column_idx: Dict[str, int],
         target_item_col: str,
         user_behavior_confiq: Tuple[List[str], int, int],
-        rating_seq_config: Optional[Tuple[List[str], int, int]] = None,
+        action_seq_config: Optional[Tuple[List[str], int, int]] = None,
         other_seq_cols_confiq: Optional[List[Tuple[List[str], int, int]]] = None,
         other_cols_config: Optional[List[Tuple[str, int, int]]] = None,
         activation: Literal["prelu", "dice"] = "prelu",
@@ -261,7 +262,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
         self.column_idx = column_idx
         self.target_item_col = target_item_col
         self.user_behavior_confiq = user_behavior_confiq
-        self.rating_seq_config = rating_seq_config
+        self.action_seq_config = action_seq_config
         self.other_seq_cols_confiq = other_seq_cols_confiq
         self.other_cols_config = other_cols_config
         self.activation = activation
@@ -295,12 +296,12 @@ class DeepInterestNetwork(BaseWDModelComponent):
             self.set_user_behavior_indexes_and_embed(user_behavior_confiq)
         )
 
-        if self.rating_seq_config is not None:
-            self.rating_seq_indexes, self.rating_embed = (
-                self._set_rating_indexes_and_embed(rating_seq_config)
+        if self.action_seq_config is not None:
+            self.action_seq_indexes, self.action_embed = (
+                self._set_rating_indexes_and_embed(action_seq_config)
             )
         else:
-            self.rating_embed = None
+            self.action_embed = None
 
         if self.other_seq_cols_confiq is not None:
             self.other_seq_cols_indexes, self.other_seq_cols_embed, other_seq_dim = (
@@ -327,15 +328,15 @@ class DeepInterestNetwork(BaseWDModelComponent):
             **self._get_seq_cols_embed_confiq(user_behavior_confiq)
         )
 
-        if self.rating_seq_config is not None:
-            self.rating_seq_indexes = [
-                self.column_idx[col] for col in self.rating_seq_config[0]
+        if self.action_seq_config is not None:
+            self.action_seq_indexes = [
+                self.column_idx[col] for col in self.action_seq_config[0]
             ]
-            self.rating_embed = BaseTabularModelWithAttention(
-                **self._get_seq_cols_embed_confiq(self.rating_seq_config)
+            self.action_embed = BaseTabularModelWithAttention(
+                **self._get_seq_cols_embed_confiq(self.action_seq_config)
             )
         else:
-            self.rating_embed = None
+            self.action_embed = None
 
         self.attention = ActivationUnit(user_behavior_confiq[2], activation)
 
@@ -370,10 +371,10 @@ class DeepInterestNetwork(BaseWDModelComponent):
         # 0 is the padding index
         mask = (X_user_behavior != 0).float().to(X.device)
 
-        if self.rating_embed is not None:
-            X_rating = X[:, self.rating_seq_indexes]
-            rating_embed = self.rating_embed._get_embeddings(X_rating)
-            user_behavior_embed = user_behavior_embed * rating_embed
+        if self.action_embed is not None:
+            X_rating = X[:, self.action_seq_indexes]
+            action_embed = self.action_embed._get_embeddings(X_rating)
+            user_behavior_embed = user_behavior_embed * action_embed
 
         attention_scores = self.attention(item_embed, user_behavior_embed)
         attention_scores = attention_scores * mask
@@ -485,13 +486,15 @@ class DeepInterestNetwork(BaseWDModelComponent):
         return user_behavior_indexes, user_behavior_embed
 
     def _set_rating_indexes_and_embed(
-        self, rating_seq_config
+        self, action_seq_config
     ) -> Tuple[List[int], BaseTabularModelWithAttention]:
-        rating_seq_indexes = [self.column_idx[col] for col in rating_seq_config[0]]
-        rating_embed = BaseTabularModelWithAttention(
-            **self._get_seq_cols_embed_confiq(rating_seq_config)
+        action_seq_indexes = [
+            self.column_idx[col] for col in action_seq_config[0]
+        ]
+        action_embed = BaseTabularModelWithAttention(
+            **self._get_seq_cols_embed_confiq(action_seq_config)
         )
-        return rating_seq_indexes, rating_embed
+        return action_seq_indexes, action_embed
 
     def _set_other_seq_cols_indexes_embed_and_dim(
         self, other_seq_cols_confiq

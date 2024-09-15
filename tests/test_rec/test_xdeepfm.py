@@ -1,0 +1,153 @@
+import torch
+import pytest
+
+from pytorch_widedeep.models import Wide, WideDeep
+from pytorch_widedeep.models.rec import ExtremeDeepFactorizationMachine as xDeepFM
+from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
+
+from .utils_test_rec import create_train_val_test_data
+
+train, valid, test = create_train_val_test_data()
+
+
+@pytest.mark.parametrize(
+    "reduce_sum, mlp_hidden_dims",
+    [
+        (True, None),
+        (False, None),
+        (True, [16, 8]),
+        (False, [16, 8]),
+    ],
+)
+def test_xdeepfm_reduce_sum(
+    reduce_sum, mlp_hidden_dims, cat_embed_cols, continuous_cols
+):
+
+    tab_preprocessor = TabPreprocessor(
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        for_mf=True,
+    )
+
+    X_tab = tab_preprocessor.fit_transform(train)
+
+    xdeepfm = xDeepFM(
+        column_idx=tab_preprocessor.column_idx,
+        input_dim=8,
+        reduce_sum=reduce_sum,
+        cin_layer_dims=[16, 8],
+        cat_embed_input=tab_preprocessor.cat_embed_input,
+        continuous_cols=continuous_cols,
+        embed_continuous_method="periodic",
+        n_frequencies=5,
+        sigma=0.1,
+        share_last_layer=False,
+        mlp_hidden_dims=mlp_hidden_dims,
+    )
+
+    X_tab_tnsr = torch.tensor(X_tab)
+    res = xdeepfm(X_tab_tnsr)
+
+    if reduce_sum:
+        assert res.shape == (X_tab_tnsr.shape[0], 1)
+    else:
+        assert res.shape == (X_tab_tnsr.shape[0], xdeepfm.output_dim)
+
+
+@pytest.mark.parametrize("embed_continuous_method", ["periodic", "piecewise"])
+@pytest.mark.parametrize("reduce_sum", [True, False])
+def test_xdeepfm_cont_embed_methods(
+    embed_continuous_method, reduce_sum, cat_embed_cols, continuous_cols
+):
+
+    tab_preprocessor = TabPreprocessor(
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        for_mf=True,
+    )
+
+    X_tab = tab_preprocessor.fit_transform(train)
+    X_tab_tnsr = torch.tensor(X_tab)
+
+    if embed_continuous_method == "periodic":
+        xdeepfm = xDeepFM(
+            column_idx=tab_preprocessor.column_idx,
+            input_dim=8,
+            reduce_sum=True,
+            cin_layer_dims=[16, 8],
+            cat_embed_input=tab_preprocessor.cat_embed_input,
+            continuous_cols=continuous_cols,
+            embed_continuous_method=embed_continuous_method,
+            n_frequencies=5,
+            sigma=0.1,
+            share_last_layer=False,
+            mlp_hidden_dims=[16, 8],
+        )
+    else:
+        quantization_setup = {
+            "item_price": list(train["item_price"].quantile([0.25, 0.5, 0.75]).values),
+            "user_age": list(train["user_age"].quantile([0.25, 0.5, 0.75]).values),
+        }
+        xdeepfm = xDeepFM(
+            column_idx=tab_preprocessor.column_idx,
+            input_dim=8,
+            reduce_sum=True,
+            cin_layer_dims=[16, 8],
+            cat_embed_input=tab_preprocessor.cat_embed_input,
+            continuous_cols=continuous_cols,
+            embed_continuous_method=embed_continuous_method,
+            quantization_setup=quantization_setup,
+            mlp_hidden_dims=[16, 8],
+        )
+
+    res = xdeepfm(X_tab_tnsr)
+
+    if reduce_sum:
+        assert res.shape == (X_tab_tnsr.shape[0], 1)
+    else:
+        assert res.shape == (X_tab_tnsr.shape[0], xdeepfm.output_dim)
+
+
+def test_xdeepfm_model(cat_embed_cols, continuous_cols):
+
+    tab_preprocessor = TabPreprocessor(
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        for_mf=True,
+    )
+
+    X_tab = tab_preprocessor.fit_transform(train)
+    X_tab_tnsr = torch.tensor(X_tab)
+
+    wide_preprocessor = WidePreprocessor(wide_cols=cat_embed_cols + continuous_cols)
+    # This is not entirely correct and needs comments in the docs
+    train_for_wide = train.copy()
+    train_for_wide["item_price"] = train_for_wide["item_price"].astype("int")
+    train_for_wide["user_age"] = train_for_wide["user_age"].astype("int")
+    X_wide = wide_preprocessor.fit_transform(train_for_wide)
+    X_wide_tnsr = torch.tensor(X_wide)
+
+    xdeepfm = xDeepFM(
+        column_idx=tab_preprocessor.column_idx,
+        input_dim=8,
+        reduce_sum=True,
+        cin_layer_dims=[16, 8],
+        cat_embed_input=tab_preprocessor.cat_embed_input,
+        continuous_cols=continuous_cols,
+        embed_continuous_method="periodic",
+        n_frequencies=5,
+        sigma=0.1,
+        share_last_layer=False,
+        mlp_hidden_dims=[16, 8],
+    )
+
+    linear = Wide(input_dim=X_wide.max())
+
+    fm_model = WideDeep(wide=linear, deeptabular=xdeepfm)
+
+    X_inp = {"wide": X_wide_tnsr, "deeptabular": X_tab_tnsr}
+
+    out = fm_model(X_inp)
+
+    assert out.shape[0] == X_tab_tnsr.shape[0]
+    assert out.shape[1] == 1

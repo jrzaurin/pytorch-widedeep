@@ -1,2 +1,4 @@
+from pytorch_widedeep.models.rec.din import DeepInterestNetwork
 from pytorch_widedeep.models.rec.deepfm import DeepFactorizationMachine
+from pytorch_widedeep.models.rec.xdeepfm import ExtremeDeepFactorizationMachine
 from pytorch_widedeep.models.rec.deepffm import DeepFieldAwareFactorizationMachine

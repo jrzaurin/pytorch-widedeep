@@ -13,7 +13,8 @@ class Dice(nn.Module):
 
     def forward(self, X: Tensor) -> Tensor:
         # assumes X has n_dim = 3
-        x_p = self.bn(X.transpose(1, 2))
+        # TO DO: double check this
+        x_p = self.bn(X.transpose(1, 2)).transpose(1, 2)
         p = torch.sigmoid(x_p)
         return X.mul(p) + self.alpha * X.mul(1 - p)
 
@@ -38,9 +39,15 @@ class ActivationUnit(nn.Module):
         # in this implementation:
         # item: [batch_size, 1, embedding_dim]
         # user_behavior: [batch_size, seq_len, embedding_dim]
-        item = item.expand(-1, user_behavior.size(1), -1)
+        item_expanded = item.expand(-1, user_behavior.size(1), -1)
         attn_input = torch.cat(
-            [item, user_behavior, item - user_behavior, item * user_behavior], dim=-1
+            [
+                item_expanded,
+                user_behavior,
+                item_expanded - user_behavior,
+                item_expanded * user_behavior,
+            ],
+            dim=-1,
         )
         attn_output = self.activation(self.linear_in(attn_input))
         attn_output = self.linear_out(attn_output).squeeze(-1)

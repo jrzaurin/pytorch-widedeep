@@ -10,7 +10,7 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 )
 
 
-class xDeepFM(BaseTabularModelWithAttention):
+class ExtremeDeepFactorizationMachine(BaseTabularModelWithAttention):
     """
     Adaptation 'xDeepFM implementation: xDeepFM: Combining Explicit and
     Implicit Feature Interactions for Recommender Systems' by Jianxun Lian,
@@ -173,7 +173,7 @@ class xDeepFM(BaseTabularModelWithAttention):
         mlp_batchnorm_last: Optional[bool] = None,
         mlp_linear_first: Optional[bool] = None,
     ):
-        super(xDeepFM, self).__init__(
+        super(ExtremeDeepFactorizationMachine, self).__init__(
             column_idx=column_idx,
             input_dim=input_dim,
             cat_embed_input=cat_embed_input,
@@ -352,7 +352,7 @@ if __name__ == "__main__":
         ]
     ).fit_transform(df_sample)
 
-    xdfm_sum = xDeepFM(
+    xdfm_sum = ExtremeDeepFactorizationMachine(
         column_idx=tab_preprocessor.column_idx,
         cat_embed_input=tab_preprocessor.cat_embed_input,
         input_dim=8,
@@ -361,7 +361,7 @@ if __name__ == "__main__":
         mlp_hidden_dims=[32, 16],
     )
 
-    xdfm_deep = xDeepFM(
+    xdfm_deep = ExtremeDeepFactorizationMachine(
         column_idx=tab_preprocessor.column_idx,
         cat_embed_input=tab_preprocessor.cat_embed_input,
         input_dim=8,
