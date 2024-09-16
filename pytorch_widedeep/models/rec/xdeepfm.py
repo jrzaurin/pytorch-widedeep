@@ -155,7 +155,6 @@ class ExtremeDeepFactorizationMachine(BaseTabularModelWithAttention):
         cat_embed_activation: Optional[str] = None,
         continuous_cols: Optional[List[str]] = None,
         cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = None,
-        embed_continuous: Optional[bool] = None,
         embed_continuous_method: Optional[
             Literal["piecewise", "periodic"]
         ] = "piecewise",
@@ -185,7 +184,6 @@ class ExtremeDeepFactorizationMachine(BaseTabularModelWithAttention):
             frac_shared_embed=None,
             continuous_cols=continuous_cols,
             cont_norm_layer=cont_norm_layer,
-            embed_continuous=embed_continuous,
             embed_continuous_method=embed_continuous_method,
             cont_embed_dropout=cont_embed_dropout,
             cont_embed_activation=cont_embed_activation,

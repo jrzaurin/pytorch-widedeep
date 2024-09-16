@@ -49,13 +49,6 @@ class DeepFactorizationMachine(BaseTabularModelWithAttention):
         Type of normalization layer applied to the continuous features.
         Options are: _'layernorm'_ and _'batchnorm'_. if `None`, no
         normalization layer will be used.
-    embed_continuous : Optional[bool], default=None
-        Boolean indicating if the continuous columns will be embedded using
-        one of the available methods: _'standard'_, _'periodic'_
-        or _'piecewise'_. If `None`, it will default to 'False'.<br/>
-        :information_source: **NOTE**: This parameter is deprecated and it
-         will be removed in future releases. Please, use the
-         `embed_continuous_method` parameter instead.
     embed_continuous_method : Optional[Literal["piecewise", "periodic"]], default="piecewise"
         Method to use to embed the continuous features. Options are:
         _'standard'_, _'periodic'_ or _'piecewise'_. The _'standard'_
@@ -187,7 +180,6 @@ class DeepFactorizationMachine(BaseTabularModelWithAttention):
             frac_shared_embed=None,
             continuous_cols=continuous_cols,
             cont_norm_layer=cont_norm_layer,
-            embed_continuous=embed_continuous,
             embed_continuous_method=embed_continuous_method,
             cont_embed_dropout=cont_embed_dropout,
             cont_embed_activation=cont_embed_activation,

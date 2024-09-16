@@ -4,7 +4,6 @@ import torch
 from torch import Tensor, nn
 
 from pytorch_widedeep.models.rec._layers import ActivationUnit
-from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 from pytorch_widedeep.models.tabular._base_tabular_model import (
@@ -44,13 +43,13 @@ class DeepInterestNetwork(BaseWDModelComponent):
         - List of column names that correspond to the sequential column
         - Number of unique feature values (n_tokens)
         - Embedding dimension
-    other_cols_config : Optional[List[Tuple[str, int, int]]], default=None
+    activation : Literal["prelu", "dice"], default="prelu"
+        Activation function to use in the attention unit.
+    cat_embed_input : Optional[List[Tuple[str, int, int]]], default=None
         Configuration for other columns. List of tuples containing:
         - Column name
         - Number of unique feature values (n_tokens)
         - Embedding dimension
-    activation : Literal["prelu", "dice"], default="prelu"
-        Activation function to use in the attention unit.
     cat_embed_dropout : Optional[float], default=None
         Categorical embeddings dropout. If `None`, it will default
         to 0.
@@ -218,7 +217,6 @@ class DeepInterestNetwork(BaseWDModelComponent):
     >>> output = model(X)
     """
 
-    @alias("other_cols_config", ["cat_embed_input"])
     def __init__(
         self,
         *,
@@ -227,8 +225,8 @@ class DeepInterestNetwork(BaseWDModelComponent):
         user_behavior_confiq: Tuple[List[str], int, int],
         action_seq_config: Optional[Tuple[List[str], int, int]] = None,
         other_seq_cols_confiq: Optional[List[Tuple[List[str], int, int]]] = None,
-        other_cols_config: Optional[List[Tuple[str, int, int]]] = None,
         activation: Literal["prelu", "dice"] = "prelu",
+        cat_embed_input: Optional[List[Tuple[str, int, int]]] = None,
         cat_embed_dropout: Optional[float] = None,
         use_cat_bias: Optional[bool] = None,
         cat_embed_activation: Optional[str] = None,
@@ -236,8 +234,8 @@ class DeepInterestNetwork(BaseWDModelComponent):
         cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = None,
         embed_continuous: Optional[bool] = None,
         embed_continuous_method: Optional[
-            Literal["piecewise", "periodic"]
-        ] = "piecewise",
+            Literal["standard", "piecewise", "periodic"]
+        ] = None,
         cont_embed_dim: Optional[int] = None,
         cont_embed_dropout: Optional[float] = None,
         cont_embed_activation: Optional[str] = None,
@@ -264,7 +262,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
         self.user_behavior_confiq = user_behavior_confiq
         self.action_seq_config = action_seq_config
         self.other_seq_cols_confiq = other_seq_cols_confiq
-        self.other_cols_config = other_cols_config
+        self.cat_embed_input = cat_embed_input
         self.activation = activation
 
         self.cat_embed_dropout = cat_embed_dropout
@@ -313,30 +311,15 @@ class DeepInterestNetwork(BaseWDModelComponent):
             self.other_seq_cols_embed = None
             other_seq_dim = 0
 
-        if self.other_cols_config is not None:
+        if self.cat_embed_input is not None or self.continuous_cols is not None:
             self.other_cols_idx, self.other_col_embed, other_cols_dim = (
-                self._set_other_cols_idx_embed_and_dim(self.other_cols_config)
+                self._set_other_cols_idx_embed_and_dim(
+                    self.cat_embed_input, self.continuous_cols
+                )
             )
         else:
             self.other_col_embed = None
             other_cols_dim = 0
-
-        self.user_behavior_indexes = [
-            self.column_idx[col] for col in user_behavior_confiq[0]
-        ]
-        self.user_behavior_embed = BaseTabularModelWithAttention(
-            **self._get_seq_cols_embed_confiq(user_behavior_confiq)
-        )
-
-        if self.action_seq_config is not None:
-            self.action_seq_indexes = [
-                self.column_idx[col] for col in self.action_seq_config[0]
-            ]
-            self.action_embed = BaseTabularModelWithAttention(
-                **self._get_seq_cols_embed_confiq(self.action_seq_config)
-            )
-        else:
-            self.action_embed = None
 
         self.attention = ActivationUnit(user_behavior_confiq[2], activation)
 
@@ -436,7 +419,6 @@ class DeepInterestNetwork(BaseWDModelComponent):
             "frac_shared_embed": None,
             "continuous_cols": None,
             "cont_norm_layer": None,
-            "embed_continuous": None,
             "embed_continuous_method": None,
             "cont_embed_dropout": None,
             "cont_embed_activation": None,
@@ -450,15 +432,20 @@ class DeepInterestNetwork(BaseWDModelComponent):
         return col_config
 
     def _get_other_cols_embed_config(
-        self, tups: List[Tuple[str, int, int]]
+        self, cat_embed_input: List[Tuple[str, int, int]], continuous_cols: List[str]
     ) -> Dict[str, Any]:
         cols_config = {
-            "column_idx": {col: i for i, col in enumerate([el[0] for el in tups])},
-            "cat_embed_input": tups,
+            "column_idx": {
+                col: i
+                for i, col in enumerate(
+                    [el[0] for el in cat_embed_input] + continuous_cols
+                )
+            },
+            "cat_embed_input": cat_embed_input,
             "cat_embed_dropout": self.cat_embed_dropout,
             "use_cat_bias": self.use_cat_bias,
             "cat_embed_activation": self.cat_embed_activation,
-            "continuous_cols": self.continuous_cols,
+            "continuous_cols": continuous_cols,
             "cont_norm_layer": self.cont_norm_layer,
             "embed_continuous": self.embed_continuous,
             "embed_continuous_method": self.embed_continuous_method,
@@ -488,9 +475,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
     def _set_rating_indexes_and_embed(
         self, action_seq_config
     ) -> Tuple[List[int], BaseTabularModelWithAttention]:
-        action_seq_indexes = [
-            self.column_idx[col] for col in action_seq_config[0]
-        ]
+        action_seq_indexes = [self.column_idx[col] for col in action_seq_config[0]]
         action_embed = BaseTabularModelWithAttention(
             **self._get_seq_cols_embed_confiq(action_seq_config)
         )
@@ -519,14 +504,16 @@ class DeepInterestNetwork(BaseWDModelComponent):
         return other_seq_cols_indexes, other_seq_cols_embed, other_seq_dim
 
     def _set_other_cols_idx_embed_and_dim(
-        self, other_cols_config
+        self, cat_embed_input, continuous_cols
     ) -> Tuple[List[int], BaseTabularModelWithoutAttention, int]:
         other_cols_idx = [
-            self.column_idx[col] for col in [el[0] for el in other_cols_config]
-        ]
+            self.column_idx[col] for col in [el[0] for el in cat_embed_input]
+        ] + [self.column_idx[col] for col in continuous_cols]
+
         other_col_embed = BaseTabularModelWithoutAttention(
-            **self._get_other_cols_embed_config(other_cols_config)
+            **self._get_other_cols_embed_config(cat_embed_input, continuous_cols)
         )
-        other_cols_dim = sum([el[2] for el in other_cols_config])
+
+        other_cols_dim = other_col_embed.output_dim
 
         return other_cols_idx, other_col_embed, other_cols_dim

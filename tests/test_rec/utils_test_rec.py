@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-
 from sklearn.preprocessing import LabelEncoder
+
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
 
@@ -84,7 +84,7 @@ def split_user_data(df):
     return train_df, val_df, test_df
 
 
-def create_train_val_test_data(sequence_length=5):
+def create_train_val_test_data():
     df = create_purchase_dataframe()
     train_df, val_df, test_df = split_user_data(df)
     return train_df, val_df, test_df
@@ -97,100 +97,80 @@ def label_encode_column(df, column_name):
 
 
 def prepare_data_for_din():
-    df = create_purchase_dataframe()
+    df = create_and_encode_dataframe()
+    df_seq = create_user_sequences(df)
+    df_seq = process_item_seq_and_target(df_seq)
+    train, val, test = split_user_data(df_seq)
+    tab_preprocessor = TabPreprocessor(
+        cat_embed_cols=["user_id", "user_age", "user_location"],
+        continuous_cols=[f"item_price_{i}" for i in range(5)],
+    )
+    data = process_datasets(train, val, test, tab_preprocessor)
+    config, column_idx = create_config(train, tab_preprocessor)
+    return data, config, column_idx
 
-    # to be rigorous, you should split a then encode, but this is a unit test
+
+def create_and_encode_dataframe():
+    df = create_purchase_dataframe()
     df_le = df.copy()
 
-    df_le, _ = label_encode_column(df_le, "item_id")
-    df_le, _ = label_encode_column(df_le, "item_category")
-    df_le, _ = label_encode_column(df_le, "user_location")
+    for column in ["item_id", "item_category", "user_location"]:
+        df_le, _ = label_encode_column(df_le, column)
+        df_le[column] += 1  # Add 1 because 0 will be used for padding
 
-    # Add because 0 will be use for padding
-    df_le["item_id"] += 1
-    df_le["item_category"] += 1
-    df_le["user_location"] += 1
     df_le["purchased"] += 1
+    return df_le
 
-    df_seq = create_user_sequences(df_le)
 
-    # purchased back to 0, 1
+def process_item_seq_and_target(df_seq):
     df_seq["purchased"] = (df_seq["purchased"] - 1).astype(int)
 
-    # explode the price col into 5 columns because continuous cols will NOT be
-    # considered as sequences
     for i in range(5):
         df_seq[f"item_price_{i}"] = df_seq["item_price_seq"].apply(lambda x: x[i])
 
     df_seq.drop(columns="item_price_seq", inplace=True)
+    return df_seq
 
-    train, val, test = split_user_data(df_seq)
 
+def process_dataset(dataset, tab_preprocessor, is_train=False):
+    X_item_seq = np.array(dataset["item_seq"].tolist())
+    X_item_purchased_seq = np.array(dataset["item_purchased_seq"].tolist())
+    X_item_category_seq = np.array(dataset["item_category_seq"].tolist())
+    X_target_item = dataset["target_item"].values.reshape(-1, 1)
+
+    if is_train:
+        X_other_cols = tab_preprocessor.fit_transform(dataset)
+    else:
+        X_other_cols = tab_preprocessor.transform(dataset)
+
+    y = dataset["purchased"].values
+
+    X = np.concatenate(
+        [
+            X_item_seq,
+            X_item_purchased_seq,
+            X_item_category_seq,
+            X_other_cols,
+            X_target_item,
+        ],
+        axis=1,
+    )
+
+    return X, y
+
+
+def process_datasets(train, val, test, tab_preprocessor):
+    return {
+        "train": process_dataset(train, tab_preprocessor, is_train=True),
+        "val": process_dataset(val, tab_preprocessor),
+        "test": process_dataset(test, tab_preprocessor),
+    }
+
+
+def create_config(train, tab_preprocessor):
     item_seq_cols = [f"item_seq_{i}" for i in range(5)]
     item_purchased_seq_cols = [f"item_purchased_seq_{i}" for i in range(5)]
     item_category_seq_cols = [f"item_category_seq_{i}" for i in range(5)]
-    target_item_col = "target_item"
-    target_col = "purchased"
-
-    tab_preprocessor = TabPreprocessor(
-        cat_embed_cols=["user_id", "user_age", "user_location"],
-        continuous_cols=[f"item_price_{i}" for i in range(5)],
-        for_mf=True,
-    )
-
-    X_item_seq_tr = np.array(train["item_seq"].tolist())
-    X_item_purchased_seq_tr = np.array(train["item_purchased_seq"].tolist())
-    X_item_category_seq_tr = np.array(train["item_category_seq"].tolist())
-    X_other_cols_tr = tab_preprocessor.fit_transform(train)
-    X_target_item_tr = train[target_item_col].values.reshape(-1, 1)
-    y_tr = train[target_col].values
-
-    X_tr = np.concatenate(
-        [
-            X_item_seq_tr,
-            X_item_purchased_seq_tr,
-            X_item_category_seq_tr,
-            X_other_cols_tr,
-            X_target_item_tr,  # type: ignore
-        ],
-        axis=1,
-    )
-
-    X_item_seq_val = np.array(val["item_seq"].tolist())
-    X_item_purchased_seq_val = np.array(val["item_purchased_seq"].tolist())
-    X_item_category_seq_val = np.array(val["item_category_seq"].tolist())
-    X_target_item_val = val[target_item_col].values.reshape(-1, 1)
-    X_other_cols_val = tab_preprocessor.transform(val)
-    y_val = val[target_col].values
-
-    X_val = np.concatenate(
-        [
-            X_item_seq_val,
-            X_item_purchased_seq_val,
-            X_item_category_seq_val,
-            X_other_cols_val,
-            X_target_item_val,  # type: ignore
-        ],
-        axis=1,
-    )
-
-    X_item_seq_te = np.array(test["item_seq"].tolist())
-    X_item_purchased_seq_te = np.array(test["item_purchased_seq"].tolist())
-    X_item_category_seq_te = np.array(test["item_category_seq"].tolist())
-    X_target_item_te = test[target_item_col].values.reshape(-1, 1)
-    X_other_cols_te = tab_preprocessor.transform(test)
-    y_te = test[target_col].values
-
-    X_te = np.concatenate(
-        [
-            X_item_seq_te,
-            X_item_purchased_seq_te,
-            X_item_category_seq_te,
-            X_other_cols_te,
-            X_target_item_te,  # type: ignore
-        ],
-        axis=1,
-    )
 
     col_order = (
         item_seq_cols
@@ -198,30 +178,28 @@ def prepare_data_for_din():
         + item_category_seq_cols
         + [el[0] for el in tab_preprocessor.cat_embed_input]
         + [f"item_price_{i}" for i in range(5)]
-        + [target_item_col]
+        + ["target_item"]
     )
 
     column_idx = {k: i for i, k in enumerate(col_order)}
 
-    item_seq_config = (item_seq_cols, X_item_seq_tr.max(), 8)
-    item_purchased_seq_config = (item_purchased_seq_cols, 2, 1)
-    item_category_seq_config = [
-        (item_category_seq_cols, X_item_category_seq_tr.max(), 8)
-    ]
-    other_cols_config = tab_preprocessor.cat_embed_input
-
-    data = {
-        "train": (X_tr, y_tr),
-        "val": (X_val, y_val),
-        "test": (X_te, y_te),
-    }
-
     config = {
         "column_idx": column_idx,
-        "item_seq_config": item_seq_config,
-        "item_purchased_seq_config": item_purchased_seq_config,
-        "item_category_seq_config": item_category_seq_config,
-        "other_cols_config": other_cols_config,
+        "item_seq_config": (
+            item_seq_cols,
+            np.array(train["item_seq"].tolist()).max(),
+            8,
+        ),
+        "item_purchased_seq_config": (item_purchased_seq_cols, 2, 1),
+        "item_category_seq_config": [
+            (
+                item_category_seq_cols,
+                np.array(train["item_category_seq"].tolist()).max(),
+                8,
+            )
+        ],
+        "cat_embed_input": tab_preprocessor.cat_embed_input,
+        "continuous_cols": tab_preprocessor.continuous_cols,
     }
 
-    return data, config, column_idx
+    return config, column_idx

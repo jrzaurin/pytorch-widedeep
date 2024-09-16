@@ -241,8 +241,12 @@ class TabTransformer(BaseTabularModelWithAttention):
             frac_shared_embed=frac_shared_embed,
             continuous_cols=continuous_cols,
             cont_norm_layer=cont_norm_layer,
-            embed_continuous=embed_continuous,
-            embed_continuous_method=embed_continuous_method,
+            # UGLY hack to be able to use the base class __init__ method
+            embed_continuous_method=(
+                "standard"
+                if embed_continuous_method is None
+                else embed_continuous_method
+            ),
             cont_embed_dropout=cont_embed_dropout,
             cont_embed_activation=cont_embed_activation,
             quantization_setup=quantization_setup,
@@ -252,6 +256,25 @@ class TabTransformer(BaseTabularModelWithAttention):
             input_dim=input_dim,
             full_embed_dropout=full_embed_dropout,
         )
+
+        # we overwrite the embed_continuous_method parameter that was set
+        # to 'standard' if embed_continuous_method is None. In other words,
+        # this will already have the right value if the user provided a value
+        # for embed_continuous_method, otherwise will be "standard" when it
+        # should be None
+        self.embed_continuous_method = embed_continuous_method
+
+        if embed_continuous is not None:
+            self.embed_continuous = embed_continuous
+            if embed_continuous and embed_continuous_method is None:
+                raise ValueError(
+                    "If 'embed_continuous' is True, 'embed_continuous_method' must be "
+                    "one of 'standard', 'piecewise' or 'periodic'."
+                )
+        elif self.embed_continuous_method is not None:
+            self.embed_continuous = True
+        else:
+            self.embed_continuous = False
 
         self.n_heads = n_heads
         self.use_qkv_bias = use_qkv_bias
