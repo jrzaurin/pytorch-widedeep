@@ -19,7 +19,8 @@ class DeepInterestNetwork(BaseWDModelComponent):
     Prediction' by Guorui Zhou et al. 2018.
 
     Note that all the categorical- and continuous-related parameters refer to
-    those columns that will be represented as a standard tabular data.
+    the categorical and continuous columns that are not part of the
+    sequential columns and will be treated as standard tabular data.
 
     Parameters
     ----------
@@ -43,13 +44,18 @@ class DeepInterestNetwork(BaseWDModelComponent):
         - List of column names that correspond to the sequential column
         - Number of unique feature values (n_tokens)
         - Embedding dimension
-    activation : Literal["prelu", "dice"], default="prelu"
+    attention_unit_activation : Literal["prelu", "dice"], default="prelu"
         Activation function to use in the attention unit.
     cat_embed_input : Optional[List[Tuple[str, int, int]]], default=None
         Configuration for other columns. List of tuples containing:
         - Column name
         - Number of unique feature values (n_tokens)
         - Embedding dimension
+
+        **Note**: From here in advance the remaining parameters are related to
+        the categorical and continuous columns that are not part of the
+        sequential columns and will be treated as standard tabular data.
+
     cat_embed_dropout : Optional[float], default=None
         Categorical embeddings dropout. If `None`, it will default
         to 0.
@@ -170,10 +176,10 @@ class DeepInterestNetwork(BaseWDModelComponent):
     >>> import torch
     >>> import numpy as np
     >>> from torch import Tensor
-    >>> from typing import Dict, List
+    >>> from typing import Dict, List, Tuple
     >>> from pytorch_widedeep.models.rec import DeepInterestNetwork
-    >>> np.random.seed(42)
-    >>> torch.manual_seed(42)
+    >>> np_seed = np.random.seed(42)
+    >>> torch_seed = torch.manual_seed(42)
     >>> num_users = 10
     >>> num_items = 5
     >>> num_contexts = 3
@@ -203,7 +209,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
     ...     num_items,
     ...     8,
     ... )
-    >>> other_cols_config: List[Tuple[str, int, int]] = [
+    >>> cat_embed_input: List[Tuple[str, int, int]] = [
     ...     ("user_id", num_users, 8),
     ...     ("context", num_contexts, 4),
     ... ]
@@ -211,7 +217,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
     ...     column_idx=column_idx,
     ...     target_item_col="target_item",
     ...     user_behavior_confiq=user_behavior_config,
-    ...     other_cols_config=other_cols_config,
+    ...     cat_embed_input=cat_embed_input,
     ...     mlp_hidden_dims=[16, 8],
     ... )
     >>> output = model(X)
@@ -225,7 +231,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
         user_behavior_confiq: Tuple[List[str], int, int],
         action_seq_config: Optional[Tuple[List[str], int, int]] = None,
         other_seq_cols_confiq: Optional[List[Tuple[List[str], int, int]]] = None,
-        activation: Literal["prelu", "dice"] = "prelu",
+        attention_unit_activation: Literal["prelu", "dice"] = "prelu",
         cat_embed_input: Optional[List[Tuple[str, int, int]]] = None,
         cat_embed_dropout: Optional[float] = None,
         use_cat_bias: Optional[bool] = None,
@@ -263,7 +269,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
         self.action_seq_config = action_seq_config
         self.other_seq_cols_confiq = other_seq_cols_confiq
         self.cat_embed_input = cat_embed_input
-        self.activation = activation
+        self.attention_unit_activation = attention_unit_activation
 
         self.cat_embed_dropout = cat_embed_dropout
         self.use_cat_bias = use_cat_bias
@@ -293,38 +299,45 @@ class DeepInterestNetwork(BaseWDModelComponent):
         self.user_behavior_indexes, self.user_behavior_embed = (
             self.set_user_behavior_indexes_and_embed(user_behavior_confiq)
         )
+        self.user_behavior_dim = user_behavior_confiq[2]
 
         if self.action_seq_config is not None:
             self.action_seq_indexes, self.action_embed = (
-                self._set_rating_indexes_and_embed(action_seq_config)
+                self._set_rating_indexes_and_embed(self.action_seq_config)
             )
         else:
             self.action_embed = None
 
         if self.other_seq_cols_confiq is not None:
-            self.other_seq_cols_indexes, self.other_seq_cols_embed, other_seq_dim = (
-                self._set_other_seq_cols_indexes_embed_and_dim(
-                    self.other_seq_cols_confiq
-                )
+            (
+                self.other_seq_cols_indexes,
+                self.other_seq_cols_embed,
+                self.other_seq_dim,
+            ) = self._set_other_seq_cols_indexes_embed_and_dim(
+                self.other_seq_cols_confiq
             )
         else:
             self.other_seq_cols_embed = None
-            other_seq_dim = 0
+            self.other_seq_dim = 0
 
         if self.cat_embed_input is not None or self.continuous_cols is not None:
-            self.other_cols_idx, self.other_col_embed, other_cols_dim = (
+            self.other_cols_idx, self.other_col_embed, self.other_cols_dim = (
                 self._set_other_cols_idx_embed_and_dim(
                     self.cat_embed_input, self.continuous_cols
                 )
             )
         else:
             self.other_col_embed = None
-            other_cols_dim = 0
+            self.other_cols_dim = 0
 
-        self.attention = ActivationUnit(user_behavior_confiq[2], activation)
+        self.attention = ActivationUnit(
+            user_behavior_confiq[2], attention_unit_activation
+        )
 
         if self.mlp_hidden_dims is not None:
-            mlp_input_dim = user_behavior_confiq[2] * 2 + other_seq_dim + other_cols_dim
+            mlp_input_dim = (
+                self.user_behavior_dim * 2 + self.other_seq_dim + self.other_cols_dim
+            )
             self.mlp = MLP(
                 d_hidden=[mlp_input_dim] + self.mlp_hidden_dims,
                 activation=(
@@ -393,7 +406,9 @@ class DeepInterestNetwork(BaseWDModelComponent):
         # tup[1] is the number of unique feat value or "n_tokens"
         # tup[2] is the embedding dimension
 
-        # Once sliced, the indexes will go from 0 to len(tup[0])
+        # Once sliced, the indexes will go from 0 to len(tup[0]) it is assumed
+        # that the columns in tup[0] are ordered of appearance in the input
+        # data
         column_idx = {col: i for i, col in enumerate(tup[0])}
 
         # This is a hack so that I can use any BaseTabularModelWithAttention.
@@ -432,15 +447,14 @@ class DeepInterestNetwork(BaseWDModelComponent):
         return col_config
 
     def _get_other_cols_embed_config(
-        self, cat_embed_input: List[Tuple[str, int, int]], continuous_cols: List[str]
+        self,
+        cat_embed_input: Optional[List[Tuple[str, int, int]]],
+        continuous_cols: Optional[List[str]],
+        column_idx: Dict[str, int],
     ) -> Dict[str, Any]:
+
         cols_config = {
-            "column_idx": {
-                col: i
-                for i, col in enumerate(
-                    [el[0] for el in cat_embed_input] + continuous_cols
-                )
-            },
+            "column_idx": {col: i for i, col in enumerate(column_idx.keys())},
             "cat_embed_input": cat_embed_input,
             "cat_embed_dropout": self.cat_embed_dropout,
             "use_cat_bias": self.use_cat_bias,
@@ -462,7 +476,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
         return cols_config
 
     def set_user_behavior_indexes_and_embed(
-        self, user_behavior_confiq
+        self, user_behavior_confiq: Tuple[List[str], int, int]
     ) -> Tuple[List[int], BaseTabularModelWithAttention]:
         user_behavior_indexes = [
             self.column_idx[col] for col in user_behavior_confiq[0]
@@ -473,7 +487,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
         return user_behavior_indexes, user_behavior_embed
 
     def _set_rating_indexes_and_embed(
-        self, action_seq_config
+        self, action_seq_config: Tuple[List[str], int, int]
     ) -> Tuple[List[int], BaseTabularModelWithAttention]:
         action_seq_indexes = [self.column_idx[col] for col in action_seq_config[0]]
         action_embed = BaseTabularModelWithAttention(
@@ -482,7 +496,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
         return action_seq_indexes, action_embed
 
     def _set_other_seq_cols_indexes_embed_and_dim(
-        self, other_seq_cols_confiq
+        self, other_seq_cols_confiq: List[Tuple[List[str], int, int]]
     ) -> Tuple[Dict[str, List[int]], nn.ModuleDict, int]:
         other_seq_cols_indexes: Dict[str, List[int]] = {}
         for i, el in enumerate(other_seq_cols_confiq):
@@ -504,16 +518,37 @@ class DeepInterestNetwork(BaseWDModelComponent):
         return other_seq_cols_indexes, other_seq_cols_embed, other_seq_dim
 
     def _set_other_cols_idx_embed_and_dim(
-        self, cat_embed_input, continuous_cols
+        self,
+        cat_embed_input: Optional[List[Tuple[str, int, int]]],
+        continuous_cols: Optional[List[str]],
     ) -> Tuple[List[int], BaseTabularModelWithoutAttention, int]:
-        other_cols_idx = [
-            self.column_idx[col] for col in [el[0] for el in cat_embed_input]
-        ] + [self.column_idx[col] for col in continuous_cols]
+        other_cols_idx: Dict[str, int] = {}
+        if cat_embed_input is not None:
+            other_cols_idx = {
+                col: self.column_idx[col] for col in [el[0] for el in cat_embed_input]
+            }
+        if continuous_cols is not None:
+            other_cols_idx.update(
+                {col: self.column_idx[col] for col in continuous_cols}
+            )
+
+        sorted_other_cols_idx = {
+            k: v for k, v in sorted(other_cols_idx.items(), key=lambda x: x[1])
+        }
 
         other_col_embed = BaseTabularModelWithoutAttention(
-            **self._get_other_cols_embed_config(cat_embed_input, continuous_cols)
+            **self._get_other_cols_embed_config(
+                cat_embed_input, continuous_cols, sorted_other_cols_idx
+            )
         )
 
         other_cols_dim = other_col_embed.output_dim
 
-        return other_cols_idx, other_col_embed, other_cols_dim
+        return list(other_cols_idx.values()), other_col_embed, other_cols_dim
+
+    @property
+    def output_dim(self) -> int:
+        if self.mlp_hidden_dims is not None:
+            return self.mlp_hidden_dims[-1]
+        else:
+            return self.user_behavior_dim * 2 + self.other_seq_dim + self.other_cols_dim

@@ -86,7 +86,6 @@ class DeepFieldAwareFactorizationMachine(BaseTabularModelWithAttention):
     ...     cat_embed_input=cat_embed_input,
     ...     mlp_hidden_dims=[16, 8]
     ... )
-    >>> # Forward pass
     >>> output = ffm(X)
     """
 

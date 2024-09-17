@@ -19,10 +19,16 @@ def factorization_machine(input: Tensor, reduce_sum: bool = True) -> Tensor:
 
 class DeepFactorizationMachine(BaseTabularModelWithAttention):
     """
-    Deep Factorization Machine (DeepFM) for recommendation systems. Adaptation
-    of 'Factorization Machines' by Steffen Rendle. Presented in 'DeepFM: A
-    Factorization-Machine based Neural Network for CTR Prediction' by Huifeng
-    Guo, Ruiming Tang, Yunming Yey, Zhenguo Li, Xiuqiang He. 2017.
+
+    Deep Factorization Machine (DeepFM) for recommendation systems, which is
+    an adaptation of 'Factorization Machines' by Steffen Rendle. Presented
+    in 'DeepFM: A Factorization-Machine based Neural Network for CTR
+    Prediction' by Huifeng Guo, Ruiming Tang, Yunming Yey, Zhenguo Li,
+    Xiuqiang He. 2017.
+
+    The implementation in this library takes advantage of all the
+    functionalities available to encode categorical and continuous features.
+    The model can be used with only the factorization machine
 
     Parameters
     ----------

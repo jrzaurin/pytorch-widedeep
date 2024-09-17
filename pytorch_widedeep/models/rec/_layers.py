@@ -12,11 +12,10 @@ class Dice(nn.Module):
         self.alpha = nn.Parameter(torch.zeros(input_dim))
 
     def forward(self, X: Tensor) -> Tensor:
-        # assumes X has n_dim = 3
-        # TO DO: double check this
+        # This implementation assumes X has n_dim = 3
         x_p = self.bn(X.transpose(1, 2)).transpose(1, 2)
         p = torch.sigmoid(x_p)
-        return X.mul(p) + self.alpha * X.mul(1 - p)
+        return p * X + (1 - p) * self.alpha * X
 
 
 class ActivationUnit(nn.Module):

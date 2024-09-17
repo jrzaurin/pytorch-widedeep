@@ -17,6 +17,10 @@ class ExtremeDeepFactorizationMachine(BaseTabularModelWithAttention):
     Xiaohuan Zhou, Fuzheng Zhang, Zhongxia Chen, Xing Xie, Guangzhong Sun and
     Enhong Chen, 2018
 
+    The implementation in this library takes advantage of all the
+    functionalities available to encode categorical and continuous features.
+    The model can be used with only the factorization machine
+
     Parameters
     ----------
     column_idx : Dict[str, int]
@@ -128,11 +132,11 @@ class ExtremeDeepFactorizationMachine(BaseTabularModelWithAttention):
     Examples
     --------
     >>> import torch
-    >>> from pytorch_widedeep.models import.rec xDeepFM
+    >>> from pytorch_widedeep.models.rec import ExtremeDeepFactorizationMachine
     >>> X_tab = torch.randint(0, 10, (16, 2))
     >>> column_idx = {"col1": 0, "col2": 1}
     >>> cat_embed_input = [("col1", 10), ("col2", 10)]
-    >>> xdeepfm = xDeepFM(
+    >>> xdeepfm = ExtremeDeepFactorizationMachine(
     ...     column_idx=column_idx,
     ...     input_dim=4,
     ...     cin_layer_dims=[8, 16],
