@@ -39,6 +39,12 @@ class DeepInterestNetwork(BaseWDModelComponent):
         - List of column names
         - Number of unique feature values (n_tokens)
         - Embedding dimension
+        This action will **always** be learned as a 1d embedding and will be
+        combined with the user behaviour. For example, imagine that the
+        action is purchased/not-purchased. then per item in the user
+        behaviour sequence there will be a binary action to learn 0/1. Such
+        action will be represented by a float number that will multiply the
+        corresponding item embedding in the user behaviour sequence.
     other_seq_cols_confiq : Optional[List[Tuple[List[str], int, int]]], default=None
         Configuration for other sequential columns. List of tuples containing:
         - List of column names that correspond to the sequential column
