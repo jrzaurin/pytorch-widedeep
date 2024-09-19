@@ -14,11 +14,11 @@
         <link rel="prev" href="load_from_folder.html">
       
       
-        <link rel="next" href="bayesian_models.html">
+        <link rel="next" href="the_rec_module.html">
       
       
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.33">
     
     
       
@@ -452,6 +452,8 @@
   
     
     
+      
+        
       
         
       
@@ -917,15 +919,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer" class="md-nav__link">
-    <span class="md-ellipsis">
-      Transformer
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#pytorch_widedeep.models.text.huggingface_transformers.hf_model.HFModel" class="md-nav__link">
     <span class="md-ellipsis">
       HFModel
@@ -965,6 +958,27 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="the_rec_module.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    The Rec Module
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1836,8 +1850,8 @@ it requires the <code>pred_dim</code> parameter.</p>
 <p><span class="doc-section-title">Examples:</span></p>
     <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">Wide</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">wide</span> <span class="o">=</span> <span class="n">Wide</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wide</span> <span class="o">=</span> <span class="n">Wide</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()),</span> <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">wide</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 </code></pre></div>
 
@@ -2281,7 +2295,15 @@ the continuous columns</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/tab_mlp.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">144</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
 <span class="normal">145</span>
 <span class="normal">146</span>
 <span class="normal">147</span>
@@ -2340,15 +2362,7 @@ the continuous columns</p>
 <span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -2600,7 +2614,15 @@ LIN -&gt; ACT]</code></p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/tab_mlp.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">279</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
 <span class="normal">280</span>
 <span class="normal">281</span>
 <span class="normal">282</span>
@@ -2620,15 +2642,7 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">296</span>
 <span class="normal">297</span>
 <span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">299</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">mlp_hidden_dims</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
@@ -3102,7 +3116,14 @@ embeddings and the continuous columns -- if present --.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/resnet/tab_resnet.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">174</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
 <span class="normal">175</span>
 <span class="normal">176</span>
 <span class="normal">177</span>
@@ -3191,14 +3212,7 @@ embeddings and the continuous columns -- if present --.</p>
 <span class="normal">260</span>
 <span class="normal">261</span>
 <span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">263</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -3541,7 +3555,14 @@ deep dense Resnet.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/resnet/tab_resnet.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">368</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
 <span class="normal">369</span>
 <span class="normal">370</span>
 <span class="normal">371</span>
@@ -3596,14 +3617,7 @@ deep dense Resnet.</p>
 <span class="normal">420</span>
 <span class="normal">421</span>
 <span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">423</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">blocks_dims</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
@@ -4113,7 +4127,14 @@ steps</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/tabnet/tab_net.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
 <span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
@@ -4192,14 +4213,7 @@ steps</p>
 <span class="normal">234</span>
 <span class="normal">235</span>
 <span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">237</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -4495,7 +4509,14 @@ reconstruct the embeddings</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/tabnet/tab_net.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">342</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
 <span class="normal">343</span>
 <span class="normal">344</span>
 <span class="normal">345</span>
@@ -4533,14 +4554,7 @@ reconstruct the embeddings</p>
 <span class="normal">377</span>
 <span class="normal">378</span>
 <span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
-<span class="normal">383</span>
-<span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span>
-<span class="normal">387</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">380</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
@@ -4975,7 +4989,16 @@ and <em>'gelu'</em> are supported.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/context_attention_mlp.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
@@ -5038,17 +5061,7 @@ and <em>'gelu'</em> are supported.</p>
 <span class="normal">212</span>
 <span class="normal">213</span>
 <span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -5088,7 +5101,6 @@ and <em>'gelu'</em> are supported.</p>
         <span class="n">frac_shared_embed</span><span class="o">=</span><span class="n">frac_shared_embed</span><span class="p">,</span>
         <span class="n">continuous_cols</span><span class="o">=</span><span class="n">continuous_cols</span><span class="p">,</span>
         <span class="n">cont_norm_layer</span><span class="o">=</span><span class="n">cont_norm_layer</span><span class="p">,</span>
-        <span class="n">embed_continuous</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">embed_continuous_method</span><span class="o">=</span><span class="n">embed_continuous_method</span><span class="p">,</span>
         <span class="n">cont_embed_dropout</span><span class="o">=</span><span class="n">cont_embed_dropout</span><span class="p">,</span>
         <span class="n">cont_embed_activation</span><span class="o">=</span><span class="n">cont_embed_activation</span><span class="p">,</span>
@@ -5602,7 +5614,14 @@ and <em>'gelu'</em> are supported.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/self_attention_mlp.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">170</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
 <span class="normal">171</span>
 <span class="normal">172</span>
 <span class="normal">173</span>
@@ -5673,15 +5692,7 @@ and <em>'gelu'</em> are supported.</p>
 <span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -5724,7 +5735,6 @@ and <em>'gelu'</em> are supported.</p>
         <span class="n">frac_shared_embed</span><span class="o">=</span><span class="n">frac_shared_embed</span><span class="p">,</span>
         <span class="n">continuous_cols</span><span class="o">=</span><span class="n">continuous_cols</span><span class="p">,</span>
         <span class="n">cont_norm_layer</span><span class="o">=</span><span class="n">cont_norm_layer</span><span class="p">,</span>
-        <span class="n">embed_continuous</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">embed_continuous_method</span><span class="o">=</span><span class="n">embed_continuous_method</span><span class="p">,</span>
         <span class="n">cont_embed_dropout</span><span class="o">=</span><span class="n">cont_embed_dropout</span><span class="p">,</span>
         <span class="n">cont_embed_activation</span><span class="o">=</span><span class="n">cont_embed_activation</span><span class="p">,</span>
@@ -6353,7 +6363,16 @@ will default to <code>True</code>.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_transformer.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">201</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
@@ -6482,7 +6501,21 @@ will default to <code>True</code>.</p>
 <span class="normal">327</span>
 <span class="normal">328</span>
 <span class="normal">329</span>
-<span class="normal">330</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -6534,8 +6567,12 @@ will default to <code>True</code>.</p>
         <span class="n">frac_shared_embed</span><span class="o">=</span><span class="n">frac_shared_embed</span><span class="p">,</span>
         <span class="n">continuous_cols</span><span class="o">=</span><span class="n">continuous_cols</span><span class="p">,</span>
         <span class="n">cont_norm_layer</span><span class="o">=</span><span class="n">cont_norm_layer</span><span class="p">,</span>
-        <span class="n">embed_continuous</span><span class="o">=</span><span class="n">embed_continuous</span><span class="p">,</span>
-        <span class="n">embed_continuous_method</span><span class="o">=</span><span class="n">embed_continuous_method</span><span class="p">,</span>
+        <span class="c1"># UGLY hack to be able to use the base class __init__ method</span>
+        <span class="n">embed_continuous_method</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;standard&quot;</span>
+            <span class="k">if</span> <span class="n">embed_continuous_method</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">embed_continuous_method</span>
+        <span class="p">),</span>
         <span class="n">cont_embed_dropout</span><span class="o">=</span><span class="n">cont_embed_dropout</span><span class="p">,</span>
         <span class="n">cont_embed_activation</span><span class="o">=</span><span class="n">cont_embed_activation</span><span class="p">,</span>
         <span class="n">quantization_setup</span><span class="o">=</span><span class="n">quantization_setup</span><span class="p">,</span>
@@ -6545,6 +6582,25 @@ will default to <code>True</code>.</p>
         <span class="n">input_dim</span><span class="o">=</span><span class="n">input_dim</span><span class="p">,</span>
         <span class="n">full_embed_dropout</span><span class="o">=</span><span class="n">full_embed_dropout</span><span class="p">,</span>
     <span class="p">)</span>
+
+    <span class="c1"># we overwrite the embed_continuous_method parameter that was set</span>
+    <span class="c1"># to &#39;standard&#39; if embed_continuous_method is None. In other words,</span>
+    <span class="c1"># this will already have the right value if the user provided a value</span>
+    <span class="c1"># for embed_continuous_method, otherwise will be &quot;standard&quot; when it</span>
+    <span class="c1"># should be None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">embed_continuous_method</span> <span class="o">=</span> <span class="n">embed_continuous_method</span>
+
+    <span class="k">if</span> <span class="n">embed_continuous</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embed_continuous</span> <span class="o">=</span> <span class="n">embed_continuous</span>
+        <span class="k">if</span> <span class="n">embed_continuous</span> <span class="ow">and</span> <span class="n">embed_continuous_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;If &#39;embed_continuous&#39; is True, &#39;embed_continuous_method&#39; must be &quot;</span>
+                <span class="s2">&quot;one of &#39;standard&#39;, &#39;piecewise&#39; or &#39;periodic&#39;.&quot;</span>
+            <span class="p">)</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_continuous_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embed_continuous</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embed_continuous</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">n_heads</span> <span class="o">=</span> <span class="n">n_heads</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">use_qkv_bias</span> <span class="o">=</span> <span class="n">use_qkv_bias</span>
@@ -7175,7 +7231,14 @@ will default to <code>True</code>.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/saint.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">184</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
 <span class="normal">187</span>
@@ -7290,15 +7353,7 @@ will default to <code>True</code>.</p>
 <span class="normal">296</span>
 <span class="normal">297</span>
 <span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">299</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -7347,7 +7402,6 @@ will default to <code>True</code>.</p>
         <span class="n">frac_shared_embed</span><span class="o">=</span><span class="n">frac_shared_embed</span><span class="p">,</span>
         <span class="n">continuous_cols</span><span class="o">=</span><span class="n">continuous_cols</span><span class="p">,</span>
         <span class="n">cont_norm_layer</span><span class="o">=</span><span class="n">cont_norm_layer</span><span class="p">,</span>
-        <span class="n">embed_continuous</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">embed_continuous_method</span><span class="o">=</span><span class="n">embed_continuous_method</span><span class="p">,</span>
         <span class="n">cont_embed_dropout</span><span class="o">=</span><span class="n">cont_embed_dropout</span><span class="p">,</span>
         <span class="n">cont_embed_activation</span><span class="o">=</span><span class="n">cont_embed_activation</span><span class="p">,</span>
@@ -8018,7 +8072,16 @@ will default to <code>True</code>.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/ft_transformer.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">194</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
 <span class="normal">195</span>
 <span class="normal">196</span>
 <span class="normal">197</span>
@@ -8140,17 +8203,7 @@ will default to <code>True</code>.</p>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
-<span class="normal">318</span>
-<span class="normal">319</span>
-<span class="normal">320</span>
-<span class="normal">321</span>
-<span class="normal">322</span>
-<span class="normal">323</span>
-<span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">316</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -8201,7 +8254,6 @@ will default to <code>True</code>.</p>
         <span class="n">frac_shared_embed</span><span class="o">=</span><span class="n">frac_shared_embed</span><span class="p">,</span>
         <span class="n">continuous_cols</span><span class="o">=</span><span class="n">continuous_cols</span><span class="p">,</span>
         <span class="n">cont_norm_layer</span><span class="o">=</span><span class="n">cont_norm_layer</span><span class="p">,</span>
-        <span class="n">embed_continuous</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">embed_continuous_method</span><span class="o">=</span><span class="n">embed_continuous_method</span><span class="p">,</span>
         <span class="n">cont_embed_dropout</span><span class="o">=</span><span class="n">cont_embed_dropout</span><span class="p">,</span>
         <span class="n">cont_embed_activation</span><span class="o">=</span><span class="n">cont_embed_activation</span><span class="p">,</span>
@@ -8922,7 +8974,16 @@ will default to <code>True</code>.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_perceiver.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">216</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
 <span class="normal">217</span>
 <span class="normal">218</span>
 <span class="normal">219</span>
@@ -9036,17 +9097,7 @@ will default to <code>True</code>.</p>
 <span class="normal">327</span>
 <span class="normal">328</span>
 <span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
-<span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">330</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -9100,7 +9151,6 @@ will default to <code>True</code>.</p>
         <span class="n">frac_shared_embed</span><span class="o">=</span><span class="n">frac_shared_embed</span><span class="p">,</span>
         <span class="n">continuous_cols</span><span class="o">=</span><span class="n">continuous_cols</span><span class="p">,</span>
         <span class="n">cont_norm_layer</span><span class="o">=</span><span class="n">cont_norm_layer</span><span class="p">,</span>
-        <span class="n">embed_continuous</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">embed_continuous_method</span><span class="o">=</span><span class="n">embed_continuous_method</span><span class="p">,</span>
         <span class="n">cont_embed_dropout</span><span class="o">=</span><span class="n">cont_embed_dropout</span><span class="p">,</span>
         <span class="n">cont_embed_activation</span><span class="o">=</span><span class="n">cont_embed_activation</span><span class="p">,</span>
@@ -9783,7 +9833,16 @@ will default to <code>True</code>.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_fastformer.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
 <span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
@@ -9916,17 +9975,7 @@ will default to <code>True</code>.</p>
 <span class="normal">330</span>
 <span class="normal">331</span>
 <span class="normal">332</span>
-<span class="normal">333</span>
-<span class="normal">334</span>
-<span class="normal">335</span>
-<span class="normal">336</span>
-<span class="normal">337</span>
-<span class="normal">338</span>
-<span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">333</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
@@ -9977,7 +10026,6 @@ will default to <code>True</code>.</p>
         <span class="n">frac_shared_embed</span><span class="o">=</span><span class="n">frac_shared_embed</span><span class="p">,</span>
         <span class="n">continuous_cols</span><span class="o">=</span><span class="n">continuous_cols</span><span class="p">,</span>
         <span class="n">cont_norm_layer</span><span class="o">=</span><span class="n">cont_norm_layer</span><span class="p">,</span>
-        <span class="n">embed_continuous</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">embed_continuous_method</span><span class="o">=</span><span class="n">embed_continuous_method</span><span class="p">,</span>
         <span class="n">cont_embed_dropout</span><span class="o">=</span><span class="n">cont_embed_dropout</span><span class="p">,</span>
         <span class="n">cont_embed_activation</span><span class="o">=</span><span class="n">cont_embed_activation</span><span class="p">,</span>
@@ -10230,7 +10278,7 @@ used</p>
         </li>
         <li class="doc-section-item field-body">
           <b><code>rnn_type</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[<span title="torch.lstm">lstm</span>, gru]</code>, default:
+              (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[lstm, gru]</code>, default:
                   <code>&#39;lstm&#39;</code>
 )
           –
@@ -10410,7 +10458,16 @@ LIN -&gt; ACT]</code></p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/text/rnns/basic_rnn.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 95</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
 <span class="normal"> 96</span>
 <span class="normal"> 97</span>
 <span class="normal"> 98</span>
@@ -10509,16 +10566,7 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">191</span>
 <span class="normal">192</span>
 <span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span>
-<span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">194</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -10964,7 +11012,9 @@ LIN -&gt; ACT]</code></p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/text/rnns/attentive_rnn.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
 <span class="normal"> 94</span>
 <span class="normal"> 95</span>
 <span class="normal"> 96</span>
@@ -11030,9 +11080,7 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">156</span>
 <span class="normal">157</span>
 <span class="normal">158</span>
-<span class="normal">159</span>
-<span class="normal">160</span>
-<span class="normal">161</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">159</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -11428,7 +11476,17 @@ LIN -&gt; ACT]</code></p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/text/rnns/stacked_attentive_rnn.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">102</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
@@ -11539,17 +11597,7 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">210</span>
 <span class="normal">211</span>
 <span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">213</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -11747,399 +11795,6 @@ size and <span class="arithmatex">\(S\)</span> is the length of the sequence</p>
 
 
 
-<h2 id="pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer" class="doc doc-heading">
-            <span class="doc doc-object-name doc-class-name">Transformer</span>
-
-
-<a href="#pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">Transformer</span><span class="p">(</span>
-    <span class="n">vocab_size</span><span class="p">,</span>
-    <span class="n">seq_length</span><span class="p">,</span>
-    <span class="n">input_dim</span><span class="p">,</span>
-    <span class="n">n_heads</span><span class="p">,</span>
-    <span class="n">n_blocks</span><span class="p">,</span>
-    <span class="n">attn_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">ff_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">ff_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-    <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;gelu&quot;</span><span class="p">,</span>
-    <span class="n">use_linear_attention</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">use_flash_attention</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">padding_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">with_cls_token</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">with_pos_encoding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">pos_encoding_dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">pos_encoder</span><span class="o">=</span><span class="kc">None</span>
-<span class="p">)</span>
-</code></pre></div>
-
-    <div class="doc doc-contents first">
-            <p class="doc doc-class-bases">
-              Bases: <code><span title="torch.nn.Module">Module</span></code></p>
-
-
-      <p>Basic Encoder-Only Transformer Model for text classification/regression.
-As all other models in the library this model can be used as the
-<code>deeptext</code> component of a Wide &amp; Deep model or independently by itself.</p>
-<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>:
-This model is introduced in the context of recommendation systems and
-thought for sequences of any nature (e.g. items). It can, of course,
-still be used for text. However, at this stage, we have decided to not
-include the possibility of loading pretrained word vectors since we aim
-to integrate the library wit Huggingface in the (hopefully) near future</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>vocab_size</code></b>
-              (<code>int</code>)
-          –
-          <div class="doc-md-description">
-            <p>Number of words in the vocabulary</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>input_dim</code></b>
-              (<code>int</code>)
-          –
-          <div class="doc-md-description">
-            <p>Dimension of the token embeddings</p>
-<p>Param aliases: <code>embed_dim</code>, <code>d_model</code>. <br/></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>seq_length</code></b>
-              (<code>int</code>)
-          –
-          <div class="doc-md-description">
-            <p>Input sequence length</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>n_heads</code></b>
-              (<code>int</code>)
-          –
-          <div class="doc-md-description">
-            <p>Number of attention heads per Transformer block</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>n_blocks</code></b>
-              (<code>int</code>)
-          –
-          <div class="doc-md-description">
-            <p>Number of Transformer blocks</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>attn_dropout</code></b>
-              (<code>float</code>, default:
-                  <code>0.1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Dropout that will be applied to the Multi-Head Attention layers</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>ff_dropout</code></b>
-              (<code>float</code>, default:
-                  <code>0.1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Dropout that will be applied to the FeedForward network</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>ff_factor</code></b>
-              (<code>int</code>, default:
-                  <code>4</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Multiplicative factor applied to the first layer of the FF network in
-each Transformer block, This is normally set to 4.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>activation</code></b>
-              (<code>str</code>, default:
-                  <code>&#39;gelu&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Transformer Encoder activation function. <em>'tanh'</em>, <em>'relu'</em>,
-<em>'leaky_relu'</em>, <em>'gelu'</em>, <em>'geglu'</em> and <em>'reglu'</em> are supported</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>padding_idx</code></b>
-              (<code>int</code>, default:
-                  <code>0</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>index of the padding token in the padded-tokenised sequences.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>with_cls_token</code></b>
-              (<code>bool</code>, default:
-                  <code>False</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Boolean indicating if a <code>'[CLS]'</code> token is included in the tokenized
-sequences. If present, the final hidden state corresponding to this
-token is used as the aggregated representation for classification and
-regression tasks. <strong>NOTE</strong>: if included in the tokenized sequences it
-must be inserted as the first token in the sequences.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>with_pos_encoding</code></b>
-              (<code>bool</code>, default:
-                  <code>True</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Boolean indicating if positional encoding will be used</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>pos_encoding_dropout</code></b>
-              (<code>float</code>, default:
-                  <code>0.1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Positional encoding dropout</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>pos_encoder</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="torch.nn.Module">Module</span>]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>This model uses by default a standard positional encoding approach.
-However, any custom positional encoder can also be used and pass to
-the Transformer model via the 'pos_encoder' parameter</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><span title="pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer.embedding">embedding</span></code></b>
-              (<code><span title="torch.nn.Module">Module</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Standard token embedding layer</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer.pos_encoder">pos_encoder</span></code></b>
-              (<code><span title="torch.nn.Module">Module</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Positional Encoder</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer.encoder">encoder</span></code></b>
-              (<code><span title="torch.nn.Module">Module</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Sequence of Transformer blocks</p>
-          </div>
-        </li>
-    </ul>
-
-
-<p><span class="doc-section-title">Examples:</span></p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytorch_widedeep.models</span> <span class="kn">import</span> <span class="n">Transformer</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">X_text</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">vocab_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">seq_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">input_dim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">n_heads</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_blocks</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_text</span><span class="p">)</span>
-</code></pre></div>
-
-                  <details class="quote">
-                    <summary>Source code in <code>pytorch_widedeep/models/text/miscellaneous/basic_transformer.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;input_dim&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;embed_dim&quot;</span><span class="p">,</span> <span class="s2">&quot;d_model&quot;</span><span class="p">])</span>
-<span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;seq_length&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;max_length&quot;</span><span class="p">,</span> <span class="s2">&quot;maxlen&quot;</span><span class="p">])</span>
-<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">seq_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">input_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">n_heads</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">n_blocks</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">attn_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">ff_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">ff_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
-    <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;gelu&quot;</span><span class="p">,</span>
-    <span class="n">use_linear_attention</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">use_flash_attention</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">padding_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="n">with_cls_token</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>  <span class="c1"># from here on pos encoding args</span>
-    <span class="n">with_pos_encoding</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">pos_encoding_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
-    <span class="n">pos_encoder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-
-    <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span> <span class="o">=</span> <span class="n">input_dim</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">seq_length</span> <span class="o">=</span> <span class="n">seq_length</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">n_heads</span> <span class="o">=</span> <span class="n">n_heads</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">n_blocks</span> <span class="o">=</span> <span class="n">n_blocks</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">attn_dropout</span> <span class="o">=</span> <span class="n">attn_dropout</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">ff_dropout</span> <span class="o">=</span> <span class="n">ff_dropout</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">ff_factor</span> <span class="o">=</span> <span class="n">ff_factor</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">=</span> <span class="n">activation</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">use_linear_attention</span> <span class="o">=</span> <span class="n">use_linear_attention</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">use_flash_attention</span> <span class="o">=</span> <span class="n">use_flash_attention</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span> <span class="o">=</span> <span class="n">padding_idx</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">with_cls_token</span> <span class="o">=</span> <span class="n">with_cls_token</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">with_pos_encoding</span> <span class="o">=</span> <span class="n">with_pos_encoding</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoding_dropout</span> <span class="o">=</span> <span class="n">pos_encoding_dropout</span>
-
-    <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span>
-        <span class="n">vocab_size</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">padding_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span>
-    <span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">with_pos_encoding</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">pos_encoder</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">,</span> <span class="n">PositionalEncoding</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">pos_encoder</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span> <span class="o">=</span> <span class="n">PositionalEncoding</span><span class="p">(</span>
-                <span class="n">input_dim</span><span class="p">,</span> <span class="n">pos_encoding_dropout</span><span class="p">,</span> <span class="n">seq_length</span>
-            <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
-
-    <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_blocks</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span>
-            <span class="s2">&quot;transformer_block&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
-            <span class="n">TransformerEncoder</span><span class="p">(</span>
-                <span class="n">input_dim</span><span class="p">,</span>
-                <span class="n">n_heads</span><span class="p">,</span>
-                <span class="kc">False</span><span class="p">,</span>  <span class="c1"># use_qkv_bias</span>
-                <span class="n">attn_dropout</span><span class="p">,</span>
-                <span class="n">ff_dropout</span><span class="p">,</span>
-                <span class="n">ff_factor</span><span class="p">,</span>
-                <span class="n">activation</span><span class="p">,</span>
-                <span class="n">use_linear_attention</span><span class="p">,</span>
-                <span class="n">use_flash_attention</span><span class="p">,</span>
-            <span class="p">),</span>
-        <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-                  </details>
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-class">
-
-
-
 <h2 id="pytorch_widedeep.models.text.huggingface_transformers.hf_model.HFModel" class="doc doc-heading">
             <span class="doc doc-object-name doc-class-name">HFModel</span>
 
@@ -12318,7 +11973,12 @@ if <code>head_layers_dim</code> is not None</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/text/huggingface_transformers/hf_model.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 77</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
 <span class="normal"> 78</span>
 <span class="normal"> 79</span>
 <span class="normal"> 80</span>
@@ -12371,12 +12031,7 @@ if <code>head_layers_dim</code> is not None</p>
 <span class="normal">127</span>
 <span class="normal">128</span>
 <span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;use_cls_token&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;use_special_token&quot;</span><span class="p">])</span>
+<span class="normal">130</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;use_cls_token&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;use_special_token&quot;</span><span class="p">])</span>
 <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -12703,7 +12358,9 @@ LIN -&gt; ACT]</code></p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/image/vision.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">125</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
 <span class="normal">126</span>
 <span class="normal">127</span>
 <span class="normal">128</span>
@@ -12750,9 +12407,7 @@ LIN -&gt; ACT]</code></p>
 <span class="normal">169</span>
 <span class="normal">170</span>
 <span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;pretrained_model_setup&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pretrained_model_name&quot;</span><span class="p">])</span>
+<span class="normal">172</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;pretrained_model_setup&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pretrained_model_name&quot;</span><span class="p">])</span>
 <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">pretrained_model_setup</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">WeightsEnum</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -12895,14 +12550,14 @@ to 'fuse' the models using a variety of methods.</p>
         </li>
         <li class="doc-section-item field-body">
           <b><code>fusion_method</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[concatenate, mean, max, sum, mult, <span title="pytorch_widedeep.models.model_fusion.ModelFuser.head">head</span>], <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[concatenate, mean, max, sum, mult, <span title="pytorch_widedeep.models.model_fusion.ModelFuser.head">head</span>]]]</code>)
+              (<code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[concatenate, mean, max, sum, mult, dot, <span title="pytorch_widedeep.models.model_fusion.ModelFuser.head">head</span>], <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[concatenate, mean, max, sum, mult, <span title="pytorch_widedeep.models.model_fusion.ModelFuser.head">head</span>]]]</code>)
           –
           <div class="doc-md-description">
             <p>Method to fuse the output of the models. It can be one of
-['concatenate', 'mean', 'max', 'sum', 'mult', 'head'] or a list of
-those. If a list is provided the output of the models will be fused
-using all the methods in the list and the final output will be the
-concatenation of the outputs of each method</p>
+['concatenate', 'mean', 'max', 'sum', 'mult', 'dot', 'head'] or a
+list of those, but 'dot'. If a list is provided the output of the
+models will be fused using all the methods in the list and the final
+output will be the concatenation of the outputs of each method</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -13055,7 +12710,8 @@ head_hidden_dims</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/models/model_fusion.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">102</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">101</span>
+<span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
@@ -13142,6 +12798,7 @@ head_hidden_dims</p>
             <span class="s2">&quot;max&quot;</span><span class="p">,</span>
             <span class="s2">&quot;sum&quot;</span><span class="p">,</span>
             <span class="s2">&quot;mult&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;dot&quot;</span><span class="p">,</span>
             <span class="s2">&quot;head&quot;</span><span class="p">,</span>
         <span class="p">],</span>
         <span class="n">List</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;concatenate&quot;</span><span class="p">,</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">,</span> <span class="s2">&quot;mult&quot;</span><span class="p">,</span> <span class="s2">&quot;head&quot;</span><span class="p">]],</span>
@@ -13263,16 +12920,7 @@ head_hidden_dims</p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/models/model_fusion.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">232</span>
 <span class="normal">233</span>
 <span class="normal">234</span>
 <span class="normal">235</span>
@@ -13292,7 +12940,16 @@ head_hidden_dims</p>
 <span class="normal">249</span>
 <span class="normal">250</span>
 <span class="normal">251</span>
-<span class="normal">252</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Projects the output of the models to a common dimension.&quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_output_dim_equal</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -13404,14 +13061,16 @@ captured via crossed-columns.</p>
         </li>
         <li class="doc-section-item field-body">
           <b><code>deeptabular</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]</code>, default:
+              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>, <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]]]</code>, default:
                   <code>None</code>
 )
           –
           <div class="doc-md-description">
             <p>Currently this library implements a number of possible architectures
 for the <code>deeptabular</code> component. See the documenation of the
-package.</p>
+package. Note that <code>deeptabular</code> can be a list of models. This is
+useful when using multiple tabular inputs (e.g. for example in the
+context of a two-tower model for recommendation systems)</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -13652,14 +13311,24 @@ of classes for multiclass classification.</p>
 <span class="normal">189</span>
 <span class="normal">190</span>
 <span class="normal">191</span>
-<span class="normal">192</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
     <span class="s2">&quot;pred_dim&quot;</span><span class="p">,</span>
     <span class="p">[</span><span class="s2">&quot;num_class&quot;</span><span class="p">,</span> <span class="s2">&quot;pred_size&quot;</span><span class="p">],</span>
 <span class="p">)</span>
 <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">deeptabular</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">deeptabular</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">Union</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">]]</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">deeptext</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
         <span class="n">Union</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseWDModelComponent</span><span class="p">]]</span>
     <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -13698,6 +13367,12 @@ of classes for multiclass classification.</p>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">enforce_positive</span> <span class="o">=</span> <span class="n">enforce_positive</span>
 
+    <span class="c1"># better to set this attribute already here</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">deeptabular</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_tabnet</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_tabnet</span> <span class="o">=</span> <span class="n">deeptabular</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;TabNet&quot;</span>
+
     <span class="c1"># The main 5 components of the wide and deep assemble: wide,</span>
     <span class="c1"># deeptabular, deeptext, deepimage and deephead</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">with_deephead</span> <span class="o">=</span> <span class="n">deephead</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">head_hidden_dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -13723,7 +13398,7 @@ of classes for multiclass classification.</p>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">wide</span> <span class="o">=</span> <span class="n">wide</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">deeptabular</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deeptext</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deepimage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_model_components</span><span class="p">(</span>
-        <span class="n">deeptabular</span><span class="p">,</span> <span class="n">deeptext</span><span class="p">,</span> <span class="n">deepimage</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">with_deephead</span>
+        <span class="n">deeptabular</span><span class="p">,</span> <span class="n">deeptext</span><span class="p">,</span> <span class="n">deepimage</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enforce_positive</span><span class="p">:</span>
@@ -13841,7 +13516,7 @@ of classes for multiclass classification.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      <script src="../assets/javascripts/bundle.af256bd8.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       

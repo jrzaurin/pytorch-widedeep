@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.31">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.33">
     
     
       
@@ -479,6 +479,8 @@
       
         
       
+        
+      
     
     
       
@@ -723,6 +725,27 @@
   
   <span class="md-ellipsis">
     Model Components
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="the_rec_module.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    The Rec Module
   </span>
   
 
@@ -1929,7 +1952,10 @@ if the <code>deeptabular</code> component is a Tabnet model.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">229</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
 <span class="normal">230</span>
 <span class="normal">231</span>
 <span class="normal">232</span>
@@ -1964,10 +1990,7 @@ if the <code>deeptabular</code> component is a Tabnet model.</p>
 <span class="normal">261</span>
 <span class="normal">262</span>
 <span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+<span class="normal">264</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
     <span class="s2">&quot;objective&quot;</span><span class="p">,</span>
     <span class="p">[</span><span class="s2">&quot;loss_function&quot;</span><span class="p">,</span> <span class="s2">&quot;loss_fn&quot;</span><span class="p">,</span> <span class="s2">&quot;loss&quot;</span><span class="p">,</span> <span class="s2">&quot;cost_function&quot;</span><span class="p">,</span> <span class="s2">&quot;cost_fn&quot;</span><span class="p">,</span> <span class="s2">&quot;cost&quot;</span><span class="p">],</span>
 <span class="p">)</span>
@@ -2071,13 +2094,15 @@ See <code>pytorch_widedeep.preprocessing.WidePreprocessor</code></p>
         </li>
         <li class="doc-section-item field-body">
           <b><code>X_tab</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="numpy.ndarray">ndarray</span>, <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]]</code>, default:
                   <code>None</code>
 )
           –
           <div class="doc-md-description">
             <p>Input for the <code>deeptabular</code> model component.
-See <code>pytorch_widedeep.preprocessing.TabPreprocessor</code></p>
+See <code>pytorch_widedeep.preprocessing.TabPreprocessor</code>. If multiple
+tabular models are used for different columns, this should be a
+list of numpy arrays</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -2297,7 +2322,10 @@ folder in the repo</p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">269</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
 <span class="normal">270</span>
 <span class="normal">271</span>
 <span class="normal">272</span>
@@ -2554,12 +2582,11 @@ folder in the repo</p>
 <span class="normal">523</span>
 <span class="normal">524</span>
 <span class="normal">525</span>
-<span class="normal">526</span>
-<span class="normal">527</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;finetune&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;warmup&quot;</span><span class="p">])</span>
+<span class="normal">526</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;finetune&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;warmup&quot;</span><span class="p">])</span>
 <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_train</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2587,7 +2614,9 @@ folder in the repo</p>
 <span class="sd">        See `pytorch_widedeep.preprocessing.WidePreprocessor`</span>
 <span class="sd">    X_tab: np.ndarray, Optional. default=None</span>
 <span class="sd">        Input for the `deeptabular` model component.</span>
-<span class="sd">        See `pytorch_widedeep.preprocessing.TabPreprocessor`</span>
+<span class="sd">        See `pytorch_widedeep.preprocessing.TabPreprocessor`. If multiple</span>
+<span class="sd">        tabular models are used for different columns, this should be a</span>
+<span class="sd">        list of numpy arrays</span>
 <span class="sd">    X_text: Union[np.ndarray, List[np.ndarray]], Optional. default=None</span>
 <span class="sd">        Input for the `deeptext` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.TextPreprocessor`.</span>
@@ -2861,7 +2890,7 @@ See <code>pytorch_widedeep.preprocessing.WidePreprocessor</code></p>
         </li>
         <li class="doc-section-item field-body">
           <b><code>X_tab</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="numpy.ndarray">ndarray</span>, <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]]</code>, default:
                   <code>None</code>
 )
           –
@@ -2932,7 +2961,8 @@ the <code>Trainer</code> is instantiated</p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">529</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">528</span>
+<span class="normal">529</span>
 <span class="normal">530</span>
 <span class="normal">531</span>
 <span class="normal">532</span>
@@ -2985,11 +3015,10 @@ the <code>Trainer</code> is instantiated</p>
 <span class="normal">579</span>
 <span class="normal">580</span>
 <span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>  <span class="c1"># type: ignore[override, return]</span>
+<span class="normal">582</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>  <span class="c1"># type: ignore[override, return]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3007,13 +3036,13 @@ the <code>Trainer</code> is instantiated</p>
 <span class="sd">    X_wide: np.ndarray, Optional. default=None</span>
 <span class="sd">        Input for the `wide` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.WidePreprocessor`</span>
-<span class="sd">    X_tab: np.ndarray, Optional. default=None</span>
+<span class="sd">    X_tab: np.ndarray or List[np.ndarray], Optional. default=None</span>
 <span class="sd">        Input for the `deeptabular` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.TabPreprocessor`</span>
-<span class="sd">    X_text: np.ndarray, Optional. default=None</span>
+<span class="sd">    X_text: np.ndarray or List[np.ndarray], Optional. default=None</span>
 <span class="sd">        Input for the `deeptext` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.TextPreprocessor`</span>
-<span class="sd">    X_img: np.ndarray, Optional. default=None</span>
+<span class="sd">    X_img: np.ndarray or List[np.ndarray], Optional. default=None</span>
 <span class="sd">        Input for the `deepimage` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.ImagePreprocessor`</span>
 <span class="sd">    X_test: Dict, Optional. default=None</span>
@@ -3092,7 +3121,7 @@ See <code>pytorch_widedeep.preprocessing.WidePreprocessor</code></p>
         </li>
         <li class="doc-section-item field-body">
           <b><code>X_tab</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="numpy.ndarray">ndarray</span>, <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]]</code>, default:
                   <code>None</code>
 )
           –
@@ -3178,7 +3207,8 @@ the <code>Trainer</code> is instantiated</p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">585</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">584</span>
+<span class="normal">585</span>
 <span class="normal">586</span>
 <span class="normal">587</span>
 <span class="normal">588</span>
@@ -3272,11 +3302,10 @@ the <code>Trainer</code> is instantiated</p>
 <span class="normal">676</span>
 <span class="normal">677</span>
 <span class="normal">678</span>
-<span class="normal">679</span>
-<span class="normal">680</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_uncertainty</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
+<span class="normal">679</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_uncertainty</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3297,13 +3326,13 @@ the <code>Trainer</code> is instantiated</p>
 <span class="sd">    X_wide: np.ndarray, Optional. default=None</span>
 <span class="sd">        Input for the `wide` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.WidePreprocessor`</span>
-<span class="sd">    X_tab: np.ndarray, Optional. default=None</span>
+<span class="sd">    X_tab: np.ndarray or List[np.ndarray], Optional. default=None</span>
 <span class="sd">        Input for the `deeptabular` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.TabPreprocessor`</span>
-<span class="sd">    X_text: np.ndarray, Optional. default=None</span>
+<span class="sd">    X_text: np.ndarray or List[np.ndarray], Optional. default=None</span>
 <span class="sd">        Input for the `deeptext` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.TextPreprocessor`</span>
-<span class="sd">    X_img: np.ndarray, Optional. default=None</span>
+<span class="sd">    X_img: np.ndarray or List[np.ndarray], Optional. default=None</span>
 <span class="sd">        Input for the `deepimage` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.ImagePreprocessor`</span>
 <span class="sd">    X_test: Dict, Optional. default=None</span>
@@ -3417,7 +3446,7 @@ See <code>pytorch_widedeep.preprocessing.WidePreprocessor</code></p>
         </li>
         <li class="doc-section-item field-body">
           <b><code>X_tab</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
+              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="numpy.ndarray">ndarray</span>, <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]]</code>, default:
                   <code>None</code>
 )
           –
@@ -3488,7 +3517,8 @@ the <code>Trainer</code> is instantiated</p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">682</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">681</span>
+<span class="normal">682</span>
 <span class="normal">683</span>
 <span class="normal">684</span>
 <span class="normal">685</span>
@@ -3540,11 +3570,10 @@ the <code>Trainer</code> is instantiated</p>
 <span class="normal">731</span>
 <span class="normal">732</span>
 <span class="normal">733</span>
-<span class="normal">734</span>
-<span class="normal">735</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span>  <span class="c1"># type: ignore[override, return]  # noqa: C901</span>
+<span class="normal">734</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span>  <span class="c1"># type: ignore[override, return]  # noqa: C901</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3562,13 +3591,13 @@ the <code>Trainer</code> is instantiated</p>
 <span class="sd">    X_wide: np.ndarray, Optional. default=None</span>
 <span class="sd">        Input for the `wide` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.WidePreprocessor`</span>
-<span class="sd">    X_tab: np.ndarray, Optional. default=None</span>
+<span class="sd">    X_tab: np.ndarray or List[np.ndarray], Optional. default=None</span>
 <span class="sd">        Input for the `deeptabular` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.TabPreprocessor`</span>
-<span class="sd">    X_text: np.ndarray, Optional. default=None</span>
+<span class="sd">    X_text: np.ndarray or List[np.ndarray], Optional. default=None</span>
 <span class="sd">        Input for the `deeptext` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.TextPreprocessor`</span>
-<span class="sd">    X_img: np.ndarray, Optional. default=None</span>
+<span class="sd">    X_img: np.ndarray or List[np.ndarray], Optional. default=None</span>
 <span class="sd">        Input for the `deepimage` model component.</span>
 <span class="sd">        See `pytorch_widedeep.preprocessing.ImagePreprocessor`</span>
 <span class="sd">    X_test: Dict, Optional. default=None</span>
@@ -3685,7 +3714,8 @@ dictionary</p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">748</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">747</span>
+<span class="normal">748</span>
 <span class="normal">749</span>
 <span class="normal">750</span>
 <span class="normal">751</span>
@@ -3734,8 +3764,7 @@ dictionary</p>
 <span class="normal">794</span>
 <span class="normal">795</span>
 <span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+<span class="normal">797</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">save_state_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -3821,8 +3850,8 @@ dictionary</p>
     </span>
     <nav>
       
-        <a href="mailto:mulinka.pavol@gmail.com">Pavol Mulinka</a>, 
-        <a href="mailto:javierrodriguezzaurin@javiers-macbook-pro.local">Javier Rodriguez Zaurin</a>
+        <a href="mailto:javierrodriguezzaurin@javiers-macbook-pro.local">Javier Rodriguez Zaurin</a>, 
+        <a href="mailto:mulinka.pavol@gmail.com">Pavol Mulinka</a>
     </nav>
   </span>
 
@@ -3890,7 +3919,7 @@ dictionary</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.fe8b6f2b.min.js"></script>
+      <script src="../assets/javascripts/bundle.af256bd8.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       

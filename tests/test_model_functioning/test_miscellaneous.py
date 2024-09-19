@@ -17,9 +17,9 @@ from pytorch_widedeep.models import (
     BasicRNN,
     WideDeep,
     TabResnet,
-    Transformer,
     TabTransformer,
 )
+from pytorch_widedeep.models.rec import Transformer  # left here for 'legacy' reasons
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.callbacks import EarlyStopping

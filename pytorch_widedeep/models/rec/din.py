@@ -22,6 +22,12 @@ class DeepInterestNetwork(BaseWDModelComponent):
     the categorical and continuous columns that are not part of the
     sequential columns and will be treated as standard tabular data.
 
+    This model requires some specific data preparation that allows for quite a
+    lot of flexibility. Therefore, this library does not currently include a
+    preprocessor designed specifically for this model. Please, see the
+    example 'movielens_din.py' in the examples folder to understand the data
+    preparation process.
+
     Parameters
     ----------
     column_idx : Dict[str, int]

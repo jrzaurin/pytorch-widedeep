@@ -9,16 +9,16 @@ from pytorch_widedeep.models.tabular.transformers._encoders import TransformerEn
 
 
 class Transformer(nn.Module):
-    r"""Basic Encoder-Only Transformer Model for text classification/regression.
-    As all other models in the library this model can be used as the
-    `deeptext` component of a Wide & Deep model or independently by itself.
+    r"""
+    Basic Encoder-Only Transformer Model for sequence
+    classification/regression. As all other models in the library this model
+    can be used as the `deeptext` component of a Wide & Deep model or
+    independently by itself.
 
     :information_source: **NOTE**:
     This model is introduced in the context of recommendation systems and
     thought for sequences of any nature (e.g. items). It can, of course,
-    still be used for text. However, at this stage, we have decided to not
-    include the possibility of loading pretrained word vectors since we aim
-    to integrate the library wit Huggingface in the (hopefully) near future
+    still be used for text.
 
     Parameters
     ----------

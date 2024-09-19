@@ -29,6 +29,12 @@ class DeepFactorizationMachine(BaseTabularModelWithAttention):
     functionalities available to encode categorical and continuous features.
     The model can be used with only the factorization machine
 
+    Note that this class implements only the 'Deep' component of the model
+    described in the paper. The linear component is not
+    implemented 'internally' and, if one wants to include it, it can be
+    easily added using the 'Wide'/linear component in this library. See the
+    examples in the examples folder.
+
     Parameters
     ----------
     column_idx : Dict[str, int]
