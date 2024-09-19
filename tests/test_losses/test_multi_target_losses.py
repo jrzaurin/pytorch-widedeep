@@ -388,7 +388,9 @@ def test_multi_target_losses_integration(problem):
 
     model = WideDeep(deeptabular=tab_ml, pred_dim=pred_dim)
 
-    trainer = Trainer(model, objective="multitarget", custom_loss_function=loss, verbose=0)
+    trainer = Trainer(
+        model, objective="multitarget", custom_loss_function=loss, verbose=0
+    )
 
     trainer.fit(X_tab=X_tab, target=target, n_epochs=1)
 
@@ -401,9 +403,7 @@ def test_multi_target_losses_integration(problem):
     assert preds.shape[0] == df.shape[0] and preds.shape[1] == pred_dim
 
 
-@pytest.mark.parametrize(
-    "problem", ["classification", "regression_and_classification"]
-)
+@pytest.mark.parametrize("problem", ["classification", "regression_and_classification"])
 def test_predict_error_for_classification_problems(problem):
 
     tab_preprocessor = TabPreprocessor(
@@ -442,7 +442,9 @@ def test_predict_error_for_classification_problems(problem):
 
     model = WideDeep(deeptabular=tab_ml, pred_dim=pred_dim)
 
-    trainer = Trainer(model, objective="multitarget", custom_loss_function=loss, verbose=0)
+    trainer = Trainer(
+        model, objective="multitarget", custom_loss_function=loss, verbose=0
+    )
 
     trainer.fit(X_tab=X_tab, target=target, n_epochs=1)
 

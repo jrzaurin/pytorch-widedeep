@@ -115,7 +115,7 @@ def tabular_train_val_split(
 
 def wd_train_val_split(  # noqa: C901
     seed: int,
-    method: Literal["regression", "binary", "multiclass", "qregression"],
+    method: Literal["regression", "binary", "multiclass", "qregression", "multitarget"],
     X_wide: Optional[np.ndarray] = None,
     X_tab: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
     X_text: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
@@ -139,7 +139,7 @@ def wd_train_val_split(  # noqa: C901
     seed: int
         random seed to be used during train/val split
     method: str
-        'regression',  'binary' or 'multiclass'
+        'regression',  'binary', 'multiclass', 'qregression' or 'multitarget'
     X_wide: np.ndaaray, Optional, default = None
         wide dataset
     X_tab: np.ndarray or List[np.ndarray], Optional, default = None
@@ -184,7 +184,7 @@ def wd_train_val_split(  # noqa: C901
             random_state=seed,
             stratify=(
                 X_train["target"]
-                if method not in ["regression", "qregression"]
+                if method not in ["regression", "qregression", "multitarget"]
                 else None
             ),
         )
