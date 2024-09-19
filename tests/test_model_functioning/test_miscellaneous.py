@@ -19,10 +19,10 @@ from pytorch_widedeep.models import (
     TabResnet,
     TabTransformer,
 )
-from pytorch_widedeep.models.rec import Transformer  # left here for 'legacy' reasons
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.callbacks import EarlyStopping
+from pytorch_widedeep.models.rec import Transformer  # left here for 'legacy' reasons
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
 # Wide array
