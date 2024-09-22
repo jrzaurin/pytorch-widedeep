@@ -28,7 +28,6 @@ class Transformer(nn.Module):
         Dimension of the token embeddings
 
         Param aliases: `embed_dim`, `d_model`. <br/>
-
     seq_length: int, Optional, default = None
         Input sequence length
     n_heads: int, default = 8
@@ -74,10 +73,10 @@ class Transformer(nn.Module):
     Examples
     --------
     >>> import torch
-    >>> from pytorch_widedeep.models import Transformer
-    >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
+    >>> from pytorch_widedeep.models.rec import Transformer
+    >>> X = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
     >>> model = Transformer(vocab_size=4, seq_length=5, input_dim=8, n_heads=1, n_blocks=1)
-    >>> out = model(X_text)
+    >>> out = model(X)
     """
 
     @alias("input_dim", ["embed_dim", "d_model"])

@@ -211,7 +211,8 @@ if __name__ == "__main__":
     )
 
     # Again, the explanation to this will come when we instantiate the model
-    rating_seq_config = (ratings_cols, 2, 1)
+    # (also, please, read the docs)
+    rating_seq_config = (ratings_cols, 2)
 
     # all the other sequence columns that are not user behaviour or an action
     # related to the items that define the user behaviour will be refer

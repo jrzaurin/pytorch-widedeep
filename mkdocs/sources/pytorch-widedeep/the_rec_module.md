@@ -1,7 +1,7 @@
 # The ``rec`` module
 
 This module contains models are that specifically designed for recommendation systems.
-While the rest of the models can be accessed from the pytorch_widedeep.models module, models
+While the rest of the models can be accessed from the ``pytorch_widedeep.models`` module, models
 in this module need to be specifically imported from the ``rec`` module, e.g.:
 
 ```python

@@ -74,7 +74,7 @@ class BayesianWide(BaseBayesianModel):
     >>> import torch
     >>> from pytorch_widedeep.bayesian_models import BayesianWide
     >>> X = torch.empty(4, 4).random_(6)
-    >>> wide = BayesianWide(input_dim=X.unique().size(0), pred_dim=1)
+    >>> wide = BayesianWide(input_dim=int(X.max().item()), pred_dim=1)
     >>> out = wide(X)
     """
 

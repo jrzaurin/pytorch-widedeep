@@ -11,7 +11,7 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 
 class ExtremeDeepFactorizationMachine(BaseTabularModelWithAttention):
     """
-    Adaptation 'xDeepFM implementation: xDeepFM: Combining Explicit and
+    Adaptation of 'xDeepFM implementation: xDeepFM: Combining Explicit and
     Implicit Feature Interactions for Recommender Systems' by Jianxun Lian,
     Xiaohuan Zhou, Fuzheng Zhang, Zhongxia Chen, Xing Xie, Guangzhong Sun and
     Enhong Chen, 2018
@@ -23,7 +23,7 @@ class ExtremeDeepFactorizationMachine(BaseTabularModelWithAttention):
     Note that this class implements only the 'Deep' component of the model
     described in the paper. The linear component is not
     implemented 'internally' and, if one wants to include it, it can be
-    easily added using the 'Wide'/linear component in this library. See the
+    easily added using the 'wide'/linear component in this library. See the
     examples in the examples folder.
 
     Parameters
@@ -53,13 +53,6 @@ class ExtremeDeepFactorizationMachine(BaseTabularModelWithAttention):
         Type of normalization layer applied to the continuous features.
         Options are: _'layernorm'_ and _'batchnorm'_. if `None`, no
         normalization layer will be used.
-    embed_continuous : Optional[bool], default=None
-        Boolean indicating if the continuous columns will be embedded using
-        one of the available methods: _'standard'_, _'periodic'_
-        or _'piecewise'_. If `None`, it will default to 'False'.<br/>
-        :information_source: **NOTE**: This parameter is deprecated and it
-         will be removed in future releases. Please, use the
-         `embed_continuous_method` parameter instead.
     embed_continuous_method : Optional[Literal["piecewise", "periodic"]], default="piecewise"
         Method to use to embed the continuous features. Options are:
         _'standard'_, _'periodic'_ or _'piecewise'_. The _'standard'_
@@ -129,10 +122,10 @@ class ExtremeDeepFactorizationMachine(BaseTabularModelWithAttention):
     n_features: int
         Number of unique features/columns
     cin: CompressedInteractionNetwork
-        Instance of the CompressedInteractionNetwork class
+        Instance of the `CompressedInteractionNetwork` class
     mlp: MLP
-        Instance of the MLP class if `mlp_hidden_dims` is not None. If None,
-        the model will return directly the output of the CIN
+        Instance of the `MLP` class if `mlp_hidden_dims` is not None. If None,
+        the model will return directly the output of the `CIN`
 
     Examples
     --------

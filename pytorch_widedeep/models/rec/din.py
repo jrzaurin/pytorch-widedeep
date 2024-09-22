@@ -36,33 +36,36 @@ class DeepInterestNetwork(BaseWDModelComponent):
         Name of the target item column.
     user_behavior_confiq : Tuple[List[str], int, int]
         Configuration for user behavior sequence columns. Tuple containing:
-        - List of column names that correspond to the user behavior sequence
-        - Number of unique feature values (n_tokens)
-        - Embedding dimension
-    action_seq_config : Optional[Tuple[List[str], int, int]], default=None
-        Configuration for a so-called action (for example a rating, or
-        purchased/not-purchased, etc) sequence columns. Tuple containing:
-        - List of column names
-        - Number of unique feature values (n_tokens)
-        - Embedding dimension
+        - List of column names that correspond to the user behavior sequence<br/>
+        - Number of unique feature values (n_tokens)<br/>
+        - Embedding dimension<br/>
+        Example: `(["item_1", "item_2", "item_3"], 5, 8)`
+    action_seq_config : Optional[Tuple[List[str], int]], default=None
+        Configuration for a so-called action sequence columns (for example a
+        rating, or purchased/not-purchased, etc). Tuple containing:<br/>
+        - List of column names<br/>
+        - Number of unique feature values (n_tokens)<br/>
         This action will **always** be learned as a 1d embedding and will be
         combined with the user behaviour. For example, imagine that the
         action is purchased/not-purchased. then per item in the user
         behaviour sequence there will be a binary action to learn 0/1. Such
         action will be represented by a float number that will multiply the
-        corresponding item embedding in the user behaviour sequence.
+        corresponding item embedding in the user behaviour sequence.<br/>
+        Example: `(["rating_1", "rating_2", "rating_3"], 5)`<br/>
+        Internally, the embedding dimension will be set to 1
     other_seq_cols_confiq : Optional[List[Tuple[List[str], int, int]]], default=None
-        Configuration for other sequential columns. List of tuples containing:
-        - List of column names that correspond to the sequential column
-        - Number of unique feature values (n_tokens)
-        - Embedding dimension
+        Configuration for other sequential columns. List of tuples containing:<br/>
+        - List of column names that correspond to the sequential column<br/>
+        - Number of unique feature values (n_tokens)<br/>
+        - Embedding dimension<br/>
+        Example: `[(["seq1_col1", "seq1_col2"], 5, 8), (["seq2_col1", "seq2_col2"], 5, 8)]`
     attention_unit_activation : Literal["prelu", "dice"], default="prelu"
         Activation function to use in the attention unit.
     cat_embed_input : Optional[List[Tuple[str, int, int]]], default=None
-        Configuration for other columns. List of tuples containing:
-        - Column name
-        - Number of unique feature values (n_tokens)
-        - Embedding dimension
+        Configuration for other columns. List of tuples containing:<br/>
+        - Column name<br/>
+        - Number of unique feature values (n_tokens)<br/>
+        - Embedding dimension<br/>
 
         **Note**: From here in advance the remaining parameters are related to
         the categorical and continuous columns that are not part of the
@@ -241,7 +244,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
         column_idx: Dict[str, int],
         target_item_col: str,
         user_behavior_confiq: Tuple[List[str], int, int],
-        action_seq_config: Optional[Tuple[List[str], int, int]] = None,
+        action_seq_config: Optional[Tuple[List[str], int]] = None,
         other_seq_cols_confiq: Optional[List[Tuple[List[str], int, int]]] = None,
         attention_unit_activation: Literal["prelu", "dice"] = "prelu",
         cat_embed_input: Optional[List[Tuple[str, int, int]]] = None,
@@ -278,7 +281,11 @@ class DeepInterestNetwork(BaseWDModelComponent):
         self.column_idx = column_idx
         self.target_item_col = target_item_col
         self.user_behavior_confiq = user_behavior_confiq
-        self.action_seq_config = action_seq_config
+        self.action_seq_config = (
+            (action_seq_config[0], action_seq_config[1], 1)
+            if action_seq_config is not None
+            else None
+        )
         self.other_seq_cols_confiq = other_seq_cols_confiq
         self.cat_embed_input = cat_embed_input
         self.attention_unit_activation = attention_unit_activation

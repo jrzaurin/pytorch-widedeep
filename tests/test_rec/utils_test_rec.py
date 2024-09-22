@@ -190,7 +190,7 @@ def create_config(train, tab_preprocessor):
             np.array(train["item_seq"].tolist()).max(),
             8,
         ),
-        "item_purchased_seq_config": (item_purchased_seq_cols, 2, 1),
+        "item_purchased_seq_config": (item_purchased_seq_cols, 2),
         "item_category_seq_config": [
             (
                 item_category_seq_cols,

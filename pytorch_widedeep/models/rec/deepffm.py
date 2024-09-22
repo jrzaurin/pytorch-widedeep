@@ -12,12 +12,12 @@ from pytorch_widedeep.models.tabular._base_tabular_model import (
 class DeepFieldAwareFactorizationMachine(BaseTabularModelWithAttention):
     """
     Deep Field Aware Factorization Machine (DeepFFM) for recommendation
-    systems. Adaptation of the paper Field-aware Factorization Machines in a
-    Real-world Online Advertising System, Juan et al. 2017.
+    systems. Adaptation of the paper 'Field-aware Factorization Machines in a
+    Real-world Online Advertising System', Juan et al. 2017.
 
     This class implements only the 'Deep' component of the model described in
     the paper. The linear component is not implemented 'internally' and, if
-    one wants to include it, it can be easily added using the 'Wide'/linear
+    one wants to include it, it can be easily added using the 'wide'/linear
     component in this library. See the examples in the examples folder.
 
     Note that in this case, only categorical features are accepted. This is

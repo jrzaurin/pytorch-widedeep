@@ -496,8 +496,8 @@ class BayesianTrainer(BaseBayesianTrainer):
                             else F.softmax(preds, dim=1)
                         )
 
-                    preds = preds.cpu().data.numpy()
-                    preds_l.append(preds)
+                    preds_cpu = preds.cpu().data.numpy()
+                    preds_l.append(preds_cpu)
 
         self.model.train()
 

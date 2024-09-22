@@ -33,6 +33,7 @@ The content of this document is organized as follows:
     - [Introduction](#introduction)
     - [Architectures](#architectures)
     - [The ``deeptabular`` component](#the-deeptabular-component)
+    - [The ``rec`` module](#the-rec-module)
     - [Text and Images](#text-and-images)
     - [Installation](#installation)
       - [Developer Install](#developer-install)
@@ -794,6 +795,28 @@ pre-training can be used via two methods or routines which we refer as:
 encoder-decoder method and constrastive-denoising method. Please, see the
 documentation and the examples for details on this functionality, and all
 other options in the library.
+
+### The ``rec`` module
+
+This module was introduced as an extension to the existing components in the
+library, addressing questions and issues related to recommendation systems.
+While still under active development, it currently includes a select number
+of powerful recommendation models.
+
+It's worth noting that this library already supported the implementation of
+various recommendation algorithms using existing components. For example,
+models like Wide and Deep, Two-Tower, or Neural Collaborative Filtering could
+be constructed using the library's core functionalities.
+
+The recommendation algorithms in the `rec` module are:
+
+1. [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247)
+2. (Deep) Field Aware Factorization Machine (FFM): a Deep Learning version of the algorithm presented in [Field-aware Factorization Machines in a Real-world Online Advertising System](https://arxiv.org/abs/1701.04099)
+3. [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://arxiv.org/pdf/1803.05170)
+4. [Deep Interest Network for Click-Through Rate Prediction](https://arxiv.org/abs/1706.06978)
+
+These can all be used as the `deeptabular` component in the `WideDeep` model.
+See the examples for more details.
 
 ### Text and Images
 For the text component, `deeptext`, the library offers the following models:

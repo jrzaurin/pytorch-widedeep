@@ -32,8 +32,8 @@ class DeepFactorizationMachine(BaseTabularModelWithAttention):
     Note that this class implements only the 'Deep' component of the model
     described in the paper. The linear component is not
     implemented 'internally' and, if one wants to include it, it can be
-    easily added using the 'Wide'/linear component in this library. See the
-    examples in the examples folder.
+    easily added using the 'wide' (aka linear) component available in this
+    library. See the examples in the examples folder.
 
     Parameters
     ----------
