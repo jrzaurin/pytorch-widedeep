@@ -38,6 +38,8 @@ def get_activation_fn(activation):
         return REGLU()
     elif activation == "softplus":
         return nn.Softplus()
+    elif activation == "prelu":
+        return nn.PReLU()
     else:
         raise ValueError(
             "Only the following activation functions are currently "

@@ -1,20 +1,11 @@
 from torch import nn
 
-from pytorch_widedeep.wdtypes import (
-    Dict,
-    List,
-    Tuple,
-    Tensor,
-    Literal,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Literal, Optional
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
 )
-from pytorch_widedeep.models.tabular.transformers._encoders import (
-    FastFormerEncoder,
-)
+from pytorch_widedeep.models.tabular.transformers._encoders import FastFormerEncoder
 
 
 class TabFastFormer(BaseTabularModelWithAttention):
@@ -248,7 +239,6 @@ class TabFastFormer(BaseTabularModelWithAttention):
             frac_shared_embed=frac_shared_embed,
             continuous_cols=continuous_cols,
             cont_norm_layer=cont_norm_layer,
-            embed_continuous=None,
             embed_continuous_method=embed_continuous_method,
             cont_embed_dropout=cont_embed_dropout,
             cont_embed_activation=cont_embed_activation,

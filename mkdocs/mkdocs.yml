@@ -28,6 +28,7 @@ nav:
         - Preprocessing: pytorch-widedeep/preprocessing.md
         - Load From Folder: pytorch-widedeep/load_from_folder.md
         - Model Components: pytorch-widedeep/model_components.md
+        - The Rec Module: pytorch-widedeep/the_rec_module.md
         - Bayesian models: pytorch-widedeep/bayesian_models.md
         - Losses: pytorch-widedeep/losses.md
         - Metrics: pytorch-widedeep/metrics.md

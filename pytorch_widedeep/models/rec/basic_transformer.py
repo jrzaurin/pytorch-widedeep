@@ -5,22 +5,20 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import Union, Tensor, Optional
 from pytorch_widedeep.utils.general_utils import alias
-from pytorch_widedeep.models.tabular.transformers._encoders import (
-    TransformerEncoder,
-)
+from pytorch_widedeep.models.tabular.transformers._encoders import TransformerEncoder
 
 
 class Transformer(nn.Module):
-    r"""Basic Encoder-Only Transformer Model for text classification/regression.
-    As all other models in the library this model can be used as the
-    `deeptext` component of a Wide & Deep model or independently by itself.
+    r"""
+    Basic Encoder-Only Transformer Model for sequence
+    classification/regression. As all other models in the library this model
+    can be used as the `deeptext` component of a Wide & Deep model or
+    independently by itself.
 
     :information_source: **NOTE**:
     This model is introduced in the context of recommendation systems and
     thought for sequences of any nature (e.g. items). It can, of course,
-    still be used for text. However, at this stage, we have decided to not
-    include the possibility of loading pretrained word vectors since we aim
-    to integrate the library wit Huggingface in the (hopefully) near future
+    still be used for text.
 
     Parameters
     ----------
@@ -30,7 +28,6 @@ class Transformer(nn.Module):
         Dimension of the token embeddings
 
         Param aliases: `embed_dim`, `d_model`. <br/>
-
     seq_length: int, Optional, default = None
         Input sequence length
     n_heads: int, default = 8
@@ -76,10 +73,10 @@ class Transformer(nn.Module):
     Examples
     --------
     >>> import torch
-    >>> from pytorch_widedeep.models import Transformer
-    >>> X_text = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
+    >>> from pytorch_widedeep.models.rec import Transformer
+    >>> X = torch.cat((torch.zeros([5,1]), torch.empty(5, 4).random_(1,4)), axis=1)
     >>> model = Transformer(vocab_size=4, seq_length=5, input_dim=8, n_heads=1, n_blocks=1)
-    >>> out = model(X_text)
+    >>> out = model(X)
     """
 
     @alias("input_dim", ["embed_dim", "d_model"])

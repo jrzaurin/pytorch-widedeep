@@ -187,7 +187,7 @@ class ImageFromFolder:
             else:
                 processed_sample = preprocessor.transform_sample(sample)
         else:
-            processed_sample = sample
+            processed_sample = sample  # type: ignore
 
         prepared_sample = self._prepare_sample(processed_sample)
 
@@ -240,7 +240,7 @@ class ImageFromFolder:
             # processed_sample after all the previous manipulation
             processed_sample = self.transforms(torch.tensor(processed_sample))
 
-        return processed_sample
+        return processed_sample  # type: ignore
 
     def __repr__(self) -> str:
         list_of_params: List[str] = []

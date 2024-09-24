@@ -12,11 +12,7 @@ from torch.optim.lr_scheduler import StepLR, CyclicLR, ReduceLROnPlateau
 
 from pytorch_widedeep.models import Wide, TabMlp, WideDeep, TabTransformer
 from pytorch_widedeep.training import Trainer
-from pytorch_widedeep.callbacks import (
-    LRHistory,
-    EarlyStopping,
-    ModelCheckpoint,
-)
+from pytorch_widedeep.callbacks import LRHistory, EarlyStopping, ModelCheckpoint
 
 # Wide array
 X_wide = np.random.choice(50, (32, 10))

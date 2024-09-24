@@ -368,10 +368,14 @@ class Vocab:
         max_vocab: int,
         min_freq: int,
         pad_idx: Optional[int] = None,
+        special_cases: Optional[Collection[str]] = None,
     ):
         self.max_vocab = max_vocab
         self.min_freq = min_freq
         self.pad_idx = pad_idx
+        self.special_cases = (
+            special_cases if special_cases is not None else defaults.text_spec_tok
+        )
 
     def create(
         self,
@@ -410,7 +414,7 @@ class Vocab:
 
         freq = Counter(p for o in tokens for p in o)
         itos = [o for o, c in freq.most_common(self.max_vocab) if c >= self.min_freq]
-        for o in reversed(defaults.text_spec_tok):
+        for o in reversed(self.special_cases):
             if o in itos:
                 itos.remove(o)
             itos.insert(0, o)

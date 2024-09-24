@@ -5,13 +5,7 @@ import numpy as np
 import pytest
 from torch import nn
 
-from pytorch_widedeep.models import (
-    Wide,
-    TabMlp,
-    TabNet,
-    WideDeep,
-    TabTransformer,
-)
+from pytorch_widedeep.models import Wide, TabMlp, TabNet, WideDeep, TabTransformer
 from pytorch_widedeep.metrics import R2Score
 from pytorch_widedeep.training import Trainer
 from pytorch_widedeep.dataloaders import DataLoaderImbalanced

@@ -16,9 +16,7 @@ from pytorch_widedeep.wdtypes import (
 from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.models.image._layers import conv_layer
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
-from pytorch_widedeep.models._base_wd_model_component import (
-    BaseWDModelComponent,
-)
+from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 
 # TO DO: Add support for:
 # alexnet

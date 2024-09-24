@@ -2,14 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from pytorch_widedeep.wdtypes import (
-    List,
-    Tuple,
-    Union,
-    Tensor,
-    Literal,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import List, Tuple, Union, Tensor, Literal, Optional
 from pytorch_widedeep.utils.general_utils import alias
 
 use_cuda = torch.cuda.is_available()

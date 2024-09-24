@@ -2,12 +2,8 @@ import torch
 from torch import nn
 
 from pytorch_widedeep.wdtypes import Tuple, Tensor
-from pytorch_widedeep.models.tabular.mlp._attention_layers import (
-    ContextAttention,
-)
-from pytorch_widedeep.models.tabular.transformers._attention_layers import (
-    AddNorm,
-)
+from pytorch_widedeep.models.tabular.mlp._attention_layers import ContextAttention
+from pytorch_widedeep.models.tabular.transformers._attention_layers import AddNorm
 
 
 class ContextAttentionEncoder(nn.Module):

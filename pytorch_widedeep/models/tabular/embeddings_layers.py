@@ -209,6 +209,14 @@ class PiecewiseContEmbeddings(nn.Module):
                 bucket_indices,
             ] = frac.float()
 
+            # if greater_mask dim 1 is less than max_num_buckets, pad with
+            # zeros up to max_num_buckets
+            if greater_mask.shape[1] < self.max_num_buckets:
+                pad = torch.zeros(
+                    greater_mask.shape[0], self.max_num_buckets - greater_mask.shape[1]
+                ).to(greater_mask.device)
+                greater_mask = torch.cat([greater_mask, pad], dim=1)
+
             encoded_values.append(greater_mask)
 
         out = torch.stack(encoded_values, dim=1)

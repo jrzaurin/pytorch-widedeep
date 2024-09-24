@@ -1,14 +1,7 @@
 import pytest
 from torch import nn
 
-from pytorch_widedeep.models import (
-    Wide,
-    TabMlp,
-    TabNet,
-    Vision,
-    BasicRNN,
-    WideDeep,
-)
+from pytorch_widedeep.models import Wide, TabMlp, TabNet, Vision, BasicRNN, WideDeep
 
 embed_input = [(u, i, j) for u, i, j in zip(["a", "b", "c"][:4], [4] * 3, [8] * 3)]
 column_idx = {k: v for v, k in enumerate(["a", "b", "c"])}

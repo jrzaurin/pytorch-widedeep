@@ -97,12 +97,6 @@ self-supervised pre-training with tabular data.
             - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
-::: pytorch_widedeep.models.text.miscellaneous.basic_transformer.Transformer
-    selection:
-        filters:
-            - "!^_"  # exclude all members starting with _
-            - "!^forward$"
-
 ::: pytorch_widedeep.models.text.huggingface_transformers.hf_model.HFModel
     selection:
         filters:

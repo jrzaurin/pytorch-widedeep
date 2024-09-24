@@ -3,9 +3,7 @@ from torch import nn
 
 from pytorch_widedeep.wdtypes import Tensor
 from pytorch_widedeep.bayesian_models import bayesian_nn as bnn
-from pytorch_widedeep.bayesian_models._base_bayesian_model import (
-    BaseBayesianModel,
-)
+from pytorch_widedeep.bayesian_models._base_bayesian_model import BaseBayesianModel
 
 
 class BayesianWide(BaseBayesianModel):
@@ -76,7 +74,7 @@ class BayesianWide(BaseBayesianModel):
     >>> import torch
     >>> from pytorch_widedeep.bayesian_models import BayesianWide
     >>> X = torch.empty(4, 4).random_(6)
-    >>> wide = BayesianWide(input_dim=X.unique().size(0), pred_dim=1)
+    >>> wide = BayesianWide(input_dim=int(X.max().item()), pred_dim=1)
     >>> out = wide(X)
     """
 

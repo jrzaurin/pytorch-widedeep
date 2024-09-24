@@ -3,19 +3,10 @@ import torch
 import pandas as pd
 
 from pytorch_widedeep import Trainer
-from pytorch_widedeep.models import (  # noqa: F401
-    Wide,
-    TabMlp,
-    WideDeep,
-    TabResnet,
-)
+from pytorch_widedeep.models import Wide, TabMlp, WideDeep, TabResnet  # noqa: F401
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.datasets import load_adult
-from pytorch_widedeep.callbacks import (
-    LRHistory,
-    EarlyStopping,
-    ModelCheckpoint,
-)
+from pytorch_widedeep.callbacks import LRHistory, EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.initializers import XavierNormal, KaimingNormal
 from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 

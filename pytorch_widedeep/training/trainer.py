@@ -34,10 +34,7 @@ from pytorch_widedeep.training._trainer_utils import (
     wd_train_val_split,
     print_loss_and_metric,
 )
-from pytorch_widedeep.training._feature_importance import (
-    Explainer,
-    FeatureImportance,
-)
+from pytorch_widedeep.training._feature_importance import Explainer, FeatureImportance
 
 
 class Trainer(BaseTrainer):
@@ -583,6 +580,16 @@ class Trainer(BaseTrainer):
         if self.method == "multiclass":
             preds = np.vstack(preds_l)
             return np.argmax(preds, 1)  # type: ignore[return-value]
+        if self.method == "multitarget":
+            if self.loss_fn.__class__.__name__ in [
+                "MultiTargetClassificationLoss",
+                "MutilTargetRegressionAndClassificationLoss",
+            ]:
+                raise ValueError(
+                    "MultiTargetClassificationLoss and MutilTargetRegressionAndClassificationLoss "
+                    "are not supported by predict method. Please use predict_proba method instead."
+                )
+            return np.vstack(preds_l)
 
     def predict_uncertainty(  # type: ignore[return]
         self,
@@ -681,6 +688,11 @@ class Trainer(BaseTrainer):
             preds = np.hstack((preds, np.vstack(np.argmax(preds, 1))))
             return preds
 
+        if self.method == "multitarget":
+            raise ValueError(
+                "Currently predict_uncertainty is not supported for multitarget method"
+            )
+
     def predict_proba(  # type: ignore[override, return]  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
@@ -734,6 +746,8 @@ class Trainer(BaseTrainer):
             probs[:, 1] = preds
             return probs
         if self.method == "multiclass":
+            return np.vstack(preds_l)
+        if self.method == "multitarget":
             return np.vstack(preds_l)
 
     def explain(self, X_tab: np.ndarray, save_step_masks: Optional[bool] = None):

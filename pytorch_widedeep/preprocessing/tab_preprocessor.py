@@ -4,14 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from pytorch_widedeep.wdtypes import (
-    Dict,
-    List,
-    Tuple,
-    Union,
-    Literal,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Literal, Optional
 from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
 from pytorch_widedeep.preprocessing.base_preprocessor import (
@@ -246,7 +239,7 @@ class TabPreprocessor(BasePreprocessor):
     >>> ft_cont_df2 = tab_preprocessor2.fit_transform(cont_df)
     """
 
-    @alias("with_attention", ["for_transformer"])
+    @alias("with_attention", ["for_transformer", "for_matrix_factorization", "for_mf"])
     @alias("cat_embed_cols", ["embed_cols"])
     @alias("scale", ["scale_cont_cols"])
     @alias("quantization_setup", ["cols_and_bins"])

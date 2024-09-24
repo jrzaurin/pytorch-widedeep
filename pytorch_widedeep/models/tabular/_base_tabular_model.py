@@ -1,23 +1,11 @@
-import warnings
-
 import numpy as np
 import torch
 import einops
 from torch import nn
 
-from pytorch_widedeep.wdtypes import (
-    Dict,
-    List,
-    Tuple,
-    Union,
-    Tensor,
-    Literal,
-    Optional,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Union, Tensor, Literal, Optional
 from pytorch_widedeep.utils.general_utils import alias
-from pytorch_widedeep.models._base_wd_model_component import (
-    BaseWDModelComponent,
-)
+from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 from pytorch_widedeep.models.tabular.embeddings_layers import (
     NormLayers,
     ContEmbeddings,
@@ -79,13 +67,6 @@ class BaseTabularModelWithoutAttention(BaseWDModelComponent):
         self.full_embed_dropout = full_embed_dropout
         if embed_continuous is not None:
             self.embed_continuous = embed_continuous
-            warnings.warn(
-                "The 'embed_continuous' parameter is deprecated and will be removed in "
-                "the next release. Please use 'embed_continuous_method' instead "
-                "See the documentation for more details.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
             if embed_continuous and embed_continuous_method is None:
                 raise ValueError(
                     "If 'embed_continuous' is True, 'embed_continuous_method' must be "
@@ -165,6 +146,10 @@ class BaseTabularModelWithoutAttention(BaseWDModelComponent):
 
         return x
 
+    @property
+    def output_dim(self) -> int:
+        return self.cat_out_dim + self.cont_out_dim
+
 
 class BaseTabularModelWithAttention(BaseWDModelComponent):
     @alias("shared_embed", ["cat_embed_shared"])
@@ -182,7 +167,6 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
         frac_shared_embed: Optional[float],
         continuous_cols: Optional[List[str]],
         cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]],
-        embed_continuous: Optional[bool],
         embed_continuous_method: Optional[Literal["standard", "piecewise", "periodic"]],
         cont_embed_dropout: Optional[float],
         cont_embed_activation: Optional[str],
@@ -218,24 +202,6 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
         self.n_frequencies = n_frequencies
         self.sigma = sigma
         self.share_last_layer = share_last_layer
-        if embed_continuous is not None:
-            self.embed_continuous = embed_continuous
-            warnings.warn(
-                "The 'embed_continuous' parameter is deprecated and will be removed in "
-                "the next release. Please use 'embed_continuous_method' instead "
-                "See the documentation for more details.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            if embed_continuous and embed_continuous_method is None:
-                raise ValueError(
-                    "If 'embed_continuous' is True, 'embed_continuous_method' must be "
-                    "one of 'standard', 'piecewise' or 'periodic'."
-                )
-        elif embed_continuous_method is not None:
-            self.embed_continuous = True
-        else:
-            self.embed_continuous = False
 
         # if full_embed_dropout is not None will be applied to all cont and cat
         self.full_embed_dropout = full_embed_dropout
@@ -272,33 +238,38 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
                 activation_fn=self.cat_embed_activation,
             )
 
-        # Continuous cols can be embedded or not
+        # Continuous cols embeddings
         if self.continuous_cols is not None:
             self.cont_idx = [self.column_idx[col] for col in self.continuous_cols]
             self.cont_norm = _set_continous_normalization_layer(
                 self.continuous_cols, self.cont_norm_layer
             )
-            if self.embed_continuous:
-                assert (
-                    self.embed_continuous_method
-                    is not None  # assertion to avoid typing conflicts
-                ), (
-                    "If continuous features are embedded, 'embed_continuous_method' must be "
-                    "one of 'standard', 'piecewise' or 'periodic'"
-                )
-                self.cont_embed = _set_continous_embeddings_layer(
-                    column_idx=self.column_idx,
-                    continuous_cols=self.continuous_cols,
-                    embed_continuous_method=self.embed_continuous_method,
-                    cont_embed_dim=self.input_dim,
-                    cont_embed_dropout=self.cont_embed_dropout,
-                    full_embed_dropout=self.full_embed_dropout,
-                    cont_embed_activation=self.cont_embed_activation,
-                    quantization_setup=self.quantization_setup,
-                    n_frequencies=self.n_frequencies,
-                    sigma=self.sigma,
-                    share_last_layer=self.share_last_layer,
-                )
+            # assert embed_continuous_method is one of the three methods
+            assert (
+                self.embed_continuous_method is not None
+                and self.embed_continuous_method
+                in [
+                    "standard",
+                    "piecewise",
+                    "periodic",
+                ]
+            ), (
+                "If continuous features are present, 'embed_continuous_method' must be "
+                "one of 'standard', 'piecewise' or 'periodic'"
+            )
+            self.cont_embed = _set_continous_embeddings_layer(
+                column_idx=self.column_idx,
+                continuous_cols=self.continuous_cols,
+                embed_continuous_method=self.embed_continuous_method,
+                cont_embed_dim=self.input_dim,
+                cont_embed_dropout=self.cont_embed_dropout,
+                full_embed_dropout=self.full_embed_dropout,
+                cont_embed_activation=self.cont_embed_activation,
+                quantization_setup=self.quantization_setup,
+                n_frequencies=self.n_frequencies,
+                sigma=self.sigma,
+                share_last_layer=self.share_last_layer,
+            )
 
     def _get_embeddings(self, X: Tensor) -> Tensor:
         tensors_to_concat: List[Tensor] = []
@@ -308,8 +279,7 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
 
         if self.continuous_cols is not None:
             x_cont = self.cont_norm((X[:, self.cont_idx].float()))
-            if self.embed_continuous:
-                x_cont = self.cont_embed(x_cont)
+            x_cont = self.cont_embed(x_cont)
             tensors_to_concat.append(x_cont)
 
         x = torch.cat(tensors_to_concat, 1)
@@ -319,6 +289,10 @@ class BaseTabularModelWithAttention(BaseWDModelComponent):
     @property
     def attention_weights(self):
         raise NotImplementedError
+
+    @property
+    def output_dim(self) -> int:
+        return self.input_dim
 
 
 # Eventually these two floating functions will be part of a base class

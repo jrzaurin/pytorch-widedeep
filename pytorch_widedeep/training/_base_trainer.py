@@ -35,9 +35,7 @@ from pytorch_widedeep.training._trainer_utils import alias_to_loss
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
 from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
 from pytorch_widedeep.training._loss_and_obj_aliases import _ObjectiveToMethod
-from pytorch_widedeep.training._multiple_lr_scheduler import (
-    MultipleLRScheduler,
-)
+from pytorch_widedeep.training._multiple_lr_scheduler import MultipleLRScheduler
 
 # I would like to be more specific with the abstract methods in 'BaseTrainer'
 # so they are more informative. However I also want to use this class to be

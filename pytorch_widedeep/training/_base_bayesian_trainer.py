@@ -26,9 +26,7 @@ from pytorch_widedeep.callbacks import (
     LRShedulerCallback,
 )
 from pytorch_widedeep.training._trainer_utils import bayesian_alias_to_loss
-from pytorch_widedeep.bayesian_models._base_bayesian_model import (
-    BaseBayesianModel,
-)
+from pytorch_widedeep.bayesian_models._base_bayesian_model import BaseBayesianModel
 
 
 # There are some nuances in the Bayesian Trainer that make it hard to build an

@@ -388,8 +388,65 @@ def test_multi_target_losses_integration(problem):
 
     model = WideDeep(deeptabular=tab_ml, pred_dim=pred_dim)
 
-    trainer = Trainer(model, objective="multitarget", custom_loss_function=loss)
+    trainer = Trainer(
+        model, objective="multitarget", custom_loss_function=loss, verbose=0
+    )
 
     trainer.fit(X_tab=X_tab, target=target, n_epochs=1)
 
+    if problem == "regression":
+        preds = trainer.predict(X_tab=X_tab)
+    else:
+        preds = trainer.predict_proba(X_tab=X_tab)
+
     assert trainer.history["train_loss"][0] != 0
+    assert preds.shape[0] == df.shape[0] and preds.shape[1] == pred_dim
+
+
+@pytest.mark.parametrize("problem", ["classification", "regression_and_classification"])
+def test_predict_error_for_classification_problems(problem):
+
+    tab_preprocessor = TabPreprocessor(
+        continuous_cols=["col1", "col2", "col3", "col4", "col5", "col6", "col7", "col8"]
+    )
+    X_tab = tab_preprocessor.fit_transform(df)
+
+    tab_ml = TabMlp(
+        column_idx=tab_preprocessor.column_idx,
+        continuous_cols=tab_preprocessor.continuous_cols,
+        mlp_hidden_dims=[16, 8],
+    )
+
+    if problem == "classification":
+        loss = MultiTargetClassificationLoss(
+            binary_config=[0],
+            multiclass_config=[(1, 3)],
+        )
+        pred_dim = 1 + 3
+        target = df[["target3_binary", "target4_multiclass"]].values
+    else:
+        loss = MutilTargetRegressionAndClassificationLoss(
+            regression_config=[0, 1],
+            binary_config=[2],
+            multiclass_config=[(3, 3)],
+        )
+        pred_dim = 2 + 1 + 3
+        target = df[
+            [
+                "target1_regression",
+                "target2_regression",
+                "target3_binary",
+                "target4_multiclass",
+            ]
+        ].values
+
+    model = WideDeep(deeptabular=tab_ml, pred_dim=pred_dim)
+
+    trainer = Trainer(
+        model, objective="multitarget", custom_loss_function=loss, verbose=0
+    )
+
+    trainer.fit(X_tab=X_tab, target=target, n_epochs=1)
+
+    with pytest.raises(ValueError):
+        trainer.predict(X_tab=X_tab)

@@ -3,20 +3,9 @@ import torch
 import einops
 from torch import nn
 
-from pytorch_widedeep.wdtypes import (
-    Dict,
-    List,
-    Tuple,
-    Tensor,
-    Literal,
-    Optional,
-)
-from pytorch_widedeep.bayesian_models._base_bayesian_model import (
-    BaseBayesianModel,
-)
-from pytorch_widedeep.bayesian_models.tabular.bayesian_mlp._layers import (
-    BayesianMLP,
-)
+from pytorch_widedeep.wdtypes import Dict, List, Tuple, Tensor, Literal, Optional
+from pytorch_widedeep.bayesian_models._base_bayesian_model import BaseBayesianModel
+from pytorch_widedeep.bayesian_models.tabular.bayesian_mlp._layers import BayesianMLP
 from pytorch_widedeep.bayesian_models.tabular.bayesian_embeddings_layers import (
     NormLayers,
     BayesianContEmbeddings,

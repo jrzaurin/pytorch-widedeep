@@ -6,11 +6,7 @@ from pytorch_widedeep import Trainer
 from pytorch_widedeep.models import TabNet, WideDeep
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.datasets import load_adult
-from pytorch_widedeep.callbacks import (
-    LRHistory,
-    EarlyStopping,
-    ModelCheckpoint,
-)
+from pytorch_widedeep.callbacks import LRHistory, EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
 use_cuda = torch.cuda.is_available()

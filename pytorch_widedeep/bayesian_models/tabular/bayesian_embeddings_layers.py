@@ -9,9 +9,7 @@ from pytorch_widedeep.bayesian_models._weight_sampler import (
     GaussianPosterior,
     ScaleMixtureGaussianPrior,
 )
-from pytorch_widedeep.bayesian_models._base_bayesian_model import (
-    BayesianModule,
-)
+from pytorch_widedeep.bayesian_models._base_bayesian_model import BayesianModule
 
 NormLayers = Union[nn.Identity, nn.LayerNorm, nn.BatchNorm1d]
 

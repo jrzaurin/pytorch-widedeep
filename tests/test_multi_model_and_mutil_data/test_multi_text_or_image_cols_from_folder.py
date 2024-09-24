@@ -6,10 +6,7 @@ from torch.utils.data import DataLoader
 
 from pytorch_widedeep.models import TabMlp, Vision, BasicRNN, WideDeep
 from pytorch_widedeep.training import TrainerFromFolder
-from pytorch_widedeep.preprocessing import (
-    ChunkTabPreprocessor,
-    ChunkTextPreprocessor,
-)
+from pytorch_widedeep.preprocessing import ChunkTabPreprocessor, ChunkTextPreprocessor
 from pytorch_widedeep.load_from_folder import (
     TabFromFolder,
     TextFromFolder,

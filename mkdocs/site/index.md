@@ -33,6 +33,7 @@ The content of this document is organized as follows:
     - [Introduction](#introduction)
     - [Architectures](#Architectures)
     - [The ``deeptabular`` component](#the-deeptabular-component)
+    - [The ``rec`` module](#the-rec-module)
     - [Text and Images](#text-and-images)
     - [Acknowledgments](#acknowledgments)
     - [License](#license)
@@ -582,13 +583,111 @@ trainer.fit(
 )
 ```
 
-**7. Tabular with a multi-target loss**
+**7. A two-tower model**
+
+This is a popular model in the context of recommendation systems. Let's say we
+have a tabular dataset formed my triples (user features, item features,
+target). We can create a two-tower model where the user and item features are
+passed through two separate models and then "fused" via a dot product.
+
+<p align="center">
+  <img width="350" src="docs/figures/arch_7.png">
+</p>
+
+
+```python
+import numpy as np
+import pandas as pd
+
+from pytorch_widedeep import Trainer
+from pytorch_widedeep.preprocessing import TabPreprocessor
+from pytorch_widedeep.models import TabMlp, WideDeep, ModelFuser
+
+# Let's create the interaction dataset
+# user_features dataframe
+np.random.seed(42)
+user_ids = np.arange(1, 101)
+ages = np.random.randint(18, 60, size=100)
+genders = np.random.choice(["male", "female"], size=100)
+locations = np.random.choice(["city_a", "city_b", "city_c", "city_d"], size=100)
+user_features = pd.DataFrame(
+    {"id": user_ids, "age": ages, "gender": genders, "location": locations}
+)
+
+# item_features dataframe
+item_ids = np.arange(1, 101)
+prices = np.random.uniform(10, 500, size=100).round(2)
+colors = np.random.choice(["red", "blue", "green", "black"], size=100)
+categories = np.random.choice(["electronics", "clothing", "home", "toys"], size=100)
+
+item_features = pd.DataFrame(
+    {"id": item_ids, "price": prices, "color": colors, "category": categories}
+)
+
+# Interactions dataframe
+interaction_user_ids = np.random.choice(user_ids, size=1000)
+interaction_item_ids = np.random.choice(item_ids, size=1000)
+purchased = np.random.choice([0, 1], size=1000, p=[0.7, 0.3])
+interactions = pd.DataFrame(
+    {
+        "user_id": interaction_user_ids,
+        "item_id": interaction_item_ids,
+        "purchased": purchased,
+    }
+)
+user_item_purchased = interactions.merge(
+    user_features, left_on="user_id", right_on="id"
+).merge(item_features, left_on="item_id", right_on="id")
+
+# Users
+tab_preprocessor_user = TabPreprocessor(
+    cat_embed_cols=["gender", "location"],
+    continuous_cols=["age"],
+)
+X_user = tab_preprocessor_user.fit_transform(user_item_purchased)
+tab_mlp_user = TabMlp(
+    column_idx=tab_preprocessor_user.column_idx,
+    cat_embed_input=tab_preprocessor_user.cat_embed_input,
+    continuous_cols=["age"],
+    mlp_hidden_dims=[16, 8],
+    mlp_dropout=[0.2, 0.2],
+)
+
+# Items
+tab_preprocessor_item = TabPreprocessor(
+    cat_embed_cols=["color", "category"],
+    continuous_cols=["price"],
+)
+X_item = tab_preprocessor_item.fit_transform(user_item_purchased)
+tab_mlp_item = TabMlp(
+    column_idx=tab_preprocessor_item.column_idx,
+    cat_embed_input=tab_preprocessor_item.cat_embed_input,
+    continuous_cols=["price"],
+    mlp_hidden_dims=[16, 8],
+    mlp_dropout=[0.2, 0.2],
+)
+
+two_tower_model = ModelFuser([tab_mlp_user, tab_mlp_item], fusion_method="dot")
+
+model = WideDeep(deeptabular=two_tower_model)
+
+trainer = Trainer(model, objective="binary")
+
+trainer.fit(
+    X_tab=[X_user, X_item],
+    target=interactions.purchased.values,
+    n_epochs=1,
+    batch_size=32,
+)
+```
+
+**8. Tabular with a multi-target loss**
 
 This one is "a bonus" to illustrate the use of multi-target losses, more than
 actually a different architecture.
 
 <p align="center">
-  <img width="200" src="docs/figures/arch_7.png">
+  <img width="200" src="docs/figures/arch_8.png">
 </p>
 
 
@@ -691,6 +790,28 @@ pre-training can be used via two methods or routines which we refer as:
 encoder-decoder method and constrastive-denoising method. Please, see the
 documentation and the examples for details on this functionality, and all
 other options in the library.
+
+### The ``rec`` module
+
+This module was introduced as an extension to the existing components in the
+library, addressing questions and issues related to recommendation systems.
+While still under active development, it currently includes a select number
+of powerful recommendation models.
+
+It's worth noting that this library already supported the implementation of
+various recommendation algorithms using existing components. For example,
+models like Wide and Deep, Two-Tower, or Neural Collaborative Filtering could
+be constructed using the library's core functionalities.
+
+The recommendation algorithms in the `rec` module are:
+
+1. [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247)
+2. (Deep) Field Aware Factorization Machine (FFM): a Deep Learning version of the algorithm presented in [Field-aware Factorization Machines in a Real-world Online Advertising System](https://arxiv.org/abs/1701.04099)
+3. [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://arxiv.org/pdf/1803.05170)
+4. [Deep Interest Network for Click-Through Rate Prediction](https://arxiv.org/abs/1706.06978)
+
+These can all be used as the `deeptabular` component in the `WideDeep` model.
+See the examples for more details.
 
 ### Text and Images
 For the text component, `deeptext`, the library offers the following models:
