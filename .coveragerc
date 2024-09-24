@@ -1,5 +1,6 @@
 [run]
 parallel = True
+data_file = .coverage
 omit =
     pytorch_widedeep/optim/*
     pytorch_widedeep/bayesian_models/bayesian_nn/modules/*
