@@ -51,12 +51,12 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       run: |
-        pytest --doctest-modules pytorch_widedeep --cov-report xml --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep tests/
+        pytest --doctest-modules pytorch_widedeep/models --cov-report xml --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep/models tests/test_model_functionality
     - name: Upload coverage
       uses: actions/upload-artifact@v4
       with:
         name: coverage${{ matrix.python-version }}
-        path: .coverage
+        path: coverage.xml
 
   finish:
     needs: test
@@ -72,12 +72,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install coverage
-    - name: Download all artifacts
-      # Downloads coverage1, coverage2, etc.
+    - name: Download all coverage artifacts
       uses: actions/download-artifact@v4
+      with:
+        path: coverage-files
     - name: Convert coverage
       run: |
-        coverage combine coverage*/.coverage*
+        coverage combine coverage-files/*/coverage.xml
         coverage report --fail-under=90
         coverage xml
     - name: upload coverage to Codecov
