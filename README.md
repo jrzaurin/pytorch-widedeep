@@ -800,13 +800,13 @@ other options in the library.
 
 This module was introduced as an extension to the existing components in the
 library, addressing questions and issues related to recommendation systems.
-While still under active development, it currently includes a small number
-of recommendation models.
+While still under active development, it currently includes a select number
+of powerful recommendation models.
 
 It's worth noting that this library already supported the implementation of
 various recommendation algorithms using existing components. For example,
 models like Wide and Deep, Two-Tower, or Neural Collaborative Filtering could
-be easilu built using the library's "core" functionalities.
+be constructed using the library's core functionalities.
 
 The recommendation algorithms in the `rec` module are:
 
