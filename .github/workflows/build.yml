@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -52,17 +52,11 @@ jobs:
     - name: Test with pytest
       run: |
         pytest --doctest-modules pytorch_widedeep --cov-report xml --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep tests/
-    - name: Debug - List files
-      run: |
-        ls -la
-        echo "Content of .coverage file:"
-        cat .coverage || echo ".coverage file not found"
     - name: Upload coverage
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
-        name: coverage-${{ matrix.python-version }}
+        name: coverage${{ matrix.python-version }}
         path: .coverage
-        if-no-files-found: error
 
   finish:
     needs: test
@@ -79,15 +73,11 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install coverage
     - name: Download all artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: coverage-files
-    - name: Debug - List downloaded files
-      run: |
-        ls -R coverage-files
+      # Downloads coverage1, coverage2, etc.
+      uses: actions/download-artifact@v3
     - name: Convert coverage
       run: |
-        coverage combine coverage-files/*/.coverage
+        coverage combine coverage*/.coverage*
         coverage report --fail-under=90
         coverage xml
     - name: upload coverage to Codecov
