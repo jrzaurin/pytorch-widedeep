@@ -51,7 +51,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       run: |
-        pytest --doctest-modules pytorch_widedeep/models --cov-report xml --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep/models tests/test_model_functionality
+        pytest --doctest-modules pytorch_widedeep/models --cov-report xml --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep/models tests/test_model_functioning
     - name: Upload coverage
       uses: actions/upload-artifact@v4
       with:
