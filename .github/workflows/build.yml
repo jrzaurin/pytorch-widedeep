@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: [3.10"]
+        python-version: ["3.9", "3.10", "3.11"]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -49,24 +49,14 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install pytest-cov codecov faker
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Set coverage directory
-      run: echo "COVERAGE_DIR=./coverage_data" >> $GITHUB_ENV
     - name: Test with pytest
       run: |
-        mkdir -p $COVERAGE_DIR
-        pytest --doctest-modules pytorch_widedeep/models --cov-report xml:$COVERAGE_DIR/coverage.xml --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep/models tests/test_model_functioning --cov-config=.coveragerc
-    - name: Debug - List files
-      run: |
-        echo "Contents of the current directory:"
-        ls -la
-        echo "Contents of the coverage directory:"
-        ls -la $COVERAGE_DIR
+        pytest --doctest-modules pytorch_widedeep --cov-report xml --cov-report term --disable-pytest-warnings --cov=pytorch_widedeep tests/
     - name: Upload coverage
       uses: actions/upload-artifact@v4
       with:
-        name: coverage-${{ matrix.python-version }}
-        path: ${{ env.COVERAGE_DIR }}
-        if-no-files-found: error
+        name: coverage${{ matrix.python-version }}
+        path: .coverage
 
   finish:
     needs: test
@@ -83,18 +73,13 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install coverage
     - name: Download all artifacts
+      # Downloads coverage1, coverage2, etc.
       uses: actions/download-artifact@v4
-      with:
-        path: coverage-files
-    - name: Debug - List downloaded files
-      run: |
-        echo "Contents of the coverage-files directory:"
-        ls -R coverage-files
     - name: Convert coverage
       run: |
-        coverage combine coverage-files/*/.coverage
-        coverage xml
+        coverage combine coverage*/.coverage*
         coverage report --fail-under=90
+        coverage xml
     - name: upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
