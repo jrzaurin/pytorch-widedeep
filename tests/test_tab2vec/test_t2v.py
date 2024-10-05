@@ -2,7 +2,6 @@ import string
 from random import choices
 
 import numpy as np
-import torch
 import pandas as pd
 import pytest
 
@@ -21,8 +20,9 @@ from pytorch_widedeep.models import (
     ContextAttentionMLP,
 )
 from pytorch_widedeep.preprocessing import TabPreprocessor
+from pytorch_widedeep.utils.general_utils import setup_device
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = setup_device()
 
 colnames = list(string.ascii_lowercase)[:4] + ["target"]
 cat_col1_vals = ["a", "b", "c"]

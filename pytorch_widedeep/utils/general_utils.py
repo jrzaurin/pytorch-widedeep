@@ -1,5 +1,16 @@
 from functools import wraps
 
+import torch
+
+
+def setup_device():
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    elif torch.backends.mps.is_available():
+        return torch.device("mps")
+    else:
+        return torch.device("cpu")
+
 
 def alias(original_name: str, alternative_names: list):
     def decorator(func):

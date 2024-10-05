@@ -66,7 +66,8 @@ def test_save_and_load(model):
     )
 
     new_model = torch.load(
-        "tests/test_bayesian_models/test_bayes_model_functioning/model_dir/bayesian_model.pt"
+        "tests/test_bayesian_models/test_bayes_model_functioning/model_dir/bayesian_model.pt",
+        weights_only=False,
     )
 
     if model.__class__.__name__ == "BayesianWide":
@@ -113,7 +114,8 @@ def test_save_and_load_dict(model_name):
 
     btrainer2.model.load_state_dict(
         torch.load(
-            "tests/test_bayesian_models/test_bayes_model_functioning/model_dir/bayesian_model.pt"
+            "tests/test_bayesian_models/test_bayes_model_functioning/model_dir/bayesian_model.pt",
+            weights_only=False,
         )
     )
 

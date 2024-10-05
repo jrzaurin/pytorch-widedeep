@@ -86,7 +86,8 @@ class BayesianTrainer(BaseBayesianTrainer):
         Other infrequently used arguments that can also be passed as kwargs are:
 
         - **device**: `str`<br/>
-            string indicating the device. One of _'cpu'_ or _'gpu'_
+            string indicating the device. One of _'cpu'_, _'gpu'_ or 'mps' if
+            run on a Mac with Apple silicon or AMD GPU(s)
 
         - **num_workers**: `int`<br/>
             number of workers to be used internally by the data loaders
@@ -396,7 +397,10 @@ class BayesianTrainer(BaseBayesianTrainer):
     ):
         self.model.train()
 
-        X = X_tab.to(self.device)
+        try:
+            X = X_tab.to(self.device)
+        except TypeError:
+            X = X_tab.to(self.device, dtype=torch.float32)
         y = target.view(-1, 1).float() if self.objective != "multiclass" else target
         y = y.to(self.device)
 
@@ -424,7 +428,10 @@ class BayesianTrainer(BaseBayesianTrainer):
     ):
         self.model.eval()
         with torch.no_grad():
-            X = X_tab.to(self.device)
+            try:
+                X = X_tab.to(self.device)
+            except TypeError:
+                X = X_tab.to(self.device, dtype=torch.float32)
             y = target.view(-1, 1).float() if self.objective != "multiclass" else target
             y = y.to(self.device)
 
@@ -479,7 +486,10 @@ class BayesianTrainer(BaseBayesianTrainer):
                 for _, Xl in zip(tt, test_loader):
                     tt.set_description("predict")
 
-                    X = Xl[0].to(self.device)
+                    try:
+                        X = Xl[0].to(self.device)
+                    except TypeError:
+                        X = Xl[0].to(self.device, dtype=torch.float32)
 
                     if return_samples:
                         preds = torch.stack([self.model(X) for _ in range(n_samples)])

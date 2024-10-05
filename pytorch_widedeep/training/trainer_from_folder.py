@@ -156,8 +156,9 @@ class TrainerFromFolder(BaseTrainer):
      **kwargs: dict
          Other infrequently used arguments that can also be passed as kwargs are:
 
-         - **device**: `str`<br/>
-             string indicating the device. One of _'cpu'_ or _'gpu'_
+        - **device**: `str`<br/>
+            string indicating the device. One of _'cpu'_, _'gpu'_ or 'mps' if
+            run on a Mac with Apple silicon or AMD GPU(s)
 
          - **num_workers**: `int`<br/>
              number of workers to be used internally by the data loaders

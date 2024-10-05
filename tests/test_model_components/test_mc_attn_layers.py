@@ -4,6 +4,7 @@ import timeit
 import torch
 import pytest
 
+from pytorch_widedeep.utils.general_utils import setup_device
 from pytorch_widedeep.models.tabular.transformers._attention_layers import (
     MultiHeadedAttention,
 )
@@ -12,7 +13,7 @@ torch.backends.cudnn.deterministic = True
 
 input_dim = 128
 n_heads = 4
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = setup_device()
 
 standard_attn = (
     MultiHeadedAttention(

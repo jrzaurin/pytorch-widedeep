@@ -27,6 +27,7 @@ from pytorch_widedeep.callbacks import (
     CallbackContainer,
     LRShedulerCallback,
 )
+from pytorch_widedeep.utils.general_utils import setup_device
 from pytorch_widedeep.models.tabular.self_supervised import ContrastiveDenoisingModel
 from pytorch_widedeep.preprocessing.tab_preprocessor import TabPreprocessor
 
@@ -270,7 +271,7 @@ class BaseContrastiveDenoisingTrainer(ABC):
             if sys.platform == "darwin" and sys.version_info.minor > 7
             else os.cpu_count()
         )
-        default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        default_device = setup_device()
         device = kwargs.get("device", default_device)
         num_workers = kwargs.get("num_workers", default_num_workers)
         return device, num_workers
