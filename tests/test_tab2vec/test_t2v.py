@@ -85,6 +85,7 @@ def test_non_transformer_models(deeptabular, return_dataframe):
     # Let's assume the model is trained
     t2v = Tab2Vec(
         tab_preprocessor=tab_preprocessor,
+        device=device,
         model=model,
         return_dataframe=return_dataframe,
     )
@@ -163,6 +164,7 @@ def test_tab_transformer_models(
     t2v = Tab2Vec(
         tab_preprocessor=tab_preprocessor,
         model=model,
+        device=device,
     )
     x_vec = t2v.transform(df_t2v)
 
@@ -229,6 +231,7 @@ def test_attentive_mlp(
     t2v = Tab2Vec(
         tab_preprocessor=tab_preprocessor,
         model=model,
+        device=device,
     )
     x_vec = t2v.transform(df_t2v)
 
@@ -305,6 +308,7 @@ def test_transformer_family_models(
         tab_preprocessor=tab_preprocessor,
         model=model,
         return_dataframe=return_dataframe,
+        device=device,
     )
     x_vec = t2v.transform(df_t2v)
 

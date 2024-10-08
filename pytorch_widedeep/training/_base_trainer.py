@@ -15,6 +15,7 @@ from pytorch_widedeep.wdtypes import (
     Any,
     Dict,
     List,
+    Tuple,
     Union,
     Module,
     Optional,
@@ -31,6 +32,7 @@ from pytorch_widedeep.callbacks import (
     LRShedulerCallback,
 )
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
+from pytorch_widedeep.utils.general_utils import setup_device, to_device_model
 from pytorch_widedeep.training._trainer_utils import alias_to_loss
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
 from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
@@ -74,10 +76,9 @@ class BaseTrainer(ABC):
         self.verbose = verbose
         self.seed = seed
 
-        self.model = model
+        self.model = to_device_model(model, self.device)
         if self.model.is_tabnet:
             self.lambda_sparse = kwargs.get("lambda_sparse", 1e-3)
-        self.model.to(self.device)
         self.model.wd_device = self.device
 
         self.objective = objective
@@ -406,7 +407,7 @@ class BaseTrainer(ABC):
             )
 
     @staticmethod
-    def _set_device_and_num_workers(**kwargs):
+    def _set_device_and_num_workers(**kwargs) -> Tuple[str, int]:
         # Important note for Mac users: Since python 3.8, the multiprocessing
         # library start method changed from 'fork' to 'spawn'. This affects the
         # data-loaders, which will not run in parallel.
@@ -415,9 +416,9 @@ class BaseTrainer(ABC):
             if sys.platform == "darwin" and sys.version_info.minor > 7
             else os.cpu_count()
         )
-        default_device = "cuda" if torch.cuda.is_available() else "cpu"
-        device = kwargs.get("device", default_device)
         num_workers = kwargs.get("num_workers", default_num_workers)
+        default_device = setup_device()
+        device = kwargs.get("device", default_device)
         return device, num_workers
 
     def __repr__(self) -> str:  # noqa: C901

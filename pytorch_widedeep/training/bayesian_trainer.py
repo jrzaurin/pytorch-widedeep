@@ -20,7 +20,7 @@ from pytorch_widedeep.wdtypes import (
     LRScheduler,
 )
 from pytorch_widedeep.callbacks import Callback
-from pytorch_widedeep.utils.general_utils import alias
+from pytorch_widedeep.utils.general_utils import alias, to_device
 from pytorch_widedeep.training._trainer_utils import (
     save_epoch_logs,
     print_loss_and_metric,
@@ -397,12 +397,9 @@ class BayesianTrainer(BaseBayesianTrainer):
     ):
         self.model.train()
 
-        try:
-            X = X_tab.to(self.device)
-        except TypeError:
-            X = X_tab.to(self.device, dtype=torch.float32)
+        X = to_device(X_tab, self.device)
         y = target.view(-1, 1).float() if self.objective != "multiclass" else target
-        y = y.to(self.device)
+        y = to_device(y, self.device)
 
         self.optimizer.zero_grad()
         y_pred, loss = self.model.sample_elbo(X, y, self.loss_fn, n_samples, n_batches)  # type: ignore[arg-type]
@@ -428,12 +425,9 @@ class BayesianTrainer(BaseBayesianTrainer):
     ):
         self.model.eval()
         with torch.no_grad():
-            try:
-                X = X_tab.to(self.device)
-            except TypeError:
-                X = X_tab.to(self.device, dtype=torch.float32)
+            X = to_device(X_tab, self.device)
             y = target.view(-1, 1).float() if self.objective != "multiclass" else target
-            y = y.to(self.device)
+            y = to_device(y, self.device)
 
             y_pred, loss = self.model.sample_elbo(
                 X,  # type: ignore[arg-type]

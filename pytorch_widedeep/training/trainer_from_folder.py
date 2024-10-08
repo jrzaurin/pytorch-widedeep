@@ -23,7 +23,7 @@ from pytorch_widedeep.wdtypes import (
 from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.initializers import Initializer
 from pytorch_widedeep.training._finetune import FineTune
-from pytorch_widedeep.utils.general_utils import alias
+from pytorch_widedeep.utils.general_utils import alias, to_device
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._base_trainer import BaseTrainer
 from pytorch_widedeep.training._trainer_utils import (
@@ -525,15 +525,15 @@ class TrainerFromFolder(BaseTrainer):
         X: Dict[str, Union[Tensor, List[Tensor]]] = {}
         for k, v in data.items():
             if isinstance(v, list):
-                X[k] = [i.to(self.device) for i in v]
+                X[k] = [to_device(i, self.device) for i in v]
             else:
-                X[k] = v.to(self.device)
+                X[k] = to_device(v, self.device)
         y = (
             target.view(-1, 1).float()
             if self.method not in ["multiclass", "qregression"]
             else target
         )
-        y = y.to(self.device)
+        y = to_device(y, self.device)
 
         self.optimizer.zero_grad()
 
@@ -560,15 +560,15 @@ class TrainerFromFolder(BaseTrainer):
             X: Dict[str, Union[Tensor, List[Tensor]]] = {}
             for k, v in data.items():
                 if isinstance(v, list):
-                    X[k] = [i.to(self.device) for i in v]
+                    X[k] = [to_device(i, self.device) for i in v]
                 else:
-                    X[k] = v.to(self.device)
+                    X[k] = to_device(v, self.device)
             y = (
                 target.view(-1, 1).float()
                 if self.method not in ["multiclass", "qregression"]
                 else target
             )
-            y = y.to(self.device)
+            y = to_device(y, self.device)
 
             y_pred = self.model(X)
             if self.model.is_tabnet:  # pragma: no cover
@@ -670,9 +670,9 @@ class TrainerFromFolder(BaseTrainer):
                             X: Dict[str, Union[Tensor, List[Tensor]]] = {}
                             for k, v in data.items():
                                 if isinstance(v, list):
-                                    X[k] = [i.to(self.device) for i in v]
+                                    X[k] = [to_device(i, self.device) for i in v]
                                 else:
-                                    X[k] = v.to(self.device)
+                                    X[k] = to_device(v, self.device)
                             preds = (
                                 self.model(X)
                                 if not self.model.is_tabnet

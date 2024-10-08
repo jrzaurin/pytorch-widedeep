@@ -16,9 +16,8 @@ from pytorch_widedeep.wdtypes import (
     DataLoader,
     LRScheduler,
 )
+from pytorch_widedeep.utils.general_utils import to_device, setup_device
 from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
-
-use_cuda = torch.cuda.is_available()
 
 WDModel = Union[nn.Module, BaseWDModelComponent]
 
@@ -66,6 +65,8 @@ class FineTune:
         self.metric = metric
         self.method = method
         self.verbose = verbose
+
+        self.device = setup_device()
 
     def finetune_all(
         self,
@@ -432,20 +433,16 @@ class FineTune:
                         data, target = packed_data
 
                     if idx is not None:
-                        X = (
-                            data[model_name][idx].cuda()
-                            if use_cuda
-                            else data[model_name][idx]
-                        )
+                        X = to_device(data[model_name][idx], self.device)
                     else:
-                        X = data[model_name].cuda() if use_cuda else data[model_name]
+                        X = to_device(data[model_name], self.device)
 
                     y = (
                         target.view(-1, 1).float()
                         if self.method not in ["multiclass", "qregression"]
                         else target
                     )
-                    y = y.cuda() if use_cuda else y
+                    y = to_device(y, self.device)
 
                     optimizer.zero_grad()
                     y_pred = model(X)
