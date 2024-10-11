@@ -5,6 +5,7 @@ from pytorch_widedeep.preprocessing.hf_preprocessor import (
 from pytorch_widedeep.preprocessing.tab_preprocessor import (
     TabPreprocessor,
     ChunkTabPreprocessor,
+    embed_sz_rule,
 )
 from pytorch_widedeep.preprocessing.text_preprocessor import (
     TextPreprocessor,
