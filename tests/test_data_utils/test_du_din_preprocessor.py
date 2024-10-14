@@ -5,6 +5,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from pytorch_widedeep import Trainer
+from pytorch_widedeep.models import WideDeep
+from pytorch_widedeep.models.rec import DeepInterestNetwork
 from pytorch_widedeep.preprocessing import DINPreprocessor
 
 full_path = os.path.realpath(__file__)
@@ -160,3 +163,42 @@ def test_din_preprocessor_diff_input_params(
     assert X.shape[1] == expected_n_cols
     if with_cat_embed_cols:
         assert user_behaviour_well_encoded(df_interactions, din_preprocessor, X, 5)
+
+
+def test_din_full_process_w_processor():
+
+    din_preprocessor = DINPreprocessor(
+        user_id_col="user_id",
+        item_embed_col="item_id",
+        target_col="interaction",
+        action_col="interaction",
+        other_seq_embed_cols=["category", "price"],
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        cols_to_scale=continuous_cols,
+        max_seq_length=5,
+    )
+
+    X, y = din_preprocessor.fit_transform(df_interactions)
+
+    din = DeepInterestNetwork(
+        column_idx=din_preprocessor.din_columns_idx,
+        user_behavior_confiq=din_preprocessor.user_behaviour_config,
+        target_item_col="target_item",
+        action_seq_config=din_preprocessor.action_seq_config,
+        other_seq_cols_confiq=din_preprocessor.other_seq_config,
+        cat_embed_input=din_preprocessor.tab_preprocessor.cat_embed_input,  # type: ignore
+        continuous_cols=din_preprocessor.tab_preprocessor.continuous_cols,
+        mlp_hidden_dims=[16, 8],
+    )
+
+    model = WideDeep(deeptabular=din)
+
+    trainer = Trainer(model, objective="binary", verbose=0)
+
+    trainer.fit(X_tab=X, target=y, n_epochs=2)
+
+    preds = trainer.predict(X_tab=X)
+
+    assert preds.shape[0] == X.shape[0]
+    assert trainer.history is not None and "train_loss" in trainer.history

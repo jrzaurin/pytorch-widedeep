@@ -405,7 +405,8 @@ class DeepInterestNetwork(BaseWDModelComponent):
                 [
                     self.other_seq_cols_embed[col]._get_embeddings(X_other_seq[col])
                     for col in self.other_seq_cols_indexes.keys()
-                ]
+                ],
+                dim=-1,
             ).sum(1)
             deep_out = torch.cat([deep_out, other_seq_embed], dim=1)
 
