@@ -8,7 +8,7 @@ import pandas as pd
 full_path = os.path.realpath(__file__)
 path = os.path.split(full_path)[0]
 
-save_dir = Path(path) / "data_for_rec_preprocessor"
+save_dir = Path(path) / "interactions_df_for_rec_preprocessor"
 
 
 def generate_sample_data(n_users=5, n_items=10, seed=42, return_df=False):

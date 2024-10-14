@@ -179,7 +179,7 @@ class DINPreprocessor(BasePreprocessor):
         _df = self._pre_transform(df)
         df_w_sequences = self._build_sequences(_df)
         X_all = self._concatenate_features(df_w_sequences)
-        return X_all, np.array(df_w_sequences["target"].tolist())
+        return X_all, np.array(df_w_sequences[self.target_col].tolist())
 
     def fit_transform(self, df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
         self.fit(df)
@@ -363,6 +363,10 @@ class DINPreprocessor(BasePreprocessor):
             sequence.update(
                 self._create_action_sequence(group, targets, i, target, drop_cols)
             )
+        else:
+            sequence[self.target_col] = target
+            drop_cols.append(self.target_col)
+
         if self.other_seq_embed_cols:
             sequence.update(self._create_other_seq_sequence(group, i, drop_cols))
 
@@ -392,7 +396,7 @@ class DINPreprocessor(BasePreprocessor):
                 else targets[i:-1]
             )
 
-        return {"target": target, "actions_sequence": action_sequences}
+        return {self.target_col: target, "actions_sequence": action_sequences}
 
     def _create_other_seq_sequence(
         self, group: pd.DataFrame, i: int, drop_cols: List[str]
