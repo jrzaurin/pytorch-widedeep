@@ -23,10 +23,9 @@ class DeepInterestNetwork(BaseWDModelComponent):
     sequential columns and will be treated as standard tabular data.
 
     This model requires some specific data preparation that allows for quite a
-    lot of flexibility. Therefore, this library does not currently include a
-    preprocessor designed specifically for this model. Please, see the
-    example 'movielens_din.py' in the examples folder to understand the data
-    preparation process.
+    lot of flexibility. Therefore, I have included a preprocessor
+    (`DINPreprocessor`) in the preprocessing module that will take care of
+    the data preparation.
 
     Parameters
     ----------

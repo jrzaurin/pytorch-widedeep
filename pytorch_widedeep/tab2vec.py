@@ -77,7 +77,7 @@ class Tab2Vec:
     >>> # ...train the model...
     >>>
     >>> # vectorise the dataframe
-    >>> t2v = Tab2Vec(tab_preprocessor, model)
+    >>> t2v = Tab2Vec(tab_preprocessor, model, device="cpu")
     >>> X_vec = t2v.transform(df_t2v)
     """
 

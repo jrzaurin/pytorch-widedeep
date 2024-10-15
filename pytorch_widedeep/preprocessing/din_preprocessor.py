@@ -5,11 +5,6 @@ from typing import Dict, List, Tuple, Union, Literal, Optional
 import numpy as np
 import pandas as pd
 
-# from pytorch_widedeep.models import WideDeep
-# from pytorch_widedeep.metrics import Accuracy
-# from pytorch_widedeep.datasets import load_movielens100k
-# from pytorch_widedeep.training import Trainer
-# from pytorch_widedeep.models.rec.din import DeepInterestNetwork
 from pytorch_widedeep.utils.text_utils import pad_sequences
 from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.utils.deeptabular_utils import LabelEncoder
@@ -100,6 +95,32 @@ class DINPreprocessor(BasePreprocessor):
         Number of unique values in each other sequence column.
     other_seq_config : List[Tuple[List[str], int, int]]
         Configuration for other sequence columns.
+
+    Examples:
+    ---------
+    >>> import pandas as pd
+    >>> from pytorch_widedeep.preprocessing import DINPreprocessor
+    >>> data = {
+    ...    'user_id': [1, 1, 1, 2, 2, 2, 3, 3, 3],
+    ...    'item_id': [101, 102, 103, 101, 103, 104, 102, 103, 104],
+    ...    'timestamp': [1, 2, 3, 1, 2, 3, 1, 2, 3],
+    ...    'category': ['A', 'B', 'A', 'B', 'A', 'C', 'B', 'A', 'C'],
+    ...    'price': [10.5, 15.0, 12.0, 10.5, 12.0, 20.0, 15.0, 12.0, 20.0],
+    ...    'rating': [0, 1, 0, 1, 0, 1, 0, 1, 0]
+    ... }
+    >>> df = pd.DataFrame(data)
+    >>> din_preprocessor = DINPreprocessor(
+    ...     user_id_col='user_id',
+    ...     item_embed_col='item_id',
+    ...     target_col='rating',
+    ...     max_seq_length=2,
+    ...     action_col='rating',
+    ...     other_seq_embed_cols=['category'],
+    ...     cat_embed_cols=['user_id'],
+    ...     continuous_cols=['price'],
+    ...     cols_to_scale=['price']
+    ... )
+    >>> X, y = din_preprocessor.fit_transform(df)
     """
 
     @alias("item_embed_col", ["item_id_col"])
@@ -313,9 +334,9 @@ class DINPreprocessor(BasePreprocessor):
         return df
 
     def _build_sequences(self, df: pd.DataFrame) -> pd.DataFrame:
-        # TO DO: do something to avoid warning here
+        # df.columns.tolist() -> to avoid annoying pandas warning
         return (
-            df.groupby(self.user_id_col)
+            df.groupby(self.user_id_col)[df.columns.tolist()]  # type: ignore[index]
             .apply(self._group_sequences)
             .reset_index(drop=True)
         )
@@ -490,92 +511,3 @@ class DINPreprocessor(BasePreprocessor):
             X_other_seq_arrays.append(np.array(other_seq_target[col]).reshape(-1, 1))
 
         return np.concatenate([X_all] + X_other_seq_arrays, axis=1)
-
-
-# if __name__ == "__main__":
-
-#     def clean_genre_list(genre_list):
-#         return "_".join(
-#             sorted([re.sub(r"[^a-z0-9]", "", genre.lower()) for genre in genre_list])
-#         )
-
-#     data, users, items = load_movielens100k(as_frame=True)
-
-#     list_of_genres = [
-#         "unknown",
-#         "Action",
-#         "Adventure",
-#         "Animation",
-#         "Children's",
-#         "Comedy",
-#         "Crime",
-#         "Documentary",
-#         "Drama",
-#         "Fantasy",
-#         "Film-Noir",
-#         "Horror",
-#         "Musical",
-#         "Mystery",
-#         "Romance",
-#         "Sci-Fi",
-#         "Thriller",
-#         "War",
-#         "Western",
-#     ]
-
-#     assert (
-#         isinstance(items, pd.DataFrame)
-#         and isinstance(data, pd.DataFrame)
-#         and isinstance(users, pd.DataFrame)
-#     )
-#     items["genre_list"] = items[list_of_genres].apply(
-#         lambda x: [genre for genre in list_of_genres if x[genre] == 1], axis=1
-#     )
-
-#     items["genre_list"] = items["genre_list"].apply(clean_genre_list)
-
-#     df = pd.merge(data, items[["movie_id", "genre_list"]], on="movie_id")
-#     df = pd.merge(
-#         df,
-#         users[["user_id", "age", "gender", "occupation"]],
-#         on="user_id",
-#     )
-
-#     df["rating"] = df["rating"].apply(lambda x: 1 if x >= 4 else 0)
-
-#     df = df.sort_values(by=["timestamp"]).reset_index(drop=True)
-#     df = df.drop("timestamp", axis=1)
-
-#     din_preprocessor = DINPreprocessor(
-#         user_id_col="user_id",
-#         target_col="rating",
-#         item_embed_col=("movie_id", 16),
-#         max_seq_length=5,
-#         action_col="rating",
-#         other_seq_embed_cols=[("genre_list", 16)],
-#         cat_embed_cols=["user_id", "age", "gender", "occupation"],
-#     )
-
-#     X, y = din_preprocessor.fit_transform(df)
-
-#     din = DeepInterestNetwork(
-#         column_idx=din_preprocessor.din_columns_idx,
-#         user_behavior_confiq=din_preprocessor.user_behaviour_config,
-#         action_seq_config=din_preprocessor.action_seq_config,
-#         other_seq_cols_confiq=din_preprocessor.other_seq_config,
-#         cat_embed_input=din_preprocessor.tab_preprocessor.cat_embed_input,  # type: ignore[attr-defined]
-#         mlp_hidden_dims=[128, 64],
-#     )
-
-#     # And from here on, everything is standard
-#     model = WideDeep(deeptabular=din)
-
-#     trainer = Trainer(model=model, objective="binary", metrics=[Accuracy()])
-
-#     # in the real world you would have to split the data into train, val and test
-#     trainer.fit(
-#         X_tab=X,
-#         target=y,
-#         n_epochs=5,
-#         batch_size=512,
-#     )
