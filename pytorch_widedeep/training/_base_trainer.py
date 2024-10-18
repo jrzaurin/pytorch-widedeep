@@ -10,7 +10,7 @@ import torch
 from torchmetrics import Metric as TorchMetric
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from pytorch_widedeep.metrics import Metric, MultipleMetrics
+from pytorch_widedeep.metrics import Metric, RankingMetrics, MultipleMetrics
 from pytorch_widedeep.wdtypes import (
     Any,
     Dict,
@@ -285,13 +285,14 @@ class BaseTrainer(ABC):
         else:
             return None
 
-    # this needs type fixing to adjust for the fact that the main class can
-    # take an 'object', a non-instastiated Class, so, should be something like:
-    # callbacks: Optional[List[Union[object, Callback]]] in all places
+    # TO DO: this needs type fixing to adjust for the fact that the main class
+    # can take an 'object', a non-instastiated Class, so, should be something
+    # like: callbacks: Optional[List[Union[object, Callback]]] in all places
     def _set_callbacks_and_metrics(
         self,
         callbacks: Any,
-        metrics: Any,
+        metrics: Any,  # Union[List[Metric], List[TorchMetric]],
+        eval_metrics: Optional[Any] = None,  # Union[List[Metric], List[TorchMetric]],
     ):
         self.callbacks: List = [History(), LRShedulerCallback()]
         if callbacks is not None:
@@ -301,9 +302,31 @@ class BaseTrainer(ABC):
                 self.callbacks.append(callback)
         if metrics is not None:
             self.metric = MultipleMetrics(metrics)
+            # assert that no ranking metric is used during training assertion
+            # here so all metrics are instanciated
+            assert not any(
+                [isinstance(m, RankingMetrics) for m in self.metric._metrics]  # type: ignore[arg-type, misc]
+            ), "Currently, ranking metrics are not supported during training"
+
             self.callbacks += [MetricCallback(self.metric)]
         else:
             self.metric = None
+        if eval_metrics is not None:
+            self.eval_metric = MultipleMetrics(eval_metrics)
+            # assert that if any of the metrics is a ranking metric, all metrics
+            # must be ranking metrics
+            if any(
+                [isinstance(m, RankingMetrics) for m in self.eval_metric._metrics]  # type: ignore[arg-type, misc]
+            ):
+                assert all(
+                    [isinstance(m, RankingMetrics) for m in self.eval_metric._metrics]  # type: ignore[arg-type, misc]
+                ), (
+                    "All eval metrics must be ranking metrics if any of the eval"
+                    " metrics is a ranking metric"
+                )
+            self.callbacks += [MetricCallback(self.eval_metric)]
+        else:
+            self.eval_metric = None
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self.model)
         self.callback_container.set_trainer(self)

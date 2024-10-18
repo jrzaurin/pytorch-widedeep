@@ -228,6 +228,7 @@ class Trainer(BaseTrainer):
         "objective",
         ["loss_function", "loss_fn", "loss", "cost_function", "cost_fn", "cost"],
     )
+    @alias("metrics", ["train_metrics"])
     def __init__(
         self,
         model: WideDeep,
@@ -245,6 +246,7 @@ class Trainer(BaseTrainer):
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
+        eval_metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
         verbose: int = 1,
         seed: int = 1,
         **kwargs,
@@ -259,6 +261,7 @@ class Trainer(BaseTrainer):
             transforms=transforms,
             callbacks=callbacks,
             metrics=metrics,
+            eval_metrics=eval_metrics,
             verbose=verbose,
             seed=seed,
             **kwargs,
@@ -600,7 +603,7 @@ class Trainer(BaseTrainer):
         X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         batch_size: Optional[int] = None,
-        uncertainty_granularity=1000,
+        uncertainty_granularity: int = 1000,
     ) -> np.ndarray:
         r"""Returns the predicted ucnertainty of the model for the test dataset
         using a Monte Carlo method during which dropout layers are activated
@@ -930,10 +933,10 @@ class Trainer(BaseTrainer):
 
         if self.model.is_tabnet:
             loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
-            score = self._get_score(y_pred[0], y)
+            score = self._get_score(y_pred[0], y, is_train=True)
         else:
             loss = self.loss_fn(y_pred, y)
-            score = self._get_score(y_pred, y)
+            score = self._get_score(y_pred, y, is_train=True)
 
         loss.backward()
         self.optimizer.step()
@@ -967,9 +970,9 @@ class Trainer(BaseTrainer):
             y_pred = self.model(X)
             if self.model.is_tabnet:
                 loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
-                score = self._get_score(y_pred[0], y)
+                score = self._get_score(y_pred[0], y, is_train=False)
             else:
-                score = self._get_score(y_pred, y)
+                score = self._get_score(y_pred, y, is_train=False)
                 loss = self.loss_fn(y_pred, y)
 
             self.valid_running_loss += loss.item()
@@ -978,20 +981,30 @@ class Trainer(BaseTrainer):
         self.model.train()
         return score, avg_loss
 
-    def _get_score(self, y_pred, y):
-        if self.metric is not None:
+    def _get_score(
+        self, y_pred: Tensor, y: Tensor, is_train: bool
+    ) -> Optional[Dict[str, float]]:
+
+        score = None
+        metric = None
+
+        if hasattr(self, "metric") and not hasattr(self, "eval_metric"):
+            metric = self.metric
+        elif hasattr(self, "metric") and hasattr(self, "eval_metric"):
+            metric = self.metric if is_train else self.eval_metric
+        elif not hasattr(self, "metric") and hasattr(self, "eval_metric"):
+            metric = None if is_train else self.eval_metric
+
+        if metric is not None:
             if self.method == "regression":
-                score = self.metric(y_pred, y)
+                score = metric(y_pred, y)
             if self.method == "binary":
-                score = self.metric(torch.sigmoid(y_pred), y)
+                score = metric(torch.sigmoid(y_pred), y)
             if self.method == "qregression":
-                score = self.metric(y_pred, y)
+                score = metric(y_pred, y)
             if self.method == "multiclass":
-                score = self.metric(F.softmax(y_pred, dim=1), y)
-            # TO DO: handle multitarget
-            return score
-        else:
-            return None
+                score = metric(F.softmax(y_pred, dim=1), y)
+        return score
 
     def _predict(  # type: ignore[override, return]  # noqa: C901
         self,
@@ -1001,7 +1014,7 @@ class Trainer(BaseTrainer):
         X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         batch_size: Optional[int] = None,
-        uncertainty_granularity=1000,
+        uncertainty_granularity: int = 1000,
         uncertainty: bool = False,
     ) -> List:
         r"""Private method to avoid code repetition in predict and
