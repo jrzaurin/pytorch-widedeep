@@ -26,6 +26,7 @@ from pytorch_widedeep.wdtypes import (
     LRScheduler,
 )
 from pytorch_widedeep.callbacks import Callback
+from pytorch_widedeep.dataloaders import CustomDataLoader, DatasetAlreadySetError
 from pytorch_widedeep.initializers import Initializer
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.utils.general_utils import alias, to_device
@@ -285,8 +286,8 @@ class Trainer(BaseTrainer):
         n_epochs: int = 1,
         validation_freq: int = 1,
         batch_size: int = 32,
-        train_dataloader: Optional[DataLoader] = None,
-        eval_dataloader: Optional[DataLoader] = None,
+        train_dataloader: Optional[CustomDataLoader] = None,
+        eval_dataloader: Optional[CustomDataLoader] = None,
         feature_importance_sample_size: Optional[int] = None,
         finetune: bool = False,
         **kwargs,
@@ -438,13 +439,13 @@ class Trainer(BaseTrainer):
             target,
             self.transforms,
         )
-        train_loader, eval_loader = self._get_dataloaders(
-            train_dataloader,
-            eval_dataloader,
-            train_set,
-            eval_set,
-            batch_size,
-            dataloader_args,
+        train_loader = self._set_dataloader(
+            train_dataloader, train_set, batch_size, dataloader_args
+        )
+        eval_loader = (
+            self._set_dataloader(eval_dataloader, eval_set, batch_size, dataloader_args)
+            if eval_set is not None
+            else None
         )
 
         if finetune:
@@ -780,51 +781,25 @@ class Trainer(BaseTrainer):
             with open(Path(path) / "feature_importance.json", "w") as fi:
                 json.dump(self.feature_importance, fi)
 
-    def _get_dataloaders(
+    def _set_dataloader(
         self,
-        train_dataloader: Optional[DataLoader],
-        eval_dataloader: Optional[DataLoader],
-        train_set: WideDeepDataset,
-        eval_set: Optional[WideDeepDataset],
+        dataloader: Optional[CustomDataLoader],
+        dataset: WideDeepDataset,
         batch_size: int,
         dataloader_args: Dict[str, Any],
-    ) -> Tuple[DataLoader, Optional[DataLoader]]:
-        if train_dataloader is not None:
-            # make sure is callable (and HAS to be an subclass of DataLoader)
-            assert isinstance(train_dataloader, type)
-            train_loader = train_dataloader(  # type: ignore[misc]
-                dataset=train_set,
-                batch_size=batch_size,
-                num_workers=self.num_workers,
-                **dataloader_args,
-            )
+    ) -> DataLoader | CustomDataLoader:
+        if dataloader is not None:
+            dataloader.set_dataset(dataset)
+            return dataloader
         else:
-            train_loader = DataLoader(
-                dataset=train_set,
+            # var name 'loader' to avoid reassigment and type errors
+            loader = DataLoader(
+                dataset=dataset,
                 batch_size=batch_size,
                 num_workers=self.num_workers,
                 **dataloader_args,
             )
-
-        eval_loader = None
-        if eval_set is not None:
-            if eval_dataloader is not None:
-                assert isinstance(eval_dataloader, type)
-                eval_loader = eval_dataloader(  # type: ignore[misc]
-                    dataset=eval_set,
-                    batch_size=batch_size,
-                    num_workers=self.num_workers,
-                    shuffle=False,
-                )
-            else:
-                eval_loader = DataLoader(
-                    dataset=eval_set,
-                    batch_size=batch_size,
-                    num_workers=self.num_workers,
-                    shuffle=False,
-                )
-
-        return train_loader, eval_loader
+        return loader
 
     @alias("n_epochs", ["finetune_epochs", "warmup_epochs"])
     @alias("max_lr", ["finetune_max_lr", "warmup_max_lr"])

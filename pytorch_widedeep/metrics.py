@@ -397,15 +397,25 @@ class R2Score(Metric):
         return np.array((1 - (self.numerator / self.denominator)))
 
 
-def reshape_1d_to_2d(tensor: Tensor, n_columns: int) -> Tensor:
-    if tensor.dim() != 1:
-        raise ValueError("Input tensor must be 1-dimensional")
-    if tensor.size(0) % n_columns != 0:
+def reshape_to_2d(tensor: Tensor, n_columns: int) -> Tensor:
+    if tensor.dim() == 1:
+        if tensor.size(0) % n_columns != 0:
+            raise ValueError(
+                f"Tensor length ({tensor.size(0)}) must be divisible by n_columns ({n_columns})"
+            )
+        n_rows = tensor.size(0) // n_columns
+        return tensor.reshape(n_rows, n_columns)
+    elif tensor.dim() == 2 and tensor.size(1) == 1:
+        if tensor.size(0) % n_columns != 0:
+            raise ValueError(
+                f"Tensor length ({tensor.size(0)}) must be divisible by n_columns ({n_columns})"
+            )
+        n_rows = tensor.size(0) // n_columns
+        return tensor.reshape(n_rows, n_columns)
+    else:
         raise ValueError(
-            f"Tensor length ({tensor.size(0)}) must be divisible by n_columns ({n_columns})"
+            "Input tensor must be 1-dimensional or 2-dimensional with one column"
         )
-    n_rows = tensor.size(0) // n_columns
-    return tensor.reshape(n_rows, n_columns)
 
 
 class NDCG_at_k(Metric):
@@ -461,8 +471,8 @@ class NDCG_at_k(Metric):
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
         device = y_pred.device
 
-        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
+        y_pred_2d = reshape_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_to_2d(y_true, self.n_cols)
 
         batch_size = y_true_2d.shape[0]
 
@@ -544,8 +554,8 @@ class BinaryNDCG_at_k(Metric):
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
         device = y_pred.device
 
-        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
+        y_pred_2d = reshape_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_to_2d(y_true, self.n_cols)
 
         batch_size = y_pred_2d.shape[0]
 
@@ -607,6 +617,9 @@ class MAP_at_k(Metric):
     >>> score = map_at_k(y_pred, y_true)
     """
 
+    @alias(
+        "n_cols", ["n_items", "n_items_per_query", "n_items_per_id", "n_items_per_user"]
+    )
     def __init__(self, n_cols: int = 10, k: Optional[int] = None):
         super(MAP_at_k, self).__init__()
 
@@ -626,8 +639,8 @@ class MAP_at_k(Metric):
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
 
-        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
+        y_pred_2d = reshape_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_to_2d(y_true, self.n_cols)
 
         batch_size = y_pred_2d.shape[0]
         _, top_k_indices = torch.topk(y_pred_2d, self.k, dim=1)
@@ -670,6 +683,9 @@ class HitRatio_at_k(Metric):
     >>> score = hr_at_k(y_pred, y_true
     """
 
+    @alias(
+        "n_cols", ["n_items", "n_items_per_query", "n_items_per_id", "n_items_per_user"]
+    )
     def __init__(self, n_cols: int = 10, k: Optional[int] = None):
         super(HitRatio_at_k, self).__init__()
 
@@ -688,8 +704,8 @@ class HitRatio_at_k(Metric):
         self.count = 0
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
-        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
+        y_pred_2d = reshape_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_to_2d(y_true, self.n_cols)
         batch_size = y_pred_2d.shape[0]
         _, top_k_indices = torch.topk(y_pred_2d, self.k, dim=1)
         batch_relevance = y_true_2d.gather(1, top_k_indices)
@@ -726,6 +742,9 @@ class Precision_at_k(Metric):
     >>> score = prec_at_k(y_pred, y_true)
     """
 
+    @alias(
+        "n_cols", ["n_items", "n_items_per_query", "n_items_per_id", "n_items_per_user"]
+    )
     def __init__(self, n_cols: int = 10, k: Optional[int] = None):
         super(Precision_at_k, self).__init__()
 
@@ -744,8 +763,8 @@ class Precision_at_k(Metric):
         self.count = 0
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
-        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
+        y_pred_2d = reshape_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_to_2d(y_true, self.n_cols)
         batch_size = y_pred_2d.shape[0]
         _, top_k_indices = torch.topk(y_pred_2d, self.k, dim=1)
         batch_relevance = y_true_2d.gather(1, top_k_indices)
@@ -761,6 +780,12 @@ class Recall_at_k(Metric):
 
     Parameters
     ----------
+    n_cols: int, default = 10
+        Number of columns in the input tensors. This parameter is neccessary
+        because the input tensors are reshaped to 2D tensors. n_cols is the
+        number of columns in the reshaped tensor. Alias for this parameter
+        are: 'n_items', 'n_items_per_query',
+        'n_items_per_id', 'n_items_per_user'
     k: int, default = 10
         Number of top items to consider.
 
@@ -775,6 +800,9 @@ class Recall_at_k(Metric):
     >>> score = rec_at_k(y_pred, y_true)
     """
 
+    @alias(
+        "n_cols", ["n_items", "n_items_per_query", "n_items_per_id", "n_items_per_user"]
+    )
     def __init__(self, n_cols: int = 10, k: Optional[int] = None):
         super(Recall_at_k, self).__init__()
 
@@ -793,8 +821,8 @@ class Recall_at_k(Metric):
         self.count = 0
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
-        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
+        y_pred_2d = reshape_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_to_2d(y_true, self.n_cols)
         batch_size = y_pred_2d.shape[0]
         _, top_k_indices = torch.topk(y_pred_2d, self.k, dim=1)
         batch_relevance = y_true_2d.gather(1, top_k_indices)
