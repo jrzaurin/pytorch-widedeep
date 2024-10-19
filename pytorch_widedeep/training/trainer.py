@@ -12,8 +12,10 @@ from torch.utils.data import DataLoader
 from pytorch_widedeep.losses import ZILNLoss
 from pytorch_widedeep.metrics import Metric
 from pytorch_widedeep.wdtypes import (
+    Any,
     Dict,
     List,
+    Tuple,
     Union,
     Tensor,
     Literal,
@@ -268,6 +270,8 @@ class Trainer(BaseTrainer):
         )
 
     @alias("finetune", ["warmup"])
+    @alias("train_dataloader", ["custom_dataloader"])
+    @alias("eval_dataloader", ["custom_eval_dataloader"])
     def fit(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
@@ -281,7 +285,8 @@ class Trainer(BaseTrainer):
         n_epochs: int = 1,
         validation_freq: int = 1,
         batch_size: int = 32,
-        custom_dataloader: Optional[DataLoader] = None,
+        train_dataloader: Optional[DataLoader] = None,
+        eval_dataloader: Optional[DataLoader] = None,
         feature_importance_sample_size: Optional[int] = None,
         finetune: bool = False,
         **kwargs,
@@ -418,11 +423,8 @@ class Trainer(BaseTrainer):
         [Examples](https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples)
         folder in the repo
         """
-
         dataloader_args, finetune_args = self._extract_kwargs(kwargs)
-
         self.batch_size = batch_size
-
         train_set, eval_set = wd_train_val_split(
             self.seed,
             self.method,  # type: ignore
@@ -436,35 +438,18 @@ class Trainer(BaseTrainer):
             target,
             self.transforms,
         )
-        if custom_dataloader is not None:
-            # make sure is callable (and HAS to be an subclass of DataLoader)
-            assert isinstance(custom_dataloader, type)
-            train_loader = custom_dataloader(  # type: ignore[misc]
-                dataset=train_set,
-                batch_size=batch_size,
-                num_workers=self.num_workers,
-                **dataloader_args,
-            )
-        else:
-            train_loader = DataLoader(
-                dataset=train_set,
-                batch_size=batch_size,
-                num_workers=self.num_workers,
-                **dataloader_args,
-            )
-        train_steps = len(train_loader)
-        if eval_set is not None:
-            eval_loader = DataLoader(
-                dataset=eval_set,
-                batch_size=batch_size,
-                num_workers=self.num_workers,
-                shuffle=False,
-            )
-            eval_steps = len(eval_loader)
+        train_loader, eval_loader = self._get_dataloaders(
+            train_dataloader,
+            eval_dataloader,
+            train_set,
+            eval_set,
+            batch_size,
+            dataloader_args,
+        )
 
         if finetune:
             self.with_finetuning: bool = True
-            self._finetune(train_loader, **finetune_args)
+            self._do_finetune(train_loader, **finetune_args)
             if self.verbose:
                 print(
                     "Fine-tuning (or warmup) of individual components completed. "
@@ -474,54 +459,32 @@ class Trainer(BaseTrainer):
             self.with_finetuning = False
 
         self.callback_container.on_train_begin(
-            {"batch_size": batch_size, "train_steps": train_steps, "n_epochs": n_epochs}
+            {
+                "batch_size": batch_size,
+                "train_steps": len(train_loader),
+                "n_epochs": n_epochs,
+            }
         )
         for epoch in range(n_epochs):
-            epoch_logs: Dict[str, float] = {}
-            self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
-
-            self.train_running_loss = 0.0
-            with trange(train_steps, disable=self.verbose != 1) as t:
-                for batch_idx, (data, targett) in zip(t, train_loader):
-                    t.set_description("epoch %i" % (epoch + 1))
-                    train_score, train_loss = self._train_step(data, targett, batch_idx)
-                    print_loss_and_metric(t, train_loss, train_score)
-                    self.callback_container.on_batch_end(batch=batch_idx)
-            epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
-
-            on_epoch_end_metric = None
-            if eval_set is not None and epoch % validation_freq == (
+            epoch_logs = self._train_epoch(train_loader, epoch)
+            if eval_loader is not None and epoch % validation_freq == (
                 validation_freq - 1
             ):
-                self.callback_container.on_eval_begin()
-                self.valid_running_loss = 0.0
-                with trange(eval_steps, disable=self.verbose != 1) as v:
-                    for i, (data, targett) in zip(v, eval_loader):
-                        v.set_description("valid")
-                        val_score, val_loss = self._eval_step(data, targett, i)
-                        print_loss_and_metric(v, val_loss, val_score)
-                epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
-
-                if self.reducelronplateau:
-                    if self.reducelronplateau_criterion == "loss":
-                        on_epoch_end_metric = val_loss
-                    else:
-                        on_epoch_end_metric = val_score[
-                            self.reducelronplateau_criterion
-                        ]
+                epoch_logs, on_epoch_end_metric = self._eval_epoch(
+                    eval_loader, epoch_logs
+                )
             else:
+                on_epoch_end_metric = None
                 if self.reducelronplateau:
                     raise NotImplementedError(
                         "ReduceLROnPlateau scheduler can be used only with validation data."
                     )
             self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
-
             if self.early_stop:
                 # self.callback_container.on_train_end(epoch_logs)
                 break
 
         self.callback_container.on_train_end(epoch_logs)
-
         if feature_importance_sample_size is not None:
             self.feature_importance = FeatureImportance(
                 self.device, feature_importance_sample_size
@@ -817,9 +780,55 @@ class Trainer(BaseTrainer):
             with open(Path(path) / "feature_importance.json", "w") as fi:
                 json.dump(self.feature_importance, fi)
 
+    def _get_dataloaders(
+        self,
+        train_dataloader: Optional[DataLoader],
+        eval_dataloader: Optional[DataLoader],
+        train_set: WideDeepDataset,
+        eval_set: Optional[WideDeepDataset],
+        batch_size: int,
+        dataloader_args: Dict[str, Any],
+    ) -> Tuple[DataLoader, Optional[DataLoader]]:
+        if train_dataloader is not None:
+            # make sure is callable (and HAS to be an subclass of DataLoader)
+            assert isinstance(train_dataloader, type)
+            train_loader = train_dataloader(  # type: ignore[misc]
+                dataset=train_set,
+                batch_size=batch_size,
+                num_workers=self.num_workers,
+                **dataloader_args,
+            )
+        else:
+            train_loader = DataLoader(
+                dataset=train_set,
+                batch_size=batch_size,
+                num_workers=self.num_workers,
+                **dataloader_args,
+            )
+
+        eval_loader = None
+        if eval_set is not None:
+            if eval_dataloader is not None:
+                assert isinstance(eval_dataloader, type)
+                eval_loader = eval_dataloader(  # type: ignore[misc]
+                    dataset=eval_set,
+                    batch_size=batch_size,
+                    num_workers=self.num_workers,
+                    shuffle=False,
+                )
+            else:
+                eval_loader = DataLoader(
+                    dataset=eval_set,
+                    batch_size=batch_size,
+                    num_workers=self.num_workers,
+                    shuffle=False,
+                )
+
+        return train_loader, eval_loader
+
     @alias("n_epochs", ["finetune_epochs", "warmup_epochs"])
     @alias("max_lr", ["finetune_max_lr", "warmup_max_lr"])
-    def _finetune(
+    def _do_finetune(
         self,
         loader: DataLoader,
         n_epochs: int = 5,
@@ -905,6 +914,27 @@ class Trainer(BaseTrainer):
                     self.model.deepimage, "deepimage", loader, n_epochs, max_lr
                 )
 
+    def _train_epoch(
+        self,
+        train_loader: DataLoader,
+        epoch: int,
+    ):
+        epoch_logs: Dict[str, float] = {}
+        self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
+        self.train_running_loss = 0.0
+
+        train_steps = len(train_loader)
+        with trange(train_steps, disable=self.verbose != 1) as t:
+            for batch_idx, (data, targett) in zip(t, train_loader):
+                t.set_description("epoch %i" % (epoch + 1))
+                train_score, train_loss = self._train_step(data, targett, batch_idx)
+                print_loss_and_metric(t, train_loss, train_score)
+                self.callback_container.on_batch_end(batch=batch_idx)
+
+        epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
+
+        return epoch_logs
+
     def _train_step(
         self,
         data: Dict[str, Union[Tensor, List[Tensor]]],
@@ -945,6 +975,33 @@ class Trainer(BaseTrainer):
         avg_loss = self.train_running_loss / (batch_idx + 1)
 
         return score, avg_loss
+
+    def _eval_epoch(
+        self,
+        eval_loader: DataLoader,
+        epoch_logs: Dict[str, float],
+    ) -> Tuple[Dict[str, float], Optional[float]]:
+        self.callback_container.on_eval_begin()
+        self.valid_running_loss = 0.0
+
+        eval_steps = len(eval_loader)
+        with trange(eval_steps, disable=self.verbose != 1) as v:
+            for i, (data, targett) in zip(v, eval_loader):
+                v.set_description("valid")
+                val_score, val_loss = self._eval_step(data, targett, i)
+                print_loss_and_metric(v, val_loss, val_score)
+
+        epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
+
+        if self.reducelronplateau:
+            if self.reducelronplateau_criterion == "loss":
+                on_epoch_end_metric = val_loss
+            else:
+                on_epoch_end_metric = val_score[self.reducelronplateau_criterion]
+        else:
+            on_epoch_end_metric = None
+
+        return epoch_logs, on_epoch_end_metric
 
     def _eval_step(
         self,
@@ -988,11 +1045,11 @@ class Trainer(BaseTrainer):
         score = None
         metric = None
 
-        if hasattr(self, "metric") and not hasattr(self, "eval_metric"):
+        if self.metric and not self.eval_metric:
             metric = self.metric
-        elif hasattr(self, "metric") and hasattr(self, "eval_metric"):
+        elif self.metric and self.eval_metric:
             metric = self.metric if is_train else self.eval_metric
-        elif not hasattr(self, "metric") and hasattr(self, "eval_metric"):
+        elif not self.metric and self.eval_metric:
             metric = None if is_train else self.eval_metric
 
         if metric is not None:
@@ -1097,6 +1154,7 @@ class Trainer(BaseTrainer):
 
     @staticmethod
     def _predict_ziln(preds: Tensor) -> Tensor:
+        # Legacy implementation. It will be removed in future versions
         """Calculates predicted mean of zero inflated lognormal logits.
 
         Adjusted implementaion of `code

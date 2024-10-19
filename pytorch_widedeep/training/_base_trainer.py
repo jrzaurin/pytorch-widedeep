@@ -302,27 +302,32 @@ class BaseTrainer(ABC):
                 self.callbacks.append(callback)
         if metrics is not None:
             self.metric = MultipleMetrics(metrics)
-            # assert that no ranking metric is used during training assertion
-            # here so all metrics are instanciated
-            assert not any(
-                [isinstance(m, RankingMetrics) for m in self.metric._metrics]  # type: ignore[arg-type, misc]
-            ), "Currently, ranking metrics are not supported during training"
-
+            if (
+                any(
+                    [isinstance(m, RankingMetrics) for m in self.metric._metrics]  # type: ignore[arg-type, misc]
+                )
+                and self.verbose
+            ):
+                UserWarning(
+                    "There are ranking metrics in the 'metrics' list. The implementation "
+                    "in this library requires that all query or user ids must have the "
+                    "same number of entries or items."
+                )
             self.callbacks += [MetricCallback(self.metric)]
         else:
             self.metric = None
         if eval_metrics is not None:
             self.eval_metric = MultipleMetrics(eval_metrics)
-            # assert that if any of the metrics is a ranking metric, all metrics
-            # must be ranking metrics
-            if any(
-                [isinstance(m, RankingMetrics) for m in self.eval_metric._metrics]  # type: ignore[arg-type, misc]
-            ):
-                assert all(
+            if (
+                any(
                     [isinstance(m, RankingMetrics) for m in self.eval_metric._metrics]  # type: ignore[arg-type, misc]
-                ), (
-                    "All eval metrics must be ranking metrics if any of the eval"
-                    " metrics is a ranking metric"
+                )
+                and self.verbose
+            ):
+                UserWarning(
+                    "There are ranking metrics in the 'eval_metric' list. The implementation "
+                    "in this library requires that all query or user ids must have the "
+                    "same number of entries or items."
                 )
             self.callbacks += [MetricCallback(self.eval_metric)]
         else:

@@ -461,13 +461,13 @@ class NDCG_at_k(Metric):
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
         device = y_pred.device
 
-        y_pred_reshaped = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_reshaped = reshape_1d_to_2d(y_true, self.n_cols)
+        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
 
-        batch_size = y_true_reshaped.shape[0]
+        batch_size = y_true_2d.shape[0]
 
-        _, top_k_indices = torch.topk(y_pred_reshaped, self.k, dim=1)
-        top_k_relevance = y_true_reshaped.gather(1, top_k_indices)
+        _, top_k_indices = torch.topk(y_pred_2d, self.k, dim=1)
+        top_k_relevance = y_true_2d.gather(1, top_k_indices)
         discounts = 1.0 / torch.log2(
             torch.arange(2, top_k_relevance.shape[1] + 2, device=device)
         )
@@ -475,7 +475,7 @@ class NDCG_at_k(Metric):
         dcg = (torch.pow(2, top_k_relevance) - 1) * discounts.unsqueeze(0)
         dcg = dcg.sum(dim=1)
 
-        sorted_relevance, _ = torch.sort(y_true_reshaped, dim=1, descending=True)
+        sorted_relevance, _ = torch.sort(y_true_2d, dim=1, descending=True)
         ideal_relevance = sorted_relevance[:, : self.k]
 
         idcg = (torch.pow(2, ideal_relevance) - 1) * discounts[
@@ -544,13 +544,13 @@ class BinaryNDCG_at_k(Metric):
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
         device = y_pred.device
 
-        y_pred_reshaped = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_reshaped = reshape_1d_to_2d(y_true, self.n_cols)
+        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
 
-        batch_size = y_pred_reshaped.shape[0]
+        batch_size = y_pred_2d.shape[0]
 
-        _, top_k_indices = torch.topk(y_pred_reshaped, self.k, dim=1)
-        top_k_mask = torch.zeros_like(y_pred_reshaped, dtype=torch.bool).scatter_(
+        _, top_k_indices = torch.topk(y_pred_2d, self.k, dim=1)
+        top_k_mask = torch.zeros_like(y_pred_2d, dtype=torch.bool).scatter_(
             1, top_k_indices, 1
         )
 
@@ -561,12 +561,12 @@ class BinaryNDCG_at_k(Metric):
         discounts = torch.zeros_like(top_k_mask, dtype=torch.float)
         discounts[top_k_mask] = expanded_discounts
 
-        dcg = (y_true_reshaped * top_k_mask * discounts).sum(dim=1)
+        dcg = (y_true_2d * top_k_mask * discounts).sum(dim=1)
         n_relevant = torch.minimum(
-            y_true_reshaped.sum(dim=1), torch.tensor(self.k, device=device)
+            y_true_2d.sum(dim=1), torch.tensor(self.k, device=device)
         ).int()
         ideal_discounts = 1.0 / torch.log2(
-            torch.arange(2, y_true_reshaped.shape[1] + 2, device=device).float()
+            torch.arange(2, y_true_2d.shape[1] + 2, device=device).float()
         )
 
         idcg = torch.zeros(batch_size, device=device)
@@ -626,18 +626,18 @@ class MAP_at_k(Metric):
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
 
-        y_pred_reshaped = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_reshaped = reshape_1d_to_2d(y_true, self.n_cols)
+        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
 
-        batch_size = y_pred_reshaped.shape[0]
-        _, top_k_indices = torch.topk(y_pred_reshaped, self.k, dim=1)
-        batch_relevance = y_true_reshaped.gather(1, top_k_indices)
+        batch_size = y_pred_2d.shape[0]
+        _, top_k_indices = torch.topk(y_pred_2d, self.k, dim=1)
+        batch_relevance = y_true_2d.gather(1, top_k_indices)
         cumsum_relevance = torch.cumsum(batch_relevance, dim=1)
         precision_at_i = cumsum_relevance / torch.arange(
-            1, self.k + 1, device=y_pred_reshaped.device
+            1, self.k + 1, device=y_pred_2d.device
         ).float().unsqueeze(0)
         avg_precision = (precision_at_i * batch_relevance).sum(dim=1) / torch.clamp(
-            y_true_reshaped.sum(dim=1), min=1
+            y_true_2d.sum(dim=1), min=1
         )
         self.sum_avg_precision += avg_precision.sum().item()
         self.count += batch_size
@@ -688,11 +688,11 @@ class HitRatio_at_k(Metric):
         self.count = 0
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
-        y_pred_reshaped = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_reshaped = reshape_1d_to_2d(y_true, self.n_cols)
-        batch_size = y_pred_reshaped.shape[0]
-        _, top_k_indices = torch.topk(y_pred_reshaped, self.k, dim=1)
-        batch_relevance = y_true_reshaped.gather(1, top_k_indices)
+        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
+        batch_size = y_pred_2d.shape[0]
+        _, top_k_indices = torch.topk(y_pred_2d, self.k, dim=1)
+        batch_relevance = y_true_2d.gather(1, top_k_indices)
         hit = (batch_relevance.sum(dim=1) > 0).float()
         self.sum_hr += hit.sum().item()
         self.count += batch_size
@@ -744,11 +744,11 @@ class Precision_at_k(Metric):
         self.count = 0
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
-        y_pred_reshaped = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_reshaped = reshape_1d_to_2d(y_true, self.n_cols)
-        batch_size = y_pred_reshaped.shape[0]
-        _, top_k_indices = torch.topk(y_pred_reshaped, self.k, dim=1)
-        batch_relevance = y_true_reshaped.gather(1, top_k_indices)
+        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
+        batch_size = y_pred_2d.shape[0]
+        _, top_k_indices = torch.topk(y_pred_2d, self.k, dim=1)
+        batch_relevance = y_true_2d.gather(1, top_k_indices)
         precision = batch_relevance.sum(dim=1) / self.k
         self.sum_precision += precision.sum().item()
         self.count += batch_size
@@ -793,14 +793,12 @@ class Recall_at_k(Metric):
         self.count = 0
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
-        y_pred_reshaped = reshape_1d_to_2d(y_pred, self.n_cols)
-        y_true_reshaped = reshape_1d_to_2d(y_true, self.n_cols)
-        batch_size = y_pred_reshaped.shape[0]
-        _, top_k_indices = torch.topk(y_pred_reshaped, self.k, dim=1)
-        batch_relevance = y_true_reshaped.gather(1, top_k_indices)
-        recall = batch_relevance.sum(dim=1) / torch.clamp(
-            y_true_reshaped.sum(dim=1), min=1
-        )
+        y_pred_2d = reshape_1d_to_2d(y_pred, self.n_cols)
+        y_true_2d = reshape_1d_to_2d(y_true, self.n_cols)
+        batch_size = y_pred_2d.shape[0]
+        _, top_k_indices = torch.topk(y_pred_2d, self.k, dim=1)
+        batch_relevance = y_true_2d.gather(1, top_k_indices)
+        recall = batch_relevance.sum(dim=1) / torch.clamp(y_true_2d.sum(dim=1), min=1)
         self.sum_recall += recall.sum().item()
         self.count += batch_size
         return np.array(self.sum_recall / max(self.count, 1))
