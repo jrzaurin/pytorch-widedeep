@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img width="300" src="docs/figures/widedeep_logo.png">
+  <img width="300" src="mkdocs/sources/docs/figures/widedeep_logo.png">
 </p>
 
 [![PyPI version](https://badge.fury.io/py/pytorch-widedeep.svg)](https://pypi.org/project/pytorch-widedeep/)
@@ -60,7 +60,7 @@ Figure below:
 
 
 <p align="center">
-  <img width="750" src="docs/figures/widedeep_arch_new.png">
+  <img width="750" src="mkdocs/sources/docs/figures/widedeep_arch_new.png">
 </p>
 
 
@@ -69,7 +69,7 @@ In math terms, and following the notation in the
 without a ``deephead`` component can be formulated as:
 
 <p align="center">
-  <img width="500" src="docs/figures/architecture_1_math.png">
+  <img width="500" src="mkdocs/sources/docs/figures/architecture_1_math.png">
 </p>
 
 
@@ -164,7 +164,7 @@ Face models.
 
 
 <p align="center">
-  <img width="400" src="docs/figures/arch_1.png">
+  <img width="400" src="mkdocs/sources/docs/figures/arch_1.png">
 </p>
 
 
@@ -210,7 +210,7 @@ trainer.fit(
 **2. Tabular and Text data**
 
 <p align="center">
-  <img width="400" src="docs/figures/arch_2.png">
+  <img width="400" src="mkdocs/sources/docs/figures/arch_2.png">
 </p>
 
 
@@ -262,7 +262,7 @@ trainer.fit(
   in `WideDeep`**
 
 <p align="center">
-  <img width="400" src="docs/figures/arch_3.png">
+  <img width="400" src="mkdocs/sources/docs/figures/arch_3.png">
 </p>
 
 ```python
@@ -313,7 +313,7 @@ trainer.fit(
   `WideDeep`**
 
 <p align="center">
-  <img width="500" src="docs/figures/arch_4.png">
+  <img width="500" src="mkdocs/sources/docs/figures/arch_4.png">
 </p>
 
 ```python
@@ -375,7 +375,7 @@ trainer.fit(
   `ModelFuser` class**
 
 <p align="center">
-    <img width="500" src="docs/figures/arch_5.png">
+    <img width="500" src="mkdocs/sources/docs/figures/arch_5.png">
 </p>
 
 ```python
@@ -454,7 +454,7 @@ property and avoids some typing errors internally.
 
 
 <p align="center">
-    <img width="600" src="docs/figures/arch_6.png">
+    <img width="600" src="mkdocs/sources/docs/figures/arch_6.png">
 </p>
 
 
@@ -596,7 +596,7 @@ target). We can create a two-tower model where the user and item features are
 passed through two separate models and then "fused" via a dot product.
 
 <p align="center">
-  <img width="350" src="docs/figures/arch_7.png">
+  <img width="350" src="mkdocs/sources/docs/figures/arch_7.png">
 </p>
 
 
@@ -692,7 +692,7 @@ This one is "a bonus" to illustrate the use of multi-target losses, more than
 actually a different architecture.
 
 <p align="center">
-  <img width="200" src="docs/figures/arch_8.png">
+  <img width="200" src="mkdocs/sources/docs/figures/arch_8.png">
 </p>
 
 
