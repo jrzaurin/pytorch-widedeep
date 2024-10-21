@@ -21,6 +21,8 @@ available: one for the case when no Hugging Face model is used
 
 ::: pytorch_widedeep.preprocessing.image_preprocessor.ImagePreprocessor
 
+::: pytorch_widedeep.preprocessing.din_preprocessor.DINPreprocessor
+
 
 ## Chunked versions
 

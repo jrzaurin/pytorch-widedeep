@@ -1622,6 +1622,7 @@
     <span class="n">transforms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">eval_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span>
@@ -1856,7 +1857,8 @@ repo.</p>
 <ul>
 <li>
 <p><strong>device</strong>: <code>str</code><br/>
-    string indicating the device. One of <em>'cpu'</em> or <em>'gpu'</em></p>
+    string indicating the device. One of <em>'cpu'</em>, <em>'gpu'</em> or 'mps' if
+    run on a Mac with Apple silicon or AMD GPU(s)</p>
 </li>
 <li>
 <p><strong>num_workers</strong>: <code>int</code><br/>
@@ -1952,11 +1954,7 @@ if the <code>deeptabular</code> component is a Tabnet model.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">230</span>
 <span class="normal">231</span>
 <span class="normal">232</span>
 <span class="normal">233</span>
@@ -1990,10 +1988,18 @@ if the <code>deeptabular</code> component is a Tabnet model.</p>
 <span class="normal">261</span>
 <span class="normal">262</span>
 <span class="normal">263</span>
-<span class="normal">264</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
     <span class="s2">&quot;objective&quot;</span><span class="p">,</span>
     <span class="p">[</span><span class="s2">&quot;loss_function&quot;</span><span class="p">,</span> <span class="s2">&quot;loss_fn&quot;</span><span class="p">,</span> <span class="s2">&quot;loss&quot;</span><span class="p">,</span> <span class="s2">&quot;cost_function&quot;</span><span class="p">,</span> <span class="s2">&quot;cost_fn&quot;</span><span class="p">,</span> <span class="s2">&quot;cost&quot;</span><span class="p">],</span>
 <span class="p">)</span>
+<span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;metrics&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;train_metrics&quot;</span><span class="p">])</span>
 <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">WideDeep</span><span class="p">,</span>
@@ -2011,6 +2017,7 @@ if the <code>deeptabular</code> component is a Tabnet model.</p>
     <span class="n">transforms</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Transforms</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">callbacks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Metric</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">TorchMetric</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">eval_metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Metric</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">TorchMetric</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
@@ -2025,6 +2032,7 @@ if the <code>deeptabular</code> component is a Tabnet model.</p>
         <span class="n">transforms</span><span class="o">=</span><span class="n">transforms</span><span class="p">,</span>
         <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
         <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+        <span class="n">eval_metrics</span><span class="o">=</span><span class="n">eval_metrics</span><span class="p">,</span>
         <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
         <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
@@ -2064,7 +2072,8 @@ if the <code>deeptabular</code> component is a Tabnet model.</p>
     <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">validation_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
-    <span class="n">custom_dataloader</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">train_dataloader</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">eval_dataloader</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">feature_importance_sample_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">finetune</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span>
@@ -2211,9 +2220,6 @@ be lists of numpy arrays</p>
         </li>
         <li class="doc-section-item field-body">
           <b><code>custom_dataloader</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="torch.utils.data.DataLoader">DataLoader</span>]</code>, default:
-                  <code>None</code>
-)
           –
           <div class="doc-md-description">
             <p>object of class <code>torch.utils.data.DataLoader</code>. Available
@@ -2322,14 +2328,7 @@ folder in the repo</p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">273</span>
 <span class="normal">274</span>
 <span class="normal">275</span>
 <span class="normal">276</span>
@@ -2550,39 +2549,9 @@ folder in the repo</p>
 <span class="normal">491</span>
 <span class="normal">492</span>
 <span class="normal">493</span>
-<span class="normal">494</span>
-<span class="normal">495</span>
-<span class="normal">496</span>
-<span class="normal">497</span>
-<span class="normal">498</span>
-<span class="normal">499</span>
-<span class="normal">500</span>
-<span class="normal">501</span>
-<span class="normal">502</span>
-<span class="normal">503</span>
-<span class="normal">504</span>
-<span class="normal">505</span>
-<span class="normal">506</span>
-<span class="normal">507</span>
-<span class="normal">508</span>
-<span class="normal">509</span>
-<span class="normal">510</span>
-<span class="normal">511</span>
-<span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span>
-<span class="normal">515</span>
-<span class="normal">516</span>
-<span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;finetune&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;warmup&quot;</span><span class="p">])</span>
+<span class="normal">494</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;finetune&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;warmup&quot;</span><span class="p">])</span>
+<span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;train_dataloader&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;custom_dataloader&quot;</span><span class="p">])</span>
+<span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;eval_dataloader&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;custom_eval_dataloader&quot;</span><span class="p">])</span>
 <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2596,7 +2565,8 @@ folder in the repo</p>
     <span class="n">n_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">validation_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
-    <span class="n">custom_dataloader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DataLoader</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">train_dataloader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CustomDataLoader</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">eval_dataloader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CustomDataLoader</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">feature_importance_sample_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">finetune</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
@@ -2733,11 +2703,8 @@ folder in the repo</p>
 <span class="sd">    [Examples](https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples)</span>
 <span class="sd">    folder in the repo</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">dataloader_args</span><span class="p">,</span> <span class="n">finetune_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-
     <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
-
     <span class="n">train_set</span><span class="p">,</span> <span class="n">eval_set</span> <span class="o">=</span> <span class="n">wd_train_val_split</span><span class="p">(</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
@@ -2751,35 +2718,18 @@ folder in the repo</p>
         <span class="n">target</span><span class="p">,</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="k">if</span> <span class="n">custom_dataloader</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># make sure is callable (and HAS to be an subclass of DataLoader)</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">custom_dataloader</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
-        <span class="n">train_loader</span> <span class="o">=</span> <span class="n">custom_dataloader</span><span class="p">(</span>  <span class="c1"># type: ignore[misc]</span>
-            <span class="n">dataset</span><span class="o">=</span><span class="n">train_set</span><span class="p">,</span>
-            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
-            <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">dataloader_args</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="o">=</span><span class="n">train_set</span><span class="p">,</span>
-            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
-            <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">dataloader_args</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="n">train_steps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">eval_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">eval_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
-            <span class="n">dataset</span><span class="o">=</span><span class="n">eval_set</span><span class="p">,</span>
-            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
-            <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
-            <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">eval_steps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">eval_loader</span><span class="p">)</span>
+    <span class="n">train_loader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_dataloader</span><span class="p">(</span>
+        <span class="n">train_dataloader</span><span class="p">,</span> <span class="n">train_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">dataloader_args</span>
+    <span class="p">)</span>
+    <span class="n">eval_loader</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_dataloader</span><span class="p">(</span><span class="n">eval_dataloader</span><span class="p">,</span> <span class="n">eval_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">dataloader_args</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eval_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="kc">None</span>
+    <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">finetune</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">with_finetuning</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_finetune</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="o">**</span><span class="n">finetune_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_finetune</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="o">**</span><span class="n">finetune_args</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span>
                 <span class="s2">&quot;Fine-tuning (or warmup) of individual components completed. &quot;</span>
@@ -2789,54 +2739,32 @@ folder in the repo</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">with_finetuning</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_train_begin</span><span class="p">(</span>
-        <span class="p">{</span><span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">,</span> <span class="s2">&quot;train_steps&quot;</span><span class="p">:</span> <span class="n">train_steps</span><span class="p">,</span> <span class="s2">&quot;n_epochs&quot;</span><span class="p">:</span> <span class="n">n_epochs</span><span class="p">}</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">,</span>
+            <span class="s2">&quot;train_steps&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">),</span>
+            <span class="s2">&quot;n_epochs&quot;</span><span class="p">:</span> <span class="n">n_epochs</span><span class="p">,</span>
+        <span class="p">}</span>
     <span class="p">)</span>
     <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">):</span>
-        <span class="n">epoch_logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_epoch_begin</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="n">epoch_logs</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">train_running_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="k">with</span> <span class="n">trange</span><span class="p">(</span><span class="n">train_steps</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targett</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">):</span>
-                <span class="n">t</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="s2">&quot;epoch </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-                <span class="n">train_score</span><span class="p">,</span> <span class="n">train_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_step</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targett</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">)</span>
-                <span class="n">print_loss_and_metric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">train_loss</span><span class="p">,</span> <span class="n">train_score</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_batch_end</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="n">batch_idx</span><span class="p">)</span>
-        <span class="n">epoch_logs</span> <span class="o">=</span> <span class="n">save_epoch_logs</span><span class="p">(</span><span class="n">epoch_logs</span><span class="p">,</span> <span class="n">train_loss</span><span class="p">,</span> <span class="n">train_score</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">)</span>
-
-        <span class="n">on_epoch_end_metric</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">eval_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">validation_freq</span> <span class="o">==</span> <span class="p">(</span>
+        <span class="n">epoch_logs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_epoch</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eval_loader</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">validation_freq</span> <span class="o">==</span> <span class="p">(</span>
             <span class="n">validation_freq</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_eval_begin</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">valid_running_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
-            <span class="k">with</span> <span class="n">trange</span><span class="p">(</span><span class="n">eval_steps</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targett</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">eval_loader</span><span class="p">):</span>
-                    <span class="n">v</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="s2">&quot;valid&quot;</span><span class="p">)</span>
-                    <span class="n">val_score</span><span class="p">,</span> <span class="n">val_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_step</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targett</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-                    <span class="n">print_loss_and_metric</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">val_loss</span><span class="p">,</span> <span class="n">val_score</span><span class="p">)</span>
-            <span class="n">epoch_logs</span> <span class="o">=</span> <span class="n">save_epoch_logs</span><span class="p">(</span><span class="n">epoch_logs</span><span class="p">,</span> <span class="n">val_loss</span><span class="p">,</span> <span class="n">val_score</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducelronplateau</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducelronplateau_criterion</span> <span class="o">==</span> <span class="s2">&quot;loss&quot;</span><span class="p">:</span>
-                    <span class="n">on_epoch_end_metric</span> <span class="o">=</span> <span class="n">val_loss</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">on_epoch_end_metric</span> <span class="o">=</span> <span class="n">val_score</span><span class="p">[</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">reducelronplateau_criterion</span>
-                    <span class="p">]</span>
+            <span class="n">epoch_logs</span><span class="p">,</span> <span class="n">on_epoch_end_metric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_epoch</span><span class="p">(</span>
+                <span class="n">eval_loader</span><span class="p">,</span> <span class="n">epoch_logs</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="n">on_epoch_end_metric</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducelronplateau</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
                     <span class="s2">&quot;ReduceLROnPlateau scheduler can be used only with validation data.&quot;</span>
                 <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_epoch_end</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">epoch_logs</span><span class="p">,</span> <span class="n">on_epoch_end_metric</span><span class="p">)</span>
-
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">early_stop</span><span class="p">:</span>
             <span class="c1"># self.callback_container.on_train_end(epoch_logs)</span>
             <span class="k">break</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_train_end</span><span class="p">(</span><span class="n">epoch_logs</span><span class="p">)</span>
-
     <span class="k">if</span> <span class="n">feature_importance_sample_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">feature_importance</span> <span class="o">=</span> <span class="n">FeatureImportance</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">feature_importance_sample_size</span>
@@ -2961,7 +2889,39 @@ the <code>Trainer</code> is instantiated</p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">528</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
 <span class="normal">529</span>
 <span class="normal">530</span>
 <span class="normal">531</span>
@@ -2993,39 +2953,7 @@ the <code>Trainer</code> is instantiated</p>
 <span class="normal">557</span>
 <span class="normal">558</span>
 <span class="normal">559</span>
-<span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span>
-<span class="normal">564</span>
-<span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span>
-<span class="normal">572</span>
-<span class="normal">573</span>
-<span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span>
-<span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span>
-<span class="normal">589</span>
-<span class="normal">590</span>
-<span class="normal">591</span>
-<span class="normal">592</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>  <span class="c1"># type: ignore[override, return]</span>
+<span class="normal">560</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>  <span class="c1"># type: ignore[override, return]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3198,6 +3126,9 @@ the <code>Trainer</code> is instantiated</p>
         </li>
         <li class="doc-section-item field-body">
           <b><code>uncertainty_granularity</code></b>
+              (<code>int</code>, default:
+                  <code>1000</code>
+)
           –
           <div class="doc-md-description">
             <p>number of times the model does prediction for each sample</p>
@@ -3227,7 +3158,39 @@ the <code>Trainer</code> is instantiated</p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">594</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
 <span class="normal">595</span>
 <span class="normal">596</span>
 <span class="normal">597</span>
@@ -3295,39 +3258,7 @@ the <code>Trainer</code> is instantiated</p>
 <span class="normal">659</span>
 <span class="normal">660</span>
 <span class="normal">661</span>
-<span class="normal">662</span>
-<span class="normal">663</span>
-<span class="normal">664</span>
-<span class="normal">665</span>
-<span class="normal">666</span>
-<span class="normal">667</span>
-<span class="normal">668</span>
-<span class="normal">669</span>
-<span class="normal">670</span>
-<span class="normal">671</span>
-<span class="normal">672</span>
-<span class="normal">673</span>
-<span class="normal">674</span>
-<span class="normal">675</span>
-<span class="normal">676</span>
-<span class="normal">677</span>
-<span class="normal">678</span>
-<span class="normal">679</span>
-<span class="normal">680</span>
-<span class="normal">681</span>
-<span class="normal">682</span>
-<span class="normal">683</span>
-<span class="normal">684</span>
-<span class="normal">685</span>
-<span class="normal">686</span>
-<span class="normal">687</span>
-<span class="normal">688</span>
-<span class="normal">689</span>
-<span class="normal">690</span>
-<span class="normal">691</span>
-<span class="normal">692</span>
-<span class="normal">693</span>
-<span class="normal">694</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_uncertainty</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
+<span class="normal">662</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_uncertainty</span><span class="p">(</span>  <span class="c1"># type: ignore[return]</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3335,7 +3266,7 @@ the <code>Trainer</code> is instantiated</p>
     <span class="n">X_img</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">uncertainty_granularity</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">uncertainty_granularity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the predicted ucnertainty of the model for the test dataset</span>
 <span class="sd">    using a Monte Carlo method during which dropout layers are activated</span>
@@ -3547,7 +3478,39 @@ the <code>Trainer</code> is instantiated</p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">696</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
 <span class="normal">697</span>
 <span class="normal">698</span>
 <span class="normal">699</span>
@@ -3570,39 +3533,7 @@ the <code>Trainer</code> is instantiated</p>
 <span class="normal">716</span>
 <span class="normal">717</span>
 <span class="normal">718</span>
-<span class="normal">719</span>
-<span class="normal">720</span>
-<span class="normal">721</span>
-<span class="normal">722</span>
-<span class="normal">723</span>
-<span class="normal">724</span>
-<span class="normal">725</span>
-<span class="normal">726</span>
-<span class="normal">727</span>
-<span class="normal">728</span>
-<span class="normal">729</span>
-<span class="normal">730</span>
-<span class="normal">731</span>
-<span class="normal">732</span>
-<span class="normal">733</span>
-<span class="normal">734</span>
-<span class="normal">735</span>
-<span class="normal">736</span>
-<span class="normal">737</span>
-<span class="normal">738</span>
-<span class="normal">739</span>
-<span class="normal">740</span>
-<span class="normal">741</span>
-<span class="normal">742</span>
-<span class="normal">743</span>
-<span class="normal">744</span>
-<span class="normal">745</span>
-<span class="normal">746</span>
-<span class="normal">747</span>
-<span class="normal">748</span>
-<span class="normal">749</span>
-<span class="normal">750</span>
-<span class="normal">751</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span>  <span class="c1"># type: ignore[override, return]  # noqa: C901</span>
+<span class="normal">719</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span>  <span class="c1"># type: ignore[override, return]  # noqa: C901</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_wide</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3748,7 +3679,39 @@ dictionary</p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/training/trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">764</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">732</span>
+<span class="normal">733</span>
+<span class="normal">734</span>
+<span class="normal">735</span>
+<span class="normal">736</span>
+<span class="normal">737</span>
+<span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span>
 <span class="normal">765</span>
 <span class="normal">766</span>
 <span class="normal">767</span>
@@ -3766,39 +3729,7 @@ dictionary</p>
 <span class="normal">779</span>
 <span class="normal">780</span>
 <span class="normal">781</span>
-<span class="normal">782</span>
-<span class="normal">783</span>
-<span class="normal">784</span>
-<span class="normal">785</span>
-<span class="normal">786</span>
-<span class="normal">787</span>
-<span class="normal">788</span>
-<span class="normal">789</span>
-<span class="normal">790</span>
-<span class="normal">791</span>
-<span class="normal">792</span>
-<span class="normal">793</span>
-<span class="normal">794</span>
-<span class="normal">795</span>
-<span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span>
-<span class="normal">799</span>
-<span class="normal">800</span>
-<span class="normal">801</span>
-<span class="normal">802</span>
-<span class="normal">803</span>
-<span class="normal">804</span>
-<span class="normal">805</span>
-<span class="normal">806</span>
-<span class="normal">807</span>
-<span class="normal">808</span>
-<span class="normal">809</span>
-<span class="normal">810</span>
-<span class="normal">811</span>
-<span class="normal">812</span>
-<span class="normal">813</span>
-<span class="normal">814</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+<span class="normal">782</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">save_state_dict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>

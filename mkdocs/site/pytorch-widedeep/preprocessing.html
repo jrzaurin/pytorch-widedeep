@@ -778,6 +778,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pytorch_widedeep.preprocessing.din_preprocessor.DINPreprocessor" class="md-nav__link">
+    <span class="md-ellipsis">
+      DINPreprocessor
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#chunked-versions" class="md-nav__link">
     <span class="md-ellipsis">
       Chunked versions
@@ -5413,6 +5422,294 @@ functions.</p>
     </div>
 
 </div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="pytorch_widedeep.preprocessing.din_preprocessor.DINPreprocessor" class="doc doc-heading">
+            <span class="doc doc-object-name doc-class-name">DINPreprocessor</span>
+
+
+<a href="#pytorch_widedeep.preprocessing.din_preprocessor.DINPreprocessor" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">DINPreprocessor</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">user_id_col</span><span class="p">,</span>
+    <span class="n">item_embed_col</span><span class="p">,</span>
+    <span class="n">target_col</span><span class="p">,</span>
+    <span class="n">max_seq_length</span><span class="p">,</span>
+    <span class="n">action_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">other_seq_embed_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cat_embed_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">continuous_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">quantization_setup</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cols_to_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">auto_embed_dim</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">embedding_rule</span><span class="o">=</span><span class="s2">&quot;fastai_new&quot;</span><span class="p">,</span>
+    <span class="n">default_embed_dim</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">already_standard</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pytorch_widedeep.preprocessing.base_preprocessor.BasePreprocessor">BasePreprocessor</span></code></p>
+
+
+        <p>Preprocessor for Deep Interest Network (DIN) models.</p>
+<p>This preprocessor handles the preparation of data for DIN models,
+including sequence building, label encoding, and handling of various
+types of input columns (categorical, continuous, and sequential).</p>
+
+
+<details class="parameters:" open>
+  <summary></summary>
+  <p>user_id_col : str
+    Name of the column containing user IDs.
+item_embed_col : Union[str, Tuple[str, int]]
+    Name of the column containing item IDs to be embedded, or a tuple of
+    (column_name, embedding_dim).
+target_col : str
+    Name of the column containing the target variable.
+max_seq_length : int
+    Maximum length of sequences to be created.
+action_col : Optional[str], default=None
+    Name of the column containing user actions (if applicable).
+other_seq_embed_cols : Optional[List[str] | List[Tuple[str, int]]], default=None
+    List of other columns to be treated as sequences.
+cat_embed_cols : Optional[Union[List[str], List[Tuple[str, int]]]], default=None
+    List of categorical columns to be represented by embeddings.
+continuous_cols: List, default = None
+    List with the name of the continuous cols.
+quantization_setup: int or Dict[str, Union[int, List[float]]], default=None
+    Continuous columns can be turned into categorical via <code>pd.cut</code>.
+cols_to_scale: List or str, default = None,
+    List with the names of the columns that will be standardized via
+    sklearn's <code>StandardScaler</code>.
+auto_embed_dim: bool, default = True
+    Boolean indicating whether the embedding dimensions will be
+    automatically defined via rule of thumb.
+embedding_rule: str, default = 'fastai_new'
+    Rule of thumb for embedding size.
+default_embed_dim: int, default=16
+    Default dimension for the embeddings.
+verbose : int, default=1
+    Verbosity level.
+scale: bool, default = False
+    Boolean indicating whether or not to scale/standardize continuous cols.
+already_standard: List, default = None
+    List with the name of the continuous cols that do not need to be
+    scaled/standardized.
+**kwargs :
+    Additional keyword arguments to be passed to the TabPreprocessor.</p>
+</details>
+
+<details class="attributes:" open>
+  <summary></summary>
+  <p>is_fitted : bool
+    Whether the preprocessor has been fitted.
+has_standard_tab_data : bool
+    Whether the data includes standard tabular data.
+tab_preprocessor : TabPreprocessor
+    Preprocessor for standard tabular data.
+din_columns_idx : Dict[str, int]
+    Dictionary mapping column names to their indices in the processed data.
+item_le : LabelEncoder
+    Label encoder for item IDs.
+n_items : int
+    Number of unique items.
+user_behaviour_config : Tuple[List[str], int, int]
+    Configuration for user behavior sequences.
+action_le : LabelEncoder
+    Label encoder for action column (if applicable).
+n_actions : int
+    Number of unique actions (if applicable).
+action_seq_config : Tuple[List[str], int]
+    Configuration for action sequences (if applicable).
+other_seq_le : LabelEncoder
+    Label encoder for other sequence columns (if applicable).
+n_other_seq_cols : Dict[str, int]
+    Number of unique values in each other sequence column.
+other_seq_config : List[Tuple[List[str], int, int]]
+    Configuration for other sequence columns.</p>
+</details>
+
+<details class="examples:" open>
+  <summary></summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>import pandas as pd
+from pytorch_widedeep.preprocessing import DINPreprocessor
+data = {
+...    'user_id': [1, 1, 1, 2, 2, 2, 3, 3, 3],
+...    'item_id': [101, 102, 103, 101, 103, 104, 102, 103, 104],
+...    'timestamp': [1, 2, 3, 1, 2, 3, 1, 2, 3],
+...    'category': ['A', 'B', 'A', 'B', 'A', 'C', 'B', 'A', 'C'],
+...    'price': [10.5, 15.0, 12.0, 10.5, 12.0, 20.0, 15.0, 12.0, 20.0],
+...    'rating': [0, 1, 0, 1, 0, 1, 0, 1, 0]
+... }
+df = pd.DataFrame(data)
+din_preprocessor = DINPreprocessor(
+...     user_id_col='user_id',
+...     item_embed_col='item_id',
+...     target_col='rating',
+...     max_seq_length=2,
+...     action_col='rating',
+...     other_seq_embed_cols=['category'],
+...     cat_embed_cols=['user_id'],
+...     continuous_cols=['price'],
+...     cols_to_scale=['price']
+... )
+X, y = din_preprocessor.fit_transform(df)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
+                  <details class="quote">
+                    <summary>Source code in <code>pytorch_widedeep/preprocessing/din_preprocessor.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@alias</span><span class="p">(</span><span class="s2">&quot;item_embed_col&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;item_id_col&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">user_id_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">item_embed_col</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span>
+    <span class="n">target_col</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">max_seq_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">action_col</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">other_seq_embed_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cat_embed_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">continuous_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">quantization_setup</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]]</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">cols_to_scale</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">auto_embed_dim</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">embedding_rule</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;google&quot;</span><span class="p">,</span> <span class="s2">&quot;fastai_old&quot;</span><span class="p">,</span> <span class="s2">&quot;fastai_new&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;fastai_new&quot;</span><span class="p">,</span>
+    <span class="n">default_embed_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">scale</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">already_standard</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">user_id_col</span> <span class="o">=</span> <span class="n">user_id_col</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">item_embed_col</span> <span class="o">=</span> <span class="n">item_embed_col</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">max_seq_length</span> <span class="o">=</span> <span class="n">max_seq_length</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">target_col</span> <span class="o">=</span> <span class="n">target_col</span> <span class="k">if</span> <span class="n">target_col</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;target&quot;</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">action_col</span> <span class="o">=</span> <span class="n">action_col</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">other_seq_embed_cols</span> <span class="o">=</span> <span class="n">other_seq_embed_cols</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_cols</span> <span class="o">=</span> <span class="n">cat_embed_cols</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span> <span class="o">=</span> <span class="n">continuous_cols</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">quantization_setup</span> <span class="o">=</span> <span class="n">quantization_setup</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cols_to_scale</span> <span class="o">=</span> <span class="n">cols_to_scale</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">auto_embed_dim</span> <span class="o">=</span> <span class="n">auto_embed_dim</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">embedding_rule</span> <span class="o">=</span> <span class="n">embedding_rule</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">default_embed_dim</span> <span class="o">=</span> <span class="n">default_embed_dim</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">already_standard</span> <span class="o">=</span> <span class="n">already_standard</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">has_standard_tab_data</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_cols</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_standard_tab_data</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">TabPreprocessor</span><span class="p">(</span>
+            <span class="n">cat_embed_cols</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_cols</span><span class="p">,</span>
+            <span class="n">continuous_cols</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">,</span>
+            <span class="n">quantization_setup</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">quantization_setup</span><span class="p">,</span>
+            <span class="n">cols_to_scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cols_to_scale</span><span class="p">,</span>
+            <span class="n">auto_embed_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">auto_embed_dim</span><span class="p">,</span>
+            <span class="n">embedding_rule</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding_rule</span><span class="p">,</span>
+            <span class="n">default_embed_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default_embed_dim</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span>
+            <span class="n">already_standard</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">already_standard</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">is_fitted</span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre></div></td></tr></table></div>
+                  </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
 
 
 
