@@ -26,7 +26,7 @@ from pytorch_widedeep.wdtypes import (
     LRScheduler,
 )
 from pytorch_widedeep.callbacks import Callback
-from pytorch_widedeep.dataloaders import CustomDataLoader, DatasetAlreadySetError
+from pytorch_widedeep.dataloaders import CustomDataLoader
 from pytorch_widedeep.initializers import Initializer
 from pytorch_widedeep.training._finetune import FineTune
 from pytorch_widedeep.utils.general_utils import alias, to_device

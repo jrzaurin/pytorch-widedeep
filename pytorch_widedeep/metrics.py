@@ -469,7 +469,17 @@ class NDCG_at_k(Metric):
         self.count = 0
 
     def __call__(self, y_pred: Tensor, y_true: Tensor) -> np.ndarray:
+        # NDGC@k is supposed to be used when the output reflects interest
+        # scores, i.e, could be used in a regression or a multiclass problem.
+        # If regression y_pred will be a float tensor, if multiclass, y_pred
+        # will be a float tensor with the output of a softmax activation
+        # function and we need to turn it into a 1D tensor with the class.
+        # Finally, for binary problems, please use BinaryNDCG_at_k
         device = y_pred.device
+
+        if y_pred.ndim > 1 and y_pred.size(1) > 1:
+            # multiclass
+            y_pred = y_pred.topk(1, 1)[1]
 
         y_pred_2d = reshape_to_2d(y_pred, self.n_cols)
         y_true_2d = reshape_to_2d(y_true, self.n_cols)

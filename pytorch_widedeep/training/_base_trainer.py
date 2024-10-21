@@ -63,6 +63,7 @@ class BaseTrainer(ABC):
         transforms: Optional[List[Transforms]],
         callbacks: Optional[List[Callback]],
         metrics: Optional[Union[List[Metric], List[TorchMetric]]],
+        eval_metrics: Optional[Union[List[Metric], List[TorchMetric]]],
         verbose: int,
         seed: int,
         **kwargs,
@@ -90,7 +91,7 @@ class BaseTrainer(ABC):
         self.optimizer = self._set_optimizer(optimizers)
         self.lr_scheduler = self._set_lr_scheduler(lr_schedulers, **kwargs)
         self.transforms = self._set_transforms(transforms)
-        self._set_callbacks_and_metrics(callbacks, metrics)
+        self._set_callbacks_and_metrics(callbacks, metrics, eval_metrics)
 
     @abstractmethod
     def fit(self, **kwargs):

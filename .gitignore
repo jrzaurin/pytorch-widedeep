@@ -61,3 +61,12 @@ checkpoints
 # wnb
 wandb/
 wandb_api.key
+
+# pytest
+pytest.ini
+
+# code style
+code_style.sh
+
+# isort
+.isort.cfg

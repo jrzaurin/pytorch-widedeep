@@ -286,12 +286,12 @@ def test_custom_dataloader():
     )
     model = WideDeep(wide=wide, deeptabular=deeptabular)
     trainer = Trainer(model, loss="binary", verbose=0)
+
     trainer.fit(
         X_wide=X_wide,
         X_tab=X_tab,
         target=target_binary_imbalanced,
-        batch_size=16,
-        custom_dataloader=DataLoaderImbalanced,
+        custom_dataloader=DataLoaderImbalanced(batch_size=16),
     )
     # simply checking that runs with DataLoaderImbalanced
     assert "train_loss" in trainer.history.keys()
