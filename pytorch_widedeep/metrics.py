@@ -442,8 +442,8 @@ class NDCG_at_k(Metric):
     >>> from pytorch_widedeep.metrics import NDCG_at_k
     >>>
     >>> ndcg = NDCG_at_k(k=10)
-    >>> y_pred = torch.rand(100, 10)
-    >>> y_true = torch.randint(100, 10)
+    >>> y_pred = torch.rand(100, 5)
+    >>> y_true = torch.randint(2, (100,))
     >>> score = ndcg(y_pred, y_true)
     """
 
@@ -535,8 +535,8 @@ class BinaryNDCG_at_k(Metric):
     >>> from pytorch_widedeep.metrics import BinaryNDCG_at_k
     >>>
     >>> ndcg = BinaryNDCG_at_k(k=10)
-    >>> y_pred = torch.rand(100, 10)
-    >>> y_true = torch.randint(0, 2, (100, 10))
+    >>> y_pred = torch.randint(2, (100,))
+    >>> y_true = torch.randint(2, (100,))
     >>> score = ndcg(y_pred, y_true)
     """
 
@@ -622,8 +622,8 @@ class MAP_at_k(Metric):
     >>> from pytorch_widedeep.metrics import MAP_at_k
     >>>
     >>> map_at_k = MAP_at_k(k=10)
-    >>> y_pred = torch.rand(100, 10)
-    >>> y_true = torch.randint(0, 2, (100, 10))
+    >>> y_pred = torch.randint(2, (100,))
+    >>> y_true = torch.randint(2, (100,))
     >>> score = map_at_k(y_pred, y_true)
     """
 
@@ -688,9 +688,9 @@ class HitRatio_at_k(Metric):
     >>> from pytorch_widedeep.metrics import HitRatio_at_k
     >>>
     >>> hr_at_k = HitRatio_at_k(k=10)
-    >>> y_pred = torch.rand(100, 10)
-    >>> y_true = torch.randint(0, 2, (100, 10))
-    >>> score = hr_at_k(y_pred, y_true
+    >>> y_pred = torch.randint(2, (100,))
+    >>> y_true = torch.randint(2, (100,))
+    >>> score = hr_at_k(y_pred, y_true)
     """
 
     @alias(
@@ -747,8 +747,8 @@ class Precision_at_k(Metric):
     >>> from pytorch_widedeep.metrics import Precision_at_k
     >>>
     >>> prec_at_k = Precision_at_k(k=10)
-    >>> y_pred = torch.rand(100, 10)
-    >>> y_true = torch.randint(0, 2, (100, 10))
+    >>> y_pred = torch.randint(2, (100,))
+    >>> y_true = torch.randint(2, (100,))
     >>> score = prec_at_k(y_pred, y_true)
     """
 
@@ -805,8 +805,8 @@ class Recall_at_k(Metric):
     >>> from pytorch_widedeep.metrics import Recall_at_k
     >>>
     >>> rec_at_k = Recall_at_k(k=10)
-    >>> y_pred = torch.rand(100, 10)
-    >>> y_true = torch.randint(0, 2, (100, 10))
+    >>> y_pred = torch.randint(2, (100,))
+    >>> y_true = torch.randint(2, (100,))
     >>> score = rec_at_k(y_pred, y_true)
     """
 
