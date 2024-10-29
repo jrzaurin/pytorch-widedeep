@@ -1,15 +1,63 @@
 from typing import Any, Dict, List, Tuple, Literal, Optional
 
 import torch
+import torch.nn.functional as F
 from torch import Tensor, nn
 
-from pytorch_widedeep.models.rec._layers import ActivationUnit
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 from pytorch_widedeep.models.tabular._base_tabular_model import (
     BaseTabularModelWithAttention,
     BaseTabularModelWithoutAttention,
 )
+
+
+class Dice(nn.Module):
+    def __init__(self, input_dim: int):
+        super(Dice, self).__init__()
+        self.bn = nn.BatchNorm1d(input_dim, eps=1e-9)
+        self.alpha = nn.Parameter(torch.zeros(input_dim))
+
+    def forward(self, X: Tensor) -> Tensor:
+        # This implementation assumes X has n_dim = 3
+        x_p = self.bn(X.transpose(1, 2)).transpose(1, 2)
+        p = torch.sigmoid(x_p)
+        return p * X + (1 - p) * self.alpha * X
+
+
+class ActivationUnit(nn.Module):
+    def __init__(
+        self,
+        embed_dim: int,
+        activation: Literal["prelu", "dice"],
+        proj_dim: Optional[int] = None,
+    ):
+        super(ActivationUnit, self).__init__()
+        self.proj_dim = proj_dim if proj_dim is not None else embed_dim
+        self.linear_in = nn.Linear(embed_dim * 4, self.proj_dim)
+        if activation == "prelu":
+            self.activation: nn.PReLU | Dice = nn.PReLU()
+        elif activation == "dice":
+            self.activation = Dice(self.proj_dim)
+        self.linear_out = nn.Linear(self.proj_dim, 1)
+
+    def forward(self, item: Tensor, user_behavior: Tensor) -> Tensor:
+        # in this implementation:
+        # item: [batch_size, 1, embedding_dim]
+        # user_behavior: [batch_size, seq_len, embedding_dim]
+        item_expanded = item.expand(-1, user_behavior.size(1), -1)
+        attn_input = torch.cat(
+            [
+                item_expanded,
+                user_behavior,
+                item_expanded - user_behavior,
+                item_expanded * user_behavior,
+            ],
+            dim=-1,
+        )
+        attn_output = self.activation(self.linear_in(attn_input))
+        attn_output = self.linear_out(attn_output).squeeze(-1)
+        return F.softmax(attn_output, dim=1)
 
 
 class DeepInterestNetwork(BaseWDModelComponent):

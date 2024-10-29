@@ -1,11 +1,8 @@
 import torch
 import pytest
 
-from pytorch_widedeep.models.rec._layers import (
-    Dice,
-    ActivationUnit,
-    CompressedInteractionNetwork,
-)
+from pytorch_widedeep.models.rec.din import Dice, ActivationUnit
+from pytorch_widedeep.models.rec.xdeepfm import CompressedInteractionNetwork
 
 
 @pytest.fixture

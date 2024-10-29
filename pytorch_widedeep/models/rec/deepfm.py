@@ -161,7 +161,6 @@ class DeepFactorizationMachine(BaseTabularModelWithAttention):
         cat_embed_activation: Optional[str] = None,
         continuous_cols: Optional[List[str]] = None,
         cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = None,
-        embed_continuous: Optional[bool] = None,
         embed_continuous_method: Optional[
             Literal["piecewise", "periodic"]
         ] = "piecewise",
