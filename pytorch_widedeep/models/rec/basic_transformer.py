@@ -83,6 +83,7 @@ class Transformer(nn.Module):
     @alias("seq_length", ["max_length", "maxlen"])
     def __init__(
         self,
+        *,
         vocab_size: int,
         seq_length: int,
         input_dim: int,
@@ -96,7 +97,6 @@ class Transformer(nn.Module):
         use_flash_attention: bool = False,
         padding_idx: int = 0,
         with_cls_token: bool = False,
-        *,  # from here on pos encoding args
         with_pos_encoding: bool = True,
         pos_encoding_dropout: float = 0.1,
         pos_encoder: Optional[nn.Module] = None,
