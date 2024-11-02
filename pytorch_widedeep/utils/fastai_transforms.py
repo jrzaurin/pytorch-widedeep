@@ -414,7 +414,7 @@ class Vocab:
 
         freq = Counter(p for o in tokens for p in o)
         itos = [o for o, c in freq.most_common(self.max_vocab) if c >= self.min_freq]
-        for o in reversed(self.special_cases):
+        for o in reversed(self.special_cases):  # type: ignore[arg-type]
             if o in itos:
                 itos.remove(o)
             itos.insert(0, o)
