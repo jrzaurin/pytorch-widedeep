@@ -1396,7 +1396,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/16_Self_Supervised_Pretraning_pt1.ipynb" class="md-nav__link">
+      <a href="../examples/15_Self_Supervised_Pretraning_pt1.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1417,7 +1417,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/16_Self_Supervised_Pretraning_pt2.ipynb" class="md-nav__link">
+      <a href="../examples/15_Self_Supervised_Pretraning_pt2.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1438,7 +1438,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/17_Usign_a_custom_hugging_face_model.ipynb" class="md-nav__link">
+      <a href="../examples/16_Usign_a_custom_hugging_face_model.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1459,7 +1459,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/18_feature_importance_via_attention_weights.ipynb" class="md-nav__link">
+      <a href="../examples/17_feature_importance_via_attention_weights.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1480,7 +1480,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/19_wide_and_deep_for_recsys_pt1.ipynb" class="md-nav__link">
+      <a href="../examples/18_wide_and_deep_for_recsys_pt1.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1501,7 +1501,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/19_wide_and_deep_for_recsys_pt2.ipynb" class="md-nav__link">
+      <a href="../examples/18_wide_and_deep_for_recsys_pt2.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1522,7 +1522,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/20_load_from_folder_functionality.ipynb" class="md-nav__link">
+      <a href="../examples/19_load_from_folder_functionality.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1543,7 +1543,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/21_Using_huggingface_within_widedeep.ipynb" class="md-nav__link">
+      <a href="../examples/20_Using_huggingface_within_widedeep.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1620,16 +1620,7 @@ scenarios where getting a measure of uncertainty is important.</p>
 
 
 <a href="#pytorch_widedeep.bayesian_models.tabular.bayesian_linear.bayesian_wide.BayesianWide" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">BayesianWide</span><span class="p">(</span>
-    <span class="n">input_dim</span><span class="p">,</span>
-    <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">prior_sigma_1</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-    <span class="n">prior_sigma_2</span><span class="o">=</span><span class="mf">0.002</span><span class="p">,</span>
-    <span class="n">prior_pi</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
-    <span class="n">posterior_mu_init</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">posterior_rho_init</span><span class="o">=-</span><span class="mf">7.0</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
+
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
@@ -1641,36 +1632,55 @@ non-linearlities are captured via crossed-columns</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>input_dim</code></b>
-              (<code>int</code>)
-          –
-          <div class="doc-md-description">
-            <p>size of the Embedding layer. <code>input_dim</code> is the summation of all the
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>input_dim</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>size of the Embedding layer. <code>input_dim</code> is the summation of all the
 individual values for all the features that go through the wide
 component. For example, if the wide component receives 2 features with
 5 individual values each, <code>input_dim = 10</code></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>pred_dim</code></b>
-              (<code>int</code>, default:
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>pred_dim</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>size of the ouput tensor containing the predictions</p>
+              </div>
+            </td>
+            <td>
                   <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>size of the ouput tensor containing the predictions</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>prior_sigma_1</code></b>
-              (<code>float</code>, default:
-                  <code>1.0</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The prior weight distribution is a scaled mixture of two Gaussian
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>prior_sigma_1</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The prior weight distribution is a scaled mixture of two Gaussian
 densities:</p>
 <div class="arithmatex">\[
    \begin{aligned}
@@ -1680,39 +1690,51 @@ densities:</p>
 <p><code>prior_sigma_1</code> is the prior of the sigma parameter for the first of the two
 Gaussians that will be mixed to produce the prior weight
 distribution.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>prior_sigma_2</code></b>
-              (<code>float</code>, default:
-                  <code>0.002</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Prior of the sigma parameter for the second of the two Gaussian
+              </div>
+            </td>
+            <td>
+                  <code>1.0</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>prior_sigma_2</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Prior of the sigma parameter for the second of the two Gaussian
 distributions that will be mixed to produce the prior weight
 distribution</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>prior_pi</code></b>
-              (<code>float</code>, default:
-                  <code>0.8</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Scaling factor that will be used to mix the Gaussians to produce the
+              </div>
+            </td>
+            <td>
+                  <code>0.002</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>prior_pi</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Scaling factor that will be used to mix the Gaussians to produce the
 prior weight distribution</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>posterior_mu_init</code></b>
-              (<code>float</code>, default:
-                  <code>0.0</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The posterior sample of the weights is defined as:</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.8</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>posterior_mu_init</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The posterior sample of the weights is defined as:</p>
 <div class="arithmatex">\[
    \begin{aligned}
    \mathbf{w} &amp;= \mu + log(1 + exp(\rho))
@@ -1727,34 +1749,55 @@ prior weight distribution</p>
 \]</div>
 <p><span class="arithmatex">\(\mu\)</span> is initialised using a normal distributtion with mean
 <code>posterior_mu_init</code> and std equal to 0.1.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>posterior_rho_init</code></b>
-              (<code>float</code>, default:
-                  <code>-7.0</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>As in the case of <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\rho\)</span> is initialised using a
+              </div>
+            </td>
+            <td>
+                  <code>0.0</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>posterior_rho_init</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>As in the case of <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\rho\)</span> is initialised using a
 normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 0.1.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+            </td>
+            <td>
+                  <code>-7.0</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><span title="pytorch_widedeep.bayesian_models.tabular.bayesian_linear.bayesian_wide.BayesianWide.bayesian_wide_linear">bayesian_wide_linear</span></code></b>
-              (<code><span title="torch.nn.Module">Module</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>the linear layer that comprises the wide branch of the model</p>
-          </div>
-        </li>
-    </ul>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="pytorch_widedeep.bayesian_models.tabular.bayesian_linear.bayesian_wide.BayesianWide.bayesian_wide_linear">bayesian_wide_linear</span></code></td>
+            <td>
+                  <code><span title="torch.nn.Module">Module</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>the linear layer that comprises the wide branch of the model</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -1765,9 +1808,81 @@ normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">wide</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 </code></pre></div>
 
-                  <details class="quote">
-                    <summary>Source code in <code>pytorch_widedeep/bayesian_models/tabular/bayesian_linear/bayesian_wide.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 81</span>
+              <details class="quote">
+                <summary>Source code in <code>pytorch_widedeep/bayesian_models/tabular/bayesian_linear/bayesian_wide.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">  9</span>
+<span class="normal"> 10</span>
+<span class="normal"> 11</span>
+<span class="normal"> 12</span>
+<span class="normal"> 13</span>
+<span class="normal"> 14</span>
+<span class="normal"> 15</span>
+<span class="normal"> 16</span>
+<span class="normal"> 17</span>
+<span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
 <span class="normal"> 82</span>
 <span class="normal"> 83</span>
 <span class="normal"> 84</span>
@@ -1789,31 +1904,111 @@ normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 <span class="normal">100</span>
 <span class="normal">101</span>
 <span class="normal">102</span>
-<span class="normal">103</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">input_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">pred_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">prior_sigma_1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-    <span class="n">prior_sigma_2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.002</span><span class="p">,</span>
-    <span class="n">prior_pi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
-    <span class="n">posterior_mu_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">posterior_rho_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">7.0</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="nb">super</span><span class="p">(</span><span class="n">BayesianWide</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-    <span class="c1">#  Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">bayesian_wide_linear</span> <span class="o">=</span> <span class="n">bnn</span><span class="o">.</span><span class="n">BayesianEmbedding</span><span class="p">(</span>
-        <span class="n">n_embed</span><span class="o">=</span><span class="n">input_dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">embed_dim</span><span class="o">=</span><span class="n">pred_dim</span><span class="p">,</span>
-        <span class="n">padding_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-        <span class="n">prior_sigma_1</span><span class="o">=</span><span class="n">prior_sigma_1</span><span class="p">,</span>
-        <span class="n">prior_sigma_2</span><span class="o">=</span><span class="n">prior_sigma_2</span><span class="p">,</span>
-        <span class="n">prior_pi</span><span class="o">=</span><span class="n">prior_pi</span><span class="p">,</span>
-        <span class="n">posterior_mu_init</span><span class="o">=</span><span class="n">posterior_mu_init</span><span class="p">,</span>
-        <span class="n">posterior_rho_init</span><span class="o">=</span><span class="n">posterior_rho_init</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">pred_dim</span><span class="p">))</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">BayesianWide</span><span class="p">(</span><span class="n">BaseBayesianModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Defines a `Wide` model. This is a linear model where the</span>
+<span class="sd">    non-linearlities are captured via crossed-columns</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_dim: int</span>
+<span class="sd">        size of the Embedding layer. `input_dim` is the summation of all the</span>
+<span class="sd">        individual values for all the features that go through the wide</span>
+<span class="sd">        component. For example, if the wide component receives 2 features with</span>
+<span class="sd">        5 individual values each, `input_dim = 10`</span>
+<span class="sd">    pred_dim: int</span>
+<span class="sd">        size of the ouput tensor containing the predictions</span>
+<span class="sd">    prior_sigma_1: float, default = 1.0</span>
+<span class="sd">        The prior weight distribution is a scaled mixture of two Gaussian</span>
+<span class="sd">        densities:</span>
+
+<span class="sd">        $$</span>
+<span class="sd">           \begin{aligned}</span>
+<span class="sd">           P(\mathbf{w}) = \prod_{i=j} \pi N (\mathbf{w}_j | 0, \sigma_{1}^{2}) + (1 - \pi) N (\mathbf{w}_j | 0, \sigma_{2}^{2})</span>
+<span class="sd">           \end{aligned}</span>
+<span class="sd">        $$</span>
+
+<span class="sd">        `prior_sigma_1` is the prior of the sigma parameter for the first of the two</span>
+<span class="sd">        Gaussians that will be mixed to produce the prior weight</span>
+<span class="sd">        distribution.</span>
+<span class="sd">    prior_sigma_2: float, default = 0.002</span>
+<span class="sd">        Prior of the sigma parameter for the second of the two Gaussian</span>
+<span class="sd">        distributions that will be mixed to produce the prior weight</span>
+<span class="sd">        distribution</span>
+<span class="sd">    prior_pi: float, default = 0.8</span>
+<span class="sd">        Scaling factor that will be used to mix the Gaussians to produce the</span>
+<span class="sd">        prior weight distribution</span>
+<span class="sd">    posterior_mu_init: float = 0.0</span>
+<span class="sd">        The posterior sample of the weights is defined as:</span>
+
+<span class="sd">        $$</span>
+<span class="sd">           \begin{aligned}</span>
+<span class="sd">           \mathbf{w} &amp;= \mu + log(1 + exp(\rho))</span>
+<span class="sd">           \end{aligned}</span>
+<span class="sd">        $$</span>
+
+<span class="sd">        where:</span>
+
+<span class="sd">        $$</span>
+<span class="sd">           \begin{aligned}</span>
+<span class="sd">           \mathcal{N}(x\vert \mu, \sigma) &amp;= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\</span>
+<span class="sd">           \log{\mathcal{N}(x\vert \mu, \sigma)} &amp;= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\</span>
+<span class="sd">           \end{aligned}</span>
+<span class="sd">        $$</span>
+
+<span class="sd">        $\mu$ is initialised using a normal distributtion with mean</span>
+<span class="sd">        `posterior_mu_init` and std equal to 0.1.</span>
+<span class="sd">    posterior_rho_init: float = -7.0</span>
+<span class="sd">        As in the case of $\mu$, $\rho$ is initialised using a</span>
+<span class="sd">        normal distributtion with mean `posterior_rho_init` and std equal to</span>
+<span class="sd">        0.1.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    -----------</span>
+<span class="sd">    bayesian_wide_linear: nn.Module</span>
+<span class="sd">        the linear layer that comprises the wide branch of the model</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import torch</span>
+<span class="sd">    &gt;&gt;&gt; from pytorch_widedeep.bayesian_models import BayesianWide</span>
+<span class="sd">    &gt;&gt;&gt; X = torch.empty(4, 4).random_(6)</span>
+<span class="sd">    &gt;&gt;&gt; wide = BayesianWide(input_dim=int(X.max().item()), pred_dim=1)</span>
+<span class="sd">    &gt;&gt;&gt; out = wide(X)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">input_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">pred_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">prior_sigma_1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">prior_sigma_2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.002</span><span class="p">,</span>
+        <span class="n">prior_pi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
+        <span class="n">posterior_mu_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">posterior_rho_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">7.0</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BayesianWide</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1">#  Embeddings: val + 1 because 0 is reserved for padding/unseen cateogories.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bayesian_wide_linear</span> <span class="o">=</span> <span class="n">bnn</span><span class="o">.</span><span class="n">BayesianEmbedding</span><span class="p">(</span>
+            <span class="n">n_embed</span><span class="o">=</span><span class="n">input_dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">embed_dim</span><span class="o">=</span><span class="n">pred_dim</span><span class="p">,</span>
+            <span class="n">padding_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">prior_sigma_1</span><span class="o">=</span><span class="n">prior_sigma_1</span><span class="p">,</span>
+            <span class="n">prior_sigma_2</span><span class="o">=</span><span class="n">prior_sigma_2</span><span class="p">,</span>
+            <span class="n">prior_pi</span><span class="o">=</span><span class="n">prior_pi</span><span class="p">,</span>
+            <span class="n">posterior_mu_init</span><span class="o">=</span><span class="n">posterior_mu_init</span><span class="p">,</span>
+            <span class="n">posterior_rho_init</span><span class="o">=</span><span class="n">posterior_rho_init</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">pred_dim</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bayesian_wide_linear</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">long</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span>
+        <span class="k">return</span> <span class="n">out</span>
 </code></pre></div></td></tr></table></div>
-                  </details>
+              </details>
 
 
 
@@ -1844,28 +2039,7 @@ normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 
 
 <a href="#pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">BayesianTabMlp</span><span class="p">(</span>
-    <span class="n">column_idx</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">cat_embed_input</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">cat_embed_activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">continuous_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">embed_continuous</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">cont_embed_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">cont_embed_dropout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">cont_embed_activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">use_cont_bias</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">cont_norm_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">mlp_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
-    <span class="n">mlp_activation</span><span class="o">=</span><span class="s2">&quot;leaky_relu&quot;</span><span class="p">,</span>
-    <span class="n">prior_sigma_1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">prior_sigma_2</span><span class="o">=</span><span class="mf">0.002</span><span class="p">,</span>
-    <span class="n">prior_pi</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
-    <span class="n">posterior_mu_init</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">posterior_rho_init</span><span class="o">=-</span><span class="mf">7.0</span><span class="p">,</span>
-    <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span>
-<span class="p">)</span>
-</code></pre></div>
+
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
@@ -1879,141 +2053,200 @@ passed through a series of probabilistic dense layers (i.e. a MLP).</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>column_idx</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>)
-          –
-          <div class="doc-md-description">
-            <p>Dict containing the index of the columns that will be passed through
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>column_idx</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dict containing the index of the columns that will be passed through
 the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'education':
 0, 'relationship': 1, 'workclass': 2, ...}</em></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>cat_embed_input</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int, int]]]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>List of Tuples with the column name, number of unique values and
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>cat_embed_input</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int, int]]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of Tuples with the column name, number of unique values and
 embedding dimension. e.g. <em>[(education, 11, 32), ...]</em></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>cat_embed_activation</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>, default:
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Activation function for the categorical embeddings, if any. Currently
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>cat_embed_activation</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Activation function for the categorical embeddings, if any. Currently
 <em>'tanh'</em>, <em>'relu'</em>, <em>'leaky_relu'</em> and <em>'gelu'</em> are supported</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>continuous_cols</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>, default:
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>List with the name of the numeric (aka continuous) columns</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>cont_norm_layer</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>continuous_cols</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List with the name of the numeric (aka continuous) columns</p>
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Type of normalization layer applied to the continuous features. Options
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>cont_norm_layer</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Type of normalization layer applied to the continuous features. Options
 are: 'layernorm', 'batchnorm' or None.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>embed_continuous</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>, default:
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Boolean indicating if the continuous columns will be embedded
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>embed_continuous</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Boolean indicating if the continuous columns will be embedded
 (i.e. passed each through a linear layer with or without activation)</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>cont_embed_dim</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>, default:
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Size of the continuous embeddings</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>cont_embed_dropout</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>cont_embed_dim</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Size of the continuous embeddings</p>
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Dropout for the continuous embeddings</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>use_cont_bias</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>cont_embed_dropout</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dropout for the continuous embeddings</p>
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Boolean indicating if bias will be used for the continuous embeddings</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>cont_embed_activation</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>use_cont_bias</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Boolean indicating if bias will be used for the continuous embeddings</p>
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Activation function for the continuous embeddings if any. Currently
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>cont_embed_activation</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Activation function for the continuous embeddings if any. Currently
 <em>'tanh'</em>, <em>'relu'</em>, <em>'leaky_relu'</em> and <em>'gelu'</em> are supported</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>mlp_hidden_dims</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>, default:
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List with the number of neurons per dense layer in the mlp.</p>
+              </div>
+            </td>
+            <td>
                   <code>[200, 100]</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>List with the number of neurons per dense layer in the mlp.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>mlp_activation</code></b>
-              (<code>str</code>, default:
-                  <code>&#39;leaky_relu&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Activation function for the dense layers of the MLP. Currently
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>mlp_activation</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Activation function for the dense layers of the MLP. Currently
 <em>'tanh'</em>, <em>'relu'</em>, <em>'leaky_relu'</em> and <em>'gelu'</em> are supported</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>prior_sigma_1</code></b>
-              (<code>float</code>, default:
-                  <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The prior weight distribution is a scaled mixture of two Gaussian
+              </div>
+            </td>
+            <td>
+                  <code>&#39;leaky_relu&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>prior_sigma_1</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The prior weight distribution is a scaled mixture of two Gaussian
 densities:</p>
 <div class="arithmatex">\[
    \begin{aligned}
@@ -2023,40 +2256,52 @@ densities:</p>
 <p><code>prior_sigma_1</code> is the prior of the sigma parameter for the first of the two
 Gaussians that will be mixed to produce the prior weight
 distribution.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>prior_sigma_2</code></b>
-              (<code>float</code>, default:
-                  <code>0.002</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Prior of the sigma parameter for the second of the two Gaussian
+              </div>
+            </td>
+            <td>
+                  <code>1</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>prior_sigma_2</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Prior of the sigma parameter for the second of the two Gaussian
 distributions that will be mixed to produce the prior weight
 distribution for each Bayesian linear and embedding layer</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>prior_pi</code></b>
-              (<code>float</code>, default:
-                  <code>0.8</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Scaling factor that will be used to mix the Gaussians to produce the
+              </div>
+            </td>
+            <td>
+                  <code>0.002</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>prior_pi</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Scaling factor that will be used to mix the Gaussians to produce the
 prior weight distribution ffor each Bayesian linear and embedding
 layer</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>posterior_mu_init</code></b>
-              (<code>float</code>, default:
-                  <code>0.0</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The posterior sample of the weights is defined as:</p>
+              </div>
+            </td>
+            <td>
+                  <code>0.8</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>posterior_mu_init</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The posterior sample of the weights is defined as:</p>
 <p>$$
    \begin{aligned}
    \mathbf{w} &amp;= \mu + log(1 + exp(\rho))
@@ -2071,43 +2316,67 @@ where:</p>
 \]</div>
 <p><span class="arithmatex">\(\mu\)</span> is initialised using a normal distributtion with mean
 <code>posterior_mu_init</code> and std equal to 0.1.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>posterior_rho_init</code></b>
-              (<code>float</code>, default:
-                  <code>-7.0</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>As in the case of <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\rho\)</span> is initialised using a
+              </div>
+            </td>
+            <td>
+                  <code>0.0</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>posterior_rho_init</code></td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>As in the case of <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\rho\)</span> is initialised using a
 normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 0.1.</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+            </td>
+            <td>
+                  <code>-7.0</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><span title="pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp.bayesian_cat_and_cont_embed">bayesian_cat_and_cont_embed</span></code></b>
-              (<code><span title="torch.nn.Module">Module</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>This is the module that processes the categorical and continuous columns</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><span title="pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp.bayesian_tab_mlp">bayesian_tab_mlp</span></code></b>
-              (<code><span title="torch.nn.Sequential">Sequential</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>mlp model that will receive the concatenation of the embeddings and
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp.bayesian_cat_and_cont_embed">bayesian_cat_and_cont_embed</span></code></td>
+            <td>
+                  <code><span title="torch.nn.Module">Module</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>This is the module that processes the categorical and continuous columns</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp.bayesian_tab_mlp">bayesian_tab_mlp</span></code></td>
+            <td>
+                  <code><span title="torch.nn.Sequential">Sequential</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>mlp model that will receive the concatenation of the embeddings and
 the continuous columns</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -2122,9 +2391,116 @@ the continuous columns</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
 
-                  <details class="quote">
-                    <summary>Source code in <code>pytorch_widedeep/bayesian_models/tabular/bayesian_mlp/bayesian_tab_mlp.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">123</span>
+              <details class="quote">
+                <summary>Source code in <code>pytorch_widedeep/bayesian_models/tabular/bayesian_mlp/bayesian_tab_mlp.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 16</span>
+<span class="normal"> 17</span>
+<span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
 <span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
@@ -2242,127 +2618,278 @@ the continuous columns</p>
 <span class="normal">238</span>
 <span class="normal">239</span>
 <span class="normal">240</span>
-<span class="normal">241</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">cat_embed_activation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">continuous_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">embed_continuous</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">cont_embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">cont_embed_dropout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">cont_embed_activation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">use_cont_bias</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">cont_norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;batchnorm&quot;</span><span class="p">,</span> <span class="s2">&quot;layernorm&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">mlp_hidden_dims</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
-    <span class="n">mlp_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">,</span>
-    <span class="n">prior_sigma_1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">prior_sigma_2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.002</span><span class="p">,</span>
-    <span class="n">prior_pi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
-    <span class="n">posterior_mu_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">posterior_rho_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">7.0</span><span class="p">,</span>
-    <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Bayesian models will require their own trainer and need the output layer</span>
-<span class="p">):</span>
-    <span class="nb">super</span><span class="p">(</span><span class="n">BayesianTabMlp</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">BayesianTabMlp</span><span class="p">(</span><span class="n">BaseBayesianModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Defines a `BayesianTabMlp` model.</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">column_idx</span> <span class="o">=</span> <span class="n">column_idx</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span> <span class="o">=</span> <span class="n">cat_embed_input</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_activation</span> <span class="o">=</span> <span class="n">cat_embed_activation</span>
+<span class="sd">    This class combines embedding representations of the categorical features</span>
+<span class="sd">    with numerical (aka continuous) features, embedded or not. These are then</span>
+<span class="sd">    passed through a series of probabilistic dense layers (i.e. a MLP).</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span> <span class="o">=</span> <span class="n">continuous_cols</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm_layer</span> <span class="o">=</span> <span class="n">cont_norm_layer</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">embed_continuous</span> <span class="o">=</span> <span class="n">embed_continuous</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span> <span class="o">=</span> <span class="n">cont_embed_dim</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dropout</span> <span class="o">=</span> <span class="n">cont_embed_dropout</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span> <span class="o">=</span> <span class="n">use_cont_bias</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_activation</span> <span class="o">=</span> <span class="n">cont_embed_activation</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    column_idx: Dict</span>
+<span class="sd">        Dict containing the index of the columns that will be passed through</span>
+<span class="sd">        the `TabMlp` model. Required to slice the tensors. e.g. _{&#39;education&#39;:</span>
+<span class="sd">        0, &#39;relationship&#39;: 1, &#39;workclass&#39;: 2, ...}_</span>
+<span class="sd">    cat_embed_input: List, Optional, default = None</span>
+<span class="sd">        List of Tuples with the column name, number of unique values and</span>
+<span class="sd">        embedding dimension. e.g. _[(education, 11, 32), ...]_</span>
+<span class="sd">    cat_embed_activation: Optional, str, default = None,</span>
+<span class="sd">        Activation function for the categorical embeddings, if any. Currently</span>
+<span class="sd">        _&#39;tanh&#39;_, _&#39;relu&#39;_, _&#39;leaky_relu&#39;_ and _&#39;gelu&#39;_ are supported</span>
+<span class="sd">    continuous_cols: List, Optional, default = None</span>
+<span class="sd">        List with the name of the numeric (aka continuous) columns</span>
+<span class="sd">    cont_norm_layer: str, default =  &quot;batchnorm&quot;</span>
+<span class="sd">        Type of normalization layer applied to the continuous features. Options</span>
+<span class="sd">        are: &#39;layernorm&#39;, &#39;batchnorm&#39; or None.</span>
+<span class="sd">    embed_continuous: bool, default = False,</span>
+<span class="sd">        Boolean indicating if the continuous columns will be embedded</span>
+<span class="sd">        (i.e. passed each through a linear layer with or without activation)</span>
+<span class="sd">    cont_embed_dim: int, default = 32,</span>
+<span class="sd">        Size of the continuous embeddings</span>
+<span class="sd">    cont_embed_dropout: float, default = 0.1,</span>
+<span class="sd">        Dropout for the continuous embeddings</span>
+<span class="sd">    use_cont_bias: bool, default = True,</span>
+<span class="sd">        Boolean indicating if bias will be used for the continuous embeddings</span>
+<span class="sd">    cont_embed_activation: Optional, str, default = None,</span>
+<span class="sd">        Activation function for the continuous embeddings if any. Currently</span>
+<span class="sd">        _&#39;tanh&#39;_, _&#39;relu&#39;_, _&#39;leaky_relu&#39;_ and _&#39;gelu&#39;_ are supported</span>
+<span class="sd">    mlp_hidden_dims: List, default = [200, 100]</span>
+<span class="sd">        List with the number of neurons per dense layer in the mlp.</span>
+<span class="sd">    mlp_activation: str, default = &quot;relu&quot;</span>
+<span class="sd">        Activation function for the dense layers of the MLP. Currently</span>
+<span class="sd">        _&#39;tanh&#39;_, _&#39;relu&#39;_, _&#39;leaky_relu&#39;_ and _&#39;gelu&#39;_ are supported</span>
+<span class="sd">    prior_sigma_1: float, default = 1.0</span>
+<span class="sd">        The prior weight distribution is a scaled mixture of two Gaussian</span>
+<span class="sd">        densities:</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="o">=</span> <span class="n">mlp_hidden_dims</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="o">=</span> <span class="n">mlp_activation</span>
+<span class="sd">        $$</span>
+<span class="sd">           \begin{aligned}</span>
+<span class="sd">           P(\mathbf{w}) = \prod_{i=j} \pi N (\mathbf{w}_j | 0, \sigma_{1}^{2}) + (1 - \pi) N (\mathbf{w}_j | 0, \sigma_{2}^{2})</span>
+<span class="sd">           \end{aligned}</span>
+<span class="sd">        $$</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_1</span> <span class="o">=</span> <span class="n">prior_sigma_1</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_2</span> <span class="o">=</span> <span class="n">prior_sigma_2</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">prior_pi</span> <span class="o">=</span> <span class="n">prior_pi</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">posterior_mu_init</span> <span class="o">=</span> <span class="n">posterior_mu_init</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">posterior_rho_init</span> <span class="o">=</span> <span class="n">posterior_rho_init</span>
+<span class="sd">        `prior_sigma_1` is the prior of the sigma parameter for the first of the two</span>
+<span class="sd">        Gaussians that will be mixed to produce the prior weight</span>
+<span class="sd">        distribution.</span>
+<span class="sd">    prior_sigma_2: float, default = 0.002</span>
+<span class="sd">        Prior of the sigma parameter for the second of the two Gaussian</span>
+<span class="sd">        distributions that will be mixed to produce the prior weight</span>
+<span class="sd">        distribution for each Bayesian linear and embedding layer</span>
+<span class="sd">    prior_pi: float, default = 0.8</span>
+<span class="sd">        Scaling factor that will be used to mix the Gaussians to produce the</span>
+<span class="sd">        prior weight distribution ffor each Bayesian linear and embedding</span>
+<span class="sd">        layer</span>
+<span class="sd">    posterior_mu_init: float = 0.0</span>
+<span class="sd">        The posterior sample of the weights is defined as:</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">pred_dim</span> <span class="o">=</span> <span class="n">pred_dim</span>
+<span class="sd">        $$</span>
+<span class="sd">           \begin{aligned}</span>
+<span class="sd">           \mathbf{w} &amp;= \mu + log(1 + exp(\rho))</span>
+<span class="sd">           \end{aligned}</span>
+<span class="sd">        $$</span>
+<span class="sd">        where:</span>
 
-    <span class="n">allowed_activations</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">,</span> <span class="s2">&quot;tanh&quot;</span><span class="p">,</span> <span class="s2">&quot;gelu&quot;</span><span class="p">]</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_activations</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;Currently, only the following activation functions are supported &quot;</span>
-            <span class="s2">&quot;for the Bayesian MLP&#39;s dense layers: </span><span class="si">{}</span><span class="s2">. Got &#39;</span><span class="si">{}</span><span class="s2">&#39; instead&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">allowed_activations</span><span class="p">),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span><span class="p">,</span>
+<span class="sd">        $$</span>
+<span class="sd">           \begin{aligned}</span>
+<span class="sd">           \mathcal{N}(x\vert \mu, \sigma) &amp;= \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}\\</span>
+<span class="sd">           \log{\mathcal{N}(x\vert \mu, \sigma)} &amp;= -\log{\sqrt{2\pi}} -\log{\sigma} -\frac{(x-\mu)^2}{2\sigma^2}\\</span>
+<span class="sd">           \end{aligned}</span>
+<span class="sd">        $$</span>
+
+<span class="sd">        $\mu$ is initialised using a normal distributtion with mean</span>
+<span class="sd">        `posterior_mu_init` and std equal to 0.1.</span>
+<span class="sd">    posterior_rho_init: float = -7.0</span>
+<span class="sd">        As in the case of $\mu$, $\rho$ is initialised using a</span>
+<span class="sd">        normal distributtion with mean `posterior_rho_init` and std equal to</span>
+<span class="sd">        0.1.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bayesian_cat_and_cont_embed: nn.Module</span>
+<span class="sd">        This is the module that processes the categorical and continuous columns</span>
+<span class="sd">    bayesian_tab_mlp: nn.Sequential</span>
+<span class="sd">        mlp model that will receive the concatenation of the embeddings and</span>
+<span class="sd">        the continuous columns</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import torch</span>
+<span class="sd">    &gt;&gt;&gt; from pytorch_widedeep.bayesian_models import BayesianTabMlp</span>
+<span class="sd">    &gt;&gt;&gt; X_tab = torch.cat((torch.empty(5, 4).random_(4), torch.rand(5, 1)), axis=1)</span>
+<span class="sd">    &gt;&gt;&gt; colnames = [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; cat_embed_input = [(u,i,j) for u,i,j in zip(colnames[:4], [4]*4, [8]*4)]</span>
+<span class="sd">    &gt;&gt;&gt; column_idx = {k:v for v,k in enumerate(colnames)}</span>
+<span class="sd">    &gt;&gt;&gt; model = BayesianTabMlp(mlp_hidden_dims=[8,4], column_idx=column_idx, cat_embed_input=cat_embed_input,</span>
+<span class="sd">    ... continuous_cols = [&#39;e&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; out = model(X_tab)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">column_idx</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">cat_embed_input</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cat_embed_activation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">continuous_cols</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">embed_continuous</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cont_embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cont_embed_dropout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cont_embed_activation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">use_cont_bias</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">cont_norm_layer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;batchnorm&quot;</span><span class="p">,</span> <span class="s2">&quot;layernorm&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mlp_hidden_dims</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+        <span class="n">mlp_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">,</span>
+        <span class="n">prior_sigma_1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">prior_sigma_2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.002</span><span class="p">,</span>
+        <span class="n">prior_pi</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span>
+        <span class="n">posterior_mu_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">posterior_rho_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">7.0</span><span class="p">,</span>
+        <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Bayesian models will require their own trainer and need the output layer</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BayesianTabMlp</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">column_idx</span> <span class="o">=</span> <span class="n">column_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span> <span class="o">=</span> <span class="n">cat_embed_input</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_activation</span> <span class="o">=</span> <span class="n">cat_embed_activation</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span> <span class="o">=</span> <span class="n">continuous_cols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm_layer</span> <span class="o">=</span> <span class="n">cont_norm_layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embed_continuous</span> <span class="o">=</span> <span class="n">embed_continuous</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span> <span class="o">=</span> <span class="n">cont_embed_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dropout</span> <span class="o">=</span> <span class="n">cont_embed_dropout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span> <span class="o">=</span> <span class="n">use_cont_bias</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_activation</span> <span class="o">=</span> <span class="n">cont_embed_activation</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp_hidden_dims</span> <span class="o">=</span> <span class="n">mlp_hidden_dims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="o">=</span> <span class="n">mlp_activation</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_1</span> <span class="o">=</span> <span class="n">prior_sigma_1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_2</span> <span class="o">=</span> <span class="n">prior_sigma_2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prior_pi</span> <span class="o">=</span> <span class="n">prior_pi</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">posterior_mu_init</span> <span class="o">=</span> <span class="n">posterior_mu_init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">posterior_rho_init</span> <span class="o">=</span> <span class="n">posterior_rho_init</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pred_dim</span> <span class="o">=</span> <span class="n">pred_dim</span>
+
+        <span class="n">allowed_activations</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span> <span class="s2">&quot;leaky_relu&quot;</span><span class="p">,</span> <span class="s2">&quot;tanh&quot;</span><span class="p">,</span> <span class="s2">&quot;gelu&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_activations</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Currently, only the following activation functions are supported &quot;</span>
+                <span class="s2">&quot;for the Bayesian MLP&#39;s dense layers: </span><span class="si">{}</span><span class="s2">. Got &#39;</span><span class="si">{}</span><span class="s2">&#39; instead&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">allowed_activations</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mlp_activation</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="p">)</span>
-        <span class="p">)</span>
 
-    <span class="c1"># Categorical</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed</span> <span class="o">=</span> <span class="n">BayesianDiffSizeCatEmbeddings</span><span class="p">(</span>
-            <span class="n">column_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">column_idx</span><span class="p">,</span>
-            <span class="n">embed_input</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">,</span>
-            <span class="n">prior_sigma_1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_1</span><span class="p">,</span>
-            <span class="n">prior_sigma_2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_2</span><span class="p">,</span>
-            <span class="n">prior_pi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_pi</span><span class="p">,</span>
-            <span class="n">posterior_mu_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_mu_init</span><span class="p">,</span>
-            <span class="n">posterior_rho_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_rho_init</span><span class="p">,</span>
-            <span class="n">activation_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_activation</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cat_out_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">embed</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">embed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">]))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cat_out_dim</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="c1"># Continuous</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cont_idx</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">column_idx</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">cont_norm_layer</span> <span class="o">==</span> <span class="s2">&quot;layernorm&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm</span><span class="p">:</span> <span class="n">NormLayers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">))</span>
-        <span class="k">elif</span> <span class="n">cont_norm_layer</span> <span class="o">==</span> <span class="s2">&quot;batchnorm&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_continuous</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
-                <span class="s2">&quot;If &#39;embed_continuous&#39; is True, &#39;cont_embed_dim&#39; must be &quot;</span>
-                <span class="s2">&quot;provided&quot;</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed</span> <span class="o">=</span> <span class="n">BayesianContEmbeddings</span><span class="p">(</span>
-                <span class="n">n_cont_cols</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">),</span>
-                <span class="n">embed_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span><span class="p">,</span>
+        <span class="c1"># Categorical</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed</span> <span class="o">=</span> <span class="n">BayesianDiffSizeCatEmbeddings</span><span class="p">(</span>
+                <span class="n">column_idx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">column_idx</span><span class="p">,</span>
+                <span class="n">embed_input</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">,</span>
                 <span class="n">prior_sigma_1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_1</span><span class="p">,</span>
                 <span class="n">prior_sigma_2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_2</span><span class="p">,</span>
                 <span class="n">prior_pi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_pi</span><span class="p">,</span>
                 <span class="n">posterior_mu_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_mu_init</span><span class="p">,</span>
                 <span class="n">posterior_rho_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_rho_init</span><span class="p">,</span>
-                <span class="n">use_bias</span><span class="o">=</span><span class="p">(</span>
-                    <span class="kc">False</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span>
-                <span class="p">),</span>
-                <span class="n">activation_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_activation</span><span class="p">,</span>
+                <span class="n">activation_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_activation</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cat_out_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">embed</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">embed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">]))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cat_out_dim</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_out_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span>
+        <span class="c1"># Continuous</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cont_idx</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">column_idx</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">cont_norm_layer</span> <span class="o">==</span> <span class="s2">&quot;layernorm&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm</span><span class="p">:</span> <span class="n">NormLayers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">cont_norm_layer</span> <span class="o">==</span> <span class="s2">&quot;batchnorm&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_continuous</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="p">(</span>
+                    <span class="s2">&quot;If &#39;embed_continuous&#39; is True, &#39;cont_embed_dim&#39; must be &quot;</span>
+                    <span class="s2">&quot;provided&quot;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed</span> <span class="o">=</span> <span class="n">BayesianContEmbeddings</span><span class="p">(</span>
+                    <span class="n">n_cont_cols</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">),</span>
+                    <span class="n">embed_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span><span class="p">,</span>
+                    <span class="n">prior_sigma_1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_1</span><span class="p">,</span>
+                    <span class="n">prior_sigma_2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_sigma_2</span><span class="p">,</span>
+                    <span class="n">prior_pi</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prior_pi</span><span class="p">,</span>
+                    <span class="n">posterior_mu_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_mu_init</span><span class="p">,</span>
+                    <span class="n">posterior_rho_init</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">posterior_rho_init</span><span class="p">,</span>
+                    <span class="n">use_bias</span><span class="o">=</span><span class="p">(</span>
+                        <span class="kc">False</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cont_bias</span>
+                    <span class="p">),</span>
+                    <span class="n">activation_fn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_activation</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="n">mlp_hidden_dims</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">]</span> <span class="o">+</span> <span class="n">mlp_hidden_dims</span> <span class="o">+</span> <span class="p">[</span><span class="n">pred_dim</span><span class="p">]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">bayesian_tab_mlp</span> <span class="o">=</span> <span class="n">BayesianMLP</span><span class="p">(</span>
-        <span class="n">mlp_hidden_dims</span><span class="p">,</span>
-        <span class="n">mlp_activation</span><span class="p">,</span>
-        <span class="kc">True</span><span class="p">,</span>  <span class="c1"># use_bias</span>
-        <span class="n">prior_sigma_1</span><span class="p">,</span>
-        <span class="n">prior_sigma_2</span><span class="p">,</span>
-        <span class="n">prior_pi</span><span class="p">,</span>
-        <span class="n">posterior_mu_init</span><span class="p">,</span>
-        <span class="n">posterior_rho_init</span><span class="p">,</span>
-    <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_out_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_out_dim</span>
+
+        <span class="n">mlp_hidden_dims</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">]</span> <span class="o">+</span> <span class="n">mlp_hidden_dims</span> <span class="o">+</span> <span class="p">[</span><span class="n">pred_dim</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bayesian_tab_mlp</span> <span class="o">=</span> <span class="n">BayesianMLP</span><span class="p">(</span>
+            <span class="n">mlp_hidden_dims</span><span class="p">,</span>
+            <span class="n">mlp_activation</span><span class="p">,</span>
+            <span class="kc">True</span><span class="p">,</span>  <span class="c1"># use_bias</span>
+            <span class="n">prior_sigma_1</span><span class="p">,</span>
+            <span class="n">prior_sigma_2</span><span class="p">,</span>
+            <span class="n">prior_pi</span><span class="p">,</span>
+            <span class="n">posterior_mu_init</span><span class="p">,</span>
+            <span class="n">posterior_rho_init</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_embeddings</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bayesian_tab_mlp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">_get_embeddings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">tensors_to_concat</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x_cat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cat_embed</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">tensors_to_concat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_cat</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">continuous_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x_cont</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_norm</span><span class="p">((</span><span class="n">X</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_idx</span><span class="p">]</span><span class="o">.</span><span class="n">float</span><span class="p">()))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed_continuous</span><span class="p">:</span>
+                <span class="n">x_cont</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed</span><span class="p">(</span><span class="n">x_cont</span><span class="p">)</span>
+                <span class="n">x_cont</span> <span class="o">=</span> <span class="n">einops</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">x_cont</span><span class="p">,</span> <span class="s2">&quot;b s d -&gt; b (s d)&quot;</span><span class="p">)</span>
+            <span class="n">tensors_to_concat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_cont</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">tensors_to_concat</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span>
 </code></pre></div></td></tr></table></div>
-                  </details>
+              </details>
 
 
 

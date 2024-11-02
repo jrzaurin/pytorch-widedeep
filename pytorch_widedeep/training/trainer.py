@@ -787,7 +787,7 @@ class Trainer(BaseTrainer):
         dataset: WideDeepDataset,
         batch_size: int,
         dataloader_args: Dict[str, Any],
-    ) -> DataLoader | CustomDataLoader:
+    ) -> Union[DataLoader, CustomDataLoader]:
         if dataloader is not None:
             dataloader.set_dataset(dataset)
             return dataloader

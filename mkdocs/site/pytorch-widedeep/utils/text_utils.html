@@ -1414,7 +1414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/16_Self_Supervised_Pretraning_pt1.ipynb" class="md-nav__link">
+      <a href="../../examples/15_Self_Supervised_Pretraning_pt1.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1435,7 +1435,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/16_Self_Supervised_Pretraning_pt2.ipynb" class="md-nav__link">
+      <a href="../../examples/15_Self_Supervised_Pretraning_pt2.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1456,7 +1456,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/17_Usign_a_custom_hugging_face_model.ipynb" class="md-nav__link">
+      <a href="../../examples/16_Usign_a_custom_hugging_face_model.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1477,7 +1477,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/18_feature_importance_via_attention_weights.ipynb" class="md-nav__link">
+      <a href="../../examples/17_feature_importance_via_attention_weights.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1498,7 +1498,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/19_wide_and_deep_for_recsys_pt1.ipynb" class="md-nav__link">
+      <a href="../../examples/18_wide_and_deep_for_recsys_pt1.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1519,7 +1519,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/19_wide_and_deep_for_recsys_pt2.ipynb" class="md-nav__link">
+      <a href="../../examples/18_wide_and_deep_for_recsys_pt2.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1540,7 +1540,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/20_load_from_folder_functionality.ipynb" class="md-nav__link">
+      <a href="../../examples/19_load_from_folder_functionality.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1561,7 +1561,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/21_Using_huggingface_within_widedeep.ipynb" class="md-nav__link">
+      <a href="../../examples/20_Using_huggingface_within_widedeep.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1645,56 +1645,88 @@ indicate wether or not to lower case all the token in the doc</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>doc</code></b>
-              (<code>str</code>)
-          –
-          <div class="doc-md-description">
-            <p>Input document.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>lower</code></b>
-              (<code>bool</code>, default:
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>doc</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input document.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>lower</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Lower case tokens in the input doc</p>
+              </div>
+            </td>
+            <td>
                   <code>False</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Lower case tokens in the input doc</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>deacc</code></b>
-              (<code>bool</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>deacc</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Remove accent marks from tokens using <code>Gensim</code>'s <code>deaccent</code></p>
+              </div>
+            </td>
+            <td>
                   <code>False</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Remove accent marks from tokens using <code>Gensim</code>'s <code>deaccent</code></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>min_len</code></b>
-              (<code>int</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>min_len</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Minimum length of token (inclusive). Shorter tokens are discarded.</p>
+              </div>
+            </td>
+            <td>
                   <code>2</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Minimum length of token (inclusive). Shorter tokens are discarded.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>max_len</code></b>
-              (<code>int</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>max_len</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Maximum length of token in result (inclusive). Longer tokens are discarded.</p>
+              </div>
+            </td>
+            <td>
                   <code>15</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Maximum length of token in result (inclusive). Longer tokens are discarded.</p>
-          </div>
-        </li>
-    </ul>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -1704,16 +1736,27 @@ indicate wether or not to lower case all the token in the doc</p>
 </code></pre></div>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="typing.List">List</span>[str]</code>
-          –
-          <div class="doc-md-description">
-            <p>List with the processed tokens</p>
-          </div>
-        </li>
-    </ul>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.List">List</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List with the processed tokens</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/utils/text_utils.py</code></summary>
@@ -1824,42 +1867,72 @@ indicate wether or not to lower case all the token in the doc</p>
         <p>Tokenization using <code>Fastai</code>'s <code>Tokenizer</code> because it does a
 series of very convenients things during the tokenization process</p>
 <p>See <code>pytorch_widedeep.utils.fastai_utils.Tokenizer</code></p>
+<p><img alt="ℹ️" class="emojione" src="https://cdnjs.cloudflare.com/ajax/libs/emojione/2.2.7/assets/png/2139.png" title=":information_source:" /> <strong>NOTE</strong>:
+<code>get_texts</code> uses <code>pytorch_widedeep.utils.fastai_transforms.Tokenizer</code>.
+Such tokenizer uses a series of convenient processing steps, including
+the  addition of some special tokens, such as <code>TK_MAJ</code> (<code>xxmaj</code>), used to
+indicate the next word begins with a capital in the original text. For more
+details of special tokens please see the <a href="https://docs.fast.ai/text.core.html#Tokenizing"><code>fastai</code> `docs</a></p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>texts</code></b>
-              (<code><span title="typing.List">List</span>[str]</code>)
-          –
-          <div class="doc-md-description">
-            <p>List of str with the texts (or documents). One str per document</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>already_processed</code></b>
-              (<code><span title="typing.Optional">Optional</span>[bool]</code>, default:
-                  <code>False</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Boolean indicating if the text is already processed and we simply want
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>texts</code></td>
+            <td>
+                  <code><span title="typing.List">List</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of str with the texts (or documents). One str per document</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>already_processed</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[bool]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Boolean indicating if the text is already processed and we simply want
 to tokenize it. This parameter is thought for those cases where the
 input sequences might not be text (but IDs, or anything else) and we
 just want to tokenize it</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>n_cpus</code></b>
-              (<code><span title="typing.Optional">Optional</span>[int]</code>, default:
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>n_cpus</code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[int]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>number of CPUs to used during the tokenization process</p>
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>number of CPUs to used during the tokenization process</p>
-          </div>
-        </li>
-    </ul>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -1870,58 +1943,27 @@ just want to tokenize it</p>
 </code></pre></div>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="typing.List">List</span>[<span title="typing.List">List</span>[str]]</code>
-          –
-          <div class="doc-md-description">
-            <p>List of lists, one list per '<em>document</em>' containing its corresponding tokens</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-              <code>information_source: **NOTE**:</code>
-          –
-          <div class="doc-md-description">
-            
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-              <code>`get_texts` uses `pytorch_widedeep.utils.fastai_transforms.Tokenizer`.</code>
-          –
-          <div class="doc-md-description">
-            
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-              <code>Such tokenizer uses a series of convenient processing steps, including</code>
-          –
-          <div class="doc-md-description">
-            
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-              <code>the  addition of some special tokens, such as `TK_MAJ` (`xxmaj`), used to</code>
-          –
-          <div class="doc-md-description">
-            
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-              <code>indicate the next word begins with a capital in the original text. For more</code>
-          –
-          <div class="doc-md-description">
-            
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-              <code>details of special tokens please see the [`fastai` `docs](https://docs.fast.ai/text.core.html#Tokenizing)</code>
-          –
-          <div class="doc-md-description">
-            
-          </div>
-        </li>
-    </ul>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="typing.List">List</span>[<span title="typing.List">List</span>[str]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of lists, one list per '<em>document</em>' containing its corresponding tokens</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/utils/text_utils.py</code></summary>
@@ -1984,6 +2026,13 @@ just want to tokenize it</p>
 
 <span class="sd">    See `pytorch_widedeep.utils.fastai_utils.Tokenizer`</span>
 
+<span class="sd">    :information_source: **NOTE**:</span>
+<span class="sd">    `get_texts` uses `pytorch_widedeep.utils.fastai_transforms.Tokenizer`.</span>
+<span class="sd">    Such tokenizer uses a series of convenient processing steps, including</span>
+<span class="sd">    the  addition of some special tokens, such as `TK_MAJ` (`xxmaj`), used to</span>
+<span class="sd">    indicate the next word begins with a capital in the original text. For more</span>
+<span class="sd">    details of special tokens please see the [`fastai` `docs](https://docs.fast.ai/text.core.html#Tokenizing)</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    texts: List</span>
@@ -2007,13 +2056,6 @@ just want to tokenize it</p>
 <span class="sd">    -------</span>
 <span class="sd">    List[List[str]]</span>
 <span class="sd">        List of lists, one list per &#39;_document_&#39; containing its corresponding tokens</span>
-
-<span class="sd">    :information_source: **NOTE**:</span>
-<span class="sd">    `get_texts` uses `pytorch_widedeep.utils.fastai_transforms.Tokenizer`.</span>
-<span class="sd">    Such tokenizer uses a series of convenient processing steps, including</span>
-<span class="sd">    the  addition of some special tokens, such as `TK_MAJ` (`xxmaj`), used to</span>
-<span class="sd">    indicate the next word begins with a capital in the original text. For more</span>
-<span class="sd">    details of special tokens please see the [`fastai` `docs](https://docs.fast.ai/text.core.html#Tokenizing)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">num_cpus</span> <span class="o">=</span> <span class="n">n_cpus</span> <span class="k">if</span> <span class="n">n_cpus</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
@@ -2048,45 +2090,75 @@ padded sequences according to the input parameters.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>seq</code></b>
-              (<code><span title="typing.List">List</span>[int]</code>)
-          –
-          <div class="doc-md-description">
-            <p>List of int with the <code>numericalised</code> tokens</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>maxlen</code></b>
-              (<code>int</code>)
-          –
-          <div class="doc-md-description">
-            <p>Maximum length of the padded sequences</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>pad_first</code></b>
-              (<code>bool</code>, default:
-                  <code>True</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Indicates whether the padding index will be added at the beginning or the
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>seq</code></td>
+            <td>
+                  <code><span title="typing.List">List</span>[int]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List of int with the <code>numericalised</code> tokens</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>maxlen</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Maximum length of the padded sequences</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>pad_first</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Indicates whether the padding index will be added at the beginning or the
 end of the sequences</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>pad_idx</code></b>
-              (<code>int</code>, default:
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>pad_idx</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.</p>
+              </div>
+            </td>
+            <td>
                   <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>padding index. Fastai's Tokenizer leaves 0 for the 'unknown' token.</p>
-          </div>
-        </li>
-    </ul>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -2097,16 +2169,27 @@ end of the sequences</p>
 </code></pre></div>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="numpy.ndarray">ndarray</span></code>
-          –
-          <div class="doc-md-description">
-            <p>numpy array with the padded sequences</p>
-          </div>
-        </li>
-    </ul>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>numpy array with the padded sequences</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/utils/text_utils.py</code></summary>
@@ -2223,54 +2306,97 @@ word-embeddings vector</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>vocab</code></b>
-              (<code><span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="pytorch_widedeep.utils.fastai_transforms.Vocab" href="fastai_transforms.html#pytorch_widedeep.utils.fastai_transforms.Vocab">Vocab</a>, <span title="pytorch_widedeep.utils.fastai_transforms.ChunkVocab">ChunkVocab</span>]</code>)
-          –
-          <div class="doc-md-description">
-            <p>see <code>pytorch_widedeep.utils.fastai_utils.Vocab</code></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>word_vectors_path</code></b>
-              (<code>str</code>)
-          –
-          <div class="doc-md-description">
-            <p>path to the pretrained word embeddings</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>min_freq</code></b>
-              (<code>int</code>)
-          –
-          <div class="doc-md-description">
-            <p>minimum frequency required for a word to be in the vocabulary</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>verbose</code></b>
-              (<code>int</code>, default:
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>vocab</code></td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="pytorch_widedeep.utils.fastai_transforms.Vocab" href="fastai_transforms.html#pytorch_widedeep.utils.fastai_transforms.Vocab">Vocab</a>, <span title="pytorch_widedeep.utils.fastai_transforms.ChunkVocab">ChunkVocab</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>see <code>pytorch_widedeep.utils.fastai_utils.Vocab</code></p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>word_vectors_path</code></td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>path to the pretrained word embeddings</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>min_freq</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>minimum frequency required for a word to be in the vocabulary</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>verbose</code></td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>level of verbosity. Set to 0 for no verbosity</p>
+              </div>
+            </td>
+            <td>
                   <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>level of verbosity. Set to 0 for no verbosity</p>
-          </div>
-        </li>
-    </ul>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><span title="numpy.ndarray">ndarray</span></code>
-          –
-          <div class="doc-md-description">
-            <p>Pretrained word embeddings</p>
-          </div>
-        </li>
-    </ul>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Pretrained word embeddings</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/utils/text_utils.py</code></summary>

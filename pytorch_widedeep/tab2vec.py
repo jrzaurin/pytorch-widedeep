@@ -85,7 +85,7 @@ class Tab2Vec:
         self,
         tab_preprocessor: TabPreprocessor,
         model: Union[WideDeep, BayesianWide, BayesianTabMlp],
-        device: str | torch.device,
+        device: Union[str, torch.device],
         return_dataframe: bool = False,
         verbose: bool = False,
     ):

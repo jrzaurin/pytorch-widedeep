@@ -12,7 +12,6 @@ self-supervised pre-training with tabular data.
     selection:
         filters:
             - "!^forward$"
-            - "!^_reset_parameters$"
 
 ::: pytorch_widedeep.models.tabular.mlp.tab_mlp.TabMlp
     selection:
@@ -82,42 +81,35 @@ self-supervised pre-training with tabular data.
 ::: pytorch_widedeep.models.text.rnns.basic_rnn.BasicRNN
     selection:
         filters:
-            - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
 ::: pytorch_widedeep.models.text.rnns.attentive_rnn.AttentiveRNN
     selection:
         filters:
-            - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
 ::: pytorch_widedeep.models.text.rnns.stacked_attentive_rnn.StackedAttentiveRNN
     selection:
         filters:
-            - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
 ::: pytorch_widedeep.models.text.huggingface_transformers.hf_model.HFModel
     selection:
         filters:
-            - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
 
 ::: pytorch_widedeep.models.image.vision.Vision
     selection:
         filters:
-            - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
 ::: pytorch_widedeep.models.model_fusion.ModelFuser
     selection:
         filters:
-            - "!^_"  # exclude all members starting with _
             - "!^forward$"
 
 ::: pytorch_widedeep.models.wide_deep.WideDeep
     selection:
         filters:
-            - "!^_"  # exclude all members starting with _
             - "!^forward$"

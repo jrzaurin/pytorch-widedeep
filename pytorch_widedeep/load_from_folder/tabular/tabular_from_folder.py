@@ -108,6 +108,21 @@ class TabFromFolder:
         Optional[Union[str, List[str]]],
         Optional[Union[int, float]],
     ]:
+        """
+        This method is used to retrieve a sample from the csv file
+
+        Parameters
+        ----------
+        idx: int
+            the index of the sample to retrieve
+
+        Returns
+        -------
+        Tuple
+            a tuple with the processed tabular data, the text data and/or the
+            image data, and the target variable
+        """
+
         path = os.path.join(self.directory, self.fname)
 
         try:

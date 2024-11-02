@@ -18,25 +18,48 @@ added in the future.
         filters:
             - "!^forward$"
 
-
 ::: pytorch_widedeep.models.rec.deepffm.DeepFieldAwareFactorizationMachine
     selection:
         filters:
             - "!^forward$"
-
-
-::: pytorch_widedeep.models.rec.xdeepfm.ExtremeDeepFactorizationMachine
-    selection:
-        filters:
-            - "!^forward$"
-
 
 ::: pytorch_widedeep.models.rec.din.DeepInterestNetwork
     selection:
         filters:
             - "!^forward$"
 
+::: pytorch_widedeep.models.rec.xdeepfm.ExtremeDeepFactorizationMachine
+    selection:
+        filters:
+            - "!^forward$"
+
+::: pytorch_widedeep.models.rec.autoint.AutoInt
+    selection:
+        filters:
+            - "!^forward$"
+
+::: pytorch_widedeep.models.rec.autoint_plus.AutoIntPlus
+    selection:
+        filters:
+            - "!^forward$"
+
+
 ::: pytorch_widedeep.models.rec.basic_transformer.Transformer
+    selection:
+        filters:
+            - "!^forward$"
+
+::: pytorch_widedeep.models.rec.dcn.DeepCrossNetwork
+    selection:
+        filters:
+            - "!^forward$"
+
+::: pytorch_widedeep.models.rec.dcnv2.DeepCrossNetworkV2
+    selection:
+        filters:
+            - "!^forward$"
+
+::: pytorch_widedeep.models.rec.gdcn.GatedDeepCrossNetwork
     selection:
         filters:
             - "!^forward$"

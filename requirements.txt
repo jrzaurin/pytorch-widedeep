@@ -5,7 +5,6 @@ scikit-learn>=1.0.2
 gensim
 spacy
 opencv-contrib-python>=4.9.0.80
-imutils
 tqdm
 torch >= 2.0.0
 torchvision >= 0.15.0

@@ -10,7 +10,7 @@ import torch
 from torchmetrics import Metric as TorchMetric
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from pytorch_widedeep.metrics import Metric, RankingMetrics, MultipleMetrics
+from pytorch_widedeep.metrics import Metric, MultipleMetrics, is_ranking_metric
 from pytorch_widedeep.wdtypes import (
     Any,
     Dict,
@@ -304,9 +304,7 @@ class BaseTrainer(ABC):
         if metrics is not None:
             self.metric = MultipleMetrics(metrics)
             if (
-                any(
-                    [isinstance(m, RankingMetrics) for m in self.metric._metrics]  # type: ignore[arg-type, misc]
-                )
+                any([is_ranking_metric(m) for m in self.metric._metrics])
                 and self.verbose
             ):
                 UserWarning(
@@ -320,9 +318,7 @@ class BaseTrainer(ABC):
         if eval_metrics is not None:
             self.eval_metric = MultipleMetrics(eval_metrics)
             if (
-                any(
-                    [isinstance(m, RankingMetrics) for m in self.eval_metric._metrics]  # type: ignore[arg-type, misc]
-                )
+                any([is_ranking_metric(m) for m in self.eval_metric._metrics])
                 and self.verbose
             ):
                 UserWarning(

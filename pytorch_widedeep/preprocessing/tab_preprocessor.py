@@ -116,7 +116,7 @@ class TabPreprocessor(BasePreprocessor):
         List containing the name of the categorical columns that will be
         represented by embeddings (e.g. _['education', 'relationship', ...]_) or
         a Tuple with the name and the embedding dimension (e.g.: _[
-        ('education',32), ('relationship',16), ...]_)
+        ('education',32), ('relationship',16), ...]_).<br/> Param alias: `embed_cols`
     continuous_cols: List, default = None
         List with the name of the continuous cols
     quantization_setup: int or Dict, default = None
@@ -125,7 +125,8 @@ class TabPreprocessor(BasePreprocessor):
         quantized using this value as the number of bins. Alternatively, a
         dictionary where the keys are the column names to quantize and the
         values are the either integers indicating the number of bins or a
-        list of scalars indicating the bin edges can also be used.
+        list of scalars indicating the bin edges can also be used.<br/>
+        Param alias: `cols_and_bins`
     cols_to_scale: List or str, default = None,
         List with the names of the columns that will be standarised via
         sklearn's `StandardScaler`. It can also be the string `'all'` in
@@ -156,7 +157,7 @@ class TabPreprocessor(BasePreprocessor):
         _['education', 'relationship', ...]_. This is because they will all be
          encoded using embeddings of the same dim, which will be specified
          later when the model is defined. <br/> Param alias:
-         `for_transformer`
+         `for_transformer`, `for_matrix_factorization`, `for_mf`
     with_cls_token: bool, default = False
         Boolean indicating if a `'[CLS]'` token will be added to the dataset
         when using attention-based models. The final hidden state
@@ -194,26 +195,36 @@ class TabPreprocessor(BasePreprocessor):
 
     Attributes
     ----------
-    embed_dim: Dict
-        Dictionary where keys are the embed cols and values are the embedding
-        dimensions. If `with_attention` is set to `True` this attribute
-        is not generated during the `fit` process
+    cat_cols: List[str]
+        List containing the names of the categorical columns after processing.
+    cols_and_bins: Optional[Dict[str, Union[int, List[float]]]]
+        Dictionary containing the quantization setup after processing if
+        quantization is requested. This is derived from the
+        quantization_setup parameter.
+    quant_args: Dict
+        Dictionary containing arguments passed to pandas.cut() function for quantization.
+    scale_args: Dict
+        Dictionary containing arguments passed to StandardScaler.
     label_encoder: LabelEncoder
-        see `pytorch_widedeep.utils.dense_utils.LabelEncder`
+        Instance of LabelEncoder used to encode categorical variables.
+        See `pytorch_widedeep.utils.dense_utils.LabelEncoder`.
     cat_embed_input: List
-        List of Tuples with the column name, number of individual values for
-        that column and, If `with_attention` is set to `False`, the
+        List of tuples with the column name, number of individual values for
+        that column and, if `with_attention` is set to `False`, the
         corresponding embeddings dim, e.g. _[('education', 16, 10),
         ('relationship', 6, 8), ...]_.
     standardize_cols: List
-        List of the columns that will be standarized
+        List of the columns that will be standardized.
     scaler: StandardScaler
-        an instance of `sklearn.preprocessing.StandardScaler`
+        An instance of `sklearn.preprocessing.StandardScaler` if standardization
+        is requested.
     column_idx: Dict
         Dictionary where keys are column names and values are column indexes.
-        This is neccesary to slice tensors
+        This is necessary to slice tensors.
     quantizer: Quantizer
-        an instance of `Quantizer`
+        An instance of `Quantizer` if quantization is requested.
+    is_fitted: bool
+        Boolean indicating if the preprocessor has been fitted.
 
     Examples
     --------
@@ -711,14 +722,15 @@ class ChunkTabPreprocessor(TabPreprocessor):
         List containing the name of the categorical columns that will be
         represented by embeddings (e.g. _['education', 'relationship', ...]_) or
         a Tuple with the name and the embedding dimension (e.g.: _[
-        ('education',32), ('relationship',16), ...]_)
+        ('education',32), ('relationship',16), ...]_). <br/> Param alias:
+        `embed_cols`
     continuous_cols: List, default = None
         List with the name of the continuous cols
     cols_and_bins: Dict, default = None
         Continuous columns can be turned into categorical via
         `pd.cut`. 'cols_and_bins' is dictionary where the keys are the column
         names to quantize and the values are a list of scalars indicating the
-        bin edges.
+        bin edges. <br/> Param alias: `quantization_setup`
     cols_to_scale: List, default = None,
         List with the names of the columns that will be standarised via
         sklearn's `StandardScaler`
@@ -773,27 +785,36 @@ class ChunkTabPreprocessor(TabPreprocessor):
 
     Attributes
     ----------
-    embed_dim: Dict
-        Dictionary where keys are the embed cols and values are the embedding
-        dimensions. If `with_attention` is set to `True` this attribute
-        is not generated during the `fit` process
+    cat_cols: List[str]
+        List containing the names of the categorical columns after processing.
+    cols_and_bins: Optional[Dict[str, Union[int, List[float]]]]
+        Dictionary containing the quantization setup after processing if
+        quantization is requested. This is derived from the
+        quantization_setup parameter.
+    quant_args: Dict
+        Dictionary containing arguments passed to pandas.cut() function for quantization.
+    scale_args: Dict
+        Dictionary containing arguments passed to StandardScaler.
     label_encoder: LabelEncoder
-        see `pytorch_widedeep.utils.dense_utils.LabelEncder`
+        Instance of LabelEncoder used to encode categorical variables.
+        See `pytorch_widedeep.utils.dense_utils.LabelEncoder`.
     cat_embed_input: List
-        List of Tuples with the column name, number of individual values for
-        that column and, If `with_attention` is set to `False`, the
+        List of tuples with the column name, number of individual values for
+        that column and, if `with_attention` is set to `False`, the
         corresponding embeddings dim, e.g. _[('education', 16, 10),
         ('relationship', 6, 8), ...]_.
     standardize_cols: List
-        List of the columns that will be standarized
+        List of the columns that will be standardized.
     scaler: StandardScaler
-        an instance of `sklearn.preprocessing.StandardScaler`
-        if 'cols_to_scale' is not None or 'scale' is 'True'
+        An instance of `sklearn.preprocessing.StandardScaler` if standardization
+        is requested.
     column_idx: Dict
         Dictionary where keys are column names and values are column indexes.
-        This is neccesary to slice tensors
+        This is necessary to slice tensors.
     quantizer: Quantizer
-        an instance of `Quantizer`
+        An instance of `Quantizer` if quantization is requested.
+    is_fitted: bool
+        Boolean indicating if the preprocessor has been fitted.
 
     Examples
     --------

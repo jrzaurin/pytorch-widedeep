@@ -60,7 +60,7 @@ class DeepFactorizationMachine(BaseTabularModelWithAttention):
         Type of normalization layer applied to the continuous features.
         Options are: _'layernorm'_ and _'batchnorm'_. if `None`, no
         normalization layer will be used.
-    embed_continuous_method : Optional[Literal["piecewise", "periodic"]], default="piecewise"
+    embed_continuous_method: Optional[Literal["piecewise", "periodic", "standard"]], default="standard"
         Method to use to embed the continuous features. Options are:
         _'standard'_, _'periodic'_ or _'piecewise'_. The _'standard'_
         embedding method is based on the FT-Transformer implementation
@@ -69,9 +69,6 @@ class DeepFactorizationMachine(BaseTabularModelWithAttention):
         and_'piecewise'_ methods were presented in the paper: [On Embeddings for
         Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556).
         Please, read the papers for details.
-    cont_embed_dim : Optional[int], default=None
-        Size of the continuous embeddings. If the continuous columns are
-        embedded, `cont_embed_dim` must be passed.
     cont_embed_dropout : Optional[float], default=None
         Dropout for the continuous embeddings. If `None`, it will default to 0.0
     cont_embed_activation : Optional[str], default=None
@@ -162,8 +159,8 @@ class DeepFactorizationMachine(BaseTabularModelWithAttention):
         continuous_cols: Optional[List[str]] = None,
         cont_norm_layer: Optional[Literal["batchnorm", "layernorm"]] = None,
         embed_continuous_method: Optional[
-            Literal["piecewise", "periodic"]
-        ] = "piecewise",
+            Literal["piecewise", "periodic", "standard"]
+        ] = "standard",
         cont_embed_dropout: Optional[float] = None,
         cont_embed_activation: Optional[str] = None,
         quantization_setup: Optional[Dict[str, List[float]]] = None,

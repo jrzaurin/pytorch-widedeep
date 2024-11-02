@@ -138,6 +138,22 @@ class ImageFromFolder:
     def get_item(
         self, fname: Union[str, List[str]]
     ) -> Union[np.ndarray, List[np.ndarray]]:
+        """
+        This method is used to load the image dataset(s) from disk.
+
+        Parameters
+        ----------
+        fname: Union[str, List[str]]
+            the name of the image file(s) to load. If a list is provided, the
+            method will return a list of numpy arrays. Each element in the list
+            corresponds to the image in the different image columns.
+
+        Returns
+        -------
+        Union[np.ndarray, List[np.ndarray]]
+            a numpy array or a list of numpy arrays representing the image(s)
+        """
+
         if isinstance(fname, list):
             if not isinstance(self.directory, list):
                 _directory = [self.directory] * len(fname)

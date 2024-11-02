@@ -80,9 +80,9 @@ class BaseEncoderDecoderTrainer(ABC):
     def save(
         self,
         path: str,
-        save_state_dict: bool,
-        save_optimizer: bool,
-        model_filename: str,
+        save_state_dict: bool = False,
+        save_optimizer: bool = False,
+        model_filename: str = "wd_model.pt",
     ):
         r"""Saves the model, training and evaluation history (if any) to disk
 

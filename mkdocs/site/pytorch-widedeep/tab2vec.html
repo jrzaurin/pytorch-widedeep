@@ -1387,7 +1387,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/16_Self_Supervised_Pretraning_pt1.ipynb" class="md-nav__link">
+      <a href="../examples/15_Self_Supervised_Pretraning_pt1.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1408,7 +1408,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/16_Self_Supervised_Pretraning_pt2.ipynb" class="md-nav__link">
+      <a href="../examples/15_Self_Supervised_Pretraning_pt2.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1429,7 +1429,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/17_Usign_a_custom_hugging_face_model.ipynb" class="md-nav__link">
+      <a href="../examples/16_Usign_a_custom_hugging_face_model.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1450,7 +1450,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/18_feature_importance_via_attention_weights.ipynb" class="md-nav__link">
+      <a href="../examples/17_feature_importance_via_attention_weights.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1471,7 +1471,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/19_wide_and_deep_for_recsys_pt1.ipynb" class="md-nav__link">
+      <a href="../examples/18_wide_and_deep_for_recsys_pt1.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1492,7 +1492,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/19_wide_and_deep_for_recsys_pt2.ipynb" class="md-nav__link">
+      <a href="../examples/18_wide_and_deep_for_recsys_pt2.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1513,7 +1513,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/20_load_from_folder_functionality.ipynb" class="md-nav__link">
+      <a href="../examples/19_load_from_folder_functionality.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1534,7 +1534,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/21_Using_huggingface_within_widedeep.ipynb" class="md-nav__link">
+      <a href="../examples/20_Using_huggingface_within_widedeep.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1605,14 +1605,7 @@
 
 
 <a href="#pytorch_widedeep.tab2vec.Tab2Vec" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">Tab2Vec</span><span class="p">(</span>
-    <span class="n">tab_preprocessor</span><span class="p">,</span>
-    <span class="n">model</span><span class="p">,</span>
-    <span class="n">device</span><span class="p">,</span>
-    <span class="n">return_dataframe</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
+
 
     <div class="doc doc-contents first">
 
@@ -1629,48 +1622,86 @@ columns.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>model</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[<a class="autorefs autorefs-internal" title="pytorch_widedeep.wdtypes.WideDeep" href="model_components.html#pytorch_widedeep.models.wide_deep.WideDeep">WideDeep</a>, <a class="autorefs autorefs-internal" title="pytorch_widedeep.bayesian_models.BayesianWide" href="bayesian_models.html#pytorch_widedeep.bayesian_models.tabular.bayesian_linear.bayesian_wide.BayesianWide">BayesianWide</a>, <a class="autorefs autorefs-internal" title="pytorch_widedeep.bayesian_models.BayesianTabMlp" href="bayesian_models.html#pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp">BayesianTabMlp</a>]</code>)
-          –
-          <div class="doc-md-description">
-            <p><code>WideDeep</code>, <code>BayesianWide</code> or <code>BayesianTabMlp</code> model. Must be trained.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>tab_preprocessor</code></b>
-              (<code><a class="autorefs autorefs-internal" title="pytorch_widedeep.preprocessing.TabPreprocessor" href="preprocessing.html#pytorch_widedeep.preprocessing.tab_preprocessor.TabPreprocessor">TabPreprocessor</a></code>)
-          –
-          <div class="doc-md-description">
-            <p><code>TabPreprocessor</code> object. Must be fitted.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>return_dataframe</code></b>
-              (<code>bool</code>, default:
-                  <code>False</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Boolean indicating of the returned object(s) will be array(s) or
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>model</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[<a class="autorefs autorefs-internal" title="pytorch_widedeep.wdtypes.WideDeep" href="model_components.html#pytorch_widedeep.models.wide_deep.WideDeep">WideDeep</a>, <a class="autorefs autorefs-internal" title="pytorch_widedeep.bayesian_models.BayesianWide" href="bayesian_models.html#pytorch_widedeep.bayesian_models.tabular.bayesian_linear.bayesian_wide.BayesianWide">BayesianWide</a>, <a class="autorefs autorefs-internal" title="pytorch_widedeep.bayesian_models.BayesianTabMlp" href="bayesian_models.html#pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp">BayesianTabMlp</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>WideDeep</code>, <code>BayesianWide</code> or <code>BayesianTabMlp</code> model. Must be trained.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>tab_preprocessor</code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="pytorch_widedeep.preprocessing.TabPreprocessor" href="preprocessing.html#pytorch_widedeep.preprocessing.tab_preprocessor.TabPreprocessor">TabPreprocessor</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>TabPreprocessor</code> object. Must be fitted.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>return_dataframe</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Boolean indicating of the returned object(s) will be array(s) or
 pandas dataframe(s)</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><span title="pytorch_widedeep.tab2vec.Tab2Vec.vectorizer">vectorizer</span></code></b>
-              (<code><span title="nn.Module">Module</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>Torch module with the categorical and continuous encoding process</p>
-          </div>
-        </li>
-    </ul>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="pytorch_widedeep.tab2vec.Tab2Vec.vectorizer">vectorizer</span></code></td>
+            <td>
+                  <code><span title="nn.Module">Module</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Torch module with the categorical and continuous encoding process</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
@@ -1714,9 +1745,79 @@ pandas dataframe(s)</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">X_vec</span> <span class="o">=</span> <span class="n">t2v</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df_t2v</span><span class="p">)</span>
 </code></pre></div>
 
-                  <details class="quote">
-                    <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 84</span>
+              <details class="quote">
+                <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 14</span>
+<span class="normal"> 15</span>
+<span class="normal"> 16</span>
+<span class="normal"> 17</span>
+<span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
 <span class="normal"> 85</span>
 <span class="normal"> 86</span>
 <span class="normal"> 87</span>
@@ -1739,32 +1840,572 @@ pandas dataframe(s)</p>
 <span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
-<span class="normal">107</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">tab_preprocessor</span><span class="p">:</span> <span class="n">TabPreprocessor</span><span class="p">,</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">WideDeep</span><span class="p">,</span> <span class="n">BayesianWide</span><span class="p">,</span> <span class="n">BayesianTabMlp</span><span class="p">],</span>
-    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-    <span class="n">return_dataframe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="nb">super</span><span class="p">(</span><span class="n">Tab2Vec</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Tab2Vec</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Class to transform an input dataframe into vectorized form.</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">_check_inputs</span><span class="p">(</span><span class="n">tab_preprocessor</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+<span class="sd">    This class will take an input dataframe in the form of the dataframe used</span>
+<span class="sd">    for training, and it will turn it into a vectorised form based on the</span>
+<span class="sd">    processing applied by the model to the categorical and continuous</span>
+<span class="sd">    columns.</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+<span class="sd">    :information_source: **NOTE**: Currently this class is only implemented</span>
+<span class="sd">     for the deeptabular component. Therefore, if the input dataframe has a</span>
+<span class="sd">     text column or a column with the path to images, these will be ignored.</span>
+<span class="sd">     We will be adding these functionalities in future versions</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">tab_preprocessor</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">return_dataframe</span> <span class="o">=</span> <span class="n">return_dataframe</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model: `WideDeep`, `BayesianWide` or `BayesianTabMlp`</span>
+<span class="sd">        `WideDeep`, `BayesianWide` or `BayesianTabMlp` model. Must be trained.</span>
+<span class="sd">    tab_preprocessor: `TabPreprocessor`</span>
+<span class="sd">        `TabPreprocessor` object. Must be fitted.</span>
+<span class="sd">    return_dataframe: bool</span>
+<span class="sd">        Boolean indicating of the returned object(s) will be array(s) or</span>
+<span class="sd">        pandas dataframe(s)</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">vectorizer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_vectorizer</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    vectorizer: nn.Module</span>
+<span class="sd">        Torch module with the categorical and continuous encoding process</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">_set_dim_attributes</span><span class="p">(</span><span class="n">tab_preprocessor</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; import string</span>
+<span class="sd">    &gt;&gt;&gt; from random import choices</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">    &gt;&gt;&gt; from pytorch_widedeep import Tab2Vec</span>
+<span class="sd">    &gt;&gt;&gt; from pytorch_widedeep.models import TabMlp, WideDeep</span>
+<span class="sd">    &gt;&gt;&gt; from pytorch_widedeep.preprocessing import TabPreprocessor</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; colnames = list(string.ascii_lowercase)[:4]</span>
+<span class="sd">    &gt;&gt;&gt; cat_col1_vals = [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]</span>
+<span class="sd">    &gt;&gt;&gt; cat_col2_vals = [&quot;d&quot;, &quot;e&quot;, &quot;f&quot;]</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; # Create the toy input dataframe and a toy dataframe to be vectorised</span>
+<span class="sd">    &gt;&gt;&gt; cat_inp = [np.array(choices(c, k=5)) for c in [cat_col1_vals, cat_col2_vals]]</span>
+<span class="sd">    &gt;&gt;&gt; cont_inp = [np.round(np.random.rand(5), 2) for _ in range(2)]</span>
+<span class="sd">    &gt;&gt;&gt; df_inp = pd.DataFrame(np.vstack(cat_inp + cont_inp).transpose(), columns=colnames)</span>
+<span class="sd">    &gt;&gt;&gt; cat_t2v = [np.array(choices(c, k=5)) for c in [cat_col1_vals, cat_col2_vals]]</span>
+<span class="sd">    &gt;&gt;&gt; cont_t2v = [np.round(np.random.rand(5), 2) for _ in range(2)]</span>
+<span class="sd">    &gt;&gt;&gt; df_t2v = pd.DataFrame(np.vstack(cat_t2v + cont_t2v).transpose(), columns=colnames)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; # fit the TabPreprocessor</span>
+<span class="sd">    &gt;&gt;&gt; embed_cols = [(&quot;a&quot;, 2), (&quot;b&quot;, 4)]</span>
+<span class="sd">    &gt;&gt;&gt; cont_cols = [&quot;c&quot;, &quot;d&quot;]</span>
+<span class="sd">    &gt;&gt;&gt; tab_preprocessor = TabPreprocessor(cat_embed_cols=embed_cols, continuous_cols=cont_cols)</span>
+<span class="sd">    &gt;&gt;&gt; X_tab = tab_preprocessor.fit_transform(df_inp)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; # define the model (and let&#39;s assume we train it)</span>
+<span class="sd">    &gt;&gt;&gt; tabmlp = TabMlp(</span>
+<span class="sd">    ... column_idx=tab_preprocessor.column_idx,</span>
+<span class="sd">    ... cat_embed_input=tab_preprocessor.cat_embed_input,</span>
+<span class="sd">    ... continuous_cols=tab_preprocessor.continuous_cols,</span>
+<span class="sd">    ... mlp_hidden_dims=[8, 4])</span>
+<span class="sd">    &gt;&gt;&gt; model = WideDeep(deeptabular=tabmlp)</span>
+<span class="sd">    &gt;&gt;&gt; # ...train the model...</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; # vectorise the dataframe</span>
+<span class="sd">    &gt;&gt;&gt; t2v = Tab2Vec(tab_preprocessor, model, device=&quot;cpu&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; X_vec = t2v.transform(df_t2v)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tab_preprocessor</span><span class="p">:</span> <span class="n">TabPreprocessor</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">WideDeep</span><span class="p">,</span> <span class="n">BayesianWide</span><span class="p">,</span> <span class="n">BayesianTabMlp</span><span class="p">],</span>
+        <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+        <span class="n">return_dataframe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Tab2Vec</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_inputs</span><span class="p">(</span><span class="n">tab_preprocessor</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span> <span class="o">=</span> <span class="n">tab_preprocessor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">return_dataframe</span> <span class="o">=</span> <span class="n">return_dataframe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vectorizer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_vectorizer</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_dim_attributes</span><span class="p">(</span><span class="n">tab_preprocessor</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tab2Vec&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;This is an empty method i.e. Returns the unchanged object itself. Is</span>
+<span class="sd">        only included for consistency in case `Tab2Vec` is used as part of a</span>
+<span class="sd">        Pipeline</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        df: pd.DataFrame</span>
+<span class="sd">            DataFrame to be vectorised, i.e. the categorical and continuous</span>
+<span class="sd">            columns will be encoded based on the processing applied within</span>
+<span class="sd">            the model</span>
+<span class="sd">        target_col: str, Optional</span>
+<span class="sd">            Column name of the target_col variable. If `None` only the array of</span>
+<span class="sd">            predictors will be returned</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tab2Vec</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">target_col</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">],</span>
+    <span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Transforms the input dataframe into vectorized form. If a target</span>
+<span class="sd">        column name is passed the target values will be returned separately</span>
+<span class="sd">        in their corresponding type (np.ndarray or pd.DataFrame)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        df: pd.DataFrame</span>
+<span class="sd">            DataFrame to be vectorised, i.e. the categorical and continuous</span>
+<span class="sd">            columns will be encoded based on the processing applied within</span>
+<span class="sd">            the model</span>
+<span class="sd">        target_col: str, Optional</span>
+<span class="sd">            Column name of the target_col variable. If `None` only the array of</span>
+<span class="sd">            predictors will be returned</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Union[np.ndarray, Tuple[np.ndarray, np.ndarray], pd.DataFrame, Tuple[pd.DataFrame, pd.Series]</span>
+<span class="sd">            Returns eiter a numpy array with the vectorised values, or a Tuple</span>
+<span class="sd">            of numpy arrays with the vectorised values and the target. The</span>
+<span class="sd">            same applies to dataframes in case we choose to set</span>
+<span class="sd">            `return_dataframe = True`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">X_tab</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;mps&quot;</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X_tab</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X_tab</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_tab_transformer</span><span class="p">:</span>
+                <span class="n">x_vec</span><span class="p">,</span> <span class="n">x_cont_not_embed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vectorizer</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">x_vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vectorizer</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+                <span class="n">x_cont_not_embed</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">with_cls_token</span><span class="p">:</span>
+            <span class="n">x_vec</span> <span class="o">=</span> <span class="n">x_vec</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">with_attention</span><span class="p">:</span>
+            <span class="n">x_vec</span> <span class="o">=</span> <span class="n">einops</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="n">x_vec</span><span class="p">,</span> <span class="s2">&quot;s c e -&gt; s (c e)&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">x_cont_not_embed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x_vec</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x_vec</span><span class="p">,</span> <span class="n">x_cont_not_embed</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_vec</span> <span class="o">=</span> <span class="n">x_vec</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">return_dataframe</span><span class="p">:</span>
+            <span class="n">new_colnames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_colnames</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">target_col</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">x_vec</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">new_colnames</span><span class="p">),</span> <span class="n">df</span><span class="p">[[</span><span class="n">target_col</span><span class="p">]]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">x_vec</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">new_colnames</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">target_col</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">x_vec</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="n">target_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">x_vec</span>
+
+    <span class="k">def</span> <span class="nf">fit_transform</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">target_col</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">Tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">],</span>
+    <span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Combines `fit` and `transform`&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">target_col</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_new_colnames</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">with_attention</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_colnames_with_attention</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_new_colnames_without_attention</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_new_colnames_with_attention</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">cat_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">ei</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">ei</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">cat_embed_input</span>
+                <span class="k">if</span> <span class="n">ei</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;cls_token&quot;</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">cat_embed_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="p">[]</span>
+        <span class="p">)</span>
+
+        <span class="n">cont_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="p">[]</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">are_cont_embed</span><span class="p">:</span>
+            <span class="n">all_embed_cols</span> <span class="o">=</span> <span class="n">cat_cols</span> <span class="o">+</span> <span class="n">cont_cols</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">all_embed_cols</span> <span class="o">=</span> <span class="n">cat_cols</span>
+
+        <span class="n">new_colnames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">colname</span> <span class="ow">in</span> <span class="n">all_embed_cols</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="n">new_colnames</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">colname</span><span class="p">,</span> <span class="s2">&quot;embed&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">are_cont_embed</span><span class="p">:</span>
+            <span class="n">new_colnames</span> <span class="o">+=</span> <span class="n">cont_cols</span>
+
+        <span class="k">return</span> <span class="n">new_colnames</span>
+
+    <span class="k">def</span> <span class="nf">_new_colnames_without_attention</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">new_colnames</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">cat_embed_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">colname</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">embedding_dim</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">cat_embed_input</span><span class="p">:</span>  <span class="c1"># type: ignore[misc]</span>
+                <span class="n">new_colnames</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">colname</span><span class="p">,</span> <span class="s2">&quot;embed&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">embedding_dim</span><span class="p">)</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">are_cont_embed</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">colname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="n">new_colnames</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">colname</span><span class="p">,</span> <span class="s2">&quot;embed&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span><span class="p">)</span>
+                        <span class="p">]</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_colnames</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">continuous_cols</span>
+
+        <span class="k">return</span> <span class="n">new_colnames</span>
+
+    <span class="k">def</span> <span class="nf">_check_inputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tab_preprocessor</span><span class="p">:</span> <span class="n">TabPreprocessor</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">WideDeep</span><span class="p">,</span> <span class="n">BayesianWide</span><span class="p">,</span> <span class="n">BayesianTabMlp</span><span class="p">],</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">BaseBayesianModel</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">deepimage</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">model</span><span class="o">.</span><span class="n">deeptext</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="s2">&quot;Currently &#39;Tab2Vec&#39; is only implemented for the &#39;deeptabular&#39; component.&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">deeptabular</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Currently &#39;Tab2Vec&#39; is only implemented for the &#39;deeptabular&#39; component.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">is_fitted</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;The &#39;tab_preprocessor&#39; must be fitted before is passed to &#39;Tab2Vec&#39;&quot;</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_vectorizer</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">WideDeep</span><span class="p">,</span> <span class="n">BayesianWide</span><span class="p">,</span> <span class="n">BayesianTabMlp</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">BaseBayesianModel</span><span class="p">):</span>
+            <span class="n">vectorizer</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">_get_embeddings</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_tab_transformer</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">model</span><span class="o">.</span><span class="n">deeptabular</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;tabtransformer&quot;</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_tab_transformer</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">vectorizer</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">deeptabular</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_get_embeddings_tt</span>  <span class="c1"># type: ignore</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_tab_transformer</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">vectorizer</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">deeptabular</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_get_embeddings</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="n">vectorizer</span>
+
+    <span class="k">def</span> <span class="nf">_set_dim_attributes</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tab_preprocessor</span><span class="p">:</span> <span class="n">TabPreprocessor</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">WideDeep</span><span class="p">,</span> <span class="n">BayesianWide</span><span class="p">,</span> <span class="n">BayesianTabMlp</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">BaseBayesianModel</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">are_cont_embed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">embed_continuous</span> <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">embed_continuous</span> <span class="k">else</span> <span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">cont_embed_dim</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">are_cont_embed</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">deeptabular</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">embed_continuous_method</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># type: ignore</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">with_attention</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">deeptabular</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">input_dim</span>  <span class="c1"># type: ignore</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">input_dim</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cont_embed_dim</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">deeptabular</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cont_embed_dim</span>  <span class="c1"># type: ignore</span>
 </code></pre></div></td></tr></table></div>
-                  </details>
+              </details>
 
 
 
@@ -1797,41 +2438,72 @@ Pipeline</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>df</code></b>
-              (<code><span title="pandas.DataFrame">DataFrame</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>DataFrame to be vectorised, i.e. the categorical and continuous
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>df</code></td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame to be vectorised, i.e. the categorical and continuous
 columns will be encoded based on the processing applied within
 the model</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>target_col</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Column name of the target_col variable. If <code>None</code> only the array of
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>target_col</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Column name of the target_col variable. If <code>None</code> only the array of
 predictors will be returned</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code><a class="autorefs autorefs-internal" title="pytorch_widedeep.tab2vec.Tab2Vec" href="#pytorch_widedeep.tab2vec.Tab2Vec">Tab2Vec</a></code>
-          –
-          <div class="doc-md-description">
-            
-          </div>
-        </li>
-    </ul>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="pytorch_widedeep.tab2vec.Tab2Vec" href="#pytorch_widedeep.tab2vec.Tab2Vec">Tab2Vec</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>
@@ -1901,44 +2573,75 @@ in their corresponding type (np.ndarray or pd.DataFrame)</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>df</code></b>
-              (<code><span title="pandas.DataFrame">DataFrame</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>DataFrame to be vectorised, i.e. the categorical and continuous
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>df</code></td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DataFrame to be vectorised, i.e. the categorical and continuous
 columns will be encoded based on the processing applied within
 the model</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>target_col</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Column name of the target_col variable. If <code>None</code> only the array of
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>target_col</code></td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Column name of the target_col variable. If <code>None</code> only the array of
 predictors will be returned</p>
-          </div>
-        </li>
-    </ul>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
-<p><span class="doc-section-title">Returns:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-              <code>Union[np.ndarray, Tuple[np.ndarray, np.ndarray], pd.DataFrame, Tuple[pd.DataFrame, pd.Series]</code>
-          –
-          <div class="doc-md-description">
-            <p>Returns eiter a numpy array with the vectorised values, or a Tuple
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>Union[np.ndarray, Tuple[np.ndarray, np.ndarray], pd.DataFrame, Tuple[pd.DataFrame, pd.Series]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Returns eiter a numpy array with the vectorised values, or a Tuple
 of numpy arrays with the vectorised values and the target. The
 same applies to dataframes in case we choose to set
 <code>return_dataframe = True</code></p>
-          </div>
-        </li>
-    </ul>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/tab2vec.py</code></summary>

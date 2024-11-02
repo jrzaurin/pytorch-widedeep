@@ -101,46 +101,72 @@ class GatedDeepCrossNetwork(BaseTabularModelWithoutAttention):
     cat_embed_activation: Optional, str, default = None,
         Activation function for the categorical embeddings, if any. Currently
         _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
-    continuous_cols: List, Optional, default = None
+    continuous_cols : Optional[List[str]], default=None
         List with the name of the numeric (aka continuous) columns
-    cont_norm_layer: str, Optional, default = None
+    cont_norm_layer : Optional[Literal["batchnorm", "layernorm"]], default=None
         Type of normalization layer applied to the continuous features.
         Options are: _'layernorm'_ and _'batchnorm'_. if `None`, no
         normalization layer will be used.
-    embed_continuous: bool, Optional, default = None,
-        Boolean indicating if the continuous columns will be embedded
-    embed_continuous_method: Optional, str, default = None,
+    embed_continuous_method: Optional[Literal["piecewise", "periodic", "standard"]], default="standard"
         Method to use to embed the continuous features. Options are:
-        _'standard'_, _'periodic'_ or _'piecewise'_.
-    cont_embed_dim: int, Optional, default = None,
-        Size of the continuous embeddings
-    cont_embed_dropout: float, Optional, default = None,
-        Dropout for the continuous embeddings
-    cont_embed_activation: Optional, str, default = None,
-        Activation function for the continuous embeddings
-    quantization_setup: Dict[str, List[float]], Optional, default = None,
-        Setup for the piecewise embeddings quantization
-    n_frequencies: int, Optional, default = None,
-        Number of frequencies for periodic embeddings
-    sigma: float, Optional, default = None,
-        Sigma parameter for periodic embeddings
-    share_last_layer: bool, Optional, default = None,
-        Whether to share the last layer in periodic embeddings
+        _'standard'_, _'periodic'_ or _'piecewise'_. The _'standard'_
+        embedding method is based on the FT-Transformer implementation
+        presented in the paper: [Revisiting Deep Learning Models for
+        Tabular Data](https://arxiv.org/abs/2106.11959v5). The _'periodic'_
+        and_'piecewise'_ methods were presented in the paper: [On Embeddings for
+        Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556).
+        Please, read the papers for details.
+    cont_embed_dropout : Optional[float], default=None
+        Dropout for the continuous embeddings. If `None`, it will default to 0.0
+    cont_embed_activation : Optional[str], default=None
+        Activation function for the continuous embeddings if any. Currently
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported.
+        If `None`, no activation function will be applied.
+    quantization_setup : Optional[Dict[str, List[float]]], default=None
+        This parameter is used when the _'piecewise'_ method is used to embed
+        the continuous cols. It is a dict where keys are the name of the continuous
+        columns and values are lists with the boundaries for the quantization
+        of the continuous_cols. See the examples for details. If
+        If the _'piecewise'_ method is used, this parameter is required.
+    n_frequencies : Optional[int], default=None
+        This is the so called _'k'_ in their paper [On Embeddings for
+        Numerical Features in Tabular Deep Learning](https://arxiv.org/abs/2203.05556),
+        and is the number of 'frequencies' that will be used to represent each
+        continuous column. See their Eq 2 in the paper for details. If
+        the _'periodic'_ method is used, this parameter is required.
+    sigma : Optional[float], default=None
+        This is the sigma parameter in the paper mentioned when describing the
+        previous parameters and it is used to initialise the 'frequency
+        weights'. See their Eq 2 in the paper for details. If
+        the _'periodic'_ method is used, this parameter is required.
+    share_last_layer : Optional[bool], default=None
+        This parameter is not present in the before mentioned paper but it is implemented in
+        the [official repo](https://github.com/yandex-research/rtdl-num-embeddings/tree/main).
+        If `True` the linear layer that turns the frequencies into embeddings
+        will be shared across the continuous columns. If `False` a different
+        linear layer will be used for each continuous column.
+        If the _'periodic'_ method is used, this parameter is required.
     full_embed_dropout: bool, Optional, default = None,
-        If True, drops the entire embedding for a column
+        If `True`, the full embedding corresponding to a column will be masked
+        out/dropout. If `None`, it will default to `False`.
     mlp_hidden_dims: List, default = [200, 100]
-        List with the number of neurons per dense layer in the deep network
+        List with the number of neurons per dense layer in the mlp.
     mlp_activation: str, default = "relu"
-        Activation function for the dense layers
+        Activation function for the dense layers of the MLP. Currently
+        _'tanh'_, _'relu'_, _'leaky_relu'_ and _'gelu'_ are supported
     mlp_dropout: float or List, default = 0.1
-        Dropout between the dense layers
+        float or List of floats with the dropout between the dense layers.
+        e.g: _[0.5,0.5]_
     mlp_batchnorm: bool, default = False
-        If True, applies batch normalization in the dense layers
+        Boolean indicating whether or not batch normalization will be applied
+        to the dense layers
     mlp_batchnorm_last: bool, default = False
-        If True, applies batch normalization in the last dense layer
-    mlp_linear_first: bool, default = True
-        If True, applies the order: [Linear -> Activation -> BatchNorm -> Dropout]
-        If False: [BatchNorm -> Dropout -> Linear -> Activation]
+        Boolean indicating whether or not batch normalization will be applied
+        to the last of the dense layers
+    mlp_linear_first: bool, default = False
+        Boolean indicating the order of the operations in the dense
+        layer. If `True: [LIN -> ACT -> BN -> DP]`. If `False: [BN -> DP ->
+        LIN -> ACT]`
 
     Attributes
     ----------

@@ -64,6 +64,13 @@ def get_texts(
 
     See `pytorch_widedeep.utils.fastai_utils.Tokenizer`
 
+    :information_source: **NOTE**:
+    `get_texts` uses `pytorch_widedeep.utils.fastai_transforms.Tokenizer`.
+    Such tokenizer uses a series of convenient processing steps, including
+    the  addition of some special tokens, such as `TK_MAJ` (`xxmaj`), used to
+    indicate the next word begins with a capital in the original text. For more
+    details of special tokens please see the [`fastai` `docs](https://docs.fast.ai/text.core.html#Tokenizing)
+
     Parameters
     ----------
     texts: List
@@ -87,13 +94,6 @@ def get_texts(
     -------
     List[List[str]]
         List of lists, one list per '_document_' containing its corresponding tokens
-
-    :information_source: **NOTE**:
-    `get_texts` uses `pytorch_widedeep.utils.fastai_transforms.Tokenizer`.
-    Such tokenizer uses a series of convenient processing steps, including
-    the  addition of some special tokens, such as `TK_MAJ` (`xxmaj`), used to
-    indicate the next word begins with a capital in the original text. For more
-    details of special tokens please see the [`fastai` `docs](https://docs.fast.ai/text.core.html#Tokenizing)
     """
 
     num_cpus = n_cpus if n_cpus is not None else os.cpu_count()

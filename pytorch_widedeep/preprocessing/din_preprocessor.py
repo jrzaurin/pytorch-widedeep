@@ -26,55 +26,94 @@ class DINPreprocessor(BasePreprocessor):
     including sequence building, label encoding, and handling of various
     types of input columns (categorical, continuous, and sequential).
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     user_id_col : str
         Name of the column containing user IDs.
     item_embed_col : Union[str, Tuple[str, int]]
         Name of the column containing item IDs to be embedded, or a tuple of
-        (column_name, embedding_dim).
+        (column_name, embedding_dim). If embedding_dim is not provided, it
+        will be automatically calculated using a rule of thumb specified by
+        `embedding_rule`. Aliased as `item_id_col`.
     target_col : str
         Name of the column containing the target variable.
     max_seq_length : int
         Maximum length of sequences to be created.
     action_col : Optional[str], default=None
-        Name of the column containing user actions (if applicable).
+        Name of the column containing user actions (if applicable), for
+        example a rating, or purchased/not-purchased, etc). This 'action_col'
+        can also be the same as the 'target_col'.
     other_seq_embed_cols : Optional[List[str] | List[Tuple[str, int]]], default=None
-        List of other columns to be treated as sequences.
+        List of other columns to be treated as sequences. Each element in the
+        list can be a string with the name of the column or a tuple with the
+        name of the column and the embedding dimension.
+
     cat_embed_cols : Optional[Union[List[str], List[Tuple[str, int]]]], default=None
-        List of categorical columns to be represented by embeddings.
+        This and the following parameters are identical to those used in the
+        TabPreprocessor.<br>
+        List containing the name of the categorical columns that will be
+        represented by embeddings (e.g. _['education', 'relationship', ...]_) or
+        a Tuple with the name and the embedding dimension (e.g.: _[
+        ('education',32), ('relationship',16), ...]_)
     continuous_cols: List, default = None
-        List with the name of the continuous cols.
-    quantization_setup: int or Dict[str, Union[int, List[float]]], default=None
-        Continuous columns can be turned into categorical via `pd.cut`.
+        List with the name of the continuous cols
+    quantization_setup: int or Dict, default = None
+        Continuous columns can be turned into categorical via `pd.cut`. If
+        `quantization_setup` is an `int`, all continuous columns will be
+        quantized using this value as the number of bins. Alternatively, a
+        dictionary where the keys are the column names to quantize and the
+        values are the either integers indicating the number of bins or a
+        list of scalars indicating the bin edges can also be used.
     cols_to_scale: List or str, default = None,
-        List with the names of the columns that will be standardized via
-        sklearn's `StandardScaler`.
+        List with the names of the columns that will be standarised via
+        sklearn's `StandardScaler`. It can also be the string `'all'` in
+        which case all the continuous cols will be scaled.
     auto_embed_dim: bool, default = True
         Boolean indicating whether the embedding dimensions will be
-        automatically defined via rule of thumb.
+        automatically defined via rule of thumb. See `embedding_rule`
+        below.
     embedding_rule: str, default = 'fastai_new'
-        Rule of thumb for embedding size.
+        If `auto_embed_dim=True`, this is the choice of embedding rule of
+        thumb. Choices are:
+
+        - _fastai_new_: $min(600, round(1.6 \times n_{cat}^{0.56}))$
+
+        - _fastai_old_: $min(50, (n_{cat}//{2})+1)$
+
+        - _google_: $min(600, round(n_{cat}^{0.24}))$
     default_embed_dim: int, default=16
-        Default dimension for the embeddings.
+        Dimension for the embeddings if the embedding dimension is not
+        provided in the `cat_embed_cols` parameter and `auto_embed_dim` is
+        set to `False`.
     verbose : int, default=1
         Verbosity level.
     scale: bool, default = False
-        Boolean indicating whether or not to scale/standardize continuous cols.
+        :information_source: **note**: this arg will be removed in upcoming
+         releases. Please use `cols_to_scale` instead. <br/> Bool indicating
+         whether or not to scale/standarise continuous cols. It is important
+         to emphasize that all the DL models for tabular data in the library
+         also include the possibility of normalising the input continuous
+         features via a `BatchNorm` or a `LayerNorm`. <br/> Param alias:
+         `scale_cont_cols`.
     already_standard: List, default = None
-        List with the name of the continuous cols that do not need to be
-        scaled/standardized.
-    **kwargs :
-        Additional keyword arguments to be passed to the TabPreprocessor.
+        :information_source: **note**: this arg will be removed in upcoming
+         releases. Please use `cols_to_scale` instead. <br/> List with the
+         name of the continuous cols that do not need to be
+         scaled/standarised.
 
-    Attributes:
-    -----------
+    Other Parameters
+    ----------------
+    **kwargs: dict
+        `pd.cut` and `StandardScaler` related args
+
+    Attributes
+    ----------
     is_fitted : bool
         Whether the preprocessor has been fitted.
     has_standard_tab_data : bool
         Whether the data includes standard tabular data.
     tab_preprocessor : TabPreprocessor
-        Preprocessor for standard tabular data.
+        Preprocessor for standard tabular data (if applicable).
     din_columns_idx : Dict[str, int]
         Dictionary mapping column names to their indices in the processed data.
     item_le : LabelEncoder
@@ -96,8 +135,8 @@ class DINPreprocessor(BasePreprocessor):
     other_seq_config : List[Tuple[List[str], int, int]]
         Configuration for other sequence columns.
 
-    Examples:
-    ---------
+    Examples
+    --------
     >>> import pandas as pd
     >>> from pytorch_widedeep.preprocessing import DINPreprocessor
     >>> data = {

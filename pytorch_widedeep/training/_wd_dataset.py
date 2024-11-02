@@ -237,7 +237,7 @@ class GroupWideDeepDataset(Dataset):
 def group_collate_fn(batch: List[Tuple[Bunch, np.ndarray]]):
 
     all_targets: List[np.ndarray] = []
-    all_features: Dict[str, List[np.ndarray] | List[List[np.ndarray]]] = {
+    all_features: Dict[str, Union[List[np.ndarray], List[List[np.ndarray]]]] = {
         "wide": [],
         "deeptabular": [],
         "deeptext": [],
@@ -250,7 +250,7 @@ def group_collate_fn(batch: List[Tuple[Bunch, np.ndarray]]):
         all_targets.append(targets)
     all_features = {k: v for k, v in all_features.items() if v}
 
-    batch_features: Dict[str, torch.Tensor | List[torch.Tensor]] = {}
+    batch_features: Dict[str, Union[torch.Tensor, List[torch.Tensor]]] = {}
 
     for key, value in all_features.items():
         if isinstance(value[0], list):

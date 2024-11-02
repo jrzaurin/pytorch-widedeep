@@ -55,7 +55,9 @@ def test_xdeepfm_reduce_sum(
         assert res.shape == (X_tab_tnsr.shape[0], xdeepfm.output_dim)
 
 
-@pytest.mark.parametrize("embed_continuous_method", ["periodic", "piecewise"])
+@pytest.mark.parametrize(
+    "embed_continuous_method", ["periodic", "piecewise", "standard"]
+)
 @pytest.mark.parametrize("reduce_sum", [True, False])
 def test_xdeepfm_cont_embed_methods(
     embed_continuous_method, reduce_sum, cat_embed_cols, continuous_cols

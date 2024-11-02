@@ -23,7 +23,7 @@ class TextFromFolder:
 
     Parameters
     ----------
-    preprocessor: Union[TextPreprocessor, ChunkTextPreprocessor, HFPreprocessor, ChunkHFPreprocessor]
+    preprocessor:
         The preprocessor used to process the text. It must be fitted before using
         this class
     """
@@ -56,6 +56,21 @@ class TextFromFolder:
     def get_item(
         self, text: Union[str, List[str]]
     ) -> Union[np.ndarray, List[np.ndarray]]:
+        """
+        Given a text or a list of texts corresponding to different text
+        columns, this method will return the processed text or a list of
+        processed texts
+
+        Parameters
+        ----------
+        text: Union[str, List[str]]
+            The text or list of texts to be processed
+
+        Returns
+        -------
+        Union[np.ndarray, List[np.ndarray]]
+            The processed text or a list of processed texts
+        """
         if isinstance(self.preprocessor, list):
             assert isinstance(text, list)
             processed_sample: Union[np.ndarray, List[np.ndarray]] = [

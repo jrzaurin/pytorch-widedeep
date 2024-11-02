@@ -44,6 +44,7 @@ def test_autoint_plus_reduction(
         gated=gated,
         continuous_cols=continuous_cols,
         embed_continuous_method="standard",
+        mlp_hidden_dims=[32, 16],
     )
 
     res = model(X_tab_tnsr)
@@ -72,6 +73,7 @@ def test_autoint_plus_gating_validation_errors(cat_embed_cols, continuous_cols):
             gated=True,
             continuous_cols=continuous_cols,
             embed_continuous_method="standard",
+            mlp_hidden_dims=[32, 16],
         )
 
     # Test 2: ValueError when using gated with reduction="cat"
@@ -87,6 +89,7 @@ def test_autoint_plus_gating_validation_errors(cat_embed_cols, continuous_cols):
             gated=True,
             continuous_cols=continuous_cols,
             embed_continuous_method="standard",
+            mlp_hidden_dims=[32, 16],
         )
 
 
@@ -111,6 +114,7 @@ def test_autoint_plus_with_wide_component(cat_embed_cols):
         cat_embed_input=tab_preprocessor.cat_embed_input,
         structure="parallel",
         gated=True,
+        mlp_hidden_dims=[32, 16],
     )
 
     linear = Wide(input_dim=X_wide.max())
@@ -153,6 +157,7 @@ def test_autoint_plus_full_process(structure, gated, reduction, cat_embed_cols):
         structure=structure,
         gated=gated,
         reduction=reduction,
+        mlp_hidden_dims=[32, 16],
     )
 
     model = WideDeep(deeptabular=auto_int_plus)
@@ -171,3 +176,54 @@ def test_autoint_plus_full_process(structure, gated, reduction, cat_embed_cols):
         and "train_loss" in trainer.history
         and "val_loss" in trainer.history
     )
+
+
+@pytest.mark.parametrize(
+    "embed_continuous_method", ["periodic", "piecewise", "standard"]
+)
+def test_autoint_plus_cont_embed_methods(
+    embed_continuous_method, cat_embed_cols, continuous_cols
+):
+    tab_preprocessor = TabPreprocessor(
+        cat_embed_cols=cat_embed_cols,
+        continuous_cols=continuous_cols,
+        with_attention=True,
+    )
+
+    X_tab = tab_preprocessor.fit_transform(train)
+    X_tab_tnsr = torch.tensor(X_tab, dtype=torch.float32)
+
+    if embed_continuous_method == "periodic":
+        model = AutoIntPlus(
+            column_idx=tab_preprocessor.column_idx,
+            input_dim=16,
+            cat_embed_input=tab_preprocessor.cat_embed_input,
+            num_heads=2,
+            num_layers=2,
+            continuous_cols=continuous_cols,
+            embed_continuous_method=embed_continuous_method,
+            n_frequencies=4,
+            sigma=0.1,
+            share_last_layer=False,
+            mlp_hidden_dims=[32, 16],
+        )
+    else:
+        quantization_setup = {
+            "item_price": list(train["item_price"].quantile([0.25, 0.5, 0.75]).values),
+            "user_age": list(train["user_age"].quantile([0.25, 0.5, 0.75]).values),
+        }
+        model = AutoIntPlus(
+            column_idx=tab_preprocessor.column_idx,
+            input_dim=16,
+            cat_embed_input=tab_preprocessor.cat_embed_input,
+            num_heads=2,
+            num_layers=2,
+            continuous_cols=continuous_cols,
+            embed_continuous_method=embed_continuous_method,
+            quantization_setup=quantization_setup,
+            mlp_hidden_dims=[32, 16],
+        )
+
+    res = model(X_tab_tnsr)
+
+    assert res.shape == (X_tab_tnsr.shape[0], model.output_dim)

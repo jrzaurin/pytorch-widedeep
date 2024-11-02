@@ -31,7 +31,7 @@ The content of this document is organized as follows:
 
 - [**pytorch-widedeep**](#pytorch-widedeep)
     - [Introduction](#introduction)
-    - [Architectures](#Architectures)
+    - [Architectures](#architectures)
     - [The ``deeptabular`` component](#the-deeptabular-component)
     - [The ``rec`` module](#the-rec-module)
     - [Text and Images](#text-and-images)

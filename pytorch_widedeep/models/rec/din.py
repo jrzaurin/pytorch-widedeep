@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple, Literal, Optional
+from typing import Any, Dict, List, Tuple, Union, Literal, Optional
 
 import torch
 import torch.nn.functional as F
@@ -36,7 +36,7 @@ class ActivationUnit(nn.Module):
         self.proj_dim = proj_dim if proj_dim is not None else embed_dim
         self.linear_in = nn.Linear(embed_dim * 4, self.proj_dim)
         if activation == "prelu":
-            self.activation: nn.PReLU | Dice = nn.PReLU()
+            self.activation: Union[nn.PReLU, Dice] = nn.PReLU()
         elif activation == "dice":
             self.activation = Dice(self.proj_dim)
         self.linear_out = nn.Linear(self.proj_dim, 1)
@@ -80,7 +80,11 @@ class DeepInterestNetwork(BaseWDModelComponent):
     column_idx : Dict[str, int]
         Dictionary mapping column names to their corresponding index.
     target_item_col : str
-        Name of the target item column.
+        Name of the target item column. Note that this is not the target
+        column. This algorithm relies on a sequence representation of
+        interactions. The target item would be the next item in the sequence
+        of interactions (e.g. item 6th in a sequence of 5 items), and our
+        goal is to predict a given action on it.
     user_behavior_confiq : Tuple[List[str], int, int]
         Configuration for user behavior sequence columns. Tuple containing:
         - List of column names that correspond to the user behavior sequence<br/>
@@ -140,7 +144,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
         :information_source: **NOTE**: This parameter is deprecated and it
          will be removed in future releases. Please, use the
          `embed_continuous_method` parameter instead.
-    embed_continuous_method : Optional[Literal["piecewise", "periodic"]], default="piecewise"
+    embed_continuous_method : Optional[Literal["piecewise", "periodic", "standard"]], default=None
         Method to use to embed the continuous features. Options are:
         _'standard'_, _'periodic'_ or _'piecewise'_. The _'standard'_
         embedding method is based on the FT-Transformer implementation

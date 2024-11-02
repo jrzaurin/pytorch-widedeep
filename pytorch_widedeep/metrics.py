@@ -845,3 +845,19 @@ class Recall_at_k(Metric):
 RankingMetrics = Union[
     BinaryNDCG_at_k, MAP_at_k, HitRatio_at_k, Precision_at_k, Recall_at_k
 ]
+
+
+# tnis is just because we want to support python 3.9. In 3.10 we could define
+# a type hint like Union[BinaryNDCG_at_k, MAP_at_k, HitRatio_at_k,
+# Precision_at_k, Recall_at_k]
+def is_ranking_metric(metric) -> bool:
+    return isinstance(
+        metric,
+        (
+            BinaryNDCG_at_k,
+            MAP_at_k,
+            HitRatio_at_k,
+            Precision_at_k,
+            Recall_at_k,
+        ),
+    )

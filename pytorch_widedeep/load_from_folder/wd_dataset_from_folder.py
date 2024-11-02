@@ -34,13 +34,13 @@ class WideDeepDatasetFromFolder(Dataset):
     img_from_folder: Optional[ImageFromFolder], default = None
         Instance of the `ImageFromFolder` class
     reference: Type["WideDeepDatasetFromFolder"], default = None
-        If not None, the 'text_from_folder' and 'img_from_folder' objects will
-        be retrieved from the reference class. This is useful when we want to
-        use a `WideDeepDatasetFromFolder` class used for a train dataset as a
-        reference for the validation and test datasets. In this case, the
-        `text_from_folder` and `img_from_folder` objects will be the same for
-        all three datasets, so there is no need to create a new instance for
-        each dataset.
+        If `reference` not None, the `text_from_folder` and `img_from_folder`
+        objects will be retrieved from the reference class. This is useful
+        when we want to use a `WideDeepDatasetFromFolder` class used for a
+        train dataset as a reference for the validation and test datasets. In
+        this case, the `text_from_folder` and `img_from_folder` objects will
+        be the same for all three datasets, so there is no need to create a
+        new instance for each dataset.
     """
 
     def __init__(
