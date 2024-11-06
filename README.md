@@ -810,13 +810,17 @@ be constructed using the library's core functionalities.
 
 The recommendation algorithms in the `rec` module are:
 
-1. [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247)
-2. (Deep) Field Aware Factorization Machine (FFM): a Deep Learning version of the algorithm presented in [Field-aware Factorization Machines in a Real-world Online Advertising System](https://arxiv.org/abs/1701.04099)
-3. [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://arxiv.org/pdf/1803.05170)
-4. [Deep Interest Network for Click-Through Rate Prediction](https://arxiv.org/abs/1706.06978)
+1. [AutoInt: Automatic Feature Interaction Learning via Self-Attentive Neural Networks](https://arxiv.org/abs/1810.11921)
+2. [DeepFM: A Factorization-Machine based Neural Network for CTR Prediction](https://arxiv.org/abs/1703.04247)
+3. (Deep) Field Aware Factorization Machine (FFM): a Deep Learning version of the algorithm presented in [Field-aware Factorization Machines in a Real-world Online Advertising System](https://arxiv.org/abs/1701.04099)
+4. [xDeepFM: Combining Explicit and Implicit Feature Interactions for Recommender Systems](https://arxiv.org/pdf/1803.05170)
+5. [Deep Interest Network for Click-Through Rate Prediction](https://arxiv.org/abs/1706.06978)
+6. [Deep and Cross Network for Ad Click Predictions](https://arxiv.org/abs/1708.05123)
+7. [DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems](https://arxiv.org/abs/2008.13535)
+8. [Towards Deeper, Lighter and Interpretable Click-through Rate Prediction](https://arxiv.org/abs/2311.04635)
+9. A basic Transformer-based model for recommendation where the problem is faced as a sequence.
 
-These can all be used as the `deeptabular` component in the `WideDeep` model.
-See the examples for more details.
+See the examples for details on how to use these models.
 
 ### Text and Images
 For the text component, `deeptext`, the library offers the following models:
