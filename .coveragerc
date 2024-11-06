@@ -5,6 +5,11 @@ omit =
     pytorch_widedeep/bayesian_models/bayesian_nn/modules/*
 
 [report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    class GroupWideDeepDataset
+    def group_collate_fn
 exclude_also =
     def __repr__
 omit =

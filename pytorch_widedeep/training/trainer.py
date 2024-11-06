@@ -12,8 +12,10 @@ from torch.utils.data import DataLoader
 from pytorch_widedeep.losses import ZILNLoss
 from pytorch_widedeep.metrics import Metric
 from pytorch_widedeep.wdtypes import (
+    Any,
     Dict,
     List,
+    Tuple,
     Union,
     Tensor,
     Literal,
@@ -24,9 +26,10 @@ from pytorch_widedeep.wdtypes import (
     LRScheduler,
 )
 from pytorch_widedeep.callbacks import Callback
+from pytorch_widedeep.dataloaders import CustomDataLoader
 from pytorch_widedeep.initializers import Initializer
 from pytorch_widedeep.training._finetune import FineTune
-from pytorch_widedeep.utils.general_utils import alias
+from pytorch_widedeep.utils.general_utils import alias, to_device
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 from pytorch_widedeep.training._base_trainer import BaseTrainer
 from pytorch_widedeep.training._trainer_utils import (
@@ -151,7 +154,8 @@ class Trainer(BaseTrainer):
         Other infrequently used arguments that can also be passed as kwargs are:
 
         - **device**: `str`<br/>
-            string indicating the device. One of _'cpu'_ or _'gpu'_
+            string indicating the device. One of _'cpu'_, _'gpu'_ or 'mps' if
+            run on a Mac with Apple silicon or AMD GPU(s)
 
         - **num_workers**: `int`<br/>
             number of workers to be used internally by the data loaders
@@ -227,6 +231,7 @@ class Trainer(BaseTrainer):
         "objective",
         ["loss_function", "loss_fn", "loss", "cost_function", "cost_fn", "cost"],
     )
+    @alias("metrics", ["train_metrics"])
     def __init__(
         self,
         model: WideDeep,
@@ -244,6 +249,7 @@ class Trainer(BaseTrainer):
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
+        eval_metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
         verbose: int = 1,
         seed: int = 1,
         **kwargs,
@@ -258,12 +264,15 @@ class Trainer(BaseTrainer):
             transforms=transforms,
             callbacks=callbacks,
             metrics=metrics,
+            eval_metrics=eval_metrics,
             verbose=verbose,
             seed=seed,
             **kwargs,
         )
 
     @alias("finetune", ["warmup"])
+    @alias("train_dataloader", ["custom_dataloader"])
+    @alias("eval_dataloader", ["custom_eval_dataloader"])
     def fit(  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
@@ -277,7 +286,8 @@ class Trainer(BaseTrainer):
         n_epochs: int = 1,
         validation_freq: int = 1,
         batch_size: int = 32,
-        custom_dataloader: Optional[DataLoader] = None,
+        train_dataloader: Optional[CustomDataLoader] = None,
+        eval_dataloader: Optional[CustomDataLoader] = None,
         feature_importance_sample_size: Optional[int] = None,
         finetune: bool = False,
         **kwargs,
@@ -414,11 +424,8 @@ class Trainer(BaseTrainer):
         [Examples](https://github.com/jrzaurin/pytorch-widedeep/tree/master/examples)
         folder in the repo
         """
-
         dataloader_args, finetune_args = self._extract_kwargs(kwargs)
-
         self.batch_size = batch_size
-
         train_set, eval_set = wd_train_val_split(
             self.seed,
             self.method,  # type: ignore
@@ -432,35 +439,18 @@ class Trainer(BaseTrainer):
             target,
             self.transforms,
         )
-        if custom_dataloader is not None:
-            # make sure is callable (and HAS to be an subclass of DataLoader)
-            assert isinstance(custom_dataloader, type)
-            train_loader = custom_dataloader(  # type: ignore[misc]
-                dataset=train_set,
-                batch_size=batch_size,
-                num_workers=self.num_workers,
-                **dataloader_args,
-            )
-        else:
-            train_loader = DataLoader(
-                dataset=train_set,
-                batch_size=batch_size,
-                num_workers=self.num_workers,
-                **dataloader_args,
-            )
-        train_steps = len(train_loader)
-        if eval_set is not None:
-            eval_loader = DataLoader(
-                dataset=eval_set,
-                batch_size=batch_size,
-                num_workers=self.num_workers,
-                shuffle=False,
-            )
-            eval_steps = len(eval_loader)
+        train_loader = self._set_dataloader(
+            train_dataloader, train_set, batch_size, dataloader_args
+        )
+        eval_loader = (
+            self._set_dataloader(eval_dataloader, eval_set, batch_size, dataloader_args)
+            if eval_set is not None
+            else None
+        )
 
         if finetune:
             self.with_finetuning: bool = True
-            self._finetune(train_loader, **finetune_args)
+            self._do_finetune(train_loader, **finetune_args)
             if self.verbose:
                 print(
                     "Fine-tuning (or warmup) of individual components completed. "
@@ -470,54 +460,32 @@ class Trainer(BaseTrainer):
             self.with_finetuning = False
 
         self.callback_container.on_train_begin(
-            {"batch_size": batch_size, "train_steps": train_steps, "n_epochs": n_epochs}
+            {
+                "batch_size": batch_size,
+                "train_steps": len(train_loader),
+                "n_epochs": n_epochs,
+            }
         )
         for epoch in range(n_epochs):
-            epoch_logs: Dict[str, float] = {}
-            self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
-
-            self.train_running_loss = 0.0
-            with trange(train_steps, disable=self.verbose != 1) as t:
-                for batch_idx, (data, targett) in zip(t, train_loader):
-                    t.set_description("epoch %i" % (epoch + 1))
-                    train_score, train_loss = self._train_step(data, targett, batch_idx)
-                    print_loss_and_metric(t, train_loss, train_score)
-                    self.callback_container.on_batch_end(batch=batch_idx)
-            epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
-
-            on_epoch_end_metric = None
-            if eval_set is not None and epoch % validation_freq == (
+            epoch_logs = self._train_epoch(train_loader, epoch)
+            if eval_loader is not None and epoch % validation_freq == (
                 validation_freq - 1
             ):
-                self.callback_container.on_eval_begin()
-                self.valid_running_loss = 0.0
-                with trange(eval_steps, disable=self.verbose != 1) as v:
-                    for i, (data, targett) in zip(v, eval_loader):
-                        v.set_description("valid")
-                        val_score, val_loss = self._eval_step(data, targett, i)
-                        print_loss_and_metric(v, val_loss, val_score)
-                epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
-
-                if self.reducelronplateau:
-                    if self.reducelronplateau_criterion == "loss":
-                        on_epoch_end_metric = val_loss
-                    else:
-                        on_epoch_end_metric = val_score[
-                            self.reducelronplateau_criterion
-                        ]
+                epoch_logs, on_epoch_end_metric = self._eval_epoch(
+                    eval_loader, epoch_logs
+                )
             else:
+                on_epoch_end_metric = None
                 if self.reducelronplateau:
                     raise NotImplementedError(
                         "ReduceLROnPlateau scheduler can be used only with validation data."
                     )
             self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
-
             if self.early_stop:
                 # self.callback_container.on_train_end(epoch_logs)
                 break
 
         self.callback_container.on_train_end(epoch_logs)
-
         if feature_importance_sample_size is not None:
             self.feature_importance = FeatureImportance(
                 self.device, feature_importance_sample_size
@@ -599,7 +567,7 @@ class Trainer(BaseTrainer):
         X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         batch_size: Optional[int] = None,
-        uncertainty_granularity=1000,
+        uncertainty_granularity: int = 1000,
     ) -> np.ndarray:
         r"""Returns the predicted ucnertainty of the model for the test dataset
         using a Monte Carlo method during which dropout layers are activated
@@ -813,9 +781,29 @@ class Trainer(BaseTrainer):
             with open(Path(path) / "feature_importance.json", "w") as fi:
                 json.dump(self.feature_importance, fi)
 
+    def _set_dataloader(
+        self,
+        dataloader: Optional[CustomDataLoader],
+        dataset: WideDeepDataset,
+        batch_size: int,
+        dataloader_args: Dict[str, Any],
+    ) -> Union[DataLoader, CustomDataLoader]:
+        if dataloader is not None:
+            dataloader.set_dataset(dataset)
+            return dataloader
+        else:
+            # var name 'loader' to avoid reassigment and type errors
+            loader = DataLoader(
+                dataset=dataset,
+                batch_size=batch_size,
+                num_workers=self.num_workers,
+                **dataloader_args,
+            )
+        return loader
+
     @alias("n_epochs", ["finetune_epochs", "warmup_epochs"])
     @alias("max_lr", ["finetune_max_lr", "warmup_max_lr"])
-    def _finetune(
+    def _do_finetune(
         self,
         loader: DataLoader,
         n_epochs: int = 5,
@@ -901,6 +889,27 @@ class Trainer(BaseTrainer):
                     self.model.deepimage, "deepimage", loader, n_epochs, max_lr
                 )
 
+    def _train_epoch(
+        self,
+        train_loader: DataLoader,
+        epoch: int,
+    ):
+        epoch_logs: Dict[str, float] = {}
+        self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
+        self.train_running_loss = 0.0
+
+        train_steps = len(train_loader)
+        with trange(train_steps, disable=self.verbose != 1) as t:
+            for batch_idx, (data, targett) in zip(t, train_loader):
+                t.set_description("epoch %i" % (epoch + 1))
+                train_score, train_loss = self._train_step(data, targett, batch_idx)
+                print_loss_and_metric(t, train_loss, train_score)
+                self.callback_container.on_batch_end(batch=batch_idx)
+
+        epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
+
+        return epoch_logs
+
     def _train_step(
         self,
         data: Dict[str, Union[Tensor, List[Tensor]]],
@@ -913,15 +922,15 @@ class Trainer(BaseTrainer):
         X: Dict[str, Union[Tensor, List[Tensor]]] = {}
         for k, v in data.items():
             if isinstance(v, list):
-                X[k] = [i.to(self.device) for i in v]
+                X[k] = [to_device(i, self.device) for i in v]
             else:
-                X[k] = v.to(self.device)
+                X[k] = to_device(v, self.device)
         y = (
             target.view(-1, 1).float()
             if self.method not in ["multiclass", "qregression", "multitarget"]
             else target
         )
-        y = y.to(self.device)
+        y = to_device(y, self.device)
 
         self.optimizer.zero_grad()
 
@@ -929,10 +938,10 @@ class Trainer(BaseTrainer):
 
         if self.model.is_tabnet:
             loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
-            score = self._get_score(y_pred[0], y)
+            score = self._get_score(y_pred[0], y, is_train=True)
         else:
             loss = self.loss_fn(y_pred, y)
-            score = self._get_score(y_pred, y)
+            score = self._get_score(y_pred, y, is_train=True)
 
         loss.backward()
         self.optimizer.step()
@@ -941,6 +950,33 @@ class Trainer(BaseTrainer):
         avg_loss = self.train_running_loss / (batch_idx + 1)
 
         return score, avg_loss
+
+    def _eval_epoch(
+        self,
+        eval_loader: DataLoader,
+        epoch_logs: Dict[str, float],
+    ) -> Tuple[Dict[str, float], Optional[float]]:
+        self.callback_container.on_eval_begin()
+        self.valid_running_loss = 0.0
+
+        eval_steps = len(eval_loader)
+        with trange(eval_steps, disable=self.verbose != 1) as v:
+            for i, (data, targett) in zip(v, eval_loader):
+                v.set_description("valid")
+                val_score, val_loss = self._eval_step(data, targett, i)
+                print_loss_and_metric(v, val_loss, val_score)
+
+        epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
+
+        if self.reducelronplateau:
+            if self.reducelronplateau_criterion == "loss":
+                on_epoch_end_metric = val_loss
+            else:
+                on_epoch_end_metric = val_score[self.reducelronplateau_criterion]
+        else:
+            on_epoch_end_metric = None
+
+        return epoch_logs, on_epoch_end_metric
 
     def _eval_step(
         self,
@@ -953,22 +989,22 @@ class Trainer(BaseTrainer):
             X: Dict[str, Union[Tensor, List[Tensor]]] = {}
             for k, v in data.items():
                 if isinstance(v, list):
-                    X[k] = [i.to(self.device) for i in v]
+                    X[k] = [to_device(i, self.device) for i in v]
                 else:
-                    X[k] = v.to(self.device)
+                    X[k] = to_device(v, self.device)
             y = (
                 target.view(-1, 1).float()
                 if self.method not in ["multiclass", "qregression", "multitarget"]
                 else target
             )
-            y = y.to(self.device)
+            y = to_device(y, self.device)
 
             y_pred = self.model(X)
             if self.model.is_tabnet:
                 loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
-                score = self._get_score(y_pred[0], y)
+                score = self._get_score(y_pred[0], y, is_train=False)
             else:
-                score = self._get_score(y_pred, y)
+                score = self._get_score(y_pred, y, is_train=False)
                 loss = self.loss_fn(y_pred, y)
 
             self.valid_running_loss += loss.item()
@@ -977,20 +1013,30 @@ class Trainer(BaseTrainer):
         self.model.train()
         return score, avg_loss
 
-    def _get_score(self, y_pred, y):
-        if self.metric is not None:
+    def _get_score(
+        self, y_pred: Tensor, y: Tensor, is_train: bool
+    ) -> Optional[Dict[str, float]]:
+
+        score = None
+        metric = None
+
+        if self.metric and not self.eval_metric:
+            metric = self.metric
+        elif self.metric and self.eval_metric:
+            metric = self.metric if is_train else self.eval_metric
+        elif not self.metric and self.eval_metric:
+            metric = None if is_train else self.eval_metric
+
+        if metric is not None:
             if self.method == "regression":
-                score = self.metric(y_pred, y)
+                score = metric(y_pred, y)
             if self.method == "binary":
-                score = self.metric(torch.sigmoid(y_pred), y)
+                score = metric(torch.sigmoid(y_pred), y)
             if self.method == "qregression":
-                score = self.metric(y_pred, y)
+                score = metric(y_pred, y)
             if self.method == "multiclass":
-                score = self.metric(F.softmax(y_pred, dim=1), y)
-            # TO DO: handle multitarget
-            return score
-        else:
-            return None
+                score = metric(F.softmax(y_pred, dim=1), y)
+        return score
 
     def _predict(  # type: ignore[override, return]  # noqa: C901
         self,
@@ -1000,7 +1046,7 @@ class Trainer(BaseTrainer):
         X_img: Optional[Union[np.ndarray, List[np.ndarray]]] = None,
         X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         batch_size: Optional[int] = None,
-        uncertainty_granularity=1000,
+        uncertainty_granularity: int = 1000,
         uncertainty: bool = False,
     ) -> List:
         r"""Private method to avoid code repetition in predict and
@@ -1060,9 +1106,9 @@ class Trainer(BaseTrainer):
                             X: Dict[str, Union[Tensor, List[Tensor]]] = {}
                             for k, v in data.items():
                                 if isinstance(v, list):
-                                    X[k] = [i.to(self.device) for i in v]
+                                    X[k] = [to_device(i, self.device) for i in v]
                                 else:
-                                    X[k] = v.to(self.device)
+                                    X[k] = to_device(v, self.device)
                             preds = (
                                 self.model(X)
                                 if not self.model.is_tabnet
@@ -1083,6 +1129,7 @@ class Trainer(BaseTrainer):
 
     @staticmethod
     def _predict_ziln(preds: Tensor) -> Tensor:
+        # Legacy implementation. It will be removed in future versions
         """Calculates predicted mean of zero inflated lognormal logits.
 
         Adjusted implementaion of `code

@@ -10,13 +10,5 @@ The models in this module are based on the publication:
 
 
 ::: pytorch_widedeep.bayesian_models.tabular.bayesian_linear.bayesian_wide.BayesianWide
-    selection:
-        filters:
-            - "!^_"  # exclude all members starting with _
-            - "!^forward$"
 
 ::: pytorch_widedeep.bayesian_models.tabular.bayesian_mlp.bayesian_tab_mlp.BayesianTabMlp
-    selection:
-        filters:
-            - "!^_"  # exclude all members starting with _
-            - "!^forward$"

@@ -1,5 +1,4 @@
 import numpy as np
-import torch
 import pandas as pd
 from torch.utils.data import DataLoader
 
@@ -18,8 +17,6 @@ from pytorch_widedeep.load_from_folder import (
     ImageFromFolder,
     WideDeepDatasetFromFolder,
 )
-
-use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
     # The airbnb dataset, which you could get from here:

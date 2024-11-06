@@ -10,8 +10,6 @@ from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
 from pytorch_widedeep.bayesian_models._base_bayesian_model import BaseBayesianModel
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 class Tab2Vec:
     r"""Class to transform an input dataframe into vectorized form.
@@ -79,7 +77,7 @@ class Tab2Vec:
     >>> # ...train the model...
     >>>
     >>> # vectorise the dataframe
-    >>> t2v = Tab2Vec(tab_preprocessor, model)
+    >>> t2v = Tab2Vec(tab_preprocessor, model, device="cpu")
     >>> X_vec = t2v.transform(df_t2v)
     """
 
@@ -87,12 +85,18 @@ class Tab2Vec:
         self,
         tab_preprocessor: TabPreprocessor,
         model: Union[WideDeep, BayesianWide, BayesianTabMlp],
+        device: Union[str, torch.device],
         return_dataframe: bool = False,
         verbose: bool = False,
     ):
         super(Tab2Vec, self).__init__()
 
         self._check_inputs(tab_preprocessor, model, verbose)
+
+        if isinstance(device, str):
+            self.device = torch.device(device)
+        else:
+            self.device = device
 
         self.tab_preprocessor = tab_preprocessor
         self.return_dataframe = return_dataframe
@@ -158,7 +162,11 @@ class Tab2Vec:
         """
 
         X_tab = self.tab_preprocessor.transform(df)
-        X = torch.from_numpy(X_tab.astype("float")).to(device)
+
+        if self.device.type == "mps":
+            X = torch.from_numpy(X_tab.astype("float32")).to(self.device)
+        else:
+            X = torch.from_numpy(X_tab.astype("float")).to(self.device)
 
         with torch.no_grad():
             if self.is_tab_transformer:

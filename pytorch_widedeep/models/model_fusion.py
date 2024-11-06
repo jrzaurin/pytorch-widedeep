@@ -179,57 +179,55 @@ class ModelFuser(BaseWDModelComponent):
 
     def forward(self, X: List[Tensor]) -> Tensor:  # noqa: C901
         if self.fusion_method == "head":
-            return self.head(
-                torch.cat([model(x) for model, x in zip(self.models, X)], -1)
-            )
+            return self._head_fusion(X)
         elif self.fusion_method == "dot":
-            assert len(X) == 2, (
-                "When using 'dot' as fusion_method, only two models "
-                " can be fused. Accordingly, only two inputs should be provided"
-            )
-            outputs = [model(x) for model, x in zip(self.models, X)]
-            return torch.bmm(outputs[1].unsqueeze(1), outputs[0].unsqueeze(2)).view(
-                -1, 1
-            )
+            return self._dot_fusion(X)
         else:
-            if isinstance(self.fusion_method, str):
-                fusion_methods = [self.fusion_method]
-            else:
-                fusion_methods = self.fusion_method  # type: ignore
+            return self._other_fusions(X)
 
-            fused_outputs: List[Tensor] = []
-            for fm in fusion_methods:
-                if fm == "concatenate":
-                    out = torch.cat([model(x) for model, x in zip(self.models, X)], 1)
-                else:
+    def _head_fusion(self, X: List[Tensor]) -> Tensor:
+        return self.head(torch.cat([model(x) for model, x in zip(self.models, X)], -1))
 
-                    model_outputs = [model(x) for model, x in zip(self.models, X)]
-                    projections = self.project(model_outputs)
+    def _dot_fusion(self, X: List[Tensor]) -> Tensor:
+        assert (
+            len(X) == 2
+        ), "When using 'dot' as fusion_method, only two models can be fused"
+        outputs = [model(x) for model, x in zip(self.models, X)]
+        return torch.bmm(outputs[1].unsqueeze(1), outputs[0].unsqueeze(2)).view(-1, 1)
 
-                    if fm == "mean":
-                        out = torch.mean(torch.stack(projections, -1), -1)
-                    elif fm == "max":
-                        out, _ = torch.max(torch.stack(projections, -1), -1)
-                    elif fm == "min":
-                        out, _ = torch.min(torch.stack(projections, -1), -1)
-                    elif fm == "sum":
-                        out = torch.sum(torch.stack(projections, -1), -1)
-                    elif fm == "mult":
-                        out = torch.prod(torch.stack(projections, -1), -1)
-                    else:
-                        # This should never happen, but avoids type errors
-                        raise ValueError(
-                            "fusion_method must be one of ['concatenate', 'mean', 'max', 'sum', 'mult', 'dot', 'head'] "
-                            "or a list of those"
-                        )
-                fused_outputs.append(out)
+    def _other_fusions(self, X: List[Tensor]) -> Tensor:
+        fusion_methods = (
+            [self.fusion_method]
+            if isinstance(self.fusion_method, str)
+            else self.fusion_method
+        )
+        fused_outputs = [self._apply_fusion_method(fm, X) for fm in fusion_methods]  # type: ignore[attr-defined]
+        return (
+            fused_outputs[0] if len(fused_outputs) == 1 else torch.cat(fused_outputs, 1)
+        )
 
-            if len(fused_outputs) == 1:
-                return fused_outputs[0]
-            else:
-                return torch.cat(fused_outputs, 1)
+    def _apply_fusion_method(self, fusion_method: str, X: List[Tensor]) -> Tensor:
+        if fusion_method == "concatenate":
+            return torch.cat([model(x) for model, x in zip(self.models, X)], 1)
 
-    def project(self, X: List[Tensor]) -> List[Tensor]:
+        model_outputs = [model(x) for model, x in zip(self.models, X)]
+        projections = self._project(model_outputs)
+        stacked = torch.stack(projections, -1)
+
+        if fusion_method == "mean":
+            return torch.mean(stacked, -1)
+        elif fusion_method == "max":
+            return torch.max(stacked, -1)[0]
+        elif fusion_method == "min":
+            return torch.min(stacked, -1)[0]
+        elif fusion_method == "sum":
+            return torch.sum(stacked, -1)
+        elif fusion_method == "mult":
+            return torch.prod(stacked, -1)
+        else:
+            raise ValueError(f"Unsupported fusion method: {fusion_method}")
+
+    def _project(self, X: List[Tensor]) -> List[Tensor]:
         r"""Projects the output of the models to a common dimension."""
 
         if self.all_output_dim_equal and self.projection_method is None:
@@ -298,93 +296,73 @@ class ModelFuser(BaseWDModelComponent):
 
         return output_dim
 
-    def check_input_parameters(self):  # noqa: C901
+    def check_input_parameters(self):
+        self._validate_tabnet()
+        self._validate_fusion_methods()
+        self._validate_projection_requirements()
+        self._validate_head_dot_exclusivity()
 
+    def _validate_tabnet(self):
         if any(isinstance(model, TabNet) for model in self.models):
             raise ValueError(
                 "TabNet is not supported in ModelFuser. "
                 "Please, use another model for tabular data"
             )
 
+    def _validate_fusion_methods(self):
+        valid_methods = [
+            "concatenate",
+            "min",
+            "max",
+            "mean",
+            "sum",
+            "mult",
+            "dot",
+            "head",
+        ]
+
         if isinstance(self.fusion_method, str):
-            if not any(
-                x == self.fusion_method
-                for x in [
-                    "concatenate",
-                    "min",
-                    "max",
-                    "mean",
-                    "sum",
-                    "dot",
-                    "mult",
-                    "head",
-                ]
-            ):
+            if self.fusion_method not in valid_methods:
                 raise ValueError(
                     "fusion_method must be one of ['concatenate', 'mean', 'max', 'sum', 'mult', 'dot', 'head'] "
                     "or a list of any those but 'dot'"
                 )
-
-            if (
-                any(x in self.fusion_method for x in ["min", "max", "mean"])
-                and not self.all_output_dim_equal
-            ):
-                if self.projection_method is None:
-                    raise ValueError(
-                        "If 'fusion_method' is not 'concatenate' or 'head', "
-                        " and the output dimensions of the models are not equal, "
-                        "'projection_method' must be provided"
-                    )
-                elif self.projection_method not in ["min", "max", "mean"]:
-                    raise ValueError(
-                        "projection_method must be one of ['min', 'max', 'mean']"
-                    )
         else:
-            if not all(
-                any(
-                    x == fm
-                    for x in [
-                        "concatenate",
-                        "min",
-                        "max",
-                        "mean",
-                        "sum",
-                        "mult",
-                        "dot",
-                        "head",
-                    ]
-                )
-                for fm in self.fusion_method
-            ):
+            if not all(fm in valid_methods for fm in self.fusion_method):
                 raise ValueError(
                     "fusion_method must be one of ['concatenate', 'mean', 'max', 'sum', 'mult', 'dot', 'head'] "
                     "or a list of those but 'dot'"
                 )
 
-            if (
-                all(
-                    any(x in fm for x in ["min", "max", "mean"])
-                    for fm in self.fusion_method
-                )
-                and not self.all_output_dim_equal
-            ):
-                if self.projection_method is None:
-                    raise ValueError(
-                        "If 'fusion_method' is not 'concatenate' or 'head', "
-                        " and the output dimensions of the models are not equal, "
-                        "'projection_method' must be provided"
-                    )
-                elif self.projection_method not in ["min", "max", "mean"]:
-                    raise ValueError(
-                        "projection_method must be one of ['min', 'max', 'mean']"
-                    )
+    def _validate_projection_requirements(self):
+        needs_projection = not self.all_output_dim_equal
+        has_size_dependent_method = False
 
-        if any(x in self.fusion_method for x in ["head", "dot"]) and isinstance(
-            self.fusion_method, list
-        ):
-            raise ValueError(
-                "When using 'head' or 'dot' as fusion_method, no other method should be provided"
+        if isinstance(self.fusion_method, str):
+            has_size_dependent_method = self.fusion_method in ["min", "max", "mean"]
+        else:
+            has_size_dependent_method = all(
+                fm in ["min", "max", "mean"] for fm in self.fusion_method
             )
+
+        if has_size_dependent_method and needs_projection:
+            if self.projection_method is None:
+                raise ValueError(
+                    "If 'fusion_method' is not 'concatenate' or 'head', "
+                    "and the output dimensions of the models are not equal, "
+                    "'projection_method' must be provided"
+                )
+            elif self.projection_method not in ["min", "max", "mean"]:
+                raise ValueError(
+                    "projection_method must be one of ['min', 'max', 'mean']"
+                )
+
+    def _validate_head_dot_exclusivity(self):
+        if isinstance(self.fusion_method, list):
+            if any(method in ["head", "dot"] for method in self.fusion_method):
+                raise ValueError(
+                    "When using 'head' or 'dot' as fusion_method, no other method should be provided"
+                )
 
     def __repr__(self):
         if self.projection_method is not None:

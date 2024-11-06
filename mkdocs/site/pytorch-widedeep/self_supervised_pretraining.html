@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.43">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1396,7 +1396,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/16_Self_Supervised_Pretraning_pt1.ipynb" class="md-nav__link">
+      <a href="../examples/15_Self_Supervised_Pretraning_pt1.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1417,7 +1417,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/16_Self_Supervised_Pretraning_pt2.ipynb" class="md-nav__link">
+      <a href="../examples/15_Self_Supervised_Pretraning_pt2.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1438,7 +1438,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/17_Usign_a_custom_hugging_face_model.ipynb" class="md-nav__link">
+      <a href="../examples/16_Usign_a_custom_hugging_face_model.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1459,7 +1459,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/18_feature_importance_via_attention_weights.ipynb" class="md-nav__link">
+      <a href="../examples/17_feature_importance_via_attention_weights.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1480,7 +1480,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/19_wide_and_deep_for_recsys_pt1.ipynb" class="md-nav__link">
+      <a href="../examples/18_wide_and_deep_for_recsys_pt1.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1501,7 +1501,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/19_wide_and_deep_for_recsys_pt2.ipynb" class="md-nav__link">
+      <a href="../examples/18_wide_and_deep_for_recsys_pt2.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1522,7 +1522,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/20_load_from_folder_functionality.ipynb" class="md-nav__link">
+      <a href="../examples/19_load_from_folder_functionality.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1543,7 +1543,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/21_Using_huggingface_within_widedeep.ipynb" class="md-nav__link">
+      <a href="../examples/20_Using_huggingface_within_widedeep.html" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1653,18 +1653,7 @@ users to have a look to the papers.</p>
 
 
 <a href="#pytorch_widedeep.self_supervised_training.EncoderDecoderTrainer" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">EncoderDecoderTrainer</span><span class="p">(</span>
-    <span class="n">encoder</span><span class="p">,</span>
-    <span class="n">decoder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">masked_prob</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
-    <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">lr_scheduler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span>
-<span class="p">)</span>
-</code></pre></div>
+
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
@@ -1678,104 +1667,174 @@ See Figure 1 above.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>encoder</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.ModelWithoutAttention">ModelWithoutAttention</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>An instance of a <code>TabMlp</code>, <code>TabResNet</code> or <code>TabNet</code> model</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>decoder</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.DecoderWithoutAttention">DecoderWithoutAttention</span>]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>An instance of  a <code>TabMlpDecoder</code>, <code>TabResNetDecoder</code> or
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>encoder</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.ModelWithoutAttention">ModelWithoutAttention</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An instance of a <code>TabMlp</code>, <code>TabResNet</code> or <code>TabNet</code> model</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>decoder</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.DecoderWithoutAttention">DecoderWithoutAttention</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An instance of  a <code>TabMlpDecoder</code>, <code>TabResNetDecoder</code> or
 <code>TabNetDecoder</code> model. if <code>None</code> the decoder will be automatically
 built as a '<em>simetric</em>' model to the Encoder</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>masked_prob</code></b>
-              (<code>float</code>, default:
-                  <code>0.2</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Indicates the fraction of elements in the embedding tensor that will
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>masked_prob</code>
+            </td>
+            <td>
+                  <code>float</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Indicates the fraction of elements in the embedding tensor that will
 be masked and hence used for reconstruction</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>optimizer</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>An instance of Pytorch's <code>Optimizer</code> object (e.g. <code>torch.optim.Adam
+              </div>
+            </td>
+            <td>
+                  <code>0.2</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>optimizer</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An instance of Pytorch's <code>Optimizer</code> object (e.g. <code>torch.optim.Adam
 ()</code>). if no optimizer is passed it will default to <code>AdamW</code>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>lr_scheduler</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span>]</code>, default:
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>An instance of Pytorch's <code>LRScheduler</code> object
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>lr_scheduler</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An instance of Pytorch's <code>LRScheduler</code> object
 (e.g <code>torch.optim.lr_scheduler.StepLR(opt, step_size=5)</code>).</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>callbacks</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.callbacks.Callback">Callback</span>]]</code>, default:
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>List with <code>Callback</code> objects. The three callbacks available in
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>callbacks</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.callbacks.Callback">Callback</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List with <code>Callback</code> objects. The three callbacks available in
 <code>pytorch-widedeep</code> are: <code>LRHistory</code>, <code>ModelCheckpoint</code> and
 <code>EarlyStopping</code>. This can also be a custom callback. See
 <code>pytorch_widedeep.callbacks.Callback</code> or the Examples folder in the
 repo.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>verbose</code></b>
-              (<code>int</code>, default:
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>verbose</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Setting it to 0 will print nothing during training.</p>
+              </div>
+            </td>
+            <td>
                   <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Setting it to 0 will print nothing during training.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>seed</code></b>
-              (<code>int</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>seed</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Random seed to be used internally for train_test_split</p>
+              </div>
+            </td>
+            <td>
                   <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Random seed to be used internally for train_test_split</p>
-          </div>
-        </li>
-    </ul>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Other Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>**kwargs</code></b>
-          –
-          <div class="doc-md-description">
-            <p>Other infrequently used arguments that can also be passed as kwargs are:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>**kwargs</code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Other infrequently used arguments that can also be passed as kwargs are:</p>
 <ul>
 <li>
 <p><strong>device</strong>: <code>str</code><br/>
@@ -1792,13 +1851,71 @@ repo.</p>
     learning rate is a bit particular.</p>
 </li>
 </ul>
-          </div>
-        </li>
-    </ul>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-                  <details class="quote">
-                    <summary>Source code in <code>pytorch_widedeep/self_supervised_training/encoder_decoder_trainer.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 80</span>
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>pytorch_widedeep/self_supervised_training/encoder_decoder_trainer.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
 <span class="normal"> 81</span>
 <span class="normal"> 82</span>
 <span class="normal"> 83</span>
@@ -1820,133 +1937,9 @@ repo.</p>
 <span class="normal"> 99</span>
 <span class="normal">100</span>
 <span class="normal">101</span>
-<span class="normal">102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">encoder</span><span class="p">:</span> <span class="n">ModelWithoutAttention</span><span class="p">,</span>
-    <span class="n">decoder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DecoderWithoutAttention</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">masked_prob</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
-    <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">lr_scheduler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LRScheduler</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">callbacks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="n">encoder</span><span class="o">=</span><span class="n">encoder</span><span class="p">,</span>
-        <span class="n">decoder</span><span class="o">=</span><span class="n">decoder</span><span class="p">,</span>
-        <span class="n">masked_prob</span><span class="o">=</span><span class="n">masked_prob</span><span class="p">,</span>
-        <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
-        <span class="n">lr_scheduler</span><span class="o">=</span><span class="n">lr_scheduler</span><span class="p">,</span>
-        <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
-        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
-        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-                  </details>
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="pytorch_widedeep.self_supervised_training.EncoderDecoderTrainer.pretrain" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">pretrain</span>
-
-
-<a href="#pytorch_widedeep.self_supervised_training.EncoderDecoderTrainer.pretrain" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">pretrain</span><span class="p">(</span>
-    <span class="n">X_tab</span><span class="p">,</span>
-    <span class="n">X_tab_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">val_split</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">validation_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Pretrain method. Can also be called using <code>.fit(&lt;same_args&gt;)</code></p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>X_tab</code></b>
-              (<code><span title="numpy.ndarray">ndarray</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>tabular dataset</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>X_tab_val</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>validation data</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>val_split</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>An alterative to passing the validation set is to use a train/val
-split fraction via <code>val_split</code></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>validation_freq</code></b>
-              (<code>int</code>, default:
-                  <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>epochs validation frequency</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>n_epochs</code></b>
-              (<code>int</code>, default:
-                  <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>number of epochs</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>batch_size</code></b>
-              (<code>int</code>, default:
-                  <code>32</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>batch size</p>
-          </div>
-        </li>
-    </ul>
-
-            <details class="quote">
-              <summary>Source code in <code>pytorch_widedeep/self_supervised_training/encoder_decoder_trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">104</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
 <span class="normal">107</span>
@@ -2038,7 +2031,554 @@ split fraction via <code>val_split</code></p>
 <span class="normal">193</span>
 <span class="normal">194</span>
 <span class="normal">195</span>
-<span class="normal">196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">EncoderDecoderTrainer</span><span class="p">(</span><span class="n">BaseEncoderDecoderTrainer</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;This class implements an Encoder-Decoder self-supervised &#39;routine&#39;</span>
+<span class="sd">    inspired by</span>
+<span class="sd">    [TabNet: Attentive Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442).</span>
+<span class="sd">    See Figure 1 above.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    encoder: ModelWithoutAttention,</span>
+<span class="sd">        An instance of a `TabMlp`, `TabResNet` or `TabNet` model</span>
+<span class="sd">    decoder: Optional[DecoderWithoutAttention] = None,</span>
+<span class="sd">        An instance of  a `TabMlpDecoder`, `TabResNetDecoder` or</span>
+<span class="sd">        `TabNetDecoder` model. if `None` the decoder will be automatically</span>
+<span class="sd">        built as a &#39;_simetric_&#39; model to the Encoder</span>
+<span class="sd">    masked_prob: float = 0.2,</span>
+<span class="sd">        Indicates the fraction of elements in the embedding tensor that will</span>
+<span class="sd">        be masked and hence used for reconstruction</span>
+<span class="sd">    optimizer: Optional[Optimizer] = None,</span>
+<span class="sd">        An instance of Pytorch&#39;s `Optimizer` object (e.g. `torch.optim.Adam</span>
+<span class="sd">        ()`). if no optimizer is passed it will default to `AdamW`.</span>
+<span class="sd">    lr_scheduler: Optional[LRScheduler] = None,</span>
+<span class="sd">        An instance of Pytorch&#39;s `LRScheduler` object</span>
+<span class="sd">        (e.g `torch.optim.lr_scheduler.StepLR(opt, step_size=5)`).</span>
+<span class="sd">    callbacks: Optional[List[Callback]] = None,</span>
+<span class="sd">        List with `Callback` objects. The three callbacks available in</span>
+<span class="sd">        `pytorch-widedeep` are: `LRHistory`, `ModelCheckpoint` and</span>
+<span class="sd">        `EarlyStopping`. This can also be a custom callback. See</span>
+<span class="sd">        `pytorch_widedeep.callbacks.Callback` or the Examples folder in the</span>
+<span class="sd">        repo.</span>
+<span class="sd">    verbose: int, default=1</span>
+<span class="sd">        Setting it to 0 will print nothing during training.</span>
+<span class="sd">    seed: int, default=1</span>
+<span class="sd">        Random seed to be used internally for train_test_split</span>
+
+<span class="sd">    Other Parameters</span>
+<span class="sd">    ----------------</span>
+<span class="sd">    **kwargs: dict</span>
+<span class="sd">        Other infrequently used arguments that can also be passed as kwargs are:</span>
+
+<span class="sd">        - **device**: `str`&lt;br/&gt;</span>
+<span class="sd">            string indicating the device. One of _&#39;cpu&#39;_ or _&#39;gpu&#39;_</span>
+
+<span class="sd">        - **num_workers**: `int`&lt;br/&gt;</span>
+<span class="sd">            number of workers to be used internally by the data loaders</span>
+
+<span class="sd">        - **reducelronplateau_criterion**: `str`</span>
+<span class="sd">            This sets the criterion that will be used by the lr scheduler to</span>
+<span class="sd">            take a step: One of _&#39;loss&#39;_ or _&#39;metric&#39;_. The ReduceLROnPlateau</span>
+<span class="sd">            learning rate is a bit particular.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">encoder</span><span class="p">:</span> <span class="n">ModelWithoutAttention</span><span class="p">,</span>
+        <span class="n">decoder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DecoderWithoutAttention</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">masked_prob</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">lr_scheduler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LRScheduler</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">encoder</span><span class="o">=</span><span class="n">encoder</span><span class="p">,</span>
+            <span class="n">decoder</span><span class="o">=</span><span class="n">decoder</span><span class="p">,</span>
+            <span class="n">masked_prob</span><span class="o">=</span><span class="n">masked_prob</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">lr_scheduler</span><span class="o">=</span><span class="n">lr_scheduler</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_split</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">validation_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">n_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Pretrain method. Can also be called using `.fit(&lt;same_args&gt;)`</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X_tab: np.ndarray,</span>
+<span class="sd">            tabular dataset</span>
+<span class="sd">        X_tab_val: np.ndarray, Optional, default = None</span>
+<span class="sd">            validation data</span>
+<span class="sd">        val_split: float, Optional. default=None</span>
+<span class="sd">            An alterative to passing the validation set is to use a train/val</span>
+<span class="sd">            split fraction via `val_split`</span>
+<span class="sd">        validation_freq: int, default=1</span>
+<span class="sd">            epochs validation frequency</span>
+<span class="sd">        n_epochs: int, default=1</span>
+<span class="sd">            number of epochs</span>
+<span class="sd">        batch_size: int, default=32</span>
+<span class="sd">            batch size</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+
+        <span class="n">train_set</span><span class="p">,</span> <span class="n">eval_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_eval_split</span><span class="p">(</span><span class="n">X_tab</span><span class="p">,</span> <span class="n">X_tab_val</span><span class="p">,</span> <span class="n">val_split</span><span class="p">)</span>
+        <span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">train_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span>
+        <span class="p">)</span>
+        <span class="n">train_steps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eval_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">eval_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="n">eval_set</span><span class="p">,</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+                <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">eval_steps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">eval_loader</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_train_begin</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">,</span>
+                <span class="s2">&quot;train_steps&quot;</span><span class="p">:</span> <span class="n">train_steps</span><span class="p">,</span>
+                <span class="s2">&quot;n_epochs&quot;</span><span class="p">:</span> <span class="n">n_epochs</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">):</span>
+            <span class="n">epoch_logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_epoch_begin</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="n">epoch_logs</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">train_running_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">with</span> <span class="n">trange</span><span class="p">(</span><span class="n">train_steps</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">X</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">):</span>
+                    <span class="n">t</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="s2">&quot;epoch </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                    <span class="n">train_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_step</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">batch_idx</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_batch_end</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="n">batch_idx</span><span class="p">)</span>
+                    <span class="n">print_loss_and_metric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">train_loss</span><span class="p">)</span>
+
+            <span class="n">epoch_logs</span> <span class="o">=</span> <span class="n">save_epoch_logs</span><span class="p">(</span><span class="n">epoch_logs</span><span class="p">,</span> <span class="n">train_loss</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">)</span>
+
+            <span class="n">on_epoch_end_metric</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">eval_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">validation_freq</span> <span class="o">==</span> <span class="p">(</span>
+                <span class="n">validation_freq</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_eval_begin</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">valid_running_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">with</span> <span class="n">trange</span><span class="p">(</span><span class="n">eval_steps</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">X</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">eval_loader</span><span class="p">):</span>
+                        <span class="n">v</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+                        <span class="n">val_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_step</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">batch_idx</span><span class="p">)</span>
+                        <span class="n">print_loss_and_metric</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">val_loss</span><span class="p">)</span>
+                <span class="n">epoch_logs</span> <span class="o">=</span> <span class="n">save_epoch_logs</span><span class="p">(</span><span class="n">epoch_logs</span><span class="p">,</span> <span class="n">val_loss</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">)</span>
+                <span class="n">on_epoch_end_metric</span> <span class="o">=</span> <span class="n">val_loss</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducelronplateau</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                        <span class="s2">&quot;ReduceLROnPlateau scheduler can be used only with validation data.&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_epoch_end</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">epoch_logs</span><span class="p">,</span> <span class="n">on_epoch_end_metric</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">early_stop</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_train_end</span><span class="p">(</span><span class="n">epoch_logs</span><span class="p">)</span>
+                <span class="k">break</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_train_end</span><span class="p">(</span><span class="n">epoch_logs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_restore_best_weights</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ed_model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_split</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">validation_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">n_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pretrain</span><span class="p">(</span>
+            <span class="n">X_tab</span><span class="p">,</span> <span class="n">X_tab_val</span><span class="p">,</span> <span class="n">val_split</span><span class="p">,</span> <span class="n">validation_freq</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">,</span> <span class="n">batch_size</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">explain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">save_step_masks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;The &#39;explain&#39; is currently not implemented for Self Supervised Pretraining&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_train_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_tab</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">to_device</span><span class="p">(</span><span class="n">X_tab</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">x_embed</span><span class="p">,</span> <span class="n">x_embed_rec</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ed_model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">x_embed</span><span class="p">,</span> <span class="n">x_embed_rec</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_running_loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">avg_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_running_loss</span> <span class="o">/</span> <span class="p">(</span><span class="n">batch_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">avg_loss</span>
+
+    <span class="k">def</span> <span class="nf">_eval_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_tab</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ed_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">to_device</span><span class="p">(</span><span class="n">X_tab</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+            <span class="n">x_embed</span><span class="p">,</span> <span class="n">x_embed_rec</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ed_model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">x_embed</span><span class="p">,</span> <span class="n">x_embed_rec</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">valid_running_loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">avg_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_running_loss</span> <span class="o">/</span> <span class="p">(</span><span class="n">batch_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">avg_loss</span>
+
+    <span class="k">def</span> <span class="nf">_train_eval_split</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_split</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TensorDataset</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TensorDataset</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="n">X_tab_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">train_set</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+            <span class="n">eval_set</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X_tab_val</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">val_split</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">X_tr</span><span class="p">,</span> <span class="n">X_tab_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+                <span class="n">X</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="n">val_split</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span>
+            <span class="p">)</span>
+            <span class="n">train_set</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X_tr</span><span class="p">))</span>
+            <span class="n">eval_set</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X_tab_val</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">train_set</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+            <span class="n">eval_set</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">train_set</span><span class="p">,</span> <span class="n">eval_set</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pytorch_widedeep.self_supervised_training.EncoderDecoderTrainer.pretrain" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">pretrain</span>
+
+
+<a href="#pytorch_widedeep.self_supervised_training.EncoderDecoderTrainer.pretrain" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">pretrain</span><span class="p">(</span>
+    <span class="n">X_tab</span><span class="p">,</span>
+    <span class="n">X_tab_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">val_split</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">validation_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Pretrain method. Can also be called using <code>.fit(&lt;same_args&gt;)</code></p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X_tab</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>tabular dataset</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>X_tab_val</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>validation data</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>val_split</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An alterative to passing the validation set is to use a train/val
+split fraction via <code>val_split</code></p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>validation_freq</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>epochs validation frequency</p>
+              </div>
+            </td>
+            <td>
+                  <code>1</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>n_epochs</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>number of epochs</p>
+              </div>
+            </td>
+            <td>
+                  <code>1</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>batch_size</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>batch size</p>
+              </div>
+            </td>
+            <td>
+                  <code>32</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>pytorch_widedeep/self_supervised_training/encoder_decoder_trainer.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2154,24 +2694,7 @@ split fraction via <code>val_split</code></p>
 
 
 <a href="#pytorch_widedeep.self_supervised_training.ContrastiveDenoisingTrainer" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">ContrastiveDenoisingTrainer</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">,</span>
-    <span class="n">preprocessor</span><span class="p">,</span>
-    <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">lr_scheduler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">loss_type</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span>
-    <span class="n">projection_head1_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">projection_head2_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">projection_heads_activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
-    <span class="n">cat_mlp_type</span><span class="o">=</span><span class="s2">&quot;multiple&quot;</span><span class="p">,</span>
-    <span class="n">cont_mlp_type</span><span class="o">=</span><span class="s2">&quot;multiple&quot;</span><span class="p">,</span>
-    <span class="n">denoise_mlps_activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span>
-<span class="p">)</span>
-</code></pre></div>
+
 
     <div class="doc doc-contents first">
             <p class="doc doc-class-bases">
@@ -2185,83 +2708,134 @@ Contrastive Pre-Training</a>, their Figure 1.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>model</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.ModelWithAttention">ModelWithAttention</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>An instance of a <code>TabTransformer</code>, <code>SAINT</code>, <code>FTTransformer</code>,
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>model</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.ModelWithAttention">ModelWithAttention</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An instance of a <code>TabTransformer</code>, <code>SAINT</code>, <code>FTTransformer</code>,
 <code>TabFastFormer</code>, <code>TabPerceiver</code>, <code>ContextAttentionMLP</code> and
 <code>SelfAttentionMLP</code>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>preprocessor</code></b>
-              (<code><a class="autorefs autorefs-internal" title="pytorch_widedeep.preprocessing.TabPreprocessor" href="preprocessing.html#pytorch_widedeep.preprocessing.tab_preprocessor.TabPreprocessor">TabPreprocessor</a></code>)
-          –
-          <div class="doc-md-description">
-            <p>A fitted <code>TabPreprocessor</code> object. See
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>preprocessor</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="pytorch_widedeep.preprocessing.TabPreprocessor" href="preprocessing.html#pytorch_widedeep.preprocessing.tab_preprocessor.TabPreprocessor">TabPreprocessor</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A fitted <code>TabPreprocessor</code> object. See
 <code>pytorch_widedeep.preprocessing.tab_preprocessor.TabPreprocessor</code></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>optimizer</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>An instance of Pytorch's <code>Optimizer</code> object (e.g. <code>torch.optim.Adam
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>optimizer</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An instance of Pytorch's <code>Optimizer</code> object (e.g. <code>torch.optim.Adam
 ()</code>). if no optimizer is passed it will default to <code>AdamW</code>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>lr_scheduler</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span>]</code>, default:
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>An instance of Pytorch's <code>LRScheduler</code> object
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>lr_scheduler</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An instance of Pytorch's <code>LRScheduler</code> object
 (e.g <code>torch.optim.lr_scheduler.StepLR(opt, step_size=5)</code>).</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>callbacks</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.callbacks.Callback">Callback</span>]]</code>, default:
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>List with <code>Callback</code> objects. The three callbacks available in
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>callbacks</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.callbacks.Callback">Callback</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>List with <code>Callback</code> objects. The three callbacks available in
 <code>pytorch-widedeep</code> are: <code>LRHistory</code>, <code>ModelCheckpoint</code> and
 <code>EarlyStopping</code>. This can also be a custom callback. See
 <code>pytorch_widedeep.callbacks.Callback</code> or the Examples folder in the
 repo.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>loss_type</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[contrastive, denoising, both]</code>, default:
-                  <code>&#39;both&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>One of '<em>contrastive</em>', '<em>denoising</em>' or '<em>both</em>'. See <a href="https://arxiv.org/abs/2203.05556">SAINT: Improved
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>loss_type</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[contrastive, denoising, both]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>One of '<em>contrastive</em>', '<em>denoising</em>' or '<em>both</em>'. See <a href="https://arxiv.org/abs/2203.05556">SAINT: Improved
 Neural Networks for Tabular Data via Row Attention and Contrastive
 Pre-Training</a>, their figure (1)
 and their equation (5).</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>projection_head1_dims</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>The projection heads are simply MLPs. This parameter is a list
+              </div>
+            </td>
+            <td>
+                  <code>&#39;both&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>projection_head1_dims</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The projection heads are simply MLPs. This parameter is a list
 of integers with the dimensions of the MLP hidden layers. See the
 <a href="https://arxiv.org/abs/2203.05556">paper</a> for details. Note that
 setting up this parameter requires some knowledge of the architecture
@@ -2269,93 +2843,150 @@ one is using. For example, if we are representing the features with
 embeddings of dim 32 (i.e. the so called dimension of the model is
 32), then the first dimension of the projection head must be 32 (e.g.
 [32, 16])</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>projection_head2_dims</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>, default:
+              </div>
+            </td>
+            <td>
                   <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Same as '<em>projection_head1_dims</em>' for the second head</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>projection_heads_activation</code></b>
-              (<code>str</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>projection_head2_dims</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Same as '<em>projection_head1_dims</em>' for the second head</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>projection_heads_activation</code>
+            </td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Activation function for the projection heads</p>
+              </div>
+            </td>
+            <td>
                   <code>&#39;relu&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Activation function for the projection heads</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>cat_mlp_type</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[single, multiple]</code>, default:
-                  <code>&#39;multiple&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>If '<em>denoising</em>' loss is used, one can choose two types of 'stacked'
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>cat_mlp_type</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[single, multiple]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If '<em>denoising</em>' loss is used, one can choose two types of 'stacked'
 MLPs to process the output from the transformer-based encoder that
 receives 'corrupted' (cut-mixed and mixed-up) features. These
 are '<em>single</em>' or '<em>multiple</em>'. The former approach will apply a single
 MLP to all the categorical features while the latter will use one MLP
 per categorical feature</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>cont_mlp_type</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[single, multiple]</code>, default:
+              </div>
+            </td>
+            <td>
                   <code>&#39;multiple&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Same as 'cat_mlp_type' but for the continuous features</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>denoise_mlps_activation</code></b>
-              (<code>str</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>cont_mlp_type</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[single, multiple]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Same as 'cat_mlp_type' but for the continuous features</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;multiple&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>denoise_mlps_activation</code>
+            </td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>activation function for the so called 'denoising mlps'.</p>
+              </div>
+            </td>
+            <td>
                   <code>&#39;relu&#39;</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>activation function for the so called 'denoising mlps'.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>verbose</code></b>
-              (<code>int</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>verbose</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Setting it to 0 will print nothing during training.</p>
+              </div>
+            </td>
+            <td>
                   <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Setting it to 0 will print nothing during training.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>seed</code></b>
-              (<code>int</code>, default:
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>seed</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Random seed to be used internally for train_test_split</p>
+              </div>
+            </td>
+            <td>
                   <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>Random seed to be used internally for train_test_split</p>
-          </div>
-        </li>
-    </ul>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <p><span class="doc-section-title">Other Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>**kwargs</code></b>
-          –
-          <div class="doc-md-description">
-            <p>Other infrequently used arguments that can also be passed as kwargs are:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>**kwargs</code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Other infrequently used arguments that can also be passed as kwargs are:</p>
 <ul>
 <li>
 <p><strong>device</strong>: <code>str</code><br/>
@@ -2372,13 +3003,98 @@ per categorical feature</p>
     learning rate is a bit particular.</p>
 </li>
 </ul>
-          </div>
-        </li>
-    </ul>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-                  <details class="quote">
-                    <summary>Source code in <code>pytorch_widedeep/self_supervised_training/contrastive_denoising_trainer.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">108</span>
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>pytorch_widedeep/self_supervised_training/contrastive_denoising_trainer.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
 <span class="normal">109</span>
 <span class="normal">110</span>
 <span class="normal">111</span>
@@ -2412,153 +3128,9 @@ per categorical feature</p>
 <span class="normal">139</span>
 <span class="normal">140</span>
 <span class="normal">141</span>
-<span class="normal">142</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">ModelWithAttention</span><span class="p">,</span>
-    <span class="n">preprocessor</span><span class="p">:</span> <span class="n">TabPreprocessor</span><span class="p">,</span>
-    <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">lr_scheduler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LRScheduler</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">callbacks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">loss_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;contrastive&quot;</span><span class="p">,</span> <span class="s2">&quot;denoising&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>
-    <span class="n">projection_head1_dims</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">projection_head2_dims</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">projection_heads_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
-    <span class="n">cat_mlp_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;multiple&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;multiple&quot;</span><span class="p">,</span>
-    <span class="n">cont_mlp_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;multiple&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;multiple&quot;</span><span class="p">,</span>
-    <span class="n">denoise_mlps_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
-    <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-        <span class="n">preprocessor</span><span class="o">=</span><span class="n">preprocessor</span><span class="p">,</span>
-        <span class="n">loss_type</span><span class="o">=</span><span class="n">loss_type</span><span class="p">,</span>
-        <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
-        <span class="n">lr_scheduler</span><span class="o">=</span><span class="n">lr_scheduler</span><span class="p">,</span>
-        <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
-        <span class="n">projection_head1_dims</span><span class="o">=</span><span class="n">projection_head1_dims</span><span class="p">,</span>
-        <span class="n">projection_head2_dims</span><span class="o">=</span><span class="n">projection_head2_dims</span><span class="p">,</span>
-        <span class="n">projection_heads_activation</span><span class="o">=</span><span class="n">projection_heads_activation</span><span class="p">,</span>
-        <span class="n">cat_mlp_type</span><span class="o">=</span><span class="n">cat_mlp_type</span><span class="p">,</span>
-        <span class="n">cont_mlp_type</span><span class="o">=</span><span class="n">cont_mlp_type</span><span class="p">,</span>
-        <span class="n">denoise_mlps_activation</span><span class="o">=</span><span class="n">denoise_mlps_activation</span><span class="p">,</span>
-        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
-        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-    <span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-                  </details>
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="pytorch_widedeep.self_supervised_training.ContrastiveDenoisingTrainer.pretrain" class="doc doc-heading">
-            <span class="doc doc-object-name doc-function-name">pretrain</span>
-
-
-<a href="#pytorch_widedeep.self_supervised_training.ContrastiveDenoisingTrainer.pretrain" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">pretrain</span><span class="p">(</span>
-    <span class="n">X_tab</span><span class="p">,</span>
-    <span class="n">X_tab_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">val_split</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">validation_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>Pretrain method. Can also be called using <code>.fit(&lt;same_args&gt;)</code></p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code>X_tab</code></b>
-              (<code><span title="numpy.ndarray">ndarray</span></code>)
-          –
-          <div class="doc-md-description">
-            <p>tabular dataset</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>X_tab_val</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>validation data. Note that, although it is possible to use
-contrastive-denoising training with a validation set, such set
-must include feature values that are <em>all</em> seen in the training
-set in the case of the categorical columns. This is because the
-values of the columns themselves will be used as targets when
-computing the loss. Therefore, if a new category is present in
-the validation set that was not seen in training this will
-effectively be like trying to predict a new, never seen category
-(and Pytorch will throw an error)</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>val_split</code></b>
-              (<code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>, default:
-                  <code>None</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>An alterative to passing the validation set is to use a train/val
-split fraction via <code>val_split</code></p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>validation_freq</code></b>
-              (<code>int</code>, default:
-                  <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>epochs validation frequency</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>n_epochs</code></b>
-              (<code>int</code>, default:
-                  <code>1</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>number of epochs</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code>batch_size</code></b>
-              (<code>int</code>, default:
-                  <code>32</code>
-)
-          –
-          <div class="doc-md-description">
-            <p>batch size</p>
-          </div>
-        </li>
-    </ul>
-
-            <details class="quote">
-              <summary>Source code in <code>pytorch_widedeep/self_supervised_training/contrastive_denoising_trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">144</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
 <span class="normal">145</span>
 <span class="normal">146</span>
 <span class="normal">147</span>
@@ -2658,7 +3230,607 @@ split fraction via <code>val_split</code></p>
 <span class="normal">241</span>
 <span class="normal">242</span>
 <span class="normal">243</span>
-<span class="normal">244</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">ContrastiveDenoisingTrainer</span><span class="p">(</span><span class="n">BaseContrastiveDenoisingTrainer</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;This class trains a Contrastive, Denoising Self Supervised &#39;routine&#39; that</span>
+<span class="sd">    is based on the one described in</span>
+<span class="sd">    [SAINT: Improved Neural Networks for Tabular Data via Row Attention and</span>
+<span class="sd">    Contrastive Pre-Training](https://arxiv.org/abs/2106.01342), their Figure 1.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model: ModelWithAttention,</span>
+<span class="sd">        An instance of a `TabTransformer`, `SAINT`, `FTTransformer`,</span>
+<span class="sd">        `TabFastFormer`, `TabPerceiver`, `ContextAttentionMLP` and</span>
+<span class="sd">        `SelfAttentionMLP`.</span>
+<span class="sd">    preprocessor: `TabPreprocessor`</span>
+<span class="sd">        A fitted `TabPreprocessor` object. See</span>
+<span class="sd">        `pytorch_widedeep.preprocessing.tab_preprocessor.TabPreprocessor`</span>
+<span class="sd">    optimizer: Optional[Optimizer] = None,</span>
+<span class="sd">        An instance of Pytorch&#39;s `Optimizer` object (e.g. `torch.optim.Adam</span>
+<span class="sd">        ()`). if no optimizer is passed it will default to `AdamW`.</span>
+<span class="sd">    lr_scheduler: Optional[LRScheduler] = None,</span>
+<span class="sd">        An instance of Pytorch&#39;s `LRScheduler` object</span>
+<span class="sd">        (e.g `torch.optim.lr_scheduler.StepLR(opt, step_size=5)`).</span>
+<span class="sd">    callbacks: Optional[List[Callback]] = None,</span>
+<span class="sd">        List with `Callback` objects. The three callbacks available in</span>
+<span class="sd">        `pytorch-widedeep` are: `LRHistory`, `ModelCheckpoint` and</span>
+<span class="sd">        `EarlyStopping`. This can also be a custom callback. See</span>
+<span class="sd">        `pytorch_widedeep.callbacks.Callback` or the Examples folder in the</span>
+<span class="sd">        repo.</span>
+<span class="sd">    loss_type: str, default = &quot;both&quot;</span>
+<span class="sd">        One of &#39;_contrastive_&#39;, &#39;_denoising_&#39; or &#39;_both_&#39;. See [SAINT: Improved</span>
+<span class="sd">        Neural Networks for Tabular Data via Row Attention and Contrastive</span>
+<span class="sd">        Pre-Training](https://arxiv.org/abs/2203.05556), their figure (1)</span>
+<span class="sd">        and their equation (5).</span>
+<span class="sd">    projection_head1_dims: list, Optional, default = None</span>
+<span class="sd">        The projection heads are simply MLPs. This parameter is a list</span>
+<span class="sd">        of integers with the dimensions of the MLP hidden layers. See the</span>
+<span class="sd">        [paper](https://arxiv.org/abs/2203.05556) for details. Note that</span>
+<span class="sd">        setting up this parameter requires some knowledge of the architecture</span>
+<span class="sd">        one is using. For example, if we are representing the features with</span>
+<span class="sd">        embeddings of dim 32 (i.e. the so called dimension of the model is</span>
+<span class="sd">        32), then the first dimension of the projection head must be 32 (e.g.</span>
+<span class="sd">        [32, 16])</span>
+<span class="sd">    projection_head2_dims: list, Optional, default = None</span>
+<span class="sd">        Same as &#39;_projection_head1_dims_&#39; for the second head</span>
+<span class="sd">    projection_heads_activation: str, default = &quot;relu&quot;</span>
+<span class="sd">        Activation function for the projection heads</span>
+<span class="sd">    cat_mlp_type: str, default = &quot;multiple&quot;</span>
+<span class="sd">        If &#39;_denoising_&#39; loss is used, one can choose two types of &#39;stacked&#39;</span>
+<span class="sd">        MLPs to process the output from the transformer-based encoder that</span>
+<span class="sd">        receives &#39;corrupted&#39; (cut-mixed and mixed-up) features. These</span>
+<span class="sd">        are &#39;_single_&#39; or &#39;_multiple_&#39;. The former approach will apply a single</span>
+<span class="sd">        MLP to all the categorical features while the latter will use one MLP</span>
+<span class="sd">        per categorical feature</span>
+<span class="sd">    cont_mlp_type: str, default = &quot;multiple&quot;</span>
+<span class="sd">        Same as &#39;cat_mlp_type&#39; but for the continuous features</span>
+<span class="sd">    denoise_mlps_activation: str, default = &quot;relu&quot;</span>
+<span class="sd">        activation function for the so called &#39;denoising mlps&#39;.</span>
+<span class="sd">    verbose: int, default=1</span>
+<span class="sd">        Setting it to 0 will print nothing during training.</span>
+<span class="sd">    seed: int, default=1</span>
+<span class="sd">        Random seed to be used internally for train_test_split</span>
+
+<span class="sd">    Other Parameters</span>
+<span class="sd">    ----------------</span>
+<span class="sd">    **kwargs: dict</span>
+<span class="sd">        Other infrequently used arguments that can also be passed as kwargs are:</span>
+
+<span class="sd">        - **device**: `str`&lt;br/&gt;</span>
+<span class="sd">            string indicating the device. One of _&#39;cpu&#39;_ or _&#39;gpu&#39;_</span>
+
+<span class="sd">        - **num_workers**: `int`&lt;br/&gt;</span>
+<span class="sd">            number of workers to be used internally by the data loaders</span>
+
+<span class="sd">        - **reducelronplateau_criterion**: `str`</span>
+<span class="sd">            This sets the criterion that will be used by the lr scheduler to</span>
+<span class="sd">            take a step: One of _&#39;loss&#39;_ or _&#39;metric&#39;_. The ReduceLROnPlateau</span>
+<span class="sd">            learning rate is a bit particular.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">ModelWithAttention</span><span class="p">,</span>
+        <span class="n">preprocessor</span><span class="p">:</span> <span class="n">TabPreprocessor</span><span class="p">,</span>
+        <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">lr_scheduler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LRScheduler</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">loss_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;contrastive&quot;</span><span class="p">,</span> <span class="s2">&quot;denoising&quot;</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>
+        <span class="n">projection_head1_dims</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">projection_head2_dims</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">projection_heads_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+        <span class="n">cat_mlp_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;multiple&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;multiple&quot;</span><span class="p">,</span>
+        <span class="n">cont_mlp_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;multiple&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;multiple&quot;</span><span class="p">,</span>
+        <span class="n">denoise_mlps_activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">preprocessor</span><span class="o">=</span><span class="n">preprocessor</span><span class="p">,</span>
+            <span class="n">loss_type</span><span class="o">=</span><span class="n">loss_type</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">lr_scheduler</span><span class="o">=</span><span class="n">lr_scheduler</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="n">projection_head1_dims</span><span class="o">=</span><span class="n">projection_head1_dims</span><span class="p">,</span>
+            <span class="n">projection_head2_dims</span><span class="o">=</span><span class="n">projection_head2_dims</span><span class="p">,</span>
+            <span class="n">projection_heads_activation</span><span class="o">=</span><span class="n">projection_heads_activation</span><span class="p">,</span>
+            <span class="n">cat_mlp_type</span><span class="o">=</span><span class="n">cat_mlp_type</span><span class="p">,</span>
+            <span class="n">cont_mlp_type</span><span class="o">=</span><span class="n">cont_mlp_type</span><span class="p">,</span>
+            <span class="n">denoise_mlps_activation</span><span class="o">=</span><span class="n">denoise_mlps_activation</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_split</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">validation_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">n_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Pretrain method. Can also be called using `.fit(&lt;same_args&gt;)`</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X_tab: np.ndarray,</span>
+<span class="sd">            tabular dataset</span>
+<span class="sd">        X_tab_val: np.ndarray, Optional, default = None</span>
+<span class="sd">            validation data. Note that, although it is possible to use</span>
+<span class="sd">            contrastive-denoising training with a validation set, such set</span>
+<span class="sd">            must include feature values that are _all_ seen in the training</span>
+<span class="sd">            set in the case of the categorical columns. This is because the</span>
+<span class="sd">            values of the columns themselves will be used as targets when</span>
+<span class="sd">            computing the loss. Therefore, if a new category is present in</span>
+<span class="sd">            the validation set that was not seen in training this will</span>
+<span class="sd">            effectively be like trying to predict a new, never seen category</span>
+<span class="sd">            (and Pytorch will throw an error)</span>
+<span class="sd">        val_split: float, Optional. default=None</span>
+<span class="sd">            An alterative to passing the validation set is to use a train/val</span>
+<span class="sd">            split fraction via `val_split`</span>
+<span class="sd">        validation_freq: int, default=1</span>
+<span class="sd">            epochs validation frequency</span>
+<span class="sd">        n_epochs: int, default=1</span>
+<span class="sd">            number of epochs</span>
+<span class="sd">        batch_size: int, default=32</span>
+<span class="sd">            batch size</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+
+        <span class="n">train_set</span><span class="p">,</span> <span class="n">eval_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_eval_split</span><span class="p">(</span><span class="n">X_tab</span><span class="p">,</span> <span class="n">X_tab_val</span><span class="p">,</span> <span class="n">val_split</span><span class="p">)</span>
+        <span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">train_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span>
+        <span class="p">)</span>
+        <span class="n">train_steps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eval_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">eval_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="n">eval_set</span><span class="p">,</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                <span class="n">num_workers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_workers</span><span class="p">,</span>
+                <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">eval_steps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">eval_loader</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_train_begin</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">,</span>
+                <span class="s2">&quot;train_steps&quot;</span><span class="p">:</span> <span class="n">train_steps</span><span class="p">,</span>
+                <span class="s2">&quot;n_epochs&quot;</span><span class="p">:</span> <span class="n">n_epochs</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">):</span>
+            <span class="n">epoch_logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_epoch_begin</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="n">epoch_logs</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">train_running_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">with</span> <span class="n">trange</span><span class="p">(</span><span class="n">train_steps</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">t</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">X</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">):</span>
+                    <span class="n">t</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="s2">&quot;epoch </span><span class="si">%i</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                    <span class="n">train_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_step</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">batch_idx</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_batch_end</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="n">batch_idx</span><span class="p">)</span>
+                    <span class="n">print_loss_and_metric</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">train_loss</span><span class="p">)</span>
+
+            <span class="n">epoch_logs</span> <span class="o">=</span> <span class="n">save_epoch_logs</span><span class="p">(</span><span class="n">epoch_logs</span><span class="p">,</span> <span class="n">train_loss</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">)</span>
+
+            <span class="n">on_epoch_end_metric</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">eval_set</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">validation_freq</span> <span class="o">==</span> <span class="p">(</span>
+                <span class="n">validation_freq</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_eval_begin</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">valid_running_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">with</span> <span class="n">trange</span><span class="p">(</span><span class="n">eval_steps</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="n">X</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">eval_loader</span><span class="p">):</span>
+                        <span class="n">v</span><span class="o">.</span><span class="n">set_description</span><span class="p">(</span><span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+                        <span class="n">val_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eval_step</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">batch_idx</span><span class="p">)</span>
+                        <span class="n">print_loss_and_metric</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">val_loss</span><span class="p">)</span>
+                <span class="n">epoch_logs</span> <span class="o">=</span> <span class="n">save_epoch_logs</span><span class="p">(</span><span class="n">epoch_logs</span><span class="p">,</span> <span class="n">val_loss</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">)</span>
+                <span class="n">on_epoch_end_metric</span> <span class="o">=</span> <span class="n">val_loss</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reducelronplateau</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                        <span class="s2">&quot;ReduceLROnPlateau scheduler can be used only with validation data.&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_epoch_end</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">epoch_logs</span><span class="p">,</span> <span class="n">on_epoch_end_metric</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">early_stop</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_train_end</span><span class="p">(</span><span class="n">epoch_logs</span><span class="p">)</span>
+                <span class="k">break</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">callback_container</span><span class="o">.</span><span class="n">on_train_end</span><span class="p">(</span><span class="n">epoch_logs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_restore_best_weights</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cd_model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_split</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">validation_freq</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">n_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pretrain</span><span class="p">(</span>
+            <span class="n">X_tab</span><span class="p">,</span> <span class="n">X_tab_val</span><span class="p">,</span> <span class="n">val_split</span><span class="p">,</span> <span class="n">validation_freq</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">,</span> <span class="n">batch_size</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_train_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_tab</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">to_device</span><span class="p">(</span><span class="n">X_tab</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">g_projs</span><span class="p">,</span> <span class="n">cat_x_and_x_</span><span class="p">,</span> <span class="n">cont_x_and_x_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd_model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_loss</span><span class="p">(</span><span class="n">g_projs</span><span class="p">,</span> <span class="n">cat_x_and_x_</span><span class="p">,</span> <span class="n">cont_x_and_x_</span><span class="p">)</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_running_loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">avg_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_running_loss</span> <span class="o">/</span> <span class="p">(</span><span class="n">batch_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">avg_loss</span>
+
+    <span class="k">def</span> <span class="nf">_eval_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_tab</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cd_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">to_device</span><span class="p">(</span><span class="n">X_tab</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+            <span class="n">g_projs</span><span class="p">,</span> <span class="n">cat_x_and_x_</span><span class="p">,</span> <span class="n">cont_x_and_x_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd_model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_loss</span><span class="p">(</span><span class="n">g_projs</span><span class="p">,</span> <span class="n">cat_x_and_x_</span><span class="p">,</span> <span class="n">cont_x_and_x_</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">valid_running_loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">avg_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_running_loss</span> <span class="o">/</span> <span class="p">(</span><span class="n">batch_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">avg_loss</span>
+
+    <span class="k">def</span> <span class="nf">_train_eval_split</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">val_split</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TensorDataset</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TensorDataset</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="n">X_tab_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">train_set</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+            <span class="n">eval_set</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X_tab_val</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">val_split</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">X_tr</span><span class="p">,</span> <span class="n">X_tab_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+                <span class="n">X</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="n">val_split</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span>
+            <span class="p">)</span>
+            <span class="n">train_set</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X_tr</span><span class="p">))</span>
+            <span class="n">eval_set</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X_tab_val</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">train_set</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+            <span class="n">eval_set</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">train_set</span><span class="p">,</span> <span class="n">eval_set</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pytorch_widedeep.self_supervised_training.ContrastiveDenoisingTrainer.pretrain" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">pretrain</span>
+
+
+<a href="#pytorch_widedeep.self_supervised_training.ContrastiveDenoisingTrainer.pretrain" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">pretrain</span><span class="p">(</span>
+    <span class="n">X_tab</span><span class="p">,</span>
+    <span class="n">X_tab_val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">val_split</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">validation_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">n_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Pretrain method. Can also be called using <code>.fit(&lt;same_args&gt;)</code></p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>X_tab</code>
+            </td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>tabular dataset</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>X_tab_val</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>validation data. Note that, although it is possible to use
+contrastive-denoising training with a validation set, such set
+must include feature values that are <em>all</em> seen in the training
+set in the case of the categorical columns. This is because the
+values of the columns themselves will be used as targets when
+computing the loss. Therefore, if a new category is present in
+the validation set that was not seen in training this will
+effectively be like trying to predict a new, never seen category
+(and Pytorch will throw an error)</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>val_split</code>
+            </td>
+            <td>
+                  <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An alterative to passing the validation set is to use a train/val
+split fraction via <code>val_split</code></p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>validation_freq</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>epochs validation frequency</p>
+              </div>
+            </td>
+            <td>
+                  <code>1</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>n_epochs</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>number of epochs</p>
+              </div>
+            </td>
+            <td>
+                  <code>1</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>batch_size</code>
+            </td>
+            <td>
+                  <code>int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>batch size</p>
+              </div>
+            </td>
+            <td>
+                  <code>32</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>pytorch_widedeep/self_supervised_training/contrastive_denoising_trainer.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2863,7 +4035,7 @@ split fraction via <code>val_split</code></p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       

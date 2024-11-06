@@ -9,8 +9,6 @@ from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.callbacks import LRHistory, EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
-use_cuda = torch.cuda.is_available()
-
 if __name__ == "__main__":
     df: pd.DataFrame = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
@@ -19,7 +17,7 @@ if __name__ == "__main__":
     )
     df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
     df.drop("income", axis=1, inplace=True)
-    df.head()
+    # df.head()
 
     cat_embed_cols = [
         "age_buckets",

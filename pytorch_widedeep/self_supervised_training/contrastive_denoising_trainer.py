@@ -17,6 +17,7 @@ from pytorch_widedeep.wdtypes import (
 )
 from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.preprocessing import TabPreprocessor
+from pytorch_widedeep.utils.general_utils import to_device
 from pytorch_widedeep.training._trainer_utils import (
     save_epoch_logs,
     print_loss_and_metric,
@@ -257,7 +258,7 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         )
 
     def _train_step(self, X_tab: Tensor, batch_idx: int) -> float:
-        X = X_tab.to(self.device)
+        X = to_device(X_tab, self.device)
 
         self.optimizer.zero_grad()
         g_projs, cat_x_and_x_, cont_x_and_x_ = self.cd_model(X)
@@ -274,7 +275,7 @@ class ContrastiveDenoisingTrainer(BaseContrastiveDenoisingTrainer):
         self.cd_model.eval()
 
         with torch.no_grad():
-            X = X_tab.to(self.device)
+            X = to_device(X_tab, self.device)
 
             g_projs, cat_x_and_x_, cont_x_and_x_ = self.cd_model(X)
             loss = self._compute_loss(g_projs, cat_x_and_x_, cont_x_and_x_)

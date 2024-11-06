@@ -25,6 +25,7 @@ from pytorch_widedeep.callbacks import (
     CallbackContainer,
     LRShedulerCallback,
 )
+from pytorch_widedeep.utils.general_utils import setup_device
 from pytorch_widedeep.models.tabular.self_supervised import EncoderDecoderModel
 
 
@@ -79,9 +80,9 @@ class BaseEncoderDecoderTrainer(ABC):
     def save(
         self,
         path: str,
-        save_state_dict: bool,
-        save_optimizer: bool,
-        model_filename: str,
+        save_state_dict: bool = False,
+        save_optimizer: bool = False,
+        model_filename: str = "wd_model.pt",
     ):
         r"""Saves the model, training and evaluation history (if any) to disk
 
@@ -245,7 +246,7 @@ class BaseEncoderDecoderTrainer(ABC):
             if sys.platform == "darwin" and sys.version_info.minor > 7
             else os.cpu_count()
         )
-        default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        default_device = setup_device()
         device = kwargs.get("device", default_device)
         num_workers = kwargs.get("num_workers", default_num_workers)
         return device, num_workers

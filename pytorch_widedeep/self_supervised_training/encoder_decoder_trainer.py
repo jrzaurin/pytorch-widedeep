@@ -16,6 +16,7 @@ from pytorch_widedeep.wdtypes import (
     DecoderWithoutAttention,
 )
 from pytorch_widedeep.callbacks import Callback
+from pytorch_widedeep.utils.general_utils import to_device
 from pytorch_widedeep.training._trainer_utils import (
     save_epoch_logs,
     print_loss_and_metric,
@@ -214,7 +215,7 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
         )
 
     def _train_step(self, X_tab: Tensor, batch_idx: int) -> float:
-        X = X_tab.to(self.device)
+        X = to_device(X_tab, self.device)
 
         self.optimizer.zero_grad()
         x_embed, x_embed_rec, mask = self.ed_model(X)
@@ -231,7 +232,7 @@ class EncoderDecoderTrainer(BaseEncoderDecoderTrainer):
         self.ed_model.eval()
 
         with torch.no_grad():
-            X = X_tab.to(self.device)
+            X = to_device(X_tab, self.device)
 
             x_embed, x_embed_rec, mask = self.ed_model(X)
             loss = self.loss_fn(x_embed, x_embed_rec, mask)

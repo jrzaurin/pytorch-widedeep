@@ -79,8 +79,8 @@ def test_din_with_params(
 
     din = DeepInterestNetwork(
         column_idx=column_idx,
-        target_item_col="target_item",
         user_behavior_confiq=item_seq_config,
+        target_item_col="target_item",
         action_seq_config=item_purchased_seq_config,
         other_seq_cols_confiq=item_category_seq_config,
         cat_embed_input=cat_embed_input,

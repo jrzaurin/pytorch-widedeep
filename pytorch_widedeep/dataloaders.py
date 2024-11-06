@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 
 import numpy as np
 from torch.utils.data import DataLoader, WeightedRandomSampler
@@ -6,6 +6,45 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 
 
+class DatasetAlreadySetError(Exception):
+    """Exception raised when attempting to set a dataset that has already been set."""
+
+    def __init__(self, message="Dataset has already been set and cannot be changed."):
+        self.message = message
+        super().__init__(self.message)
+
+
+class CustomDataLoader(DataLoader):
+    r"""
+    Wrapper around the `torch.utils.data.DataLoader` class that allows
+    to set the dataset after the class has been instantiated.
+    """
+
+    def __init__(self, dataset: Optional[WideDeepDataset] = None, *args, **kwargs):
+        self.dataset_set = dataset is not None
+        if self.dataset_set:
+            super().__init__(dataset, *args, **kwargs)
+        else:
+            self.args = args
+            self.kwargs = kwargs
+
+    def set_dataset(self, dataset: WideDeepDataset):
+        if self.dataset_set:
+            raise DatasetAlreadySetError()
+
+        self.dataset_set = True
+        super().__init__(dataset, *self.args, **self.kwargs)
+
+    def __iter__(self):
+        if not self.dataset_set:
+            raise ValueError(
+                "Dataset has not been set. Use set_dataset method to set a dataset."
+            )
+        return super().__iter__()
+
+
+# From here on is legacy code and there are better ways to do it. It will be
+# removed in the next version.
 def get_class_weights(dataset: WideDeepDataset) -> Tuple[np.ndarray, int, int]:
     """Helper function to get weights of classes in the imbalanced dataset.
 
@@ -37,7 +76,7 @@ def get_class_weights(dataset: WideDeepDataset) -> Tuple[np.ndarray, int, int]:
     return weights, minor_class_count, num_classes
 
 
-class DataLoaderImbalanced(DataLoader):
+class DataLoaderImbalanced(CustomDataLoader):
     r"""Class to load and shuffle batches with adjusted weights for imbalanced
     datasets. If the classes do not begin from 0 remapping is necessary. See
     [here](https://towardsdatascience.com/pytorch-tabular-multiclass-classification-9f8211a123ab).
@@ -46,13 +85,11 @@ class DataLoaderImbalanced(DataLoader):
     ----------
     dataset: `WideDeepDataset`
         see `pytorch_widedeep.training._wd_dataset`
-    batch_size: int
-        size of batch
-    num_workers: int
-        number of workers
 
     Other Parameters
     ----------------
+    *args: Any
+        Positional arguments to be passed to the parent CustomDataLoader.
     **kwargs: Dict
         This can include any parameter that can be passed to the _'standard'_
         pytorch
@@ -69,23 +106,31 @@ class DataLoaderImbalanced(DataLoader):
         $$
     """
 
-    def __init__(
-        self, dataset: WideDeepDataset, batch_size: int, num_workers: int, **kwargs
-    ):
+    def __init__(self, dataset: Optional[WideDeepDataset] = None, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+        if dataset is not None:
+            self._setup_sampler(dataset)
+            super().__init__(dataset, *args, sampler=self.sampler, **kwargs)
+        else:
+            super().__init__()
+
+    def set_dataset(self, dataset: WideDeepDataset):
+        sampler = self._setup_sampler(dataset)
+        # update the kwargs with the new sampler
+        self.kwargs["sampler"] = sampler
+        super().set_dataset(dataset)
+
+    def _setup_sampler(self, dataset: WideDeepDataset) -> WeightedRandomSampler:
         assert dataset.Y is not None, (
             "The 'dataset' instance of WideDeepDataset must contain a "
             "target array 'Y'"
         )
 
-        if "oversample_mul" in kwargs:
-            oversample_mul = kwargs["oversample_mul"]
-            del kwargs["oversample_mul"]
-        else:
-            oversample_mul = 1
+        oversample_mul = self.kwargs.pop("oversample_mul", 1)
         weights, minor_cls_cnt, num_clss = get_class_weights(dataset)
         num_samples = int(minor_cls_cnt * num_clss * oversample_mul)
         samples_weight = list(np.array([weights[i] for i in dataset.Y]))
         sampler = WeightedRandomSampler(samples_weight, num_samples, replacement=True)
-        super().__init__(
-            dataset, batch_size, num_workers=num_workers, sampler=sampler, **kwargs
-        )
+        return sampler

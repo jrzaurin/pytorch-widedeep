@@ -10,11 +10,12 @@ import torch
 from torchmetrics import Metric as TorchMetric
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from pytorch_widedeep.metrics import Metric, MultipleMetrics
+from pytorch_widedeep.metrics import Metric, MultipleMetrics, is_ranking_metric
 from pytorch_widedeep.wdtypes import (
     Any,
     Dict,
     List,
+    Tuple,
     Union,
     Module,
     Optional,
@@ -31,6 +32,7 @@ from pytorch_widedeep.callbacks import (
     LRShedulerCallback,
 )
 from pytorch_widedeep.initializers import Initializer, MultipleInitializer
+from pytorch_widedeep.utils.general_utils import setup_device, to_device_model
 from pytorch_widedeep.training._trainer_utils import alias_to_loss
 from pytorch_widedeep.training._multiple_optimizer import MultipleOptimizer
 from pytorch_widedeep.training._multiple_transforms import MultipleTransforms
@@ -61,6 +63,7 @@ class BaseTrainer(ABC):
         transforms: Optional[List[Transforms]],
         callbacks: Optional[List[Callback]],
         metrics: Optional[Union[List[Metric], List[TorchMetric]]],
+        eval_metrics: Optional[Union[List[Metric], List[TorchMetric]]],
         verbose: int,
         seed: int,
         **kwargs,
@@ -74,10 +77,9 @@ class BaseTrainer(ABC):
         self.verbose = verbose
         self.seed = seed
 
-        self.model = model
+        self.model = to_device_model(model, self.device)
         if self.model.is_tabnet:
             self.lambda_sparse = kwargs.get("lambda_sparse", 1e-3)
-        self.model.to(self.device)
         self.model.wd_device = self.device
 
         self.objective = objective
@@ -89,7 +91,7 @@ class BaseTrainer(ABC):
         self.optimizer = self._set_optimizer(optimizers)
         self.lr_scheduler = self._set_lr_scheduler(lr_schedulers, **kwargs)
         self.transforms = self._set_transforms(transforms)
-        self._set_callbacks_and_metrics(callbacks, metrics)
+        self._set_callbacks_and_metrics(callbacks, metrics, eval_metrics)
 
     @abstractmethod
     def fit(self, **kwargs):
@@ -284,13 +286,14 @@ class BaseTrainer(ABC):
         else:
             return None
 
-    # this needs type fixing to adjust for the fact that the main class can
-    # take an 'object', a non-instastiated Class, so, should be something like:
-    # callbacks: Optional[List[Union[object, Callback]]] in all places
+    # TO DO: this needs type fixing to adjust for the fact that the main class
+    # can take an 'object', a non-instastiated Class, so, should be something
+    # like: callbacks: Optional[List[Union[object, Callback]]] in all places
     def _set_callbacks_and_metrics(
         self,
         callbacks: Any,
-        metrics: Any,
+        metrics: Any,  # Union[List[Metric], List[TorchMetric]],
+        eval_metrics: Optional[Any] = None,  # Union[List[Metric], List[TorchMetric]],
     ):
         self.callbacks: List = [History(), LRShedulerCallback()]
         if callbacks is not None:
@@ -300,9 +303,32 @@ class BaseTrainer(ABC):
                 self.callbacks.append(callback)
         if metrics is not None:
             self.metric = MultipleMetrics(metrics)
+            if (
+                any([is_ranking_metric(m) for m in self.metric._metrics])
+                and self.verbose
+            ):
+                UserWarning(
+                    "There are ranking metrics in the 'metrics' list. The implementation "
+                    "in this library requires that all query or user ids must have the "
+                    "same number of entries or items."
+                )
             self.callbacks += [MetricCallback(self.metric)]
         else:
             self.metric = None
+        if eval_metrics is not None:
+            self.eval_metric = MultipleMetrics(eval_metrics)
+            if (
+                any([is_ranking_metric(m) for m in self.eval_metric._metrics])
+                and self.verbose
+            ):
+                UserWarning(
+                    "There are ranking metrics in the 'eval_metric' list. The implementation "
+                    "in this library requires that all query or user ids must have the "
+                    "same number of entries or items."
+                )
+            self.callbacks += [MetricCallback(self.eval_metric)]
+        else:
+            self.eval_metric = None
         self.callback_container = CallbackContainer(self.callbacks)
         self.callback_container.set_model(self.model)
         self.callback_container.set_trainer(self)
@@ -406,7 +432,7 @@ class BaseTrainer(ABC):
             )
 
     @staticmethod
-    def _set_device_and_num_workers(**kwargs):
+    def _set_device_and_num_workers(**kwargs) -> Tuple[str, int]:
         # Important note for Mac users: Since python 3.8, the multiprocessing
         # library start method changed from 'fork' to 'spawn'. This affects the
         # data-loaders, which will not run in parallel.
@@ -415,9 +441,9 @@ class BaseTrainer(ABC):
             if sys.platform == "darwin" and sys.version_info.minor > 7
             else os.cpu_count()
         )
-        default_device = "cuda" if torch.cuda.is_available() else "cpu"
-        device = kwargs.get("device", default_device)
         num_workers = kwargs.get("num_workers", default_num_workers)
+        default_device = setup_device()
+        device = kwargs.get("device", default_device)
         return device, num_workers
 
     def __repr__(self) -> str:  # noqa: C901

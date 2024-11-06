@@ -1,7 +1,6 @@
 import string
 
 import numpy as np
-import torch
 import pytest
 import torch.nn.functional as F
 from torch import nn
@@ -10,10 +9,11 @@ from torch.utils.data import DataLoader
 from pytorch_widedeep.models import Wide, TabMlp
 from pytorch_widedeep.metrics import Accuracy, MultipleMetrics
 from pytorch_widedeep.training._finetune import FineTune
+from pytorch_widedeep.utils.general_utils import setup_device, to_device_model
 from pytorch_widedeep.models.image._layers import conv_layer
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
 
-use_cuda = torch.cuda.is_available()
+device = setup_device()
 
 
 # Define a series of simple models to quickly test the FineTune class
@@ -87,8 +87,7 @@ X_image = np.random.rand(100, 28, 28, 3)
 
 # wide/linear
 wide = Wide(np.unique(X_wide).size, 1)
-if use_cuda:
-    wide.cuda()
+wide = to_device_model(wide, device)
 
 # tabular
 tab_mlp = TabMlp(
@@ -99,18 +98,15 @@ tab_mlp = TabMlp(
     mlp_dropout=0.2,
 )
 tab_mlp = nn.Sequential(tab_mlp, nn.Linear(8, 1))  # type: ignore[assignment]
-if use_cuda:
-    tab_mlp.cuda()
+tab_mlp = to_device_model(tab_mlp, device)
 
 # text
 deeptext = TextModeTestClass()
-if use_cuda:
-    deeptext.cuda()
+deeptext = to_device_model(deeptext, device)
 
 # image
 deepimage = ImageModeTestClass()
-if use_cuda:
-    deepimage.cuda()
+ddeimage = to_device_model(deepimage, device)
 
 # Define the loader
 mmset = WideDeepDataset(X_wide, X_tab, X_text, X_image, target)

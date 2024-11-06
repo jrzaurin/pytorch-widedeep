@@ -13,7 +13,6 @@ from pytorch_widedeep.wdtypes import (
     List,
     Union,
     Tensor,
-    Literal,
     Optional,
     WideDeep,
     Optimizer,
@@ -22,30 +21,12 @@ from pytorch_widedeep.wdtypes import (
 )
 from pytorch_widedeep.callbacks import Callback
 from pytorch_widedeep.initializers import Initializer
-from pytorch_widedeep.training._finetune import FineTune
-from pytorch_widedeep.utils.general_utils import alias
+from pytorch_widedeep.training.trainer import Trainer
+from pytorch_widedeep.utils.general_utils import alias, to_device
 from pytorch_widedeep.training._wd_dataset import WideDeepDataset
-from pytorch_widedeep.training._base_trainer import BaseTrainer
-from pytorch_widedeep.training._trainer_utils import (
-    save_epoch_logs,
-    print_loss_and_metric,
-)
-
-# Observation 1: I am annoyed by sublime highlighting an override issue with
-# the abstractmethods. There is no override issue. The Signature of
-# the 'predict' method is compatible with the supertype. Buy for whatever
-# issue sublime highlights this as an error (not vscode and is not returned
-# as an error when running mypy). I am ignoring it
-
-# There is a lot of code repetition between this class and the 'Trainer'
-# class (and in consquence a lot of ignore methods for test coverage). Maybe
-# in the future I decided to merge the two of them and offer the ability to
-# laod from folder based on the input parameters. For now, I'll leave it like
-# this, separated, since it is the easiest and most manageable(i.e. easier to
-# debug) implementation
 
 
-class TrainerFromFolder(BaseTrainer):
+class TrainerFromFolder(Trainer):
     r"""Class to set the of attributes that will be used during the
      training process.
 
@@ -156,8 +137,9 @@ class TrainerFromFolder(BaseTrainer):
      **kwargs: dict
          Other infrequently used arguments that can also be passed as kwargs are:
 
-         - **device**: `str`<br/>
-             string indicating the device. One of _'cpu'_ or _'gpu'_
+        - **device**: `str`<br/>
+            string indicating the device. One of _'cpu'_, _'gpu'_ or 'mps' if
+            run on a Mac with Apple silicon or AMD GPU(s)
 
          - **num_workers**: `int`<br/>
              number of workers to be used internally by the data loaders
@@ -186,6 +168,7 @@ class TrainerFromFolder(BaseTrainer):
         "objective",
         ["loss_function", "loss_fn", "loss", "cost_function", "cost_fn", "cost"],
     )
+    @alias("metrics", ["train_metrics"])
     def __init__(
         self,
         model: WideDeep,
@@ -203,6 +186,7 @@ class TrainerFromFolder(BaseTrainer):
         transforms: Optional[List[Transforms]] = None,
         callbacks: Optional[List[Callback]] = None,
         metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
+        eval_metrics: Optional[Union[List[Metric], List[TorchMetric]]] = None,
         verbose: int = 1,
         seed: int = 1,
         **kwargs,
@@ -217,13 +201,19 @@ class TrainerFromFolder(BaseTrainer):
             transforms=transforms,
             callbacks=callbacks,
             metrics=metrics,
+            eval_metrics=eval_metrics,
             verbose=verbose,
             seed=seed,
             **kwargs,
         )
 
+        if self.method == "multitarget":
+            raise NotImplementedError(
+                "Training from folder is not supported for multitarget models"
+            )
+
     @alias("finetune", ["warmup"])
-    def fit(  # noqa: C901
+    def fit(  # type: ignore[override]  # noqa: C901
         self,
         train_loader: DataLoader,
         eval_loader: Optional[DataLoader] = None,
@@ -232,68 +222,44 @@ class TrainerFromFolder(BaseTrainer):
         finetune: bool = False,
         **kwargs,
     ):
-        finetune_args = self._extract_kwargs(kwargs)
 
-        train_steps = len(train_loader)
+        # There will never be dataloader_args when using 'TrainingFromFolder'
+        # as the loaders are passed as arguments
+        _, finetune_args = self._extract_kwargs(kwargs)
 
         if finetune:
-            self._finetune(train_loader, **finetune_args)
+            self.with_finetuning: bool = True
+            self._do_finetune(train_loader, **finetune_args)
             if self.verbose:
                 print(
                     "Fine-tuning (or warmup) of individual components completed. "
                     "Training the whole model for {} epochs".format(n_epochs)
                 )
+        else:
+            self.with_finetuning = False
 
         self.callback_container.on_train_begin(
             {
                 "batch_size": train_loader.batch_size,
-                "train_steps": train_steps,
+                "train_steps": len(train_loader),
                 "n_epochs": n_epochs,
             }
         )
         for epoch in range(n_epochs):
-            epoch_logs: Dict[str, float] = {}
-            self.callback_container.on_epoch_begin(epoch, logs=epoch_logs)
-
-            self.train_running_loss = 0.0
-            with trange(train_steps, disable=self.verbose != 1) as t:
-                for batch_idx, (data, targett) in zip(t, train_loader):
-                    t.set_description("epoch %i" % (epoch + 1))
-                    train_score, train_loss = self._train_step(
-                        data, targett, batch_idx, epoch
-                    )
-                    print_loss_and_metric(t, train_loss, train_score)
-                    self.callback_container.on_batch_end(batch=batch_idx)
-            epoch_logs = save_epoch_logs(epoch_logs, train_loss, train_score, "train")
-
-            on_epoch_end_metric = None
+            epoch_logs = self._train_epoch(train_loader, epoch)
             if eval_loader is not None and epoch % validation_freq == (
                 validation_freq - 1
             ):
-                eval_steps = len(eval_loader)
-                self.callback_container.on_eval_begin()
-                self.valid_running_loss = 0.0
-                with trange(eval_steps, disable=self.verbose != 1) as v:
-                    for i, (data, targett) in zip(v, eval_loader):
-                        v.set_description("valid")
-                        val_score, val_loss = self._eval_step(data, targett, i)
-                        print_loss_and_metric(v, val_loss, val_score)
-                epoch_logs = save_epoch_logs(epoch_logs, val_loss, val_score, "val")
-
-                if self.reducelronplateau:  # pragma: no cover
-                    if self.reducelronplateau_criterion == "loss":
-                        on_epoch_end_metric = val_loss
-                    else:
-                        on_epoch_end_metric = val_score[
-                            self.reducelronplateau_criterion
-                        ]
+                epoch_logs, on_epoch_end_metric = self._eval_epoch(
+                    eval_loader, epoch_logs
+                )
             else:
+                on_epoch_end_metric = None
                 if self.reducelronplateau:
                     raise NotImplementedError(
                         "ReduceLROnPlateau scheduler can be used only with validation data."
                     )
             self.callback_container.on_epoch_end(epoch, epoch_logs, on_epoch_end_metric)
-
             if self.early_stop:
                 # self.callback_container.on_train_end(epoch_logs)
                 break
@@ -326,7 +292,7 @@ class TrainerFromFolder(BaseTrainer):
             preds = np.vstack(preds_l)
             return np.argmax(preds, 1)
 
-    def predict_uncertainty(  # type: ignore[return]
+    def predict_uncertainty(  # type: ignore[override, return]
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
@@ -401,202 +367,7 @@ class TrainerFromFolder(BaseTrainer):
         if self.method == "multiclass":
             return np.vstack(preds_l)
 
-    def save(
-        self,
-        path: str,
-        save_state_dict: bool = False,
-        save_optimizer: bool = False,
-        model_filename: str = "wd_model.pt",
-    ):  # pragma: no cover
-        """
-        Parameters
-        ----------
-        path: str
-            path to the directory where the model and the feature importance
-            attribute will be saved.
-        save_state_dict: bool, default = False
-            Boolean indicating whether to save directly the model
-            (and optimizer) or the model's (and optimizer's) state
-            dictionary
-        save_optimizer: bool, default = False
-            Boolean indicating whether to save the optimizer
-        model_filename: str, Optional, default = "wd_model.pt"
-            filename where the model weights will be store
-        """
-        self._save_history(path)
-
-        self._save_model_and_optimizer(
-            path, save_state_dict, save_optimizer, model_filename
-        )
-
-    @alias("n_epochs", ["finetune_epochs", "warmup_epochs"])
-    @alias("max_lr", ["finetune_max_lr", "warmup_max_lr"])
-    def _finetune(
-        self,
-        loader: DataLoader,
-        n_epochs: int = 5,
-        max_lr: float = 0.01,
-        routine: Literal["howard", "felbo"] = "howard",
-        deeptabular_gradual: bool = False,
-        deeptabular_layers: Optional[List[nn.Module]] = None,
-        deeptabular_max_lr: float = 0.01,
-        deeptext_gradual: bool = False,
-        deeptext_layers: Optional[List[nn.Module]] = None,
-        deeptext_max_lr: float = 0.01,
-        deepimage_gradual: bool = False,
-        deepimage_layers: Optional[List[nn.Module]] = None,
-        deepimage_max_lr: float = 0.01,
-    ):
-        r"""
-        Simple wrap-up to individually fine-tune model components
-        """
-        if self.model.deephead is not None:
-            raise ValueError(
-                "Currently warming up is only supported without a fully connected 'DeepHead'"
-            )
-
-        finetuner = FineTune(self.loss_fn, self.metric, self.method, self.verbose)  # type: ignore[arg-type]
-        if self.model.wide:
-            finetuner.finetune_all(self.model.wide, "wide", loader, n_epochs, max_lr)
-
-        if self.model.deeptabular:
-            if deeptabular_gradual:
-                assert (
-                    deeptabular_layers is not None
-                ), "deeptabular_layers must be passed if deeptabular_gradual=True"
-                finetuner.finetune_gradual(
-                    self.model.deeptabular,
-                    "deeptabular",
-                    loader,
-                    deeptabular_max_lr,
-                    deeptabular_layers,
-                    routine,
-                )
-            else:
-                finetuner.finetune_all(
-                    self.model.deeptabular, "deeptabular", loader, n_epochs, max_lr
-                )
-
-        if self.model.deeptext:
-            if deeptext_gradual:
-                assert (
-                    deeptext_layers is not None
-                ), "deeptext_layers must be passed if deeptabular_gradual=True"
-                finetuner.finetune_gradual(
-                    self.model.deeptext,
-                    "deeptext",
-                    loader,
-                    deeptext_max_lr,
-                    deeptext_layers,
-                    routine,
-                )
-            else:
-                finetuner.finetune_all(
-                    self.model.deeptext, "deeptext", loader, n_epochs, max_lr
-                )
-
-        if self.model.deepimage:
-            if deepimage_gradual:
-                assert (
-                    deepimage_layers is not None
-                ), "deepimage_layers must be passed if deeptabular_gradual=True"
-                finetuner.finetune_gradual(
-                    self.model.deepimage,
-                    "deepimage",
-                    loader,
-                    deepimage_max_lr,
-                    deepimage_layers,
-                    routine,
-                )
-            else:
-                finetuner.finetune_all(
-                    self.model.deepimage, "deepimage", loader, n_epochs, max_lr
-                )
-
-    def _train_step(
-        self,
-        data: Dict[str, Union[Tensor, List[Tensor]]],
-        target: Tensor,
-        batch_idx: int,
-        epoch: int,
-    ):
-        self.model.train()
-        X: Dict[str, Union[Tensor, List[Tensor]]] = {}
-        for k, v in data.items():
-            if isinstance(v, list):
-                X[k] = [i.to(self.device) for i in v]
-            else:
-                X[k] = v.to(self.device)
-        y = (
-            target.view(-1, 1).float()
-            if self.method not in ["multiclass", "qregression"]
-            else target
-        )
-        y = y.to(self.device)
-
-        self.optimizer.zero_grad()
-
-        y_pred = self.model(X)
-
-        if self.model.is_tabnet:  # pragma: no cover
-            loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
-            score = self._get_score(y_pred[0], y)
-        else:
-            loss = self.loss_fn(y_pred, y)
-            score = self._get_score(y_pred, y)
-
-        loss.backward()
-        self.optimizer.step()
-
-        self.train_running_loss += loss.item()
-        avg_loss = self.train_running_loss / (batch_idx + 1)
-
-        return score, avg_loss
-
-    def _eval_step(self, data: Dict[str, Tensor], target: Tensor, batch_idx: int):
-        self.model.eval()
-        with torch.no_grad():
-            X: Dict[str, Union[Tensor, List[Tensor]]] = {}
-            for k, v in data.items():
-                if isinstance(v, list):
-                    X[k] = [i.to(self.device) for i in v]
-                else:
-                    X[k] = v.to(self.device)
-            y = (
-                target.view(-1, 1).float()
-                if self.method not in ["multiclass", "qregression"]
-                else target
-            )
-            y = y.to(self.device)
-
-            y_pred = self.model(X)
-            if self.model.is_tabnet:  # pragma: no cover
-                loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
-                score = self._get_score(y_pred[0], y)
-            else:
-                score = self._get_score(y_pred, y)
-                loss = self.loss_fn(y_pred, y)
-
-            self.valid_running_loss += loss.item()
-            avg_loss = self.valid_running_loss / (batch_idx + 1)
-
-        return score, avg_loss
-
-    def _get_score(self, y_pred, y):  # pragma: no cover
-        if self.metric is not None:
-            if self.method == "regression":
-                score = self.metric(y_pred, y)
-            if self.method == "binary":
-                score = self.metric(torch.sigmoid(y_pred), y)
-            if self.method == "qregression":
-                score = self.metric(y_pred, y)
-            if self.method == "multiclass":
-                score = self.metric(F.softmax(y_pred, dim=1), y)
-            return score
-        else:
-            return None
-
-    def _predict(  # noqa: C901
+    def _predict(  # type: ignore[override]  # noqa: C901
         self,
         X_wide: Optional[np.ndarray] = None,
         X_tab: Optional[np.ndarray] = None,
@@ -605,7 +376,7 @@ class TrainerFromFolder(BaseTrainer):
         X_test: Optional[Dict[str, Union[np.ndarray, List[np.ndarray]]]] = None,
         test_loader: Optional[DataLoader] = None,
         batch_size: Optional[int] = None,
-        uncertainty_granularity=1000,
+        uncertainty_granularity: int = 1000,
         uncertainty: bool = False,
     ) -> List:
         r"""Private method to avoid code repetition in predict and
@@ -669,9 +440,9 @@ class TrainerFromFolder(BaseTrainer):
                             X: Dict[str, Union[Tensor, List[Tensor]]] = {}
                             for k, v in data.items():
                                 if isinstance(v, list):
-                                    X[k] = [i.to(self.device) for i in v]
+                                    X[k] = [to_device(i, self.device) for i in v]
                                 else:
-                                    X[k] = v.to(self.device)
+                                    X[k] = to_device(v, self.device)
                             preds = (
                                 self.model(X)
                                 if not self.model.is_tabnet
@@ -689,49 +460,3 @@ class TrainerFromFolder(BaseTrainer):
                             preds_l.append(preds)
         self.model.train()
         return preds_l
-
-    @staticmethod
-    def _predict_ziln(preds: Tensor) -> Tensor:  # pragma: no cover
-        """Calculates predicted mean of zero inflated lognormal logits.
-
-        Adjusted implementaion of `code
-        <https://github.com/google/lifetime_value/blob/master/lifetime_value/zero_inflated_lognormal.py>`
-
-        Arguments:
-            preds: [batch_size, 3] tensor of logits.
-        Returns:
-            ziln_preds: [batch_size, 1] tensor of predicted mean.
-        """
-        positive_probs = torch.sigmoid(preds[..., :1])
-        loc = preds[..., 1:2]
-        scale = F.softplus(preds[..., 2:])
-        ziln_preds = positive_probs * torch.exp(loc + 0.5 * torch.square(scale))
-        return ziln_preds
-
-    @staticmethod
-    def _extract_kwargs(kwargs):
-        finetune_params = [
-            "n_epochs",
-            "finetune_epochs",
-            "warmup_epochs",
-            "max_lr",
-            "finetune_max_lr",
-            "warmup_max_lr",
-            "routine",
-            "deeptabular_gradual",
-            "deeptabular_layers",
-            "deeptabular_max_lr",
-            "deeptext_gradual",
-            "deeptext_layers",
-            "deeptext_max_lr",
-            "deepimage_gradual",
-            "deepimage_layers",
-            "deepimage_max_lr",
-        ]
-
-        finetune_args = {}
-        for k, v in kwargs.items():
-            if k in finetune_params:
-                finetune_args[k] = v
-
-        return finetune_args

@@ -1,3 +1,5 @@
+# HT models are available in the library, but in this script we show how
+# to use a custom model with the WideDeep class.
 import numpy as np
 import torch
 import pandas as pd

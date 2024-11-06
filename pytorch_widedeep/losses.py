@@ -1,6 +1,6 @@
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
 from pytorch_widedeep.wdtypes import List, Tuple, Union, Tensor, Literal, Optional
 
@@ -272,8 +272,7 @@ class FocalLoss(nn.Module):
         else:
             num_class = input_prob.size(1)
         binary_target = torch.eye(num_class)[target.squeeze().cpu().long()]
-        if use_cuda:
-            binary_target = binary_target.cuda()
+        binary_target = binary_target.to(input.device)
         binary_target = binary_target.contiguous()
         weight = self._get_weight(input_prob, binary_target)
 
@@ -430,9 +429,7 @@ class ZILNLoss(nn.Module):
         # when using max the two input tensors (input and other) have to be of
         # the same type
         max_input = F.softplus(input[..., 2:])
-        max_other = torch.sqrt(torch.Tensor([torch.finfo(torch.double).eps])).type(
-            max_input.type()
-        )
+        max_other = self.get_eps(max_input)
         scale = torch.max(max_input, max_other)
         safe_labels = positive * target + (1 - positive) * torch.ones_like(target)
 
@@ -445,6 +442,25 @@ class ZILNLoss(nn.Module):
         )
 
         return torch.mean(classification_loss + regression_loss)
+
+    @staticmethod
+    def get_eps(max_input: Tensor) -> Tensor:
+        if max_input.device.type == "mps":
+            # For MPS, use float32 and then convert to the input type
+            eps = torch.finfo(torch.float32).eps
+            max_other = (
+                torch.sqrt(torch.tensor([eps], device="cpu"))
+                .to(max_input.device)
+                .to(max_input.dtype)
+            )
+        else:
+            # For other devices, use the original approach
+            eps = torch.finfo(torch.double).eps
+            max_other = (
+                torch.sqrt(torch.tensor([eps])).to(max_input.device).to(max_input.dtype)
+            )
+
+        return max_other
 
 
 class L1Loss(nn.Module):

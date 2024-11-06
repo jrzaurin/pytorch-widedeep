@@ -161,6 +161,7 @@ def test_full_training_process(model_name):
         model,
         objective="binary",
         verbose=0,
+        # device="cpu",
     )
 
     trainer.fit(

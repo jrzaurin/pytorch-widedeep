@@ -20,7 +20,7 @@ from pytorch_widedeep.wdtypes import (
     LRScheduler,
 )
 from pytorch_widedeep.callbacks import Callback
-from pytorch_widedeep.utils.general_utils import alias
+from pytorch_widedeep.utils.general_utils import alias, to_device
 from pytorch_widedeep.training._trainer_utils import (
     save_epoch_logs,
     print_loss_and_metric,
@@ -86,7 +86,8 @@ class BayesianTrainer(BaseBayesianTrainer):
         Other infrequently used arguments that can also be passed as kwargs are:
 
         - **device**: `str`<br/>
-            string indicating the device. One of _'cpu'_ or _'gpu'_
+            string indicating the device. One of _'cpu'_, _'gpu'_ or 'mps' if
+            run on a Mac with Apple silicon or AMD GPU(s)
 
         - **num_workers**: `int`<br/>
             number of workers to be used internally by the data loaders
@@ -396,9 +397,9 @@ class BayesianTrainer(BaseBayesianTrainer):
     ):
         self.model.train()
 
-        X = X_tab.to(self.device)
+        X = to_device(X_tab, self.device)
         y = target.view(-1, 1).float() if self.objective != "multiclass" else target
-        y = y.to(self.device)
+        y = to_device(y, self.device)
 
         self.optimizer.zero_grad()
         y_pred, loss = self.model.sample_elbo(X, y, self.loss_fn, n_samples, n_batches)  # type: ignore[arg-type]
@@ -424,9 +425,9 @@ class BayesianTrainer(BaseBayesianTrainer):
     ):
         self.model.eval()
         with torch.no_grad():
-            X = X_tab.to(self.device)
+            X = to_device(X_tab, self.device)
             y = target.view(-1, 1).float() if self.objective != "multiclass" else target
-            y = y.to(self.device)
+            y = to_device(y, self.device)
 
             y_pred, loss = self.model.sample_elbo(
                 X,  # type: ignore[arg-type]
@@ -479,7 +480,10 @@ class BayesianTrainer(BaseBayesianTrainer):
                 for _, Xl in zip(tt, test_loader):
                     tt.set_description("predict")
 
-                    X = Xl[0].to(self.device)
+                    try:
+                        X = Xl[0].to(self.device)
+                    except TypeError:
+                        X = Xl[0].to(self.device, dtype=torch.float32)
 
                     if return_samples:
                         preds = torch.stack([self.model(X) for _ in range(n_samples)])

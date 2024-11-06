@@ -7,6 +7,7 @@ import pytest
 
 from pytorch_widedeep.utils import SimplePreprocessor, AspectAwarePreprocessor
 from pytorch_widedeep.preprocessing import ImagePreprocessor
+from pytorch_widedeep.utils.image_utils import resize
 
 full_path = os.path.realpath(__file__)
 path = os.path.split(full_path)[0]
@@ -53,3 +54,65 @@ def test_sizes():
 def test_notimplementederror():
     with pytest.raises(NotImplementedError):
         org_df = processor.inverse_transform(X_imgs)  # noqa: F841
+
+
+###############################################################################
+# testthe resize function
+###############################################################################
+
+
+@pytest.fixture
+def sample_image():
+    # Create a sample 100x200 RGB image
+    return np.zeros((100, 200, 3), dtype=np.uint8)
+
+
+def test_resize_width_only(sample_image):
+    # Test resizing with only width specified
+    width = 100
+    resized = resize(sample_image, width=width)
+
+    # Check dimensions
+    assert resized.shape[1] == width  # width should match
+    assert resized.shape[2] == 3  # channels should remain unchanged
+    # Height should be proportionally scaled (50 in this case)
+    assert resized.shape[0] == 50
+
+
+def test_resize_height_only(sample_image):
+    # Test resizing with only height specified
+    height = 50
+    resized = resize(sample_image, height=height)
+
+    # Check dimensions
+    assert resized.shape[0] == height  # height should match
+    assert resized.shape[2] == 3  # channels should remain unchanged
+    # Width should be proportionally scaled (100 in this case)
+    assert resized.shape[1] == 100
+
+
+def test_resize_none_dimensions(sample_image):
+    # Test when both width and height are None
+    resized = resize(sample_image, width=None, height=None)
+
+    # Image should remain unchanged
+    assert np.array_equal(resized, sample_image)
+    assert resized.shape == sample_image.shape
+
+
+def test_resize_different_interpolation(sample_image):
+    # Test with different interpolation method
+    width = 100
+    resized = resize(sample_image, width=width, inter=cv2.INTER_LINEAR)
+
+    assert resized.shape[1] == width
+    assert resized.shape[2] == 3
+    assert resized.shape[0] == 50
+
+
+def test_resize_maintains_type(sample_image):
+    # Test that the output maintains the same dtype as input
+    width = 100
+    resized = resize(sample_image, width=width)
+
+    assert resized.dtype == sample_image.dtype

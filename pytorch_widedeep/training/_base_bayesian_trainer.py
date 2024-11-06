@@ -12,6 +12,7 @@ from pytorch_widedeep.metrics import Metric, MultipleMetrics
 from pytorch_widedeep.wdtypes import (
     Any,
     List,
+    Tuple,
     Union,
     Module,
     Optional,
@@ -25,6 +26,7 @@ from pytorch_widedeep.callbacks import (
     CallbackContainer,
     LRShedulerCallback,
 )
+from pytorch_widedeep.utils.general_utils import setup_device, to_device_model
 from pytorch_widedeep.training._trainer_utils import bayesian_alias_to_loss
 from pytorch_widedeep.bayesian_models._base_bayesian_model import BaseBayesianModel
 
@@ -57,8 +59,7 @@ class BaseBayesianTrainer(ABC):
         self.device, self.num_workers = self._set_device_and_num_workers(**kwargs)
 
         self.early_stop = False
-        self.model = model
-        self.model.to(self.device)
+        self.model = to_device_model(model, self.device)
 
         self.verbose = verbose
         self.seed = seed
@@ -229,13 +230,13 @@ class BaseBayesianTrainer(ABC):
         self.callback_container.set_trainer(self)
 
     @staticmethod
-    def _set_device_and_num_workers(**kwargs):
+    def _set_device_and_num_workers(**kwargs) -> Tuple[str, int]:
         default_num_workers = (
             0
             if sys.platform == "darwin" and sys.version_info.minor > 7
             else os.cpu_count()
         )
-        default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        default_device = setup_device()
         device = kwargs.get("device", default_device)
         num_workers = kwargs.get("num_workers", default_num_workers)
         return device, num_workers
