@@ -10,8 +10,6 @@ from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.self_supervised_training import EncoderDecoderTrainer
 
-use_cuda = torch.cuda.is_available()
-
 if __name__ == "__main__":
     df: pd.DataFrame = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]

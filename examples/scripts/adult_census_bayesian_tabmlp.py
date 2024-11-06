@@ -9,8 +9,6 @@ from pytorch_widedeep.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 from pytorch_widedeep.bayesian_models import BayesianWide, BayesianTabMlp
 
-use_cuda = torch.cuda.is_available()
-
 if __name__ == "__main__":
     df: pd.DataFrame = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]

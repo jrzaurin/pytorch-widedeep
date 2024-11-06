@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.43">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1643,7 +1643,9 @@ non-linearlities are captured via crossed-columns</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>input_dim</code></td>
+            <td>
+                <code>input_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -1660,7 +1662,9 @@ component. For example, if the wide component receives 2 features with
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>pred_dim</code></td>
+            <td>
+                <code>pred_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -1674,7 +1678,9 @@ component. For example, if the wide component receives 2 features with
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>prior_sigma_1</code></td>
+            <td>
+                <code>prior_sigma_1</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -1697,7 +1703,9 @@ distribution.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>prior_sigma_2</code></td>
+            <td>
+                <code>prior_sigma_2</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -1713,7 +1721,9 @@ distribution</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>prior_pi</code></td>
+            <td>
+                <code>prior_pi</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -1728,7 +1738,9 @@ prior weight distribution</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>posterior_mu_init</code></td>
+            <td>
+                <code>posterior_mu_init</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -1756,7 +1768,9 @@ prior weight distribution</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>posterior_rho_init</code></td>
+            <td>
+                <code>posterior_rho_init</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -1807,6 +1821,11 @@ normal distributtion with mean <code>posterior_rho_init</code> and std equal to
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wide</span> <span class="o">=</span> <span class="n">BayesianWide</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()),</span> <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">wide</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/bayesian_models/tabular/bayesian_linear/bayesian_wide.py</code></summary>
@@ -2064,7 +2083,9 @@ passed through a series of probabilistic dense layers (i.e. a MLP).</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column_idx</code></td>
+            <td>
+                <code>column_idx</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
             </td>
@@ -2080,7 +2101,9 @@ the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'educati
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_input</code></td>
+            <td>
+                <code>cat_embed_input</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int, int]]]</code>
             </td>
@@ -2095,7 +2118,9 @@ embedding dimension. e.g. <em>[(education, 11, 32), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_activation</code></td>
+            <td>
+                <code>cat_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -2110,7 +2135,9 @@ embedding dimension. e.g. <em>[(education, 11, 32), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -2124,7 +2151,9 @@ embedding dimension. e.g. <em>[(education, 11, 32), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_norm_layer</code></td>
+            <td>
+                <code>cont_norm_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
             </td>
@@ -2139,7 +2168,9 @@ are: 'layernorm', 'batchnorm' or None.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous</code></td>
+            <td>
+                <code>embed_continuous</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -2154,7 +2185,9 @@ are: 'layernorm', 'batchnorm' or None.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dim</code></td>
+            <td>
+                <code>cont_embed_dim</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -2168,7 +2201,9 @@ are: 'layernorm', 'batchnorm' or None.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dropout</code></td>
+            <td>
+                <code>cont_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -2182,7 +2217,9 @@ are: 'layernorm', 'batchnorm' or None.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cont_bias</code></td>
+            <td>
+                <code>use_cont_bias</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -2196,7 +2233,9 @@ are: 'layernorm', 'batchnorm' or None.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_activation</code></td>
+            <td>
+                <code>cont_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -2211,7 +2250,9 @@ are: 'layernorm', 'batchnorm' or None.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                <code>mlp_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>
             </td>
@@ -2225,7 +2266,9 @@ are: 'layernorm', 'batchnorm' or None.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_activation</code></td>
+            <td>
+                <code>mlp_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2240,7 +2283,9 @@ are: 'layernorm', 'batchnorm' or None.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>prior_sigma_1</code></td>
+            <td>
+                <code>prior_sigma_1</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -2263,7 +2308,9 @@ distribution.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>prior_sigma_2</code></td>
+            <td>
+                <code>prior_sigma_2</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -2279,7 +2326,9 @@ distribution for each Bayesian linear and embedding layer</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>prior_pi</code></td>
+            <td>
+                <code>prior_pi</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -2295,7 +2344,9 @@ layer</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>posterior_mu_init</code></td>
+            <td>
+                <code>posterior_mu_init</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -2323,7 +2374,9 @@ where:</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>posterior_rho_init</code></td>
+            <td>
+                <code>posterior_rho_init</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -2390,6 +2443,11 @@ the continuous columns</p>
 <span class="gp">... </span><span class="n">continuous_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/bayesian_models/tabular/bayesian_mlp/bayesian_tab_mlp.py</code></summary>
@@ -3001,7 +3059,7 @@ the continuous columns</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       

@@ -12,7 +12,7 @@ import os
 import re
 import html
 from collections import Counter, defaultdict
-from concurrent.futures import ProcessPoolExecutor
+from multiprocessing import Pool
 
 import numpy as np
 import spacy
@@ -333,10 +333,12 @@ class Tokenizer:
 
         if self.n_cpus <= 1:
             return self._process_all_1(texts)
-        with ProcessPoolExecutor(self.n_cpus) as e:
-            return sum(
-                e.map(self._process_all_1, partition_by_cores(texts, self.n_cpus)), []
-            )
+
+        with Pool(self.n_cpus) as p:
+            partitioned_texts = partition_by_cores(texts, self.n_cpus)
+            results = p.map(self._process_all_1, partitioned_texts)
+            res = sum(results, [])
+        return res
 
 
 class Vocab:

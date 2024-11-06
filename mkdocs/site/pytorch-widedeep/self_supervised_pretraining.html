@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.43">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1678,7 +1678,9 @@ See Figure 1 above.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>encoder</code></td>
+            <td>
+                <code>encoder</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.ModelWithoutAttention">ModelWithoutAttention</span></code>
             </td>
@@ -1692,7 +1694,9 @@ See Figure 1 above.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>decoder</code></td>
+            <td>
+                <code>decoder</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.DecoderWithoutAttention">DecoderWithoutAttention</span>]</code>
             </td>
@@ -1708,7 +1712,9 @@ built as a '<em>simetric</em>' model to the Encoder</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>masked_prob</code></td>
+            <td>
+                <code>masked_prob</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -1723,7 +1729,9 @@ be masked and hence used for reconstruction</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>optimizer</code></td>
+            <td>
+                <code>optimizer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>]</code>
             </td>
@@ -1738,7 +1746,9 @@ be masked and hence used for reconstruction</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>lr_scheduler</code></td>
+            <td>
+                <code>lr_scheduler</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span>]</code>
             </td>
@@ -1753,7 +1763,9 @@ be masked and hence used for reconstruction</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>callbacks</code></td>
+            <td>
+                <code>callbacks</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.callbacks.Callback">Callback</span>]]</code>
             </td>
@@ -1771,7 +1783,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -1785,7 +1799,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>seed</code></td>
+            <td>
+                <code>seed</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -1841,10 +1857,14 @@ repo.</p>
       </tbody>
     </table>
 
+
+
+
+
+
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/self_supervised_training/encoder_decoder_trainer.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 28</span>
-<span class="normal"> 29</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 29</span>
 <span class="normal"> 30</span>
 <span class="normal"> 31</span>
 <span class="normal"> 32</span>
@@ -2078,7 +2098,8 @@ repo.</p>
 <span class="normal">260</span>
 <span class="normal">261</span>
 <span class="normal">262</span>
-<span class="normal">263</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">EncoderDecoderTrainer</span><span class="p">(</span><span class="n">BaseEncoderDecoderTrainer</span><span class="p">):</span>
+<span class="normal">263</span>
+<span class="normal">264</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">EncoderDecoderTrainer</span><span class="p">(</span><span class="n">BaseEncoderDecoderTrainer</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;This class implements an Encoder-Decoder self-supervised &#39;routine&#39;</span>
 <span class="sd">    inspired by</span>
 <span class="sd">    [TabNet: Attentive Interpretable Tabular Learning](https://arxiv.org/abs/1908.07442).</span>
@@ -2267,7 +2288,7 @@ repo.</p>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_train_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_tab</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">X_tab</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">to_device</span><span class="p">(</span><span class="n">X_tab</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
         <span class="n">x_embed</span><span class="p">,</span> <span class="n">x_embed_rec</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ed_model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -2284,7 +2305,7 @@ repo.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">ed_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
         <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">X_tab</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">to_device</span><span class="p">(</span><span class="n">X_tab</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
             <span class="n">x_embed</span><span class="p">,</span> <span class="n">x_embed_rec</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ed_model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">x_embed</span><span class="p">,</span> <span class="n">x_embed_rec</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
@@ -2364,7 +2385,9 @@ repo.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>X_tab</code></td>
+            <td>
+                <code>X_tab</code>
+            </td>
             <td>
                   <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
@@ -2378,7 +2401,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>X_tab_val</code></td>
+            <td>
+                <code>X_tab_val</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>
             </td>
@@ -2392,7 +2417,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>val_split</code></td>
+            <td>
+                <code>val_split</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -2407,7 +2434,9 @@ split fraction via <code>val_split</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>validation_freq</code></td>
+            <td>
+                <code>validation_freq</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2421,7 +2450,9 @@ split fraction via <code>val_split</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_epochs</code></td>
+            <td>
+                <code>n_epochs</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2435,7 +2466,9 @@ split fraction via <code>val_split</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>batch_size</code></td>
+            <td>
+                <code>batch_size</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2453,8 +2486,7 @@ split fraction via <code>val_split</code></p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/self_supervised_training/encoder_decoder_trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">104</span>
-<span class="normal">105</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">105</span>
 <span class="normal">106</span>
 <span class="normal">107</span>
 <span class="normal">108</span>
@@ -2545,7 +2577,8 @@ split fraction via <code>val_split</code></p>
 <span class="normal">193</span>
 <span class="normal">194</span>
 <span class="normal">195</span>
-<span class="normal">196</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
+<span class="normal">196</span>
+<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2686,7 +2719,9 @@ Contrastive Pre-Training</a>, their Figure 1.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>model</code></td>
+            <td>
+                <code>model</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.ModelWithAttention">ModelWithAttention</span></code>
             </td>
@@ -2702,7 +2737,9 @@ Contrastive Pre-Training</a>, their Figure 1.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>preprocessor</code></td>
+            <td>
+                <code>preprocessor</code>
+            </td>
             <td>
                   <code><a class="autorefs autorefs-internal" title="pytorch_widedeep.preprocessing.TabPreprocessor" href="preprocessing.html#pytorch_widedeep.preprocessing.tab_preprocessor.TabPreprocessor">TabPreprocessor</a></code>
             </td>
@@ -2717,7 +2754,9 @@ Contrastive Pre-Training</a>, their Figure 1.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>optimizer</code></td>
+            <td>
+                <code>optimizer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>]</code>
             </td>
@@ -2732,7 +2771,9 @@ Contrastive Pre-Training</a>, their Figure 1.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>lr_scheduler</code></td>
+            <td>
+                <code>lr_scheduler</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span>]</code>
             </td>
@@ -2747,7 +2788,9 @@ Contrastive Pre-Training</a>, their Figure 1.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>callbacks</code></td>
+            <td>
+                <code>callbacks</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.callbacks.Callback">Callback</span>]]</code>
             </td>
@@ -2765,7 +2808,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>loss_type</code></td>
+            <td>
+                <code>loss_type</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[contrastive, denoising, both]</code>
             </td>
@@ -2782,7 +2827,9 @@ and their equation (5).</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>projection_head1_dims</code></td>
+            <td>
+                <code>projection_head1_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -2803,7 +2850,9 @@ embeddings of dim 32 (i.e. the so called dimension of the model is
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>projection_head2_dims</code></td>
+            <td>
+                <code>projection_head2_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -2817,7 +2866,9 @@ embeddings of dim 32 (i.e. the so called dimension of the model is
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>projection_heads_activation</code></td>
+            <td>
+                <code>projection_heads_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2831,7 +2882,9 @@ embeddings of dim 32 (i.e. the so called dimension of the model is
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_mlp_type</code></td>
+            <td>
+                <code>cat_mlp_type</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[single, multiple]</code>
             </td>
@@ -2850,7 +2903,9 @@ per categorical feature</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_mlp_type</code></td>
+            <td>
+                <code>cont_mlp_type</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[single, multiple]</code>
             </td>
@@ -2864,7 +2919,9 @@ per categorical feature</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>denoise_mlps_activation</code></td>
+            <td>
+                <code>denoise_mlps_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2878,7 +2935,9 @@ per categorical feature</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2892,7 +2951,9 @@ per categorical feature</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>seed</code></td>
+            <td>
+                <code>seed</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2948,10 +3009,14 @@ per categorical feature</p>
       </tbody>
     </table>
 
+
+
+
+
+
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/self_supervised_training/contrastive_denoising_trainer.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 29</span>
-<span class="normal"> 30</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 30</span>
 <span class="normal"> 31</span>
 <span class="normal"> 32</span>
 <span class="normal"> 33</span>
@@ -3227,7 +3292,8 @@ per categorical feature</p>
 <span class="normal">303</span>
 <span class="normal">304</span>
 <span class="normal">305</span>
-<span class="normal">306</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">ContrastiveDenoisingTrainer</span><span class="p">(</span><span class="n">BaseContrastiveDenoisingTrainer</span><span class="p">):</span>
+<span class="normal">306</span>
+<span class="normal">307</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">ContrastiveDenoisingTrainer</span><span class="p">(</span><span class="n">BaseContrastiveDenoisingTrainer</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;This class trains a Contrastive, Denoising Self Supervised &#39;routine&#39; that</span>
 <span class="sd">    is based on the one described in</span>
 <span class="sd">    [SAINT: Improved Neural Networks for Tabular Data via Row Attention and</span>
@@ -3458,7 +3524,7 @@ per categorical feature</p>
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_train_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_tab</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="n">X</span> <span class="o">=</span> <span class="n">X_tab</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">to_device</span><span class="p">(</span><span class="n">X_tab</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
         <span class="n">g_projs</span><span class="p">,</span> <span class="n">cat_x_and_x_</span><span class="p">,</span> <span class="n">cont_x_and_x_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd_model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -3475,7 +3541,7 @@ per categorical feature</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">cd_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
         <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-            <span class="n">X</span> <span class="o">=</span> <span class="n">X_tab</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">to_device</span><span class="p">(</span><span class="n">X_tab</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
             <span class="n">g_projs</span><span class="p">,</span> <span class="n">cat_x_and_x_</span><span class="p">,</span> <span class="n">cont_x_and_x_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cd_model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_loss</span><span class="p">(</span><span class="n">g_projs</span><span class="p">,</span> <span class="n">cat_x_and_x_</span><span class="p">,</span> <span class="n">cont_x_and_x_</span><span class="p">)</span>
@@ -3555,7 +3621,9 @@ per categorical feature</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>X_tab</code></td>
+            <td>
+                <code>X_tab</code>
+            </td>
             <td>
                   <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
@@ -3569,7 +3637,9 @@ per categorical feature</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>X_tab_val</code></td>
+            <td>
+                <code>X_tab_val</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>
             </td>
@@ -3591,7 +3661,9 @@ effectively be like trying to predict a new, never seen category
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>val_split</code></td>
+            <td>
+                <code>val_split</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -3606,7 +3678,9 @@ split fraction via <code>val_split</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>validation_freq</code></td>
+            <td>
+                <code>validation_freq</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -3620,7 +3694,9 @@ split fraction via <code>val_split</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_epochs</code></td>
+            <td>
+                <code>n_epochs</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -3634,7 +3710,9 @@ split fraction via <code>val_split</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>batch_size</code></td>
+            <td>
+                <code>batch_size</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -3652,8 +3730,7 @@ split fraction via <code>val_split</code></p>
 
             <details class="quote">
               <summary>Source code in <code>pytorch_widedeep/self_supervised_training/contrastive_denoising_trainer.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">144</span>
-<span class="normal">145</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">145</span>
 <span class="normal">146</span>
 <span class="normal">147</span>
 <span class="normal">148</span>
@@ -3752,7 +3829,8 @@ split fraction via <code>val_split</code></p>
 <span class="normal">241</span>
 <span class="normal">242</span>
 <span class="normal">243</span>
-<span class="normal">244</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
+<span class="normal">244</span>
+<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">pretrain</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">X_tab</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="n">X_tab_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -3957,7 +4035,7 @@ split fraction via <code>val_split</code></p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       

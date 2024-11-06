@@ -1,5 +1,4 @@
 import numpy as np
-import torch
 import pandas as pd
 
 from pytorch_widedeep import Trainer
@@ -7,8 +6,6 @@ from pytorch_widedeep.models import WideDeep, SelfAttentionMLP, ContextAttention
 from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.preprocessing import TabPreprocessor
-
-use_cuda = torch.cuda.is_available()
 
 if __name__ == "__main__":
     df: pd.DataFrame = load_adult(as_frame=True)

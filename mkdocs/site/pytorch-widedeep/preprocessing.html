@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.43">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1738,7 +1738,9 @@ crossed_cols</code>. See the Example below.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>wide_cols</code></td>
+            <td>
+                <code>wide_cols</code>
+            </td>
             <td>
                   <code><span title="typing.List">List</span>[str]</code>
             </td>
@@ -1753,7 +1755,9 @@ encoded and passed through the <code>wide</code> component</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>crossed_cols</code></td>
+            <td>
+                <code>crossed_cols</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<span title="typing.Tuple">Tuple</span>[str, str]]]</code>
             </td>
@@ -1852,6 +1856,11 @@ column value</code> and the values are the corresponding mapped integer.</p>
 <span class="go">1     b        b-n</span>
 <span class="go">2     g        g-l</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/preprocessing/wide_preprocessor.py</code></summary>
@@ -2287,7 +2296,9 @@ column value</code> and the values are the corresponding mapped integer.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -2414,7 +2425,9 @@ column value</code> and the values are the corresponding mapped integer.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -2537,7 +2550,9 @@ return the original values.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>encoded</code></td>
+            <td>
+                <code>encoded</code>
+            </td>
             <td>
                   <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
@@ -2664,7 +2679,9 @@ return the original values.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -2777,7 +2794,9 @@ return the original values.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>cat_embed_cols</code></td>
+            <td>
+                <code>cat_embed_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str], <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int]]]]</code>
             </td>
@@ -2794,7 +2813,9 @@ a Tuple with the name and the embedding dimension (e.g.: <em>[
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -2808,7 +2829,9 @@ a Tuple with the name and the embedding dimension (e.g.: <em>[
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[int, <span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.Union">Union</span>[int, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]]]</code>
             </td>
@@ -2828,7 +2851,9 @@ Param alias: <code>cols_and_bins</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cols_to_scale</code></td>
+            <td>
+                <code>cols_to_scale</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str], str]]</code>
             </td>
@@ -2844,7 +2869,9 @@ which case all the continuous cols will be scaled.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>auto_embed_dim</code></td>
+            <td>
+                <code>auto_embed_dim</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2860,7 +2887,9 @@ below.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embedding_rule</code></td>
+            <td>
+                <code>embedding_rule</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[google, fastai_old, fastai_new]</code>
             </td>
@@ -2886,7 +2915,9 @@ thumb. Choices are:</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>default_embed_dim</code></td>
+            <td>
+                <code>default_embed_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2902,7 +2933,9 @@ set to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>with_attention</code></td>
+            <td>
+                <code>with_attention</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2924,7 +2957,9 @@ e.g.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>with_cls_token</code></td>
+            <td>
+                <code>with_cls_token</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2943,7 +2978,9 @@ to the final MLP (if present).</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>shared_embed</code></td>
+            <td>
+                <code>shared_embed</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2963,7 +3000,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2977,7 +3016,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>scale</code></td>
+            <td>
+                <code>scale</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2997,7 +3038,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>already_standard</code></td>
+            <td>
+                <code>already_standard</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -3206,6 +3249,11 @@ This is necessary to slice tensors.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tab_preprocessor2</span> <span class="o">=</span> <span class="n">TabPreprocessor</span><span class="p">(</span><span class="n">continuous_cols</span><span class="o">=</span><span class="n">cont_cols</span><span class="p">,</span> <span class="n">quantization_setup</span><span class="o">=</span><span class="n">quantization_setup</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ft_cont_df2</span> <span class="o">=</span> <span class="n">tab_preprocessor2</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">cont_df</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/preprocessing/tab_preprocessor.py</code></summary>
@@ -4455,7 +4503,9 @@ This is necessary to slice tensors.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -4677,7 +4727,9 @@ This is necessary to slice tensors.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -4840,7 +4892,9 @@ return the original values.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>encoded</code></td>
+            <td>
+                <code>encoded</code>
+            </td>
             <td>
                   <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
@@ -4994,7 +5048,9 @@ return the original values.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -5109,7 +5165,9 @@ designed to always run internally within the <code>TabPreprocessor</code> class.
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.Union">Union</span>[int, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -5126,6 +5184,11 @@ list of scalars indicating the bin edges.</p>
           </tr>
       </tbody>
     </table>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/preprocessing/tab_preprocessor.py</code></summary>
@@ -5320,7 +5383,9 @@ list of scalars indicating the bin edges.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>text_col</code></td>
+            <td>
+                <code>text_col</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -5334,7 +5399,9 @@ list of scalars indicating the bin edges.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>max_vocab</code></td>
+            <td>
+                <code>max_vocab</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -5348,7 +5415,9 @@ list of scalars indicating the bin edges.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>min_freq</code></td>
+            <td>
+                <code>min_freq</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -5362,7 +5431,9 @@ list of scalars indicating the bin edges.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>maxlen</code></td>
+            <td>
+                <code>maxlen</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -5376,7 +5447,9 @@ list of scalars indicating the bin edges.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>pad_first</code></td>
+            <td>
+                <code>pad_first</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -5391,7 +5464,9 @@ end of the sequences</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>pad_idx</code></td>
+            <td>
+                <code>pad_idx</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -5405,7 +5480,9 @@ end of the sequences</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>already_processed</code></td>
+            <td>
+                <code>already_processed</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[bool]</code>
             </td>
@@ -5425,7 +5502,9 @@ are already fully processed or are directly not text (e.g. IDs)</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>word_vectors_path</code></td>
+            <td>
+                <code>word_vectors_path</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[str]</code>
             </td>
@@ -5439,7 +5518,9 @@ are already fully processed or are directly not text (e.g. IDs)</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_cpus</code></td>
+            <td>
+                <code>n_cpus</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[int]</code>
             </td>
@@ -5453,7 +5534,9 @@ are already fully processed or are directly not text (e.g. IDs)</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -5520,6 +5603,11 @@ are already fully processed or are directly not text (e.g. IDs)</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">text_preprocessor</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">df_te</span><span class="p">)</span>
 <span class="go">array([[ 1,  1,  9, 16, 17, 18, 11,  0,  0, 13]], dtype=int32)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/preprocessing/text_preprocessor.py</code></summary>
@@ -6045,7 +6133,9 @@ are already fully processed or are directly not text (e.g. IDs)</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -6189,7 +6279,9 @@ are already fully processed or are directly not text (e.g. IDs)</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -6297,7 +6389,9 @@ are already fully processed or are directly not text (e.g. IDs)</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>text</code></td>
+            <td>
+                <code>text</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -6403,7 +6497,9 @@ are already fully processed or are directly not text (e.g. IDs)</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -6505,7 +6601,9 @@ are already fully processed or are directly not text (e.g. IDs)</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>padded_seq</code></td>
+            <td>
+                <code>padded_seq</code>
+            </td>
             <td>
                   <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
@@ -6625,7 +6723,9 @@ or following the API call 'protocol' of the rest of the library.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>model_name</code></td>
+            <td>
+                <code>model_name</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -6641,7 +6741,9 @@ DistilBERT, ALBERT and ELECTRA.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_fast_tokenizer</code></td>
+            <td>
+                <code>use_fast_tokenizer</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -6655,7 +6757,9 @@ DistilBERT, ALBERT and ELECTRA.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>text_col</code></td>
+            <td>
+                <code>text_col</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[str]</code>
             </td>
@@ -6673,7 +6777,9 @@ directly to the <code>encode</code> method.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>num_workers</code></td>
+            <td>
+                <code>num_workers</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[int]</code>
             </td>
@@ -6690,7 +6796,9 @@ preprocessed in parallel using the number of workers specified. If
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>preprocessing_rules</code></td>
+            <td>
+                <code>preprocessing_rules</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<span title="typing.Callable">Callable</span>[[str], str]]]</code>
             </td>
@@ -6706,7 +6814,9 @@ example, removing html tags, special characters, etc.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>tokenizer_params</code></td>
+            <td>
+                <code>tokenizer_params</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>
             </td>
@@ -6722,7 +6832,9 @@ can also be passed via the <code>**kwargs</code> argument</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>encode_params</code></td>
+            <td>
+                <code>encode_params</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>
             </td>
@@ -6740,7 +6852,9 @@ input text is passed directly to the <code>encode</code> method.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>**kwargs</code></td>
+            <td>
+                <code>**kwargs</code>
+            </td>
             <td>
             </td>
             <td>
@@ -6796,6 +6910,11 @@ for some functionality in the library.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">hf_processor_2</span> <span class="o">=</span> <span class="n">HFPreprocessor</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;bert-base-uncased&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">X_text_2</span> <span class="o">=</span> <span class="n">hf_processor_2</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;max_length&quot;</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/preprocessing/hf_preprocessor.py</code></summary>
@@ -7543,7 +7662,9 @@ for some functionality in the library.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>texts</code></td>
+            <td>
+                <code>texts</code>
+            </td>
             <td>
                   <code><span title="typing.List">List</span>[str]</code>
             </td>
@@ -7557,7 +7678,9 @@ for some functionality in the library.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>**kwargs</code></td>
+            <td>
+                <code>**kwargs</code>
+            </td>
             <td>
             </td>
             <td>
@@ -7755,7 +7878,9 @@ HuggingFace's tokenizer.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>input_ids</code></td>
+            <td>
+                <code>input_ids</code>
+            </td>
             <td>
                   <code><span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.int64">int64</span>]</code>
             </td>
@@ -7769,7 +7894,9 @@ HuggingFace's tokenizer.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>skip_special_tokens</code></td>
+            <td>
+                <code>skip_special_tokens</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -7901,7 +8028,9 @@ not <code>None</code>.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -7996,7 +8125,9 @@ in general and with the <code>BasePreprocessor</code> in particular.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -8125,7 +8256,9 @@ the 'text_col' parameter</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>text</code></td>
+            <td>
+                <code>text</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -8239,7 +8372,9 @@ the 'text_col' parameter</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -8347,7 +8482,9 @@ under the hood.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>input_ids</code></td>
+            <td>
+                <code>input_ids</code>
+            </td>
             <td>
                   <code><span title="numpy.typing.NDArray">NDArray</span>[<span title="numpy.int64">int64</span>]</code>
             </td>
@@ -8361,7 +8498,9 @@ under the hood.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>skip_special_tokens</code></td>
+            <td>
+                <code>skip_special_tokens</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -8488,7 +8627,9 @@ aspect ratio</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>img_col</code></td>
+            <td>
+                <code>img_col</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -8502,7 +8643,9 @@ aspect ratio</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>img_path</code></td>
+            <td>
+                <code>img_path</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -8516,7 +8659,9 @@ aspect ratio</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>width</code></td>
+            <td>
+                <code>width</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -8530,7 +8675,9 @@ aspect ratio</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>height</code></td>
+            <td>
+                <code>height</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -8544,7 +8691,9 @@ aspect ratio</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -8628,6 +8777,11 @@ Normalising metrics will only be computed when the <code>fit_transform</code>
 method is run. Running <code>transform</code> only will not change the computed
 metrics and running <code>fit</code> only simply instantiates the resizing
 functions.</p>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/preprocessing/image_preprocessor.py</code></summary>
@@ -9033,7 +9187,9 @@ functions.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -9237,7 +9393,9 @@ functions.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>df</code></td>
+            <td>
+                <code>df</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -9353,7 +9511,9 @@ types of input columns (categorical, continuous, and sequential).</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>user_id_col</code></td>
+            <td>
+                <code>user_id_col</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -9367,7 +9527,9 @@ types of input columns (categorical, continuous, and sequential).</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>item_embed_col</code></td>
+            <td>
+                <code>item_embed_col</code>
+            </td>
             <td>
                   <code><span title="typing.Union">Union</span>[str, <span title="typing.Tuple">Tuple</span>[str, int]]</code>
             </td>
@@ -9384,7 +9546,9 @@ will be automatically calculated using a rule of thumb specified by
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>target_col</code></td>
+            <td>
+                <code>target_col</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -9398,7 +9562,9 @@ will be automatically calculated using a rule of thumb specified by
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>max_seq_length</code></td>
+            <td>
+                <code>max_seq_length</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -9412,7 +9578,9 @@ will be automatically calculated using a rule of thumb specified by
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>action_col</code></td>
+            <td>
+                <code>action_col</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[str]</code>
             </td>
@@ -9428,7 +9596,9 @@ can also be the same as the 'target_col'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>other_seq_embed_cols</code></td>
+            <td>
+                <code>other_seq_embed_cols</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[str] | <span title="typing.List">List</span>[<span title="typing.Tuple">Tuple</span>[str, int]]]</code>
             </td>
@@ -9444,7 +9614,9 @@ name of the column and the embedding dimension.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_cols</code></td>
+            <td>
+                <code>cat_embed_cols</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<span title="typing.List">List</span>[str], <span title="typing.List">List</span>[<span title="typing.Tuple">Tuple</span>[str, int]]]]</code>
             </td>
@@ -9463,7 +9635,9 @@ a Tuple with the name and the embedding dimension (e.g.: <em>[
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[str]]</code>
             </td>
@@ -9477,7 +9651,9 @@ a Tuple with the name and the embedding dimension (e.g.: <em>[
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[int, <span title="typing.Dict">Dict</span>[str, <span title="typing.Union">Union</span>[int, <span title="typing.List">List</span>[float]]]]]</code>
             </td>
@@ -9496,7 +9672,9 @@ list of scalars indicating the bin edges can also be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cols_to_scale</code></td>
+            <td>
+                <code>cols_to_scale</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<span title="typing.List">List</span>[str], str]]</code>
             </td>
@@ -9512,7 +9690,9 @@ which case all the continuous cols will be scaled.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>auto_embed_dim</code></td>
+            <td>
+                <code>auto_embed_dim</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -9528,7 +9708,9 @@ below.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embedding_rule</code></td>
+            <td>
+                <code>embedding_rule</code>
+            </td>
             <td>
                   <code><span title="typing.Literal">Literal</span>[&#39;google&#39;, &#39;fastai_old&#39;, &#39;fastai_new&#39;]</code>
             </td>
@@ -9554,7 +9736,9 @@ thumb. Choices are:</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>default_embed_dim</code></td>
+            <td>
+                <code>default_embed_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -9570,7 +9754,9 @@ set to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -9584,7 +9770,9 @@ set to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>scale</code></td>
+            <td>
+                <code>scale</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -9604,7 +9792,9 @@ set to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>already_standard</code></td>
+            <td>
+                <code>already_standard</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[str]]</code>
             </td>
@@ -9830,6 +10020,11 @@ set to <code>False</code>.</p>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">din_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/preprocessing/din_preprocessor.py</code></summary>
@@ -10962,7 +11157,9 @@ crossed_cols</code>. See the Example below.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>wide_cols</code></td>
+            <td>
+                <code>wide_cols</code>
+            </td>
             <td>
                   <code><span title="typing.List">List</span>[str]</code>
             </td>
@@ -10977,7 +11174,9 @@ encoded and passed through the <code>wide</code> component</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>crossed_cols</code></td>
+            <td>
+                <code>crossed_cols</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<span title="typing.Tuple">Tuple</span>[str, str]]]</code>
             </td>
@@ -11066,6 +11265,11 @@ column value</code> and the values are the corresponding mapped integer.</p>
 <span class="gp">... </span><span class="n">n_chunks</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">X_wide</span> <span class="o">=</span> <span class="n">chunk_wide_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/preprocessing/wide_preprocessor.py</code></summary>
@@ -11329,7 +11533,9 @@ column value</code> and the values are the corresponding mapped integer.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>chunk</code></td>
+            <td>
+                <code>chunk</code>
+            </td>
             <td>
                   <code><span title="pandas.DataFrame">DataFrame</span></code>
             </td>
@@ -11521,7 +11727,9 @@ class. This class is not designed or thought to run fit</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>n_chunks</code></td>
+            <td>
+                <code>n_chunks</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -11535,7 +11743,9 @@ class. This class is not designed or thought to run fit</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_cols</code></td>
+            <td>
+                <code>cat_embed_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str], <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int]]]]</code>
             </td>
@@ -11553,7 +11763,9 @@ a Tuple with the name and the embedding dimension (e.g.: <em>[
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -11567,7 +11779,9 @@ a Tuple with the name and the embedding dimension (e.g.: <em>[
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cols_and_bins</code></td>
+            <td>
+                <code>cols_and_bins</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -11584,7 +11798,9 @@ bin edges. <br/> Param alias: <code>quantization_setup</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cols_to_scale</code></td>
+            <td>
+                <code>cols_to_scale</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str], str]]</code>
             </td>
@@ -11599,7 +11815,9 @@ sklearn's <code>StandardScaler</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>default_embed_dim</code></td>
+            <td>
+                <code>default_embed_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -11615,7 +11833,9 @@ sklearn's <code>StandardScaler</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>with_attention</code></td>
+            <td>
+                <code>with_attention</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -11637,7 +11857,9 @@ e.g.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>with_cls_token</code></td>
+            <td>
+                <code>with_cls_token</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -11656,7 +11878,9 @@ being passed to the final MLP (if present).</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>shared_embed</code></td>
+            <td>
+                <code>shared_embed</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -11676,7 +11900,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -11690,7 +11916,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>scale</code></td>
+            <td>
+                <code>scale</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -11710,7 +11938,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>already_standard</code></td>
+            <td>
+                <code>already_standard</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -11915,6 +12145,11 @@ This is necessary to slice tensors.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tab_preprocessor</span><span class="o">.</span><span class="n">column_idx</span>
 <span class="go">{&#39;cat_col&#39;: 0, &#39;cont_col&#39;: 1}</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/preprocessing/tab_preprocessor.py</code></summary>
@@ -12673,7 +12908,9 @@ This is necessary to slice tensors.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>text_col</code></td>
+            <td>
+                <code>text_col</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -12688,7 +12925,9 @@ filenames where the text documents are stored</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_chunks</code></td>
+            <td>
+                <code>n_chunks</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -12702,7 +12941,9 @@ filenames where the text documents are stored</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>root_dir</code></td>
+            <td>
+                <code>root_dir</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[str]</code>
             </td>
@@ -12717,7 +12958,9 @@ the path to the directory where those documents are stored.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>max_vocab</code></td>
+            <td>
+                <code>max_vocab</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -12731,7 +12974,9 @@ the path to the directory where those documents are stored.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>min_freq</code></td>
+            <td>
+                <code>min_freq</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -12745,7 +12990,9 @@ the path to the directory where those documents are stored.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>maxlen</code></td>
+            <td>
+                <code>maxlen</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -12759,7 +13006,9 @@ the path to the directory where those documents are stored.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>pad_first</code></td>
+            <td>
+                <code>pad_first</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -12774,7 +13023,9 @@ end of the sequences</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>pad_idx</code></td>
+            <td>
+                <code>pad_idx</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -12788,7 +13039,9 @@ end of the sequences</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>word_vectors_path</code></td>
+            <td>
+                <code>word_vectors_path</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[str]</code>
             </td>
@@ -12802,7 +13055,9 @@ end of the sequences</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_cpus</code></td>
+            <td>
+                <code>n_cpus</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[int]</code>
             </td>
@@ -12816,7 +13071,9 @@ end of the sequences</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -12878,6 +13135,11 @@ end of the sequences</p>
 <span class="gp">... </span><span class="n">max_vocab</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">min_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_cpus</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">processed_chunk</span> <span class="o">=</span> <span class="n">chunk_text_preprocessor</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">chunk_df</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/preprocessing/text_preprocessor.py</code></summary>
@@ -13214,7 +13476,9 @@ using this class. It must be passed containing at least the
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>model_name</code></td>
+            <td>
+                <code>model_name</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -13230,7 +13494,9 @@ DistilBERT, ALBERT and ELECTRA.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>text_col</code></td>
+            <td>
+                <code>text_col</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -13245,7 +13511,9 @@ the <code>ChunkHFPreprocessor</code> the <code>text_col</code> parameter is mand
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>root_dir</code></td>
+            <td>
+                <code>root_dir</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[str]</code>
             </td>
@@ -13262,7 +13530,9 @@ needed.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_fast_tokenizer</code></td>
+            <td>
+                <code>use_fast_tokenizer</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -13276,7 +13546,9 @@ needed.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>num_workers</code></td>
+            <td>
+                <code>num_workers</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[int]</code>
             </td>
@@ -13293,7 +13565,9 @@ preprocessed in parallel using the number of workers specified. If
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>preprocessing_rules</code></td>
+            <td>
+                <code>preprocessing_rules</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.List">List</span>[<span title="typing.Callable">Callable</span>[[str], str]]]</code>
             </td>
@@ -13309,7 +13583,9 @@ example, removing html tags, special characters, etc.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>tokenizer_params</code></td>
+            <td>
+                <code>tokenizer_params</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>
             </td>
@@ -13324,7 +13600,9 @@ example, removing html tags, special characters, etc.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>encode_params</code></td>
+            <td>
+                <code>encode_params</code>
+            </td>
             <td>
                   <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>
             </td>
@@ -13372,6 +13650,11 @@ for some functionality in the library.</p>
           </tr>
       </tbody>
     </table>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/preprocessing/hf_preprocessor.py</code></summary>
@@ -13699,7 +13982,7 @@ for some functionality in the library.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       

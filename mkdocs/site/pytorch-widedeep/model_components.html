@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.43">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1815,7 +1815,9 @@ captured via the so-called crossed-columns. This can be used as the
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>input_dim</code></td>
+            <td>
+                <code>input_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -1833,7 +1835,9 @@ model receives 2 features with 5 individual values each, <code>input_dim =
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>pred_dim</code></td>
+            <td>
+                <code>pred_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -1885,6 +1889,11 @@ it requires the <code>pred_dim</code> parameter.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">wide</span> <span class="o">=</span> <span class="n">Wide</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()),</span> <span class="n">pred_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">wide</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/linear/wide.py</code></summary>
@@ -2101,7 +2110,9 @@ categorical features only, continuous features only or both).</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column_idx</code></td>
+            <td>
+                <code>column_idx</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
             </td>
@@ -2117,7 +2128,9 @@ the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'educati
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_input</code></td>
+            <td>
+                <code>cat_embed_input</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int, int]]]</code>
             </td>
@@ -2132,7 +2145,9 @@ embedding dimension. e.g. <em>[(education, 11, 32), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_dropout</code></td>
+            <td>
+                <code>cat_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -2147,7 +2162,9 @@ to 0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cat_bias</code></td>
+            <td>
+                <code>use_cat_bias</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -2162,7 +2179,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_activation</code></td>
+            <td>
+                <code>cat_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -2177,7 +2196,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -2191,7 +2212,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_norm_layer</code></td>
+            <td>
+                <code>cont_norm_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
             </td>
@@ -2207,7 +2230,9 @@ normalization layer will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous</code></td>
+            <td>
+                <code>embed_continuous</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -2226,7 +2251,9 @@ or <em>'piecewise'</em>. If <code>None</code>, it will default to 'False'.<br/>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous_method</code></td>
+            <td>
+                <code>embed_continuous_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[standard, piecewise, periodic]]</code>
             </td>
@@ -2247,7 +2274,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dim</code></td>
+            <td>
+                <code>cont_embed_dim</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -2262,7 +2291,9 @@ embedded, <code>cont_embed_dim</code> must be passed.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dropout</code></td>
+            <td>
+                <code>cont_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -2276,7 +2307,9 @@ embedded, <code>cont_embed_dim</code> must be passed.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_activation</code></td>
+            <td>
+                <code>cont_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -2292,7 +2325,9 @@ If <code>None</code>, no activation function will be applied.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -2310,7 +2345,9 @@ If the <em>'piecewise'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_frequencies</code></td>
+            <td>
+                <code>n_frequencies</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -2328,7 +2365,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>sigma</code></td>
+            <td>
+                <code>sigma</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -2345,7 +2384,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_last_layer</code></td>
+            <td>
+                <code>share_last_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -2364,7 +2405,9 @@ If the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>full_embed_dropout</code></td>
+            <td>
+                <code>full_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -2379,7 +2422,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                <code>mlp_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>
             </td>
@@ -2393,7 +2438,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_activation</code></td>
+            <td>
+                <code>mlp_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2408,7 +2455,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_dropout</code></td>
+            <td>
+                <code>mlp_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[float, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]</code>
             </td>
@@ -2423,7 +2472,9 @@ e.g: <em>[0.5,0.5]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm</code></td>
+            <td>
+                <code>mlp_batchnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2438,7 +2489,9 @@ to the dense layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm_last</code></td>
+            <td>
+                <code>mlp_batchnorm_last</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2453,7 +2506,9 @@ to the last of the dense layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_linear_first</code></td>
+            <td>
+                <code>mlp_linear_first</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2509,6 +2564,11 @@ the continuous columns</p>
 <span class="gp">... </span><span class="n">continuous_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/tab_mlp.py</code></summary>
@@ -3002,7 +3062,9 @@ and '<em>reconstruct</em>' the embeddings.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>embed_dim</code></td>
+            <td>
+                <code>embed_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -3016,7 +3078,9 @@ and '<em>reconstruct</em>' the embeddings.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                <code>mlp_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>
             </td>
@@ -3030,7 +3094,9 @@ and '<em>reconstruct</em>' the embeddings.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_activation</code></td>
+            <td>
+                <code>mlp_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -3045,7 +3111,9 @@ and '<em>reconstruct</em>' the embeddings.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_dropout</code></td>
+            <td>
+                <code>mlp_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[float, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]</code>
             </td>
@@ -3060,7 +3128,9 @@ e.g: <em>[0.5,0.5]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm</code></td>
+            <td>
+                <code>mlp_batchnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -3075,7 +3145,9 @@ to the dense layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm_last</code></td>
+            <td>
+                <code>mlp_batchnorm_last</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -3090,7 +3162,9 @@ to the last of the dense layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_linear_first</code></td>
+            <td>
+                <code>mlp_linear_first</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -3143,6 +3217,11 @@ LIN -&gt; ACT]</code></p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">shape</span>
 <span class="go">torch.Size([3, 32])</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/tab_mlp.py</code></summary>
@@ -3368,7 +3447,9 @@ categorical features only, continuous features only or both).</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column_idx</code></td>
+            <td>
+                <code>column_idx</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
             </td>
@@ -3384,7 +3465,9 @@ the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'educati
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_input</code></td>
+            <td>
+                <code>cat_embed_input</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int, int]]]</code>
             </td>
@@ -3399,7 +3482,9 @@ embedding dimension. e.g. <em>[(education, 11, 32), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_dropout</code></td>
+            <td>
+                <code>cat_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -3414,7 +3499,9 @@ to 0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cat_bias</code></td>
+            <td>
+                <code>use_cat_bias</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -3429,7 +3516,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_activation</code></td>
+            <td>
+                <code>cat_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -3444,7 +3533,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -3458,7 +3549,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_norm_layer</code></td>
+            <td>
+                <code>cont_norm_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
             </td>
@@ -3474,7 +3567,9 @@ normalization layer will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous</code></td>
+            <td>
+                <code>embed_continuous</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -3493,7 +3588,9 @@ or <em>'piecewise'</em>. If <code>None</code>, it will default to 'False'.<br/>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous_method</code></td>
+            <td>
+                <code>embed_continuous_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[standard, piecewise, periodic]]</code>
             </td>
@@ -3514,7 +3611,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dim</code></td>
+            <td>
+                <code>cont_embed_dim</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -3529,7 +3628,9 @@ embedded, <code>cont_embed_dim</code> must be passed.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dropout</code></td>
+            <td>
+                <code>cont_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -3543,7 +3644,9 @@ embedded, <code>cont_embed_dim</code> must be passed.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_activation</code></td>
+            <td>
+                <code>cont_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -3559,7 +3662,9 @@ If <code>None</code>, no activation function will be applied.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -3577,7 +3682,9 @@ If the <em>'piecewise'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_frequencies</code></td>
+            <td>
+                <code>n_frequencies</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -3595,7 +3702,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>sigma</code></td>
+            <td>
+                <code>sigma</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -3612,7 +3721,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_last_layer</code></td>
+            <td>
+                <code>share_last_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -3631,7 +3742,9 @@ If the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>full_embed_dropout</code></td>
+            <td>
+                <code>full_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -3646,7 +3759,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>blocks_dims</code></td>
+            <td>
+                <code>blocks_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>
             </td>
@@ -3665,7 +3780,9 @@ details on the structure of each block.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>blocks_dropout</code></td>
+            <td>
+                <code>blocks_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -3679,7 +3796,9 @@ details on the structure of each block.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>simplify_blocks</code></td>
+            <td>
+                <code>simplify_blocks</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -3695,7 +3814,9 @@ details on the structure of each block.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                <code>mlp_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -3711,7 +3832,9 @@ connected directly to the output neuron(s).</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_activation</code></td>
+            <td>
+                <code>mlp_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -3728,7 +3851,9 @@ will default to <em>'relu'</em>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_dropout</code></td>
+            <td>
+                <code>mlp_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -3744,7 +3869,9 @@ will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm</code></td>
+            <td>
+                <code>mlp_batchnorm</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -3761,7 +3888,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm_last</code></td>
+            <td>
+                <code>mlp_batchnorm_last</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -3778,7 +3907,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_linear_first</code></td>
+            <td>
+                <code>mlp_linear_first</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -3849,6 +3980,11 @@ embeddings and the continuous columns -- if present --.</p>
 <span class="gp">... </span><span class="n">continuous_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_deep</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/resnet/tab_resnet.py</code></summary>
@@ -4476,7 +4612,9 @@ MLP(if present) and '<em>reconstruct</em>' the embeddings.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>embed_dim</code></td>
+            <td>
+                <code>embed_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -4490,7 +4628,9 @@ MLP(if present) and '<em>reconstruct</em>' the embeddings.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>blocks_dims</code></td>
+            <td>
+                <code>blocks_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>
             </td>
@@ -4509,7 +4649,9 @@ details on the structure of each block.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>blocks_dropout</code></td>
+            <td>
+                <code>blocks_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -4523,7 +4665,9 @@ details on the structure of each block.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>simplify_blocks</code></td>
+            <td>
+                <code>simplify_blocks</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -4539,7 +4683,9 @@ details on the structure of each block.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                <code>mlp_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -4555,7 +4701,9 @@ connected directly to the output neuron(s).</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_activation</code></td>
+            <td>
+                <code>mlp_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -4572,7 +4720,9 @@ will default to <em>'relu'</em>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_dropout</code></td>
+            <td>
+                <code>mlp_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -4588,7 +4738,9 @@ will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm</code></td>
+            <td>
+                <code>mlp_batchnorm</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -4605,7 +4757,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm_last</code></td>
+            <td>
+                <code>mlp_batchnorm_last</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -4622,7 +4776,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_linear_first</code></td>
+            <td>
+                <code>mlp_linear_first</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -4691,6 +4847,11 @@ deep dense Resnet.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">shape</span>
 <span class="go">torch.Size([3, 32])</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/resnet/tab_resnet.py</code></summary>
@@ -5041,7 +5202,9 @@ Therefore, <strong>ALL CREDIT TO THE DREAMQUARK-AI TEAM</strong>.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column_idx</code></td>
+            <td>
+                <code>column_idx</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
             </td>
@@ -5057,7 +5220,9 @@ the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'educati
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_input</code></td>
+            <td>
+                <code>cat_embed_input</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int, int]]]</code>
             </td>
@@ -5072,7 +5237,9 @@ embedding dimension. e.g. <em>[(education, 11, 32), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_dropout</code></td>
+            <td>
+                <code>cat_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -5087,7 +5254,9 @@ to 0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cat_bias</code></td>
+            <td>
+                <code>use_cat_bias</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -5102,7 +5271,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_activation</code></td>
+            <td>
+                <code>cat_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -5117,7 +5288,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -5131,7 +5304,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_norm_layer</code></td>
+            <td>
+                <code>cont_norm_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
             </td>
@@ -5147,7 +5322,9 @@ normalization layer will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous</code></td>
+            <td>
+                <code>embed_continuous</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -5166,7 +5343,9 @@ or <em>'piecewise'</em>. If <code>None</code>, it will default to 'False'.<br/>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous_method</code></td>
+            <td>
+                <code>embed_continuous_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[standard, piecewise, periodic]]</code>
             </td>
@@ -5187,7 +5366,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dim</code></td>
+            <td>
+                <code>cont_embed_dim</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -5202,7 +5383,9 @@ embedded, <code>cont_embed_dim</code> must be passed.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dropout</code></td>
+            <td>
+                <code>cont_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -5216,7 +5399,9 @@ embedded, <code>cont_embed_dim</code> must be passed.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_activation</code></td>
+            <td>
+                <code>cont_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -5232,7 +5417,9 @@ If <code>None</code>, no activation function will be applied.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -5250,7 +5437,9 @@ If the <em>'piecewise'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_frequencies</code></td>
+            <td>
+                <code>n_frequencies</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -5268,7 +5457,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>sigma</code></td>
+            <td>
+                <code>sigma</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -5285,7 +5476,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_last_layer</code></td>
+            <td>
+                <code>share_last_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -5304,7 +5497,9 @@ If the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>full_embed_dropout</code></td>
+            <td>
+                <code>full_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -5319,7 +5514,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_steps</code></td>
+            <td>
+                <code>n_steps</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -5335,7 +5532,9 @@ of <code>n_steps</code> and the upcoming parameters, please see the
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>step_dim</code></td>
+            <td>
+                <code>step_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -5350,7 +5549,9 @@ of <code>n_steps</code> and the upcoming parameters, please see the
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_dim</code></td>
+            <td>
+                <code>attn_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -5364,7 +5565,9 @@ of <code>n_steps</code> and the upcoming parameters, please see the
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>dropout</code></td>
+            <td>
+                <code>dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -5378,7 +5581,9 @@ of <code>n_steps</code> and the upcoming parameters, please see the
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_glu_step_dependent</code></td>
+            <td>
+                <code>n_glu_step_dependent</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -5392,7 +5597,9 @@ of <code>n_steps</code> and the upcoming parameters, please see the
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_glu_shared</code></td>
+            <td>
+                <code>n_glu_shared</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -5407,7 +5614,9 @@ across decision steps</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ghost_bn</code></td>
+            <td>
+                <code>ghost_bn</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -5422,7 +5631,9 @@ will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>virtual_batch_size</code></td>
+            <td>
+                <code>virtual_batch_size</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -5436,7 +5647,9 @@ will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>momentum</code></td>
+            <td>
+                <code>momentum</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -5452,7 +5665,9 @@ publication. During our tests higher values lead to better results</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>gamma</code></td>
+            <td>
+                <code>gamma</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -5469,7 +5684,9 @@ steps</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>epsilon</code></td>
+            <td>
+                <code>epsilon</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -5483,7 +5700,9 @@ steps</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mask_type</code></td>
+            <td>
+                <code>mask_type</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -5533,6 +5752,11 @@ steps</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">TabNet</span><span class="p">(</span><span class="n">column_idx</span><span class="o">=</span><span class="n">column_idx</span><span class="p">,</span> <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">cat_embed_input</span><span class="p">,</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;e&quot;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/tabnet/tab_net.py</code></summary>
@@ -6103,7 +6327,9 @@ embeddings.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>embed_dim</code></td>
+            <td>
+                <code>embed_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -6117,7 +6343,9 @@ embeddings.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_steps</code></td>
+            <td>
+                <code>n_steps</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -6133,7 +6361,9 @@ of <code>n_steps</code> and the upcoming parameters, please see the
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>step_dim</code></td>
+            <td>
+                <code>step_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -6148,7 +6378,9 @@ of <code>n_steps</code> and the upcoming parameters, please see the
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>dropout</code></td>
+            <td>
+                <code>dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -6162,7 +6394,9 @@ of <code>n_steps</code> and the upcoming parameters, please see the
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_glu_step_dependent</code></td>
+            <td>
+                <code>n_glu_step_dependent</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -6176,7 +6410,9 @@ of <code>n_steps</code> and the upcoming parameters, please see the
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_glu_shared</code></td>
+            <td>
+                <code>n_glu_shared</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -6191,7 +6427,9 @@ across decision steps</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ghost_bn</code></td>
+            <td>
+                <code>ghost_bn</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -6206,7 +6444,9 @@ will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>virtual_batch_size</code></td>
+            <td>
+                <code>virtual_batch_size</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -6220,7 +6460,9 @@ will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>momentum</code></td>
+            <td>
+                <code>momentum</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -6274,6 +6516,11 @@ reconstruct the embeddings</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">res</span><span class="o">.</span><span class="n">shape</span>
 <span class="go">torch.Size([3, 32])</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/tabnet/tab_net.py</code></summary>
@@ -6561,7 +6808,9 @@ categorical features only, continuous features only or both).</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column_idx</code></td>
+            <td>
+                <code>column_idx</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
             </td>
@@ -6577,7 +6826,9 @@ the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'educati
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_input</code></td>
+            <td>
+                <code>cat_embed_input</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int]]]</code>
             </td>
@@ -6592,7 +6843,9 @@ embedding dimension. e.g. <em>[(education, 11), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_dropout</code></td>
+            <td>
+                <code>cat_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -6607,7 +6860,9 @@ to 0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cat_bias</code></td>
+            <td>
+                <code>use_cat_bias</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -6622,7 +6877,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_activation</code></td>
+            <td>
+                <code>cat_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -6637,7 +6894,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>shared_embed</code></td>
+            <td>
+                <code>shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -6656,7 +6915,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>add_shared_embed</code></td>
+            <td>
+                <code>add_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -6674,7 +6935,9 @@ If 'None' is passed, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>frac_shared_embed</code></td>
+            <td>
+                <code>frac_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -6690,7 +6953,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -6704,7 +6969,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_norm_layer</code></td>
+            <td>
+                <code>cont_norm_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
             </td>
@@ -6720,7 +6987,9 @@ normalization layer will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous_method</code></td>
+            <td>
+                <code>embed_continuous_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[standard, piecewise, periodic]]</code>
             </td>
@@ -6741,7 +7010,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dropout</code></td>
+            <td>
+                <code>cont_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -6755,7 +7026,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_activation</code></td>
+            <td>
+                <code>cont_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -6771,7 +7044,9 @@ If <code>None</code>, no activation function will be applied.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -6789,7 +7064,9 @@ If the <em>'piecewise'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_frequencies</code></td>
+            <td>
+                <code>n_frequencies</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -6807,7 +7084,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>sigma</code></td>
+            <td>
+                <code>sigma</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -6824,7 +7103,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_last_layer</code></td>
+            <td>
+                <code>share_last_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -6843,7 +7124,9 @@ If the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>full_embed_dropout</code></td>
+            <td>
+                <code>full_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -6858,7 +7141,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>input_dim</code></td>
+            <td>
+                <code>input_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -6873,7 +7158,9 @@ used to encode the categorical and/or continuous columns</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_dropout</code></td>
+            <td>
+                <code>attn_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -6887,7 +7174,9 @@ used to encode the categorical and/or continuous columns</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>with_addnorm</code></td>
+            <td>
+                <code>with_addnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -6902,7 +7191,9 @@ attention blocks</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_activation</code></td>
+            <td>
+                <code>attn_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -6918,7 +7209,9 @@ and <em>'gelu'</em> are supported.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_blocks</code></td>
+            <td>
+                <code>n_blocks</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -6970,6 +7263,11 @@ and <em>'gelu'</em> are supported.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">ContextAttentionMLP</span><span class="p">(</span><span class="n">column_idx</span><span class="o">=</span><span class="n">column_idx</span><span class="p">,</span> <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">cat_embed_input</span><span class="p">,</span> <span class="n">continuous_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/context_attention_mlp.py</code></summary>
@@ -7570,7 +7868,9 @@ categorical features only, continuous features only or both).</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column_idx</code></td>
+            <td>
+                <code>column_idx</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
             </td>
@@ -7586,7 +7886,9 @@ the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'educati
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_input</code></td>
+            <td>
+                <code>cat_embed_input</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int]]]</code>
             </td>
@@ -7601,7 +7903,9 @@ embedding dimension. e.g. <em>[(education, 11), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_dropout</code></td>
+            <td>
+                <code>cat_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -7616,7 +7920,9 @@ to 0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cat_bias</code></td>
+            <td>
+                <code>use_cat_bias</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -7631,7 +7937,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_activation</code></td>
+            <td>
+                <code>cat_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -7646,7 +7954,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>shared_embed</code></td>
+            <td>
+                <code>shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -7665,7 +7975,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>add_shared_embed</code></td>
+            <td>
+                <code>add_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -7683,7 +7995,9 @@ If 'None' is passed, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>frac_shared_embed</code></td>
+            <td>
+                <code>frac_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -7699,7 +8013,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -7713,7 +8029,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_norm_layer</code></td>
+            <td>
+                <code>cont_norm_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
             </td>
@@ -7729,7 +8047,9 @@ normalization layer will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous_method</code></td>
+            <td>
+                <code>embed_continuous_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[standard, piecewise, periodic]]</code>
             </td>
@@ -7750,7 +8070,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dropout</code></td>
+            <td>
+                <code>cont_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -7764,7 +8086,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_activation</code></td>
+            <td>
+                <code>cont_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -7780,7 +8104,9 @@ If <code>None</code>, no activation function will be applied.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -7798,7 +8124,9 @@ If the <em>'piecewise'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_frequencies</code></td>
+            <td>
+                <code>n_frequencies</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -7816,7 +8144,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>sigma</code></td>
+            <td>
+                <code>sigma</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -7833,7 +8163,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_last_layer</code></td>
+            <td>
+                <code>share_last_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -7852,7 +8184,9 @@ If the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>full_embed_dropout</code></td>
+            <td>
+                <code>full_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -7867,7 +8201,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>input_dim</code></td>
+            <td>
+                <code>input_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -7882,7 +8218,9 @@ embeddings used to encode the categorical and/or continuous columns</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_dropout</code></td>
+            <td>
+                <code>attn_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -7896,7 +8234,9 @@ embeddings used to encode the categorical and/or continuous columns</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_heads</code></td>
+            <td>
+                <code>n_heads</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -7910,7 +8250,9 @@ embeddings used to encode the categorical and/or continuous columns</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_bias</code></td>
+            <td>
+                <code>use_bias</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -7925,7 +8267,9 @@ layers.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>with_addnorm</code></td>
+            <td>
+                <code>with_addnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -7939,7 +8283,9 @@ layers.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_activation</code></td>
+            <td>
+                <code>attn_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -7955,7 +8301,9 @@ and <em>'gelu'</em> are supported.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_blocks</code></td>
+            <td>
+                <code>n_blocks</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -8018,6 +8366,11 @@ and <em>'gelu'</em> are supported.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">SelfAttentionMLP</span><span class="p">(</span><span class="n">column_idx</span><span class="o">=</span><span class="n">column_idx</span><span class="p">,</span> <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">cat_embed_input</span><span class="p">,</span> <span class="n">continuous_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/mlp/self_attention_mlp.py</code></summary>
@@ -8659,7 +9012,9 @@ original publication(and some other models in the library)</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column_idx</code></td>
+            <td>
+                <code>column_idx</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
             </td>
@@ -8675,7 +9030,9 @@ the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'educati
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_input</code></td>
+            <td>
+                <code>cat_embed_input</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int]]]</code>
             </td>
@@ -8690,7 +9047,9 @@ embedding dimension. e.g. <em>[(education, 11), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_dropout</code></td>
+            <td>
+                <code>cat_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -8705,7 +9064,9 @@ to 0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cat_bias</code></td>
+            <td>
+                <code>use_cat_bias</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -8720,7 +9081,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_activation</code></td>
+            <td>
+                <code>cat_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -8735,7 +9098,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>shared_embed</code></td>
+            <td>
+                <code>shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -8754,7 +9119,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>add_shared_embed</code></td>
+            <td>
+                <code>add_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -8772,7 +9139,9 @@ If 'None' is passed, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>frac_shared_embed</code></td>
+            <td>
+                <code>frac_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -8788,7 +9157,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -8802,7 +9173,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_norm_layer</code></td>
+            <td>
+                <code>cont_norm_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
             </td>
@@ -8818,7 +9191,9 @@ normalization layer will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous_method</code></td>
+            <td>
+                <code>embed_continuous_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[standard, piecewise, periodic]]</code>
             </td>
@@ -8839,7 +9214,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dropout</code></td>
+            <td>
+                <code>cont_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -8853,7 +9230,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_activation</code></td>
+            <td>
+                <code>cont_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -8869,7 +9248,9 @@ If <code>None</code>, no activation function will be applied.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -8887,7 +9268,9 @@ If the <em>'piecewise'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_frequencies</code></td>
+            <td>
+                <code>n_frequencies</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -8905,7 +9288,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>sigma</code></td>
+            <td>
+                <code>sigma</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -8922,7 +9307,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_last_layer</code></td>
+            <td>
+                <code>share_last_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -8941,7 +9328,9 @@ If the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>full_embed_dropout</code></td>
+            <td>
+                <code>full_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -8956,7 +9345,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>input_dim</code></td>
+            <td>
+                <code>input_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -8971,7 +9362,9 @@ embeddings used to encode the categorical and/or continuous columns</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_heads</code></td>
+            <td>
+                <code>n_heads</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -8985,7 +9378,9 @@ embeddings used to encode the categorical and/or continuous columns</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_qkv_bias</code></td>
+            <td>
+                <code>use_qkv_bias</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -9000,7 +9395,9 @@ projection layers.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_blocks</code></td>
+            <td>
+                <code>n_blocks</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -9014,7 +9411,9 @@ projection layers.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_dropout</code></td>
+            <td>
+                <code>attn_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -9028,7 +9427,9 @@ projection layers.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ff_dropout</code></td>
+            <td>
+                <code>ff_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -9042,7 +9443,9 @@ projection layers.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ff_factor</code></td>
+            <td>
+                <code>ff_factor</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -9057,7 +9460,9 @@ each Transformer block, This is normally set to 4.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>transformer_activation</code></td>
+            <td>
+                <code>transformer_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -9072,7 +9477,9 @@ each Transformer block, This is normally set to 4.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_linear_attention</code></td>
+            <td>
+                <code>use_linear_attention</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -9091,7 +9498,9 @@ best results for their tabular data.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_flash_attention</code></td>
+            <td>
+                <code>use_flash_attention</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -9107,7 +9516,9 @@ will be used. <br/></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                <code>mlp_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -9123,7 +9534,9 @@ Transformer block will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_activation</code></td>
+            <td>
+                <code>mlp_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -9140,7 +9553,9 @@ will default to <em>'relu'</em>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_dropout</code></td>
+            <td>
+                <code>mlp_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -9156,7 +9571,9 @@ will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm</code></td>
+            <td>
+                <code>mlp_batchnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -9173,7 +9590,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm_last</code></td>
+            <td>
+                <code>mlp_batchnorm_last</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -9190,7 +9609,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_linear_first</code></td>
+            <td>
+                <code>mlp_linear_first</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -9258,6 +9679,11 @@ will default to <code>True</code>.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">TabTransformer</span><span class="p">(</span><span class="n">column_idx</span><span class="o">=</span><span class="n">column_idx</span><span class="p">,</span> <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">cat_embed_input</span><span class="p">,</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="n">continuous_cols</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_transformer.py</code></summary>
@@ -10219,7 +10645,9 @@ categorical features only, continuous features only or both).</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column_idx</code></td>
+            <td>
+                <code>column_idx</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
             </td>
@@ -10235,7 +10663,9 @@ the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'educati
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_input</code></td>
+            <td>
+                <code>cat_embed_input</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int]]]</code>
             </td>
@@ -10250,7 +10680,9 @@ embedding dimension. e.g. <em>[(education, 11), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_dropout</code></td>
+            <td>
+                <code>cat_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -10265,7 +10697,9 @@ to 0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cat_bias</code></td>
+            <td>
+                <code>use_cat_bias</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -10280,7 +10714,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_activation</code></td>
+            <td>
+                <code>cat_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -10295,7 +10731,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>shared_embed</code></td>
+            <td>
+                <code>shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -10314,7 +10752,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>add_shared_embed</code></td>
+            <td>
+                <code>add_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -10332,7 +10772,9 @@ If 'None' is passed, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>frac_shared_embed</code></td>
+            <td>
+                <code>frac_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -10348,7 +10790,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -10362,7 +10806,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_norm_layer</code></td>
+            <td>
+                <code>cont_norm_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
             </td>
@@ -10378,7 +10824,9 @@ normalization layer will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous_method</code></td>
+            <td>
+                <code>embed_continuous_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[standard, piecewise, periodic]]</code>
             </td>
@@ -10399,7 +10847,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dropout</code></td>
+            <td>
+                <code>cont_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -10413,7 +10863,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_activation</code></td>
+            <td>
+                <code>cont_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -10429,7 +10881,9 @@ If <code>None</code>, no activation function will be applied.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -10447,7 +10901,9 @@ If the <em>'piecewise'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_frequencies</code></td>
+            <td>
+                <code>n_frequencies</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -10465,7 +10921,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>sigma</code></td>
+            <td>
+                <code>sigma</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -10482,7 +10940,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_last_layer</code></td>
+            <td>
+                <code>share_last_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -10501,7 +10961,9 @@ If the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>full_embed_dropout</code></td>
+            <td>
+                <code>full_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -10516,7 +10978,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>input_dim</code></td>
+            <td>
+                <code>input_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -10531,7 +10995,9 @@ embeddings used to encode the categorical and/or continuous columns</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_heads</code></td>
+            <td>
+                <code>n_heads</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -10545,7 +11011,9 @@ embeddings used to encode the categorical and/or continuous columns</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_qkv_bias</code></td>
+            <td>
+                <code>use_qkv_bias</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -10560,7 +11028,9 @@ projection layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_blocks</code></td>
+            <td>
+                <code>n_blocks</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -10574,7 +11044,9 @@ projection layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_dropout</code></td>
+            <td>
+                <code>attn_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -10589,7 +11061,9 @@ row layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ff_dropout</code></td>
+            <td>
+                <code>ff_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -10603,7 +11077,9 @@ row layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ff_factor</code></td>
+            <td>
+                <code>ff_factor</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -10618,7 +11094,9 @@ each Transformer block, This is normally set to 4.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>transformer_activation</code></td>
+            <td>
+                <code>transformer_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -10633,7 +11111,9 @@ each Transformer block, This is normally set to 4.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                <code>mlp_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -10649,7 +11129,9 @@ Transformer block will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_activation</code></td>
+            <td>
+                <code>mlp_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -10666,7 +11148,9 @@ will default to <em>'relu'</em>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_dropout</code></td>
+            <td>
+                <code>mlp_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -10682,7 +11166,9 @@ will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm</code></td>
+            <td>
+                <code>mlp_batchnorm</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -10699,7 +11185,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm_last</code></td>
+            <td>
+                <code>mlp_batchnorm_last</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -10716,7 +11204,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_linear_first</code></td>
+            <td>
+                <code>mlp_linear_first</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -10784,6 +11274,11 @@ will default to <code>True</code>.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">SAINT</span><span class="p">(</span><span class="n">column_idx</span><span class="o">=</span><span class="n">column_idx</span><span class="p">,</span> <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">cat_embed_input</span><span class="p">,</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="n">continuous_cols</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/saint.py</code></summary>
@@ -11571,7 +12066,9 @@ categorical features only, continuous features only or both).</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column_idx</code></td>
+            <td>
+                <code>column_idx</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
             </td>
@@ -11587,7 +12084,9 @@ the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'educati
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_input</code></td>
+            <td>
+                <code>cat_embed_input</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int]]]</code>
             </td>
@@ -11602,7 +12101,9 @@ embedding dimension. e.g. <em>[(education, 11), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_dropout</code></td>
+            <td>
+                <code>cat_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -11617,7 +12118,9 @@ to 0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cat_bias</code></td>
+            <td>
+                <code>use_cat_bias</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -11632,7 +12135,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_activation</code></td>
+            <td>
+                <code>cat_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -11647,7 +12152,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>shared_embed</code></td>
+            <td>
+                <code>shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -11666,7 +12173,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>add_shared_embed</code></td>
+            <td>
+                <code>add_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -11684,7 +12193,9 @@ If 'None' is passed, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>frac_shared_embed</code></td>
+            <td>
+                <code>frac_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -11700,7 +12211,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -11714,7 +12227,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_norm_layer</code></td>
+            <td>
+                <code>cont_norm_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
             </td>
@@ -11730,7 +12245,9 @@ normalization layer will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous_method</code></td>
+            <td>
+                <code>embed_continuous_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[standard, piecewise, periodic]]</code>
             </td>
@@ -11751,7 +12268,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dropout</code></td>
+            <td>
+                <code>cont_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -11765,7 +12284,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_activation</code></td>
+            <td>
+                <code>cont_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -11781,7 +12302,9 @@ If <code>None</code>, no activation function will be applied.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -11799,7 +12322,9 @@ If the <em>'piecewise'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_frequencies</code></td>
+            <td>
+                <code>n_frequencies</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -11817,7 +12342,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>sigma</code></td>
+            <td>
+                <code>sigma</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -11834,7 +12361,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_last_layer</code></td>
+            <td>
+                <code>share_last_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -11853,7 +12382,9 @@ If the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>full_embed_dropout</code></td>
+            <td>
+                <code>full_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -11868,7 +12399,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>input_dim</code></td>
+            <td>
+                <code>input_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -11883,7 +12416,9 @@ the categorical and/or continuous columns.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>kv_compression_factor</code></td>
+            <td>
+                <code>kv_compression_factor</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -11902,7 +12437,9 @@ where <span class="arithmatex">\(s\)</span> is the input sequence length.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>kv_sharing</code></td>
+            <td>
+                <code>kv_sharing</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -11918,7 +12455,9 @@ Complexity</a> for details</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_heads</code></td>
+            <td>
+                <code>n_heads</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -11932,7 +12471,9 @@ Complexity</a> for details</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_qkv_bias</code></td>
+            <td>
+                <code>use_qkv_bias</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -11947,7 +12488,9 @@ projection layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_blocks</code></td>
+            <td>
+                <code>n_blocks</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -11961,7 +12504,9 @@ projection layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_dropout</code></td>
+            <td>
+                <code>attn_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -11975,7 +12520,9 @@ projection layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ff_dropout</code></td>
+            <td>
+                <code>ff_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -11989,7 +12536,9 @@ projection layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ff_factor</code></td>
+            <td>
+                <code>ff_factor</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -12005,7 +12554,9 @@ in the paper.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>transformer_activation</code></td>
+            <td>
+                <code>transformer_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -12020,7 +12571,9 @@ in the paper.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                <code>mlp_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -12036,7 +12589,9 @@ FTTransformer block will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_activation</code></td>
+            <td>
+                <code>mlp_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -12053,7 +12608,9 @@ will default to <em>'relu'</em>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_dropout</code></td>
+            <td>
+                <code>mlp_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -12069,7 +12626,9 @@ will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm</code></td>
+            <td>
+                <code>mlp_batchnorm</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -12086,7 +12645,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm_last</code></td>
+            <td>
+                <code>mlp_batchnorm_last</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -12103,7 +12664,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_linear_first</code></td>
+            <td>
+                <code>mlp_linear_first</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -12171,6 +12734,11 @@ will default to <code>True</code>.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">FTTransformer</span><span class="p">(</span><span class="n">column_idx</span><span class="o">=</span><span class="n">column_idx</span><span class="p">,</span> <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">cat_embed_input</span><span class="p">,</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="n">continuous_cols</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/ft_transformer.py</code></summary>
@@ -12966,7 +13534,9 @@ categorical features only, continuous features only or both).</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column_idx</code></td>
+            <td>
+                <code>column_idx</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
             </td>
@@ -12982,7 +13552,9 @@ the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'educati
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_input</code></td>
+            <td>
+                <code>cat_embed_input</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int]]]</code>
             </td>
@@ -12997,7 +13569,9 @@ embedding dimension. e.g. <em>[(education, 11), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_dropout</code></td>
+            <td>
+                <code>cat_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -13012,7 +13586,9 @@ to 0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cat_bias</code></td>
+            <td>
+                <code>use_cat_bias</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -13027,7 +13603,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_activation</code></td>
+            <td>
+                <code>cat_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -13042,7 +13620,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>shared_embed</code></td>
+            <td>
+                <code>shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -13061,7 +13641,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>add_shared_embed</code></td>
+            <td>
+                <code>add_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -13079,7 +13661,9 @@ If 'None' is passed, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>frac_shared_embed</code></td>
+            <td>
+                <code>frac_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -13095,7 +13679,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -13109,7 +13695,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_norm_layer</code></td>
+            <td>
+                <code>cont_norm_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
             </td>
@@ -13125,7 +13713,9 @@ normalization layer will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous_method</code></td>
+            <td>
+                <code>embed_continuous_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[standard, piecewise, periodic]]</code>
             </td>
@@ -13146,7 +13736,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dropout</code></td>
+            <td>
+                <code>cont_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -13160,7 +13752,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_activation</code></td>
+            <td>
+                <code>cont_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -13176,7 +13770,9 @@ If <code>None</code>, no activation function will be applied.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -13194,7 +13790,9 @@ If the <em>'piecewise'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_frequencies</code></td>
+            <td>
+                <code>n_frequencies</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -13212,7 +13810,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>sigma</code></td>
+            <td>
+                <code>sigma</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -13229,7 +13829,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_last_layer</code></td>
+            <td>
+                <code>share_last_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -13248,7 +13850,9 @@ If the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>full_embed_dropout</code></td>
+            <td>
+                <code>full_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -13263,7 +13867,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>input_dim</code></td>
+            <td>
+                <code>input_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -13278,7 +13884,9 @@ used to encode the categorical and/or continuous columns.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_cross_attns</code></td>
+            <td>
+                <code>n_cross_attns</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -13298,7 +13906,9 @@ cases for tabular data <img alt="🤷" class="emojione" src="https://cdnjs.cloud
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_cross_attn_heads</code></td>
+            <td>
+                <code>n_cross_attn_heads</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -13312,7 +13922,9 @@ cases for tabular data <img alt="🤷" class="emojione" src="https://cdnjs.cloud
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_latents</code></td>
+            <td>
+                <code>n_latents</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -13330,7 +13942,9 @@ the transformer quadratic bottleneck</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>latent_dim</code></td>
+            <td>
+                <code>latent_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -13344,7 +13958,9 @@ the transformer quadratic bottleneck</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_latent_heads</code></td>
+            <td>
+                <code>n_latent_heads</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -13358,7 +13974,9 @@ the transformer quadratic bottleneck</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_latent_blocks</code></td>
+            <td>
+                <code>n_latent_blocks</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -13373,7 +13991,9 @@ per Latent Transformer</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_perceiver_blocks</code></td>
+            <td>
+                <code>n_perceiver_blocks</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -13388,7 +14008,9 @@ Transformer]</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_weights</code></td>
+            <td>
+                <code>share_weights</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -13403,7 +14025,9 @@ blocks</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_dropout</code></td>
+            <td>
+                <code>attn_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -13417,7 +14041,9 @@ blocks</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ff_dropout</code></td>
+            <td>
+                <code>ff_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -13431,7 +14057,9 @@ blocks</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ff_factor</code></td>
+            <td>
+                <code>ff_factor</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -13446,7 +14074,9 @@ each Transformer block, This is normally set to 4.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>transformer_activation</code></td>
+            <td>
+                <code>transformer_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -13461,7 +14091,9 @@ each Transformer block, This is normally set to 4.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                <code>mlp_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -13477,7 +14109,9 @@ Transformer block will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_activation</code></td>
+            <td>
+                <code>mlp_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -13494,7 +14128,9 @@ will default to <em>'relu'</em>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_dropout</code></td>
+            <td>
+                <code>mlp_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -13510,7 +14146,9 @@ will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm</code></td>
+            <td>
+                <code>mlp_batchnorm</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -13527,7 +14165,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm_last</code></td>
+            <td>
+                <code>mlp_batchnorm_last</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -13544,7 +14184,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_linear_first</code></td>
+            <td>
+                <code>mlp_linear_first</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -13625,6 +14267,11 @@ will default to <code>True</code>.</p>
 <span class="gp">... </span><span class="n">n_perceiver_blocks</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_perceiver.py</code></summary>
@@ -14624,7 +15271,9 @@ categorical features only, continuous features only or both).</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>column_idx</code></td>
+            <td>
+                <code>column_idx</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, int]</code>
             </td>
@@ -14640,7 +15289,9 @@ the <code>TabMlp</code> model. Required to slice the tensors. e.g. <em>{'educati
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_input</code></td>
+            <td>
+                <code>cat_embed_input</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Tuple">Tuple</span>[str, int]]]</code>
             </td>
@@ -14655,7 +15306,9 @@ embedding dimension. e.g. <em>[(education, 11), ...]</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_dropout</code></td>
+            <td>
+                <code>cat_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -14670,7 +15323,9 @@ to 0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cat_bias</code></td>
+            <td>
+                <code>use_cat_bias</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -14685,7 +15340,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cat_embed_activation</code></td>
+            <td>
+                <code>cat_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -14700,7 +15357,9 @@ If <code>None</code>, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>shared_embed</code></td>
+            <td>
+                <code>shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -14719,7 +15378,9 @@ column is embedded at the time. See: <code>pytorch_widedeep.models.transformers.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>add_shared_embed</code></td>
+            <td>
+                <code>add_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -14737,7 +15398,9 @@ If 'None' is passed, it will default to 'False'.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>frac_shared_embed</code></td>
+            <td>
+                <code>frac_shared_embed</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -14753,7 +15416,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>continuous_cols</code></td>
+            <td>
+                <code>continuous_cols</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -14767,7 +15432,9 @@ column. If 'None' is passed, it will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_norm_layer</code></td>
+            <td>
+                <code>cont_norm_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[batchnorm, layernorm]]</code>
             </td>
@@ -14783,7 +15450,9 @@ normalization layer will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_continuous_method</code></td>
+            <td>
+                <code>embed_continuous_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[standard, piecewise, periodic]]</code>
             </td>
@@ -14804,7 +15473,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_dropout</code></td>
+            <td>
+                <code>cont_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -14818,7 +15489,9 @@ Please, read the papers for details.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>cont_embed_activation</code></td>
+            <td>
+                <code>cont_embed_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -14834,7 +15507,9 @@ If <code>None</code>, no activation function will be applied.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>quantization_setup</code></td>
+            <td>
+                <code>quantization_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]]</code>
             </td>
@@ -14852,7 +15527,9 @@ If the <em>'piecewise'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_frequencies</code></td>
+            <td>
+                <code>n_frequencies</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -14870,7 +15547,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>sigma</code></td>
+            <td>
+                <code>sigma</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -14887,7 +15566,9 @@ the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_last_layer</code></td>
+            <td>
+                <code>share_last_layer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -14906,7 +15587,9 @@ If the <em>'periodic'</em> method is used, this parameter is required.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>full_embed_dropout</code></td>
+            <td>
+                <code>full_embed_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -14921,7 +15604,9 @@ out/dropout. If <code>None</code>, it will default to <code>False</code>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>input_dim</code></td>
+            <td>
+                <code>input_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -14936,7 +15621,9 @@ embeddings used to encode the categorical and/or continuous columns</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_heads</code></td>
+            <td>
+                <code>n_heads</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -14950,7 +15637,9 @@ embeddings used to encode the categorical and/or continuous columns</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_bias</code></td>
+            <td>
+                <code>use_bias</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -14965,7 +15654,9 @@ projection layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_blocks</code></td>
+            <td>
+                <code>n_blocks</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -14979,7 +15670,9 @@ projection layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_dropout</code></td>
+            <td>
+                <code>attn_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -14993,7 +15686,9 @@ projection layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ff_dropout</code></td>
+            <td>
+                <code>ff_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -15007,7 +15702,9 @@ projection layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>ff_factor</code></td>
+            <td>
+                <code>ff_factor</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -15022,7 +15719,9 @@ each Transformer block, This is normally set to 4.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_qv_weights</code></td>
+            <td>
+                <code>share_qv_weights</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -15037,7 +15736,9 @@ the Query (<span class="arithmatex">\(Q\)</span>) transformation parameters will
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>share_weights</code></td>
+            <td>
+                <code>share_weights</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -15055,7 +15756,9 @@ details</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>transformer_activation</code></td>
+            <td>
+                <code>transformer_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -15070,7 +15773,9 @@ details</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                <code>mlp_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -15085,7 +15790,9 @@ FTTransformer block will be used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_hidden_dims</code></td>
+            <td>
+                <code>mlp_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -15101,7 +15808,9 @@ Transformer block will be used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_activation</code></td>
+            <td>
+                <code>mlp_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -15118,7 +15827,9 @@ will default to <em>'relu'</em>.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_dropout</code></td>
+            <td>
+                <code>mlp_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -15134,7 +15845,9 @@ will default to 0.0.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm</code></td>
+            <td>
+                <code>mlp_batchnorm</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -15151,7 +15864,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_batchnorm_last</code></td>
+            <td>
+                <code>mlp_batchnorm_last</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -15168,7 +15883,9 @@ will default to False.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mlp_linear_first</code></td>
+            <td>
+                <code>mlp_linear_first</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -15236,6 +15953,11 @@ will default to <code>True</code>.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">TabFastFormer</span><span class="p">(</span><span class="n">column_idx</span><span class="o">=</span><span class="n">column_idx</span><span class="p">,</span> <span class="n">cat_embed_input</span><span class="o">=</span><span class="n">cat_embed_input</span><span class="p">,</span> <span class="n">continuous_cols</span><span class="o">=</span><span class="n">continuous_cols</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_tab</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/tabular/transformers/tab_fastformer.py</code></summary>
@@ -16070,7 +16792,9 @@ dense layers on top of the stack of RNNs</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>vocab_size</code></td>
+            <td>
+                <code>vocab_size</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -16084,7 +16808,9 @@ dense layers on top of the stack of RNNs</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_dim</code></td>
+            <td>
+                <code>embed_dim</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -16099,7 +16825,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_matrix</code></td>
+            <td>
+                <code>embed_matrix</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>
             </td>
@@ -16113,7 +16841,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_trainable</code></td>
+            <td>
+                <code>embed_trainable</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -16127,7 +16857,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>rnn_type</code></td>
+            <td>
+                <code>rnn_type</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[lstm, gru]</code>
             </td>
@@ -16141,7 +16873,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>hidden_dim</code></td>
+            <td>
+                <code>hidden_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -16155,7 +16889,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_layers</code></td>
+            <td>
+                <code>n_layers</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -16169,7 +16905,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>rnn_dropout</code></td>
+            <td>
+                <code>rnn_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -16183,7 +16921,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>bidirectional</code></td>
+            <td>
+                <code>bidirectional</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -16197,7 +16937,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_hidden_state</code></td>
+            <td>
+                <code>use_hidden_state</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -16212,7 +16954,9 @@ output as predicting features. Typically the former is used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>padding_idx</code></td>
+            <td>
+                <code>padding_idx</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -16229,7 +16973,9 @@ Therefore, the default value is set to 1.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_hidden_dims</code></td>
+            <td>
+                <code>head_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -16243,7 +16989,9 @@ Therefore, the default value is set to 1.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_activation</code></td>
+            <td>
+                <code>head_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -16258,7 +17006,9 @@ Therefore, the default value is set to 1.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_dropout</code></td>
+            <td>
+                <code>head_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -16272,7 +17022,9 @@ Therefore, the default value is set to 1.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm</code></td>
+            <td>
+                <code>head_batchnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -16287,7 +17039,9 @@ the dense layers that form the <em>'rnn_mlp'</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm_last</code></td>
+            <td>
+                <code>head_batchnorm_last</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -16302,7 +17056,9 @@ last of the dense layers in the head</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_linear_first</code></td>
+            <td>
+                <code>head_linear_first</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -16376,6 +17132,11 @@ LIN -&gt; ACT]</code></p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">BasicRNN</span><span class="p">(</span><span class="n">vocab_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_text</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/text/rnns/basic_rnn.py</code></summary>
@@ -16967,7 +17728,9 @@ layers on top of attention layer</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>vocab_size</code></td>
+            <td>
+                <code>vocab_size</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -16981,7 +17744,9 @@ layers on top of attention layer</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_dim</code></td>
+            <td>
+                <code>embed_dim</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -16996,7 +17761,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_matrix</code></td>
+            <td>
+                <code>embed_matrix</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>
             </td>
@@ -17010,7 +17777,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_trainable</code></td>
+            <td>
+                <code>embed_trainable</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17024,7 +17793,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>rnn_type</code></td>
+            <td>
+                <code>rnn_type</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[lstm, gru]</code>
             </td>
@@ -17038,7 +17809,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>hidden_dim</code></td>
+            <td>
+                <code>hidden_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -17052,7 +17825,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_layers</code></td>
+            <td>
+                <code>n_layers</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -17066,7 +17841,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>rnn_dropout</code></td>
+            <td>
+                <code>rnn_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -17080,7 +17857,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>bidirectional</code></td>
+            <td>
+                <code>bidirectional</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17094,7 +17873,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_hidden_state</code></td>
+            <td>
+                <code>use_hidden_state</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17109,7 +17890,9 @@ output as predicting features. Typically the former is used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>padding_idx</code></td>
+            <td>
+                <code>padding_idx</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -17126,7 +17909,9 @@ word token. Therefore, the default value is set to 1.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_concatenate</code></td>
+            <td>
+                <code>attn_concatenate</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17142,7 +17927,9 @@ hidden state.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_dropout</code></td>
+            <td>
+                <code>attn_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -17156,7 +17943,9 @@ hidden state.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_hidden_dims</code></td>
+            <td>
+                <code>head_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -17170,7 +17959,9 @@ hidden state.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_activation</code></td>
+            <td>
+                <code>head_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -17185,7 +17976,9 @@ hidden state.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_dropout</code></td>
+            <td>
+                <code>head_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -17199,7 +17992,9 @@ hidden state.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm</code></td>
+            <td>
+                <code>head_batchnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17214,7 +18009,9 @@ the dense layers that form the <em>'rnn_mlp'</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm_last</code></td>
+            <td>
+                <code>head_batchnorm_last</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17229,7 +18026,9 @@ last of the dense layers in the head</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_linear_first</code></td>
+            <td>
+                <code>head_linear_first</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17303,6 +18102,11 @@ LIN -&gt; ACT]</code></p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">AttentiveRNN</span><span class="p">(</span><span class="n">vocab_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_text</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/text/rnns/attentive_rnn.py</code></summary>
@@ -17738,7 +18542,9 @@ dense layers on top of the attentiob blocks</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>vocab_size</code></td>
+            <td>
+                <code>vocab_size</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -17752,7 +18558,9 @@ dense layers on top of the attentiob blocks</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_dim</code></td>
+            <td>
+                <code>embed_dim</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -17767,7 +18575,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_matrix</code></td>
+            <td>
+                <code>embed_matrix</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>
             </td>
@@ -17781,7 +18591,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>embed_trainable</code></td>
+            <td>
+                <code>embed_trainable</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17795,7 +18607,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>rnn_type</code></td>
+            <td>
+                <code>rnn_type</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[lstm, gru]</code>
             </td>
@@ -17809,7 +18623,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>hidden_dim</code></td>
+            <td>
+                <code>hidden_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -17823,7 +18639,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>bidirectional</code></td>
+            <td>
+                <code>bidirectional</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17837,7 +18655,9 @@ used</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>padding_idx</code></td>
+            <td>
+                <code>padding_idx</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -17854,7 +18674,9 @@ word token. Therefore, the default value is set to 1.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_blocks</code></td>
+            <td>
+                <code>n_blocks</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -17869,7 +18691,9 @@ Context Attention Encoder</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_concatenate</code></td>
+            <td>
+                <code>attn_concatenate</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17885,7 +18709,9 @@ hidden state or simply</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>attn_dropout</code></td>
+            <td>
+                <code>attn_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -17899,7 +18725,9 @@ hidden state or simply</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>with_addnorm</code></td>
+            <td>
+                <code>with_addnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17914,7 +18742,9 @@ input and normalised</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_hidden_dims</code></td>
+            <td>
+                <code>head_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -17928,7 +18758,9 @@ input and normalised</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_activation</code></td>
+            <td>
+                <code>head_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -17943,7 +18775,9 @@ input and normalised</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_dropout</code></td>
+            <td>
+                <code>head_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -17957,7 +18791,9 @@ input and normalised</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm</code></td>
+            <td>
+                <code>head_batchnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17972,7 +18808,9 @@ the dense layers that form the <em>'rnn_mlp'</em></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm_last</code></td>
+            <td>
+                <code>head_batchnorm_last</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -17987,7 +18825,9 @@ last of the dense layers in the head</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_linear_first</code></td>
+            <td>
+                <code>head_linear_first</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -18061,6 +18901,11 @@ LIN -&gt; ACT]</code></p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">StackedAttentiveRNN</span><span class="p">(</span><span class="n">vocab_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">padding_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_text</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/text/rnns/stacked_attentive_rnn.py</code></summary>
@@ -18715,7 +19560,9 @@ work best for these tasks.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>model_name</code></td>
+            <td>
+                <code>model_name</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -18731,7 +19578,9 @@ DistilBERT, ALBERT and ELECTRA.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>use_cls_token</code></td>
+            <td>
+                <code>use_cls_token</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -18746,7 +19595,9 @@ sequence of hidden states as the sentence embedding</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>trainable_parameters</code></td>
+            <td>
+                <code>trainable_parameters</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -18761,7 +19612,9 @@ None, none of the parameters will be trainable</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_hidden_dims</code></td>
+            <td>
+                <code>head_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -18775,7 +19628,9 @@ None, none of the parameters will be trainable</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_activation</code></td>
+            <td>
+                <code>head_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -18790,7 +19645,9 @@ None, none of the parameters will be trainable</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_dropout</code></td>
+            <td>
+                <code>head_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -18804,7 +19661,9 @@ None, none of the parameters will be trainable</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm</code></td>
+            <td>
+                <code>head_batchnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -18819,7 +19678,9 @@ dense layers that form the head</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm_last</code></td>
+            <td>
+                <code>head_batchnorm_last</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -18834,7 +19695,9 @@ last of the dense layers in the head</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_linear_first</code></td>
+            <td>
+                <code>head_linear_first</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -18850,7 +19713,9 @@ LIN -&gt; ACT]</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -18864,7 +19729,9 @@ LIN -&gt; ACT]</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>**kwargs</code></td>
+            <td>
+                <code>**kwargs</code>
+            </td>
             <td>
             </td>
             <td>
@@ -18913,6 +19780,11 @@ if <code>head_layers_dim</code> is not None</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">HFModel</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;bert-base-uncased&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_text</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/text/huggingface_transformers/hf_model.py</code></summary>
@@ -19349,7 +20221,9 @@ itself.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>pretrained_model_setup</code></td>
+            <td>
+                <code>pretrained_model_setup</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[str, <span title="pytorch_widedeep.wdtypes.Dict">Dict</span>[str, <span title="pytorch_widedeep.wdtypes.Union">Union</span>[str, <span title="pytorch_widedeep.wdtypes.WeightsEnum">WeightsEnum</span>]]]</code>
             </td>
@@ -19372,7 +20246,9 @@ also be dictionary with the name of the model and the weights (e.g.
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_trainable</code></td>
+            <td>
+                <code>n_trainable</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[int]</code>
             </td>
@@ -19389,7 +20265,9 @@ the so-called <em>'head'</em> which is ALWAYS trainable. If
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>trainable_params</code></td>
+            <td>
+                <code>trainable_params</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[str]]</code>
             </td>
@@ -19409,7 +20287,9 @@ the architecture used.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>channel_sizes</code></td>
+            <td>
+                <code>channel_sizes</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.List">List</span>[int]</code>
             </td>
@@ -19424,7 +20304,9 @@ to use a pretrained model</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>kernel_sizes</code></td>
+            <td>
+                <code>kernel_sizes</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[int, <span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -19439,7 +20321,9 @@ to use a pretrained model. Must be of length equal to <code>len(channel_sizes) -
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>strides</code></td>
+            <td>
+                <code>strides</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[int, <span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -19454,7 +20338,9 @@ to use a pretrained model. Must be of length equal to <code>len(channel_sizes) -
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_hidden_dims</code></td>
+            <td>
+                <code>head_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -19468,7 +20354,9 @@ to use a pretrained model. Must be of length equal to <code>len(channel_sizes) -
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_activation</code></td>
+            <td>
+                <code>head_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -19483,7 +20371,9 @@ to use a pretrained model. Must be of length equal to <code>len(channel_sizes) -
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_dropout</code></td>
+            <td>
+                <code>head_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[float, <span title="pytorch_widedeep.wdtypes.List">List</span>[float]]</code>
             </td>
@@ -19497,7 +20387,9 @@ to use a pretrained model. Must be of length equal to <code>len(channel_sizes) -
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm</code></td>
+            <td>
+                <code>head_batchnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -19512,7 +20404,9 @@ to the dense layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm_last</code></td>
+            <td>
+                <code>head_batchnorm_last</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -19527,7 +20421,9 @@ to the last of the dense layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_linear_first</code></td>
+            <td>
+                <code>head_linear_first</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -19578,6 +20474,11 @@ LIN -&gt; ACT]</code></p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">Vision</span><span class="p">(</span><span class="n">channel_sizes</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">kernel_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">strides</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">head_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">X_img</span><span class="p">)</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/image/vision.py</code></summary>
@@ -20208,7 +21109,9 @@ to 'fuse' the models using a variety of methods.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>models</code></td>
+            <td>
+                <code>models</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]</code>
             </td>
@@ -20222,7 +21125,9 @@ to 'fuse' the models using a variety of methods.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>fusion_method</code></td>
+            <td>
+                <code>fusion_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[concatenate, mean, max, sum, mult, dot, <span title="pytorch_widedeep.models.model_fusion.ModelFuser.head">head</span>], <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[concatenate, mean, max, sum, mult, <span title="pytorch_widedeep.models.model_fusion.ModelFuser.head">head</span>]]]</code>
             </td>
@@ -20240,7 +21145,9 @@ output will be the concatenation of the outputs of each method</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>projection_method</code></td>
+            <td>
+                <code>projection_method</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Literal">Literal</span>[min, max, mean]]</code>
             </td>
@@ -20256,7 +21163,9 @@ dimension. It can be one of ['min', 'max', 'mean']. Default is None</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>custom_head</code></td>
+            <td>
+                <code>custom_head</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>, <span title="torch.nn.Module">Module</span>]]</code>
             </td>
@@ -20272,7 +21181,9 @@ provided, 'projection_method' will be ignored.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_hidden_dims</code></td>
+            <td>
+                <code>head_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -20287,7 +21198,9 @@ custom_head is provided, this parameter will be ignored</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_activation</code></td>
+            <td>
+                <code>head_activation</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -20301,7 +21214,9 @@ custom_head is provided, this parameter will be ignored</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_dropout</code></td>
+            <td>
+                <code>head_dropout</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -20315,7 +21230,9 @@ custom_head is provided, this parameter will be ignored</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm</code></td>
+            <td>
+                <code>head_batchnorm</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -20329,7 +21246,9 @@ custom_head is provided, this parameter will be ignored</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm_last</code></td>
+            <td>
+                <code>head_batchnorm_last</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -20344,7 +21263,9 @@ dense layers</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_linear_first</code></td>
+            <td>
+                <code>head_linear_first</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[bool]</code>
             </td>
@@ -20431,6 +21352,11 @@ head_hidden_dims</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fused_model</span> <span class="o">=</span> <span class="n">ModelFuser</span><span class="p">(</span><span class="n">models</span><span class="o">=</span><span class="p">[</span><span class="n">rnn1</span><span class="p">,</span> <span class="n">rnn2</span><span class="p">],</span> <span class="n">fusion_method</span><span class="o">=</span><span class="s1">&#39;concatenate&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">fused_model</span><span class="p">([</span><span class="n">X_text1_tnsr</span><span class="p">,</span> <span class="n">X_text2_tnsr</span><span class="p">])</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/model_fusion.py</code></summary>
@@ -21256,7 +22182,9 @@ two main architectures that <code>pytorch-widedeep</code> can build.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>wide</code></td>
+            <td>
+                <code>wide</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="torch.nn.Module">Module</span>]</code>
             </td>
@@ -21271,7 +22199,9 @@ captured via crossed-columns.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>deeptabular</code></td>
+            <td>
+                <code>deeptabular</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>, <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]]]</code>
             </td>
@@ -21289,7 +22219,9 @@ context of a two-tower model for recommendation systems)</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>deeptext</code></td>
+            <td>
+                <code>deeptext</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>, <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]]]</code>
             </td>
@@ -21306,7 +22238,9 @@ when using multiple text inputs.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>deepimage</code></td>
+            <td>
+                <code>deepimage</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>, <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]]]</code>
             </td>
@@ -21323,7 +22257,9 @@ models. This is useful when using multiple image inputs.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>deephead</code></td>
+            <td>
+                <code>deephead</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.models._base_wd_model_component.BaseWDModelComponent">BaseWDModelComponent</span>]</code>
             </td>
@@ -21339,7 +22275,9 @@ previous fc-head parameters will be ignored</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_hidden_dims</code></td>
+            <td>
+                <code>head_hidden_dims</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[int]]</code>
             </td>
@@ -21353,7 +22291,9 @@ previous fc-head parameters will be ignored</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_activation</code></td>
+            <td>
+                <code>head_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -21368,7 +22308,9 @@ previous fc-head parameters will be ignored</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_dropout</code></td>
+            <td>
+                <code>head_dropout</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -21382,7 +22324,9 @@ previous fc-head parameters will be ignored</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm</code></td>
+            <td>
+                <code>head_batchnorm</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -21397,7 +22341,9 @@ the dense layers that form the <code>'rnn_mlp'</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_batchnorm_last</code></td>
+            <td>
+                <code>head_batchnorm_last</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -21412,7 +22358,9 @@ last of the dense layers in the head</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>head_linear_first</code></td>
+            <td>
+                <code>head_linear_first</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -21428,7 +22376,9 @@ LIN -&gt; ACT]</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>enforce_positive</code></td>
+            <td>
+                <code>enforce_positive</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -21445,7 +22395,9 @@ predictions are bounded in between 0 and inf</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>enforce_positive_activation</code></td>
+            <td>
+                <code>enforce_positive_activation</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -21460,7 +22412,9 @@ output. <code>'softplus'</code> or <code>'relu'</code> are supported.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>pred_dim</code></td>
+            <td>
+                <code>pred_dim</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -21497,6 +22451,11 @@ of classes for multiclass classification.</p>
  addition, the models MUST also contain an attribute <code>output_dim</code> with
  the size of these last layers of activations. See for example
  <code>pytorch_widedeep.models.tab_mlp.TabMlp</code></p>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/models/wide_deep.py</code></summary>
@@ -22700,7 +23659,7 @@ of classes for multiclass classification.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       

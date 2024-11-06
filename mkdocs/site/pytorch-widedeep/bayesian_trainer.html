@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.43">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1630,7 +1630,9 @@ training process.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>model</code></td>
+            <td>
+                <code>model</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.bayesian_models._base_bayesian_model.BaseBayesianModel">BaseBayesianModel</span></code>
             </td>
@@ -1645,7 +1647,9 @@ section here in the docs.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>objective</code></td>
+            <td>
+                <code>objective</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -1662,7 +1666,9 @@ Possible values are: <em>'binary'</em>, <em>'multiclass'</em>, <em>'regression'<
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>custom_loss_function</code></td>
+            <td>
+                <code>custom_loss_function</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Module">Module</span>]</code>
             </td>
@@ -1679,7 +1685,9 @@ object or the Examples folder in the repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>optimizer</code></td>
+            <td>
+                <code>optimizer</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Optimizer">Optimizer</span>]</code>
             </td>
@@ -1694,7 +1702,9 @@ object or the Examples folder in the repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>lr_scheduler</code></td>
+            <td>
+                <code>lr_scheduler</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.LRScheduler">LRScheduler</span>]</code>
             </td>
@@ -1709,7 +1719,9 @@ object or the Examples folder in the repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>callbacks</code></td>
+            <td>
+                <code>callbacks</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.callbacks.Callback">Callback</span>]]</code>
             </td>
@@ -1727,7 +1739,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>metrics</code></td>
+            <td>
+                <code>metrics</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="pytorch_widedeep.wdtypes.Union">Union</span>[<span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="pytorch_widedeep.metrics.Metric">Metric</span>], <span title="pytorch_widedeep.wdtypes.List">List</span>[<span title="torchmetrics.Metric">Metric</span>]]]</code>
             </td>
@@ -1752,7 +1766,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -1766,7 +1782,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>seed</code></td>
+            <td>
+                <code>seed</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -1854,6 +1872,11 @@ repo.</p>
           </tr>
       </tbody>
     </table>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/training/bayesian_trainer.py</code></summary>
@@ -2862,7 +2885,9 @@ repo.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>X_tab</code></td>
+            <td>
+                <code>X_tab</code>
+            </td>
             <td>
                   <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
@@ -2876,7 +2901,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>target</code></td>
+            <td>
+                <code>target</code>
+            </td>
             <td>
                   <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
@@ -2890,7 +2917,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>X_tab_val</code></td>
+            <td>
+                <code>X_tab_val</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>
             </td>
@@ -2904,7 +2933,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>target_val</code></td>
+            <td>
+                <code>target_val</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>
             </td>
@@ -2918,7 +2949,9 @@ repo.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>val_split</code></td>
+            <td>
+                <code>val_split</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -2933,7 +2966,9 @@ split fraction via <code>val_split</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_epochs</code></td>
+            <td>
+                <code>n_epochs</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2947,7 +2982,9 @@ split fraction via <code>val_split</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>validation_freq</code></td>
+            <td>
+                <code>validation_freq</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2961,7 +2998,9 @@ split fraction via <code>val_split</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>batch_size</code></td>
+            <td>
+                <code>batch_size</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2975,7 +3014,9 @@ split fraction via <code>val_split</code></p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_train_samples</code></td>
+            <td>
+                <code>n_train_samples</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2990,7 +3031,9 @@ See <a href="https://arxiv.org/pdf/1505.05424.pdf">Weight Uncertainty in Neural 
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_val_samples</code></td>
+            <td>
+                <code>n_val_samples</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -3274,7 +3317,9 @@ See <a href="https://arxiv.org/pdf/1505.05424.pdf">Weight Uncertainty in Neural 
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>X_tab</code></td>
+            <td>
+                <code>X_tab</code>
+            </td>
             <td>
                   <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
@@ -3288,7 +3333,9 @@ See <a href="https://arxiv.org/pdf/1505.05424.pdf">Weight Uncertainty in Neural 
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_samples</code></td>
+            <td>
+                <code>n_samples</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -3303,7 +3350,9 @@ produce an overal prediction</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>return_samples</code></td>
+            <td>
+                <code>return_samples</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -3317,7 +3366,9 @@ produce an overal prediction</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>batch_size</code></td>
+            <td>
+                <code>batch_size</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -3467,7 +3518,9 @@ produce an overal prediction</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>X_tab</code></td>
+            <td>
+                <code>X_tab</code>
+            </td>
             <td>
                   <code><span title="numpy.ndarray">ndarray</span></code>
             </td>
@@ -3481,7 +3534,9 @@ produce an overal prediction</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>n_samples</code></td>
+            <td>
+                <code>n_samples</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -3496,7 +3551,9 @@ produce an overal prediction</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>return_samples</code></td>
+            <td>
+                <code>return_samples</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -3510,7 +3567,9 @@ produce an overal prediction</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>batch_size</code></td>
+            <td>
+                <code>batch_size</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -3683,7 +3742,9 @@ any other torch model (e.g. <code>torch.save(model, path)</code>).</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>path</code></td>
+            <td>
+                <code>path</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -3698,7 +3759,9 @@ attribute will be saved.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>save_state_dict</code></td>
+            <td>
+                <code>save_state_dict</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -3713,7 +3776,9 @@ model's state dictionary</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>model_filename</code></td>
+            <td>
+                <code>model_filename</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -3929,7 +3994,7 @@ model's state dictionary</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       

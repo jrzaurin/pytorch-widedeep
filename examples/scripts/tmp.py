@@ -1,12 +1,10 @@
 import numpy as np
-import torch
 import pandas as pd
 
 from pytorch_widedeep import Trainer
-from pytorch_widedeep.models import TabNet, WideDeep
+from pytorch_widedeep.models import TabMlp, WideDeep
 from pytorch_widedeep.metrics import Accuracy, Precision
 from pytorch_widedeep.datasets import load_adult
-from pytorch_widedeep.callbacks import LRHistory, EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
 if __name__ == "__main__":
@@ -17,54 +15,44 @@ if __name__ == "__main__":
     )
     df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)
     df.drop("income", axis=1, inplace=True)
-    # df.head()
 
     cat_embed_cols = [
-        "age_buckets",
-        "education",
-        "relationship",
         "workclass",
+        "education",
+        "marital_status",
         "occupation",
-        "native_country",
+        "relationship",
+        "race",
         "gender",
+        "capital_gain",
+        "capital_loss",
+        "native_country",
     ]
     continuous_cols = ["age", "hours_per_week"]
-
     target = "income_label"
     target = df[target].values
 
     tab_preprocessor = TabPreprocessor(
         cat_embed_cols=cat_embed_cols,
         continuous_cols=continuous_cols,
-        scale=True,
-        default_embed_dim=1,
+        scale=True,  # type: ignore[arg-type]
     )
     X_tab = tab_preprocessor.fit_transform(df)
 
-    deeptabular = TabNet(
+    tab_mlp = TabMlp(
         column_idx=tab_preprocessor.column_idx,
         cat_embed_input=tab_preprocessor.cat_embed_input,
         continuous_cols=continuous_cols,
-        n_steps=3,
-        attn_dim=32,
-        ghost_bn=False,
+        mlp_hidden_dims=[200, 100],
+        mlp_dropout=[0.2, 0.2],
     )
 
-    model = WideDeep(deeptabular=deeptabular)
-
-    callbacks = [
-        LRHistory(n_epochs=10),
-        EarlyStopping(patience=5),
-        ModelCheckpoint(filepath="model_weights/wd_out"),
-    ]
-    metrics = [Accuracy, Precision]
+    model = WideDeep(deeptabular=tab_mlp)
 
     trainer = Trainer(
         model,
         objective="binary",
-        optimizers=torch.optim.Adam(model.parameters(), lr=0.01),
-        callbacks=callbacks,
-        metrics=metrics,
+        metrics=[Accuracy, Precision],
     )
 
     trainer.fit(

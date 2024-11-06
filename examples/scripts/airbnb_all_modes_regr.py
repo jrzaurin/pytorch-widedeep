@@ -25,8 +25,6 @@ from pytorch_widedeep.preprocessing import (
     ImagePreprocessor,
 )
 
-use_cuda = torch.cuda.is_available()
-
 if __name__ == "__main__":
     # The airbnb dataset, which you could get from here:
     # http://insideairbnb.com/get-the-data.html, is too big to be included in

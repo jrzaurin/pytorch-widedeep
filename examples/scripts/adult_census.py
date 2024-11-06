@@ -10,8 +10,6 @@ from pytorch_widedeep.callbacks import LRHistory, EarlyStopping, ModelCheckpoint
 from pytorch_widedeep.initializers import XavierNormal, KaimingNormal
 from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
 
-use_cuda = torch.cuda.is_available()
-
 if __name__ == "__main__":
     df: pd.DataFrame = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
@@ -90,6 +88,8 @@ if __name__ == "__main__":
     for tab_model in [tab_mlp, tab_resnet]:
         model = WideDeep(wide=wide, deeptabular=tab_model)  # type: ignore[arg-type]
 
+        # Over engineered example simply to show how to use the Trainer class
+        # and its parameters
         wide_opt = torch.optim.Adam(model.wide.parameters(), lr=0.01)
         deep_opt = torch.optim.AdamW(model.deeptabular.parameters(), lr=0.01)
         wide_sch = torch.optim.lr_scheduler.StepLR(wide_opt, step_size=2)

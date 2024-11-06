@@ -9,8 +9,6 @@ from pytorch_widedeep.metrics import Accuracy
 from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
-# use_cuda = torch.cuda.is_available()
-
 df: pd.DataFrame = load_adult(as_frame=True)
 df.columns = [c.replace("-", "_") for c in df.columns]
 df["income_label"] = (df["income"].apply(lambda x: ">50K" in x)).astype(int)

@@ -16,8 +16,6 @@ from pytorch_widedeep.datasets import load_adult
 from pytorch_widedeep.preprocessing import TabPreprocessor
 from pytorch_widedeep.self_supervised_training import ContrastiveDenoisingTrainer
 
-use_cuda = torch.cuda.is_available()
-
 if __name__ == "__main__":
     df: pd.DataFrame = load_adult(as_frame=True)
     df.columns = [c.replace("-", "_") for c in df.columns]
@@ -71,7 +69,7 @@ if __name__ == "__main__":
                 n_blocks=4,
             )
         if transf_model == "saint":
-            model = SAINT(
+            model = SAINT(  # type: ignore[assignment]
                 column_idx=processor.column_idx,
                 cat_embed_input=processor.cat_embed_input,
                 continuous_cols=continuous_cols,
@@ -79,7 +77,7 @@ if __name__ == "__main__":
                 n_blocks=4,
             )
         if transf_model == "tab_fastformer":
-            model = TabFastFormer(
+            model = TabFastFormer(  # type: ignore[assignment]
                 column_idx=processor.column_idx,
                 cat_embed_input=processor.cat_embed_input,
                 continuous_cols=continuous_cols,
@@ -89,7 +87,7 @@ if __name__ == "__main__":
                 share_weights=False,
             )
         if transf_model == "ft_transformer":
-            model = FTTransformer(
+            model = FTTransformer(  # type: ignore[assignment]
                 column_idx=processor.column_idx,
                 cat_embed_input=processor.cat_embed_input,
                 continuous_cols=continuous_cols,
@@ -117,7 +115,7 @@ if __name__ == "__main__":
         X_tab = processor.fit_transform(df)
 
         if attn_model == "context_attention":
-            model = ContextAttentionMLP(
+            model = ContextAttentionMLP(  # type: ignore[assignment]
                 column_idx=processor.column_idx,
                 cat_embed_input=processor.cat_embed_input,
                 continuous_cols=continuous_cols,
@@ -126,7 +124,7 @@ if __name__ == "__main__":
                 n_blocks=3,
             )
         if attn_model == "self_attention":
-            model = SelfAttentionMLP(
+            model = SelfAttentionMLP(  # type: ignore[assignment]
                 column_idx=processor.column_idx,
                 cat_embed_input=processor.cat_embed_input,
                 continuous_cols=continuous_cols,

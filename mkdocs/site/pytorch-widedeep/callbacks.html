@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.43">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.0253249f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1653,7 +1653,9 @@ of the <code>Trainer</code>.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>n_epochs</code></td>
+            <td>
+                <code>n_epochs</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -1682,6 +1684,11 @@ of the <code>Trainer</code>.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">WideDeep</span><span class="p">(</span><span class="n">wide</span><span class="p">,</span> <span class="n">deep</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">objective</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">LRHistory</span><span class="p">(</span><span class="n">n_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)])</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/callbacks.py</code></summary>
@@ -1990,7 +1997,9 @@ Therefore, <strong>credit</strong> to the Keras Team.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>filepath</code></td>
+            <td>
+                <code>filepath</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[str]</code>
             </td>
@@ -2009,7 +2018,9 @@ class just report best metric and best_epoch.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>monitor</code></td>
+            <td>
+                <code>monitor</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2024,7 +2035,9 @@ class just report best metric and best_epoch.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>min_delta</code></td>
+            <td>
+                <code>min_delta</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -2040,7 +2053,9 @@ count as no improvement.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2054,7 +2069,9 @@ count as no improvement.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>save_best_only</code></td>
+            <td>
+                <code>save_best_only</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2069,7 +2086,9 @@ overwritten.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mode</code></td>
+            <td>
+                <code>mode</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2088,7 +2107,9 @@ quantity.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>period</code></td>
+            <td>
+                <code>period</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2102,7 +2123,9 @@ quantity.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>max_save</code></td>
+            <td>
+                <code>max_save</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2182,6 +2205,11 @@ the repo or the Examples section in this documentation for details</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">WideDeep</span><span class="p">(</span><span class="n">wide</span><span class="p">,</span> <span class="n">deep</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">objective</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">ModelCheckpoint</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;checkpoints/weights_out&#39;</span><span class="p">)])</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/callbacks.py</code></summary>
@@ -2644,7 +2672,9 @@ Therefore, <strong>credit</strong> to the Keras Team.</p>
       </thead>
       <tbody>
           <tr class="doc-section-item">
-            <td><code>monitor</code></td>
+            <td>
+                <code>monitor</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2659,7 +2689,9 @@ Therefore, <strong>credit</strong> to the Keras Team.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>min_delta</code></td>
+            <td>
+                <code>min_delta</code>
+            </td>
             <td>
                   <code>float</code>
             </td>
@@ -2675,7 +2707,9 @@ count as no improvement.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>patience</code></td>
+            <td>
+                <code>patience</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2690,7 +2724,9 @@ improvement after which training will be stopped.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>verbose</code></td>
+            <td>
+                <code>verbose</code>
+            </td>
             <td>
                   <code>int</code>
             </td>
@@ -2704,7 +2740,9 @@ improvement after which training will be stopped.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>mode</code></td>
+            <td>
+                <code>mode</code>
+            </td>
             <td>
                   <code>str</code>
             </td>
@@ -2722,7 +2760,9 @@ name of the monitored quantity.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>baseline</code></td>
+            <td>
+                <code>baseline</code>
+            </td>
             <td>
                   <code><span title="pytorch_widedeep.wdtypes.Optional">Optional</span>[float]</code>
             </td>
@@ -2737,7 +2777,9 @@ stop if the model does not show improvement over the baseline.</p>
             </td>
           </tr>
           <tr class="doc-section-item">
-            <td><code>restore_best_weights</code></td>
+            <td>
+                <code>restore_best_weights</code>
+            </td>
             <td>
                   <code>bool</code>
             </td>
@@ -2804,6 +2846,11 @@ obtained at the last step of training are used.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">WideDeep</span><span class="p">(</span><span class="n">wide</span><span class="p">,</span> <span class="n">deep</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">objective</span><span class="o">=</span><span class="s2">&quot;regression&quot;</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">EarlyStopping</span><span class="p">(</span><span class="n">patience</span><span class="o">=</span><span class="mi">10</span><span class="p">)])</span>
 </code></pre></div>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>pytorch_widedeep/callbacks.py</code></summary>
@@ -3241,7 +3288,7 @@ obtained at the last step of training are used.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.indexes", "navigation.expand", "toc.integrate"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.83f73b43.min.js"></script>
       
         <script src="../stylesheets/extra.js"></script>
       
