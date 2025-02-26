@@ -82,7 +82,7 @@ class EncoderDecoderModel(nn.Module):
             x_embed_rec = self.decoder(steps_out)
             mask = torch.ones(x_embed.shape).to(X.device)
 
-        return x_embed_rec, x_embed, mask
+        return x_embed, x_embed_rec, mask
 
     def _build_decoder(self, encoder: ModelWithoutAttention) -> DecoderWithoutAttention:
         if isinstance(encoder, TabMlp):
