@@ -959,7 +959,7 @@ class EncoderDecoderLoss(nn.Module):
         x_true_means[x_true_means == 0] = 1
 
         x_true_stds = torch.std(x_true, dim=0) ** 2
-        x_true_stds[x_true_stds == 0] = x_true_means[x_true_stds == 0]
+        x_true_stds[x_true_stds == 0] = torch.abs(x_true_means[x_true_stds == 0])
 
         features_loss = torch.matmul(reconstruction_errors, 1 / x_true_stds)
         nb_reconstructed_variables = torch.sum(mask, dim=1)
