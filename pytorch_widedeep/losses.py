@@ -896,7 +896,7 @@ class DenoisingLoss(nn.Module):
 
     @staticmethod
     def _get_device(
-        x_and_x_: Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]]
+        x_and_x_: Union[List[Tuple[Tensor, Tensor]], Tuple[Tensor, Tensor]],
     ):
         if isinstance(x_and_x_, tuple):
             device = x_and_x_[0].device
