@@ -144,7 +144,7 @@ def test_image_from_folder_with_transforms():
 
     processed_sample_from_folder = img_from_folder.get_item(df.images.loc[1])
 
-    return processed_sample_from_folder.shape == torch.Size([3, 10, 10])
+    assert processed_sample_from_folder.shape == torch.Size([3, 10, 10])
 
 
 @pytest.mark.parametrize("hugginface", [True, False])

@@ -167,6 +167,7 @@ class Tab2Vec:
             X = torch.from_numpy(X_tab.astype("float32")).to(self.device)
         else:
             X = torch.from_numpy(X_tab.astype("float")).to(self.device)
+            print(X)
 
         with torch.no_grad():
             if self.is_tab_transformer:

@@ -86,7 +86,7 @@ filtred_data = dataset[
 ].sort_values("timestamp")
 train_data, _test_data = train_test_split(filtred_data, test_size=0.2, shuffle=False)
 valid_data, test_data = train_test_split(_test_data, test_size=0.5, shuffle=False)
-
+print(dataset)
 cols_to_drop = [
     # "rating",
     "timestamp",
