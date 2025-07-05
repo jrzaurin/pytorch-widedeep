@@ -255,7 +255,9 @@ def test_save_and_load():
     trainer.fit(X_wide=X_wide, X_tab=X_tab, target=target, batch_size=16)
     wide_weights = model.wide.wide_linear.weight.data
     trainer.save("tests/test_model_functioning/model_dir/")
-    n_model = torch.load("tests/test_model_functioning/model_dir/wd_model.pt")
+    n_model = torch.load(
+        "tests/test_model_functioning/model_dir/wd_model.pt", weights_only=False
+    )
     n_wide_weights = n_model.wide.wide_linear.weight.data
     assert torch.allclose(wide_weights, n_wide_weights)
 

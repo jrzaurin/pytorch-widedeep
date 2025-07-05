@@ -69,7 +69,9 @@ def test_save_one_optimizer(save_state_dict):
         model_filename="model_and_optimizer.pt",
     )
 
-    checkpoint = torch.load(os.path.join(save_path, "model_and_optimizer.pt"))
+    checkpoint = torch.load(
+        os.path.join(save_path, "model_and_optimizer.pt"), weights_only=False
+    )
 
     if save_state_dict:
         new_model = WideDeep(wide=wide, deeptabular=tab_mlp)
@@ -83,7 +85,9 @@ def test_save_one_optimizer(save_state_dict):
     else:
         # This else statement is mostly testing that it runs, as it does not
         # involved loading a state_dict
-        saved_objects = torch.load(os.path.join(save_path, "model_and_optimizer.pt"))
+        saved_objects = torch.load(
+            os.path.join(save_path, "model_and_optimizer.pt"), weights_only=False
+        )
         new_model = saved_objects["model"]
         new_optimizer = saved_objects["optimizer"]
 
@@ -123,7 +127,9 @@ def test_save_multiple_optimizers(save_state_dict):
         model_filename="model_and_optimizer.pt",
     )
 
-    checkpoint = torch.load(os.path.join(save_path, "model_and_optimizer.pt"))
+    checkpoint = torch.load(
+        os.path.join(save_path, "model_and_optimizer.pt"), weights_only=False
+    )
 
     if save_state_dict:
         new_model = WideDeep(wide=wide, deeptabular=tab_mlp)
@@ -140,7 +146,9 @@ def test_save_multiple_optimizers(save_state_dict):
     else:
         # This else statement is mostly testing that it runs, as it does not
         # involved loading a state_dict
-        saved_objects = torch.load(os.path.join(save_path, "model_and_optimizer.pt"))
+        saved_objects = torch.load(
+            os.path.join(save_path, "model_and_optimizer.pt"), weights_only=False
+        )
         new_model = saved_objects["model"]
         new_optimizers = saved_objects["optimizer"]
         new_wide_opt = new_optimizers._optimizers["wide"]
