@@ -74,7 +74,7 @@ for model_name in model_names:
 
     hf_model = HFModel(
         model_name=model_name,
-        use_cls_token=True,
+        pooling_mode="cls",
     )
 
     model = WideDeep(
