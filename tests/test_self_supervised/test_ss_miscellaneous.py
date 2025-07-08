@@ -110,7 +110,9 @@ def test_save_and_load(model_type):
         save_state_dict=False,
         model_filename="ss_model.pt",
     )
-    new_model = torch.load("tests/test_self_supervised/model_dir/ss_model.pt")
+    new_model = torch.load(
+        "tests/test_self_supervised/model_dir/ss_model.pt", weights_only=False
+    )
 
     if model_type == "mlp":
         new_col_embed_module = new_model.encoder.cat_embed.embed_layers.emb_layer_col1
@@ -177,7 +179,8 @@ def test_save_model_and_optimizer(model_type, save_state_dict):
     )
 
     checkpoint = torch.load(
-        os.path.join("tests/test_self_supervised/model_dir/", "model_and_optimizer.pt")
+        os.path.join("tests/test_self_supervised/model_dir/", "model_and_optimizer.pt"),
+        weights_only=False,
     )
 
     if save_state_dict:
@@ -204,7 +207,8 @@ def test_save_model_and_optimizer(model_type, save_state_dict):
         saved_objects = torch.load(
             os.path.join(
                 "tests/test_self_supervised/model_dir/", "model_and_optimizer.pt"
-            )
+            ),
+            weights_only=False,
         )
         new_optimizer = saved_objects["optimizer"]
 
@@ -275,11 +279,15 @@ def test_save_and_load_dict(model_type):  # noqa: C901
 
     if model_type == "mlp":
         trainer2.ed_model.load_state_dict(
-            torch.load("tests/test_self_supervised/model_dir/ss_model.pt")
+            torch.load(
+                "tests/test_self_supervised/model_dir/ss_model.pt", weights_only=False
+            )
         )
     elif model_type == "transformer":
         trainer2.cd_model.load_state_dict(
-            torch.load("tests/test_self_supervised/model_dir/ss_model.pt")
+            torch.load(
+                "tests/test_self_supervised/model_dir/ss_model.pt", weights_only=False
+            )
         )
 
     if model_type == "mlp":
