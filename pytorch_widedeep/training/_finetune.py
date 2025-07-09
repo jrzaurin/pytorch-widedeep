@@ -298,31 +298,31 @@ class FineTune:
             for p in layer.parameters():
                 p.requires_grad = False
 
-            if self.verbose:
-                print("Training one last epoch...")
+        if self.verbose:
+            print("Training one last epoch...")
 
-            for layer in layers:
-                for p in layer.parameters():
-                    p.requires_grad = True
+        for layer in layers:
+            for p in layer.parameters():
+                p.requires_grad = True
 
-            params_, max_lr_, base_lr_ = [], [], []
-            for lr, layer in zip(layers_max_lr, layers):
-                params_ += [{"params": layer.parameters(), "lr": lr / 10.0}]
-                max_lr_ += [lr]
-                base_lr_ += [lr / 10.0]
+        params_, max_lr_, base_lr_ = [], [], []
+        for lr, layer in zip(layers_max_lr, layers):
+            params_ += [{"params": layer.parameters(), "lr": lr / 10.0}]
+            max_lr_ += [lr]
+            base_lr_ += [lr / 10.0]
 
-            optimizer = torch.optim.AdamW(params_)
+        optimizer = torch.optim.AdamW(params_)
 
-            scheduler = torch.optim.lr_scheduler.CyclicLR(
-                optimizer,
-                base_lr=base_lr_,
-                max_lr=max_lr_,
-                step_size_up=step_size_up,
-                step_size_down=step_size_down,
-                cycle_momentum=False,
-            )
+        scheduler = torch.optim.lr_scheduler.CyclicLR(
+            optimizer,
+            base_lr=base_lr_,
+            max_lr=max_lr_,
+            step_size_up=step_size_up,
+            step_size_down=step_size_down,
+            cycle_momentum=False,
+        )
 
-            self._train(model, model_name, loader, optimizer, scheduler, idx=idx)
+        self._train(model, model_name, loader, optimizer, scheduler, idx=idx)
 
     def finetune_one(
         self,
