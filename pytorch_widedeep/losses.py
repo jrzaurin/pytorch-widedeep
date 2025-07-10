@@ -5,6 +5,7 @@ from torch import nn
 from pytorch_widedeep.wdtypes import List, Tuple, Union, Tensor, Literal, Optional
 
 use_cuda = torch.cuda.is_available()
+use_xpu = torch.xpu.is_available()
 
 
 class MSELoss(nn.Module):

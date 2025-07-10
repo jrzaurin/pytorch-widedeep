@@ -57,19 +57,19 @@ for module in ["q_proj", "kv_proj", "out_proj"]:
 X = torch.randn(128, 100, input_dim).to(device)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="requires CUDA to run")
+@pytest.mark.skipif(not torch.cuda.is_available() and not torch.xpu.is_available(), reason="requires CUDA or XPU to run")
 def test_flash_standard_shapes():
     # Check that shapes of output are the same
     assert standard_attn(X).shape == flash_attn(X).shape
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="requires CUDA to run")
+@pytest.mark.skipif(not torch.cuda.is_available() and not torch.xpu.is_available(), reason="requires CUDA or XPU to run")
 def test_flash_standard_values():
     # Check output values match between both implementations
     assert torch.allclose(standard_attn(X), flash_attn(X), atol=1e-7)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="requires CUDA to run")
+@pytest.mark.skipif(not torch.cuda.is_available() and not torch.xpu.is_available(), reason="requires CUDA or XPU to run")
 def test_speedup_flash():
     # Check that iterations happen faster
     standard_its = timeit.timeit(lambda: standard_attn(X), number=500)

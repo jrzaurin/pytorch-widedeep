@@ -6,6 +6,7 @@ from pytorch_widedeep.wdtypes import List, Tuple, Union, Tensor, Literal, Option
 from pytorch_widedeep.utils.general_utils import alias
 
 use_cuda = torch.cuda.is_available()
+use_xpu = torch.xpu.is_available()
 
 
 class MultiTargetRegressionLoss(nn.Module):

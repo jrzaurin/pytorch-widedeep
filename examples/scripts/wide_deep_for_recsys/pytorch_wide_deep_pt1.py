@@ -13,7 +13,12 @@ from pytorch_widedeep import Trainer
 from pytorch_widedeep.models import TabMlp, BasicRNN, WideDeep
 from pytorch_widedeep.preprocessing import TabPreprocessor
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+if torch.cuda.is_available():
+    device = "cuda"
+elif torch.xpu.is_available():
+    device = "xpu"
+else:
+    device = "cpu"
 
 save_path = Path("prepared_data")
 

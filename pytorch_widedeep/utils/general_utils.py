@@ -7,6 +7,8 @@ from torch import Tensor
 def setup_device() -> str:
     if torch.cuda.is_available():
         return "cuda"
+    elif torch.xpu.is_available():
+        return "xpu"
     elif torch.backends.mps.is_available():
         return "mps"
     else:
@@ -24,7 +26,7 @@ def to_device_model(model, device: str):  # noqa: C901
     # insistent transformation since it some cases overall approaches such as
     # model.to('mps') do not work
 
-    if device in ["cpu", "cuda"]:
+    if device in ["cpu", "cuda", "xpu"]:
         return model.to(device)
 
     if device == "mps":
