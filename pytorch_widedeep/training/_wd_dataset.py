@@ -98,7 +98,10 @@ class WideDeepDataset(Dataset):
         if not self.transforms or "ToTensor" not in self.transforms_names:
             if xdi.ndim == 2:
                 xdi = xdi[:, :, None]
-            xdi = xdi.transpose(2, 0, 1)
+            # transpose only if the 1st dimension is not channels (3)
+            if xdi.shape[0] != 3:
+                xdi = xdi.transpose(2, 0, 1)
+            # normalize if necessary (heuristic: if int, then normalize)
             if "int" in str(xdi.dtype):
                 xdi = (xdi / xdi.max()).astype("float32")
         # if ToTensor() is included, simply apply transforms
@@ -218,7 +221,8 @@ class GroupWideDeepDataset(Dataset):
                 xdi = xdi[:, :, :, None]
             # Group Size, Height, Width, Channel -> Group Size, Channel,
             # Height, Width
-            xdi = xdi.transpose(0, 3, 1, 2)
+            if xdi.shape[1] != 3:
+                xdi = xdi.transpose(0, 3, 1, 2)
             if "int" in str(xdi.dtype):
                 xdi = (xdi / xdi.max()).astype("float32")
         # if ToTensor() is included, simply apply transforms
