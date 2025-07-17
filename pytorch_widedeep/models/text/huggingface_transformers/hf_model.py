@@ -2,7 +2,7 @@ import warnings
 
 import torch
 
-from pytorch_widedeep.wdtypes import List, Tensor, Optional, Literal
+from pytorch_widedeep.wdtypes import List, Tensor, Literal, Optional
 from pytorch_widedeep.utils.hf_utils import get_model_class, get_config_and_model
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent

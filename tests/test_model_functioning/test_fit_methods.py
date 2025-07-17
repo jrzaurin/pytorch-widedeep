@@ -315,3 +315,37 @@ def test_multiclass_warning():
 
     with pytest.raises(ValueError):
         trainer = Trainer(model, loss="multiclass", verbose=0)  # noqa: F841
+
+
+##############################################################################
+# Test stop_after_finetuning
+##############################################################################
+
+
+def test_stop_after_finetuning():
+    wide = Wide(np.unique(X_wide).shape[0], 1)
+    deeptabular = TabMlp(
+        column_idx=column_idx,
+        cat_embed_input=embed_input,
+        continuous_cols=colnames[-5:],
+        mlp_hidden_dims=[32, 16],
+        mlp_dropout=[0.5, 0.5],
+    )
+    model = WideDeep(wide=wide, deeptabular=deeptabular)
+
+    trainer = Trainer(model, objective="binary", verbose=0)
+
+    trainer.fit(
+        X_wide=X_wide,
+        X_tab=X_tab,
+        target=target_binary,
+        batch_size=4,
+        finetune=True,
+        finetune_epochs=4,
+        stop_after_finetuning=True,
+    )
+
+    preds = trainer.predict(X_wide=X_wide, X_tab=X_tab)
+
+    assert preds.shape[0] == 32
+    assert trainer.with_finetuning

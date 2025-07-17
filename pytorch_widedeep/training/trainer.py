@@ -290,6 +290,7 @@ class Trainer(BaseTrainer):
         eval_dataloader: Optional[CustomDataLoader] = None,
         feature_importance_sample_size: Optional[int] = None,
         finetune: bool = False,
+        stop_after_finetuning: bool = False,
         **kwargs,
     ):
         r"""Fit method.
@@ -374,6 +375,8 @@ class Trainer(BaseTrainer):
             For details on how these routines work, please see the Examples
             section in this documentation and the Examples folder in the repo. <br/>
             Param Alias: `warmup`
+        stop_after_finetuning: bool, default=False
+            stop the training after the finetuning process.
 
         Other Parameters
         ----------------
@@ -458,6 +461,11 @@ class Trainer(BaseTrainer):
                 )
         else:
             self.with_finetuning = False
+
+        if stop_after_finetuning:
+            if self.verbose:
+                print("Stopping after finetuning")
+            return
 
         self.callback_container.on_train_begin(
             {
