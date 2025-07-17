@@ -454,7 +454,7 @@ class Trainer(BaseTrainer):
         if finetune:
             self.with_finetuning: bool = True
             self._do_finetune(train_loader, **finetune_args)
-            if self.verbose:
+            if self.verbose and not stop_after_finetuning:
                 print(
                     "Fine-tuning (or warmup) of individual components completed. "
                     "Training the whole model for {} epochs".format(n_epochs)

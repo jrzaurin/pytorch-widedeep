@@ -220,6 +220,7 @@ class TrainerFromFolder(Trainer):
         n_epochs: int = 1,
         validation_freq: int = 1,
         finetune: bool = False,
+        stop_after_finetuning: bool = False,
         **kwargs,
     ):
 
@@ -230,13 +231,18 @@ class TrainerFromFolder(Trainer):
         if finetune:
             self.with_finetuning: bool = True
             self._do_finetune(train_loader, **finetune_args)
-            if self.verbose:
+            if self.verbose and not stop_after_finetuning:
                 print(
                     "Fine-tuning (or warmup) of individual components completed. "
                     "Training the whole model for {} epochs".format(n_epochs)
                 )
         else:
             self.with_finetuning = False
+
+        if stop_after_finetuning:
+            if self.verbose:
+                print("Stopping after finetuning")
+            return
 
         self.callback_container.on_train_begin(
             {
