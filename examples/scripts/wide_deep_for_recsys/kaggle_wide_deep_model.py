@@ -12,8 +12,12 @@ import pandas as pd
 from torch import nn, cat, mean
 from scipy.sparse import coo_matrix
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
+if torch.cuda.is_available():
+    device = "cuda"
+elif torch.xpu.is_available():
+    device = "xpu"
+else:
+    device = "cpu"
 save_path = Path("prepared_data")
 
 

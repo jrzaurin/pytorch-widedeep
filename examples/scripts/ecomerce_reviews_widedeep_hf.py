@@ -29,7 +29,7 @@ df["review_length"] = df.review_text.apply(lambda x: len(x.split(" ")))
 df = df[df.review_length >= 5]
 df = df.drop("review_length", axis=1).reset_index(drop=True)
 
-if not torch.cuda.is_available():
+if not torch.cuda.is_available() and not torch.xpu.is_available():
     # stratified sample to the minimum and then sample at random
     # rating
     # 3    12515
