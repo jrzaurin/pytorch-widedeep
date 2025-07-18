@@ -2,9 +2,8 @@ import warnings
 
 import torch
 
-from pytorch_widedeep.wdtypes import List, Tensor, Optional
+from pytorch_widedeep.wdtypes import List, Tensor, Optional, Literal
 from pytorch_widedeep.utils.hf_utils import get_model_class, get_config_and_model
-from pytorch_widedeep.utils.general_utils import alias
 from pytorch_widedeep.models.tabular.mlp._layers import MLP
 from pytorch_widedeep.models._base_wd_model_component import BaseWDModelComponent
 
@@ -26,9 +25,10 @@ class HFModel(BaseWDModelComponent):
         The model name from the transformers library e.g. 'bert-base-uncased'.
         Currently supported models are those from the families: BERT, RoBERTa,
         DistilBERT, ALBERT and ELECTRA.
-    use_cls_token: bool, default = True
-        Boolean indicating whether to use the [CLS] token or the mean of the
-        sequence of hidden states as the sentence embedding
+    pooling_mode: Literal["cls", "mean", "pooler"], default = "cls"
+        The pooling mode to use. If "cls", the [CLS] token is used. If "mean",
+        the mean of the sequence of hidden states is used. If "pooler", the
+        pooler output is used.
     trainable_parameters: List, Optional, default = None
         List with the names of the model parameters that will be trained. If
         None, none of the parameters will be trainable
@@ -69,11 +69,10 @@ class HFModel(BaseWDModelComponent):
     >>> out = model(X_text)
     """
 
-    @alias("use_cls_token", ["use_special_token"])
     def __init__(
         self,
         model_name: str,
-        use_cls_token: bool = True,
+        pooling_mode: Literal["cls", "mean", "pooler"] = "cls",
         trainable_parameters: Optional[List[str]] = None,
         head_hidden_dims: Optional[List[int]] = None,
         head_activation: str = "relu",
@@ -89,7 +88,7 @@ class HFModel(BaseWDModelComponent):
         # TO DO: add warning regarging ELECTRA as ELECTRA does not have a cls
         # token.  Research what happens with ELECTRA
         self.model_name = model_name
-        self.use_cls_token = use_cls_token
+        self.pooling_mode = pooling_mode
         self.trainable_parameters = trainable_parameters
         self.head_hidden_dims = head_hidden_dims
         self.head_activation = head_activation
@@ -100,7 +99,7 @@ class HFModel(BaseWDModelComponent):
         self.verbose = verbose
         self.kwargs = kwargs
 
-        if self.verbose and self.use_cls_token:
+        if self.verbose and self.pooling_mode == "cls":
             warnings.warn(
                 "The model will use the [CLS] token. Make sure the tokenizer "
                 "was run with add_special_tokens=True",
@@ -110,6 +109,11 @@ class HFModel(BaseWDModelComponent):
         self.model_class = get_model_class(model_name)
 
         self.config, self.model = get_config_and_model(self.model_name)
+
+        if self.pooling_mode == "pooler" and not hasattr(self.model, "pooler_output"):
+            raise ValueError(
+                "The model does not have a pooler_output attribute. Please use a different pooling mode"
+            )
 
         self.output_attention_weights = kwargs.get("output_attentions", False)
 
@@ -143,9 +147,11 @@ class HFModel(BaseWDModelComponent):
             # attribute
             self.attn_weights = output["attentions"]
 
-        if self.use_cls_token:
+        if self.pooling_mode == "cls":
             output = output[0][:, 0, :]
-        else:
+        elif self.pooling_mode == "pooler":
+            output = output.pooler_output
+        else:  # mean
             # Here one can choose to flatten, but unless the sequence length
             # is very small, flatten will result in a very large output
             # tensor.

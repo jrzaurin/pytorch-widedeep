@@ -88,7 +88,7 @@ def test_model_with_head(model_name="distilbert-base-uncased"):
         X_text = tokenizer.encode(df.random_sentences.tolist())
         model = HFModel(
             model_name=model_name,
-            use_cls_token=False,
+            pooling_mode="mean",
             head_hidden_dims=[64, 32],
         )
         X_text_tnsr = torch.tensor(X_text)
@@ -117,7 +117,7 @@ def test_hf_model_combined_with_tabmlp(model_name="distilbert-base-uncased"):
         X_text = tokenizer.encode(df.random_sentences.tolist())
         hf_model = HFModel(
             model_name=model_name,
-            use_cls_token=True,
+            pooling_mode="cls",
             head_hidden_dims=[64, 32],
         )
         wide_deep = WideDeep(deeptabular=tabmlp, deeptext=hf_model)
@@ -153,7 +153,7 @@ def test_full_training_process(model_name):
     X_text = tokenizer.fit_transform(df)
     hf_model = HFModel(
         model_name=model_name,
-        use_cls_token=True,
+        pooling_mode="cls",
     )
     model = WideDeep(deeptabular=tabmlp, deeptext=hf_model)
 
