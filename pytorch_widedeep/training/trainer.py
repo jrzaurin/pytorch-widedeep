@@ -834,22 +834,37 @@ class Trainer(BaseTrainer):
         r"""
         Simple wrap-up to individually fine-tune model components
         """
-        if self.model.deephead is not None:
+
+        # if the model is a DataParallel, we need to get the model
+        # from the first device
+        if isinstance(self.model, torch.nn.DataParallel):
+            if self.verbose:
+                print(
+                    "DataParallel model. Note that each extracted component will be a"
+                    " regular PyTorch module running on a single GPU. Once the"
+                    " finetuning is done, the model will be returned to the original"
+                    " DataParallel model."
+                )
+            model_ = self.model.module
+        else:
+            model_ = self.model
+
+        if model_.deephead is not None:
             raise ValueError(
                 "Currently warming up is only supported without a fully connected 'DeepHead'"
             )
 
         finetuner = FineTune(self.loss_fn, self.metric, self.method, self.verbose)  # type: ignore[arg-type]
-        if self.model.wide:
-            finetuner.finetune_all(self.model.wide, "wide", loader, n_epochs, max_lr)
+        if model_.wide:
+            finetuner.finetune_all(model_.wide, "wide", loader, n_epochs, max_lr)
 
-        if self.model.deeptabular:
+        if model_.deeptabular:
             if deeptabular_gradual:
                 assert (
                     deeptabular_layers is not None
                 ), "deeptabular_layers must be passed if deeptabular_gradual=True"
                 finetuner.finetune_gradual(
-                    self.model.deeptabular,
+                    model_.deeptabular,
                     "deeptabular",
                     loader,
                     deeptabular_max_lr,
@@ -858,16 +873,16 @@ class Trainer(BaseTrainer):
                 )
             else:
                 finetuner.finetune_all(
-                    self.model.deeptabular, "deeptabular", loader, n_epochs, max_lr
+                    model_.deeptabular, "deeptabular", loader, n_epochs, max_lr
                 )
 
-        if self.model.deeptext:
+        if model_.deeptext:
             if deeptext_gradual:
                 assert (
                     deeptext_layers is not None
                 ), "deeptext_layers must be passed if deeptext_gradual=True"
                 finetuner.finetune_gradual(
-                    self.model.deeptext,
+                    model_.deeptext,
                     "deeptext",
                     loader,
                     deeptext_max_lr,
@@ -876,16 +891,16 @@ class Trainer(BaseTrainer):
                 )
             else:
                 finetuner.finetune_all(
-                    self.model.deeptext, "deeptext", loader, n_epochs, max_lr
+                    model_.deeptext, "deeptext", loader, n_epochs, max_lr
                 )
 
-        if self.model.deepimage:
+        if model_.deepimage:
             if deepimage_gradual:
                 assert (
                     deepimage_layers is not None
                 ), "deepimage_layers must be passed if deepimage_gradual=True"
                 finetuner.finetune_gradual(
-                    self.model.deepimage,
+                    model_.deepimage,
                     "deepimage",
                     loader,
                     deepimage_max_lr,
@@ -894,7 +909,7 @@ class Trainer(BaseTrainer):
                 )
             else:
                 finetuner.finetune_all(
-                    self.model.deepimage, "deepimage", loader, n_epochs, max_lr
+                    model_.deepimage, "deepimage", loader, n_epochs, max_lr
                 )
 
     def _train_epoch(
@@ -944,7 +959,7 @@ class Trainer(BaseTrainer):
 
         y_pred = self.model(X)
 
-        if self.model.is_tabnet:
+        if self.is_model_tabnet:
             loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
             score = self._get_score(y_pred[0], y, is_train=True)
         else:
@@ -1008,7 +1023,7 @@ class Trainer(BaseTrainer):
             y = to_device(y, self.device)
 
             y_pred = self.model(X)
-            if self.model.is_tabnet:
+            if self.is_model_tabnet:
                 loss = self.loss_fn(y_pred[0], y) - self.lambda_sparse * y_pred[1]
                 score = self._get_score(y_pred[0], y, is_train=False)
             else:
@@ -1119,7 +1134,7 @@ class Trainer(BaseTrainer):
                                     X[k] = to_device(v, self.device)
                             preds = (
                                 self.model(X)
-                                if not self.model.is_tabnet
+                                if not self.is_model_tabnet
                                 else self.model(X)[0]
                             )
                             if self.method == "binary":
@@ -1170,6 +1185,7 @@ class Trainer(BaseTrainer):
             "prefetch_factor",
             "persistent_workers",
             "oversample_mul",
+            "pin_memory",
         ]
         finetune_params = [
             "n_epochs",

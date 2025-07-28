@@ -297,9 +297,13 @@ class WideDeep(nn.Module):
             first_model_mode = list(X.keys())[0]
             if isinstance(X[first_model_mode], list):
                 batch_size = X[first_model_mode][0].size(0)
+                # Get device from input tensor
+                device = X[first_model_mode][0].device
             else:
                 batch_size = X[first_model_mode].size(0)  # type: ignore[union-attr]
-            out = torch.zeros(batch_size, self.pred_dim).to(self.wd_device)
+                # Get device from input tensor
+                device = X[first_model_mode].device  # type: ignore[union-attr]
+            out = torch.zeros(batch_size, self.pred_dim, device=device)
 
         return out
 
@@ -331,7 +335,9 @@ class WideDeep(nn.Module):
     def _forward_deephead(
         self, X: Dict[str, Union[Tensor, List[Tensor]]], wide_out: Tensor
     ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        deepside = torch.FloatTensor().to(self.wd_device)
+        # Get device from wide_out
+        device = wide_out.device
+        deepside = torch.FloatTensor().to(device)
 
         if self.deeptabular is not None:
             if self.is_tabnet:
