@@ -160,12 +160,21 @@ class Trainer(BaseTrainer):
         - **num_workers**: `int`<br/>
             number of workers to be used internally by the data loaders
 
+        - **use_multi_gpu**: `bool`<br/>
+            If True, the model will be trained on multiple GPUs. This is
+            only supported for the `deeptabular` component.
+
+            NOTE: this is an experimental feature and might not work as expected
+            in some cases. In the particular case of the `Trainer` class, it has
+            been extensively tested.
+
         - **lambda_sparse**: `float`<br/>
             lambda sparse parameter in case the `deeptabular` component is `TabNet`
 
         - **class_weight**: `List[float]`<br/>
             This is the `weight` or `pos_weight` parameter in
             `CrossEntropyLoss` and `BCEWithLogitsLoss`, depending on whether
+
         - **reducelronplateau_criterion**: `str`
             This sets the criterion that will be used by the lr scheduler to
             take a step: One of _'loss'_ or _'metric'_. The ReduceLROnPlateau
@@ -835,36 +844,57 @@ class Trainer(BaseTrainer):
         Simple wrap-up to individually fine-tune model components
         """
 
-        # if the model is a DataParallel, we need to get the model
-        # from the first device
         if isinstance(self.model, torch.nn.DataParallel):
-            if self.verbose:
-                print(
-                    "DataParallel model. Note that each extracted component will be a"
-                    " regular PyTorch module running on a single GPU. Once the"
-                    " finetuning is done, the model will be returned to the original"
-                    " DataParallel model."
-                )
-            model_ = self.model.module
+            wide_component = (
+                torch.nn.DataParallel(self.model.module.wide)
+                if self.model.module.wide
+                else None
+            )
+            deeptabular_component = (
+                torch.nn.DataParallel(self.model.module.deeptabular)
+                if self.model.module.deeptabular
+                else None
+            )
+            deeptext_component = (
+                torch.nn.DataParallel(self.model.module.deeptext)
+                if self.model.module.deeptext
+                else None
+            )
+            deepimage_component = (
+                torch.nn.DataParallel(self.model.module.deepimage)
+                if self.model.module.deepimage
+                else None
+            )
+            deephead_component = (
+                torch.nn.DataParallel(self.model.module.deephead)
+                if self.model.module.deephead
+                else None
+            )
         else:
-            model_ = self.model
+            wide_component = self.model.wide if self.model.wide else None
+            deeptabular_component = (
+                self.model.deeptabular if self.model.deeptabular else None
+            )
+            deeptext_component = self.model.deeptext if self.model.deeptext else None
+            deepimage_component = self.model.deepimage if self.model.deepimage else None
+            deephead_component = self.model.deephead if self.model.deephead else None
 
-        if model_.deephead is not None:
+        if deephead_component is not None:
             raise ValueError(
                 "Currently warming up is only supported without a fully connected 'DeepHead'"
             )
 
         finetuner = FineTune(self.loss_fn, self.metric, self.method, self.verbose)  # type: ignore[arg-type]
-        if model_.wide:
-            finetuner.finetune_all(model_.wide, "wide", loader, n_epochs, max_lr)
+        if wide_component:
+            finetuner.finetune_all(wide_component, "wide", loader, n_epochs, max_lr)
 
-        if model_.deeptabular:
+        if deeptabular_component:
             if deeptabular_gradual:
                 assert (
                     deeptabular_layers is not None
                 ), "deeptabular_layers must be passed if deeptabular_gradual=True"
                 finetuner.finetune_gradual(
-                    model_.deeptabular,
+                    deeptabular_component,
                     "deeptabular",
                     loader,
                     deeptabular_max_lr,
@@ -873,16 +903,16 @@ class Trainer(BaseTrainer):
                 )
             else:
                 finetuner.finetune_all(
-                    model_.deeptabular, "deeptabular", loader, n_epochs, max_lr
+                    deeptabular_component, "deeptabular", loader, n_epochs, max_lr
                 )
 
-        if model_.deeptext:
+        if deeptext_component:
             if deeptext_gradual:
                 assert (
                     deeptext_layers is not None
                 ), "deeptext_layers must be passed if deeptext_gradual=True"
                 finetuner.finetune_gradual(
-                    model_.deeptext,
+                    deeptext_component,
                     "deeptext",
                     loader,
                     deeptext_max_lr,
@@ -891,16 +921,16 @@ class Trainer(BaseTrainer):
                 )
             else:
                 finetuner.finetune_all(
-                    model_.deeptext, "deeptext", loader, n_epochs, max_lr
+                    deeptext_component, "deeptext", loader, n_epochs, max_lr
                 )
 
-        if model_.deepimage:
+        if deepimage_component:
             if deepimage_gradual:
                 assert (
                     deepimage_layers is not None
                 ), "deepimage_layers must be passed if deepimage_gradual=True"
                 finetuner.finetune_gradual(
-                    model_.deepimage,
+                    deepimage_component,
                     "deepimage",
                     loader,
                     deepimage_max_lr,
@@ -909,7 +939,7 @@ class Trainer(BaseTrainer):
                 )
             else:
                 finetuner.finetune_all(
-                    model_.deepimage, "deepimage", loader, n_epochs, max_lr
+                    deepimage_component, "deepimage", loader, n_epochs, max_lr
                 )
 
     def _train_epoch(
