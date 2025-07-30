@@ -144,7 +144,17 @@ class TrainerFromFolder(Trainer):
          - **num_workers**: `int`<br/>
              number of workers to be used internally by the data loaders
 
-         - **lambda_sparse**: `float`<br/>
+        - **use_multi_gpu**: `bool`<br/>
+            If True, the model will be trained on multiple GPUs. This is
+            only supported for the `deeptabular` component.
+
+            NOTE: this is an experimental feature and might not work as expected
+            in some cases. While for the `Trainer` class, it has been extensively
+            tested, for the `TrainerFromFolder` class, it has not been tested
+            that thoroughly (in principle the `TrainerFromFolder` inherits from
+            the `Trainer` class, so it should work).
+
+        - **lambda_sparse**: `float`<br/>
              lambda sparse parameter in case the `deeptabular` component is `TabNet`
 
          - **class_weight**: `List[float]`<br/>

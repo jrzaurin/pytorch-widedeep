@@ -78,9 +78,21 @@ class BaseTrainer(ABC):
         self.seed = seed
 
         self.model = to_device_model(model, self.device)
-        if self.model.is_tabnet:
+
+        self.is_model_tabnet = model.is_tabnet
+        if self.is_model_tabnet:
             self.lambda_sparse = kwargs.get("lambda_sparse", 1e-3)
+
+        # Simply we need this attribute
         self.model.wd_device = self.device
+
+        use_multi_gpu = kwargs.get("use_multi_gpu", False) and self.device.startswith(
+            "cuda"
+        )
+        if use_multi_gpu and torch.cuda.device_count() > 1:
+            if self.verbose:
+                print(f"Using {torch.cuda.device_count()} GPUs for training")
+            self.model = torch.nn.DataParallel(self.model)
 
         self.objective = objective
         self.method: str = _ObjectiveToMethod.get(objective)  # type: ignore
@@ -444,6 +456,14 @@ class BaseTrainer(ABC):
         num_workers = kwargs.get("num_workers", default_num_workers)
         default_device = setup_device()
         device = kwargs.get("device", default_device)
+
+        # Check for multi-GPU setup
+        use_cuda = device.startswith("cuda")
+        use_multi_gpu = use_cuda and kwargs.get("use_multi_gpu", False)
+
+        if use_multi_gpu and torch.cuda.device_count() > 1:
+            device = f"cuda:{torch.cuda.current_device()}"
+
         return device, num_workers
 
     def __repr__(self) -> str:  # noqa: C901
