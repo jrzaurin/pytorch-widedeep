@@ -24,11 +24,10 @@ def to_device_model(model, device: str):  # noqa: C901
     # insistent transformation since it some cases overall approaches such as
     # model.to('mps') do not work
 
-    if device in ["cpu", f"cuda:{torch.cuda.current_device()}"]:
+    if device == "cpu" or (device.startswith("cuda") and torch.cuda.is_available()):
         return model.to(device)
 
     if device == "mps":
-
         try:
             return model.to(device)
         except (RuntimeError, TypeError):
