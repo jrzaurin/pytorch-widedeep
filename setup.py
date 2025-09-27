@@ -25,6 +25,7 @@ dev_status = {
     "1.4": "Development Status :: 5 - Production/Stable",  # v1.3 - new functionality
     "1.5": "Development Status :: 5 - Production/Stable",  # v1.5 - new functionality
     "1.6": "Development Status :: 5 - Production/Stable",  # v1.6 - new functionality
+    "1.7": "Development Status :: 5 - Production/Stable",  # v1.7 - new functionality
     "2.0": "Development Status :: 6 - Mature",  # v2.0 - new functionality?
 }
 
@@ -67,7 +68,7 @@ setup_kwargs = {
     "license": "MIT",
     "install_requires": reqs,
     "extras_require": extras,
-    "python_requires": ">=3.7.0",
+    "python_requires": ">=3.9.0",
     "classifiers": [
         dev_status[majorminor],
         "Environment :: Other Environment",
