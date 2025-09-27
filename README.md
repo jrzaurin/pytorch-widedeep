@@ -4,7 +4,7 @@
 </p>
 
 [![PyPI version](https://badge.fury.io/py/pytorch-widedeep.svg)](https://pypi.org/project/pytorch-widedeep/)
-[![Python 3.8 3.9 3.10 3.11](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue.svg)](https://pypi.org/project/pytorch-widedeep/)
+[![Python 3.9 3.10 3.11 3.12](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://pypi.org/project/pytorch-widedeep/)
 [![Build Status](https://github.com/jrzaurin/pytorch-widedeep/actions/workflows/build.yml/badge.svg)](https://github.com/jrzaurin/pytorch-widedeep/actions)
 [![Documentation Status](https://readthedocs.org/projects/pytorch-widedeep/badge/?version=latest)](https://pytorch-widedeep.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/jrzaurin/pytorch-widedeep/branch/master/graph/badge.svg)](https://codecov.io/gh/jrzaurin/pytorch-widedeep)
@@ -30,21 +30,21 @@ text and images using Wide and Deep models in Pytorch
 The content of this document is organized as follows:
 
 - [pytorch-widedeep](#pytorch-widedeep)
-    - [Introduction](#introduction)
-    - [Architectures](#architectures)
-    - [The ``deeptabular`` component](#the-deeptabular-component)
-    - [The ``rec`` module](#the-rec-module)
-    - [Text and Images](#text-and-images)
-    - [Installation](#installation)
-      - [Developer Install](#developer-install)
-    - [Quick start](#quick-start)
-    - [Testing](#testing)
-    - [How to Contribute](#how-to-contribute)
-    - [Acknowledgments](#acknowledgments)
-    - [License](#license)
-    - [Cite](#cite)
-      - [BibTex](#bibtex)
-      - [APA](#apa)
+  - [Introduction](#introduction)
+  - [Architectures](#architectures)
+  - [The ``deeptabular`` component](#the-deeptabular-component)
+  - [The ``rec`` module](#the-rec-module)
+  - [Text and Images](#text-and-images)
+  - [Installation](#installation)
+    - [Developer Install](#developer-install)
+  - [Quick start](#quick-start)
+  - [Testing](#testing)
+  - [How to Contribute](#how-to-contribute)
+  - [Acknowledgments](#acknowledgments)
+  - [License](#license)
+  - [Cite](#cite)
+    - [BibTex](#bibtex)
+    - [APA](#apa)
 
 ### Introduction
 
@@ -58,11 +58,9 @@ With that in mind there are a number of architectures that can be implemented
 with the library. The main components of those architectures are shown in the
 Figure below:
 
-
 <p align="center">
   <img width="750" src="mkdocs/sources/docs/figures/widedeep_arch_new.png">
 </p>
-
 
 In math terms, and following the notation in the
 [paper](https://arxiv.org/abs/1606.07792), the expression for the architecture
@@ -71,7 +69,6 @@ without a ``deephead`` component can be formulated as:
 <p align="center">
   <img width="500" src="mkdocs/sources/docs/figures/architecture_1_math.png">
 </p>
-
 
 Where &sigma; is the sigmoid function, *'W'* are the weight matrices applied to the wide model and to the final
 activations of the deep models, *'a'* are these final activations,
@@ -162,11 +159,9 @@ Face models.
 
 **1. Wide and Tabular component (aka deeptabular)**
 
-
 <p align="center">
   <img width="400" src="mkdocs/sources/docs/figures/arch_1.png">
 </p>
-
 
 ```python
 from pytorch_widedeep.preprocessing import TabPreprocessor, WidePreprocessor
@@ -212,7 +207,6 @@ trainer.fit(
 <p align="center">
   <img width="400" src="mkdocs/sources/docs/figures/arch_2.png">
 </p>
-
 
 ```python
 from pytorch_widedeep.preprocessing import TabPreprocessor, TextPreprocessor
@@ -452,11 +446,9 @@ activations. In other words, it does not need to inherit from
 `BaseWDModelComponent`. This base class simply checks the existence of such
 property and avoids some typing errors internally.
 
-
 <p align="center">
     <img width="600" src="mkdocs/sources/docs/figures/arch_6.png">
 </p>
-
 
 ```python
 import torch
@@ -599,7 +591,6 @@ passed through two separate models and then "fused" via a dot product.
   <img width="350" src="mkdocs/sources/docs/figures/arch_7.png">
 </p>
 
-
 ```python
 import numpy as np
 import pandas as pd
@@ -694,7 +685,6 @@ actually a different architecture.
 <p align="center">
   <img width="200" src="mkdocs/sources/docs/figures/arch_8.png">
 </p>
-
 
 ```python
 from pytorch_widedeep.preprocessing import TabPreprocessor, TextPreprocessor, ImagePreprocessor
@@ -823,6 +813,7 @@ The recommendation algorithms in the `rec` module are:
 See the examples for details on how to use these models.
 
 ### Text and Images
+
 For the text component, `deeptext`, the library offers the following models:
 
 1. **BasicRNN**: a simple RNN 2. **AttentiveRNN**: a RNN with an attention
@@ -843,7 +834,7 @@ following families:
  'mobilenetv2', 'mnasnet', 'efficientnet' and 'squeezenet'.  These are
  offered via `torchvision` and wrapped up in the `Vision` class.
 
-###  Installation
+### Installation
 
 Install using pip:
 
