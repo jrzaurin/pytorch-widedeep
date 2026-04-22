@@ -23,6 +23,7 @@ weights/
 pretrained_weights/
 model_weights/
 prepared_data/
+tmp_*/
 
 # Unit Tests/Coverage
 .coverage
