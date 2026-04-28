@@ -317,7 +317,7 @@ class Tab2Vec:
         else:
             self.is_tab_transformer = False
             vectorizer = model.deeptabular[0]._get_embeddings  # type: ignore
-        return vectorizer
+        return vectorizer  # type: ignore[return-value]
 
     def _set_dim_attributes(
         self,
@@ -326,10 +326,10 @@ class Tab2Vec:
     ) -> None:
         if isinstance(model, BaseBayesianModel):
             self.are_cont_embed: bool = (
-                model.embed_continuous if model.embed_continuous else False
+                model.embed_continuous if model.embed_continuous else False  # type: ignore[assignment]
             )
             self.input_dim: Optional[int] = None
-            self.cont_embed_dim: Optional[int] = model.cont_embed_dim
+            self.cont_embed_dim: Optional[int] = model.cont_embed_dim  # type: ignore[assignment]
         else:
             self.are_cont_embed = (
                 model.deeptabular[0].embed_continuous_method is not None  # type: ignore

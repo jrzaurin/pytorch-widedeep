@@ -159,13 +159,13 @@ class Precision(Metric):
             y_pred = y_pred.topk(1, 1)[1].view(-1)
             y_pred = torch.eye(num_class)[y_pred.cpu().long()]
 
-        self.true_positives += (y_true * y_pred).sum(dim=0)  # type:ignore
-        self.all_positives += y_pred.sum(dim=0)  # type:ignore
+        self.true_positives += (y_true * y_pred).sum(dim=0)  # type: ignore
+        self.all_positives += y_pred.sum(dim=0)  # type: ignore
 
         precision = self.true_positives / (self.all_positives + self.eps)
 
         if self.average:
-            return np.array(precision.mean().item())  # type:ignore
+            return np.array(precision.mean().item())  # type: ignore
         else:
             return precision.detach().cpu().numpy()  # type: ignore[attr-defined]
 
@@ -231,7 +231,7 @@ class Recall(Metric):
         recall = self.true_positives / (self.actual_positives + self.eps)
 
         if self.average:
-            return np.array(recall.mean().item())  # type:ignore
+            return np.array(recall.mean().item())  # type: ignore
         else:
             return recall.detach().cpu().numpy()  # type: ignore[attr-defined]
 

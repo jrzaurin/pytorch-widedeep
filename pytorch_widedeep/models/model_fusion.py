@@ -126,6 +126,7 @@ class ModelFuser(BaseWDModelComponent):
         super(ModelFuser, self).__init__()
 
         self.models = nn.ModuleList(models)
+        self._typed_models: List[BaseWDModelComponent] = models
         self.fusion_method = fusion_method
         self.projection_method = projection_method
 
@@ -156,7 +157,7 @@ class ModelFuser(BaseWDModelComponent):
                 self.head_linear_first = head_linear_first
 
                 self.head = MLP(
-                    d_hidden=[sum([model.output_dim for model in self.models])]
+                    d_hidden=[sum([model.output_dim for model in self._typed_models])]
                     + self.head_hidden_dims,
                     activation=(
                         "relu" if self.head_activation is None else self.head_activation
@@ -233,7 +234,7 @@ class ModelFuser(BaseWDModelComponent):
         if self.all_output_dim_equal and self.projection_method is None:
             return X
 
-        output_dims = [model.output_dim for model in self.models]
+        output_dims: List[int] = [model.output_dim for model in self.models]  # type: ignore[misc]
 
         if self.projection_method == "min":
             proj_dim = min(output_dims)
@@ -262,8 +263,8 @@ class ModelFuser(BaseWDModelComponent):
     def output_dim(self) -> int:
         r"""Returns the output dimension of the model."""
         if self.fusion_method == "head":
-            output_dim = (
-                self.head_hidden_dims[-1]
+            output_dim: int = (
+                self.head_hidden_dims[-1]  # type: ignore[assignment]
                 if hasattr(self, "head_hidden_dims")
                 else self.head.output_dim
             )
@@ -277,16 +278,22 @@ class ModelFuser(BaseWDModelComponent):
                 fusion_methods = self.fusion_method  # type: ignore
             for fm in fusion_methods:
                 if fm == "concatenate":
-                    output_dim += sum([model.output_dim for model in self.models])
+                    output_dim += sum(
+                        [model.output_dim for model in self._typed_models]
+                    )
                 elif self.projection_method == "mean":
                     output_dim += int(
-                        sum([model.output_dim for model in self.models])
+                        sum([model.output_dim for model in self._typed_models])
                         / len(self.models)
                     )
                 elif self.projection_method == "min":
-                    output_dim += min([model.output_dim for model in self.models])
+                    output_dim += min(
+                        [model.output_dim for model in self._typed_models]
+                    )
                 elif self.projection_method == "max":
-                    output_dim += max([model.output_dim for model in self.models])
+                    output_dim += max(
+                        [model.output_dim for model in self._typed_models]
+                    )
                 elif self.all_output_dim_equal:
                     output_dim += self.models[0].output_dim
                 else:

@@ -195,15 +195,15 @@ class TransformerBasedFeatureImportance(BaseFeatureImportance):
     def _model_type_attention_weights(self, model: WideDeep) -> Tensor:
         if self.model_type == "saint":
             attention_weights = torch.stack(
-                [aw[0] for aw in model.deeptabular[0].attention_weights],  # type: ignore[index]
+                [aw[0] for aw in model.deeptabular[0].attention_weights],  # type: ignore[index, union-attr]
                 dim=0,
             )
         elif self.model_type == "tabfastformer":
-            alpha_weights, beta_weights = zip(*model.deeptabular[0].attention_weights)  # type: ignore[index]
+            alpha_weights, beta_weights = zip(*model.deeptabular[0].attention_weights)  # type: ignore[index, misc]
             attention_weights = torch.stack(alpha_weights + beta_weights, dim=0)
         else:
             attention_weights = torch.stack(
-                model.deeptabular[0].attention_weights, dim=0  # type: ignore[index]
+                model.deeptabular[0].attention_weights, dim=0  # type: ignore[index, arg-type]
             )
 
         return attention_weights

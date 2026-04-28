@@ -205,4 +205,4 @@ class PositionalEncoding(nn.Module):
         self.register_buffer("pe", pe)
 
     def forward(self, X: Tensor) -> Tensor:
-        return self.dropout(X + self.pe)
+        return self.dropout(X + self.pe)  # type: ignore[operator]

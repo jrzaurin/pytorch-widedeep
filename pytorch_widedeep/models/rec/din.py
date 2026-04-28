@@ -454,7 +454,7 @@ class DeepInterestNetwork(BaseWDModelComponent):
             }
             other_seq_embed = torch.cat(
                 [
-                    self.other_seq_cols_embed[col]._get_embeddings(X_other_seq[col])
+                    self.other_seq_cols_embed[col]._get_embeddings(X_other_seq[col])  # type: ignore[operator]
                     for col in self.other_seq_cols_indexes.keys()
                 ],
                 dim=-1,

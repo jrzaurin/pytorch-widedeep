@@ -6,5 +6,20 @@ from pytorch_widedeep.models.rec.deepfm import DeepFactorizationMachine
 from pytorch_widedeep.models.rec.autoint import AutoInt
 from pytorch_widedeep.models.rec.deepffm import DeepFieldAwareFactorizationMachine
 from pytorch_widedeep.models.rec.xdeepfm import ExtremeDeepFactorizationMachine
+from pytorch_widedeep.models.rec.rankmixer import RankMixer
 from pytorch_widedeep.models.rec.autoint_plus import AutoIntPlus
 from pytorch_widedeep.models.rec.basic_transformer import Transformer
+
+__all__ = [
+    "DeepCrossNetwork",
+    "DeepInterestNetwork",
+    "GatedDeepCrossNetwork",
+    "DeepCrossNetworkV2",
+    "DeepFactorizationMachine",
+    "AutoInt",
+    "DeepFieldAwareFactorizationMachine",
+    "ExtremeDeepFactorizationMachine",
+    "AutoIntPlus",
+    "Transformer",
+    "RankMixer",
+]

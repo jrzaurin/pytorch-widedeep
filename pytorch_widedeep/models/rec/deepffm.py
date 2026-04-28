@@ -184,8 +184,8 @@ class DeepFieldAwareFactorizationMachine(BaseTabularModelWithAttention):
                 # as they are sliced within '_get_embeddings'. This will
                 # return a tensor of shape (b, 1, embed_dim). Then it has to
                 # be squeezed to (b, embed_dim)  before multiplied
-                embed_i = self.encoders[i]._get_embeddings(X[:, [i]]).squeeze(1)
-                embed_j = self.encoders[j]._get_embeddings(X[:, [j]]).squeeze(1)
+                embed_i = self.encoders[i]._get_embeddings(X[:, [i]]).squeeze(1)  # type: ignore[operator]
+                embed_j = self.encoders[j]._get_embeddings(X[:, [j]]).squeeze(1)  # type: ignore[operator]
                 interactions_l.append(embed_i * embed_j)
 
         interactions = torch.cat(interactions_l, dim=1)

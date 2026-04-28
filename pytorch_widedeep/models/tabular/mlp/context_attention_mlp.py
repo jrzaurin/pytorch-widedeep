@@ -241,4 +241,4 @@ class ContextAttentionMLP(BaseTabularModelWithAttention):
         The shape of the attention weights is $(N, F)$, where $N$ is the batch
         size and $F$ is the number of features/columns in the dataset
         """
-        return [blk.attn.attn_weights for blk in self.encoder]
+        return [blk.attn.attn_weights for blk in self.encoder]  # type: ignore[union-attr, misc]

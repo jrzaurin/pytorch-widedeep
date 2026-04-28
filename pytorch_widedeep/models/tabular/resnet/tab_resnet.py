@@ -393,7 +393,7 @@ class TabResnetDecoder(nn.Module):
 
         if self.mlp_hidden_dims is not None:
             self.mlp = MLP(
-                d_hidden=[self.mlp_first_hidden_dim] + self.mlp_hidden_dims,
+                d_hidden=[self.mlp_first_hidden_dim] + self.mlp_hidden_dims,  # type: ignore[arg-type]
                 activation=(
                     "relu" if self.mlp_activation is None else self.mlp_activation
                 ),

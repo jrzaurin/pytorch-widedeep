@@ -407,6 +407,8 @@ def test_label_encoder_with_chunks():
 
     df_e = le.transform(df_chunk)
     df_chunk_org = le.inverse_transform(df_e)
+    df_chunk_org["cat1"] = df_chunk_org["cat1"].astype(object)
+    df_chunk_org["cat2"] = df_chunk_org["cat2"].astype(object)
 
     assert (
         "E" in le.encoding_dict["cat1"]

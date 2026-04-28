@@ -402,7 +402,7 @@ class TabTransformer(BaseTabularModelWithAttention):
                 "linear or flash attention"
             )
 
-        return [blk.attn.attn_weights for blk in self.encoder]
+        return [blk.attn.attn_weights for blk in self.encoder]  # type: ignore[union-attr, misc]
 
     def _get_embeddings_tt(self, X: Tensor) -> Tuple[Tensor, Optional[Tensor]]:  # type: ignore[override]
         if self.n_cont and self.embed_continuous and self.n_cat:
