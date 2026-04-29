@@ -659,6 +659,7 @@ class RankMixer(BaseTabularModelWithoutAttention):
     ) -> Float[torch.Tensor, "batch output_dim"]:
 
         x = self._get_embeddings(X)
+        x = self._rearrange_embeddings_to_groups(x)
 
         # B, T, D
         x = self.tokenizer(x)
@@ -680,10 +681,9 @@ class RankMixer(BaseTabularModelWithoutAttention):
 
     def _validate_input(self, column_groups: list[list[str]]) -> None:
         _flat_groups = [col for group in column_groups for col in group]
-        _cols_in_groups = set(_flat_groups)
-        _cols_in_idx = set(self.column_idx.keys())
+        _cols_in_groups = set[str](_flat_groups)
+        _cols_in_idx = set[str](self.column_idx.keys())
 
-        # 1. coverage
         if _cols_in_groups != _cols_in_idx:
             missing = _cols_in_idx - _cols_in_groups
             extra = _cols_in_groups - _cols_in_idx
@@ -691,19 +691,6 @@ class RankMixer(BaseTabularModelWithoutAttention):
                 "column_groups and column_idx must reference the same columns. "
                 + (f"Missing from column_groups: {missing}. " if missing else "")
                 + (f"Not found in column_idx: {extra}." if extra else "")
-            )
-
-        # 2. order must match the embedding output order:
-        #  cat cols in cat_embed_input order, then cont cols in continuous_cols order
-        _cat_cols = [t[0] for t in self.cat_embed_input] if self.cat_embed_input else []
-        _cont_cols = self.continuous_cols if self.continuous_cols else []
-        _expected_order = _cat_cols + _cont_cols
-        if _flat_groups != _expected_order:
-            raise ValueError(
-                "column_groups (flattened) must match the embedding output order: "
-                "categorical columns first (in cat_embed_input order), then continuous "
-                "columns (in continuous_cols order). "
-                f"Expected: {_expected_order}, got: {_flat_groups}."
             )
 
     def compute_group_sizes(self) -> list[int]:
@@ -719,87 +706,30 @@ class RankMixer(BaseTabularModelWithoutAttention):
             sum(col_to_flat_dim[col] for col in group) for group in self.column_groups
         ]
 
+    def _rearrange_embeddings_to_groups(self, x: torch.Tensor) -> torch.Tensor:
+        col_to_slice: dict[str, tuple[int, int]] = {}
+        cursor = 0
 
-if __name__ == "__main__":
-    import numpy as np
-    import torch
-    import pandas as pd
+        if self.cat_embed_input is not None:
+            for col, _, embed_dim in self.cat_embed_input:
+                col_to_slice[col] = (cursor, cursor + embed_dim)
+                cursor += embed_dim
 
-    from pytorch_widedeep.preprocessing import TabPreprocessor
+        if self.continuous_cols is not None:
+            cont_dim = self.cont_embed_dim if self.embed_continuous else 1
+            for col in self.continuous_cols:
+                col_to_slice[col] = (cursor, cursor + cont_dim)
+                cursor += cont_dim
 
-    # ── 1. Toy dataset ────────────────────────────────────────────────────────
-    np.random.seed(42)
-    N = 100
-    df = pd.DataFrame(
-        {
-            "gender": np.random.choice(["M", "F"], N),
-            "education": np.random.choice(
-                ["high_school", "bachelor", "master", "phd"], N
-            ),
-            "age": np.random.uniform(18, 65, N),
-            "income": np.random.uniform(20_000, 120_000, N),
-        }
-    )
+        idx: list[int] = []
+        for group in self.column_groups:
+            for col in group:
+                start, end = col_to_slice[col]
+                idx.extend(range(start, end))
 
-    # ── 2. Preprocess ─────────────────────────────────────────────────────────
-    # Explicit embed dims: gender→8, education→8
-    # Each continuous col will be embedded to dim 8 by the model
-    # so flat dims per group:
-    #   group 1 [gender, education] : 8 + 8 = 16
-    #   group 2 [age, income]       : 8 + 8 = 16  (cont_embed_dim=8)
-    preprocessor = TabPreprocessor(
-        cat_embed_cols=[("gender", 8), ("education", 8)],
-        continuous_cols=["age", "income"],
-        cols_to_scale=["age", "income"],
-    )
-    X = preprocessor.fit_transform(df)
-    X_tensor = torch.tensor(X, dtype=torch.float32)
+        if idx == list(range(cursor)):
+            return x
 
-    print("column_idx:     ", preprocessor.column_idx)
-    # → {'gender': 0, 'education': 1, 'age': 2, 'income': 3}
-    print("cat_embed_input:", preprocessor.cat_embed_input)
-    # → [('gender', 2, 8), ('education', 4, 8)]
-
-    # ── 3. Column groups ──────────────────────────────────────────────────────
-    # Flattened order MUST match embedding output: cats first, then conts
-    # group 1 (user profile): gender + education
-    # group 2 (context):      age    + income
-    column_groups = [
-        ["gender", "education"],
-        ["age", "income"],
-    ]
-
-    # ── 4. Build RankMixer ────────────────────────────────────────────────────
-    # total flat dim = 16 + 16 = 32
-    # token_size = 16 → num_tokens = 32 // 16 = 2
-    # num_tokens must equal num_heads: both = 2
-    # model_dim = 32, head_dim = 32 // 2 = 16 ✓
-    model = RankMixer(
-        column_idx=preprocessor.column_idx,
-        column_groups=column_groups,
-        cat_embed_input=preprocessor.cat_embed_input,
-        continuous_cols=preprocessor.continuous_cols,
-        embed_continuous_method="standard",
-        cont_embed_dim=8,
-        num_tokens=2,
-        token_size=16,
-        model_dim=32,
-        num_layers=2,
-        num_heads=2,
-        ff_dropout=0.0,
-        use_moe=True,
-        num_experts=2,
-        top_k=1,
-    )
-
-    print("\nGroup sizes:         ", model.compute_group_sizes())  # [16, 16]
-    print("Tokenizer input_dim: ", model.tokenizer.input_dim)  # 32
-    print("Tokenizer num_tokens:", model.tokenizer.num_tokens)  # 2
-
-    # ── 5. Forward pass ───────────────────────────────────────────────────────
-    model.eval()
-    with torch.no_grad():
-        out = model(X_tensor)
-
-    print(f"\nInput  shape: {X_tensor.shape}")  # (100, 4)
-    print(f"Output shape: {out.shape}")  # (100, 64)  →  T * model_dim = 2 * 32
+        device = x.device
+        perm = torch.tensor(idx, dtype=torch.long, device=device)
+        return x[:, perm]
