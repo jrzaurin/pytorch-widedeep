@@ -749,31 +749,31 @@ passed through a series of ResNet blocks built with dense layers.
 
 Two simpler attention based models that we call:
 
-4. **ContextAttentionMLP**: MLP with at attention mechanism "on top" that is based on
+1. **ContextAttentionMLP**: MLP with at attention mechanism "on top" that is based on
     [Hierarchical Attention Networks for Document Classification](https://www.cs.cmu.edu/~./hovy/papers/16HLT-hierarchical-attention-networks.pd)
-5. **SelfAttentionMLP**: MLP with an attention mechanism that is a simplified
+2. **SelfAttentionMLP**: MLP with an attention mechanism that is a simplified
     version of a transformer block that we refer as "query-key self-attention".
 
 The ``Tabformer`` family, i.e. Transformers for Tabular data:
 
-6. **TabTransformer**: details on the TabTransformer can be found in
+1. **TabTransformer**: details on the TabTransformer can be found in
 [TabTransformer: Tabular Data Modeling Using Contextual Embeddings](https://arxiv.org/pdf/2012.06678.pdf).
-7. **SAINT**: Details on SAINT can be found in
+2. **SAINT**: Details on SAINT can be found in
 [SAINT: Improved Neural Networks for Tabular Data via Row Attention and Contrastive Pre-Training](https://arxiv.org/abs/2106.01342).
-8. **FT-Transformer**: details on the FT-Transformer can be found in
+3. **FT-Transformer**: details on the FT-Transformer can be found in
 [Revisiting Deep Learning Models for Tabular Data](https://arxiv.org/abs/2106.11959).
-9. **TabFastFormer**: adaptation of the FastFormer for tabular data. Details
+4. **TabFastFormer**: adaptation of the FastFormer for tabular data. Details
 on the Fasformer can be found in
 [FastFormers: Highly Efficient Transformer Models for Natural Language Understanding](https://arxiv.org/abs/2010.13382)
-10. **TabPerceiver**: adaptation of the Perceiver for tabular data. Details on
+5. **TabPerceiver**: adaptation of the Perceiver for tabular data. Details on
 the Perceiver can be found in
 [Perceiver: General Perception with Iterative Attention](https://arxiv.org/abs/2103.03206)
 
 And probabilistic DL models for tabular data based on
 [Weight Uncertainty in Neural Networks](https://arxiv.org/abs/1505.05424):
 
-11. **BayesianWide**: Probabilistic adaptation of the `Wide` model.
-12. **BayesianTabMlp**: Probabilistic adaptation of the `TabMlp` model
+1. **BayesianWide**: Probabilistic adaptation of the `Wide` model.
+2. **BayesianTabMlp**: Probabilistic adaptation of the `TabMlp` model
 
 Note that while there are scientific publications for the TabTransformer,
 SAINT and FT-Transformer, the TabFasfFormer and TabPerceiver are our own
@@ -809,6 +809,7 @@ The recommendation algorithms in the `rec` module are:
 7. [DCN V2: Improved Deep & Cross Network and Practical Lessons for Web-scale Learning to Rank Systems](https://arxiv.org/abs/2008.13535)
 8. [Towards Deeper, Lighter and Interpretable Click-through Rate Prediction](https://arxiv.org/abs/2311.04635)
 9. A basic Transformer-based model for recommendation where the problem is faced as a sequence.
+10. [RankMixer: Scaling Up Ranking Models via Token Mixing](https://arxiv.org/abs/2507.15551)
 
 See the examples for details on how to use these models.
 
@@ -819,8 +820,8 @@ For the text component, `deeptext`, the library offers the following models:
 1. **BasicRNN**: a simple RNN 2. **AttentiveRNN**: a RNN with an attention
 mechanism based on the
 [Hierarchical Attention Networks for DocumentClassification](https://www.cs.cmu.edu/~./hovy/papers/16HLT-hierarchical-attention-networks.pd)
-3. **StackedAttentiveRNN**: a stack of AttentiveRNNs
-4. **HFModel**: a wrapper around Hugging Face Transfomer-based models. At the moment
+2. **StackedAttentiveRNN**: a stack of AttentiveRNNs
+3. **HFModel**: a wrapper around Hugging Face Transfomer-based models. At the moment
 only models from the families BERT, RoBERTa, DistilBERT, ALBERT and ELECTRA
 are supported. This is because this library is designed to address
 classification and regression tasks and these are the most 'popular'
