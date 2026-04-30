@@ -346,4 +346,4 @@ class FTTransformer(BaseTabularModelWithAttention):
         number of features/columns and $k$ is the reduced sequence length or
         dimension, i.e. $k = int(kv_{compression \space factor} \times s)$
         """
-        return [blk.attn.attn_weights for blk in self.encoder]
+        return [blk.attn.attn_weights for blk in self.encoder]  # type: ignore[union-attr, misc]

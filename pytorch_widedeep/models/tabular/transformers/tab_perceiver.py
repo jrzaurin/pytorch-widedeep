@@ -1,3 +1,5 @@
+from typing import cast
+
 import torch
 import einops
 from torch import nn
@@ -335,10 +337,10 @@ class TabPerceiver(BaseTabularModelWithAttention):
         x = einops.repeat(self.latents, "n d -> b n d", b=X.shape[0])
 
         for n in range(self.n_perceiver_blocks):
-            cross_attns = self.encoder["perceiver_block" + str(n)]["cross_attns"]
-            latent_transformer = self.encoder["perceiver_block" + str(n)][
-                "latent_transformer"
-            ]
+            # typing this is a nightmare...
+            block = cast(nn.ModuleDict, self.encoder["perceiver_block" + str(n)])
+            cross_attns = cast(nn.ModuleList, block["cross_attns"])
+            latent_transformer = block["latent_transformer"]
             for cross_attn in cross_attns:
                 x = cross_attn(x, x_emb)
             x = latent_transformer(x)
@@ -380,22 +382,24 @@ class TabPerceiver(BaseTabularModelWithAttention):
         features/columns in the dataset and $T$ is the number of Latent
         Attention heads
         """
+
         if self.share_weights:
-            cross_attns = self.encoder["perceiver_block0"]["cross_attns"]
-            latent_transformer = self.encoder["perceiver_block0"]["latent_transformer"]
+            block = cast(nn.ModuleDict, self.encoder["perceiver_block0"])
+            cross_attns = cast(nn.ModuleList, block["cross_attns"])
+            latent_transformer = block["latent_transformer"]
             attention_weights = self._extract_attn_weights(
                 cross_attns, latent_transformer
             )
         else:
             attention_weights = []
             for n in range(self.n_perceiver_blocks):
-                cross_attns = self.encoder["perceiver_block" + str(n)]["cross_attns"]
-                latent_transformer = self.encoder["perceiver_block" + str(n)][
-                    "latent_transformer"
-                ]
+                block = cast(nn.ModuleDict, self.encoder["perceiver_block" + str(n)])
+                cross_attns = cast(nn.ModuleList, block["cross_attns"])
+                latent_transformer = block["latent_transformer"]
                 attention_weights.append(
                     self._extract_attn_weights(cross_attns, latent_transformer)
                 )
+
         return attention_weights
 
     def _build_perceiver_block(self) -> nn.ModuleDict:

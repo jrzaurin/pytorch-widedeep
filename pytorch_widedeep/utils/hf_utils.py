@@ -1,3 +1,4 @@
+# mypy: disable-error-code=attr-defined
 from typing import Tuple
 from collections import namedtuple
 
@@ -85,8 +86,11 @@ def get_tokenizer(
 
 def get_config_and_model(
     model_name: str,
+    output_attentions: bool = False,
 ) -> Tuple[PretrainedConfig, PreTrainedModel]:
     model_class = get_model_class(model_name)
     config = MODEL_OBJECTS[model_class].config.from_pretrained(model_name)
+    if output_attentions:
+        config._attn_implementation = "eager"
     model = MODEL_OBJECTS[model_class].model(config)
     return config, model

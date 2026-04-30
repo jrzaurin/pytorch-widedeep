@@ -129,7 +129,7 @@ class WideDeepDatasetFromFolder(Dataset):
     def _get_from_reference(
         reference: Type["WideDeepDatasetFromFolder"],
     ) -> Tuple[Optional[TextFromFolder], Optional[ImageFromFolder]]:
-        return reference.text_from_folder, reference.img_from_folder
+        return reference.text_from_folder, reference.img_from_folder  # type: ignore[misc]
 
     def __repr__(self) -> str:
         list_of_params: List[str] = []

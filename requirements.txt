@@ -16,3 +16,5 @@ fastparquet>=2024.2.0
 transformers>=4.37.0
 sentence-transformers>=2.3.0
 sentencepiece>=0.2.0
+beartype >= 0.22.0
+jaxtyping >= 0.3.0

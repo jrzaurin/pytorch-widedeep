@@ -33,10 +33,10 @@ def load_bio_kdd04(
     """
 
     # header_list = ["EXAMPLE_ID", "BLOCK_ID", "target"] + [str(i) for i in range(4, 78)]
-    with resources.path(
-        "pytorch_widedeep.datasets.data", "bio_train.parquet.brotli"
-    ) as fpath:
-        df = pd.read_parquet(fpath)
+    fpath = resources.files("pytorch_widedeep.datasets.data").joinpath(
+        "bio_train.parquet.brotli"
+    )
+    df = pd.read_parquet(fpath)
 
     return df if as_frame else df.to_numpy(dtype=np.float32)
 
@@ -46,10 +46,10 @@ def load_adult(as_frame: bool = False) -> Union[npt.NDArray[np.object_], pd.Data
     you may find detailed description [here](http://www.cs.toronto.edu/~delve/data/adult/adultDetail.html)
     """
 
-    with resources.path(
-        "pytorch_widedeep.datasets.data", "adult.parquet.brotli"
-    ) as fpath:
-        df = pd.read_parquet(fpath)
+    fpath = resources.files("pytorch_widedeep.datasets.data").joinpath(
+        "adult.parquet.brotli"
+    )
+    df = pd.read_parquet(fpath)
 
     return df if as_frame else df.to_numpy()
 
@@ -130,10 +130,10 @@ def load_ecoli(as_frame: bool = False) -> Union[npt.NDArray[np.object_], pd.Data
     imS (inner membrane, cleavable signal sequence)      2
     """
 
-    with resources.path(
-        "pytorch_widedeep.datasets.data", "ecoli.parquet.brotli"
-    ) as fpath:
-        df = pd.read_parquet(fpath)
+    fpath = resources.files("pytorch_widedeep.datasets.data").joinpath(
+        "ecoli.parquet.brotli"
+    )
+    df = pd.read_parquet(fpath)
 
     return df if as_frame else df.to_numpy()
 
@@ -177,10 +177,10 @@ def load_california_housing(
     Pace, R. Kelley and Ronald Barry, Sparse Spatial Autoregressions,
     Statistics and Probability Letters, 33 (1997) 291-297.
     """
-    with resources.path(
-        "pytorch_widedeep.datasets.data", "california_housing.parquet.brotli"
-    ) as fpath:
-        df = pd.read_parquet(fpath)
+    fpath = resources.files("pytorch_widedeep.datasets.data").joinpath(
+        "california_housing.parquet.brotli"
+    )
+    df = pd.read_parquet(fpath)
 
     return df if as_frame else df.to_numpy(dtype=np.float32)
 
@@ -200,10 +200,10 @@ def load_birds(as_frame: bool = False) -> Union[npt.NDArray[np.object_], pd.Data
     simultaneous bird species in a noisy environment", in proc. 2013 IEEE International Workshop
     on Machine Learning for Signal Processing (MLSP)
     """
-    with resources.path(
-        "pytorch_widedeep.datasets.data", "birds_train.parquet.brotli"
-    ) as fpath:
-        df = pd.read_parquet(fpath)
+    fpath = resources.files("pytorch_widedeep.datasets.data").joinpath(
+        "birds_train.parquet.brotli"
+    )
+    df = pd.read_parquet(fpath)
 
     return df if as_frame else df.to_numpy()
 
@@ -224,10 +224,10 @@ def load_rf1(as_frame: bool = False) -> Union[npt.NDArray[np.float32], pd.DataFr
     Service. From these 9000 data points, 1000 points have been randomly sampled for training
     and 2000 for evaluation.
     """
-    with resources.path(
-        "pytorch_widedeep.datasets.data", "rf1_train.parquet.brotli"
-    ) as fpath:
-        df = pd.read_parquet(fpath)
+    fpath = resources.files("pytorch_widedeep.datasets.data").joinpath(
+        "rf1_train.parquet.brotli"
+    )
+    df = pd.read_parquet(fpath)
 
     return df if as_frame else df.to_numpy(dtype=np.float32)
 
@@ -260,11 +260,10 @@ def load_womens_ecommerce(
     Department Name: Categorical name of the product department name.
     Class Name: Categorical name of the product class name.
     """
-    with resources.path(
-        "pytorch_widedeep.datasets.data",
-        "WomensClothingE-CommerceReviews.parquet.brotli",
-    ) as fpath:
-        df = pd.read_parquet(fpath)
+    fpath = resources.files("pytorch_widedeep.datasets.data").joinpath(
+        "WomensClothingE-CommerceReviews.parquet.brotli"
+    )
+    df = pd.read_parquet(fpath)
 
     return df if as_frame else df.to_numpy()
 
@@ -345,23 +344,20 @@ def load_movielens100k(
         Demographic information about the users.
         The user ids are the ones used in the df_data data set.
     """
-    with resources.path(
-        "pytorch_widedeep.datasets.data",
-        "MovieLens100k_data.parquet.brotli",
-    ) as fpath:
-        df_data = pd.read_parquet(fpath)
+    fpath = resources.files("pytorch_widedeep.datasets.data").joinpath(
+        "MovieLens100k_data.parquet.brotli"
+    )
+    df_data = pd.read_parquet(fpath)
 
-    with resources.path(
-        "pytorch_widedeep.datasets.data",
-        "MovieLens100k_items.parquet.brotli",
-    ) as fpath:
-        df_items = pd.read_parquet(fpath)
+    fpath = resources.files("pytorch_widedeep.datasets.data").joinpath(
+        "MovieLens100k_items.parquet.brotli"
+    )
+    df_items = pd.read_parquet(fpath)
 
-    with resources.path(
-        "pytorch_widedeep.datasets.data",
-        "MovieLens100k_users.parquet.brotli",
-    ) as fpath:
-        df_users = pd.read_parquet(fpath)
+    fpath = resources.files("pytorch_widedeep.datasets.data").joinpath(
+        "MovieLens100k_users.parquet.brotli"
+    )
+    df_users = pd.read_parquet(fpath)
 
     return (
         (df_data, df_users, df_items)

@@ -1,5 +1,3 @@
-from typing import Tuple
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -55,24 +53,16 @@ def generate_user_item_interactions(
 
 def split_train_validation(
     df: pd.DataFrame, validation_interactions_per_user: int
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    grouped = (
-        df.groupby("user_id")
-        .apply(lambda x: x.sample(frac=1, random_state=42))
-        .reset_index(drop=True)
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    shuffled = (
+        df.sample(frac=1, random_state=42).sort_values("user_id").reset_index(drop=True)
     )
-
-    train_df = (
-        grouped.groupby("user_id")
-        .apply(lambda x: x.iloc[:-validation_interactions_per_user])
-        .reset_index(drop=True)
-    )
-    val_df = (
-        grouped.groupby("user_id")
-        .apply(lambda x: x.iloc[-validation_interactions_per_user:])
-        .reset_index(drop=True)
-    )
-
+    train_dfs, val_dfs = [], []
+    for _, group in shuffled.groupby("user_id"):
+        train_dfs.append(group.iloc[:-validation_interactions_per_user])
+        val_dfs.append(group.iloc[-validation_interactions_per_user:])
+    train_df = pd.concat(train_dfs).reset_index(drop=True)
+    val_df = pd.concat(val_dfs).reset_index(drop=True)
     return train_df, val_df
 
 

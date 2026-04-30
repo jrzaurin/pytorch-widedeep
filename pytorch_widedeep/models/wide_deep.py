@@ -412,9 +412,9 @@ class WideDeep(nn.Module):
             component_: Optional[Union[nn.ModuleList, WDModel]] = nn.ModuleList()
             for cp in component:
                 if self.with_deephead or cp.output_dim == 1:
-                    component_.append(cp)
+                    component_.append(cp)  # type: ignore[union-attr, operator]
                 else:
-                    component_.append(
+                    component_.append(  # type: ignore[union-attr, operator]
                         nn.Sequential(cp, nn.Linear(cp.output_dim, self.pred_dim))
                     )
         elif self.with_deephead or component.output_dim == 1:

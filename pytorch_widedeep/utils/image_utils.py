@@ -18,7 +18,7 @@ def resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     # initialize the dimensions of the image to be resized and
     # grab the image size
     dim = None
-    (h, w) = image.shape[:2]
+    h, w = image.shape[:2]
 
     # if both the width and height are None, then return the
     # original image
@@ -91,7 +91,7 @@ class AspectAwarePreprocessor:
         np.ndarray
             Resized image according to its original image aspect ratio
         """
-        (h, w) = image.shape[:2]
+        h, w = image.shape[:2]
         dW = 0
         dH = 0
 
@@ -102,7 +102,7 @@ class AspectAwarePreprocessor:
             image = resize(image, height=self.height, inter=self.inter)
             dW = int((image.shape[1] - self.width) / 2.0)
 
-        (h, w) = image.shape[:2]
+        h, w = image.shape[:2]
         image = image[dH : h - dH, dW : w - dW]
 
         resized_image = cv2.resize(

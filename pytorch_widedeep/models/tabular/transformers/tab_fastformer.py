@@ -365,7 +365,7 @@ class TabFastFormer(BaseTabularModelWithAttention):
         number of features/columns in the dataset
         """
         if self.share_weights:
-            attention_weights = [self.encoder[0].attn.attn_weight]
+            attention_weights = [self.encoder[0].attn.attn_weight]  # type: ignore[union-attr]
         else:
-            attention_weights = [blk.attn.attn_weights for blk in self.encoder]
-        return attention_weights
+            attention_weights = [blk.attn.attn_weights for blk in self.encoder]  # type: ignore[union-attr]
+        return attention_weights  # type: ignore[return-value]

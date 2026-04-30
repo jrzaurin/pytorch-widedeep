@@ -108,7 +108,9 @@ class HFModel(BaseWDModelComponent):
 
         self.model_class = get_model_class(model_name)
 
-        self.config, self.model = get_config_and_model(self.model_name)
+        self.config, self.model = get_config_and_model(
+            self.model_name, output_attentions=kwargs.get("output_attentions", False)
+        )
 
         if self.pooling_mode == "pooler" and not hasattr(self.model, "pooler_output"):
             raise ValueError(

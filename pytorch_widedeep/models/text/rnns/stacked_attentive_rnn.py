@@ -250,7 +250,7 @@ class StackedAttentiveRNN(BaseWDModelComponent):
         The shape of the attention weights is $(N, S)$ Where $N$ is the batch
         size and $S$ is the length of the sequence
         """
-        return [blk.attn.attn_weights for blk in self.attention_blks]
+        return [blk.attn.attn_weights for blk in self.attention_blks]  # type: ignore[union-attr]
 
     def _set_embeddings(
         self, embed_matrix: Union[Any, np.ndarray]

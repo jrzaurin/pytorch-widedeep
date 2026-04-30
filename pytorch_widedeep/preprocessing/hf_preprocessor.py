@@ -154,7 +154,7 @@ class HFPreprocessor(BasePreprocessor):
         if self._multiprocessing:
             input_ids = self._encode_paralell(texts, **self.encode_params)
         else:
-            encoded_texts = self.tokenizer.batch_encode_plus(
+            encoded_texts = self.tokenizer(
                 texts,
                 **self.encode_params,
             )

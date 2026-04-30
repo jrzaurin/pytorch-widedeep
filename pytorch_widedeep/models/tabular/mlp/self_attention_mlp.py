@@ -268,4 +268,4 @@ class SelfAttentionMLP(BaseTabularModelWithAttention):
         batch size, $H$ is the number of attention heads and $F$ is the
         number of features/columns in the dataset
         """
-        return [blk.attn.attn_weights for blk in self.encoder]
+        return [blk.attn.attn_weights for blk in self.encoder]  # type: ignore[union-attr, misc]

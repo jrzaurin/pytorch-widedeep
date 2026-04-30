@@ -338,6 +338,6 @@ class SAINT(BaseTabularModelWithAttention):
         attention_weights = []
         for blk in self.encoder:
             attention_weights.append(
-                (blk.col_attn.attn_weights, blk.row_attn.attn_weights)
+                (blk.col_attn.attn_weights, blk.row_attn.attn_weights)  # type: ignore[union-attr]
             )
-        return attention_weights
+        return attention_weights  # type: ignore[return-value]
